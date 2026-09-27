@@ -1,4 +1,6 @@
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
+import { TOP_LEVEL_TYPE_CONFIG } from '../constants/type-maps';
+import { FREE_TYPE } from './freeLineType';
+import { TYPE_MAP } from '../constants/type-keys';
 import { prepareImportedLessons, resolveImportPayload, type ImportReport } from './importPipeline';
 import { IMPORT_LIMITS } from './importLimits';
 import { normalizeContentType } from '../constants/type-keys';
@@ -16,10 +18,10 @@ import type { LessonsData } from '../types';
  * le chemin précis du champ fautif.
  */
 
-export type DiagnosticSeverity = 'error' | 'warning' | 'repair';
+type DiagnosticSeverity = 'error' | 'warning' | 'repair';
 
 /** Code stable ; le libellé affiché vit dans les traductions. */
-export interface ContentDiagnostic {
+interface ContentDiagnostic {
   severity: DiagnosticSeverity;
   code: string;
   params: Record<string, string | number>;
@@ -29,7 +31,7 @@ export interface ContentDiagnostic {
   excerpt?: string;
 }
 
-export interface ContentStats {
+interface ContentStats {
   bytes: number;
   chapters: number;
   contents: number;
@@ -48,17 +50,18 @@ export interface ContentAnalysis {
 }
 
 /** Budget de synchronisation du dépôt : au-delà, la donnée ne circule plus. */
-export const MAX_CONTENT_BYTES = IMPORT_LIMITS.bytes;
+const MAX_CONTENT_BYTES = IMPORT_LIMITS.bytes;
 /** Mêmes seuils que le pipeline d'import, pour prévenir AVANT qu'il ne jette. */
-export const MAX_TEXT_CHARS = IMPORT_LIMITS.text;
+const MAX_TEXT_CHARS = IMPORT_LIMITS.text;
 const MAX_DEPTH = IMPORT_LIMITS.depth;
 const MAX_NODES = IMPORT_LIMITS.nodes;
 /** Texte long : signalé sans bloquer (lisibilité, poids, impression). */
-export const LONG_TEXT_CHARS = 5_000;
+const LONG_TEXT_CHARS = 5_000;
 
 const TEXT_FIELDS = ['title', 'name', 'type', 'number', 'page', 'description', 'remark', 'content'] as const;
 const CHILD_FIELDS = ['sections', 'subsections', 'subsubsections', 'items'] as const;
-const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection', 'free']);
+/** Nœuds du plan uniquement : la ligne libre n'en fait pas partie (voir `isFreeContent`). */
+const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
 const CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 const KEY_FOR_IDENTITY = ['type', 'title', 'name', 'date'] as const;
 
@@ -66,7 +69,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const typeIsKnown = (type: string): boolean =>
-  STRUCTURAL_TYPES.has(type) || Object.hasOwn(TYPE_MAP, type) || Object.hasOwn(TOP_LEVEL_TYPE_CONFIG, type) || type.startsWith('correction_');
+  STRUCTURAL_TYPES.has(type) || type === FREE_TYPE || Object.hasOwn(TYPE_MAP, type)
+  || Object.hasOwn(TOP_LEVEL_TYPE_CONFIG, type) || type.startsWith('correction_');
 
 /** Ligne, colonne et extrait d'une erreur de `JSON.parse` (messages V8 variés). */
 export function locateJsonError(message: string, source: string): { line: number; column: number; excerpt: string } | null {

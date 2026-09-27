@@ -1,7 +1,8 @@
 import { isDraft, original, type Draft } from 'immer';
 import type { Indices, LessonsData } from '../types';
 import { findItem } from './dataUtils';
-import { indicesKey } from './lessonRows';
+import { buildLessonRows, indicesKey } from './lessonRows';
+import { isFreeContent } from './freeLineType';
 import type { ContentEditTargets } from './contentEditing';
 
 export interface ContentMovePlan {
@@ -13,56 +14,262 @@ export interface ContentMovePlan {
   selection: Indices[];
 }
 
-const indexField = (indices: Indices): keyof Indices =>
-  (['itemIndex', 'subsubsectionIndex', 'subsectionIndex', 'sectionIndex', 'chapterIndex'] as const)
-    .find(field => indices[field] !== undefined)!;
+const getIndexField = (indices: Indices): keyof Indices => {
+  const fields = ['itemIndex', 'subsubsectionIndex', 'subsectionIndex', 'sectionIndex', 'chapterIndex'] as const;
+  return fields.find(field => indices[field] !== undefined)!;
+};
 
-/** Résout un bloc contigu dans une seule liste, dans l'ordre source. */
-function siblingBlock(data: LessonsData, indices: readonly Indices[]) {
-  if (!indices.length) return null;
+/**
+ * Valide et extrait un bloc contigu d'éléments situés strictement dans la même liste parente.
+ */
+function getContiguousSiblingBlock(data: LessonsData, indices: readonly Indices[]) {
+  if (indices.length === 0) return null;
+
+  // Localiser tous les éléments pointés par la sélection
   const located = indices.map(index => ({ index, ...findItem(data, index) }));
-  const parent = located[0].parent;
-  if (!Array.isArray(parent) || located.some(row => !row.item || row.parent !== parent || typeof row.targetIndex !== 'number')) return null;
+  
+  // Vérifier qu'ils existent tous
+  if (located.some(row => !row.item || typeof row.targetIndex !== 'number')) return null;
+
+  const firstParent = located[0].parent;
+  if (!Array.isArray(firstParent)) return null;
+
+  // Règle d'or : On ne déplace pas simultanément des éléments issus de parents/branches différents.
+  if (located.some(row => row.parent !== firstParent)) return null;
+
+  // Trier par ordre d'apparition dans le parent
   const sorted = located.sort((a, b) => Number(a.targetIndex) - Number(b.targetIndex));
   const start = Number(sorted[0].targetIndex);
-  if (sorted.some((row, offset) => row.targetIndex !== start + offset)) return null;
-  return { parent, start, count: sorted.length, anchor: sorted[0].index };
+  const count = sorted.length;
+
+  // Vérifier qu'il n'y a aucun trou dans la sélection (contiguïté stricte)
+  const hasGaps = sorted.some((row, offset) => row.targetIndex !== start + offset);
+  if (hasGaps) return null;
+
+  return { 
+    parent: firstParent, 
+    start, 
+    count, 
+    anchor: sorted[0].index 
+  };
 }
 
-/** Échange des blocs complets : ni le groupe sélectionné ni son voisin
- * fusionné ne sont coupés. Le filtre et l'ordre des clics n'interviennent pas. */
-export function planContentMove(data: LessonsData, groups: ContentEditTargets, selected: ReadonlySet<string>, direction: 'up' | 'down'): ContentMovePlan | null {
+/** 
+ * Construit un plan de déplacement pour décaler un bloc d'un cran vers le haut ou le bas.
+ * Intègre intelligemment les fusions : si une cellule sélectionnée appartient à un groupe,
+ * tout le groupe est englobé dans le plan.
+ */
+export function planContentMove(
+  data: LessonsData, 
+  groups: ContentEditTargets, 
+  selectedKeys: ReadonlySet<string>, 
+  direction: 'up' | 'down'
+): ContentMovePlan | null {
+  // 1. Récupérer et dédupliquer les groupes d'indices correspondant à la sélection visuelle
   const selectedGroups = new Set<readonly Indices[]>();
-  for (const key of selected) {
+  for (const key of selectedKeys) {
+    const group = groups.get(key);
+    if (!group) return null; // Clé orpheline, annule l'opération par sécurité
+    selectedGroups.add(group);
+  }
+
+  // 2. Extraire le bloc contigu correspondant
+  const block = getContiguousSiblingBlock(data, [...selectedGroups].flat());
+  if (!block) return null; // Sélections non contiguës ou cross-parents impossibles à déplacer d'un bloc
+
+  // 3. Identifier l'élément voisin (celui avec qui on va permuter)
+  const field = getIndexField(block.anchor);
+  const neighbourTargetIndex = direction === 'up' ? block.start - 1 : block.start + block.count;
+  
+  // Si on est aux extrémités du parent, on ne peut pas déborder dans le chapitre suivant (limite structurelle)
+  if (neighbourTargetIndex < 0 || neighbourTargetIndex >= block.parent.length) return null;
+
+  // 4. Cibler le voisin
+  const neighbourIndices = { ...block.anchor, [field]: neighbourTargetIndex };
+  const neighbourGroup = groups.get(indicesKey(neighbourIndices));
+  if (!neighbourGroup) return null;
+
+  const neighbourBlock = getContiguousSiblingBlock(data, neighbourGroup);
+  if (!neighbourBlock || neighbourBlock.parent !== block.parent) return null;
+
+  // 5. Vérifier la contiguïté avec le voisin
+  const isValidNeighbor = direction === 'up' 
+    ? neighbourBlock.start + neighbourBlock.count === block.start 
+    : neighbourBlock.start === block.start + block.count;
+    
+  if (!isValidNeighbor) return null;
+
+  // 6. Calcul de la destination finale
+  const destination = direction === 'up' ? neighbourBlock.start : block.start + neighbourBlock.count;
+  
+  // Nouveaux indices pour que la sélection suive le déplacement
+  const selectionAfterMove = Array.from(
+    { length: block.count }, 
+    (_, offset) => ({ ...block.anchor, [field]: destination + offset })
+  );
+
+  return {
+    ...block,
+    destination,
+    selection: selectionAfterMove,
+  };
+}
+
+
+/** Nœud de structure : il porte un titre et des enfants, on peut donc s'y poser. */
+const hasChildren = (value: unknown): boolean =>
+  typeof value === 'object' && value !== null
+  && ('items' in value || 'sections' in value || 'subsections' in value || 'subsubsections' in value);
+
+/**
+ * Plan de RELOCALISATION d'une ligne libre le long du plan.
+ *
+ * Contrairement à la permutation entre frères, la ligne libre suit l'ordre de
+ * lecture du cahier : elle se pose avant/après une feuille, et **sous un titre**
+ * (elle devient alors le premier enfant du bloc), même si cela change son
+ * parent. C'est ce qui permet de la glisser juste en dessous d'un titre de
+ * paragraphe, d'une proposition ou de n'importe quel type de contenu.
+ *
+ * Refusé si la sélection n'est pas composée UNIQUEMENT de lignes libres, ou si
+ * le bloc source n'est pas un groupe de frères contigus (retrait atomique).
+ */
+export interface ContentRelocationPlan {
+  source: { anchor: Indices; parent: unknown; start: number; count: number };
+  /** Repère de lecture : la ligne voisine, et le côté où se poser. */
+  neighbour: Indices;
+  side: 'before' | 'after' | 'inside';
+  /** Coordonnées de la sélection après déplacement. */
+  selection: Indices[];
+}
+
+const withoutDeepestIndex = (indices: Indices): Indices => {
+  const copy: Indices = { ...indices };
+  delete copy[getIndexField(indices)];
+  return copy;
+};
+
+export function planContentRelocation(
+  data: LessonsData,
+  groups: ContentEditTargets,
+  selectedKeys: ReadonlySet<string>,
+  direction: 'up' | 'down'
+): ContentRelocationPlan | null {
+  if (selectedKeys.size === 0) return null;
+
+  const selectedGroups = new Set<readonly Indices[]>();
+  for (const key of selectedKeys) {
     const group = groups.get(key);
     if (!group) return null;
     selectedGroups.add(group);
   }
-  const block = siblingBlock(data, [...selectedGroups].flat());
+  const indices = [...selectedGroups].flat();
+
+  // Ordinary content uses sibling moves. Reject it before flattening the whole
+  // notebook (this path runs twice for every selection, once per direction).
+  if (indices.some(index => !isFreeContent(findItem(data, index).item))) return null;
+
+  const rows = buildLessonRows(data);
+  const byKey = new Map(rows.map(row => [row.key, row]));
+  const selectedRows = indices.map(index => byKey.get(indicesKey(index)));
+  // Réservé aux lignes libres : un contenu typé garde la permutation stricte.
+  if (selectedRows.some(row => !row || !isFreeContent(row.data))) return null;
+
+  const block = getContiguousSiblingBlock(data, indices);
   if (!block) return null;
-  const field = indexField(block.anchor);
-  const neighbourIndex = direction === 'up' ? block.start - 1 : block.start + block.count;
-  if (neighbourIndex < 0 || neighbourIndex >= block.parent.length) return null;
-  const neighbourIndices = { ...block.anchor, [field]: neighbourIndex };
-  const neighbourGroup = groups.get(indicesKey(neighbourIndices));
-  if (!neighbourGroup) return null;
-  const neighbour = siblingBlock(data, neighbourGroup);
-  if (!neighbour || neighbour.parent !== block.parent) return null;
-  if (direction === 'up' ? neighbour.start + neighbour.count !== block.start : neighbour.start !== block.start + block.count) return null;
-  const destination = direction === 'up' ? neighbour.start : block.start + neighbour.count;
+
+  const positions = selectedRows.map(row => row!.position).sort((a, b) => a - b);
+  const neighbour = rows[direction === 'up' ? positions[0] - 1 : positions[positions.length - 1] + 1];
+  if (!neighbour) return null;
+
+  const side: ContentRelocationPlan['side'] = hasChildren(neighbour.data)
+    ? 'inside'
+    : direction === 'up' ? 'before' : 'after';
+
+  const neighbourField = getIndexField(neighbour.indices);
+  const neighbourParent = withoutDeepestIndex(neighbour.indices);
+  const sourceParent = withoutDeepestIndex(block.anchor);
+  const sameParent = indicesKey(sourceParent) === indicesKey(neighbourParent);
+
+  // Position brute, puis correction si l'insertion visait la liste d'où l'on retire.
+  const rawIndex = side === 'inside' ? 0 : Number(neighbour.indices[neighbourField]) + (side === 'after' ? 1 : 0);
+  const base = sameParent && side !== 'inside' && rawIndex > block.start
+    ? Math.max(block.start, rawIndex - block.count)
+    : rawIndex;
+
+  const destinationField: keyof Indices = side === 'inside' ? 'itemIndex' : neighbourField;
+  const destinationParent = side === 'inside' ? neighbour.indices : neighbourParent;
+  const selection = Array.from({ length: block.count }, (_, offset) => ({
+    ...destinationParent,
+    [destinationField]: base + offset,
+  }));
+
   return {
-    ...block,
-    destination,
-    selection: Array.from({ length: block.count }, (_, offset) => ({ ...block.anchor, [field]: destination + offset })),
+    source: { anchor: block.anchor, parent: block.parent, start: block.start, count: block.count },
+    neighbour: neighbour.indices,
+    side,
+    selection,
   };
 }
 
-/** Une mutation / une entrée d'historique. Un plan calculé avant une autre
- * modification de cette liste est ignoré pour ne pas déplacer un autre contenu. */
+/** Exécute la relocalisation en une seule transaction, avec retour arrière si
+ *  la cible a disparu entre-temps (aucune donnée ne doit bouger à moitié).
+ *
+ *  Le repère de destination est résolu AVANT le retrait : les coordonnées sont
+ *  exprimées dans l'arbre d'origine, et c'est le calcul d'insertion qui tient
+ *  compte du décalage lorsque les deux listes sont identiques. */
+export function applyContentRelocation(draft: Draft<LessonsData>, plan: ContentRelocationPlan): boolean {
+  const source = findItem(draft, plan.source.anchor);
+  const sourceParent = source.parent;
+  const resolvedSource = isDraft(sourceParent) ? original(sourceParent) : sourceParent;
+  if (!Array.isArray(sourceParent) || resolvedSource !== plan.source.parent) return false;
+
+  const destination = findItem(draft, plan.neighbour);
+  const container = plan.side === 'inside' ? destination.item as { items?: unknown[] } | undefined : undefined;
+  const targetParent = plan.side === 'inside' ? null : destination.parent;
+  if (plan.side === 'inside') {
+    if (!container || typeof container !== 'object') return false;
+  } else if (!Array.isArray(targetParent) || typeof destination.targetIndex !== 'number') {
+    return false;
+  }
+
+  const rawIndex = plan.side === 'inside'
+    ? 0
+    : Number(destination.targetIndex) + (plan.side === 'after' ? 1 : 0);
+  const index = targetParent === sourceParent && rawIndex > plan.source.start
+    ? Math.max(plan.source.start, rawIndex - plan.source.count)
+    : rawIndex;
+
+  const removed = sourceParent.splice(plan.source.start, plan.source.count);
+  if (removed.length !== plan.source.count) return false;
+
+  const restore = () => { sourceParent.splice(plan.source.start, 0, ...removed); return false; };
+
+  try {
+    if (container) {
+      const items = (container.items ??= []);
+      items.unshift(...removed);
+      return true;
+    }
+    (targetParent as unknown[]).splice(index, 0, ...removed);
+    return true;
+  } catch {
+    return restore();
+  }
+}
+
+/** 
+ * Exécute de manière atomique la permutation dans l'état Immer.
+ */
 export function applyContentMove(draft: Draft<LessonsData>, plan: ContentMovePlan): boolean {
   const { parent } = findItem(draft, plan.anchor);
-  if (!Array.isArray(parent) || (isDraft(parent) ? original(parent) : parent) !== plan.parent) return false;
-  const moved = parent.splice(plan.start, plan.count);
-  parent.splice(plan.destination, 0, ...moved);
+  
+  // Vérification de sécurité : on s'assure qu'on manipule le bon parent
+  const resolvedParent = isDraft(parent) ? original(parent) : parent;
+  if (!Array.isArray(parent) || resolvedParent !== plan.parent) return false;
+  
+  // Transaction atomique : Extraction puis réinsertion
+  const movedElements = parent.splice(plan.start, plan.count);
+  parent.splice(plan.destination, 0, ...movedElements);
+  
   return true;
 }

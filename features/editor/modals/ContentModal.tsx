@@ -365,12 +365,21 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
                 disabled={!canAddItem}
                 tooltip={t('addContent.itemTooltip')}
               />
+            </div>
+          </div>
+
+          {/* Group 2: Rédaction libre — un contenu hors plan, jamais un niveau de structure */}
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {t('addContent.groupFree')}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard icon={GripHorizontal} label={t('addContent.free')} description={t('addContent.freeHelp')}
                 colorClass="text-slate-600 dark:text-slate-400" onClick={() => handleSelectType('free')} />
             </div>
           </div>
 
-          {/* Group 2: Évaluations & Devoirs */}
+          {/* Group 3: Évaluations & Devoirs */}
           <div className="space-y-2.5">
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupAssessments')}

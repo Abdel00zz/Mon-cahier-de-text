@@ -4,6 +4,7 @@ import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 import { CurriculumChapterProgress } from '@/components/CurriculumChapterProgress';
 import { useCurriculumProgress } from '@/hooks/useCurriculumProgress';
 import { computeProgressionStats } from '@/utils/progression';
+import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { Modal } from '@/components/ui/modal';
 import { MathText } from '@/components/ui/math-text';
 import { MathTitle } from '@/components/ui/math-title';
@@ -165,7 +166,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                       <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
                     </span>
                     <span dir="ltr" className="font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-md shrink-0">
-                      {item.date.split('-').reverse().join('/')}
+                      {formatDateDDMMYYYY(item.date) ?? item.date}
                     </span>
                   </div>
                   <div className="space-y-1 mt-0.5">

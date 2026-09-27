@@ -210,7 +210,15 @@ export const deleteStructuralNodePromotingChildren = (
     draft: Draft<LessonsData>,
     indices: Indices,
 ): boolean => {
-    if (indices.itemIndex !== undefined) return false;
+    // Feuille (contenu typé, ligne libre posée où que ce soit) : simple retrait
+    // de sa liste parente. Sans ce cas, supprimer un contenu ou une ligne libre
+    // ne faisait RIEN.
+    if (indices.itemIndex !== undefined) {
+        const leaf = findItem(draft, indices);
+        if (!Array.isArray(leaf.parent) || typeof leaf.targetIndex !== 'number') return false;
+        leaf.parent.splice(leaf.targetIndex, 1);
+        return true;
+    }
 
     // Sous-sous-section : ses items remontent dans la sous-section parente.
     if (indices.subsubsectionIndex !== undefined) {
@@ -262,8 +270,49 @@ export const deleteStructuralNodePromotingChildren = (
         return true;
     }
 
-    // Chapitre : suppression complète gérée par l'appelant.
-    return false;
+    // Entrée de premier niveau (chapitre, évaluation, ligne libre à la racine) :
+    // suppression complète, enfants compris — l'avertissement du lot affiche
+    // déjà le nombre de lignes concernées.
+    const root = findItem(draft, indices);
+    if (!Array.isArray(root.parent) || typeof root.targetIndex !== 'number') return false;
+    root.parent.splice(root.targetIndex, 1);
+    return true;
+};
+
+/** Date lue telle quelle : ISO (yyyy-mm-dd, éventuellement horodatée),
+ *  française (jj/mm/aaaa) ou date reconnue par le moteur. Aucune exception et
+ *  aucune dérive de fuseau : les composantes sont lues directement. */
+export const parseDateInput = (value: unknown): Date | null => {
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+    if (typeof value !== 'string' && typeof value !== 'number') return null;
+    const text = String(value).trim();
+    if (!text) return null;
+    const iso = /^(\d{4})-(\d{2})-(\d{2})(?:[T ].*)?$/.exec(text);
+    const parts = iso ?? /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(text);
+    if (parts) {
+        const [year, month, day] = iso
+            ? [Number(parts[1]), Number(parts[2]), Number(parts[3])]
+            : [Number(parts[3]), Number(parts[2]), Number(parts[1])];
+        const date = new Date(year, month - 1, day);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+/** Date longue localisée (« lundi 5 octobre 2026 »), sinon le libellé de repli. */
+export const formatDateLong = (value: unknown, localeCode: string, emptyLabel = ''): string => {
+    const date = parseDateInput(value);
+    if (!date) return emptyLabel;
+    return date.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+/** Ajout (ou retrait) de jours sur une date, sans dépendre du fuseau local. */
+export const addDaysIso = (value: unknown, offset: number): string => {
+    const date = parseDateInput(value);
+    if (!date) return typeof value === 'string' ? value : '';
+    const shifted = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() + offset));
+    return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`;
 };
 
 // Compact date formatter: returns dd/mm/yyyy from ISO (yyyy-mm-dd) without timezone shifts

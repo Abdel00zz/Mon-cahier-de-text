@@ -2,6 +2,7 @@ import React, { Suspense, useCallback, useEffect, useRef, useState, lazy } from 
 import { ConfigModal } from './ConfigModal';
 import { downloadBackup, restoreBackup } from '@/utils/backup';
 import { parseBoundedJson } from '@/utils/jsonInput';
+import { locateJsonError } from '@/utils/contentDiagnostics';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
 import type { AppConfig, ClassDraft, ClassInfo, Cycle } from '@/types';
@@ -53,9 +54,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             setTimeout(() => window.location.reload(), 900);
         } catch (error) {
             logger.error('Import failed', error);
-            toast.error(t('settings.toast.importFailed', {
-                reason: error instanceof Error ? error.message : t('settings.toast.unknownError'),
-            }));
+            const message = error instanceof Error ? error.message : '';
+            // Une erreur de syntaxe est SITUÉE dans le fichier : le professeur
+            // sait où regarder et quoi corriger, au lieu d'un simple échec.
+            const located = locateJsonError(message, fileContent);
+            toast.error(t('settings.toast.importFailedTitle'), {
+                description: located
+                    ? t('settings.toast.importSyntax', {
+                        line: located.line,
+                        column: located.column,
+                        excerpt: located.excerpt,
+                    })
+                    : t('settings.toast.importFailed', {
+                        reason: message || t('settings.toast.unknownError'),
+                    }),
+                duration: located ? 9000 : 6000,
+            });
         }
     };
 

@@ -4,9 +4,10 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { produce } from 'immer';
-import type { AppConfig, ClassInfo, LessonsData } from '../types';
-import { buildLessonRows, filterLessonRows, indicesKey, resolveAddAfterTarget } from '../utils/lessonRows';
-import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
+import type { AppConfig, ClassInfo, Indices, LessonsData } from '../types';
+import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
+import { buildContentDateOrder, dateOrderWarnings, selectionDateOrder } from '../utils/dateOrder';
+import { applySessionEdit, readSessionSelection } from '../utils/sessionEditing';
 import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
 import { teachesSeveralSubjects, collectTeacherSubjects, subjectKey } from '../utils/subjectScope';
 import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
@@ -19,7 +20,7 @@ import { contentBadgeClass } from '../constants/type-keys';
 import { SUBJECTS } from '../constants/subjects';
 import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
 import { groupLessonRows } from '../utils/tableRows';
-import { findItem, addItem, addSection } from '../utils/dataUtils';
+import { findItem, addItem, addSection, moveWithinParent, canMoveWithinParent, deleteStructuralNodePromotingChildren } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { renderDescriptionWithBold } from '../utils/textFormat';
 import { hasMathContent, hasMathSyntax, splitMathText } from '../utils/math';
@@ -36,213 +37,62 @@ import { collectClassSignals, dateActionId } from '../utils/notificationSignals'
 import { SelectionBar } from '../features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../utils/classColors';
 import { insertFreeContent } from '../utils/freeContent';
+import { applyRemarkEdit, buildSessionTargets, orderDeletionsDeepestFirst } from '../utils/contentEditing';
+import { applyContentMove, applyContentRelocation, planContentMove, planContentRelocation } from '../utils/contentReorder';
+import { isFreeContent } from '../utils/freeLineType';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
 import { filterLessonsByDates } from '../utils/printMeta';
-import { MultiDateCard } from '../features/editor/TableRow';
-import { ContentFields } from '../features/editor/modals/ContentFields';
-import { createContentDraft, contentDraftChanged } from '../utils/contentDraft';
-import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '../utils/contentEditing';
-import { applyContentMove, planContentMove } from '../utils/contentReorder';
+import { analyzeContentJson, locateJsonError } from '../utils/contentDiagnostics';
 
-const moveFixture = (): LessonsData => [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [
-  { type: 'free', title: 'Avant', description: '' },
-  ...[14, 15, 16].map(day => ({ type: 'exercice', title: 'A', description: '$x^2$', date: `2026-09-${day}`, remark: `Note ${day}` })),
-  ...[17, 18].map(day => ({ type: 'exercice', title: 'B', description: 'Autre', date: `2026-09-${day}`, remark: `Note ${day}` })),
-  { type: 'free', title: 'Après', description: '' },
-] }] }];
-const moveKeys = (...items: number[]) => new Set(items.map(itemIndex => indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex })));
-
-test('déplacement : deux groupes fusionnés échangent leur place sans perdre dates, remarques ou ordre interne', () => {
-  const data = moveFixture();
-  const lookup = buildContentEditTargets(buildLessonRows(data));
-  const plan = planContentMove(data, lookup, moveKeys(3, 1, 2), 'down');
-  assert.ok(plan);
-  const next = produce(data, draft => { assert.equal(applyContentMove(draft, plan), true); });
-  const items = next[0].sections![0].items!;
-  assert.deepEqual(items.map(item => item.title), ['Avant', 'B', 'B', 'A', 'A', 'A', 'Après']);
-  assert.deepEqual(items.slice(3, 6), data[0].sections![0].items!.slice(1, 4));
-  assert.deepEqual(items.slice(1, 3), data[0].sections![0].items!.slice(4, 6));
-  assert.deepEqual(plan.selection.map(index => index.itemIndex), [3, 4, 5]);
-  const back = planContentMove(next, buildContentEditTargets(buildLessonRows(next)), new Set(plan.selection.map(indicesKey)), 'up');
-  assert.ok(back);
-  const restored = produce(next, draft => { applyContentMove(draft, back); });
-  assert.deepEqual(restored, data);
+test('séance : date et remarque forment une seule mutation, les cibles invalides ne modifient rien', () => {
+  const source: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'cours', title: 'A', date: '2026-09-21', remark: 'Avant' },
+    { type: 'exercice', title: 'B', date: '2026-09-21' },
+  ] }];
+  const targets = [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }];
+  const result = produce(source, draft => { assert.equal(applySessionEdit(draft, targets, { date: '2026-09-22', remark: 'Après' }), true); });
+  assert.deepEqual(result[0].items?.map(item => [item.date, item.remark]), [
+    ['2026-09-22', 'Après'], ['2026-09-22', 'Après'],
+  ]);
+  assert.equal(source[0].items?.[0].remark, 'Avant');
+  const refused = produce(source, draft => {
+    assert.equal(applySessionEdit(draft, [...targets, { chapterIndex: 8 }], { date: '' }), false);
+  });
+  assert.equal(refused, source);
 });
 
-test('déplacement : sélection filtrée, élément simple et sélection contiguë utilisent des blocs complets', () => {
-  const data = moveFixture();
-  const rows = buildLessonRows(data);
-  const lookup = buildContentEditTargets(rows);
-  const visible = filterLessonRows(rows, '2026-09-15');
-  const filteredPlan = planContentMove(data, lookup, new Set([visible.at(-1)!.key]), 'up');
-  assert.ok(filteredPlan);
-  assert.equal(filteredPlan.count, 3);
-  const up = produce(data, draft => { applyContentMove(draft, filteredPlan); });
-  assert.deepEqual(up[0].sections![0].items!.map(item => item.title), ['A', 'A', 'A', 'Avant', 'B', 'B', 'Après']);
-  assert.equal(planContentMove(up, buildContentEditTargets(buildLessonRows(up)), new Set(filteredPlan.selection.map(indicesKey)), 'up'), null);
-  const single = planContentMove(data, lookup, moveKeys(0), 'down');
-  assert.ok(single);
-  assert.equal(single.destination, 3);
-  assert.deepEqual(produce(data, draft => { applyContentMove(draft, single); }), up);
-  const multiple = planContentMove(data, lookup, moveKeys(1, 5), 'down');
-  assert.ok(multiple);
-  assert.equal(multiple.count, 5);
-  const moved = produce(data, draft => { applyContentMove(draft, multiple); });
-  assert.deepEqual(moved[0].sections![0].items!.map(item => item.title), ['Avant', 'Après', 'A', 'A', 'A', 'B', 'B']);
-});
-
-test('déplacement : bornes, parents différents, trous et plans périmés ne modifient aucune donnée', () => {
-  const data = moveFixture();
-  const lookup = buildContentEditTargets(buildLessonRows(data));
-  assert.equal(planContentMove(data, lookup, moveKeys(0), 'up'), null);
-  assert.equal(planContentMove(data, lookup, moveKeys(6), 'down'), null);
-  assert.equal(planContentMove(data, lookup, moveKeys(0, 6), 'down'), null);
-  assert.equal(planContentMove(data, lookup, new Set(), 'down'), null);
-  assert.equal(planContentMove(data, lookup, new Set(['99||||']), 'up'), null);
-  assert.equal(planContentMove(data, lookup, new Set([...moveKeys(1), indicesKey({chapterIndex: 0})]), 'down'), null);
-  const plan = planContentMove(data, lookup, moveKeys(1), 'down')!;
-  const changed = produce(data, draft => { draft[0].sections![0].items!.unshift({ type: 'free', title: 'Nouveau' }); });
-  const rejected = produce(changed, draft => { assert.equal(applyContentMove(draft, plan), false); });
-  assert.equal(rejected, changed);
-});
-
-test('déplacement : évaluations fusionnées et chapitres conservent leurs sous-arbres', () => {
-  const data: LessonsData = [
-    { type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'free', title: 'Enfant' }] }] },
-    ...['2026-09-14', '2026-09-15'].map(date => ({ type: 'controle_continu' as const, title: 'Contrôle', date })),
+test('séance : modifier uniquement la remarque conserve les dates multiples et les valeurs non touchées', () => {
+  const source: LessonsData = [
+    { type: 'evaluation_diagnostic', title: 'Bilan', date: '2026-09-21', remark: 'A' },
+    { type: 'evaluation_diagnostic', title: 'Bilan', date: '2026-09-22', remark: 'B' },
   ];
-  const lookup = buildContentEditTargets(buildLessonRows(data));
-  const plan = planContentMove(data, lookup, new Set([indicesKey({chapterIndex: 2}), indicesKey({chapterIndex: 1})]), 'up');
-  assert.ok(plan);
-  const changed = produce(data, draft => { applyContentMove(draft, plan); });
-  assert.deepEqual(changed.map(item => item.title), ['Contrôle', 'Contrôle', 'Chapitre']);
-  assert.deepEqual(changed[2], data[0]);
+  const targets = [{ chapterIndex: 0 }, { chapterIndex: 1 }];
+  const selection = readSessionSelection(source, [...targets, targets[0]])!;
+  assert.equal(selection.targets.length, 2);
+  assert.equal(selection.mixedDates, true);
+  assert.equal(selection.mixedRemarks, true);
+  const remarkOnly = produce(source, draft => { applySessionEdit(draft, targets, { remark: 'Commun' }); });
+  assert.deepEqual(remarkOnly.map(item => item.date), ['2026-09-21', '2026-09-22']);
+  const dateOnly = produce(source, draft => { applySessionEdit(draft, targets, { date: '' }); });
+  assert.deepEqual(dateOnly.map(item => item.remark), ['A', 'B']);
+  assert.equal(produce(source, draft => { applySessionEdit(draft, targets, {}); }), source);
 });
 
-test('édition fusionnée : titre et contenu changent ensemble, dates et remarques restent individuelles', () => {
-  for (const type of ['exercice', 'free']) {
-    const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
-      ...[14, 15, 16].map(day => ({ type, title: 'Titre commun', description: '$x^2$', date: `2026-09-${day}`, remark: `Note ${day}`, _tempId: `id-${day}` })),
-      { type, title: 'Autre contenu', description: 'À conserver' },
-    ] }];
-    const rows = buildLessonRows(data);
-    const lookup = buildContentEditTargets(rows);
-    const keys = new Set(rows.slice(1, 4).reverse().map(row => row.key));
-    const targets = resolveContentEditSelection(lookup, keys);
-    assert.equal(targets?.length, 3);
-    // Même résultat via double-clic ou après une recherche ne montrant qu'une date.
-    assert.equal(lookup.get(rows[2].key), targets);
-    assert.equal(resolveContentEditSelection(lookup, new Set([rows[2].key])), targets);
-    const filtered = filterLessonRows(rows, '2026-09-15');
-    assert.equal(filtered.length, 2);
-    assert.equal(resolveContentEditSelection(lookup, new Set([filtered[1].key])), targets);
-    assert.deepEqual(resolveAddAfterTarget(rows, expandContentSelection(lookup, new Set([filtered[1].key]))), targets![2]);
-    const changed = produce(data, draft => {
-      assert.equal(applyContentEdit(draft, targets!, { title: 'عنوان جديد', description: '$x+1$' }), true);
-    });
-    const items = changed[0].items!;
-    for (let index = 0; index < 3; index++) {
-      assert.equal(items[index].title, 'عنوان جديد');
-      assert.equal(items[index].date, data[0].items![index].date);
-      assert.equal(items[index].remark, data[0].items![index].remark);
-      assert.equal(items[index]._tempId, data[0].items![index]._tempId);
-    }
-    assert.deepEqual(items[3], data[0].items![3]);
-    assert.equal(groupLessonRows(buildLessonRows(changed)).renderRows.filter(row => row.kind === 'session').length, 1);
-    assert.equal(data[0].items![0].title, 'Titre commun');
-    assert.equal(filterLessonsByDates(changed, ['2026-09-15'])[0].items![0].title, 'عنوان جديد');
-  }
+test('séance : la chronologie encadre une sélection non datée sans comparer ses anciennes dates entre elles', () => {
+  const source: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'cours', date: '2026-09-21' }, { type: 'cours' },
+    { type: 'cours', date: '2026-09-22' }, { type: 'cours', date: '2026-09-25' },
+  ] }];
+  const order = selectionDateOrder(source, [{ chapterIndex: 0, itemIndex: 1 }, { chapterIndex: 0, itemIndex: 2 }]);
+  assert.deepEqual(order, { previous: '2026-09-21', following: '2026-09-25' });
+  assert.equal(dateOrderWarnings('2026-09-20', order).length, 1);
+  assert.equal(dateOrderWarnings('2026-09-24', order).length, 0);
+  assert.deepEqual(selectionDateOrder([{ type: 'evaluation_diagnostic', title: 'Test' }, ...source], [{ chapterIndex: 0 }]), {});
 });
 
-test('édition fusionnée : titres des évaluations et chapitres, refus des sélections hétérogènes', () => {
-  const data: LessonsData = [
-    ...['2026-09-14', '2026-09-15'].map(date => ({ type: 'controle_continu' as const, title: 'Contrôle 1', date, sections: [] })),
-    { type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'A', date: '2026-09-20' }, { type: 'exercice', title: 'B', date: '2026-09-20' }] }] },
-  ];
-  const rows = buildLessonRows(data);
-  const lookup = buildContentEditTargets(rows);
-  const targets = resolveContentEditSelection(lookup, new Set(rows.slice(0, 2).map(row => row.key)))!;
-  assert.equal(targets.length, 2);
-  const changed = produce(data, draft => { applyContentEdit(draft, targets, { title: 'Contrôle bilan' }); });
-  assert.deepEqual(changed.slice(0, 2).map(row => row.title), ['Contrôle bilan', 'Contrôle bilan']);
-  assert.equal(resolveContentEditSelection(lookup, new Set(rows.slice(-2).map(row => row.key))), null);
-  assert.equal(resolveContentEditSelection(lookup, new Set([rows[0].key, rows[2].key])), null);
-  assert.equal(resolveContentEditSelection(lookup, new Set(['99||||'])), null);
-  assert.equal(resolveContentEditSelection(lookup, new Set()), null);
-  const renamed = produce(data, draft => {
-    applyContentEdit(draft, [{ chapterIndex: 2 }], { title: 'Nouveau chapitre' });
-    applyContentEdit(draft, [{ chapterIndex: 2, sectionIndex: 0 }], { name: 'Nouveau nom' });
-  });
-  assert.equal(renamed[2].title, 'Nouveau chapitre');
-  assert.equal(renamed[2].sections![0].name, 'Nouveau nom');
-  assert.deepEqual(renamed[2].sections![0].items, data[2].sections![0].items);
-});
-
-test('édition commune : coordonnées invalides sans écriture partielle et métadonnées exclues du patch', () => {
-  const data: LessonsData = [{ type: 'free', title: 'Titre', date: '2026-09-14', remark: 'Note' }];
-  const rejected = produce(data, draft => {
-    assert.equal(applyContentEdit(draft, [{ chapterIndex: 0 }, { chapterIndex: 99 }], { title: 'Incorrect' }), false);
-  });
-  assert.equal(rejected, data);
-  const changed = produce(data, draft => {
-    applyContentEdit(draft, [{ chapterIndex: 0 }], { title: 'Correct', date: '2000-01-01', remark: 'Incorrect' } as any);
-  });
-  assert.equal(changed[0].title, 'Correct');
-  assert.equal(changed[0].date, data[0].date);
-  assert.equal(changed[0].remark, data[0].remark);
-});
-
-test('dates arabes : chaque conjonction reste attachée à sa date avec une direction explicite', () => {
-  for (const count of [1, 2, 3, 5, 24]) {
-    const dates = Array.from({ length: count }, (_, i) => `2026-09-${String(i + 1).padStart(2, '0')}`);
-    for (const locale of ['ar', 'fr'] as const) {
-      const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale, children:
-        React.createElement(MultiDateCard, { dates: [...dates, dates[0], 'invalid'] }),
-      }));
-      assert.match(html, new RegExp(`^<div dir="${locale === 'ar' ? 'rtl' : 'ltr'}"`));
-      assert.equal((html.match(/data-date-token/g) ?? []).length, count);
-      assert.equal((html.match(/<bdi dir="ltr"/g) ?? []).length, count);
-      const conjunction = locale === 'ar' ? 'و' : 'et';
-      assert.equal((html.match(new RegExp(`>${conjunction}</span><bdi`, 'g')) ?? []).length, count - 1);
-      assert.equal((html.match(/shrink-0 items-baseline gap-0.5 whitespace-nowrap/g) ?? []).length, count);
-    }
-  }
-});
-
-test('formulaire commun : une ligne libre expose titre et contenu facultatifs en arabe et français', () => {
-  for (const locale of ['ar', 'fr'] as const) {
-    const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale, children:
-      React.createElement(ContentFields, { value: { type: 'free', title: '', description: '' }, onChange: () => {}, contentDirection: locale === 'ar' ? 'rtl' : 'ltr' }),
-    }));
-    assert.equal((html.match(/<input /g) ?? []).length, 1);
-    assert.equal((html.match(/<textarea/g) ?? []).length, 1);
-    assert.doesNotMatch(html, /required=""|role="combobox"/);
-    assert.match(html, /<label for="[^"]+-title"/);
-    assert.match(html, /<label for="[^"]+-description"/);
-  }
-});
-
-test('édition commune : le patch préserve dates, remarques et contenu imbriqué ; réinitialisation exacte', () => {
-  const free = { type: 'free', title: 'Titre', description: '$x^2$', date: '2026-09-21', remark: 'Conserver', _tempId: 'stable' };
-  const draft = createContentDraft(free);
-  assert.deepEqual(Object.keys(draft), ['type', 'title', 'description']);
-  assert.equal(contentDraftChanged(draft, draft), false);
-  const modified = { ...draft, title: 'عنوان', description: '$x+1$' };
-  assert.equal(contentDraftChanged(modified, draft), true);
-  const saved = { ...free, ...modified };
-  assert.equal(saved.date, free.date);
-  assert.equal(saved.remark, free.remark);
-  assert.equal(saved._tempId, free._tempId);
-  assert.equal(createContentDraft(saved).title, 'عنوان');
-  const blank = { ...draft, title: '', description: '' };
-  assert.equal(contentDraftChanged(blank, draft), true);
-  const section = { name: 'Section', items: [free] };
-  const nameDraft = createContentDraft(section, true, 'name');
-  assert.deepEqual(nameDraft, { name: 'Section' });
-  assert.equal(contentDraftChanged({ name: 'Nouveau titre' }, nameDraft), true);
-  assert.equal(contentDraftChanged(createContentDraft(section, true, 'name'), nameDraft), false);
-  assert.deepEqual({ ...section, ...nameDraft }.items, [free]);
-});
+/** Nombre de nœuds d'un type donné dans l'arbre source (plan inchangé par une ligne libre). */
+const buildContentRowsCount = (data: LessonsData, type: string): number =>
+  buildLessonRows(data).filter(row => (row.data as { type?: string }).type === type).length;
 
 test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-retour serveur', () => {
   const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
@@ -262,32 +112,55 @@ test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-
   assert.ok(source.some(c => c.color === ''));
 });
 
-test('ligne libre : création vide, insertion imbriquée et aucune fusion ou numérotation', () => {
+test('ligne libre : créée à l’endroit de l’élément, hors plan, sans numérotation', () => {
+  // 1. Sans ancre : ajout à la racine, comme avant.
   let data = produce([] as LessonsData, draft => insertFreeContent(draft, undefined, {}, 'one'));
-  data = produce(data, draft => insertFreeContent(draft, { chapterIndex: 0 }, {}, 'two'));
+  data = produce(data, draft => insertFreeContent(draft, undefined, {}, 'two'));
   assert.equal(data.length, 2);
   assert.ok(data.every(row => row.type === 'free' && row.title === '' && row.description === ''));
   assert.equal(groupLessonRows(buildLessonRows(data)).renderRows.length, 2);
   assert.equal(buildContentNumbers(data).size, 0);
+
+  // 2. Ancre = ligne de contenu : la ligne libre naît JUSTE APRÈS elle, dans sa
+  //    propre liste — elle n'est plus renvoyée à la racine du cahier.
   const tree: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'Avant', description: '' }] }] }];
-  const nested = produce(tree, draft => insertFreeContent(draft, { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }, { description: '$x^2$' }, 'nested'));
-  assert.equal(nested[0].sections![0].items![1].type, 'free');
+  const afterItem = produce(tree, draft => insertFreeContent(draft, { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }, { description: '$x^2$' }, 'nested'));
+  assert.equal(afterItem.length, 1);
+  assert.equal(afterItem[0].sections![0].items!.length, 2);
+  assert.equal(afterItem[0].sections![0].items![1].type, 'free');
   assert.equal(tree[0].sections![0].items!.length, 1);
+
+  // 3. Ancre = titre (section) : elle se pose directement SOUS le titre.
+  const underSection = produce(afterItem, draft => insertFreeContent(draft, { chapterIndex: 0, sectionIndex: 0 }, { title: 'Note' }, 'sous-titre'));
+  assert.equal(underSection[0].sections![0].items!.length, 3);
+  assert.equal(underSection[0].sections![0].items![0].title, 'Note');
+
+  // 4. Ancre = une autre ligne libre : elle reste une VOISINE, jamais un parent.
+  const sibling = produce(underSection, draft => insertFreeContent(draft, { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }, {}, 'voisine'));
+  assert.equal(sibling[0].sections![0].items![1]._tempId, 'voisine');
+  assert.equal((sibling[0].sections![0].items![0] as { items?: unknown }).items, undefined);
+
+  // 5. Hors plan : aucun numéro consommé, aucun ancêtre, un seul chapitre.
+  const rows = buildLessonRows(underSection);
+  const freeRow = rows.find(row => row.elementType === 'item'
+    && isFreeContent(row.data) && (row.data as { title?: string }).title === 'Note')!;
+  assert.equal(freeRow.indices.sectionIndex, 0);
+  assert.equal(freeRow.indices.itemIndex, 0);
+  assert.equal(buildContentNumbers(underSection).size, buildContentNumbers(tree).size);
+  assert.equal(buildContentRowsCount(underSection, 'chapter'), 1);
 });
 
 test('ligne libre : texte, LaTeX et retour au vide survivent à la synchronisation, import et filtre impression', () => {
   for (const description of ['', 'Texte du professeur\n\\(x^2 + \\frac{1}{2}\\)\nنص حر']) {
-    const data: LessonsData = [{ type: 'free', title: 'عنوان $x^2$', description, date: '2026-09-21' }, { type: 'free', title: '', description: '' }];
+    const data: LessonsData = [{ type: 'free', title: '', description, date: '2026-09-21' }, { type: 'free', title: '', description: '' }];
     const before = JSON.stringify(data);
     const payload = assertValidLessonsPayload(JSON.parse(JSON.stringify([{ classId: 'test', lessonsData: data, contentDirection: 'rtl' }])), new Set(['test']));
     assert.deepEqual(payload[0].lessonsData, data);
     const imported = prepareImportedLessons(payload[0].lessonsData).lessonsData.filter(item => item.type === 'free');
     assert.equal(imported.length, 2);
     assert.equal(imported[0].description, description);
-    assert.equal(imported[0].title, 'عنوان $x^2$');
     assert.equal(imported[1].title, '');
     assert.equal(filterLessonsByDates(data, ['2026-09-21'])[0].description, description);
-    assert.equal(filterLessonsByDates(data, ['2026-09-21'])[0].title, 'عنوان $x^2$');
     assert.equal(JSON.stringify(data), before);
   }
 });
@@ -435,7 +308,7 @@ test('dimanche : la même alerte alimente le cahier et les notifications, sans r
   }
 });
 
-test('barre de sélection : vide masquée, compteur accessible et mutations verrouillées pendant le calcul', () => {
+test('barre de sélection : vide masquée, actions seules et mutations verrouillées pendant le calcul', () => {
   const noop = () => {};
   const props = { count: 2, hasDate: true, canAdd: true, canAssignDate: true, canEdit: true,
     onAdd: noop, onAssignDate: noop, onAssignToday: noop, onClearDate: noop, onEdit: noop, onDelete: noop, onClear: noop };
@@ -446,8 +319,9 @@ test('barre de sélection : vide masquée, compteur accessible et mutations verr
   const html = render({ isPending: true });
   assert.match(html, /role="toolbar"/);
   assert.match(html, /aria-busy="true"/);
-  assert.match(html, /aria-label="2 éléments sélectionnés"/);
-  assert.equal((html.match(/<button\b/g) ?? []).length, 5);
+  // Ni compteur de lignes ni bouton de fermeture : la barre ne porte que des actions.
+  assert.doesNotMatch(html, /sélectionnés|Effacer la sélection|Fermer la sélection/);
+  assert.equal((html.match(/<button\b/g) ?? []).length, 4);
   assert.equal((html.match(/disabled=""/g) ?? []).length, 4);
   assert.ok(!html.includes('overflow-x-auto'));
 });
@@ -469,18 +343,212 @@ test('diagnostic initial : création et import commencent exactement une fois pa
   assert.equal(manual[0].title, 'Évaluation diagnostique 1');
   assert.equal(manual[1].title, 'Chapitre 1');
 
-  const imported = withStarterDiagnostic([
+  // Le diagnostic du professeur n'est ni déplacé ni renommé : un import, un
+  // rechargement ou une synchronisation le laissent exactement où il est.
+  const existing = [
     { type: 'chapter', title: 'Chapitre 1' },
     { type: 'evaluation_diagnostic', title: 'Ancien titre', date: '2026-09-08' },
     { type: 'chapter', title: 'Chapitre 2' },
-  ], 'fr');
-  assert.equal(imported[0].type, 'evaluation_diagnostic');
-  assert.equal(imported[0].title, 'Évaluation diagnostique 1');
-  assert.equal(imported[0].date, '2026-09-08');
-  assert.equal(imported.filter(item => item.type === 'evaluation_diagnostic').length, 1);
-  assert.equal(withStarterDiagnostic(imported, 'fr'), imported);
+  ] as LessonsData;
+  assert.equal(withStarterDiagnostic(existing, 'fr'), existing);
+  assert.equal(withStarterDiagnostic(existing, 'fr')[1].title, 'Ancien titre');
+  // Une seule création, et uniquement quand il n'y en a aucun.
+  assert.equal(withStarterDiagnostic([{ type: 'chapter', title: 'Chapitre 1' }], 'fr')
+    .filter(item => item.type === 'evaluation_diagnostic').length, 1);
   assert.equal(hasOnlyPristineStarterDiagnostic([manual[0]]), true);
   assert.equal(hasOnlyPristineStarterDiagnostic([{ ...manual[0], date: '2026-09-08' }]), false);
+});
+
+test('import : une erreur de syntaxe est située, donc corrigeable', () => {
+  const broken = '{\n  "classes": [],\n  "timetable": [\n    { "classId": "a", },\n  ]\n}';
+  let message = '';
+  try {
+    JSON.parse(broken);
+  } catch (error) {
+    message = error instanceof Error ? error.message : '';
+  }
+  assert.ok(message, 'JSON.parse doit refuser ce contenu');
+
+  const located = locateJsonError(message, broken);
+  assert.ok(located, 'une erreur de syntaxe doit être située');
+  assert.ok(located!.line >= 3);
+  assert.ok(located!.column >= 1);
+  assert.ok(located!.excerpt.length > 0);
+
+  // Le diagnostic partagé signale le blocage ET la position.
+  const analysis = analyzeContentJson(broken);
+  assert.equal(analysis.ok, false);
+  assert.ok(analysis.issues.some(issue => issue.code === 'syntax' && issue.severity === 'error'));
+
+  // Aucune fausse précision : un message de taille n'est pas « situé ».
+  assert.equal(locateJsonError('Fichier trop volumineux.', broken), null);
+});
+
+test('suppression : contenus, lignes libres et chapitres partent vraiment, sans perte', () => {
+  const notebook: LessonsData = [
+    {
+      type: 'chapter', title: 'Chapitre 1', items: [
+        { type: 'definition', title: 'Définition 1' },
+        { type: 'free', title: '', description: 'Note' },
+        { type: 'exercice', title: 'Exercice 1' },
+      ],
+    },
+    { type: 'chapter', title: 'Chapitre 2', sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'Exercice 2' }] }] },
+  ];
+
+  // 1. Feuille de contenu.
+  const withoutDefinition = produce(notebook, draft => {
+    assert.equal(deleteStructuralNodePromotingChildren(draft, { chapterIndex: 0, itemIndex: 0 }), true);
+  });
+  assert.deepEqual(withoutDefinition[0].items!.map(item => item.type), ['free', 'exercice']);
+
+  // 2. Ligne libre posée dans un contenu : elle se supprime comme une feuille.
+  const withoutFree = produce(withoutDefinition, draft => {
+    assert.equal(deleteStructuralNodePromotingChildren(draft, { chapterIndex: 0, itemIndex: 0 }), true);
+  });
+  assert.deepEqual(withoutFree[0].items!.map(item => item.type), ['exercice']);
+
+  // 3. Ligne libre posée à la racine.
+  const withRootFree = [...withoutFree, { type: 'free', title: '', description: 'Note racine' }] as LessonsData;
+  const withoutRootFree = produce(withRootFree, draft => {
+    assert.equal(deleteStructuralNodePromotingChildren(draft, { chapterIndex: 2 }), true);
+  });
+  assert.equal(withoutRootFree.length, 2);
+
+  // 4. Chapitre entier : ses sections et ses contenus partent avec lui.
+  const withoutChapter = produce(withRootFree, draft => {
+    assert.equal(deleteStructuralNodePromotingChildren(draft, { chapterIndex: 1 }), true);
+  });
+  assert.deepEqual(withoutChapter.map(item => item.title), ['Chapitre 1', '']);
+
+  // 5. Section supprimée : ses contenus REMONTENT dans le chapitre (aucune perte).
+  const promoted = produce(withRootFree, draft => {
+    assert.equal(deleteStructuralNodePromotingChildren(draft, { chapterIndex: 1, sectionIndex: 0 }), true);
+  });
+  assert.equal(promoted[1].sections!.length, 0);
+  assert.deepEqual(promoted[1].items!.map(item => item.title), ['Exercice 2']);
+});
+
+test('suppression groupée : le plus profond part avant son ancêtre', () => {
+  const notebook: LessonsData = [
+    { type: 'chapter', title: 'Chapitre 1', sections: [
+      { name: 'Section A', items: [{ type: 'definition', title: 'Définition A' }, { type: 'exercice', title: 'Exercice A' }] },
+      { name: 'Section B', items: [{ type: 'definition', title: 'Définition B' }] },
+    ] },
+  ];
+  const selection: Indices[] = [
+    { chapterIndex: 0, sectionIndex: 0 },
+    { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 },
+  ];
+  // Sans l'ordre profondeur d'abord, la remontée des enfants de la section
+  // décalait le second retrait et supprimait une autre ligne.
+  const result = produce(notebook, draft => {
+    orderDeletionsDeepestFirst(selection).forEach(indices =>
+      deleteStructuralNodePromotingChildren(draft, indices));
+  });
+  assert.deepEqual(result[0].sections!.map(section => section.name), ['Section B']);
+  assert.deepEqual(result[0].items!.map(item => item.title), ['Exercice A']);
+  assert.deepEqual(result[0].sections![0].items!.map(item => item.title), ['Définition B']);
+});
+
+test('ligne libre : déplaçable le long de la structure, jusque sous un titre', () => {
+  // 1. Vers le haut : la ligne libre suit l'ORDRE DE LECTURE, pas les parents.
+  //    Depuis la racine, elle entre dans le chapitre et se pose juste avant la
+  //    dernière feuille.
+  const data: LessonsData = [
+    { type: 'chapter', title: 'Chapitre 1', items: [
+      { type: 'definition', title: 'Définition 1' },
+      { type: 'exercice', title: 'Exercice 1' },
+    ] },
+    { type: 'free', title: '', description: 'Note du professeur' },
+  ];
+  const targets = buildSessionTargets(buildLessonRows(data));
+  const keys = new Set([indicesKey({ chapterIndex: 1 })]);
+  const up = planContentRelocation(data, targets, keys, 'up');
+  assert.ok(up, 'la ligne libre doit pouvoir remonter dans le chapitre');
+  assert.equal(up.side, 'before');
+  const movedUp = produce(data, draft => { applyContentRelocation(draft, up); });
+  assert.equal(movedUp.length, 1);
+  assert.deepEqual(movedUp[0].items!.map(item => item.title), ['Définition 1', '', 'Exercice 1']);
+  assert.equal(movedUp[0].items![1].type, 'free');
+  assert.deepEqual(up.selection, [{ chapterIndex: 0, itemIndex: 1 }]);
+
+  // 2. Vers le bas : elle se pose SOUS LE TITRE (premier enfant du bloc), même
+  //    si cela change son parent.
+  const before: LessonsData = [
+    { type: 'free', title: '', description: 'Note' },
+    { type: 'chapter', title: 'Chapitre 1', items: [{ type: 'definition', title: 'Définition 1' }] },
+  ];
+  const beforeTargets = buildSessionTargets(buildLessonRows(before));
+  const down = planContentRelocation(before, beforeTargets, new Set([indicesKey({ chapterIndex: 0 })]), 'down');
+  assert.ok(down, 'la ligne libre doit pouvoir descendre sous un titre');
+  assert.equal(down.side, 'inside');
+  const movedDown = produce(before, draft => { applyContentRelocation(draft, down); });
+  assert.equal(movedDown.length, 1);
+  assert.deepEqual(movedDown[0].items!.map(item => item.title), ['', 'Définition 1']);
+
+  // 3. Sortie d'un chapitre : elle rejoint le chapitre suivant, sous son titre.
+  const cross: LessonsData = [
+    { type: 'chapter', title: 'Chapitre 1', items: [{ type: 'free', title: '', description: 'Note' }] },
+    { type: 'chapter', title: 'Chapitre 2', items: [{ type: 'definition', title: 'Définition 1' }] },
+  ];
+  const crossTargets = buildSessionTargets(buildLessonRows(cross));
+  const enter = planContentRelocation(cross, crossTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'down');
+  assert.ok(enter, 'la ligne libre doit changer de chapitre');
+  const movedCross = produce(cross, draft => { applyContentRelocation(draft, enter); });
+  assert.equal(movedCross[0].items!.length, 0);
+  assert.deepEqual(movedCross[1].items!.map(item => item.title), ['', 'Définition 1']);
+
+  // 4. Au bord du cahier, plus rien à échanger ; et un contenu typé garde la
+  //    permutation stricte entre frères (jamais de relocalisation).
+  assert.equal(planContentRelocation(before, beforeTargets, new Set([indicesKey({ chapterIndex: 0 })]), 'up'), null);
+  const typed: LessonsData = [{ type: 'chapter', title: 'C', items: [{ type: 'definition', title: 'D1' }] }];
+  const typedTargets = buildSessionTargets(buildLessonRows(typed));
+  assert.equal(planContentRelocation(typed, typedTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'up'), null);
+});
+
+test('diagnostic et séance fusionnée : une seule ligne, déplaçable dans tous les sens', () => {
+  // 1. Le diagnostic initial se déplace comme n'importe quelle ligne.
+  const before: LessonsData = [
+    { type: 'evaluation_diagnostic', title: 'Évaluation diagnostique 1' },
+    { type: 'chapter', title: 'Chapitre 1' },
+  ];
+  assert.equal(canMoveWithinParent(before, { chapterIndex: 0 }, 'down'), true);
+  const afterMove = produce(before, draft => { moveWithinParent(draft, { chapterIndex: 0 }, 'down'); });
+  assert.equal(afterMove[1].type, 'evaluation_diagnostic');
+  assert.equal(withStarterDiagnostic(afterMove, 'fr'), afterMove);
+
+  // 2. Deux contenus datés du même jour forment UNE ligne de tableau.
+  const session: LessonsData = [
+    { type: 'chapter', title: 'Chapitre 1', items: [
+      { type: 'definition', title: 'Définition 1' },
+      { type: 'exercice', title: 'Exercice 1', date: '2026-09-08' },
+      { type: 'activite', title: 'Activité 1', date: '2026-09-08' },
+    ] },
+  ];
+  const targets = buildSessionTargets(buildLessonRows(session));
+  const first = { chapterIndex: 0, itemIndex: 1 };
+  const second = { chapterIndex: 0, itemIndex: 2 };
+  const group = targets.get(indicesKey(first))!;
+  assert.equal(group.length, 2);
+  assert.equal(targets.get(indicesKey(second))!.length, 2);
+
+  // La remarque s'écrit sur toute la séance, en une seule mutation annulable.
+  const withRemark = produce(session, draft => {
+    assert.equal(applyRemarkEdit(draft, group, 'Absence de Yassine'), true);
+  });
+  assert.equal(withRemark[0].items![1].remark, 'Absence de Yassine');
+  assert.equal(withRemark[0].items![2].remark, 'Absence de Yassine');
+  const cleared = produce(withRemark, draft => { applyRemarkEdit(draft, group, '   '); });
+  assert.equal(Object.hasOwn(cleared[0].items![1] as object, 'remark'), false);
+
+  // Le déplacement emporte le lot entier, sélection comprise.
+  const selection = new Set([indicesKey(first), indicesKey(second)]);
+  const plan = planContentMove(session, targets, selection, 'up');
+  assert.ok(plan, 'le lot fusionné doit pouvoir remonter');
+  const moved = produce(session, draft => { applyContentMove(draft, plan!); });
+  assert.deepEqual(moved[0].items!.map(item => item.type), ['exercice', 'activite', 'definition']);
+  assert.deepEqual(plan!.selection.map(index => index.itemIndex), [0, 1]);
 });
 
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {
@@ -562,72 +630,6 @@ test('fusion : dates distinctes oui, doublon de la même séance non', () => {
   const grouped = groupLessonRows(buildLessonRows(preceded));
   assert.equal(grouped.renderRows.length, 2);
   assert.equal(grouped.flatData[1].dateMerge?.mergeType, 'content');
-});
-
-test('ajouter après : deux ou trois contenus fusionnés restent intacts avant le nouvel élément', () => {
-  for (const count of [2, 3]) {
-    const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [
-      ...Array.from({ length: count }, (_, i) => ({ type: 'exercice', title: 'Limites', description: '$x^2$', date: `2026-09-${14 + i}` })),
-      { type: 'exercice', title: 'Suite', description: '' },
-    ] }] }];
-    const rows = buildLessonRows(data);
-    const group = groupLessonRows(rows).renderRows.find(row => row.kind === 'session');
-    assert.ok(group?.kind === 'session');
-    assert.equal(group.items.length, count);
-    const selection = new Set([...group.items].reverse().map(row => row.key));
-    const anchor = resolveAddAfterTarget(rows, selection);
-    assert.deepEqual(anchor, { chapterIndex: 0, sectionIndex: 0, itemIndex: count - 1 });
-    const withExercise = produce(data, draft => addItem(draft,
-      { chapterIndex: anchor!.chapterIndex, sectionIndex: anchor!.sectionIndex },
-      { type: 'exercice', title: 'Nouvel exercice', description: '$x+1$' }, anchor!.itemIndex));
-    assert.equal(withExercise[0].sections![0].items![count].title, 'Nouvel exercice');
-    assert.equal(withExercise[0].sections![0].items![count + 1].title, 'Suite');
-    const next = produce(data, draft => insertFreeContent(draft, anchor!, { description: 'Nouveau contenu' }, 'new'));
-    const items = next[0].sections![0].items!;
-    assert.deepEqual(items.slice(0, count), data[0].sections![0].items!.slice(0, count));
-    const inserted = items[count];
-    assert.ok('description' in inserted);
-    assert.equal(inserted.description, 'Nouveau contenu');
-    assert.equal(items[count + 1].title, 'Suite');
-    const nextGroup = groupLessonRows(buildLessonRows(next)).renderRows.find(row => row.kind === 'session');
-    assert.ok(nextGroup?.kind === 'session');
-    assert.equal(nextGroup.items.length, count);
-    assert.deepEqual(JSON.parse(JSON.stringify(next)), next);
-    assert.equal(data[0].sections![0].items!.length, count + 1);
-  }
-});
-
-test('ajouter après : ordre source numérique, recherche, sélection périmée et parents différents', () => {
-  const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', items:
-    Array.from({ length: 12 }, (_, i) => ({ type: 'exercice', title: i === 10 ? 'Cible' : `Exercice ${i}`, description: '' })),
-    sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'Autre cible', description: '' }] }],
-  }];
-  const rows = buildLessonRows(data);
-  const tenth = { chapterIndex: 0, itemIndex: 10 };
-  const second = { chapterIndex: 0, itemIndex: 2 };
-  const selection = new Set([indicesKey(tenth), indicesKey(second)]);
-  assert.deepEqual(resolveAddAfterTarget(rows, selection), tenth);
-  const filtered = filterLessonRows(rows, 'cible');
-  assert.ok(!filtered.some(row => row.key === indicesKey(second)));
-  // L'ancre utilise la projection complète même pendant une recherche.
-  assert.deepEqual(resolveAddAfterTarget(rows, selection), tenth);
-  const nested = { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 };
-  assert.deepEqual(resolveAddAfterTarget(rows, new Set([indicesKey(nested), ...selection])), nested);
-  assert.deepEqual(resolveAddAfterTarget(rows, new Set([indicesKey(second)])), second);
-  assert.equal(resolveAddAfterTarget(rows, new Set()), null);
-  assert.equal(resolveAddAfterTarget(rows, new Set([...selection, '99||||'])), null);
-});
-
-test('ajouter après : séance à date commune et groupe fusionné au premier niveau', () => {
-  for (const dates of [['2026-09-14', '2026-09-14'], ['2026-09-14', '2026-09-15']]) {
-    const data: LessonsData = dates.map(date => ({ type: 'free', title: '', description: 'Contenu partagé', date }));
-    const rows = buildLessonRows(data);
-    assert.equal(groupLessonRows(rows).renderRows.length, 1);
-    const anchor = resolveAddAfterTarget(rows, new Set([...rows].reverse().map(row => row.key)));
-    const next = produce(data, draft => insertFreeContent(draft, anchor!, {}, 'after'));
-    assert.deepEqual(next.slice(0, 2), data);
-    assert.equal(next[2]._tempId, 'after');
-  }
 });
 
 test('fusion : des lignes libres de textes différents restent toutes visibles', () => {

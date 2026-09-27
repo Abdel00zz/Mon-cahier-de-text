@@ -1,5 +1,6 @@
 import type { LessonsData } from '../types.js';
 import { buildLessonRows, type LessonRow } from './lessonRows.js';
+import { isFreeContent } from './freeLineType.js';
 
 /**
  * Numérotation des contenus pédagogiques : « Définition 1 », « Exemple 2 »,
@@ -12,6 +13,7 @@ import { buildLessonRows, type LessonRow } from './lessonRows.js';
  *
  * Sont exclus :
  *  - les structures (chapitre, section, sous-section, séparateur) ;
+ *  - les lignes libres, qui n'appartiennent pas au plan du cours ;
  *  - les évaluations (devoir, contrôle, correction, examen), qui numérotent
  *    déjà leur titre via `autoNumber` (voir TYPE_MAP).
  * Tout le reste est numéroté : définitions, propositions, théorèmes, mais
@@ -32,7 +34,7 @@ const typeKey = (value: unknown): string => String(value ?? '')
     .replace(/[\s-]+/g, '_');
 
 const isNumberableRow = (row: LessonRow): boolean =>
-    rowType(row) !== 'free' && !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
+    !isFreeContent(row.data) && !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
 
 const rowType = (row: LessonRow): string => String((row.data as { type?: unknown }).type ?? '');
 

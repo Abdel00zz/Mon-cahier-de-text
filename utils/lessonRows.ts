@@ -1,4 +1,5 @@
 import type { ElementType, Indices, LessonsData, LessonItem, Section, SubSection, SubSubSection, TopLevelItem } from '../types';
+import { FREE_TYPE } from './freeLineType';
 
 type LessonNode = TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
 export interface LessonRow {
@@ -48,7 +49,13 @@ export function buildLessonRows(data: LessonsData): LessonRow[] {
     if ('subsubsections' in node) node.subsubsections?.forEach((section, subsubsectionIndex) =>
       visit(section, { ...indices, subsubsectionIndex }, 'subsubsection', ancestors));
   };
-  data.forEach((node, chapterIndex) => visit(node, { chapterIndex }, node.type === 'free' ? 'item' : node.type, []));
+  // Une ligne libre vit hors du plan : on la projette comme une ligne de
+  // contenu, jamais comme un chapitre ou une section du cours. Le type du nœud
+  // reste la source de vérité ; la position dans l'arbre ne décide de rien.
+  const elementTypeOf = (node: TopLevelItem): ElementType => (node as { type?: unknown }).type === FREE_TYPE
+    ? 'item'
+    : (node.type as ElementType);
+  data.forEach((node, chapterIndex) => visit(node, { chapterIndex }, elementTypeOf(node), []));
   return rows;
 }
 

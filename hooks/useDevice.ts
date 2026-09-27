@@ -23,12 +23,22 @@ export const useDevice = (): DeviceInfo => {
             window.matchMedia('(orientation: portrait)'),
             window.matchMedia('(pointer: coarse)'),
         ];
-        const update = () => setInfo(readDevice());
+        let frame: number | null = null;
+        const update = () => {
+            if (frame !== null) return;
+            frame = window.requestAnimationFrame(() => {
+                frame = null;
+                const next = readDevice();
+                setInfo(current => current.type === next.type && current.isPortrait === next.isPortrait
+                    && current.isTouch === next.isTouch ? current : next);
+            });
+        };
         queries.forEach(q => q.addEventListener('change', update));
         window.addEventListener('resize', update);
         window.visualViewport?.addEventListener('resize', update);
         window.screen.orientation?.addEventListener('change', update);
         return () => {
+            if (frame !== null) window.cancelAnimationFrame(frame);
             queries.forEach(q => q.removeEventListener('change', update));
             window.removeEventListener('resize', update);
             window.visualViewport?.removeEventListener('resize', update);

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
+import { useTableSearch } from './hooks/useTableSearch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -42,85 +43,25 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   searchQuery, setSearchQuery,
 }) => {
   const { t, isRtl } = useLocale();
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [localSearch, setLocalSearch] = useState(searchQuery);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<number | null>(null);
-
-  // Focus quand ouverture
-  useEffect(() => {
-    if (isSearchVisible) {
-      // petit timeout pour laisser le panneau s'animer
-      requestAnimationFrame(() => searchInputRef.current?.focus());
-    }
-  }, [isSearchVisible]);
-
-  // Debounce propagation vers parent
-  useEffect(() => {
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      setSearchQuery(localSearch);
-    }, 150);
-    return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
-  }, [localSearch, setSearchQuery]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        if (!searchQuery) {
-          setIsSearchVisible(false);
-        }
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Raccourcis ouverture
-      if ((e.key === '/' || (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey))) && !isSearchVisible) {
-        e.preventDefault();
-        setIsSearchVisible(true);
-        return;
-      }
-      if (e.key === 'Escape') {
-        setIsSearchVisible(false);
-        setLocalSearch('');
-        setSearchQuery('');
-        searchInputRef.current?.blur();
-      }
-      if (e.key === 'f' && (e.metaKey || e.ctrlKey)) {
-        // Empêcher conflit avec recherche navigateur sur mobile web-app
-        e.preventDefault();
-        setIsSearchVisible(true);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [searchQuery, setSearchQuery, isSearchVisible]);
-
-  // Synchronise aussi les recherches ouvertes depuis « Mes classes ».
-  useEffect(() => {
-    setLocalSearch(current => current === searchQuery ? current : searchQuery);
-  }, [searchQuery]);
+  const { isSearchVisible, setIsSearchVisible, localSearch, setLocalSearch, setIsComposing,
+    searchContainerRef, mobileInputRef, desktopInputRef, clearSearch, closeSearch,
+  } = useTableSearch(searchQuery, setSearchQuery);
   
   return (
-    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border-2 border-border/70 bg-background/95 backdrop-blur-sm px-3 py-2 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-4 sm:py-2.5">
+    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-1.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-1.5">
       <div className="flex min-w-0 items-center justify-start gap-1.5">
         <SyncStatusBadge />
       </div>
       
-      <div className="hidden items-center justify-center gap-1 rounded-xl border border-border/50 bg-muted/30 p-1 shadow-inner sm:flex">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
-          <Undo2 className="h-4 w-4 stroke-[2.4]" />
+      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner sm:flex">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+          <Undo2 className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
-          <Redo2 className="h-4 w-4 stroke-[2.4]" />
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+          <Redo2 className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
-          <Save className="h-4 w-4 stroke-[2.4]" />
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+          <Save className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
       </div>
 
@@ -144,17 +85,20 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 shrink-0 stroke-[2.2] text-muted-foreground" />
                 <Input
-                  ref={searchInputRef}
+                  ref={mobileInputRef}
                   type="search"
                   placeholder={t('toolbar.searchPlaceholder')}
+                  aria-label={t('toolbar.searchPlaceholder')}
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
-                  className="flex-1 h-9 text-xs sm:text-sm rounded-xl border-border/60 bg-muted/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
+                  onCompositionStart={() => setIsComposing(true)}
+                  onCompositionEnd={() => setIsComposing(false)}
+                  className="flex-1 h-11 text-base rounded-xl border-border/60 bg-muted/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
                 />
                 {localSearch && (
                   <button 
                     type="button" 
-                    onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
+                    onClick={clearSearch}
                     className="touch-target w-9 h-9 flex shrink-0 items-center justify-center rounded-xl bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation"
                     aria-label={t('toolbar.clearSearch')}
                   >
@@ -163,7 +107,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 )}
                 <button
                   type="button"
-                  onClick={() => setIsSearchVisible(false)}
+                  onClick={closeSearch}
                   className="touch-target w-9 h-9 flex shrink-0 items-center justify-center rounded-xl bg-muted/70 hover:bg-muted text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation"
                   aria-label={t('toolbar.closeSearch')}
                 >
@@ -179,11 +123,15 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           >
             <div className="relative w-full">
               <Input
-                ref={searchInputRef}
+                ref={desktopInputRef}
                 type="search"
                 placeholder={t('toolbar.searchPlaceholder')}
+                aria-label={t('toolbar.searchPlaceholder')}
+                tabIndex={isSearchVisible ? 0 : -1}
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
+                onCompositionStart={() => setIsComposing(true)}
+                onCompositionEnd={() => setIsComposing(false)}
                 className="rounded-lg h-7.5 text-xs px-2.5 border-border/60 bg-background/80 backdrop-blur-sm focus:border-border/80 focus:ring-0"
               />
             </div>

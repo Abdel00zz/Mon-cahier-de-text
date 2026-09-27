@@ -938,14 +938,6 @@ html[lang="ar"] .modal-header h2,
   background: hsl(var(--card) / 0.88);
 }
 .selection-action { min-width: 44px; min-height: 44px; }
-.selection-count {
-  min-width: 1.5em;
-  padding-inline: 4px;
-  text-align: center;
-  font-size: calc(14px * var(--app-text-scale, 1));
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
 @media (min-width: 640px) {
   .selection-bar-anchor { bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem); }
 }
@@ -1950,3 +1942,23 @@ html[data-keyboard='open'] .mobile-tab-bar {
    conserve le sens LTR à l'intérieur de la formule pour l'ordre des symboles. */
 .editor-item-body mjx-container[display="true"] { text-align: left; }
 [dir="rtl"] .editor-item-body mjx-container[display="true"] { text-align: right; }
+
+/* Une ligne libre n'appartient PAS à la structure du cours : encadré en
+   pointillés, fond très légèrement teinté, sans couleur d'accent ni filet
+   vertical. Elle peut être déplacée n'importe où : son cadre la suit. */
+.editor-free-content {
+  border: 1px dashed rgba(120, 120, 110, 0.45);
+  border-radius: 10px;
+  padding-inline: 10px;
+  padding-block: 6px;
+}
+
+.dark .editor-free-content {
+  border-color: rgba(200, 200, 190, 0.35);
+}
+
+/* Accessibilité motrice : un squelette reste un signal de chargement, mais il
+   cesse de bouger si l'appareil demande moins d'animation (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after { animation: none; opacity: 0.45; }
+}

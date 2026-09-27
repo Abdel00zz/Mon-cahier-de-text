@@ -16,7 +16,8 @@ import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
 import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
 import { motion } from 'framer-motion';
 
-const TABLE_GRID_CLASS = 'editor-table-grid';
+const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
+const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
 interface MainTableProps {
   lessonsData: LessonsData;
@@ -29,8 +30,11 @@ interface MainTableProps {
   descriptionTypes?: string[];
   selectedKeys: ReadonlySet<string>;
   onToggleSelect: (indices: Indices) => void;
+  onToggleSelectGroup?: (indices: Indices[]) => void;
   onOpenContentEditor: (indices: Indices) => void;
   onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
+  /** saisie de la remarque de la séance (ligne ou groupe fusionné) */
+  onOpenRemark?: (indices: Indices) => void;
   newlyAddedIds: string[];
   /** garde intelligente : alertes live sur la date saisie */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
@@ -83,8 +87,10 @@ interface SessionGroupRowProps {
     selectedKeys: ReadonlySet<string>;
     newlyAddedIds: string[];
     onToggleSelect: (indices: Indices) => void;
+    onToggleSelectGroup?: (indices: Indices[]) => void;
     onDoubleClickEdit?: (indices: Indices) => void;
     onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
+    onOpenRemark?: (indices: Indices) => void;
     showDescriptions?: boolean;
     descriptionTypes?: string[];
     searchQuery?: string;
@@ -94,22 +100,29 @@ interface SessionGroupRowProps {
     getContentNumber?: (indices: Indices) => string | undefined;
 }
 
-const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
+const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     items,
     selectedKeys,
     newlyAddedIds,
     onToggleSelect,
+    onToggleSelectGroup,
     onDoubleClickEdit,
     onOpenDateModal,
+    onOpenRemark,
     showDescriptions,
-    descriptionTypes = [],
+    descriptionTypes = NO_DESCRIPTION_TYPES,
     searchQuery,
     getDateWarnings,
     getDateOrder,
     getContentNumber,
 }) => {
+    const { t } = useLocale();
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
     const toggleMerged = () => {
+        if (onToggleSelectGroup) {
+            onToggleSelectGroup(items.map(item => item.indices));
+            return;
+        }
         const shouldSelect = !items.every(item => selectedKeys.has(item.key));
         items.forEach(item => {
             if (selectedKeys.has(item.key) !== shouldSelect) onToggleSelect(item.indices);
@@ -164,6 +177,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 layout="content-only"
                 onToggleSelect={merged ? toggleMerged : onToggleSelect}
                 onDoubleClickEdit={onDoubleClickEdit}
+                onOpenRemark={onOpenRemark}
                 isSelected={isSelected}
                 isNew={isNew}
                 showDescriptions={showDescriptions}
@@ -190,9 +204,10 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             ].filter(Boolean).join(' ')}
             style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
         >
-            <div
+            <button
+                type="button"
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -200,14 +215,16 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                         onOpenDateModal(items[0].indices, typeof items[0].data?.date === 'string' ? items[0].data.date : undefined);
                     }
                 }}
-                title={hasAssignedDate ? 'Modifier la date' : 'Affecter une date'}
+                title={t('selection.chooseDate')}
+                aria-label={t('selection.chooseDate')}
+                disabled={!onOpenDateModal}
             >
                 {uniqueDates.length > 1 ? (
                     <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
                 ) : (
                     <DateCard dateStr={uniqueDates[0]} hasWarning={hasWarning} />
                 )}
-            </div>
+            </button>
 
             {mergeContent ? (
                 <div
@@ -236,9 +253,16 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
                     onClick={event => event.stopPropagation()}
                 >
-                    <div className="flex min-h-full w-full flex-col justify-center">
+                    <button
+                        type="button"
+                        onClick={() => onOpenRemark?.(items[0].indices)}
+                        title={t('remark.editTitle')}
+                        aria-label={t('remark.editTitle')}
+                        data-remark-cell="true"
+                        className="flex min-h-full w-full cursor-pointer flex-col justify-center rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
                         <div dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
-                    </div>
+                    </button>
                 </div>
             ) : items.map((item, index) => (
                 <div
@@ -249,12 +273,30 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     style={{ gridColumn: 3, gridRow: index + 1 }}
                     onClick={event => event.stopPropagation()}
                 >
-                    <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                    <button
+                        type="button"
+                        onClick={() => onOpenRemark?.(item.indices)}
+                        title={t('remark.editTitle')}
+                        aria-label={t('remark.editTitle')}
+                        data-remark-cell="true"
+                        className="h-full w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                        <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                    </button>
                 </div>
             ))}
         </div>
     );
-};
+}, (previous, next) => {
+    if (previous.items !== next.items || previous.onToggleSelect !== next.onToggleSelect
+        || previous.onToggleSelectGroup !== next.onToggleSelectGroup
+        || previous.onDoubleClickEdit !== next.onDoubleClickEdit || previous.onOpenDateModal !== next.onOpenDateModal
+        || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
+        || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
+        || previous.getDateWarnings !== next.getDateWarnings || previous.getDateOrder !== next.getDateOrder
+        || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds) return false;
+    return previous.items.every(item => previous.selectedKeys.has(item.key) === next.selectedKeys.has(item.key));
+});
 
 SessionGroupRow.displayName = 'SessionGroupRow';
 
@@ -339,9 +381,11 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   descriptionTypes = NO_DESCRIPTION_TYPES,
   selectedKeys,
   onToggleSelect,
+  onToggleSelectGroup,
   newlyAddedIds,
   onOpenContentEditor,
   onOpenDateModal,
+  onOpenRemark,
   getDateWarnings,
   getDateOrder,
   getContentNumber,
@@ -368,7 +412,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }), [renderRows, contentDirection, showDescriptions, descriptionTypes]);
   const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
   const estimateSizes = useMemo(() => renderRows.map(row =>
-    (row.kind === 'session' ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
+    (row.kind === 'session' && !(row.items[0].dateMerge?.mergeType === 'content'
+      && row.items[0].dateMerge?.shouldMergeRemark) ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
   ), [renderRows]);
   const { scrollRef, scrollToIndex, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
     count: renderRows.length,
@@ -448,6 +493,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-content-direction={contentDirection}
       dir={contentDirection}
       className="rtl-table mx-0 overflow-hidden rounded-xl border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
+      style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />
       <CardContent className="!p-0">
@@ -467,8 +513,10 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   selectedKeys={selectedKeys}
                                   newlyAddedIds={newlyAddedIds}
                                   onToggleSelect={onToggleSelect}
+                                  onToggleSelectGroup={onToggleSelectGroup}
                                   onDoubleClickEdit={onOpenContentEditor}
                                   onOpenDateModal={onOpenDateModal}
+                                  onOpenRemark={onOpenRemark}
                                   showDescriptions={showDescriptions}
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
@@ -495,6 +543,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               onToggleSelect={onToggleSelect}
                               onDoubleClickEdit={onOpenContentEditor}
                               onOpenDateModal={onOpenDateModal}
+                              onOpenRemark={onOpenRemark}
                               isSelected={isSelected}
                               isNew={isNew}
                               showDescriptions={showDescriptions}

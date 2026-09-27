@@ -36,39 +36,13 @@ export const hasOnlyPristineStarterDiagnostic = (lessons: LessonsData): boolean 
 };
 
 /**
- * Place le diagnostic en tête d'un contenu prédéfini ou importé. Un diagnostic
- * déjà présent est conservé et simplement remonté : aucun doublon n'est créé.
- * Le premier porte toujours le titre canonique « Évaluation diagnostique 1 »
- * dans la langue du contenu. Les diagnostics suivants conservent leur place ;
- * seuls leurs titres génériques sont renumérotés.
+ * Garantit qu'un diagnostic initial existe, sans jamais toucher à celui du
+ * professeur. Un diagnostic déjà présent est LAISSÉ EXACTEMENT À SA PLACE :
+ * c'est une ligne du cahier comme une autre, déplaçable dans tous les sens et
+ * renommable librement. Seule la création (aucun diagnostic dans le cahier)
+ * ajoute un point de départ en tête.
  */
-export const withStarterDiagnostic = (lessons: LessonsData, locale: AppLocale): LessonsData => {
-    const firstDiagnosticIndex = lessons.findIndex(item => item.type === 'evaluation_diagnostic');
-    if (firstDiagnosticIndex < 0) return [createStarterDiagnostic(locale), ...lessons];
-
-    let changed = firstDiagnosticIndex !== 0;
-    let diagnosticNumber = 1;
-    const canonicalStarterTitle = diagnosticTitle(locale, 1);
-    const sourceStarter = lessons[firstDiagnosticIndex];
-    const starter = sourceStarter.title?.trim() === canonicalStarterTitle
-        ? sourceStarter
-        : { ...sourceStarter, title: canonicalStarterTitle };
-    if (starter !== sourceStarter) changed = true;
-
-    // Seul le premier diagnostic est remonté. Les éventuels diagnostics
-    // suivants restent à leur place pédagogique et gardent leur contenu.
-    const remaining = lessons.flatMap((item, index) => {
-        if (index === firstDiagnosticIndex) return [];
-        if (item.type !== 'evaluation_diagnostic') return [item];
-
-        diagnosticNumber += 1;
-        const currentTitle = item.title?.trim() ?? '';
-        if (!isGenericDiagnosticTitle(currentTitle)) return [item];
-        const title = diagnosticTitle(locale, diagnosticNumber);
-        if (currentTitle === title) return [item];
-        changed = true;
-        return [{ ...item, title }];
-    });
-
-    return changed ? [starter, ...remaining] : lessons;
-};
+export const withStarterDiagnostic = (lessons: LessonsData, locale: AppLocale): LessonsData =>
+    lessons.some(item => item.type === 'evaluation_diagnostic')
+        ? lessons
+        : [createStarterDiagnostic(locale), ...lessons];

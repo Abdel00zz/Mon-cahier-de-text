@@ -1,16 +1,15 @@
 import React, { FC } from 'react';
-import { motion } from 'framer-motion';
+import { motion, MotionConfig } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
-  Pencil, Trash2, X, MoreVertical,
+  Pencil, Trash2, MoreVertical,
 } from '@/components/ui/icons';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { numberFormat } from '@/utils/formatters';
 
 interface SelectionBarProps {
   count: number;
@@ -75,8 +74,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 }) => {
   const { t, locale } = useLocale();
   if (count === 0) return null;
-  const formattedCount = numberFormat(locale).format(count);
-  const selectedLabel = t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount });
   const secondary: Action[] = [];
   if (onMoveUp) {
     secondary.push({
@@ -114,6 +111,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="selection-bar-anchor print:hidden">
       <motion.div
         initial={{ y: 24, opacity: 0, scale: 0.94 }}
@@ -134,22 +132,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           aria-hidden="true"
         />
 
-        <motion.button
-          type="button"
-          onClick={onClear}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.88 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-          className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation"
-          title={t('selection.closeShortcut')}
-          aria-label={t('selection.clearAria')}
-        >
-          <X aria-hidden className="size-[18px]" />
-        </motion.button>
-        <span className="selection-count shrink-0 px-1 font-semibold text-sm tabular-nums text-foreground select-none" title={selectedLabel} aria-label={selectedLabel} role="status" aria-atomic="true">
-          {formattedCount}
-        </span>
-        <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-border/80 select-none" />
         {canAssignDate && onAssignToday && <ActionButton icon={CalendarCheck} onClick={onAssignToday}
           title={t('selection.dateToday')} label={t('selection.today')} accent disabled={isPending} />}
         {canAssignDate && <ActionButton icon={CalendarDays} onClick={onAssignDate}
@@ -186,5 +168,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         </DropdownMenu>
       </motion.div>
     </div>
+    </MotionConfig>
   );
 };

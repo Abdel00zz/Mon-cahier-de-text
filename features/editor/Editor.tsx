@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef, useTransition } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
+import { useSelectionEngine, createSelectionState } from './hooks/useSelectionEngine';
+import { useBulkOperations } from './hooks/useBulkOperations';
+import { useSessionAssignment } from './hooks/useSessionAssignment';
 import { useImmer } from 'use-immer';
 import { toast } from 'sonner';
 import { Header } from './Header';
@@ -12,15 +15,14 @@ import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey, resolveAddAfterTarget } from '@/utils/lessonRows';
-import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
+import { buildContentDateOrder } from '@/utils/dateOrder';
 import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
-import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
+import { applyContentEdit, buildContentEditTargets, buildSessionTargets, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
 import type { ContentDraft } from '@/utils/contentDraft';
-import { applyContentMove, planContentMove } from '@/utils/contentReorder';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteStructuralNodePromotingChildren, migrateLessonsData } from '@/utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
@@ -76,31 +78,6 @@ type ActiveModal =
   | null;
 
 
-interface SelectionState {
-  keys: Set<string>;
-  items: Map<string, Indices>;
-}
-
-interface PendingDateCommit {
-  date: string;
-  warnings: DateWarning[];
-  commit: () => void;
-}
-
-const createSelectionState = (indices?: Indices | Indices[]): SelectionState => {
-  const keys = new Set<string>();
-  const items = new Map<string, Indices>();
-  for (const index of (indices ? (Array.isArray(indices) ? indices : [indices]) : [])) {
-    const key = indicesKey(index);
-    keys.add(key);
-    items.set(key, index);
-  }
-  return { keys, items };
-};
-
-const isDateableContentTarget = (_indices: Indices, item: unknown): boolean => {
-  return !!item;
-};
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
@@ -123,10 +100,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     newlyAddedIds: [] as string[],
   });
 
-  const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
-  const [pendingDateCommit, setPendingDateCommit] = useState<PendingDateCommit | null>(null);
-  const [assignDateInitialDate, setAssignDateInitialDate] = useState<string | undefined>();
-  const [isSelectionPending, startSelectionTransition] = useTransition();
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
   const consumedSessionFocusRef = useRef<string | null>(null);
@@ -297,13 +270,38 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const selectedIndices = useMemo(() => Array.from(selectionState.items.values()), [selectionState]);
   const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
   const contentEditTargets = useMemo(() => buildContentEditTargets(allRows), [allRows]);
-  const moveOptions = useMemo(() => ({
-    up: planContentMove(lessonsData, contentEditTargets, selectionState.keys, 'up'),
-    down: planContentMove(lessonsData, contentEditTargets, selectionState.keys, 'down'),
-  }), [lessonsData, contentEditTargets, selectionState.keys]);
+  /** Même moteur de fusion, autre intention : une séance fusionnée est UNE
+   *  ligne pour la remarque et pour le déplacement. */
+  const sessionTargets = useMemo(() => buildSessionTargets(allRows), [allRows]);
+  const {
+    selectionState,
+    selectedIndices,
+    selectedCount,
+    isSelectionPending,
+    canMoveUp,
+    canMoveDown,
+    handleMoveSelected,
+    handleToggleSelectRow,
+    handleToggleSelectGroup,
+    handleDeselectAll,
+    setSelectionState
+  } = useSelectionEngine({
+    lessonsData,
+    moveTargets: sessionTargets,
+    setState,
+    setEditorState
+  });
+
+  const { handleBulkDelete, executeBulkDelete } = useBulkOperations({
+    selectedIndices,
+    setState,
+    setEditorState,
+    setSelectionState,
+    setConfirmBulkDelete
+  });
+
 
   const getStorageKey = useCallback(() => `classData_v1_${classInfo.id}`, [classInfo.id]);
 
@@ -336,18 +334,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     [getDateWarnings, today]
   );
 
-  const requestDateCommit = useCallback((date: string, commit: () => void, order?: ContentDateOrder) => {
-    const warnings = date ? [...getDateWarnings(date), ...dateOrderWarnings(date, order, locale)] : [];
-    if (warnings.length > 0) {
-      setAssignDateInitialDate(date);
-      setPendingDateCommit({ date, warnings, commit });
-      // Une seule modale à la fois : la planification cède la place à la
-      // vérification, puis sera recréée avec la même date si l'utilisateur modifie.
-      setEditorState(draft => { draft.activeModal = null; });
-      return;
-    }
-    commit();
-  }, [getDateWarnings, locale, setEditorState]);
+  const sessionAssignment = useSessionAssignment({
+    lessonsData, locale, setState, getDateWarnings, isActive: workspaceIsActive,
+    onOpen: () => setEditorState(draft => { draft.activeModal = 'assignDate'; }),
+    onClose: () => setEditorState(draft => { draft.activeModal = null; }),
+    onSaved: () => {
+      setSelectionState(createSelectionState());
+      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+    },
+    onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
+  });
+  const { open: openSession, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
+  const handleOpenRemark = useCallback((indices: Indices) => {
+    const targets = sessionTargets.get(indicesKey(indices));
+    if (targets) openSession(targets, 'remark');
+  }, [sessionTargets, openSession]);
 
   /*
    * Exception de date : « Ignorer » dans la vérification de date enregistre
@@ -381,7 +382,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const storedDirection = readStoredContentDirection(savedData);
       const detectedDirection = detectContentDirection(lessons, fallback).direction;
       const nextDirection = storedDirection ?? detectedDirection;
-      const normalizedLessons = migratedLessons.length > 0
+      // Un cahier VIERGE reçoit son diagnostic de départ ; un cahier qui a du
+      // contenu est pris tel quel : supprimer le diagnostic doit tenir.
+      const normalizedLessons = migratedLessons.length === 0
         ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(nextDirection))
         : migratedLessons;
       resetState(normalizedLessons, 'initial-load');
@@ -643,11 +646,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleClearSearch = useCallback(() => setEditorState(draft => { draft.searchQuery = ""; }), [setEditorState]);
 
   const handleModalClose = useCallback(() => {
+    cancelSession();
     setEditorState(draft => {
       draft.activeModal = null;
       draft.editingIndices = null;
     });
-  }, [setEditorState]);
+  }, [setEditorState, cancelSession]);
 
   const handleConfirmAddContent = useCallback((type: string, data: any) => {
       let notificationMessage = '';
@@ -676,14 +680,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, _tempId: newId };
-          setState(draft => {
-              addTopLevelItem(draft, newItem, insertAfterIndex);
-              const normalized = withStarterDiagnostic(
-                draft as unknown as LessonsData,
-                contentLocaleFromDirection(contentDirection),
-              );
-              if (normalized !== draft) draft.splice(0, draft.length, ...normalized);
-          }, 'add-top-level');
+          setState(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
           addNewItemHighlight(newId);
       } else if (type === 'section' && anchor) {
@@ -886,13 +883,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       void launchPrint();
   }, [classInfo, config, contentDirection, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
-  const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
-      const plan = moveOptions[direction];
-      if (!plan) return;
-      setState(draft => { applyContentMove(draft, plan); }, 'reorder');
-      setSelectionState(createSelectionState(plan.selection));
-      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [moveOptions, setState, setEditorState]);
 
   const handleOpenContentEditor = useCallback((indices: Indices) => {
     const targets = contentEditTargets.get(indicesKey(indices));
@@ -904,77 +894,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     });
   }, [setEditorState, contentEditTargets]);
 
-  const handleToggleSelectRow = useCallback((indices: Indices) => {
-      startSelectionTransition(() => {
-        setSelectionState(current => {
-            const key = indicesKey(indices);
-            const keys = new Set(current.keys);
-            const items = new Map(current.items);
-            if (keys.has(key)) {
-                keys.delete(key);
-                items.delete(key);
-                return { keys, items };
-            }
-            keys.add(key);
-            items.set(key, indices);
-            return { keys, items };
-        });
-      });
-      if (editingIndicesRef.current !== null) {
-        setEditorState(draft => {
-            draft.editingIndices = null;
-        });
-      }
-  }, [setEditorState, startSelectionTransition]);
 
-  const handleOpenDateModal = useCallback((indices: Indices, currentDate?: string) => {
-    const key = indicesKey(indices);
-    setAssignDateInitialDate(currentDate);
-    setSelectionState({
-      keys: new Set([key]),
-      items: new Map([[key, indices]]),
-    });
-    setEditorState(draft => {
-      draft.activeModal = 'assignDate';
-    });
-  }, [setEditorState]);
+  const handleOpenDateModal = useCallback((indices: Indices) => {
+    const targets = sessionTargets.get(indicesKey(indices));
+    if (targets) openSession(targets);
+  }, [sessionTargets, openSession]);
 
-  const handleDeselectAll = useCallback(() => {
-      startSelectionTransition(() => {
-        setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
-      });
-      // Un clic dans le tableau efface aussi la cible d'édition devenue obsolète.
-      if (editingIndicesRef.current !== null) {
-        setEditorState(draft => { draft.editingIndices = null; });
-      }
-  }, [startSelectionTransition, setEditorState]);
 
-  const handleAssignDates = useCallback((dateOrAssignments: string | { indices: Indices; date: string }[]) => {
-      const commit = () => {
-      setState(draft => {
-          if (typeof dateOrAssignments === 'string') {
-              selectedIndices.forEach(idx => {
-                  const { item } = findItem(draft, idx);
-                  if (isDateableContentTarget(idx, item)) (item as any).date = dateOrAssignments;
-              });
-          } else {
-              dateOrAssignments.forEach(assignment => {
-                  const { item } = findItem(draft, assignment.indices);
-                  if (isDateableContentTarget(assignment.indices, item)) (item as any).date = assignment.date;
-              });
-          }
-      }, 'assign-date');
-      setSelectionState(createSelectionState());
-      setEditorState(draft => {
-        draft.saveStatus = 'unsaved';
-        draft.activeModal = null;
-      });
-      showNotification(t('editorNotice.datesAssigned'), "success");
-      // garde intelligente sur les dates distinctes affectées
-      };
-      if (typeof dateOrAssignments === 'string') requestDateCommit(dateOrAssignments, commit);
-      else commit();
-  }, [selectedIndices, setState, setEditorState, showNotification, requestDateCommit, t]);
 
   const handleClearSelectedDates = useCallback(() => {
       if (selectedIndices.length === 0) return;
@@ -993,38 +919,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       showNotification(t('editorNotice.dateUnassigned'), "success");
   }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
-  const handleBulkDelete = useCallback(() => {
-      if (selectedIndices.length === 0) return;
-      setConfirmBulkDelete(true);
-  }, [selectedIndices]);
 
-  const executeBulkDelete = useCallback(() => {
-      if (selectedIndices.length === 0) return;
-      const sorted = [...selectedIndices].sort((a, b) => {
-          if (a.chapterIndex !== b.chapterIndex) return b.chapterIndex - a.chapterIndex;
-          if ((a.sectionIndex ?? -1) !== (b.sectionIndex ?? -1)) return (b.sectionIndex ?? -1) - (a.sectionIndex ?? -1);
-          if ((a.subsectionIndex ?? -1) !== (b.subsectionIndex ?? -1)) return (b.subsectionIndex ?? -1) - (a.subsectionIndex ?? -1);
-          if ((a.subsubsectionIndex ?? -1) !== (b.subsubsectionIndex ?? -1)) return (b.subsubsectionIndex ?? -1) - (a.subsubsectionIndex ?? -1);
-          return (b.itemIndex ?? -1) - (a.itemIndex ?? -1);
-      });
-      setState(draft => {
-          sorted.forEach(idx => {
-              // Titre structurel : on retire le titre et on remonte son contenu
-              // au niveau supérieur (aucune donnée imbriquée n'est perdue).
-              if (deleteStructuralNodePromotingChildren(draft, idx)) return;
-              // Élément feuille ou chapitre : suppression simple.
-              const { parent, targetIndex } = findItem(draft, idx);
-              if (parent && typeof targetIndex === 'number' && Array.isArray(parent)) {
-                  parent.splice(targetIndex, 1);
-              }
-          });
-      }, 'bulk-delete');
-      setSelectionState(createSelectionState());
-      setEditorState(draft => {
-        draft.saveStatus = 'unsaved';
-      });
-      showNotification(t('editorNotice.itemsDeleted', { count: selectedIndices.length }), 'success');
-  }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
   const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: ContentDraft) => {
       const targets = contentEditTargets.get(indicesKey(indices));
@@ -1123,7 +1018,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
   const hasSelectedDate = selectedDates.length > 0;
-  const selectedCount = selectedIndices.length;
   const canAddAfterSelection = addAfterTarget !== null;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
   const editSelectionTargets = useMemo(
@@ -1132,14 +1026,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   );
   const canEditSelection = editSelectionTargets !== null;
 
-  const canMoveUp = moveOptions.up !== null;
-  const canMoveDown = moveOptions.down !== null;
 
   // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
   // (donc aussi la garde intelligente sur la date du jour).
   const handleAssignToday = useCallback(() => {
-      handleAssignDates(todayInMorocco());
-  }, [handleAssignDates]);
+      assignSessionDate(selectedIndices, todayInMorocco());
+  }, [assignSessionDate, selectedIndices]);
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
@@ -1197,8 +1089,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               descriptionTypes={config.screenDescriptionTypes}
               selectedKeys={selectionState.keys}
               onToggleSelect={handleToggleSelectRow}
+              onToggleSelectGroup={handleToggleSelectGroup}
               onOpenContentEditor={handleOpenContentEditor}
               onOpenDateModal={handleOpenDateModal}
+              onOpenRemark={handleOpenRemark}
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDisplayDateWarnings}
               getDateOrder={getDateOrder}
@@ -1215,17 +1109,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       </div>
 
 
-      {!activeModal && (
+      {!activeModal && !sessionAssignment.review && (
         <SelectionBar
           count={selectedCount}
           hasDate={hasSelectedDate}
           canAdd={canAddAfterSelection}
           canAssignDate={canAssignDateSelection}
           onAdd={() => { if (addAfterTarget) handleOpenAddContentModal(addAfterTarget); }}
-          onAssignDate={() => {
-            setAssignDateInitialDate(undefined);
-            setEditorState(draft => { draft.activeModal = 'assignDate'; });
-          }}
+          onAssignDate={() => openSession(selectedIndices)}
           onAssignToday={handleAssignToday}
           onClearDate={handleClearSelectedDates}
           onEdit={() => { if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]); }}
@@ -1264,14 +1155,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         handleUpdateLessons={handleUpdateLessons}
         config={config}
         onConfigChange={updateConfig}
-        handleAssignDates={handleAssignDates}
-        selectedCount={selectedCount}
-        selectedItemsData={selectedItemsData}
+        sessionEditor={sessionAssignment.editor}
+        onApplySession={sessionAssignment.apply}
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
         getDisplayDateWarnings={getDisplayDateWarnings}
-        assignDateInitialDate={assignDateInitialDate}
         classInfo={classInfo}
         contentDirection={contentDirection}
         editingItem={editingItem}
@@ -1284,27 +1173,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       />
 
       <DateReviewModal
-        isOpen={pendingDateCommit !== null}
-        date={pendingDateCommit?.date ?? ''}
-        warnings={pendingDateCommit?.warnings ?? []}
+        isOpen={sessionAssignment.review !== null}
+        date={sessionAssignment.review?.date ?? ''}
+        warnings={sessionAssignment.review?.warnings ?? []}
         onModify={() => {
-          setPendingDateCommit(null);
-          setEditorState(draft => { draft.activeModal = 'assignDate'; });
+          sessionAssignment.modify();
           window.requestAnimationFrame(() => {
             window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
           });
         }}
-        onConfirm={() => {
-          const pending = pendingDateCommit;
-          setPendingDateCommit(null);
-          pending?.commit();
-        }}
+        onConfirm={sessionAssignment.confirm}
         onIgnore={() => {
-          const pending = pendingDateCommit;
+          const pending = sessionAssignment.review;
           if (!pending) return;
           ignoreDateException(pending.date, pending.warnings);
-          setPendingDateCommit(null);
-          pending.commit();
+          sessionAssignment.confirm();
           toast.info(t('editorNotice.exceptionKept'));
         }}
       />

@@ -1,7 +1,7 @@
-import type { AppLocale, LessonsData } from '../types.js';
+import type { AppLocale, Indices, LessonsData } from '../types.js';
 import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
 import { isNonCourseActivity, validChapterDate } from './chapterLifecycle.js';
-import { buildLessonRows, type LessonRow } from './lessonRows.js';
+import { buildLessonRows, indicesKey, type LessonRow } from './lessonRows.js';
 import type { DateWarning } from './dateValidation.js';
 
 /**
@@ -49,6 +49,32 @@ export const buildContentDateOrder = (lessons: LessonsData): Map<string, Content
     });
     return order;
 };
+
+/** Bound a whole selection by dates outside it, also when its rows are undated. */
+export function selectionDateOrder(lessons: LessonsData, targets: readonly Indices[]): ContentDateOrder {
+    const keys = new Set(targets.map(indicesKey));
+    const rows = buildLessonRows(lessons);
+    const excluded = new Set<string>();
+    const courseRows = rows.filter(row => {
+        if (isNonCourseActivity((row.data as { type?: unknown }).type) || row.ancestorKeys.some(key => excluded.has(key))) {
+            excluded.add(row.key);
+            return false;
+        }
+        return row.elementType === 'item' && (row.data as { type?: string }).type !== 'free';
+    });
+    const positions = courseRows.flatMap((row, index) => keys.has(row.key) ? [index] : []);
+    if (!positions.length) return {};
+    const first = positions[0];
+    const last = positions[positions.length - 1];
+    // Activities and their descendants do not constrain teaching-session dates.
+    const order: ContentDateOrder = {};
+    for (const [index, row] of courseRows.entries()) {
+        if (!isDatedCourseRow(row) || keys.has(row.key)) continue;
+        if (index < first) order.previous = rowDate(row);
+        if (index > last) { order.following = rowDate(row); break; }
+    }
+    return order;
+}
 
 const formatters = new Map<AppLocale, Intl.DateTimeFormat>();
 

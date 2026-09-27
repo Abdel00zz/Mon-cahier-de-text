@@ -380,3 +380,11 @@
   html, body, #root, [data-editor-root], [data-editor-root] > div { min-height: 0 !important; height: auto !important; overflow: visible !important; background: white !important; margin: 0 !important; padding: 0 !important; transform: none !important; filter: none !important; }
   .print-document, .print-document * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Ligne libre à l'impression : même signal (pointillés), sans aplat de couleur. */
+.print-document .editor-free-content {
+  border: 1px dashed #b9b9ae;
+  border-radius: 8px;
+  padding-inline: 8px;
+  padding-block: 4px;
+}

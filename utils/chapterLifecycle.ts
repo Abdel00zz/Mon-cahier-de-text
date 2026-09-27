@@ -1,6 +1,7 @@
 import type { LessonsData } from '../types.js';
 import { normalizeContentType } from '../constants/type-keys.js';
 import { buildLessonRows } from './lessonRows.js';
+import { isFreeContent } from './freeLineType.js';
 
 export const validChapterDate = (value: unknown): value is string => typeof value === 'string'
   && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value))
@@ -33,6 +34,8 @@ function readEvidence(lessons: LessonsData): NotebookEvidence {
   const excluded = new Set<string>();
   const diagnostics = new Set<string>();
   for (const row of buildLessonRows(lessons)) {
+    // Hors plan : une ligne libre ne démarre ni ne complète aucun chapitre.
+    if (isFreeContent(row.data)) continue;
     const type = 'type' in row.data ? row.data.type : '';
     if (type === 'evaluation_diagnostic' || row.ancestorKeys.some(key => diagnostics.has(key))) {
       diagnostics.add(row.key);

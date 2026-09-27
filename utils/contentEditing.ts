@@ -68,3 +68,70 @@ export function applyContentEdit(draft: Draft<LessonsData>, targets: readonly In
   }
   return true;
 }
+
+
+/**
+ * Cible « UNE SEULE LIGNE » du tableau : toutes les lignes d'une séance
+ * fusionnée — même date, ou même contenu répété — forment un seul bloc.
+ *
+ * C'est la cible de la REMARQUE et du DÉPLACEMENT : tant qu'elles sont
+ * combinées, elles s'annotent et bougent ensemble. L'édition de contenu garde
+ * sa propre cible (`buildContentEditTargets`) : une date partagée ne doit
+ * jamais écraser des contenus distincts.
+ */
+export function buildSessionTargets(rows: LessonRow[]): ContentEditTargets {
+  const targets = new Map<string, readonly Indices[]>();
+  for (const row of groupLessonRows(rows).renderRows) {
+    const items = row.kind === 'session' ? row.items : [row.item];
+    const group = items.map(item => item.indices);
+    for (const item of items) targets.set(item.key, group);
+  }
+  return targets;
+}
+
+/**
+ * Écrit la remarque de la cible en UNE seule mutation Immer (donc une seule
+ * annulation) : la séance fusionnée reste une seule ligne, même si elle
+ * contient plusieurs contenus. Une remarque vide supprime le champ, ce qui
+ * garde le JSON du cahier propre.
+ */
+export function applyRemarkEdit(draft: Draft<LessonsData>, targets: readonly Indices[], remark: string): boolean {
+  const keys = new Set<string>();
+  const items = targets.map(indices => {
+    keys.add(indicesKey(indices));
+    return findItem(draft, indices).item;
+  });
+  if (items.length === 0 || keys.size !== items.length || items.some(item => !item)) return false;
+  for (const item of items) {
+    const holder = item as { remark?: string };
+    if (remark.trim()) holder.remark = remark;
+    else delete holder.remark;
+  }
+  return true;
+}
+
+/** Profondeur d'une coordonnée : plus le chiffre est grand, plus la ligne est
+ *  loin de la racine. Sert à retirer les descendants avant leurs ancêtres. */
+const depthOf = (indices: Indices): number =>
+  indices.itemIndex !== undefined ? 4
+    : indices.subsubsectionIndex !== undefined ? 3
+      : indices.subsectionIndex !== undefined ? 2
+        : indices.sectionIndex !== undefined ? 1
+          : 0;
+
+/**
+ * Ordre de suppression : **le plus profond d'abord**, puis de la fin vers le
+ * début. Sans cela, supprimer un parent décale les coordonnées de ses
+ * descendants et le lot suivant retire une autre ligne que celle visée.
+ */
+export function orderDeletionsDeepestFirst(indices: readonly Indices[]): Indices[] {
+  return [...indices].sort((a, b) => {
+    const byDepth = depthOf(b) - depthOf(a);
+    if (byDepth !== 0) return byDepth;
+    if (a.chapterIndex !== b.chapterIndex) return b.chapterIndex - a.chapterIndex;
+    if ((a.sectionIndex ?? -1) !== (b.sectionIndex ?? -1)) return (b.sectionIndex ?? -1) - (a.sectionIndex ?? -1);
+    if ((a.subsectionIndex ?? -1) !== (b.subsectionIndex ?? -1)) return (b.subsectionIndex ?? -1) - (a.subsectionIndex ?? -1);
+    if ((a.subsubsectionIndex ?? -1) !== (b.subsubsectionIndex ?? -1)) return (b.subsubsectionIndex ?? -1) - (a.subsubsectionIndex ?? -1);
+    return (b.itemIndex ?? -1) - (a.itemIndex ?? -1);
+  });
+}

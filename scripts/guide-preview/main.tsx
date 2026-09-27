@@ -66,7 +66,10 @@ function Preview() {
       {screen === 'notifications' && <NotificationsTab config={config} onChange={onChange} />}
       {screen === 'appearance' && <AppearanceTab config={config} onConfigChange={onChange} />}
       {screen === 'dates' && <AssignDateModal isOpen={open} onClose={() => setOpen(false)} onApply={noop}
-        initialDate="2026-09-14" selectedCount={2} selectedItems={[]} />}
+        session={{ source: lessons, intent: 'date', selection: {
+          targets: [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }],
+          date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false,
+        } }} />}
       {(screen === 'editor' || screen === 'add') && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'دفتر النصوص — الرياضيات' : 'Cahier de textes — Mathématiques'}</h1>
         <MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} contentDirection="ltr"

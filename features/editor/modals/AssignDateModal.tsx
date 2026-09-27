@@ -3,93 +3,75 @@ import { Modal } from '@/components/ui/modal';
 import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
-import { Indices } from '@/types';
+import { ContentDirection } from '@/types';
+import type { SessionPatch } from '@/utils/sessionEditing';
+import type { SessionEditorState } from '../hooks/useSessionAssignment';
 import { todayInMorocco } from '@/utils/calendar';
+import { addDaysIso, formatDateLong } from '@/utils/dataUtils';
 import { useLocale } from '@/i18n/LocaleProvider';
-
-interface SelectedItemPreview {
-  indices: Indices;
-  item: any;
-  title: string;
-  date?: string;
-  description?: string;
-  canDate: boolean;
-}
 
 interface AssignDateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (date: string) => void;
-  selectedCount: number;
-  selectedItems: SelectedItemPreview[];
+  onApply: (patch: SessionPatch) => void;
+  session: SessionEditorState;
   /** validation intelligente : alertes live pour la date choisie (emploi du temps, fériés, vacances, absences) */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
-  /** Date conservée lors d'un retour depuis la vérification. */
-  initialDate?: string;
+  /** Sens du cahier : la remarque suit la langue du contenu. */
+  contentDirection?: ContentDirection;
 }
 
-const addDaysISO = (iso: string, offset: number): string => {
-  const [year, month, day] = iso.split('-').map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  date.setUTCDate(date.getUTCDate() + offset);
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
-};
+const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
 
-const isoFromOffset = (offset: number) => {
-  return addDaysISO(todayInMorocco(), offset);
-};
-
-const formatFullDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) => {
-  if (!dateStr) return emptyLabel;
-  try {
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const y = Number(parts[0]);
-      const m = Number(parts[1]);
-      const d = Number(parts[2]);
-      const dateObj = new Date(y, m - 1, d);
-      return dateObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    }
-    const dObj = new Date(dateStr);
-    if (isNaN(dObj.getTime())) return dateStr;
-    return dObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-};
+/** Date complète « lundi 5 octobre 2026 » ; une valeur illisible reste affichée telle quelle. */
+const formatFullDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) =>
+  formatDateLong(dateStr, localeCode, '') || dateStr || emptyLabel;
 
 export const AssignDateModal: FC<AssignDateModalProps> = ({
   isOpen,
   onClose,
   onApply,
-  selectedCount,
+  session,
   getDateWarnings,
-  initialDate,
+  contentDirection = 'ltr',
 }) => {
   const { t, locale } = useLocale();
   const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
   const number = useMemo(() => new Intl.NumberFormat(localeCode), [localeCode]);
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
   const [selectedDate, setSelectedDate] = useState(() => isoFromOffset(0));
+  const [remark, setRemark] = useState('');
+  const [dateChanged, setDateChanged] = useState(false);
+  const [remarkChanged, setRemarkChanged] = useState(false);
+  const isRtlContent = contentDirection === 'rtl';
+  const { selection, intent, patch } = session;
+  const selectedCount = selection.targets.length;
 
   useEffect(() => {
     if (!isOpen) return;
-    setActionType('associate');
-    setSelectedDate(initialDate || isoFromOffset(0));
-  }, [initialDate, isOpen]);
+    setActionType(patch?.date === '' ? 'dissociate' : 'associate');
+    setSelectedDate(patch?.date ?? (selection.date || (selection.mixedDates ? '' : isoFromOffset(0))));
+    setRemark(patch?.remark ?? selection.remark);
+    setDateChanged(patch?.date !== undefined);
+    setRemarkChanged(patch?.remark !== undefined);
+  }, [selection, patch, isOpen]);
+
+  const appliesDate = dateChanged || (intent === 'date' && !selection.mixedDates);
+  const chooseDate = (date: string) => { setSelectedDate(date); setDateChanged(true); };
+  const invalidDate = appliesDate && actionType === 'associate' && !selectedDate;
 
   // Alertes live : recalculées à chaque changement de date choisie.
   const dateWarnings = useMemo(
-    () => (actionType === 'associate' && getDateWarnings && selectedDate ? getDateWarnings(selectedDate) : []),
-    [actionType, getDateWarnings, selectedDate]
+    () => (appliesDate && actionType === 'associate' && getDateWarnings && selectedDate ? getDateWarnings(selectedDate) : []),
+    [appliesDate, actionType, getDateWarnings, selectedDate]
   );
 
   const handleApply = () => {
-    if (actionType === 'associate') {
-      onApply(selectedDate);
-    } else {
-      onApply(''); // Empty string dissociates the date
-    }
+    if (invalidDate) return;
+    onApply({
+      ...(appliesDate ? { date: actionType === 'associate' ? selectedDate : '' } : {}),
+      ...(remarkChanged ? { remark } : {}),
+    });
   };
 
 
@@ -121,13 +103,14 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <Button
             type="button"
             onClick={handleApply}
+            disabled={invalidDate}
             className={`rounded-xl h-11 flex-1 text-sm font-bold shadow-sm transition-all duration-150 ${
               actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
             }`}
           >
-            {actionType === 'associate' ? (
+            {!appliesDate ? <span>{t('common.save')}</span> : actionType === 'associate' ? (
               <span>{t('assignDate.applyDate')}</span>
             ) : (
               <span>{t('assignDate.removeDates')}</span>
@@ -140,7 +123,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         {/* Sleek toggle selector */}
         <Segmented<'associate' | 'dissociate'>
           value={actionType}
-          onChange={setActionType}
+          onChange={value => { setActionType(value); setDateChanged(true); }}
           className="grid w-full grid-cols-2"
           options={[
             {
@@ -174,7 +157,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted text-foreground border-border'
                 }`}
-                onClick={() => setSelectedDate(isoFromOffset(-1))}
+                onClick={() => chooseDate(isoFromOffset(-1))}
               >
                 {t('assignDate.yesterday')}
               </Button>
@@ -185,7 +168,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted text-foreground border-border'
                 }`}
-                onClick={() => setSelectedDate(isoFromOffset(0))}
+                onClick={() => chooseDate(isoFromOffset(0))}
               >
                 {t('assignDate.today')}
               </Button>
@@ -196,7 +179,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted text-foreground border-border'
                 }`}
-                onClick={() => setSelectedDate(isoFromOffset(1))}
+                onClick={() => chooseDate(isoFromOffset(1))}
               >
                 {t('assignDate.tomorrow')}
               </Button>
@@ -204,7 +187,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
             {/* 2. Date Input */}
             <div className="space-y-2.5">
-              <label className="block text-sm font-medium text-foreground text-start font-sans">
+              <label htmlFor="assign-date-input" className="block text-sm font-medium text-foreground text-start font-sans">
                 {t('assignDate.chooseDate')}
               </label>
 
@@ -221,7 +204,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     id="assign-date-input"
                     type="date"
                     value={selectedDate}
-                    onChange={event => setSelectedDate(event.target.value)}
+                    onChange={event => chooseDate(event.target.value)}
                     onClick={(e) => {
                       try {
                         if (typeof e.currentTarget.showPicker === 'function') {
@@ -239,6 +222,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   {formatFullDate(selectedDate, localeCode, t('assignDate.noDateSelected'))}
                 </span>
               </div>
+              {selection.mixedDates && !dateChanged && <p className="text-xs text-muted-foreground">{t('assignDate.keepDates')}</p>}
             </div>
 
             {/* 3. Warnings */}
@@ -267,6 +251,29 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             </p>
           </div>
         )}
+
+        {/* 4. Remarque de la séance — hors du choix de date : une séance peut
+            porter une remarque sans date, et une séance fusionnée est UNE
+            ligne : la remarque s'écrit partout d'un seul coup. */}
+        <div className="space-y-2.5 border-t border-border/60 pt-5">
+          <label htmlFor="assign-date-remark" className="block text-sm font-medium text-foreground text-start font-sans">
+            {t('remark.title')}
+          </label>
+          <textarea
+            id="assign-date-remark"
+            value={remark}
+            onChange={event => { setRemark(event.target.value); setRemarkChanged(true); }}
+            dir={isRtlContent ? 'rtl' : 'ltr'}
+            rows={3}
+            placeholder={t(selection.mixedRemarks ? 'assignDate.keepRemarks' : 'remark.placeholder')}
+            className="min-h-[88px] w-full resize-y rounded-xl border border-border bg-background p-3 text-sm font-medium leading-relaxed text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
+          />
+          {selectedCount > 1 && (
+            <p className="text-[12px] font-medium leading-snug text-muted-foreground font-sans">
+              {t('remark.groupHint', { count: number.format(selectedCount) })}
+            </p>
+          )}
+        </div>
       </div>
     </Modal>
   );

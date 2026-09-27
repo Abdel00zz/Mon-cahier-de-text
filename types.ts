@@ -386,6 +386,10 @@ export interface Section {
 
 
 export interface TopLevelItem extends BaseTopLevelItem {
+    /**
+     * `'free'` = ligne libre, **hors plan** : ni chapitre, ni section, ni élément
+     * typé. Elle n’a donc ni niveau, ni numéro, ni progression.
+     */
     type: 'chapter' | EmbeddableTopLevelType | 'free';
     /** Texte libre, conservé même si le titre est vide. */
     description?: string;

@@ -6,6 +6,7 @@ import { ContentRenderer } from './ContentRenderer';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/utils/formatters';
+import { parseDateInput } from '@/utils/dataUtils';
 import { textDirectionAttribute } from '@/utils/textDirection';
 
 interface TableRowProps {
@@ -18,6 +19,8 @@ interface TableRowProps {
   onToggleSelect: (indices: Indices) => void;
   onDoubleClickEdit?: (indices: Indices) => void;
   onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
+  /** saisie de la remarque : la cible (ligne ou séance fusionnée) vient du moteur */
+  onOpenRemark?: (indices: Indices) => void;
   isSelected: boolean;
   isNew?: boolean;
   showDescriptions?: boolean;
@@ -35,34 +38,10 @@ interface TableRowProps {
 
 
 const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
-  if (!dateStr) return null;
   try {
-    let dateObj: Date;
-    let y: number, m: number, d: number;
-    
-    if (dateStr.includes('-')) {
-      const parts = dateStr.split('T')[0].split('-');
-      if (parts.length === 3) {
-        y = Number(parts[0]);
-        m = Number(parts[1]);
-        d = Number(parts[2]);
-        dateObj = new Date(y, m - 1, d);
-      } else {
-        dateObj = new Date(dateStr);
-      }
-    } else if (dateStr.includes('/')) {
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        d = Number(parts[0]);
-        m = Number(parts[1]);
-        y = Number(parts[2]);
-        dateObj = new Date(y, m - 1, d);
-      } else {
-        dateObj = new Date(dateStr);
-      }
-    } else {
-      dateObj = new Date(dateStr);
-    }
+    // Un seul parseur pour tout le cahier (ISO, jj/mm/aaaa, horodatage).
+    const dateObj = parseDateInput(dateStr);
+    if (!dateObj) return null;
     
     if (isNaN(dateObj.getTime())) return null;
 
@@ -144,10 +123,12 @@ const RemarkCell: FC<{
   hasAssignedDate?: boolean;
   isSelected?: boolean;
   hasWarning?: boolean;
-}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning }) => {
+  onOpenRemark?: () => void;
+}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning, onOpenRemark }) => {
+  const { t } = useLocale();
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
-  
-  const bgClass = isSelected 
+
+  const bgClass = isSelected
     ? 'bg-muted dark:bg-muted/80'
     : hasWarning
       ? 'bg-alert/[0.055]'
@@ -157,23 +138,39 @@ const RemarkCell: FC<{
 
   const borderClass = '';
 
-  if (shouldMerge) {
-    const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
+  // La remarque d'une séance fusionnée s'écrit PARTOUT : une seule cible, donc
+  // une seule saisie et une seule annulation pour tout le groupe.
+  const editable = typeof onOpenRemark === 'function';
+  const cellTitle = editable ? t('remark.editTitle') : undefined;
+  const body = (isMergedCell: boolean) => (
+    <button
+      type="button"
+      onClick={onOpenRemark}
+      disabled={!editable}
+      title={cellTitle}
+      aria-label={cellTitle}
+      data-remark-cell="true"
+      className={`h-full w-full text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+    >
+      {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
+        <div dir={textDirectionAttribute(value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
+      )}
+    </button>
+  );
 
+  if (shouldMerge) {
     return (
       <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-        {isMiddle && (
-          <div className="relative z-10 h-full flex flex-col justify-center w-full">
-            <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
-          </div>
-        )}
+        <div className="relative z-10 h-full flex flex-col justify-center w-full">
+          {body(true)}
+        </div>
       </div>
     );
   }
 
   return (
     <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div dir={textDirectionAttribute(value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
+      {body(false)}
     </div>
   );
 });
@@ -189,6 +186,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   onToggleSelect,
   onDoubleClickEdit,
   onOpenDateModal,
+  onOpenRemark,
   isSelected,
   showDescriptions,
   descriptionTypes = [],
@@ -198,7 +196,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   getContentNumber,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
 
   const handleContentDoubleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!onDoubleClickEdit) return;
@@ -346,8 +344,9 @@ const TableRowComponent: FC<TableRowProps> = ({
         onDoubleClick={event => event.stopPropagation()}
       >
         {stateRail}
-        <div
-          className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+        <button
+          type="button"
+          className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
           onClick={(event) => {
             event.stopPropagation();
             if (onOpenDateModal) {
@@ -356,12 +355,13 @@ const TableRowComponent: FC<TableRowProps> = ({
               handleToggle();
             }
           }}
-          title={typeof data.date === 'string' && data.date ? 'Modifier la date' : 'Affecter une date'}
+          title={t('selection.chooseDate')}
+          aria-label={t('selection.chooseDate')}
         >
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
-        </div>
+        </button>
         {contentCell}
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} />
       </div>
     );
   }
@@ -419,8 +419,9 @@ const TableRowComponent: FC<TableRowProps> = ({
       onDoubleClick={event => event.stopPropagation()}
     >
       {stateRail}
-      <div
-        className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+      <button
+        type="button"
+        className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
         onClick={(event) => {
           event.stopPropagation();
           if (onOpenDateModal) {
@@ -429,20 +430,21 @@ const TableRowComponent: FC<TableRowProps> = ({
             handleToggle();
           }
         }}
-        title={typeof data.date === 'string' && data.date ? 'Modifier la date' : 'Affecter une date'}
+        title={t('selection.chooseDate')}
+        aria-label={t('selection.chooseDate')}
       >
         <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
-      </div>
+      </button>
 
       {contentCell}
 
-      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
+      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} />
     </div>
   );
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
-  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber) return false;
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.onOpenRemark !== next.onOpenRemark || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;
