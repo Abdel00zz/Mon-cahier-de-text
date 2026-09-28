@@ -1,24 +1,27 @@
 /* ──────────────────────────────────────────────────────────────────────────
  *  États de ligne du tableau de l'éditeur.
  *
- *  Registre FLAT, à la Google Keep et à la Vercel : l'état est une SURFACE,
- *  jamais un effet. Donc AUCUN rail à gauche, aucun dégradé, aucune ombre —
- *  deux aplats francs de la même famille (l'accent de l'application) et un
- *  filet de 1 px pour dire l'édition.
+ *  Registre MINIMAL, à la Google Keep et à la Vercel : l'état est une SURFACE,
+ *  jamais un effet — aucun rail, aucun dégradé, aucune ombre. Deux aplats
+ *  francs de la même famille (l'accent de l'application) et, pour l'édition,
+ *  un filet de 1 px.
  *
- *    • SÉLECTIONNÉE : aplat d'accent, calme et net ;
- *    • EN ÉDITION   : le même aplat un cran plus dense + filet interne de 1 px
- *      — la ligne reste identifiable pendant que la modale est ouverte, ce qui
- *      est indispensable dans une séance fusionnée où plusieurs contenus
- *      partagent la même date.
+ *  Les deux aplats sont CALIBRÉS pour être visibles sans devenir lourds : leur
+ *  écart avec la surface de la carte est mesuré (≈ 1,3:1 et 1,45:1 en clair,
+ *  davantage en sombre) au lieu d'être choisi à l'œil.
+ *    • SÉLECTIONNÉE : 14 % d'encre d'accent dans la carte ;
+ *    • EN ÉDITION   : 20 %, un cran plus dense, plus son filet interne — la
+ *      ligne ouverte dans l'éditeur se lit donc encore dans une séance
+ *      fusionnée où plusieurs contenus partagent la même date.
  *
- *  Le filet est un `outline` (et non un `border`) : la boîte ne change pas de
- *  taille, donc la ligne ne se décale jamais quand l'état apparaît.
- *  Contraste du titre mesuré : 11,6:1 (clair) et 10,5:1 (sombre), donc AA large.
+ *  L'encre d'accent bascule avec le thème (foncée en clair, claire en sombre) :
+ *  les deux états fonctionnent donc sans variante `.dark` dédiée.
  *
- *  Règles volontairement HORS de tout `@layer` : les utilitaires Tailwind étant
- *  layerisés, ces fonds gagnent la cascade sans lutter contre `bg-*` ni
- *  `hover:bg-*`.
+ *  Le filet est un `outline` (jamais un `border`) : la boîte ne change pas de
+ *  taille, la ligne ne se décale pas quand l'état apparaît.
+ *
+ *  Hors de tout `@layer` : les utilitaires Tailwind étant layerisés, ces fonds
+ *  gagnent la cascade sans lutter contre `bg-*` ni `hover:bg-*`.
  * ────────────────────────────────────────────────────────────────────────── */
 
 .editor-row {
@@ -26,15 +29,11 @@
 }
 
 [data-row-state~='selected'] {
-  background-color: var(--workspace-active-fill);
+  background-color: color-mix(in srgb, var(--workspace-active-ink) 14%, hsl(var(--card)));
 }
 
 [data-row-state~='editing'] {
-  background-color: color-mix(in srgb, var(--workspace-active-fill) 88%, var(--workspace-active-ink));
-  outline: 1px solid color-mix(in srgb, var(--workspace-active-ink) 42%, transparent);
+  background-color: color-mix(in srgb, var(--workspace-active-ink) 20%, hsl(var(--card)));
+  outline: 1px solid color-mix(in srgb, var(--workspace-active-ink) 45%, transparent);
   outline-offset: -1px;
-}
-
-.dark [data-row-state~='editing'] {
-  outline-color: color-mix(in srgb, var(--workspace-active-ink) 52%, transparent);
 }

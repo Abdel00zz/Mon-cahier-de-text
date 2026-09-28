@@ -218,9 +218,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 hasWarning
                     ? 'bg-alert/[0.07]'
                     : 'bg-card',
-                // Séance qui porte une sélection : teinte NEUTRE discrète, pour
-                // que la teinte d’accent reste réservée aux lignes choisies.
-                groupIsSelected ? 'bg-muted/40 dark:bg-muted/25' : '',
+                // La séance garde la surface de la carte : l’accent ne teinte que
+                // les lignes visées, ce qui les rend d’autant plus lisibles.
             ].filter(Boolean).join(' ')}
             style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
         >

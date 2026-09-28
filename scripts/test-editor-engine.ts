@@ -1552,16 +1552,22 @@ test('seance fusionnee : la ligne selectionnee et la ligne editee restent distin
   const neutral = render(new Set<string>());
   assert.equal(count(neutral, 'data-row-state'), 0);
 
-  // Le visuel vit dans son module, en registre PLAT (Keep / Vercel) : deux
-  // aplats, un filet de 1 px pour l'edition, ni rail ni ombre ni degrade.
+  // Le visuel vit dans son module, en registre MINIMAL (Keep / Vercel) : deux
+  // aplats calibres, un filet de 1 px pour l'edition, ni rail ni ombre.
   const rowSource = readFileSync('features/editor/TableRow.tsx', 'utf8');
   assert.ok(rowSource.includes("import './editorRowStates.css';"));
   const css = readFileSync('features/editor/editorRowStates.css', 'utf8');
-  assert.ok(css.includes("[data-row-state~='selected']"), 'aplat de selection');
-  assert.ok(css.includes("[data-row-state~='editing']"), 'aplat et filet d edition');
+  assert.ok(css.includes('var(--workspace-active-ink) 14%'), 'aplat de selection');
+  assert.ok(css.includes('var(--workspace-active-ink) 20%'), 'aplat d edition, un cran plus dense');
   assert.ok(css.includes('outline: 1px solid'), 'filet de 1 px, sans changer la boite');
   assert.equal(css.includes('box-shadow'), false, 'aucune ombre');
   assert.equal(css.includes('::before'), false, 'aucun rail a gauche');
   assert.equal(css.includes('linear-gradient'), false, 'aucun degrade');
   assert.ok(css.includes('.editor-row {'), 'transition portee par la ligne');
+
+  // La seance qui porte une selection reste sur la surface de la carte :
+  // l'accent ne teinte que les lignes visees.
+  const groupClass = selection.match(/data-session-group="true"[^>]*class="([^"]*)"/)?.[1] ?? '';
+  assert.ok(groupClass.includes('bg-card'), 'la seance garde la surface de la carte');
+  assert.equal(groupClass.includes('bg-muted'), false, 'la seance ne porte plus de teinte');
 });
