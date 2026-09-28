@@ -1552,12 +1552,16 @@ test('seance fusionnee : la ligne selectionnee et la ligne editee restent distin
   const neutral = render(new Set<string>());
   assert.equal(count(neutral, 'data-row-state'), 0);
 
-  // Le visuel vit dans son module : rail capsule pour la selection, filet
-  // interne pour l'edition, transition sur la ligne elle-meme.
+  // Le visuel vit dans son module, en registre PLAT (Keep / Vercel) : deux
+  // aplats, un filet de 1 px pour l'edition, ni rail ni ombre ni degrade.
   const rowSource = readFileSync('features/editor/TableRow.tsx', 'utf8');
   assert.ok(rowSource.includes("import './editorRowStates.css';"));
   const css = readFileSync('features/editor/editorRowStates.css', 'utf8');
-  assert.ok(css.includes("[data-row-state~='selected']::before"), 'rail capsule de selection');
-  assert.ok(css.includes("[data-row-state~='editing']"), 'filet interne d edition');
+  assert.ok(css.includes("[data-row-state~='selected']"), 'aplat de selection');
+  assert.ok(css.includes("[data-row-state~='editing']"), 'aplat et filet d edition');
+  assert.ok(css.includes('outline: 1px solid'), 'filet de 1 px, sans changer la boite');
+  assert.equal(css.includes('box-shadow'), false, 'aucune ombre');
+  assert.equal(css.includes('::before'), false, 'aucun rail a gauche');
+  assert.equal(css.includes('linear-gradient'), false, 'aucun degrade');
   assert.ok(css.includes('.editor-row {'), 'transition portee par la ligne');
 });

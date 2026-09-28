@@ -269,10 +269,10 @@ const TableRowComponent: FC<TableRowProps> = ({
       : 'bg-transparent';
   /*
    * États d’ACTION portés par un seul attribut, pour que les deux se
-   * cumulent sans se confondre (`~=` cherche un mot) : « selected » porte
-   * le rail capsule, « editing » le filet interne. Les visuels vivent dans
-   * `editorRowStates.css`, une seule famille chromatique : l’accent de
-   * l’application, celui de la barre de sélection.
+   * cumulent sans se confondre (`~=` cherche un mot) : « selected » pose
+   * l’aplat d’accent, « editing » le même aplat un cran plus dense et
+   * son filet de 1 px. Les visuels vivent dans `editorRowStates.css`,
+   * registre PLAT (Keep / Vercel) : aucun rail, aucune ombre.
    */
   const rowState = [isSelected ? 'selected' : null, isEditing ? 'editing' : null].filter(Boolean).join(' ') || undefined;
   const rowWash = (isSelected || isEditing) ? '' : datedWash;
