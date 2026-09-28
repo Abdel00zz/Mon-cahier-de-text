@@ -8,6 +8,7 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/utils/formatters';
 import { parseDateInput } from '@/utils/dataUtils';
 import { textDirectionAttribute } from '@/utils/textDirection';
+import './editorRowStates.css';
 
 interface TableRowProps {
   data: any;
@@ -23,6 +24,9 @@ interface TableRowProps {
   onOpenRemark?: (indices: Indices) => void;
   isSelected: boolean;
   isNew?: boolean;
+  /** contenu ouvert dans l’éditeur : la ligne doit rester identifiable
+   *  même au milieu d’une séance fusionnée (plusieurs contenus, même date) */
+  isEditing?: boolean;
   showDescriptions?: boolean;
   descriptionTypes?: string[];
   /** terme de recherche actif, surligné dans les titres/remarques */
@@ -188,6 +192,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   onOpenDateModal,
   onOpenRemark,
   isSelected,
+  isEditing,
   showDescriptions,
   descriptionTypes = [],
   searchQuery,
@@ -262,7 +267,15 @@ const TableRowComponent: FC<TableRowProps> = ({
     : hasAssignedDate
       ? 'bg-transparent'
       : 'bg-transparent';
-  const rowWash = isSelected ? 'bg-muted/40 dark:bg-muted/30' : datedWash;
+  /*
+   * États d’ACTION portés par un seul attribut, pour que les deux se
+   * cumulent sans se confondre (`~=` cherche un mot) : « selected » porte
+   * le rail capsule, « editing » le filet interne. Les visuels vivent dans
+   * `editorRowStates.css`, une seule famille chromatique : l’accent de
+   * l’application, celui de la barre de sélection.
+   */
+  const rowState = [isSelected ? 'selected' : null, isEditing ? 'editing' : null].filter(Boolean).join(' ') || undefined;
+  const rowWash = (isSelected || isEditing) ? '' : datedWash;
   const hoverWash = isSelected
     ? ''
     : hasWarning
@@ -273,7 +286,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   // §G tableau serré : AUCUN padding de cadre, les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
-  const frameClasses = `group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
+  const frameClasses = `editor-row group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
   
   // Séparateurs verticaux Date|Contenu|Remarque, filets nets et discrets style Keep
   const dividerClass = isSelected
@@ -333,6 +346,7 @@ const TableRowComponent: FC<TableRowProps> = ({
             'relative transition-colors duration-100',
             frameClasses,
           ].filter(Boolean).join(' ')}
+          data-row-state={rowState}
           onDoubleClickCapture={handleContentDoubleClickCapture}
           onDoubleClick={event => event.stopPropagation()}
         >
@@ -347,6 +361,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           `grid ${rowGridClass} transition-colors duration-100`,
           frameClasses,
         ].filter(Boolean).join(' ')}
+        data-row-state={rowState}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
       >
@@ -406,6 +421,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           'relative touch-manipulation transition-colors duration-100',
           frameClasses,
         ].filter(Boolean).join(' ')}
+        data-row-state={rowState}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
       >
@@ -422,6 +438,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   return (
     <div
       className={rowClasses}
+      data-row-state={rowState}
       onDoubleClickCapture={handleContentDoubleClickCapture}
       onDoubleClick={event => event.stopPropagation()}
     >
@@ -455,6 +472,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;
+  if (prev.isEditing !== next.isEditing) return false;
   if (prev.showDescriptions !== next.showDescriptions) return false;
   if (prev.elementType !== next.elementType) return false;
   if (prev.searchQuery !== next.searchQuery) return false;

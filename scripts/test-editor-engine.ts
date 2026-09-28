@@ -1512,3 +1512,52 @@ test('selection : ouvrir l editeur de contenu ne vide plus la selection', () => 
   assert.ok(openEditor > revert, 'la bascule est retablie AVANT l ouverture de la modale');
   assert.ok(dbl.includes('.cursor-text'), 'memes exclusions que le clic de selection');
 });
+
+test('seance fusionnee : la ligne selectionnee et la ligne editee restent distinctes', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Cours', items: [
+    { type: 'exercice', title: 'Premiere ligne', date: '2026-09-14' },
+    { type: 'exercice', title: 'Deuxieme ligne', date: '2026-09-14' },
+  ] }];
+  const { flatData: rows } = groupLessonRows(buildLessonRows(data));
+  const noop = () => {};
+  const render = (selectedKeys: ReadonlySet<string>, editingKey?: string) => renderToStaticMarkup(
+    React.createElement(LocaleProvider, { locale: 'fr', children:
+      React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
+        contentDirection: 'ltr', onOpenAddContentModal: noop, selectedKeys, onToggleSelect: noop,
+        onOpenContentEditor: noop, newlyAddedIds: [], showDescriptions: true, editingKey }),
+    }),
+  );
+  const count = (html: string, token: string) => html.split(token).length - 1;
+  const SELECTED = 'data-row-state="selected"';
+  const EDITING = 'data-row-state="editing"';
+
+  // Une seule des deux lignes de la seance est selectionnee : un seul etat sur
+  // une seule ligne, et la seance reste en neutre (avant : deux gris
+  // identiques, impossible de dire laquelle etait visee).
+  const selection = render(new Set([indicesKey(rows[1].indices)]));
+  assert.equal(count(selection, SELECTED), 1);
+  assert.equal(count(selection, EDITING), 0);
+  assert.equal(selection.includes('bg-zinc-100'), false);
+
+  // Cible de l'editeur, sans selection : etat dedie, jamais confondu avec elle.
+  const editing = render(new Set<string>(), indicesKey(rows[1].indices));
+  assert.equal(count(editing, EDITING), 1);
+  assert.equal(count(editing, SELECTED), 0);
+
+  // Les deux etats se cumulent dans UN attribut, donc sans se confondre.
+  const both = render(new Set([indicesKey(rows[1].indices)]), indicesKey(rows[1].indices));
+  assert.equal(count(both, 'data-row-state="selected editing"'), 1);
+
+  // Aucun etat : aucun attribut du tout.
+  const neutral = render(new Set<string>());
+  assert.equal(count(neutral, 'data-row-state'), 0);
+
+  // Le visuel vit dans son module : rail capsule pour la selection, filet
+  // interne pour l'edition, transition sur la ligne elle-meme.
+  const rowSource = readFileSync('features/editor/TableRow.tsx', 'utf8');
+  assert.ok(rowSource.includes("import './editorRowStates.css';"));
+  const css = readFileSync('features/editor/editorRowStates.css', 'utf8');
+  assert.ok(css.includes("[data-row-state~='selected']::before"), 'rail capsule de selection');
+  assert.ok(css.includes("[data-row-state~='editing']"), 'filet interne d edition');
+  assert.ok(css.includes('.editor-row {'), 'transition portee par la ligne');
+});

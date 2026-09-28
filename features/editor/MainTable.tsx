@@ -39,6 +39,8 @@ interface MainTableProps {
   /** saisie de la remarque de la séance (ligne ou groupe fusionné) */
   onOpenRemark?: (indices: Indices) => void;
   newlyAddedIds: string[];
+  /** clé de la ligne dont le contenu est ouvert dans l’éditeur */
+  editingKey?: string;
   /** garde intelligente : alertes live sur la date saisie */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
@@ -89,6 +91,7 @@ interface SessionGroupRowProps {
     items: FlatDataItem[];
     selectedKeys: ReadonlySet<string>;
     newlyAddedIds: string[];
+    editingKey?: string;
     onToggleSelect: (indices: Indices) => void;
     onToggleSelectGroup?: (indices: Indices[]) => void;
     onDoubleClickEdit?: (indices: Indices) => void;
@@ -107,6 +110,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     items,
     selectedKeys,
     newlyAddedIds,
+    editingKey,
     onToggleSelect,
     onToggleSelectGroup,
     onDoubleClickEdit,
@@ -193,6 +197,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 onOpenRemark={onOpenRemark}
                 isSelected={isSelected}
                 isNew={isNew}
+                isEditing={editingKey === item.key}
                 showDescriptions={showDescriptions}
                 descriptionTypes={descriptionTypes}
                 searchQuery={searchQuery}
@@ -213,7 +218,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 hasWarning
                     ? 'bg-alert/[0.07]'
                     : 'bg-card',
-                groupIsSelected ? 'bg-zinc-100 dark:bg-zinc-800/60' : '',
+                // Séance qui porte une sélection : teinte NEUTRE discrète, pour
+                // que la teinte d’accent reste réservée aux lignes choisies.
+                groupIsSelected ? 'bg-muted/40 dark:bg-muted/25' : '',
             ].filter(Boolean).join(' ')}
             style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
         >
@@ -303,6 +310,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
 }, (previous, next) => {
     if (previous.items !== next.items || previous.onToggleSelect !== next.onToggleSelect
         || previous.onToggleSelectGroup !== next.onToggleSelectGroup
+        || previous.editingKey !== next.editingKey
         || previous.onDoubleClickEdit !== next.onDoubleClickEdit || previous.onOpenDateModal !== next.onOpenDateModal
         || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
         || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
@@ -398,6 +406,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onToggleSelect,
   onToggleSelectGroup,
   newlyAddedIds,
+  editingKey,
   onOpenContentEditor,
   onOpenDateModal,
   onOpenRemark,
@@ -526,6 +535,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   items={row.items}
                                   selectedKeys={selectedKeys}
                                   newlyAddedIds={newlyAddedIds}
+                                  editingKey={editingKey}
                                   onToggleSelect={onToggleSelect}
                                   onToggleSelectGroup={onToggleSelectGroup}
                                   onDoubleClickEdit={onOpenContentEditor}
@@ -560,6 +570,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               onOpenRemark={onOpenRemark}
                               isSelected={isSelected}
                               isNew={isNew}
+                              isEditing={editingKey === item.key}
                               showDescriptions={showDescriptions}
                               descriptionTypes={descriptionTypes}
                               searchQuery={searchQuery}

@@ -1129,6 +1129,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onOpenDateModal={handleOpenDateModal}
               onOpenRemark={handleOpenRemark}
               newlyAddedIds={newlyAddedIds}
+              editingKey={editingIndices ? indicesKey(editingIndices) : undefined}
               getDateWarnings={getDisplayDateWarnings}
               getDateOrder={getDateOrder}
               getContentNumber={getContentNumber}
