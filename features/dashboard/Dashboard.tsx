@@ -22,8 +22,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
 import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
 import './dashboardCanvas.css';
-import { ClassroomWelcomeIllustration } from '@/components/ui/DynamicIllustration';
-import { AppShowcaseMedia } from '@/components/ui/AppShowcaseMedia';
+import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -303,6 +302,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 <div className="max-w-xl">
                                     {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1
+                                        id="classes-heading"
                                         style={classTitleStyle(isRtl, 'page')}
                                         className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
                                     >
@@ -318,7 +318,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-xl border border-border/80 bg-card hover:bg-muted/70 px-2.5 sm:px-3 text-xs font-semibold text-foreground shadow-2xs cursor-pointer transition-all active:scale-[0.98]"
+                                            className="flex min-h-11 items-center gap-1.5 rounded-xl border border-border/80 bg-card hover:bg-muted/70 px-2.5 sm:px-3 text-xs font-semibold text-foreground shadow-2xs cursor-pointer transition-all active:scale-[0.98]"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
                                             <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -340,7 +340,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 setClassDisplayMode(option);
                                                                 setDisplayMenuOpen(false);
                                                             }}
-                                                            className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-start text-xs font-sans cursor-pointer transition-all duration-150 active:scale-[0.98] ${isActive ? 'bg-primary/10 text-primary font-bold' : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground font-medium'}`}
+                                                            className={`flex min-h-11 w-full items-center justify-between rounded-xl px-2.5 py-2 text-start text-xs font-sans cursor-pointer transition-all duration-150 active:scale-[0.98] ${isActive ? 'bg-primary/10 text-primary font-bold' : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground font-medium'}`}
                                                         >
                                                             <span>{displayCopy(option).label}</span>
                                                         </button>
@@ -356,7 +356,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold text-white shadow-2xs hover:shadow-xs hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
+                                        className="flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--workspace-active-ink)] hover:brightness-110 active:brightness-90 px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold text-card shadow-2xs active:scale-[0.98] cursor-pointer transition-all duration-200 motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring whitespace-nowrap"
                                     >
                                         <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
@@ -369,10 +369,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
-                                        <AppShowcaseMedia locale={locale} landscape className="mb-5 w-full max-w-[420px] sm:mb-6" />
+                                        <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
 
                                         <div className="max-w-md space-y-1.5 px-2">
-                                            <h3 className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
+                                            <h3 id="classes-heading" className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
                                             <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">
@@ -399,7 +399,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </div>
                                 ) : filteredClasses.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card/90 backdrop-blur-md px-4 py-12 text-center shadow-xs">
-                                        <ClassroomWelcomeIllustration size={110} className="mb-2" />
+                                        <LessonSearchIllustration size={110} className="mb-2" />
                                         <h3 className="font-serif font-bold text-lg text-foreground mt-2">
                                             {locale === 'ar' ? 'لا توجد أقسام مطابقة' : 'Aucune classe correspondante'}
                                         </h3>
@@ -408,11 +408,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </p>
                                         <motion.button
                                             type="button"
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.96 }}
+                                            whileHover={reduceMotion ? undefined : { y: -2 }}
+                                            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                                             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                                             onClick={() => setSubjectFilter('all')}
-                                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
+                                            className="mt-4 inline-flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
                                         >
                                             {locale === 'ar' ? 'عرض كل الأقسام' : 'Afficher toutes les classes'}
                                         </motion.button>

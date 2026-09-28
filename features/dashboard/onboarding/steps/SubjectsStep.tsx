@@ -1,4 +1,5 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useRef, useState } from 'react';
+import { LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { Check } from '@/components/ui/icons';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ const normalizeSearch = (text: string) =>
 export const SubjectsStep = memo<SubjectsStepProps>(
   ({ subjects, selectedSubjects, teacherName, lang, copy, onToggle }) => {
     const [query, setQuery] = useState('');
+    const searchRef = useRef<HTMLInputElement>(null);
     const [expanded, setExpanded] = useState(false);
     const search = normalizeSearch(query.trim());
     const visibleSubjects = useMemo(() => {
@@ -50,6 +52,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
             {ar ? 'البحث عن مادة' : 'Rechercher une matière'}
           </label>
           <input
+            ref={searchRef}
             id="onboarding-subject-search"
             type="search"
             value={query}
@@ -74,19 +77,19 @@ export const SubjectsStep = memo<SubjectsStepProps>(
                 onClick={() => onToggle(subject)}
                 className={cn(
                   'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base transition-all active:scale-[0.98]',
-                  selected && 'border-[#7033e3]/40 bg-[#7033e3]/[0.05] dark:bg-[#7033e3]/[0.12]'
+                  selected && 'border-primary/40 bg-primary/10'
                 )}
               >
                 <span
                   className={cn(
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                     selected
-                      ? 'border-[#7033e3] bg-[#7033e3] text-white shadow-xs shadow-[#7033e3]/30'
+                      ? 'border-transparent bg-[var(--workspace-active-ink)] text-card'
                       : 'border-border bg-transparent',
                   )}
                 >
                   {selected && (
-                    <Check className="h-3.5 w-3.5 text-white stroke-[3]" aria-hidden="true" />
+                    <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden="true" />
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -97,14 +100,18 @@ export const SubjectsStep = memo<SubjectsStepProps>(
           })}
         </div>
         {visibleSubjects.length === 0 && (
-          <p
-            role="status"
-            className="text-sm text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]"
-          >
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-background/60 p-4 text-center">
+            <LessonSearchIllustration size={88} />
+            <p role="status" className="text-sm text-muted-foreground">
             {ar
               ? 'لم نجد مادة بهذا الاسم. جرّب كلمة أخرى.'
               : 'Aucune matière trouvée. Essayez un autre mot.'}
-          </p>
+            </p>
+            <button type="button" className="mt-3 min-h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
+              onClick={() => { setQuery(''); searchRef.current?.focus(); }}>
+              {ar ? 'مسح البحث' : 'Effacer la recherche'}
+            </button>
+          </div>
         )}
         {!search && subjects.length > 8 && (
           <button

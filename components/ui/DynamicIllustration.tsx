@@ -1,332 +1,158 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import './dynamic-illustrations.css';
 
-interface IllustrationProps {
-  className?: string;
-  size?: number;
+interface IllustrationProps { className?: string; size?: number; }
+
+/** Original educational scenes: layered study cards and pinned notes.
+ * Text remains in the UI, so the artwork works in French and Arabic alike. */
+function IllustrationFrame({ children, className, size = 140 }: IllustrationProps & { children: ReactNode }) {
+  return <div aria-hidden="true" className={cn('dynamic-illustration', className)}
+    style={{ '--illustration-size': `${size}px` } as CSSProperties}>
+    <svg viewBox="0 0 160 160" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="81" cy="137" rx="54" ry="4" className="illustration-shadow" />
+      {children}
+    </svg>
+  </div>;
 }
 
-/**
- * Illustration 1 : Cahier de textes ouvert & Plume bienveillante (Empty State Éditeur)
- * Évoque la rigueur pédagogique, l'accueil chaleureux et le plaisir d'écrire sa première séance.
- */
-export const NotebookOpeningIllustration: React.FC<IllustrationProps> = ({
-  className,
-  size = 140,
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.94 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className={cn('relative flex items-center justify-center select-none', className)}
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      {/* Halo d'ambiance doux (lueur chaude) */}
-      <motion.div
-        animate={{
-          scale: [1, 1.08, 1],
-          opacity: [0.35, 0.55, 0.35],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="absolute inset-2 rounded-full bg-primary/15 dark:bg-primary/25 blur-xl pointer-events-none"
-      />
+/** Write a first lesson: an open notebook, a note and a pencil. */
+export function NotebookOpeningIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <g transform="rotate(-8 46 46)">
+      <rect x="21" y="22" width="49" height="49" rx="9" className="illustration-note illustration-outline" />
+      <path d="M33 36H54M33 44H49" className="illustration-writing" />
+    </g>
+    <path d="M23 62Q49 54 79 64Q110 54 139 62V127Q109 120 79 130Q49 120 23 127Z" className="illustration-learning illustration-outline" />
+    <path d="M28 57Q53 51 79 61Q106 51 134 57V119Q107 113 79 123Q53 113 28 119Z" className="illustration-paper illustration-outline" />
+    <path d="M79 61V123M39 74L64 75M39 85L63 86M39 96L58 97M93 73L121 72M93 84L120 83M93 95L111 94" className="illustration-writing" />
+    <path d="M88 58V83L94 78L100 81V55" className="illustration-note" />
+    <g className="illustration-float">
+      <path d="M118 25L128 31L102 83L92 77Z" className="illustration-learning illustration-outline" />
+      <path d="M92 77L91 91L102 83Z" className="illustration-paper illustration-outline" />
+      <path d="M91 91L94 85" className="illustration-ink" strokeWidth="3" />
+      <path d="M118 25L121 20Q124 17 127 20L131 23Q134 25 131 29L128 31" className="illustration-note illustration-outline" />
+    </g>
+  </IllustrationFrame>;
+}
 
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 160 160"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="relative z-10 drop-shadow-sm"
-      >
-        <defs>
-          <linearGradient id="bookCover" x1="20" y1="30" x2="140" y2="135" gradientUnits="userSpaceOnUse">
-            <stop stopColor="hsl(var(--primary))" stopOpacity="0.9" />
-            <stop offset="1" stopColor="hsl(var(--primary))" stopOpacity="0.65" />
-          </linearGradient>
-          <linearGradient id="pageGlow" x1="80" y1="40" x2="80" y2="120" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FFFFFF" />
-            <stop offset="1" stopColor="#F8FAFC" />
-          </linearGradient>
-          <linearGradient id="goldAccent" x1="100" y1="20" x2="135" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#F59E0B" />
-            <stop offset="1" stopColor="#D97706" />
-          </linearGradient>
-        </defs>
+/** Completed work: a checked note, used only for an actual clear state. */
+export function SereneStudyIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <rect x="28" y="33" width="87" height="97" rx="12" transform="rotate(-7 72 82)" className="illustration-learning illustration-outline" />
+    <rect x="38" y="26" width="83" height="101" rx="12" className="illustration-note illustration-outline" />
+    <path d="M73 20V35M67 21H79" className="illustration-ink" strokeWidth="3" />
+    <path d="M53 51L56 54L62 47M53 72L56 75L62 68M53 93L56 96L62 89" className="illustration-success-stroke illustration-draw" strokeWidth="2.8" />
+    <path d="M71 51H103M71 72H99M71 93H88" className="illustration-writing" />
+    <g className="illustration-pop">
+      <circle cx="119" cy="111" r="23" className="illustration-mint illustration-outline" />
+      <path d="M108 111L116 119L131 103" className="illustration-success-stroke" strokeWidth="4" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        {/* Couverture du carnet (reliure noble avec perspective douce) */}
-        <path
-          d="M24 116C36 112 60 110 80 115C100 110 124 112 136 116V42C124 38 100 36 80 41C60 36 36 38 24 42V116Z"
-          fill="url(#bookCover)"
-          className="stroke-primary/40"
-          strokeWidth="1.5"
-        />
+/** Class creation: a group card and two pupils, never a success badge. */
+export function ClassroomWelcomeIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <rect x="20" y="33" width="91" height="89" rx="12" transform="rotate(-9 65 77)" className="illustration-note illustration-outline" />
+    <rect x="37" y="35" width="98" height="96" rx="12" className="illustration-paper illustration-outline" />
+    <path d="M38 47Q38 36 49 36H123Q134 36 134 47V61H38Z" className="illustration-learning" />
+    <path d="M51 49H83" className="illustration-ink" strokeWidth="3" />
+    <circle cx="65" cy="83" r="8" className="illustration-learning illustration-outline" />
+    <path d="M51 108V103Q51 93 65 93Q79 93 79 103V108Z" className="illustration-learning illustration-outline" />
+    <circle cx="104" cy="83" r="8" className="illustration-note illustration-outline" />
+    <path d="M90 108V103Q90 93 104 93Q118 93 118 103V108Z" className="illustration-note illustration-outline" />
+    <g className="illustration-pop">
+      <circle cx="126" cy="36" r="17" className="illustration-paper illustration-outline" />
+      <path d="M126 29V43M119 36H133" className="illustration-ink" strokeWidth="3" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        {/* Tranche et reliure centrale */}
-        <path
-          d="M80 41V115M80 41C76 38 60 38 30 43V117C60 112 76 112 80 115M80 41C84 38 100 38 130 43V117C100 112 84 112 80 115"
-          stroke="hsl(var(--card))"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
+/** Subject choice: a deck of study cards, with distinct subject symbols. */
+export function SubjectsLibraryIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <g transform="rotate(-14 60 83)">
+      <rect x="20" y="34" width="75" height="91" rx="12" className="illustration-note illustration-outline" />
+      <path d="M33 52H60M33 61H51" className="illustration-writing" />
+    </g>
+    <g transform="rotate(10 104 79)">
+      <rect x="72" y="30" width="66" height="92" rx="12" className="illustration-mint illustration-outline" />
+      <circle cx="110" cy="50" r="8" className="illustration-ink" strokeWidth="2" />
+    </g>
+    <g className="illustration-float">
+      <rect x="43" y="43" width="76" height="87" rx="12" className="illustration-paper illustration-outline" />
+      <rect x="54" y="54" width="54" height="44" rx="8" className="illustration-learning" />
+      <path d="M65 68H77M71 62V74M87 64L97 74M97 64L87 74M64 85H78M88 83H98M88 88H98" className="illustration-ink" strokeWidth="2.3" />
+      <path d="M59 110H103M66 117H96" className="illustration-writing" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        {/* Pages intérieures (Page gauche & droite) */}
-        <path
-          d="M30 46C55 42 70 43 77 45.5V113C70 110.5 55 109.5 30 113.5V46Z"
-          fill="url(#pageGlow)"
-          className="dark:fill-zinc-800"
-        />
-        <path
-          d="M130 46C105 42 90 43 83 45.5V113C90 110.5 105 109.5 130 113.5V46Z"
-          fill="url(#pageGlow)"
-          className="dark:fill-zinc-800"
-        />
+/** Weekly planning: colored lesson slots, rather than a generic date calendar. */
+export function SchedulePlanningIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <rect x="21" y="32" width="112" height="94" rx="12" className="illustration-paper illustration-outline" />
+    <path d="M22 44Q22 33 33 33H121Q132 33 132 44V57H22Z" className="illustration-learning" />
+    <path d="M43 26V40M111 26V40" className="illustration-ink" strokeWidth="3.5" />
+    <path d="M34 68H119M34 87H119M34 106H119M53 65V116M76 65V116M99 65V116" className="illustration-grid" />
+    <rect x="34" y="72" width="16" height="12" rx="3" className="illustration-note" />
+    <rect x="57" y="91" width="15" height="22" rx="3" className="illustration-learning" />
+    <rect x="80" y="72" width="15" height="12" rx="3" className="illustration-mint" />
+    <g className="illustration-float">
+      <circle cx="119" cy="113" r="23" className="illustration-note illustration-outline" />
+      <path d="M119 100V113L128 118" className="illustration-ink" strokeWidth="3" />
+      <circle cx="119" cy="113" r="2.5" className="illustration-ink-fill" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        {/* Lignes d'écriture pédagogiques (Lignes de cours) */}
-        <line x1="38" y1="58" x2="68" y2="56" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
-        <line x1="38" y1="68" x2="64" y2="66" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
-        <line x1="38" y1="78" x2="70" y2="76" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.25" strokeWidth="2" strokeLinecap="round" />
-        <line x1="38" y1="88" x2="58" y2="86" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.25" strokeWidth="2" strokeLinecap="round" />
+/** Search and filters: a lens over notes, without suggesting failure or success. */
+export function LessonSearchIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <rect x="26" y="26" width="78" height="91" rx="11" transform="rotate(-9 65 71)" className="illustration-note illustration-outline" />
+    <rect x="40" y="37" width="76" height="89" rx="11" className="illustration-paper illustration-outline" />
+    <path d="M53 52H92M53 62H78M53 106H74" className="illustration-writing" />
+    <g className="illustration-float">
+      <path d="M113 108L133 129" className="illustration-ink" strokeWidth="9" />
+      <circle cx="97" cy="91" r="27" className="illustration-learning illustration-outline" />
+      <circle cx="97" cy="91" r="19" className="illustration-paper illustration-outline" />
+      <path d="M87 88H106M87 95H101" className="illustration-writing" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        <line x1="92" y1="56" x2="122" y2="58" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
-        <line x1="92" y1="66" x2="118" y2="68" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
-        <line x1="92" y1="76" x2="124" y2="78" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.25" strokeWidth="2" strokeLinecap="round" />
+/** Teaching cycles: three levels in a learning path, not a class already created. */
+export function TeachingCyclesIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <path d="M21 130V103Q21 96 28 96H56V77Q56 70 63 70H96V49Q96 42 103 42H134V130Z" className="illustration-paper illustration-outline" />
+    <rect x="26" y="102" width="25" height="22" rx="5" className="illustration-note" />
+    <rect x="62" y="78" width="28" height="46" rx="5" className="illustration-mint" />
+    <rect x="102" y="50" width="26" height="74" rx="5" className="illustration-learning" />
+    <path d="M31 82L64 53L85 56L112 27M102 27H112V37" className="illustration-ink illustration-draw" strokeWidth="2.5" />
+    <g className="illustration-float">
+      <path d="M24 45L43 35L63 45L43 56Z" className="illustration-learning illustration-outline" />
+      <path d="M32 50V60Q43 68 54 60V50M62 45V61" className="illustration-ink" strokeWidth="2" />
+    </g>
+  </IllustrationFrame>;
+}
 
-        {/* Marque-page ruban soyeux */}
-        <path
-          d="M78 41V88L83 82L88 88V41"
-          fill="#EF4444"
-          opacity="0.85"
-        />
-
-        {/* Plume d'écriture animée (mouvement de respiration/écriture douce) */}
-        <motion.g
-          animate={{
-            x: [0, 2, 0],
-            y: [0, -3, 0],
-            rotate: [0, -2, 0],
-          }}
-          transition={{
-            duration: 3.2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        >
-          {/* Corps de la plume */}
-          <path
-            d="M128 22C118 24 102 36 96 52C94 57 95 62 98 65C101 68 106 69 111 67C127 61 139 45 141 35C141.5 32 140 30 138 28L128 22Z"
-            fill="url(#goldAccent)"
-          />
-          <path
-            d="M110 56L96 70L94 68L108 54"
-            stroke="#B45309"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <circle cx="94" cy="70" r="1.5" fill="#78350F" />
-        </motion.g>
-
-        {/* Étincelles de clarté / inspiration */}
-        <motion.circle
-          animate={{ scale: [0.8, 1.3, 0.8], opacity: [0.4, 0.9, 0.4] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-          cx="34"
-          cy="34"
-          r="2.5"
-          fill="#F59E0B"
-        />
-        <motion.circle
-          animate={{ scale: [1.2, 0.7, 1.2], opacity: [0.3, 0.8, 0.3] }}
-          transition={{ duration: 2.7, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          cx="138"
-          cy="86"
-          r="2"
-          fill="hsl(var(--primary))"
-        />
-      </svg>
-    </motion.div>
-  );
-};
-
-/**
- * Illustration 2 : Sérénité & Maîtrise Pédagogique (Empty State Pilotage / Tout est à jour)
- * Évoque le calme de l'enseignant dont tout le travail est accompli et synchronisé.
- */
-export const SereneStudyIllustration: React.FC<IllustrationProps> = ({
-  className,
-  size = 130,
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.94 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className={cn('relative flex items-center justify-center select-none', className)}
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      {/* Halo doux émeraude/primaire */}
-      <motion.div
-        animate={{
-          scale: [1, 1.06, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{
-          duration: 3.6,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="absolute inset-1 rounded-full bg-emerald-500/15 dark:bg-emerald-400/20 blur-xl pointer-events-none"
-      />
-
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 150 150"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="relative z-10 drop-shadow-sm"
-      >
-        <defs>
-          <linearGradient id="shieldGrad" x1="75" y1="22" x2="75" y2="128" gradientUnits="userSpaceOnUse">
-            <stop stopColor="hsl(var(--card))" />
-            <stop offset="1" stopColor="hsl(var(--muted))" stopOpacity="0.8" />
-          </linearGradient>
-          <linearGradient id="checkGrad" x1="50" y1="60" x2="100" y2="85" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#10B981" />
-            <stop offset="1" stopColor="#059669" />
-          </linearGradient>
-        </defs>
-
-        {/* Cercle d'harmonie et d'accomplissement */}
-        <motion.circle
-          animate={{ rotate: 360 }}
-          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-          cx="75"
-          cy="75"
-          r="54"
-          stroke="hsl(var(--border))"
-          strokeWidth="1.5"
-          strokeDasharray="4 6"
-        />
-
-        {/* Écusson de conformité et de sérénité */}
-        <path
-          d="M75 30C95 30 114 36 114 56C114 90 92 114 75 124C58 114 36 90 36 56C36 36 55 30 75 30Z"
-          fill="url(#shieldGrad)"
-          stroke="hsl(var(--border))"
-          strokeWidth="2"
-        />
-
-        {/* Couronne de laurier stylisée (symbole d'excellence et d'accomplissement) */}
-        <path
-          d="M52 64C50 72 52 82 58 89M98 64C100 72 98 82 92 89"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.4"
-        />
-
-        {/* Coche de succès majestueuse et dynamique */}
-        <motion.path
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.65, ease: 'easeOut', delay: 0.1 }}
-          d="M56 75L69 88L96 61"
-          stroke="url(#checkGrad)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Petites étoiles de validation */}
-        <motion.path
-          animate={{ scale: [1, 1.25, 1], rotate: [0, 15, 0] }}
-          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-          d="M108 40L110 45L115 47L110 49L108 54L106 49L101 47L106 45L108 40Z"
-          fill="#F59E0B"
-        />
-        <motion.path
-          animate={{ scale: [1, 1.3, 1], rotate: [0, -15, 0] }}
-          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-          d="M40 96L41.5 100L45.5 101.5L41.5 103L40 107L38.5 103L34.5 101.5L38.5 100L40 96Z"
-          fill="#10B981"
-          opacity="0.8"
-        />
-      </svg>
-    </motion.div>
-  );
-};
-
-/**
- * Illustration 3 : Bienvenue en classe (Empty State Tableau de bord sans classe)
- */
-export const ClassroomWelcomeIllustration: React.FC<IllustrationProps> = ({
-  className,
-  size = 140,
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className={cn('relative flex items-center justify-center select-none', className)}
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      <motion.div
-        animate={{
-          scale: [1, 1.06, 1],
-          opacity: [0.25, 0.45, 0.25],
-        }}
-        transition={{
-          duration: 3.8,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="absolute inset-2 rounded-full bg-primary/20 blur-xl pointer-events-none"
-      />
-
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 160 160"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="relative z-10 drop-shadow-sm"
-      >
-        <rect x="25" y="32" width="110" height="74" rx="10" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="2.5" />
-        <rect x="32" y="39" width="96" height="60" rx="6" fill="hsl(var(--muted))" fillOpacity="0.5" />
-
-        {/* Chevalet / trépied pédagogique */}
-        <path d="M42 106L30 138M118 106L130 138M80 106V142" stroke="hsl(var(--muted-foreground))" strokeWidth="2.5" strokeLinecap="round" />
-
-        {/* Lignes de cours sur le tableau */}
-        <motion.path
-          animate={{ opacity: [0.5, 0.9, 0.5] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          d="M44 54H86M44 66H104M44 78H72"
-          stroke="hsl(var(--primary))"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-
-        {/* Badge d'accueil '+' chaleureux */}
-        <motion.g
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <circle cx="114" cy="50" r="14" fill="hsl(var(--primary))" />
-          <path d="M114 44V56M108 50H120" stroke="hsl(var(--primary-foreground))" strokeWidth="2.5" strokeLinecap="round" />
-        </motion.g>
-      </svg>
-    </motion.div>
-  );
-};
+/** Import curriculum: a source document becomes an organized lesson notebook. */
+export function CurriculumImportIllustration(props: IllustrationProps) {
+  return <IllustrationFrame {...props}>
+    <g transform="rotate(-8 53 66)">
+      <path d="M24 25H70L84 40V104Q84 111 77 111H24Q17 111 17 104V32Q17 25 24 25Z" className="illustration-paper illustration-outline" />
+      <path d="M70 25V40H84" className="illustration-learning illustration-outline" />
+      <path d="M30 46H60M30 57H68M30 68H61" className="illustration-writing" />
+      <rect x="29" y="81" width="28" height="12" rx="4" className="illustration-note" />
+    </g>
+    <rect x="83" y="60" width="57" height="73" rx="10" className="illustration-learning illustration-outline" />
+    <path d="M93 61V132" className="illustration-ink" strokeWidth="2" />
+    <rect x="102" y="74" width="28" height="21" rx="4" className="illustration-paper" />
+    <path d="M107 82H125M107 88H120" className="illustration-writing" />
+    <g className="illustration-transfer">
+      <circle cx="75" cy="104" r="20" className="illustration-note illustration-outline" />
+      <path d="M64 104H86M79 97L86 104L79 111" className="illustration-ink" strokeWidth="2.8" />
+    </g>
+  </IllustrationFrame>;
+}

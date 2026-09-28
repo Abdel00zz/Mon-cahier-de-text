@@ -5,7 +5,6 @@ import type { ContentDateOrder } from '@/utils/dateOrder';
 import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen } from '@/components/ui/icons';
 import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/utils/tableRows';
 import { textDirectionAttribute } from '@/utils/textDirection';
 import { logger } from '@/utils/logger';
@@ -13,8 +12,8 @@ import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/compon
 import { useLocale } from '@/i18n/LocaleProvider';
 import { hasOnlyPristineStarterDiagnostic } from '@/utils/starterDiagnostic';
 import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
-import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
-import { motion } from 'framer-motion';
+import { NotebookOpeningIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { motion, useReducedMotion } from 'framer-motion';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
 // résout `--cdt-table-cols`, redéfini par `index.css` pour le téléphone
@@ -316,6 +315,8 @@ const EmptyState: React.FC<{
 }> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
     const { t, locale } = useLocale();
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
+    const reduceMotion = useReducedMotion();
+    const Illustration = canLoadPredefined ? CurriculumImportIllustration : NotebookOpeningIllustration;
 
     return (
         <section className="flex justify-center py-6 sm:py-10">
@@ -323,7 +324,7 @@ const EmptyState: React.FC<{
                 {/* Surface principale */}
                 <div className="flex flex-col items-center px-7 pt-7 pb-8 text-center sm:px-9 sm:pt-9 sm:pb-9">
                     {/* Illustration vectorielle vivante avec micro-mouvement de respiration */}
-                    <NotebookOpeningIllustration size={130} className="mb-3" />
+                    <Illustration size={152} className="mb-3" />
 
                     {/* Titre 21px bold */}
                     <h2 className="mt-2 text-[21px] font-bold tracking-tight text-foreground">
@@ -342,8 +343,8 @@ const EmptyState: React.FC<{
                         {canLoadPredefined && (
                             <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.015 }}
-                                whileTap={{ scale: 0.97 }}
+                                whileHover={reduceMotion ? undefined : { y: -2 }}
+                                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                                 transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                                 onClick={onLoadPredefined}
                                 className="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-[14.5px] font-semibold text-primary-foreground shadow-xs transition-colors hover:brightness-110 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
@@ -353,8 +354,8 @@ const EmptyState: React.FC<{
                         )}
                         <motion.button
                             type="button"
-                            whileHover={{ scale: 1.015 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={reduceMotion ? undefined : { y: -2 }}
+                            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                             onClick={() => onOpenAddContentModal()}
                             className={`flex h-12 w-full items-center justify-center rounded-xl text-[14.5px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer ${
@@ -487,8 +488,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
   if (visibleRows.length === 0 && searchQuery?.trim()) {
     return (
-      <div className="border border-border bg-card p-8 text-center" dir={contentDirection}>
-        <BookOpen className="mx-auto mb-3 h-6 w-6 text-muted-foreground" aria-hidden />
+      <div className="rounded-2xl border border-border bg-card p-8 text-center" dir={contentDirection}>
+        <LessonSearchIllustration size={120} className="mx-auto mb-3" />
         <p className="mb-4 text-muted-foreground">{t('print.noContent')}</p>
         <Button variant="outline" onClick={onClearSearch}>{t('toolbar.clearSearch')}</Button>
       </div>

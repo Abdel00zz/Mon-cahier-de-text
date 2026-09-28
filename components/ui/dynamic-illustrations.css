@@ -1,0 +1,48 @@
+/* Learning cards (lavender), organization notes (amber), completion (mint).
+   These local illustration colors never replace UI status or action tokens. */
+.dynamic-illustration {
+  --figure-ink: #414454;
+  --figure-line: #707486;
+  --figure-paper: #fcfbf8;
+  --figure-learning: #d9d3f5;
+  --figure-note: #f5d980;
+  --figure-mint: #bcddd0;
+  width: var(--illustration-size, 140px);
+  max-width: 100%;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  user-select: none;
+  pointer-events: none;
+  animation: illustration-enter 240ms ease-out both;
+}
+.dark .dynamic-illustration {
+  --figure-ink: #e0e3ec;
+  --figure-line: #a5aabe;
+  --figure-paper: #30373b;
+  --figure-learning: #635f8e;
+  --figure-note: #897446;
+  --figure-mint: #486c61;
+}
+.dynamic-illustration svg { display: block; width: 100%; height: 100%; overflow: visible; stroke-linecap: round; stroke-linejoin: round; }
+.illustration-paper { fill: var(--figure-paper); }
+.illustration-learning { fill: var(--figure-learning); }
+.illustration-note { fill: var(--figure-note); }
+.illustration-mint { fill: var(--figure-mint); }
+.illustration-outline { stroke: var(--figure-line); stroke-width: 1.6; }
+.illustration-ink { stroke: var(--figure-ink); }
+.illustration-ink-fill { fill: var(--figure-ink); }
+.illustration-writing { stroke: var(--figure-ink); stroke-width: 2; opacity: .7; }
+.illustration-grid { stroke: var(--figure-line); stroke-width: 1; opacity: .28; }
+.illustration-success-stroke { stroke: hsl(var(--success-strong)); }
+.illustration-shadow { fill: hsl(var(--foreground) / .08); }
+.illustration-float { animation: illustration-float 2.8s ease-in-out 1; }
+.illustration-pop { transform-box: fill-box; transform-origin: center; animation: illustration-pop 280ms cubic-bezier(.2,.8,.2,1) both; }
+.illustration-transfer { animation: illustration-transfer 280ms ease-out both; }
+.illustration-draw { animation: illustration-enter 250ms ease-out both; }
+@keyframes illustration-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes illustration-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes illustration-pop { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes illustration-transfer { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .dynamic-illustration, .dynamic-illustration * { animation: none !important; }
+}

@@ -11,7 +11,6 @@ import {
   CalendarCheck,
   CalendarDays,
   CalendarRange,
-  Check,
   CircleAlert,
   Clock,
   Database,
@@ -42,7 +41,7 @@ import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 import { dateTimeFormat } from '@/utils/formatters';
-import { SereneStudyIllustration } from '@/components/ui/DynamicIllustration';
+import { SereneStudyIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration, NotebookOpeningIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -124,17 +123,24 @@ const SignalCard: React.FC<{
   );
 };
 
-const EmptyState: React.FC<{ title: string; description: string }> = ({ title, description }) => (
+const EMPTY_ILLUSTRATIONS = {
+  complete: SereneStudyIllustration,
+  classes: ClassroomWelcomeIllustration,
+  schedule: SchedulePlanningIllustration,
+  activity: NotebookOpeningIllustration,
+  search: LessonSearchIllustration,
+};
+
+const EmptyState: React.FC<{ title: string; description: string; kind?: keyof typeof EMPTY_ILLUSTRATIONS }> = ({ title, description, kind = 'complete' }) => {
+  const Illustration = EMPTY_ILLUSTRATIONS[kind];
+  return (
   <div className="flex flex-col items-center justify-center px-4 py-12 text-center select-none">
-    <SereneStudyIllustration size={120} className="mb-2" />
-    <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-2">
-      <Check className="h-3.5 w-3.5 stroke-[2.5]" />
-      <span>Sérénité pédagogique</span>
-    </div>
+    <Illustration size={144} className="mb-3" />
     <h3 className="text-base font-bold text-foreground">{title}</h3>
     <p className="mt-1.5 max-w-sm text-xs sm:text-sm leading-relaxed text-muted-foreground text-pretty">{description}</p>
   </div>
-);
+  );
+};
 
 type AxisId = NotificationsAxisId;
 
@@ -853,6 +859,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     {filteredOfficial.length === 0 ? (
                       <EmptyState
                         title={t('notifications.noAssessmentTitle')}
+                        kind="schedule"
                         description={t('notifications.noAssessmentDescription')}
                       />
                     ) : (
@@ -920,6 +927,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     {rankedOverviews.length === 0 ? (
                       <EmptyState
                         title={t('notifications.emptyClassesTitle')}
+                        kind="classes"
                         description={t('notifications.emptyClassesDescription')}
                       />
                     ) : (
@@ -998,6 +1006,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     {filteredActivity.length === 0 ? (
                       <EmptyState
                         title={t('notifications.noActivityTitle')}
+                        kind={activityFilter === 'all' ? 'activity' : 'search'}
                         description={t('notifications.noActivityDescription')}
                       />
                     ) : (
@@ -1061,6 +1070,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     {filteredIgnored.length === 0 ? (
                       <EmptyState
                         title={t('notifications.noIgnoredTitle')}
+                        kind="search"
                         description={t('notifications.noIgnoredDescription')}
                       />
                     ) : (

@@ -1,9 +1,12 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Loader2 } from '@/components/ui/icons';
+import { Check, ChevronLeft, ChevronRight, Loader2 } from '@/components/ui/icons';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
 import { ONBOARDING_TOTAL_STEPS } from './types';
+import { ClassroomWelcomeIllustration, SubjectsLibraryIllustration, TeachingCyclesIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import '../../auth/authMotion.css';
+
+const STEP_ILLUSTRATIONS = [TeachingCyclesIllustration, SubjectsLibraryIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration];
 
 interface OnboardingShellProps {
   lang: ModalLang;
@@ -41,6 +44,10 @@ export function OnboardingShell({
 }: OnboardingShellProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const rtl = lang === 'ar';
+  const StepIllustration = STEP_ILLUSTRATIONS[step - 1];
+  const stepLabels = rtl
+    ? ['السلك', 'المواد', 'الأقسام', 'الحصص']
+    : ['Cycles', 'Matières', 'Classes', 'Horaires'];
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
     headingRef.current?.scrollIntoView({ block: 'nearest' });
@@ -49,6 +56,7 @@ export function OnboardingShell({
   return (
     <div
       dir={rtl ? 'rtl' : 'ltr'}
+      lang={lang}
       className="onboarding-keep onboarding-artisan-shell flex min-h-dvh flex-col bg-background text-foreground"
     >
       <header className="onboarding-artisan-header sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur-xl">
@@ -77,7 +85,7 @@ export function OnboardingShell({
                   disabled={finishing}
                   aria-pressed={value === lang}
                   onClick={() => onLanguageChange(value)}
-className={`keep-surface keep-choice min-h-10 sm:min-h-11 px-3 sm:px-3.5 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                  className={`keep-surface keep-choice min-h-11 px-3 sm:px-3.5 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
                   value === lang ? 'border-primary/40 text-primary font-bold' : ''
                 }`}
                 >
@@ -93,7 +101,7 @@ className={`keep-surface keep-choice min-h-10 sm:min-h-11 px-3 sm:px-3.5 text-xs
               value={theme}
               disabled={finishing}
               onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-              className="keep-surface min-h-9 sm:min-h-10 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="keep-surface min-h-11 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <option value="light">{rtl ? 'فاتح' : 'Clair'}</option>
               <option value="dark">{rtl ? 'داكن' : 'Sombre'}</option>
@@ -114,38 +122,40 @@ className={`keep-surface keep-choice min-h-10 sm:min-h-11 px-3 sm:px-3.5 text-xs
             type="button"
             disabled={finishing}
             onClick={onSkip}
-            className="min-h-9 rounded-lg px-2 text-xs sm:min-h-11 sm:text-sm underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5 cursor-pointer"
+            className="min-h-11 rounded-lg px-2 text-xs sm:text-sm underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5 cursor-pointer"
           >
             {rtl ? 'الإعداد لاحقاً' : 'Configurer plus tard'}
           </button>
         </div>
-        <div
-          role="progressbar"
+        <ol
           aria-label={copy.step(step, ONBOARDING_TOTAL_STEPS)}
-          aria-valuemin={1}
-          aria-valuemax={ONBOARDING_TOTAL_STEPS}
-          aria-valuenow={step}
-          className="onboarding-artisan-progress mb-5 flex gap-2 sm:mb-8"
+          className="onboarding-stepper mb-6 grid grid-cols-4 gap-2 sm:mb-8"
         >
-          {Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, index) => (
-            <span
+          {stepLabels.map((label, index) => (
+            <li
               key={index}
-              className={
-                'h-1.5 flex-1 rounded-full transition-all duration-300 ' +
-                (index < step
-                  ? 'bg-[#7033e3] shadow-xs shadow-[#7033e3]/40'
-                  : 'bg-neutral-200 dark:bg-[#27272a]')
-              }
-            />
+              aria-current={index + 1 === step ? 'step' : undefined}
+              data-complete={index + 1 < step || undefined}
+              className="onboarding-step"
+            >
+              <span className="onboarding-step-mark" aria-hidden="true">
+                {index + 1 < step ? <Check className="h-3.5 w-3.5" /> : index + 1}
+              </span>
+              <span>{label}</span>
+              {index + 1 < step && <span className="sr-only">{rtl ? 'مكتمل' : 'Terminé'}</span>}
+            </li>
           ))}
-        </div>
+        </ol>
+        <div className="onboarding-heading mb-4 flex items-center justify-between gap-3">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="mb-2.5 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground outline-none sm:mb-3 sm:text-3xl lg:text-4xl"
+          className="min-w-0 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground outline-none sm:text-3xl lg:text-4xl"
         >
           {title}
         </h1>
+        <StepIllustration key={step} size={104} className="onboarding-heading-illustration" />
+        </div>
         {step === 4 && (
           <p className="mb-5 text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
             {copy.scheduleOptional}
@@ -154,7 +164,7 @@ className={`keep-surface keep-choice min-h-10 sm:min-h-11 px-3 sm:px-3.5 text-xs
         <fieldset
           disabled={finishing}
           aria-busy={finishing}
-          className="min-w-0 w-full"
+          className="onboarding-step-content min-w-0 w-full"
         >
           {children}
         </fieldset>
