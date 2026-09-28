@@ -154,11 +154,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             ? 'border-e border-e-alert/45'
             : 'border-e border-e-border';
 
-    const innerLineClass = groupIsSelected
+    // Separateur INTERNE d'une seance (contenus d'une MEME date) : filet fin
+    // POINTILLE, plus discret qu'un trait plein, pour marquer la suite sans
+    // couper la seance. Le « ! » final (importance, syntaxe Tailwind v4) est
+    // necessaire car `border-b` impose un style plein ; il ne porte que sur
+    // le bas, donc le filet vertical `border-e` reste net. Les autres
+    // frontieres (bornes de sequence datee, fin de seance) restent pleines.
+    const innerLineClass = `${groupIsSelected
         ? 'border-b border-b-primary/25'
         : hasWarning
             ? 'border-b border-b-alert/35'
-            : 'border-b border-b-border/50';
+            : 'border-b border-b-border/50'} [border-bottom-style:dotted]!`;
     const hasAssignedDate = uniqueDates.length > 0;
     const topBoundaryClass = (hasAssignedDate && firstMerge?.isDatedSequenceStart)
         ? (hasWarning ? 'border-t-2 border-t-warning/70' : 'border-t-2 border-t-foreground/30')

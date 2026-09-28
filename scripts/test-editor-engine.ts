@@ -717,6 +717,10 @@ test('séance fusionnée : les séparateurs de contenu et remarque partagent les
   // Le trait de séparation vit sous les cellules de contenu, jamais dans la
   // date fusionnée : une seule ligne de contenu ici.
   assert.equal(occurrences('data-session-row-divider="true"'), 1);
+  // Le filet interne d'une seance (contenus d'une MEME date) est POINTILLE et
+  // fin (1 px) : un seul, et les frontieres de seance restent pleines.
+  assert.equal(occurrences('[border-bottom-style:dotted]!'), 1);
+  assert.ok(html.includes('border-b border-b-border/50 [border-bottom-style:dotted]!'));
   assert.match(html, /grid-row:1 \/ span 2/);
   assert.equal(html.includes('border-y'), false);
 });
@@ -1492,4 +1496,19 @@ test('robustesse : un JSON importé abîmé ne casse aucun rendu', () => {
     assert.doesNotThrow(() => collectTeacherSubjects([{ subject: value, teacherName: value }] as never, value as never), `périmètre : ${etiquette}`);
     assert.ok(!abbreviateClassName(value as never, 'fr').includes('[object Object]'), `objet affiché : ${etiquette}`);
   }
+});
+
+test('selection : ouvrir l editeur de contenu ne vide plus la selection', () => {
+  const editorSource = readFileSync('features/editor/Editor.tsx', 'utf8');
+  const open = editorSource.slice(editorSource.indexOf('const handleOpenContentEditor'), editorSource.indexOf('const handleOpenDateModal'));
+  assert.equal(open.includes('createSelectionState'), false);
+  assert.ok(open.includes("draft.activeModal = 'editContent'"));
+  const rowSource = readFileSync('features/editor/TableRow.tsx', 'utf8');
+  const start = rowSource.indexOf('const handleContentDoubleClickCapture');
+  const dbl = rowSource.slice(start, start + 1200);
+  const revert = dbl.indexOf('onToggleSelect(indices);');
+  const openEditor = dbl.indexOf('onDoubleClickEdit(indices);');
+  assert.ok(revert > -1, 'le double-clic retablit la bascule du premier clic');
+  assert.ok(openEditor > revert, 'la bascule est retablie AVANT l ouverture de la modale');
+  assert.ok(dbl.includes('.cursor-text'), 'memes exclusions que le clic de selection');
 });

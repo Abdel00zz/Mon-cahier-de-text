@@ -203,12 +203,19 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const target = event.target as HTMLElement | null;
     if (!target?.closest('[data-row-content="true"]')) return;
-    if (target.closest('button,input,textarea,select,a,[contenteditable="true"]')) return;
+    // Memes exclusions que le clic de selection (`.cursor-text` compris) :
+    // si le clic a ete ignore, il n'y a aucun basculement a retablir.
+    if (target.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) return;
 
     event.preventDefault();
     event.stopPropagation();
+    // Un double-clic est un geste d'EDITION : le premier clic du double-clic
+    // a deja bascule la ligne (ou toute la seance fusionnee) via le clic de
+    // selection. On retablit cet etat AVANT d'ouvrir la modale, sinon
+    // double-cliquer un titre modifie la selection en cours.
+    onToggleSelect(indices);
     onDoubleClickEdit(indices);
-  }, [indices, onDoubleClickEdit]);
+  }, [indices, onDoubleClickEdit, onToggleSelect]);
 
   const hasAssignedDate = typeof data.date === 'string' && data.date.trim().length > 0;
   const dateWarnings = (hasAssignedDate && getDateWarnings) ? getDateWarnings(data.date) : [];

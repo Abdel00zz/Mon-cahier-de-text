@@ -916,10 +916,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [classInfo, config, contentDirection, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
 
+  /* Ouvrir l'editeur de contenu NE TOUCHE PAS la selection : un double-clic
+   * sur un titre (ou « Modifier » dans la barre) ne doit pas effacer le
+   * travail de selection en cours. La barre reparaît telle quelle a la
+   * fermeture de la modale, et Échap reste le seul raccourci qui efface. */
   const handleOpenContentEditor = useCallback((indices: Indices) => {
     const targets = contentEditTargets.get(indicesKey(indices));
     if (!targets?.length) return;
-    setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
     setEditorState(draft => {
       draft.editingIndices = targets[0];
       draft.activeModal = 'editContent';
