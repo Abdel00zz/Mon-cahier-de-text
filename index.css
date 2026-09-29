@@ -692,7 +692,12 @@ html[lang="ar"] .modal-header h2,
      verticale (aucune largeur devinée). */
   .editor-list {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
+    /* Colonne des marqueurs PLAFONNÉE à 45 % : un libellé long se replie
+       dans sa colonne au lieu de ramener celle du texte à zéro (mesuré :
+       291 px contre 0 px, texte illisible une lettre par ligne). En deçà du
+       plafond, la colonne garde la largeur du plus large marqueur : c’est ce
+       qui aligne tous les textes sur la même verticale. */
+    grid-template-columns: fit-content(45%) minmax(0, 1fr);
     align-items: baseline;
     column-gap: 0.375rem;
     padding-inline-start: 0.25rem;

@@ -942,6 +942,14 @@ test('mise en page : les commandes LaTeX de document sont traitées par la mise 
     !/\.editor-item-body[^{}]*\{[^}]*overflow-x:\s*auto/.test(css),
     'La zone de description elle-même ne défile pas'
   );
+  // La colonne des marqueurs est PLAFONNÉE : un libellé long se replie dans sa
+  // colonne au lieu de ramener celle du texte à zéro (mesuré : 291 px contre
+  // 0 px, texte illisible — une lettre par ligne).
+  assert.match(
+    css,
+    /\.editor-list\s*\{[^}]*grid-template-columns:\s*fit-content\(45%\)\s*minmax\(0,\s*1fr\)/,
+    'Colonne des marqueurs plafonnée'
+  );
 });
 
 test('listes : items multi-lignes, imbrication et grandes formules', () => {
@@ -1032,6 +1040,15 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   //     seule une formule display occupe sa propre ligne.
   const inlineKeepsBreak = render('Voir $x$ ici\nPuis la suite.');
   assert.ok(inlineKeepsBreak.includes('Voir ') && inlineKeepsBreak.includes(' ici\nPuis la suite.'), 'Le saut de ligne du texte doit rester');
+
+  // 12. Numérotation arabo-indienne (`١.`) : reconnue comme une liste, donc le
+  //     texte replié reste aligné sous le texte et non au début de la ligne.
+  const arabicNumbered = render('١. Une première ligne très longue qui se replie sur la suivante\n٢. Deuxième point.');
+  assert.equal(listGrids(arabicNumbered).length, 1, 'Une grille pour la liste arabo-indienne');
+  assert.match(arabicNumbered, /class="editor-item-marker">١\./, 'Le marqueur arabo-indien vit dans sa colonne');
+  assert.equal(contentSpans(arabicNumbered).length, 2, 'Deux items arabo-indiens reconnus');
+  // …mais un décimal reste du texte (`1.5 kg`) : le point doit être suivi d'une espace.
+  assert.equal(listGrids(render('1.5 kg de farine\n2.5 L d’eau')).length, 0, 'Un décimal n’est pas un item');
 });
 
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {

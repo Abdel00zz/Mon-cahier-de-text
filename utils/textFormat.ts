@@ -49,8 +49,9 @@ const LIST_ENVIRONMENTS: Record<string, ListKind> = {
 };
 
 /** Puce tapée à la main : `-` ou `+` (jamais `*`, réservé à l'italique), et
- *  numéro `1.` / `1)`. Les deux formes sont reconnues en un seul test. */
-const HAND_TYPED_ITEM = /^\s*(?:(\d+)[.)]|[-+])\s+(.*)$/;
+ *  numéro `1.` / `1)`, chiffres arabo-indiens (`١.`) et persans compris.
+ *  Les deux formes sont reconnues en un seul test. */
+const HAND_TYPED_ITEM = /^\s*(?:([0-9\u0660-\u0669\u06F0-\u06F9]+)[.)]|[-+])\s+(.*)$/;
 
 /** Jetons structurels : \begin{…}, \end{…} et \item (avec son libellé).
  *  `g` requis par `String.prototype.matchAll`, qui clone l'expression : aucun
