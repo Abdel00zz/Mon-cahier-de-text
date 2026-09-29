@@ -238,17 +238,26 @@ function markerFor(style: MarkerStyle, position: number): string {
 /** Marqueur et contenu d'un item : deux CELLULES d'une même grille
  *  `.editor-list`. La colonne des marqueurs prend la largeur du plus large de la
  *  liste — puces et numéros laissent donc leur texte démarrer sur la même
- *  verticale, comme dans un traitement de texte. */
+ *  verticale, comme dans un traitement de texte.
+ *  `isLabel` distingue le LIBELLÉ d'une liste de définitions (`\item[terme]`) :
+ *  c'est la seule cellule qui a le droit de se replier, sinon sa largeur
+ *  minimale (le mot le plus long) peut dépasser le plafond de 45 % et écraser
+ *  la colonne de texte à zéro (constaté sur téléphone : 173 lignes d'une lettre). */
 function renderItemCells(
   marker: React.ReactNode,
   content: React.ReactNode[],
   key: string,
-  decorative: boolean
+  decorative: boolean,
+  isLabel = false
 ): React.ReactNode[] {
   return [
     React.createElement(
       'span',
-      { key: `${key}-marker`, className: 'editor-item-marker', 'aria-hidden': decorative ? true : undefined },
+      {
+        key: `${key}-marker`,
+        className: isLabel ? 'editor-item-marker editor-item-marker-label' : 'editor-item-marker',
+        'aria-hidden': decorative ? true : undefined,
+      },
       marker
     ),
     // `whitespace-pre-wrap` garde les retours à la ligne de l'auteur DANS
@@ -272,7 +281,7 @@ function renderItem(type: ListKind, item: DescriptionItem, position: number, key
   // une lettre porte une information : il reste lu par les lecteurs d'écran.
   const decorative = !item.label && style === 'bullet';
   const content = renderBlocks(item.blocks, `${key}-c`, depth + 1);
-  return renderItemCells(marker, content.length ? content : [''], key, decorative);
+  return renderItemCells(marker, content.length ? content : [''], key, decorative, Boolean(item.label));
 }
 
 function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): React.ReactNode[] {

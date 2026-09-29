@@ -224,7 +224,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
-                <span>{sectionLetter}.</span>
+                {/* `shrink-0 whitespace-nowrap` : la cellule hérite de
+                    `overflow-wrap: anywhere` ([data-row-content]), donc sans
+                    cela le repli d'un titre long comprime « A. » jusqu'à ce
+                    que le point passe seul à la ligne suivante. */}
+                <span className="shrink-0 whitespace-nowrap">{sectionLetter}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -235,7 +239,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
-                <span>{indices.subsectionIndex! + 1}.</span>
+                <span className="shrink-0 whitespace-nowrap">{indices.subsectionIndex! + 1}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -247,7 +251,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
-                <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
+                <span className="shrink-0 whitespace-nowrap">{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>

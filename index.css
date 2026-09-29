@@ -716,6 +716,17 @@ html[lang="ar"] .modal-header h2,
     user-select: none;
     font-weight: 600;
     color: hsl(var(--primary));
+    white-space: nowrap;
+  }
+
+  /* Libellé de \item[terme] : seule cellule autorisée à se replier. Sa
+     largeur minimale (le mot le plus long) ne doit pas dépasser le plafond
+     de 45 %, sinon la colonne de texte tombe à zéro (mesuré sur téléphone :
+     173 lignes d'une seule lettre). */
+  .editor-item-marker-label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
 

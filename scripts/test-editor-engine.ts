@@ -950,6 +950,28 @@ test('mise en page : les commandes LaTeX de document sont traitées par la mise 
     /\.editor-list\s*\{[^}]*grid-template-columns:\s*fit-content\(45%\)\s*minmax\(0,\s*1fr\)/,
     'Colonne des marqueurs plafonnée'
   );
+  // Un marqueur ne se coupe JAMAIS en deux lignes : la cellule hérite de
+  // `overflow-wrap: anywhere` ([data-row-content]), donc sans `nowrap`
+  // « 1. » se brisait en « 1 » puis « . » au début de la ligne suivante
+  // (mesuré sur téléphone : marqueur sur 2 lignes, largeur 6 px).
+  assert.match(
+    css,
+    /\.editor-item-marker\s*\{[^}]*white-space:\s*nowrap/,
+    'Un marqueur de liste reste sur une seule ligne'
+  );
+  // Seul le LIBELLÉ d'une liste de définitions se replie : sa largeur minimale
+  // (le mot le plus long) ne doit pas dépasser le plafond, sinon la colonne de
+  // texte tombe à zéro (mesuré : 173 lignes d'une seule lettre).
+  assert.match(
+    css,
+    /\.editor-item-marker-label\s*\{[^}]*overflow-wrap:\s*anywhere/,
+    'Le libellé se replie pour ne pas écraser le texte'
+  );
+  // Les marqueurs de structure (A. / 1. / i.) sont des cellules FLEX : sans
+  // `shrink-0`, le repli d'un titre long les comprimait jusqu'à couper le point.
+  const contentRendererSource = readFileSync('features/editor/ContentRenderer.tsx', 'utf8');
+  const structureMarkers = contentRendererSource.match(/<span className="shrink-0 whitespace-nowrap">/g) ?? [];
+  assert.equal(structureMarkers.length, 3, 'Section, sous-section et sous-sous-section : marqueurs insécables');
 });
 
 test('listes : items multi-lignes, imbrication et grandes formules', () => {
@@ -1017,6 +1039,15 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   const described = render(String.raw`\begin{description}\item[Co] A\item[Beaucoup plus longue] B\end{description}`);
   assert.equal(listGrids(described).length, 1, 'Les libellés partagent la même grille');
   assert.match(described, /<strong[^>]*>Beaucoup plus longue<\/strong>/);
+  // Le libellé est la SEULE cellule autorisée à se replier : les marqueurs
+  // courts (numéros, puces) restent insécables pour que le point ne passe
+  // jamais seul à la ligne suivante.
+  assert.match(described, /class="editor-item-marker editor-item-marker-label"/, 'Le libellé porte sa propre classe');
+  assert.match(continued, /class="editor-item-marker">1\./, 'Un marqueur court reste insécable');
+  assert.ok(
+    !/class="editor-item-marker editor-item-marker-label"[^>]*>1\./.test(continued),
+    'Un numéro n’est pas traité comme un libellé'
+  );
   // Les items tapés à la main sont groupés de la même façon.
   assert.equal(listGrids(plain).length, 1, 'Puces manuelles : une seule grille');
 
