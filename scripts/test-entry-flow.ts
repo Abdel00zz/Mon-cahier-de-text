@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import {
   authRouteHash,
   resolveAuthRoute,
@@ -68,6 +69,24 @@ test("séance en cours : ouvrir la classe à la main ne bloque plus le retour na
   assert.equal(claimCurrentSessionAutoOpen("teacher-manual", slot, storage), false);
   // La séance suivante reste, elle, éligible à l'ouverture automatique.
   assert.equal(claimCurrentSessionAutoOpen("teacher-manual", "2026-09-21:c7-540-600", storage), true);
+});
+
+test("retour au tableau de bord : bouton de l'éditeur câblé et séance marquée quelle que soit l'entrée", () => {
+  const app = readFileSync("App.tsx", "utf8");
+  // L'en-tête de l'éditeur porte « Retour aux classes » : sans `onBack`, la barre
+  // d'onglets étant masquée dans l'éditeur, l'accueil devient inatteignable.
+  assert.match(
+    app,
+    /<Editor classInfo=\{backgroundClass\}[^>]*onBack=\{handleBackToDashboard\}/,
+    "Le bouton « Retour aux classes » doit être câblé dans l'éditeur",
+  );
+  // Un cahier ouvert par lien profond (notification) ou par rechargement direct
+  // vaut pour la séance : revenir à l'accueil ne doit pas rouvrir la classe.
+  assert.match(
+    app,
+    /if \(view !== 'editor'\) return;\s*\n\s*markCurrentSessionHandled\(/,
+    "Tout cahier ouvert marque la séance comme traitée",
+  );
 });
 
 test("nouveau visiteur : entrée principale et inscription après préparation", () => {

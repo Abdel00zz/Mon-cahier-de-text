@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { bundledCurricula, chapterAssociations, computeOfficialProgression, findCurricula, findMatchingCurriculum, validateCurriculumCatalog } from '../utils/officialCurriculum';
 import { assertValidClasses, assertValidSyncSettings } from '../api/_lib/validate';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
@@ -306,4 +307,26 @@ test('timetable edits and assessment reservations immediately update expected pa
     assert.equal(analyse(classInfo, lessons, { reservedHours: { '2026-09-14': hours } }).expectedRate, 50);
   }
   assert.equal(analyse(classInfo, lessons, { reservedHours: { '2026-09-14': 20 } }).expectedRate, 0);
+});
+
+test('dashboard shows the live session again, wired to the shared detector', () => {
+  const dashboard = readFileSync('features/dashboard/Dashboard.tsx', 'utf8');
+  // Le détecteur partagé transmet les classes actives au tableau de bord :
+  // il doit les annoncer en tête de page, pas seulement sur les cartes.
+  assert.match(dashboard, /activeSessionClassIds = \[\]/, 'Le tableau de bord reçoit les classes actives');
+  assert.match(
+    dashboard,
+    /const liveClasses = useMemo\(\s*\n\s*\(\) => classes\.filter\(classInfo => activeSessionIds\.has\(classInfo\.id\)\),/,
+    'Les classes actives sont dérivées du détecteur, jamais recomputées',
+  );
+  assert.match(dashboard, /\{liveClasses\.length > 0 && \(/, 'Le repère n’apparaît que pendant une séance');
+  assert.match(dashboard, /data-session-banner/, 'Le repère est identifiable');
+  assert.match(dashboard, /onClick=\{\(\) => onSelectClass\(liveClasses\[0\]\)\}/, 'Le repère ouvre le cahier visé');
+  assert.match(dashboard, /dashboard\.welcome\.nowTitle/, 'Le libellé localisé est réutilisé');
+  // Aucune bannière passive : le repère est un bouton, jamais un simple texte.
+  assert.match(dashboard, /<button\s*\n\s*type="button"\s*\n\s*data-session-banner/, 'Le repère est actionnable');
+  // Le point respirant suit la coupure d’accessibilité motrice de la pastille.
+  const cardStyles = readFileSync('features/dashboard/classCards.css', 'utf8');
+  assert.match(cardStyles, /\.dashboard-live-dot \{[^}]*background: hsl\(var\(--success\)\)/, 'Teinte sémantique de succès');
+  assert.match(cardStyles, /prefers-reduced-motion[\s\S]*\.dashboard-live-dot \{ animation: none; \}/, 'Animation coupée en mouvement réduit');
 });

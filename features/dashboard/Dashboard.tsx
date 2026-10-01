@@ -16,7 +16,7 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/utils/timetable';
 import { collectTeacherSubjects, subjectKey } from '@/utils/subjectScope';
-import { ChevronDown, Plus } from '@/components/ui/icons';
+import { ChevronDown, Plus, ArrowRight } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
@@ -229,6 +229,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
         [classes, config.dashboardClassOrder],
     );
     const activeSessionIds = useMemo(() => new Set(activeSessionClassIds), [activeSessionClassIds]);
+    /*
+     * « Séance en cours » : le détecteur partagé (`useSessionAlerts`) transmet
+     * les classes actives à `App`, qui les passe ici. La carte les met en avant,
+     * et cet encart les annonce en tête de page — sinon le professeur n'a plus
+     * aucun repère de la séance qui commence quand il est sur l'accueil.
+     */
+    const liveClasses = useMemo(
+        () => classes.filter(classInfo => activeSessionIds.has(classInfo.id)),
+        [classes, activeSessionIds],
+    );
+    const liveDetail = useMemo(() => {
+        if (liveClasses.length === 0) return '';
+        if (liveClasses.length === 1) {
+            return t('dashboard.session.teaching', { className: formatLocalizedClassDisplayName(liveClasses[0].name, locale) });
+        }
+        const names = liveClasses.slice(0, 2).map(classInfo => formatLocalizedClassDisplayName(classInfo.name, locale));
+        const extra = liveClasses.length > 2 ? ` +${liveClasses.length - 2}` : '';
+        return names.join(locale === 'ar' ? '، ' : ', ') + extra;
+    }, [liveClasses, locale, t]);
     const filteredClasses = useMemo(() => prioritizeActiveClasses(
         persistedClassOrder
             .map(id => classById.get(id))
@@ -295,6 +314,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
+
+                    {liveClasses.length > 0 && (
+                        <button
+                            type="button"
+                            data-session-banner
+                            onClick={() => onSelectClass(liveClasses[0])}
+                            className="mb-4 flex w-full items-center gap-3 rounded-xl border border-border/70 bg-card/90 px-3 py-2.5 text-start shadow-2xs transition-colors hover:bg-muted/60 active:scale-[0.99] sm:mb-6 sm:gap-4 sm:px-4"
+                        >
+                            <span aria-hidden="true" className="dashboard-live-dot" />
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-semibold text-foreground">{t('dashboard.welcome.nowTitle')}</span>
+                                <span className="block truncate text-xs text-muted-foreground">{liveDetail}</span>
+                            </span>
+                            <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+                        </button>
+                    )}
 
                     {classes.length > 0 && (
                         <div className="mb-4 sm:mb-6">

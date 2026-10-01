@@ -134,6 +134,18 @@ const App: React.FC = () => {
   useEffect(() => {
     sessionClaimRef.current = { scope: authUser?.phone ?? 'local', key: currentSession.key };
   }, [authUser?.phone, currentSession.key]);
+  /*
+   * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
+   * clic sur la carte, ouverture automatique, lien profond d'une notification
+   * ou rechargement direct sur `#/classe/…`. Sans cette règle, quitter un
+   * cahier ouvert par lien profond ramenait au tableau de bord… pour être
+   * aussitôt renvoyé dans la classe par l'ouverture automatique : l'enseignant
+   * ne pouvait plus rester sur l'accueil.
+   */
+  useEffect(() => {
+    if (view !== 'editor') return;
+    markCurrentSessionHandled(authUser?.phone ?? 'local', currentSession.key);
+  }, [authUser?.phone, currentSession.key, view]);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   /*
    * Une seule matière ne se distingue de rien : ses libellés et badges sont
@@ -348,7 +360,10 @@ const App: React.FC = () => {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
     if (backgroundView === 'editor' && backgroundClass) {
-      return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} />;
+      /* `onBack` alimente le bouton « Retour aux classes » de l'en-tête : sans
+         lui, l'éditeur n'offre AUCUN retour à l'accueil (la barre d'onglets y
+         est masquée et un lien profond n'a pas d'entrée d'historique). */
+      return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
     }
     return (
       <Dashboard
