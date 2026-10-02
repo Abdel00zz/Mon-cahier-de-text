@@ -1,14 +1,14 @@
 import { createRoot } from 'react-dom/client';
-import { LocaleProvider } from '../../i18n/LocaleProvider';
-import { MathProvider } from '../../components/ui/math-provider';
-import { ClassCard } from '../../features/dashboard/ClassCard';
-import { MainTable } from '../../features/editor/MainTable';
-import { ScheduleTab } from '../../features/settings/components/ScheduleTab';
-import { BookOpen, CalendarDays, LayoutGrid } from '../../components/ui/icons';
-import { assignClassColors } from '../../utils/classColors';
-import { buildLessonRows } from '../../utils/lessonRows';
-import type { AppConfig, ClassInfo, LessonsData } from '../../types';
-import '../../index.css';
+import { LocaleProvider } from '../../src/i18n/LocaleProvider';
+import { MathProvider } from '../../src/components/ui/math-provider';
+import { ClassCard } from '../../src/features/dashboard/ClassCard';
+import { MainTable } from '../../src/features/editor/MainTable';
+import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
+import { BookOpen, CalendarDays, LayoutGrid } from '../../src/components/ui/icons';
+import { assignClassColors } from '../../src/domain/classes/classColors';
+import { buildLessonRows } from '../../src/domain/notebook/lessonRows';
+import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
+import '../../src/styles/index.css';
 
 const params = new URLSearchParams(location.search);
 const ar = params.get('lang') === 'ar';

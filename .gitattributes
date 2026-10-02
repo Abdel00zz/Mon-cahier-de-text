@@ -1,0 +1,16 @@
+# Keep source files stable across Windows, macOS and Linux.
+/src/** text=auto eol=lf
+/api/** text=auto eol=lf
+/server/** text=auto eol=lf
+/build/** text=auto eol=lf
+/tests/** text=auto eol=lf
+/scripts/** text=auto eol=lf
+/docs/** text=auto eol=lf
+/*.ts text eol=lf
+/*.json text eol=lf
+/*.html text eol=lf
+/README.md text eol=lf
+/AGENTS.md text eol=lf
+/.editorconfig text eol=lf
+/.gitattributes text eol=lf
+*.ps1 text eol=crlf

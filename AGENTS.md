@@ -200,7 +200,7 @@ Un produit engageant et durable combine **rassurance psychologique immédiate** 
 * **Garantie WCAG AA :** Tous les textes et icônes sur verre conservent un ratio de contraste supérieur à 4.5:1 en mode clair comme en mode sombre.
 
 ### 3. Illustrations Vectorielles Vivantes (*Dynamic Vector Storytelling*)
-* **Composants dédiés :** Bibliothèque modulaire `/components/ui/DynamicIllustration.tsx` contenant `NotebookOpeningIllustration`, `SereneStudyIllustration`, `ClassroomWelcomeIllustration`.
+* **Composants dédiés :** Bibliothèque modulaire `/src/components/ui/DynamicIllustration.tsx` contenant `NotebookOpeningIllustration`, `SereneStudyIllustration`, `ClassroomWelcomeIllustration`.
 * **Micro-respiration :** Animations CSS/Motion douces et perpétuelles (battement doux, oscillation de lueur) sans surcharge GPU.
 * **Adaptation automatique :** Palette sémantique (`stroke-primary`, `fill-primary/10`) s'harmonisant instantanément au thème sélectionné par l'enseignant.
 

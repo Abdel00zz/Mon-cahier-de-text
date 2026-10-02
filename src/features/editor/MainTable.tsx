@@ -1,0 +1,592 @@
+import React, { useEffect, useMemo, useRef } from 'react';
+import { LessonsData, Indices, ContentDirection } from '@/types';
+import { type LessonRow } from '@/domain/notebook/lessonRows';
+import type { ContentDateOrder } from '@/domain/calendar/dateOrder';
+import { DateCard, MultiDateCard, TableRow } from './TableRow';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/domain/notebook/tableRows';
+import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { logger } from '@/lib/logger';
+import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
+import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
+import { NotebookOpeningIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { motion, useReducedMotion } from 'framer-motion';
+
+// Une seule source de largeurs pour toute l'application : `.editor-table-grid`
+// résout `--cdt-table-cols`, redéfini par `index.css` pour le téléphone
+// (largeurs MINIMALES comprises) puis pour le desktop. Des pourcentages
+// codés en dur ici écrasaient ces bornes sur téléphone et tassaient les
+// colonnes — donc les rails et la lisibilité.
+const TABLE_GRID_CLASS = 'editor-table-grid';
+
+interface MainTableProps {
+  lessonsData: LessonsData;
+  visibleRows: LessonRow[];
+  onClearSearch: () => void;
+  /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
+  contentDirection: ContentDirection;
+  onOpenAddContentModal: (indices?: Indices) => void;
+  showDescriptions?: boolean;
+  descriptionTypes?: string[];
+  selectedKeys: ReadonlySet<string>;
+  onToggleSelect: (indices: Indices) => void;
+  onToggleSelectGroup?: (indices: Indices[]) => void;
+  onOpenContentEditor: (indices: Indices) => void;
+  onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
+  /** saisie de la remarque de la séance (ligne ou groupe fusionné) */
+  onOpenRemark?: (indices: Indices) => void;
+  newlyAddedIds: string[];
+  /** clé de la ligne dont le contenu est ouvert dans l’éditeur */
+  editingKey?: string;
+  /** garde intelligente : alertes live sur la date saisie */
+  getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
+  getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
+  /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
+  getContentNumber?: (indices: Indices) => string | undefined;
+  /** terme de recherche actif (surlignage dans les lignes) */
+  searchQuery?: string;
+  /** rangée à rejoindre automatiquement après une suggestion de séance */
+  focusKey?: string | null;
+  /** programme officiel proposé lorsque le cahier est encore vide */
+  predefinedProgramTitle?: string;
+  onLoadPredefined?: () => void;
+}
+
+const VIRTUALIZATION_THRESHOLD = 140;
+const ESTIMATED_ROW_HEIGHT = 72;
+const VIRTUAL_OVERSCAN = 16;
+/** Référence stable : un `[]` littéral par défaut créait un nouveau tableau à
+ *  chaque rendu et invalidait les `useMemo` dont il est une dépendance. */
+const NO_DESCRIPTION_TYPES: string[] = [];
+
+const TableHeader: React.FC = React.memo(() => {
+  const { t } = useLocale();
+  return (
+  /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
+     avec celles des rangées. Style épuré inspiré de Google Keep. */
+  <div className="border-b border-border/60 bg-muted/30">
+    {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
+    <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
+      </div>
+      <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
+        <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
+      </div>
+      <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">
+          <span className="sr-only sm:not-sr-only">{t('editor.remark')}</span>
+          <span className="sm:hidden" aria-hidden="true">{t('editor.remarkShort')}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+  );
+});
+TableHeader.displayName = 'TableHeader';
+
+
+interface SessionGroupRowProps {
+    items: FlatDataItem[];
+    selectedKeys: ReadonlySet<string>;
+    newlyAddedIds: string[];
+    editingKey?: string;
+    onToggleSelect: (indices: Indices) => void;
+    onToggleSelectGroup?: (indices: Indices[]) => void;
+    onDoubleClickEdit?: (indices: Indices) => void;
+    onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
+    onOpenRemark?: (indices: Indices) => void;
+    showDescriptions?: boolean;
+    descriptionTypes?: string[];
+    searchQuery?: string;
+    getDateWarnings?: (date: string) => { type: string; message: string }[];
+    getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
+    /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
+    getContentNumber?: (indices: Indices) => string | undefined;
+}
+
+const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
+    items,
+    selectedKeys,
+    newlyAddedIds,
+    editingKey,
+    onToggleSelect,
+    onToggleSelectGroup,
+    onDoubleClickEdit,
+    onOpenDateModal,
+    onOpenRemark,
+    showDescriptions,
+    descriptionTypes = NO_DESCRIPTION_TYPES,
+    searchQuery,
+    getDateWarnings,
+    getDateOrder,
+    getContentNumber,
+}) => {
+    const { t } = useLocale();
+    const mergeContent = items[0].dateMerge?.mergeType === 'content';
+    const toggleMerged = () => {
+        if (onToggleSelectGroup) {
+            onToggleSelectGroup(items.map(item => item.indices));
+            return;
+        }
+        const shouldSelect = !items.every(item => selectedKeys.has(item.key));
+        items.forEach(item => {
+            if (selectedKeys.has(item.key) !== shouldSelect) onToggleSelect(item.indices);
+        });
+    };
+    const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
+    const uniqueDates = Array.from(new Set(allDates));
+    const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
+    const hasWarning = warnings.length > 0;
+    // Une seule source de vérité : le moteur décide si la séance partage sa
+    // remarque (voir `sharedRemark`) — plus de comparaison locale, qui
+    // éclatait la colonne en une cellule par ligne dès qu'un seul contenu
+    // était annoté.
+    const sameRemark = !!items[0].dateMerge?.shouldMergeRemark;
+    const sharedRemark = items[0].dateMerge?.sharedRemark ?? '';
+    const groupIsSelected = items.some(item => selectedKeys.has(item.key));
+    // Une grille commune garde les traits de contenu et de remarque sur le
+    // même axe, même si une remarque ou une description occupe plusieurs lignes.
+    const visualRowCount = mergeContent && sameRemark ? 1 : items.length;
+    const firstMerge = items[0].dateMerge;
+    const lastMerge = items[items.length - 1].dateMerge;
+
+    const dividerClass = groupIsSelected
+        ? 'border-e border-e-primary/45'
+        : hasWarning
+            ? 'border-e border-e-alert/45'
+            : 'border-e border-e-border';
+
+    // Separateur INTERNE d'une seance (contenus d'une MEME date) : filet fin
+    // POINTILLE, plus discret qu'un trait plein, pour marquer la suite sans
+    // couper la seance. Le « ! » final (importance, syntaxe Tailwind v4) est
+    // necessaire car `border-b` impose un style plein ; il ne porte que sur
+    // le bas, donc le filet vertical `border-e` reste net. Les autres
+    // frontieres (bornes de sequence datee, fin de seance) restent pleines.
+    const innerLineClass = `${groupIsSelected
+        ? 'border-b border-b-primary/25'
+        : hasWarning
+            ? 'border-b border-b-alert/35'
+            : 'border-b border-b-border/50'} [border-bottom-style:dotted]!`;
+    const hasAssignedDate = uniqueDates.length > 0;
+    const topBoundaryClass = (hasAssignedDate && firstMerge?.isDatedSequenceStart)
+        ? (hasWarning ? 'border-t-2 border-t-warning/70' : 'border-t-2 border-t-foreground/30')
+        : '';
+    // Une seule bordure porte la limite avec la séance suivante : aucun
+    // empilement border-bottom + border-top entre deux groupes datés.
+    const bottomBoundaryClass = hasAssignedDate
+        ? (lastMerge?.isDatedSequenceEnd
+            ? (hasWarning ? 'border-b-2 border-b-warning/70' : 'border-b-2 border-b-foreground/30')
+            : (hasWarning ? 'border-b border-b-warning/60' : 'border-b border-b-border/70'))
+        : (groupIsSelected ? 'border-b border-b-primary/15' : '');
+
+    const renderContent = (item: FlatDataItem, merged: boolean) => {
+        const isSelected = merged ? groupIsSelected : selectedKeys.has(item.key);
+        const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
+        return (
+            <TableRow
+                data={item.data}
+                indices={item.indices}
+                elementType={item.elementType}
+                dateMerge={item.dateMerge}
+                lineClassOverride=""
+                layout="content-only"
+                onToggleSelect={merged ? toggleMerged : onToggleSelect}
+                onDoubleClickEdit={onDoubleClickEdit}
+                onOpenRemark={onOpenRemark}
+                isSelected={isSelected}
+                isNew={isNew}
+                isEditing={editingKey === item.key}
+                showDescriptions={showDescriptions}
+                descriptionTypes={descriptionTypes}
+                searchQuery={searchQuery}
+                getDateWarnings={getDateWarnings}
+                getDateOrder={getDateOrder}
+                getContentNumber={getContentNumber}
+            />
+        );
+    };
+
+    return (
+        <div
+            data-session-group="true"
+            className={[
+                `group relative grid ${TABLE_GRID_CLASS} transition-colors duration-200`,
+                topBoundaryClass,
+                bottomBoundaryClass,
+                hasWarning
+                    ? 'bg-alert/[0.07]'
+                    : 'bg-card',
+                // La séance garde la surface de la carte : l’accent ne teinte que
+                // les lignes visées, ce qui les rend d’autant plus lisibles.
+            ].filter(Boolean).join(' ')}
+            style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
+        >
+            <button
+                type="button"
+                data-session-cell="date"
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (onOpenDateModal && items[0]) {
+                        onOpenDateModal(items[0].indices, typeof items[0].data?.date === 'string' ? items[0].data.date : undefined);
+                    }
+                }}
+                title={t('selection.chooseDate')}
+                aria-label={t('selection.chooseDate')}
+                disabled={!onOpenDateModal}
+            >
+                {uniqueDates.length > 1 ? (
+                    <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
+                ) : (
+                    <DateCard dateStr={uniqueDates[0]} hasWarning={hasWarning} />
+                )}
+            </button>
+
+            {mergeContent ? (
+                <div
+                    data-session-cell="content"
+                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full ${hasAssignedDate ? '[&_.editor-type-item-title]:text-center' : ''}`}
+                    style={{ gridColumn: 2, gridRow: `1 / span ${visualRowCount}` }}
+                >
+                    {renderContent(items[0], true)}
+                </div>
+            ) : items.map((item, index) => (
+                <div
+                    key={`content-${item.key}`}
+                    data-session-cell="content"
+                    data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
+                    className={`min-w-0 self-stretch ${dividerClass} ${index < items.length - 1 ? innerLineClass : ''}`}
+                    style={{ gridColumn: 2, gridRow: index + 1 }}
+                >
+                    {renderContent(item, false)}
+                </div>
+            ))}
+
+            {sameRemark ? (
+                <div
+                    data-session-cell="remark"
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
+                    onClick={event => event.stopPropagation()}
+                >
+                    <button
+                        type="button"
+                        onClick={() => onOpenRemark?.(items[0].indices)}
+                        title={t('remark.editTitle')}
+                        aria-label={t('remark.editTitle')}
+                        data-remark-cell="true"
+                        className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                        <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark || '—'}</span>
+                    </button>
+                </div>
+            ) : items.map((item, index) => (
+                <div
+                    key={`remark-${item.key}`}
+                    data-session-cell="remark"
+                    data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    style={{ gridColumn: 3, gridRow: index + 1 }}
+                    onClick={event => event.stopPropagation()}
+                >
+                    <button
+                        type="button"
+                        onClick={() => onOpenRemark?.(item.indices)}
+                        title={t('remark.editTitle')}
+                        aria-label={t('remark.editTitle')}
+                        data-remark-cell="true"
+                        className="min-h-11 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                        <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}, (previous, next) => {
+    if (previous.items !== next.items || previous.onToggleSelect !== next.onToggleSelect
+        || previous.onToggleSelectGroup !== next.onToggleSelectGroup
+        || previous.editingKey !== next.editingKey
+        || previous.onDoubleClickEdit !== next.onDoubleClickEdit || previous.onOpenDateModal !== next.onOpenDateModal
+        || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
+        || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
+        || previous.getDateWarnings !== next.getDateWarnings || previous.getDateOrder !== next.getDateOrder
+        || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds) return false;
+    return previous.items.every(item => previous.selectedKeys.has(item.key) === next.selectedKeys.has(item.key));
+});
+
+SessionGroupRow.displayName = 'SessionGroupRow';
+
+/* État vide réinventé selon le design system éditorial chaud & épuré avec illustration dynamique. */
+const EmptyState: React.FC<{
+  onOpenAddContentModal: (indices?: Indices) => void;
+  predefinedProgramTitle?: string;
+  onLoadPredefined?: () => void;
+}> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
+    const { t, locale } = useLocale();
+    const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
+    const reduceMotion = useReducedMotion();
+    const Illustration = canLoadPredefined ? CurriculumImportIllustration : NotebookOpeningIllustration;
+
+    return (
+        <section className="flex justify-center py-6 sm:py-10">
+            <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-border bg-card shadow-sm transition-all">
+                {/* Surface principale */}
+                <div className="flex flex-col items-center px-7 pt-7 pb-8 text-center sm:px-9 sm:pt-9 sm:pb-9">
+                    {/* Illustration vectorielle vivante avec micro-mouvement de respiration */}
+                    <Illustration size={152} className="mb-3" />
+
+                    {/* Titre 21px bold */}
+                    <h2 className="mt-2 text-[21px] font-bold tracking-tight text-foreground">
+                        {t('emptyNotebook.label')}
+                    </h2>
+
+                    {/* Description 14.5px (uniquement si programme officiel disponible) */}
+                    {canLoadPredefined && (
+                        <p className="mt-2.5 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-muted-foreground">
+                            {t('emptyNotebook.programAvailable')}
+                        </p>
+                    )}
+
+                    {/* Boutons d'action avec physique de ressort (Spring physics) */}
+                    <div className="mt-6 flex w-full flex-col gap-2.5">
+                        {canLoadPredefined && (
+                            <motion.button
+                                type="button"
+                                whileHover={reduceMotion ? undefined : { y: -2 }}
+                                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                                onClick={onLoadPredefined}
+                                className="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-[14.5px] font-semibold text-primary-foreground shadow-xs transition-colors hover:brightness-110 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
+                            >
+                                {t('emptyNotebook.importProgram')}
+                            </motion.button>
+                        )}
+                        <motion.button
+                            type="button"
+                            whileHover={reduceMotion ? undefined : { y: -2 }}
+                            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                            onClick={() => onOpenAddContentModal()}
+                            className={`flex h-12 w-full items-center justify-center rounded-xl text-[14.5px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer ${
+                                canLoadPredefined
+                                    ? 'border border-border bg-transparent text-foreground hover:bg-muted'
+                                    : 'bg-primary text-primary-foreground hover:brightness-110 shadow-xs'
+                            }`}
+                        >
+                            {t('emptyNotebook.createChapter')}
+                        </motion.button>
+                    </div>
+                </div>
+
+                {/* Surface secondaire : assistance WhatsApp */}
+                <SupportWhatsAppBlock
+                    locale={locale}
+                    hint={t('support.serviceHint')}
+                    label={t('support.serviceWhatsApp')}
+                />
+            </div>
+        </section>
+    );
+};
+
+export const MainTable: React.FC<MainTableProps> = React.memo(({
+  lessonsData,
+  visibleRows,
+  onClearSearch,
+  contentDirection,
+  onOpenAddContentModal,
+  showDescriptions,
+  descriptionTypes = NO_DESCRIPTION_TYPES,
+  selectedKeys,
+  onToggleSelect,
+  onToggleSelectGroup,
+  newlyAddedIds,
+  editingKey,
+  onOpenContentEditor,
+  onOpenDateModal,
+  onOpenRemark,
+  getDateWarnings,
+  getDateOrder,
+  getContentNumber,
+  searchQuery,
+  focusKey,
+  predefinedProgramTitle,
+  onLoadPredefined,
+}) => {
+  const { t } = useLocale();
+  const { flatData, renderRows } = useMemo(() => groupLessonRows(visibleRows), [visibleRows]);
+
+  const measurementIds = useRef(new WeakMap<object, number>());
+  const nextMeasurementId = useRef(0);
+  const itemKeys = useMemo(() => renderRows.map(row => {
+    const items = row.kind === 'single' ? [row.item] : row.items;
+    return items.map(item => {
+      let id = measurementIds.current.get(item.data);
+      if (id === undefined) {
+        id = ++nextMeasurementId.current;
+        measurementIds.current.set(item.data, id);
+      }
+      return id;
+    }).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypes.join(',');
+  }), [renderRows, contentDirection, showDescriptions, descriptionTypes]);
+  const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
+  const estimateSizes = useMemo(() => renderRows.map(row =>
+    (row.kind === 'session' && !(row.items[0].dateMerge?.mergeType === 'content'
+      && row.items[0].dateMerge?.shouldMergeRemark) ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
+  ), [renderRows]);
+  const { scrollRef, scrollToIndex, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
+    count: renderRows.length,
+    itemKeys,
+    enabled: shouldVirtualize,
+    estimateSize: ESTIMATED_ROW_HEIGHT,
+    estimateSizes,
+    overscan: VIRTUAL_OVERSCAN,
+  });
+
+  useEffect(() => {
+    if (!focusKey) return;
+
+    const targetIndex = renderRows.findIndex(row => (
+        row.kind === 'single'
+            ? row.item.key === focusKey
+            : row.items.some(item => item.key === focusKey)
+    ));
+    if (targetIndex < 0) return;
+
+    const scrollNearTarget = () => scrollToIndex(targetIndex);
+
+    const refineToRenderedRow = () => {
+        const row = Array.from(document.querySelectorAll<HTMLElement>('[data-focus-key]'))
+            .find(element => element.dataset.focusKey === focusKey);
+        row?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    };
+
+    const frame = window.requestAnimationFrame(scrollNearTarget);
+    const refineTimer = window.setTimeout(refineToRenderedRow, shouldVirtualize ? 260 : 80);
+    return () => {
+        window.cancelAnimationFrame(frame);
+        window.clearTimeout(refineTimer);
+    };
+  }, [focusKey, renderRows, scrollToIndex, shouldVirtualize]);
+
+  useEffect(() => {
+    logger.debug('MainTable profile', {
+      totalRowsInMemory: flatData.length,
+      renderedLogicalRows: renderRows.length,
+      renderedRows: renderedCount,
+      virtualized: shouldVirtualize,
+      virtualWindow: shouldVirtualize && virtualItems.length > 0 ? `${virtualItems[0].index}-${virtualItems[virtualItems.length - 1].index}` : 'full',
+      measuredCanvasHeight: shouldVirtualize ? Math.round(totalSize) : renderRows.length * ESTIMATED_ROW_HEIGHT,
+      estimatedRowsSkipped: shouldVirtualize ? Math.max(0, renderRows.length - renderedCount) : 0,
+      estimatedDomReductionPercent: shouldVirtualize
+        ? Math.round((1 - renderedCount / Math.max(1, renderRows.length)) * 100)
+        : 0,
+    });
+  }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
+
+  if (!lessonsData || lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) {
+      return (
+          <div dir={contentDirection} data-content-direction={contentDirection}>
+              <EmptyState
+                  onOpenAddContentModal={onOpenAddContentModal}
+                  predefinedProgramTitle={predefinedProgramTitle}
+                  onLoadPredefined={onLoadPredefined}
+              />
+          </div>
+      );
+  }
+
+  if (visibleRows.length === 0 && searchQuery?.trim()) {
+    return (
+      <div className="rounded-2xl border border-border bg-card p-8 text-center" dir={contentDirection}>
+        <LessonSearchIllustration size={120} className="mx-auto mb-3" />
+        <p className="mb-4 text-muted-foreground">{t('print.noContent')}</p>
+        <Button variant="outline" onClick={onClearSearch}>{t('toolbar.clearSearch')}</Button>
+      </div>
+    );
+  }
+
+  return (
+    <Card
+      data-editor-table
+      data-content-direction={contentDirection}
+      dir={contentDirection}
+      className="rtl-table mx-0 overflow-hidden rounded-xl border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
+    >
+      <TableHeader />
+      <CardContent className="!p-0">
+        <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
+          {(() => {
+              const rows: Array<{ row: RenderRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
+                ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
+                : renderRows.map((row, absoluteIndex) => ({ row, absoluteIndex }));
+
+              return rows.map(({ row, virtualItem, absoluteIndex }) => {
+                  if (row.kind === 'session') {
+                      const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
+                      return (
+                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={rowFocusKey ?? undefined} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                              <SessionGroupRow
+                                  items={row.items}
+                                  selectedKeys={selectedKeys}
+                                  newlyAddedIds={newlyAddedIds}
+                                  editingKey={editingKey}
+                                  onToggleSelect={onToggleSelect}
+                                  onToggleSelectGroup={onToggleSelectGroup}
+                                  onDoubleClickEdit={onOpenContentEditor}
+                                  onOpenDateModal={onOpenDateModal}
+                                  onOpenRemark={onOpenRemark}
+                                  showDescriptions={showDescriptions}
+                                  descriptionTypes={descriptionTypes}
+                                  searchQuery={searchQuery}
+                                  getDateWarnings={getDateWarnings}
+                                  getDateOrder={getDateOrder}
+                                  getContentNumber={getContentNumber}
+                              />
+                          </VirtualListRow>
+                      );
+                  }
+
+                  const { item } = row;
+
+                  const isSelected = selectedKeys.has(item.key);
+                  const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
+
+                  return (
+                      <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                          <TableRow
+                              data={item.data}
+                              indices={item.indices}
+                              elementType={item.elementType}
+                              dateMerge={item.dateMerge}
+                              onToggleSelect={onToggleSelect}
+                              onDoubleClickEdit={onOpenContentEditor}
+                              onOpenDateModal={onOpenDateModal}
+                              onOpenRemark={onOpenRemark}
+                              isSelected={isSelected}
+                              isNew={isNew}
+                              isEditing={editingKey === item.key}
+                              showDescriptions={showDescriptions}
+                              descriptionTypes={descriptionTypes}
+                              searchQuery={searchQuery}
+                              getDateWarnings={getDateWarnings}
+                              getDateOrder={getDateOrder}
+                              getContentNumber={getContentNumber}
+                          />
+                      </VirtualListRow>
+                  );
+              });
+          })()}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+MainTable.displayName = 'MainTable';

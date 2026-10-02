@@ -1,0 +1,61 @@
+.editor-back-button {
+  --back-direction: -1;
+  --back-rotation: 0deg;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border) / .65);
+  border-radius: 12px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground) / .8);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / .025), 0 3px 8px -6px hsl(var(--foreground) / .18);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 230ms cubic-bezier(.16,1,.3,1), border-color 230ms,
+    background-color 230ms, box-shadow 230ms;
+}
+.editor-back-button::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -50%;
+  background: linear-gradient(115deg, transparent 38%, hsl(var(--primary) / .08) 50%, transparent 62%);
+  opacity: 0;
+  transform: translateX(45%);
+  transition: transform 230ms cubic-bezier(.16,1,.3,1), opacity 230ms;
+}
+.editor-back-button:dir(rtl) { --back-direction: 1; --back-rotation: 180deg; }
+.editor-back-button__arrow {
+  width: 19px;
+  height: 19px;
+  transform: rotate(var(--back-rotation));
+  transition: transform 230ms cubic-bezier(.16,1,.3,1);
+}
+.editor-back-button:focus-visible {
+  outline: 2px solid var(--workspace-focus);
+  outline-offset: 4px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .editor-back-button:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / .25);
+    box-shadow: inset 0 1px 0 hsl(var(--card) / .7), 0 7px 16px -11px hsl(var(--foreground) / .3);
+  }
+  .editor-back-button:hover::before { opacity: 1; transform: translateX(0); }
+  .editor-back-button:hover .editor-back-button__arrow {
+    transform: translateX(calc(var(--back-direction) * 2px)) rotate(var(--back-rotation));
+  }
+}
+.editor-back-button:active { transform: scale(.96); background: hsl(var(--muted)); }
+@media (prefers-reduced-motion: reduce) {
+  .editor-back-button, .editor-back-button::before, .editor-back-button__arrow { transition: none; }
+  .editor-back-button:is(:hover, :active) { transform: none; }
+  .editor-back-button:hover .editor-back-button__arrow { transform: rotate(var(--back-rotation)); }
+}

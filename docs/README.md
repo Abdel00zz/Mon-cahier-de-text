@@ -1,0 +1,11 @@
+# Documentation
+
+| Besoin | Dossier / document |
+| --- | --- |
+| Comprendre les dossiers et choisir où ajouter du code | [Architecture](architecture/architecture.md) |
+| Utiliser le cahier et rédiger des contenus | [Guides](guides/) |
+| Déployer, vérifier la synchronisation ou les notifications | [Exploitation](operations/) |
+| Consulter les analyses UX, mobile et données | [Audits](audits/) |
+| Retrouver les transcriptions des documents officiels | [Recherche](research/) |
+
+Les audits conservent le contexte de leurs dates de rédaction. Pour l’organisation actuelle et les commandes de vérification, utiliser l’architecture et le README du projet.

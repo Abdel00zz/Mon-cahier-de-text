@@ -4,11 +4,11 @@ import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
-import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../types.js';
-import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
-import { assignClassColors } from '../utils/classColors.js';
-import { mergeAdminAssessmentDates } from '../utils/syncSettings.js';
-import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../utils/timetable.js';
+import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../src/types.js';
+import { withCurriculumSettings } from '../src/domain/classes/classCurriculumSettings.js';
+import { assignClassColors } from '../src/domain/classes/classColors.js';
+import { mergeAdminAssessmentDates } from '../src/infrastructure/sync/syncSettings.js';
+import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../src/domain/calendar/timetable.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];

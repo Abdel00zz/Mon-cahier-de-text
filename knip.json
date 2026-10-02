@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "admin/index.tsx",
+    "src/admin/index.tsx",
     "api/admin.ts",
     "api/auth.ts",
     "api/calendar.ts",
@@ -10,8 +10,8 @@
     "api/official-events.ts",
     "api/send-email.ts",
     "api/sync.ts",
-    "scripts/test-*.ts",
-    "scripts/benchmark-*.ts",
+    "tests/test-*.ts",
+    "scripts/benchmarks/benchmark-*.ts",
     "scripts/guide-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",

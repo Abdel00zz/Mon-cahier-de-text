@@ -1,6 +1,6 @@
 import { ApiRequest, ApiResponse, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
-import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
+import { getBundledCalendar, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');

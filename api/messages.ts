@@ -3,7 +3,7 @@ import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
 import { getRedis, KEYS } from './_lib/redis.js';
-import type { AdminMessage } from '../types.js';
+import type { AdminMessage } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 
 interface MessageBody {

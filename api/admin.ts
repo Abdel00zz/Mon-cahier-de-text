@@ -4,7 +4,7 @@ import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMess
 import { getRedis, KEYS } from './_lib/redis.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
-import { withStarterDiagnostic } from '../utils/starterDiagnostic.js';
+import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
 import { PushEntry, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
 import {
     ADMIN_COOKIE,
@@ -15,16 +15,16 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../types.js';
-import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../utils/calendar.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../src/types.js';
+import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
 import {
     getOfficialStudentEventsFile,
     validateOfficialStudentEventsFile,
     type OfficialStudentEventsFile,
-} from '../utils/officialStudentEvents.js';
-import { composeAdminLessonImport, prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
+} from '../src/domain/evaluations/officialStudentEvents.js';
+import { composeAdminLessonImport, prepareImportedLessons, summarizeImportedLessons } from '../src/domain/notebook/importPipeline.js';
 import { assertBodySize } from './_lib/validate.js';
-import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from '../utils/timetable.js';
+import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from '../src/domain/calendar/timetable.js';
 
 interface AdminBody {
     action?: string;

@@ -10,7 +10,7 @@ compte n’est utilisée. Elle ne fait pas partie des entrées du build de produ
    mobile. Attendre le chargement des polices et la visibilité des `.katex`.
 3. Enregistrer les PNG dans `tmp/showcase-captures`, sous les noms
    `{landscape|portrait}-{fr|ar}-{classes|editor|schedule}.png`.
-4. Exécuter `python scripts/build-showcase-gifs.py --capture-scale 1` (Pillow).
+4. Exécuter `python scripts/assets/build-showcase-gifs.py --capture-scale 1` (Pillow).
    Les exports du navigateur intégré de cette session ont une surface visible à
    80 % : ils utilisent `--capture-scale 0.8` pour retirer la marge d’export.
 

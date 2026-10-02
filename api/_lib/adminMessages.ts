@@ -1,4 +1,4 @@
-import type { AdminMessage } from '../../types.js';
+import type { AdminMessage } from '../../src/types.js';
 
 export const MAX_ADMIN_MESSAGES_PER_TEACHER = 60;
 const ADMIN_MESSAGES_DETAIL_LIMIT = 20;

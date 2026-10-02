@@ -1,12 +1,12 @@
 /** Development-only visual review. No account, persistence or network writes. */
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import '../../index.css';
-import { LocaleProvider } from '../../i18n/LocaleProvider';
-import { OnboardingPage } from '../../features/dashboard/OnboardingPage';
-import { AnimatedSubmitButton } from '../../components/ui/animated-submit-button';
-import { ClassroomWelcomeIllustration, NotebookOpeningIllustration, SereneStudyIllustration, SubjectsLibraryIllustration, SchedulePlanningIllustration, LessonSearchIllustration, TeachingCyclesIllustration, CurriculumImportIllustration } from '../../components/ui/DynamicIllustration';
-import type { AppConfig, ClassInfo, ThemeMode } from '../../types';
+import '../../src/styles/index.css';
+import { LocaleProvider } from '../../src/i18n/LocaleProvider';
+import { OnboardingPage } from '../../src/features/dashboard/OnboardingPage';
+import { AnimatedSubmitButton } from '../../src/components/ui/animated-submit-button';
+import { ClassroomWelcomeIllustration, NotebookOpeningIllustration, SereneStudyIllustration, SubjectsLibraryIllustration, SchedulePlanningIllustration, LessonSearchIllustration, TeachingCyclesIllustration, CurriculumImportIllustration } from '../../src/components/ui/DynamicIllustration';
+import type { AppConfig, ClassInfo, ThemeMode } from '../../src/types';
 
 const artwork = [
   { label: 'Choisir ses cycles', ar: 'اختيار الأسلاك', context: 'Configuration · étape 1', contextAr: 'الإعداد · المرحلة الأولى', Component: TeachingCyclesIllustration },

@@ -1,0 +1,365 @@
+import React from 'react';
+import { hasMathSyntax, splitMathText } from '@/lib/text/math';
+import { MathText } from '@/components/ui/math-text';
+import { renderKatexHtml } from '@/config/katex';
+import { toDisplayText } from '@/lib/text/textValue';
+import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
+import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
+import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
+import { renderDescriptionWithBold } from '@/components/typography/textFormat';
+import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { TriangleAlert } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
+
+interface ContentRendererProps {
+  data: any;
+  indices: Indices;
+  elementType: ElementType;
+  isPrint?: boolean;
+  showDescriptions?: boolean; // explicit on/off. If undefined, use descriptionTypes (custom mode)
+  descriptionTypes?: string[];
+  /** terme de recherche à surligner dans les titres */
+  highlight?: string;
+  /** numéro affiché : saisi à la main, sinon calculé par chapitre */
+  contentNumber?: string;
+}
+
+/** Champs qu'un JSON importé peut remplir n'importe comment. */
+type DisplayTextFields = { title?: unknown; description?: unknown; page?: unknown; number?: unknown };
+
+/**
+ * Ramène UNE fois pour toutes les champs texte d'un contenu à du texte
+ * affichable : un titre d'objet ne doit pas finir en « [object Object] » dans
+ * le cahier, ni un numéro non textuel faire planter React. Les valeurs vides
+ * restent vides (falsy), donc les replis existants (placeholder, page absente)
+ * continuent de fonctionner à l'identique.
+ */
+const withDisplayText = <T extends DisplayTextFields>(item: T): T & Record<keyof DisplayTextFields, string> => ({
+  ...item,
+  title: toDisplayText(item.title),
+  description: toDisplayText(item.description),
+  page: toDisplayText(item.page),
+  number: toDisplayText(item.number),
+});
+
+const MaybeKaTeX: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
+  <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
+);
+
+const HighlightedPlainText: React.FC<{ text: string; query?: string }> = ({ text, query }) => {
+  const needle = query?.trim();
+  if (!needle) return <>{text}</>;
+  const parts: React.ReactNode[] = [];
+  const source = text.toLocaleLowerCase();
+  const target = needle.toLocaleLowerCase();
+  let cursor = 0;
+  let match = source.indexOf(target);
+  while (match >= 0) {
+    if (match > cursor) parts.push(text.slice(cursor, match));
+    parts.push(<mark key={`${match}-${target}`} className="rounded-sm bg-warning/30 px-0.5 text-inherit">{text.slice(match, match + needle.length)}</mark>);
+    cursor = match + needle.length;
+    match = source.indexOf(target, cursor);
+  }
+  if (cursor < text.length) parts.push(text.slice(cursor));
+  return <>{parts}</>;
+};
+
+/**
+ * Surlignage de recherche SANS perdre les formules : un segment mathématique
+ * est composé par KaTeX, le reste passe par le surlignage habituel. Avant,
+ * le segment était recopié en texte brut — d'où les `$…$` visibles dans les
+ * titres de chapitres, de blocs et d'items.
+ */
+const HighlightedText: React.FC<{ text?: unknown; query?: string }> = ({ text, query }) => (
+  <>
+    {splitMathText(text).map((part, index) => (part.math ? (
+      <span
+        key={index}
+        className="math-text"
+        dangerouslySetInnerHTML={{ __html: renderKatexHtml(part.text) }}
+      />
+    ) : (
+      <HighlightedPlainText key={index} text={part.text} query={query} />
+    )))}
+  </>
+);
+
+const renderChapterLabel = (input: unknown) => {
+  const label = toDisplayText(input);
+  const parts = label.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème|st|nd|rd|th)?)/gi);
+  return parts.map((part, idx) => {
+    if (!part) return null;
+    const matchOrdinal = part.match(/^([0-9\u0660-\u0669]+)(er|ere|eme|ère|ème|st|nd|rd|th)$/i);
+    if (matchOrdinal) {
+      const num = matchOrdinal[1];
+      const suf = matchOrdinal[2];
+      return (
+        <span key={idx} className="inline-block">
+          <span>{num}</span>
+          <sup className="relative -top-[0.45em] text-[0.6em] font-semibold">{suf}</sup>
+        </span>
+      );
+    }
+    return <span key={idx}>{part}</span>;
+  });
+};
+
+const renderChapterTitleStyled = (text: string) => {
+  const trimmed = text.trim();
+  const match = trimmed.match(
+    /^(Chapitre\s+[^:\-–—\n]+|Chapter\s+[^:\-–—\n]+|الفصل\s+[^:\-–—\n]+|الباب\s+[^:\-–—\n]+|الوحدة\s+[^:\-–—\n]+|الدرس\s+[^:\-–—\n]+|المحور\s+[^:\-–—\n]+)(?:\s*([:\-–—])\s*(.*))?$/i
+  );
+
+  if (match) {
+    const chapterPrefix = match[1].trim();
+    const separator = match[2];
+    const restTitle = match[3]?.trim();
+
+    return (
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
+        <span className="text-[0.95em] font-bold text-inherit font-sans tracking-tight">
+          {renderChapterLabel(chapterPrefix)}
+          {separator ? <span className="ms-1 opacity-80">{separator}</span> : null}
+        </span>
+        {restTitle ? (
+          <span className="text-[0.85em] font-semibold text-inherit">
+            {restTitle}
+          </span>
+        ) : null}
+      </span>
+    );
+  }
+
+  return (
+    <span className="text-[0.85em] font-bold text-inherit">
+      {text}
+    </span>
+  );
+};
+
+export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight, contentNumber }) => {
+  const { t } = useLocale();
+  
+  if (elementType in TOP_LEVEL_TYPE_CONFIG) {
+    const item = withDisplayText(data as TopLevelItem);
+    const config = TOP_LEVEL_TYPE_CONFIG[item.type as TopLevelType];
+
+    if (!config) {
+        logger.error("ContentRenderer Error: Invalid top-level item type encountered.", { data });
+        return (
+            <div className="text-lg font-bold text-center py-3 text-destructive flex items-center justify-center gap-3">
+                <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
+                <span>{t('editor.unknownContent')}</span>
+            </div>
+        );
+    }
+    
+    const isCorrection = toDisplayText(item.type).startsWith('correction_');
+
+    if (isPrint) {
+      const prefix = toDisplayText(item.type).toUpperCase();
+      const title = (toDisplayText(item.title) || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
+      return (
+        <MathText source={title}>
+          <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
+            {title}
+          </div>
+        </MathText>
+      );
+    }
+
+    const isEvaluation = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu'].includes(item.type);
+    const isCenteredInApp = isEvaluation;
+    
+    let indentClass = '';
+    // Ne pas appliquer d'indentation pour les chapitres et évaluations de premier niveau
+    if (indices.itemIndex !== undefined) {
+        // Un cran de marge par niveau : c'est le plan du cahier.
+        if (indices.subsubsectionIndex !== undefined) indentClass = 'editor-indent-3';
+        else if (indices.subsectionIndex !== undefined) indentClass = 'editor-indent-2';
+        else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1';
+    }
+
+    const isTopLevel = item.type === 'chapter' || isEvaluation;
+    const justificationClass = isTopLevel ? 'justify-center' : '';
+    
+    if (isCorrection) {
+      indentClass = 'editor-indent-1';
+    }
+
+    if (item.type === 'chapter') {
+      const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
+      return (
+        <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
+          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
+            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
+              {highlight || hasMathSyntax(chapterTitle) ? (
+                <HighlightedText text={chapterTitle} query={highlight} />
+              ) : (
+                renderChapterTitleStyled(chapterTitle)
+              )}
+            </span>
+          </div>
+        </MaybeKaTeX>
+      );
+    }
+
+    return (
+      // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
+      // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
+      <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
+        <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+            <span dir={textDirectionAttribute(item.title)}>
+              <HighlightedText text={item.title} query={highlight} />
+            </span>
+        </div>
+      </MaybeKaTeX>
+    );
+  }
+
+  switch (elementType) {
+    case 'section':
+      const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
+      return (
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+            <div className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+                {/* `shrink-0 whitespace-nowrap` : la cellule hérite de
+                    `overflow-wrap: anywhere` ([data-row-content]), donc sans
+                    cela le repli d'un titre long comprime « A. » jusqu'à ce
+                    que le point passe seul à la ligne suivante. */}
+                <span className="shrink-0 whitespace-nowrap">{sectionLetter}.</span>
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
+            </div>
+        </MaybeKaTeX>
+      );
+    case 'subsection':
+      return (
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+            <div className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+                <span className="shrink-0 whitespace-nowrap">{indices.subsectionIndex! + 1}.</span>
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
+            </div>
+        </MaybeKaTeX>
+      );
+    case 'subsubsection':
+      const roman = ['i', 'ii', 'iii', 'iv', 'v'];
+      return (
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+            <div className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+                <span className="shrink-0 whitespace-nowrap">{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
+            </div>
+        </MaybeKaTeX>
+      );
+    case 'item':
+      const item = withDisplayText(data as LessonItem);
+      // Un cran de marge par niveau parent : chapitre à la marge, puis
+      // section, sous-section, sous-sous-section.
+      const lessonIndentClass = indices.subsubsectionIndex !== undefined
+        ? 'editor-indent-3'
+        : indices.subsectionIndex !== undefined
+          ? 'editor-indent-2'
+          : indices.sectionIndex !== undefined
+            ? 'editor-indent-1'
+            : '';
+      const normalizedType = TYPE_MAP[toDisplayText(item.type).toLowerCase()] || toDisplayText(item.type);
+      if (normalizedType === 'free') {
+        const source = `${item.title ?? ''}\n${item.description ?? ''}`;
+        const empty = !source.trim();
+        return (
+          <MaybeKaTeX mathSource={source} cacheKey={`free-${source}`}>
+            <div className={`editor-free-content min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
+              {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
+              {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
+              {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
+              {empty && isPrint && <span aria-hidden="true">{'\u00a0'}</span>}
+            </div>
+          </MaybeKaTeX>
+        );
+      }
+      const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
+      const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
+      const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
+      const badgeClass = contentBadgeClass(normalizedType);
+      // Numéro saisi à la main prioritaire, sinon compteur du chapitre.
+      const displayNumber = toDisplayText(contentNumber ?? item.number);
+
+      if (isPrint) {
+        const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
+        return (
+          <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
+            <div className={`print-lesson-item ${lessonIndentClass}`}>
+              <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
+              <span dir={textDirectionAttribute(item.title)} className="print-item-title">{item.title || ''}</span>
+              {item.page && <span className="print-item-page"> p. {item.page}</span>}
+              {allowDescription && (
+                <div dir={textDirectionAttribute(item.description)} className="print-item-description">
+                  {renderDescriptionWithBold(item.description)}
+                </div>
+              )}
+            </div>
+          </MaybeKaTeX>
+        );
+      }
+
+      const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
+        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${displayNumber ? ` ${displayNumber}` : ''}`
+        : `${normalizedType}${displayNumber ? ` ${displayNumber}` : ''}`;
+
+      const content = (
+        <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
+          <Badge
+            variant="outline"
+            className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline lg:tracking-wide ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
+            data-content-number={displayNumber ?? ''}
+            data-tippy-content={fullTooltip}
+            title={fullTooltip}
+          >
+            <span>{badgeText}</span>
+            {displayNumber ? <span className="ms-px font-bold lg:ms-0.5">{displayNumber}</span> : null}
+          </Badge>
+          {/* Titre : wrap multilingue / saut de ligne supporté */}
+          <div
+            title={item.title || t('editor.titlePlaceholder')}
+            dir={textDirectionAttribute(item.title)}
+            className="editor-type-item-title min-w-0 break-words p-0 font-semibold text-foreground"
+          >
+            {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
+          </div>
+
+          {/* Description : encadré sobre sous le titre façon Google Keep */}
+          {allowDescription && (
+            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
+              {renderDescriptionWithBold(item.description)}
+            </div>
+          )}
+
+          {/* Info page */}
+          {item.page && (
+            <div className="col-start-2 editor-type-page flex items-center gap-1 text-muted-foreground italic">
+              <span>(p.</span>
+              <span>{String(item.page)}</span>
+              <span>)</span>
+            </div>
+          )}
+        </div>
+      );
+      
+      const contentKey = `${item.type || ''}-${item.number || ''}-${item.title || ''}-${allowDescription ? item.description || '' : ''}-${item.page || ''}`;
+
+      const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
+
+
+      return <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeKaTeX>;
+
+    default:
+      return null;
+  }
+});

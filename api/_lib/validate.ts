@@ -1,5 +1,5 @@
 import { HttpError } from './http.js';
-import { isClassColor } from '../../utils/classColors.js';
+import { isClassColor } from '../../src/domain/classes/classColors.js';
 import type {
   AppConfig,
   AppLocale,
@@ -10,7 +10,7 @@ import type {
   ScheduleSlot,
   TeacherSnapshot,
   TimetableEntry,
-} from '../../types.js';
+} from '../../src/types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);

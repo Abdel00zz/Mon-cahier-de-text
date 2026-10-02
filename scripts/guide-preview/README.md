@@ -30,9 +30,9 @@ simulée. L’horloge et les données d’exemple ne décrivent aucun compte ré
 
 ## Maintenance
 
-- `constants/guides.ts` : contenus FR/AR, liens entre chapitres, mots de recherche.
-- `features/guide/GuideText.tsx` : emphase sûre des mots-clés, sans HTML brut.
-- `features/guide/GuideFigure.tsx` : cadre, zoom intégré défilable, erreur et nouvelle tentative.
+- `src/constants/guides.ts` : contenus FR/AR, liens entre chapitres, mots de recherche.
+- `src/features/guide/GuideText.tsx` : emphase sûre des mots-clés, sans HTML brut.
+- `src/features/guide/GuideFigure.tsx` : cadre, zoom intégré défilable, erreur et nouvelle tentative.
 - `vite.config.ts` : précache des captures pour l’application installée.
 - Les dimensions déclarées dans `GuideFigure` doivent rester celles des fichiers.
 - Tester recherche accentuée/arabe, résultat vide, changement de langue, lecture

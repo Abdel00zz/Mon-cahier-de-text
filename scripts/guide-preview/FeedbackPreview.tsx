@@ -1,15 +1,15 @@
 /** Safe visual cases: no user data, persistence, notification permission or network writes. */
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../components/ui/button';
-import { ConfirmDialog } from '../../components/ui/confirm-dialog';
-import { FluidTabRail } from '../../components/ui/FluidTabRail';
-import { StatusNotice } from '../../components/ui/status-notice';
-import { Toaster } from '../../components/ui/sonner';
-import { useLocale } from '../../i18n/LocaleProvider';
-import { Modal } from '../../components/ui/modal';
-import { PushActivationCard } from '../../features/settings/components/NotificationsTab';
-import type { PushNotificationState } from '../../utils/push';
+import { Button } from '../../src/components/ui/button';
+import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
+import { FluidTabRail } from '../../src/components/ui/FluidTabRail';
+import { StatusNotice } from '../../src/components/ui/status-notice';
+import { Toaster } from '../../src/components/ui/sonner';
+import { useLocale } from '../../src/i18n/LocaleProvider';
+import { Modal } from '../../src/components/ui/modal';
+import { PushActivationCard } from '../../src/features/settings/components/NotificationsTab';
+import type { PushNotificationState } from '../../src/infrastructure/push/push';
 
 type Scenario = 'save' | 'unavailable' | 'retry' | 'delete';
 

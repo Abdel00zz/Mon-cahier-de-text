@@ -2,10 +2,10 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { PushEntry, PushSubscriptionJSON, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { requireUser } from './_lib/auth.js';
-import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from '../utils/calendar.js';
-import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness.js';
+import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
+import { ClassLateness, computeLateness, summarizeForTeacher } from '../src/domain/calendar/lateness.js';
 import { assertValidTeacherSnapshot } from './_lib/validate.js';
-import type { AppLocale, TeacherSnapshot } from '../types.js';
+import type { AppLocale, TeacherSnapshot } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 
 interface NotifyBody {

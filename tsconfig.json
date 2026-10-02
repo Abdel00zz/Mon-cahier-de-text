@@ -15,10 +15,11 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
+  "include": ["src", "api", "server", "build", "tests", "scripts/**/*.ts", "vite.config.ts"],
   "exclude": ["dist", "node_modules", ".next", ".git", "tmp"]
 }

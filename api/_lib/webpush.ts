@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import webpush from 'web-push';
-import type { PushNotificationPayload } from '../../utils/notificationTypes.js';
-import { serializePushNotification } from '../../utils/notificationPresentation.js';
-import { notificationDeliveryPolicy } from '../../utils/notificationDelivery.js';
+import type { PushNotificationPayload } from '../../src/domain/notifications/notificationTypes.js';
+import { serializePushNotification } from '../../src/domain/notifications/notificationPresentation.js';
+import { notificationDeliveryPolicy } from '../../src/domain/notifications/notificationDelivery.js';
 
 /** Helper Web Push partagé entre le cron (notify) et les actions admin. */
 

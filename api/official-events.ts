@@ -3,7 +3,7 @@ import { getRedis, KEYS } from './_lib/redis.js';
 import {
     getOfficialStudentEventsFile,
     type OfficialStudentEventsFile,
-} from '../utils/officialStudentEvents.js';
+} from '../src/domain/evaluations/officialStudentEvents.js';
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');

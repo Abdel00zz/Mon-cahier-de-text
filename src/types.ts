@@ -1,0 +1,411 @@
+export type Cycle = 'college' | 'lycee' | 'prepa';
+export type AppLocale = 'fr' | 'en' | 'ar';
+/** Sens de lecture propre au contenu d'un cahier, indépendant de la langue de l'interface. */
+export type ContentDirection = 'ltr' | 'rtl';
+
+export interface ClassInfo {
+  id: string;
+  name: string; // Formerly className
+  teacherName: string;
+  subject: string;
+  createdAt: string;
+  lastOpenedAt?: string;
+  color: string;
+  cycle?: Cycle; // optional for backward compatibility
+  level?: string;   // classe / niveau pédagogique (ex: "3AC", "Tronc Commun", "1er Bac", "2ème Bac")
+  branch?: string;  // filière / branche (ex: "Sciences Expérimentales", "Sciences Physiques", "Lettres")
+  group?: string;   // numéro ou lettre de groupe (ex: "1", "2")
+  /** @deprecated Legacy metadata preserved for old clients; progression only uses chapter title dates. */
+  courseStartDate?: string;
+  curriculumSourceId?: string;
+  /** Associations confirmées, invalidées si le titre ou l'index du cahier change. */
+  curriculumChapterMatches?: Record<string, { index: number; title: string }[]>;
+}
+
+/** Classe en cours de création : le gestionnaire complète l'identifiant, la
+    date de création et la couleur. Source unique du contrat `addClass`. */
+export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color'>;
+
+interface OfficialChapter {
+  id: string;
+  order: number;
+  semester: 1 | 2;
+  title: string;
+  titleAr?: string;
+  allocatedHours: number | null; // null : volume non lisible ou non ventilé dans la source
+  aliases?: string[];
+  assessmentMilestone?: {
+    type: 'DM' | 'DS' | 'EXAM';
+    num?: number;
+    label: string;
+    labelAr: string;
+    timing: string;
+  };
+}
+
+export interface OfficialCurriculumPlan {
+  id: string;
+  levels?: string[];
+  preferredForMatching?: boolean;
+  cycle: Cycle;
+  level: string;
+  subject: string;
+  sourceDoc: string;
+  weeklyHours: number;
+  diagnosticEvaluation: {
+    period: string;
+    weeks: string;
+    label: string;
+    labelAr: string;
+  };
+  chapters: OfficialChapter[];
+  schoolYear?: string;
+  sourceFile?: string;
+  authority?: 'teacher-plan' | 'ministerial';
+  notes?: string[];
+  coverage?: 'annual' | 'semester1';
+  assessmentWindows?: { type: 'DM' | 'DS'; semester: 1 | 2; num: number; start: string; end: string; hours: number | null }[];
+}
+
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+/**
+ * Densité de texte de l'interface.
+ *
+ * C'est le SEUL réglage typographique exposé au professeur : la police est
+ * déterminée par la langue (DM Sans / Rubik en latin, Arabswell 3 / Maghribi
+ * Font 3 en arabe) et n'est plus un choix utilisateur.
+ */
+export type AppTextSize = 'sm' | 'md' | 'lg' | 'xl';
+
+export interface AppConfig {
+  /** Mode d'affichage (Clair / Sombre / Système). */
+  theme?: ThemeMode;
+  /** Densité du texte de l'interface (petit, normal, grand, très grand). */
+  appTextSize?: AppTextSize;
+  /** Langue de l'interface, partagée avec le compte enseignant. */
+  applicationLocale?: AppLocale;
+  establishmentName: string;
+  defaultTeacherName: string;
+  /** Référentiel administratif marocain utilisé dans l'en-tête imprimé. */
+  academyRegion?: string;
+  educationProvince?: string;
+  printShowDescriptions: boolean;
+    // New flexible description visibility controls
+    screenDescriptionMode?: 'all' | 'none' | 'custom';
+    screenDescriptionTypes?: string[];
+    /** Numérotation des contenus : « définition 1 », « exemple 2 »… */
+    contentNumbering?: ContentNumbering;
+    printDescriptionMode?: 'all' | 'none' | 'custom';
+    printDescriptionTypes?: string[];
+    // User preferences for display filtering
+    selectedCycles?: Cycle[];
+    selectedSubjects?: string[];
+    showAllCycles?: boolean;
+    showAllSubjects?: boolean;
+    // Welcome flow control
+    hasCompletedWelcome?: boolean;
+    showGettingStarted?: boolean;
+    firstNotebookOpened?: boolean;
+    // Emploi du temps hebdomadaire et alertes de retard
+    schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
+    timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant
+    /** Ordre personnalisé des cartes du Dashboard, synchronisé par compte. */
+    dashboardClassOrder?: string[];
+    /** Horloge globale publiée par la direction ; absente = grille historique sans décalage. */
+    timetableClock?: TimetableClockPolicy;
+    notificationSettings?: NotificationSettings;
+    /** signaux masqués par portée (`classId` ou `_global_`), synchronisés entre appareils */
+    notificationDismissals?: Record<string, string[]>;
+    absences?: AbsencePeriod[];         // certificats de maladie, congés, exclus du calcul de retard
+    schoolYearStart?: string;
+    /** dates de devoirs personnalisées par le prof : { [classId]: { [assessmentId]: 'YYYY-MM-DD' } } */
+    assessmentDates?: Record<string, Record<string, string>>;
+    /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: AssessmentAbsenceRecord } } */
+    assessmentAbsences?: Record<string, Record<string, AssessmentAbsenceRecord>>;
+    /** activités pédagogiques libres par classe (diagnostic, olympiade, soutien, examen blanc...) */
+    pedagogicalEvents?: Record<string, PedagogicalEvent[]>;
+    /** devoirs surveillés / maison saisis manuellement par le prof, par classe */
+    manualAssessments?: Record<string, ManualAssessment[]>;
+    /** devoirs (prédéfinis ou manuels) masqués par le prof, par classe */
+    removedAssessments?: Record<string, string[]>;
+    /** ordre personnalisé des devoirs (ids) par classe */
+    assessmentOrder?: Record<string, string[]>;
+}
+
+/** Devoir surveillé ou maison ajouté manuellement, sans planning officiel imposé. */
+export interface ManualAssessment {
+    id: string;
+    /** Millésime explicite pour empêcher un devoir manuel de réapparaître l'année suivante. */
+    schoolYear?: string;
+    type: DevoirType;
+    num: number;
+    dateISO: string;
+    duree?: string;
+    semestre: 1 | 2;
+    /** compte dans la note officielle */
+    note?: boolean;
+}
+
+/** Types officiels d'évaluation (nomenclature ministérielle AR/FR). */
+export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison';
+
+/** Absents d'un devoir surveillé : consignés au moment du devoir, synchronisés avec le compte. */
+interface AssessmentAbsenceRecord {
+    /** noms des élèves absents (un nom par entrée) */
+    names: string[];
+    updatedAt: string;
+}
+
+export type PedagogicalEventType =
+    | 'evaluation_diagnostic'
+    | 'olympiade'
+    | 'concours'
+    | 'soutien'
+    | 'remediation'
+    | 'examen_blanc'
+    | 'rattrapage'
+    | 'autre';
+
+/** Activité créée par le professeur et reliée à une classe, sans la confondre avec une date ministérielle. */
+export interface PedagogicalEvent {
+    id: string;
+    type: PedagogicalEventType;
+    title: string;
+    date: string;
+    endDate?: string;
+    note?: string;
+    status: 'planned' | 'done';
+    createdAt: string;
+}
+
+// ── Emploi du temps & notifications ─────────────────────────────────────────
+
+/** weekday en convention JS getDay() : 0=dimanche … 6=samedi */
+export interface ScheduleSlot {
+    weekday: number;
+    /** nombre de séances ce jour-là (défaut 1, 2 = séance double) */
+    sessions?: number;
+}
+
+export interface ClassSchedule {
+    classId: string;
+    slots: ScheduleSlot[];
+}
+
+/** Une case de la grille emploi du temps : un jour (getDay 0-6) × un créneau horaire × une classe. */
+export interface TimetableEntry {
+    day: number;
+    slot: number;
+    classId: string;
+    room?: string;
+}
+
+/** Translation globale des créneaux, sans modifier les affectations des classes. */
+export interface TimetableClockPolicy {
+    offsetMinutes: number;
+    version: number;
+    updatedAt: string | null;
+}
+
+/** Choix administratif par compte ; `null` signifie suivre l'horaire global. */
+export interface TimetableClockAssignment {
+    offsetMinutes: number | null;
+    version: number;
+    updatedAt: string | null;
+}
+
+export interface NotificationSettings {
+    enabled: boolean;
+    pushEnabled: boolean;
+    /** séances de retard avant alerte */
+    gapThreshold: number;
+    /** jours DE CLASSE sans saisie avant alerte */
+    inactivityThresholdDays: number;
+    quietDuringVacations: boolean;
+    /**
+     * Rappels locaux de fin de séance (vibration + toast). Préférence propre à
+     * l'appareil : exclue du blob de réglages synchronisé (voir
+     * `utils/syncSettings.ts`). Elle ne gouverne PAS les retours haptiques des
+     * boutons (`useHapticFeedback`) : ceux-ci relèvent du confort d'interface,
+     * pas de la notification de séance.
+     */
+    sessionVibration?: boolean;
+    sessionEndReminderEnabled?: boolean;
+    sessionEndReminderTime?: string;
+    sessionReminderMinutes?: number;
+    missingDateReminderEnabled?: boolean;
+    missingDateReminderMinutes?: number;
+}
+
+/** Période d'absence justifiée (certificat de maladie, congé...) : exclue du calcul de retard. */
+export interface AbsencePeriod {
+    debut: string;
+    fin: string;
+    motif?: string;
+}
+
+// ── Instantanés de progression synchronisés (lus par le dashboard admin) ────
+
+export interface ClassSnapshot {
+    id: string;
+    name: string;
+    subject: string;
+    cycle?: Cycle;
+    totalItems: number;
+    plannedCount: number;
+    completionRate: number;
+    sessionsCount: number;
+    lastDate: string | null;
+    weekdays: number[];
+    /**
+     * Projection fidèle de l'emploi du temps. `weekdays` reste présent pour
+     * lire les anciens snapshots, mais ne permettait pas de distinguer une
+     * séance simple d'une séance double le même jour.
+     */
+    scheduleSlots?: ScheduleSlot[];
+    sessionsPerWeek: number;
+    updatedAt: string;
+}
+
+export interface TeacherSnapshot {
+    phone: string;
+    nom: string;
+    prenom: string;
+    /**
+     * Nom d'usage choisi dans le profil. La direction l'affiche à la place de
+     * l'identité du compte : c'est le nom que l'enseignant utilise en classe,
+     * et il doit rester le même partout (app, documents, fiche direction).
+     */
+    displayName?: string;
+    /** Matières déclarées dans le profil, même sans classe encore rattachée. */
+    subjects?: string[];
+    /** Langue de l'interface utilisée aussi pour les notifications système. */
+    applicationLocale?: AppLocale;
+    lastSyncAt: string | null;
+    notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & {
+        /** Absent sur les anciens snapshots : traité comme activé pour rétro-compatibilité. */
+        enabled?: boolean;
+        /**
+         * État Push de l'appareil, remonté EN LECTURE SEULE vers l'admin dans le
+         * snapshot. Il reste hors du blob de réglages synchronisé : l'admin
+         * l'observe, il ne le pilote pas.
+         */
+        pushEnabled?: boolean;
+    };
+    /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */
+    absences?: AbsencePeriod[];
+    /** rentrée choisie par l'enseignant, référence commune des calculs annuels */
+    schoolYearStart?: string;
+    classes: ClassSnapshot[];
+}
+
+/** Message unidirectionnel de la direction, visible par son seul destinataire. */
+export interface AdminMessage {
+    id: string;
+    title: string;
+    body: string;
+    createdAt: string;
+    /** Accusé explicite de l'enseignant via le bouton « J'ai compris ». */
+    acknowledgedAt?: string;
+}
+
+export type TopLevelType =
+    | 'chapter'
+    | 'evaluation_diagnostic'
+    | 'devoir_maison'
+    | 'controle_continu'
+    | 'correction_devoir_maison'
+    | 'correction_controle_continu';
+
+export type EmbeddableTopLevelType = Exclude<TopLevelType, 'chapter'>;
+
+export type ElementType =
+    | TopLevelType
+    | 'section'
+    | 'subsection'
+    | 'subsubsection'
+    | 'item';
+
+export interface Indices {
+    chapterIndex: number;
+    sectionIndex?: number;
+    subsectionIndex?: number;
+    subsubsectionIndex?: number;
+    itemIndex?: number;
+}
+
+export interface LessonItem {
+    type: string;
+    number?: string | number;
+    title?: string;
+    description?: string;
+    page?: string | number;
+    date?: string;
+    remark?: string;
+    _tempId?: string;
+}
+
+interface BaseTopLevelItem {
+    title: string;
+    date?: string;
+    remark?: string;
+    _tempId?: string;
+}
+
+export type EmbeddableTopLevelItem = BaseTopLevelItem & {
+    type: EmbeddableTopLevelType;
+};
+
+
+export interface SubSubSection {
+    name: string;
+    items?: (LessonItem | EmbeddableTopLevelItem)[];
+    date?: string;
+    remark?: string;
+    _tempId?: string;
+}
+
+export interface SubSection {
+    name: string;
+    subsubsections?: SubSubSection[];
+    items?: (LessonItem | EmbeddableTopLevelItem)[];
+    date?: string;
+    remark?: string;
+    _tempId?: string;
+}
+
+export interface Section {
+    name: string;
+    subsections?: SubSection[];
+    items?: (LessonItem | EmbeddableTopLevelItem)[];
+    date?: string;
+    remark?: string;
+    _tempId?: string;
+}
+
+
+export interface TopLevelItem extends BaseTopLevelItem {
+    /**
+     * `'free'` = ligne libre, **hors plan** : ni chapitre, ni section, ni élément
+     * typé. Elle n’a donc ni niveau, ni numéro, ni progression.
+     */
+    type: 'chapter' | EmbeddableTopLevelType | 'free';
+    /** Texte libre, conservé même si le titre est vide. */
+    description?: string;
+    sections?: Section[];
+    /** items (types de contenu) directement sous le chapitre, sans section */
+    items?: (LessonItem | EmbeddableTopLevelItem)[];
+}
+
+export type LessonsData = TopLevelItem[];
+
+
+/**
+ * Portée du compteur de contenus (voir `utils/contentNumbering.ts`).
+ * `chapter` : « définition 1 » repart de 1 dans chaque chapitre.
+ */
+interface ContentNumbering {
+    /** Affiche « Définition 1 », « Exemple 2 »… (compteur par chapitre). */
+    enabled: boolean;
+}
