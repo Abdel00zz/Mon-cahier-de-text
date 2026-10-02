@@ -1,4 +1,5 @@
 import type { AppLocale } from '../../types.js';
+import { unreadBadgeCount } from './appBadge.js';
 import { defaultNotificationTag, isPushNotificationKind, type PushNotificationPayload } from './notificationTypes.js';
 
 const NOTIFICATION_ICON = '/icons/icon-192.png';
@@ -52,7 +53,7 @@ export function notificationPresentation(raw: unknown, vibration = false, now = 
         { action: 'open', title: url.startsWith('/#/classe/') ? copy.notebook : copy.open },
         { action: 'dismiss', title: copy.dismiss },
       ],
-      data: { url, kind, timestamp, messageId: conciseNotificationText(payload.messageId, 96) || undefined },
+      data: { url, kind, timestamp, messageId: conciseNotificationText(payload.messageId, 96) || undefined, badgeOwner: payload.badgeOwner },
     } satisfies NotificationOptions & { renotify: boolean; vibrate: number[]; timestamp: number; actions: { action: string; title: string }[] },
   };
 }
@@ -63,6 +64,8 @@ export function serializePushNotification(payload: PushNotificationPayload): str
   const legacy = {
     title, body: options.body, url: options.data.url, kind: options.data.kind,
     locale: options.lang, tag: options.tag, timestamp: options.timestamp, messageId: options.data.messageId,
+    ...(payload.kind === 'admin' && unreadBadgeCount(payload.badgeCount) !== null
+      ? { badgeCount: unreadBadgeCount(payload.badgeCount), badgeOwner: payload.badgeOwner } : {}),
   };
   const combined = JSON.stringify({
     ...legacy, web_push: 8030, mutable: true,

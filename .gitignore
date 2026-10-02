@@ -32,6 +32,10 @@ android/app/src/main/assets/capacitor.plugins.json
 *.pfx
 **/credentials.dpapi.json
 android/key.properties
+android/app/google-services.json
+**/*service-account*.json
+**/*firebase-adminsdk*.json
+**/serviceAccount*.json
 *.local
 .env
 .env.*

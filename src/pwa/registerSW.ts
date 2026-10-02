@@ -4,6 +4,7 @@ import { translateLocaleMessage } from '@/i18n/messages';
 import { startSafePwaAction } from './safeUpdate';
 import { Capacitor } from '@capacitor/core';
 import { startPwaUpdateChecks } from './updateCheck';
+import { webUpdates } from './updateControl';
 
 /**
  * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
@@ -38,7 +39,6 @@ export const initPwa = (): void => {
     // premier claim), on ne recharge pas : la page a déjà la dernière version.
     const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
-    let cancelActivation: (() => void) | undefined;
     let cancelReload: (() => void) | undefined;
     const requestReload = () => {
         if (!hadController || reloading) return;
@@ -50,11 +50,14 @@ export const initPwa = (): void => {
     const updateServiceWorker = registerSW({
         immediate: true,
         onRegisteredSW(_url, registration) {
-            if (registration) startPwaUpdateChecks(registration);
+            if (registration) {
+                webUpdates.attach(registration, () => updateServiceWorker(false));
+                startPwaUpdateChecks(registration);
+            }
         },
         onNeedRefresh() {
-            cancelActivation?.();
-            cancelActivation = startSafePwaAction(() => { void updateServiceWorker(false); });
+            webUpdates.ready();
+            webUpdates.apply(false);
         },
         onNeedReload: requestReload,
         onOfflineReady() {

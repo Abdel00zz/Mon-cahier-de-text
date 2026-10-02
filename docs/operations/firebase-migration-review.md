@@ -1,0 +1,25 @@
+# Relecture du guide de migration Firebase
+
+Le guide fourni le 2 octobre 2026 décrit une architecture possible. Cette livraison prépare Firebase Cloud Messaging Android et conserve le backend Vercel/Upstash, l’authentification et les cahiers existants. Une connexion FCM ne nécessite pas de migrer Firestore, Authentication et Hosting simultanément.
+
+## Corrections nécessaires avant une migration
+
+* **Isolation des récapitulatifs :** le droit d’écriture de `teacher_snapshots/{phone}` donné à tout utilisateur authentifié permet de modifier les récapitulatifs d’autres enseignants. Les produire côté serveur à partir des données autorisées, ou les isoler par UID avec validation stricte du propriétaire.
+* **Champs sensibles et messages :** une règle récursive autorisant toutes les écritures du propriétaire sous `users/{uid}` lui permet de modifier `blocked`, son profil de rôle et le contenu des messages reçus. Distinguer profil, classes, séances, paramètres et boîte de réception. Réserver l’envoi des messages et la gestion des droits à l’administration ; l’enseignant peut uniquement accuser réception des messages qui lui appartiennent.
+* **Blocage :** la règle utilise un claim `blocked` que l’étape d’authentification ne définit pas. Un champ absent peut refuser les accès légitimes. Les changements de claims arrivent lors du renouvellement du jeton, pas instantanément. Contrôler le blocage dans un document serveur protégé, avec mise à jour de l’interface au retour réseau. Une coupure réseau ne permet pas de retirer instantanément des données déjà en cache. [Propagation des claims](https://firebase.google.com/docs/auth/admin/custom-claims).
+* **Cache Capacitor :** le SDK JavaScript dans le WebView utilise le mécanisme Web/IndexedDB, pas automatiquement le cache du SDK Android natif. Choisir un adaptateur natif si nécessaire et tester persistance, quotas, redémarrage, changements de compte et appareils partagés. [Persistance Firestore](https://firebase.google.com/docs/firestore/manage-data/enable-offline).
+* **Conflits :** Firestore ne remplace pas toutes les garanties du moteur actuel. La dernière écriture gagne sur un même document ; un tableau contenant le cahier entier peut écraser le travail d’un autre appareil. Utiliser des documents par séance et une politique de conflits. Un document est limité à 1 Mio. [Persistance](https://firebase.google.com/docs/firestore/manage-data/enable-offline), [limites](https://firebase.google.com/docs/firestore/quotas).
+* **Comptes existants :** vérifier la compatibilité des empreintes de mots de passe avec l’import Auth et conserver l’association téléphone/UID. Le numéro transformé en adresse interne ne vérifie pas la propriété du téléphone et ne fournit pas une adresse de récupération réelle. Prévoir récupération et migration des sessions sans exposer les mots de passe.
+* **Coût et batterie :** borner les requêtes de la direction, paginer et détacher les écouteurs inutiles. Les reconnexions et documents reçus par les écouteurs peuvent être facturés. La suppression du polling ne garantit pas à elle seule un coût nul ou une consommation plus faible. [Facturation Firestore](https://firebase.google.com/docs/firestore/pricing).
+* **Nettoyage :** conserver le moteur existant jusqu’à validation de l’import et des deux sens de synchronisation. Les routes Express actuelles servent aussi le développement et l’API ; leur suppression prématurée casserait des parcours. Les SDK Firebase fournissent leurs règles R8 : éviter de conserver tout Firebase sans besoin démontré.
+
+## Ordre de migration proposé
+
+1. Identifier le projet, la région exacte, les applications Android/Web et les environnements de test/production. Préparer sauvegarde, export et possibilité de retour arrière.
+2. Définir UID, schéma par séance, règles par collection et fonctions privilégiées. Tester les règles dans l’émulateur : accès anonyme, autre compte, usurpation de récapitulatif, rôle, blocage, messages, dates et accusés de lecture.
+3. Importer un jeu de comptes/données de test ; vérifier contenu, volumes et cohérence avec les exports Redis.
+4. Brancher un adaptateur Firebase derrière les mêmes contrats de stockage/authentification, avec activation contrôlée. Tester deux appareils, hors ligne, reprises, conflits et changement de compte.
+5. Valider FCM et l’accusé de lecture de bout en bout avec les applications configurées ; séparer les tests locaux des preuves de livraison réelle.
+6. Migrer progressivement, comparer les données, puis retirer les services remplacés une fois les parcours et le retour arrière vérifiés.
+
+Le pipeline `npm run release` prépare les versions Web/Android et vérifie tests, signatures et démarrage. Il n’effectue pas un `firebase deploy` implicite : un déploiement cloud futur devra avoir ses propres validations de règles et compatibilité, ainsi qu’un environnement cible explicite.

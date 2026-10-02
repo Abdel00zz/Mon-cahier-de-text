@@ -47,13 +47,35 @@ Les règles du détecteur partagé s’appliquent : classes présentes, séances
 
 Les alarmes utilisent une planification économe, sans permission d’alarme exacte ni `allowWhileIdle`. Android peut donc retarder un rappel en veille profonde. Ouvrir régulièrement l’application renouvelle son horizon de deux semaines. Les alertes de dates manquantes continuent d’être évaluées au premier plan, sur les données réellement saisies.
 
-L’APK ne dispose pas encore de notifications distantes Firebase Cloud Messaging. Les messages de l’administration se synchronisent au retour dans l’application ; une réception native à application fermée nécessite un projet Firebase, son fichier de configuration Android et un transport FCM côté serveur. Les notifications Web Push de la PWA restent indépendantes.
+Les messages non lus alimentent une notification native groupée et son compteur (`setNumber`). La lecture confirmée met à jour le compteur ; la déconnexion retire la notification et son association au compte, même hors ligne. Android décide d’afficher une pastille ou un nombre selon le lanceur et les réglages utilisateur : Pixel et Samsung ne proposent pas forcément le même rendu. Les nouveaux canaux de rappels/tests désactivent le badge pour ne pas gonfler le nombre de messages. Les réglages de canaux déjà créés restent sous le contrôle d’Android et de l’utilisateur.
+
+La réception des messages de l’administration à application fermée dispose d’un circuit Firebase Cloud Messaging HTTP v1. **Cette intégration nécessite encore une configuration Firebase ; elle n’est pas activée par la présence du code.** Sans configuration, les rappels locaux et la synchronisation au retour restent utilisables, sans crash de démarrage. Les notifications Web Push de la PWA restent indépendantes.
+
+### Configuration des messages distants Android
+
+Projet indiqué par le propriétaire : `cahier-text`. Compte de service : `firebase-adminsdk-fbsvc@cahier-text.iam.gserviceaccount.com`. Ces deux identifiants publics figurent dans `.env.example` ; la clé privée serveur et le fichier `google-services.json` restent à fournir séparément. L’extrait `admin.initializeApp({ credential: admin.credential.cert(...) })` est un exemple d’initialisation, pas une clé ni une preuve d’autorisation FCM. Le transport HTTP v1 existant authentifie ce compte sans ajouter l’ensemble du SDK Admin au serveur.
+
+1. Dans votre projet Firebase, enregistrer l’application Android **`ma.cahier.textes`**, télécharger sa configuration et l’enregistrer dans `android/app/google-services.json` (ignoré par Git). Le client Firebase Android requiert les services Google Play ; aucun compte Analytics n’est nécessaire à cette implémentation.
+2. Activer l’API Firebase Cloud Messaging HTTP v1. Sur Vercel, ajouter **uniquement côté serveur** `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY` pour un compte de service autorisé à envoyer des messages FCM. La clé privée ne doit jamais être incluse dans le fichier Android, une variable `VITE_*`, une capture ou le dépôt.
+3. Redéployer le serveur et reconstruire un APK/AAB avec la même clé de signature et un numéro de version supérieur. Un fichier Firebase invalide bloque la compilation. La collecte Analytics et l’initialisation automatique du messaging sont désactivées ; l’enregistrement se fait après activation explicite des notifications.
+4. Sur un appareil réel Pixel/Samsung, se connecter puis activer les notifications dans les paramètres du cahier. Le diagnostic « Messages de l’administration » doit indiquer « Enregistré ». Le bouton de test utilise alors le serveur FCM ; lorsqu’il n’est pas raccordé, il teste uniquement la notification locale.
+5. Envoyer un message depuis l’administration, vérifier la réception à application fermée, le compteur, l’ouverture, l’accusé de lecture et une déconnexion hors ligne. Tester aussi le renouvellement du token et le changement de compte. Un arrêt forcé Android peut suspendre les réceptions jusqu’à la réouverture : ne pas le confondre avec une fermeture normale.
+
+Les envois FCM contiennent une association aléatoire à l’appareil, un compteur et un horodatage ; aucun texte confidentiel du professeur n’est exposé sur l’écran verrouillé. Le service natif refuse les associations révoquées et les compteurs anciens. Un token expiré est retiré du serveur ; une erreur transitoire le conserve. Le renouvellement du token est réconcilié au retour dans l’application. Les inscriptions/transferts/retraits d’appareils utilisent Redis Lua atomique et une limite de cinq appareils par compte. Un retrait serveur échoué reste sans effet local grâce à la révocation de l’association ; son entrée est récupérée à la prochaine inscription, à expiration du token ou à la suppression du compte.
+
+La PWA utilise `setAppBadge`/`clearAppBadge` lorsqu’ils sont disponibles. Sur iOS/iPadOS, cela nécessite une application installée sur l’écran d’accueil et l’autorisation système correspondante. Le worker conserve le dernier compteur confirmé, refuse les push d’un autre compte et efface les notifications de messages après la lecture de la dernière. Une erreur réseau ne remplace pas le compteur par zéro. Sans réception d’un nouveau push, la lecture depuis un autre appareil est réconciliée à la prochaine ouverture/vérification au premier plan.
+
+Tests natifs isolés : après `cap sync android`, lancer `:app:connectedDebugAndroidTest -PnotificationQa` sur un émulateur Android 13+. L’identifiant `.qa` évite toute modification des données de l’application de production. Ces tests couvrent les canaux, le compteur, la lecture, les push dupliqués, les associations et la déconnexion ; ils ne remplacent pas un test FCM réel avec votre projet Firebase.
 
 La compilation native désactive le service worker et exclut l’entrée d’administration. Les vérifications périodiques du cloud s’arrêtent quand l’application est masquée, hors ligne ou en pause native.
 
 Les animations CSS s’arrêtent en arrière-plan. La barre d’actions tactile utilise une surface plus opaque et un flou réduit. Les polices principales sont locales, sans requêtes vers Google Fonts. Les scans JPEG de recherche et les anciennes démonstrations GIF sont exclus du paquet Android ; les données de cours, le calendrier, les captures du guide et les licences des polices restent embarqués.
 
+La lecture confirmée depuis un autre appareil envoie également une réconciliation FCM silencieuse aux appareils Android, avec priorité normale. Vercel `waitUntil` termine cet envoi après la réponse, sans retarder le bouton de lecture. Le renouvellement d’un token remplace l’inscription de la même installation au lieu de consommer une place supplémentaire dans la limite des cinq appareils. Les retraits serveur échoués sont conservés localement, isolés par compte et association, avec au maximum cinq entrées pendant quatorze jours. Ils sont retentés au retour au premier plan, au rétablissement du réseau ou via « Terminer la désactivation », sans service permanent.
+
 ## Validation et distribution
+
+Le compteur et son ordre de lecture sont lus atomiquement dans Redis, avec une horloge commune aux instances serveur. Une livraison FCM retardée ne peut ainsi pas rétablir un compteur plus ancien après un accusé de lecture. Les contrats et ordres de livraison sont testés localement ; les scripts Redis doivent aussi être validés avec le stockage déployé.
 
 Avant une distribution : exécuter `npm test` et `npm run check`, compiler l’APK, vérifier sa signature avec `apksigner`, puis tester sur un téléphone réel : connexion / déconnexion, changements de compte, synchronisation aller-retour, clavier arabe, impression, permission de notifications, rappel écran verrouillé et reconnexion.
 
@@ -88,9 +110,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.2.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.2-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.2.txt` pour diagnostiquer le code réduit.
+* `mon-cahier-de-textes-1.2.4.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.4-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.4.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -103,13 +125,12 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run android:version -- 1.2.3
-npm test
-npm run check
-npm run android:release
+npm run release -- --version 1.2.5 --serial emulator-5580
 ```
 
-La première commande augmente les deux versions et actualise le verrouillage npm. Ne jamais réutiliser un `versionCode` déjà envoyé à Play. Envoyer ensuite le nouvel AAB avec **la même clé d’envoi** et déployer d’abord sur la piste interne. Un retour arrière Android exige une nouvelle compilation avec un `versionCode` supérieur ; ne pas tenter de redistribuer un ancien numéro.
+Le pipeline lance les tests et `npm run check`, augmente la version si `--version` est fourni, compile et vérifie les signatures/ressources, puis contrôle le démarrage sur l’appareil de test choisi. Il produit `validation.json` avec les résultats. Sans `--version`, il reconstruit la version courante. En CI sans émulateur, `--skip-smoke` marque explicitement ce contrôle comme non effectué. Il ne déploie pas le cloud et ne publie pas sur Google Play.
+
+Ne jamais réutiliser un `versionCode` déjà distribué. Envoyer le nouvel AAB avec **la même clé d’envoi** et déployer d’abord sur la piste interne. Un retour arrière Android exige une nouvelle compilation avec un `versionCode` supérieur ; ne pas redistribuer un ancien numéro. `release.json` identifie les binaires par taille, SHA-256 et certificat, avec date de compilation, commit source et indication des modifications locales.
 
 | Changement | Circuit |
 | --- | --- |
@@ -117,10 +138,21 @@ La première commande augmente les deux versions et actualise le verrouillage np
 | Services cloud / messages administratifs | Déploiement serveur ; conserver la compatibilité avec les anciennes versions encore installées |
 | Interface Web / PWA | Déploiement Web ; service worker activé après la fin des saisies, dialogues et sauvegardes |
 
-Dans l’application Android, le guide propose la vérification des mises à jour. Google Play peut télécharger une mise à jour **flexible** pendant que le professeur continue à travailler. L’installation est demandée explicitement puis attend la fermeture du guide, des autres dialogues et la fin des sauvegardes/saisies. Les erreurs et annulations restent récupérables. Il n’y a pas d’interrogation périodique pour les mises à jour, ni de téléchargement de code depuis le serveur Web.
+L’aide propose un contrôle de mise à jour commun à la PWA et à Android, dans la langue choisie. Google Play télécharge une mise à jour **flexible** pendant que le professeur travaille, avec progression lorsqu’elle est fournie par Play. La réouverture de l’aide ou le retour au premier plan avec l’aide ouverte retrouve le téléchargement. L’installation demandée attend la fermeture du guide, des autres dialogues et la fin des sauvegardes/saisies ; « Plus tard » annule cette installation différée. Les erreurs et annulations sont récupérables, sans interrogation périodique ni remplacement du code Android par une version Web.
 
-Ce circuit nécessite une application installée depuis Google Play et une version plus récente disponible pour le compte/piste de test. Sur un APK direct, une absence de service Play ou un échec de vérification n’affiche jamais à tort « à jour » : le guide indique le circuit Play. Valider téléchargement, annulation, fin du téléchargement après fermeture du guide, installation et conservation du cahier sur la piste interne avant la diffusion publique.
+Le circuit Play nécessite une installation depuis Google Play et une version plus récente disponible pour le compte/piste de test. Le plugin distingue le canal d’installation réel. Valider téléchargement, annulation, fin du téléchargement après fermeture du guide, installation et conservation du cahier sur la piste interne avant diffusion publique. Un échec réseau n’est jamais présenté comme une application à jour.
 
-La PWA vérifie à nouveau son worker au retour à l’écran après une heure, sans minuteur en arrière-plan. Les vérifications automatiques respectent le mode économie de données et l’absence de réseau ; une erreur réessaie au prochain retour après dix minutes. L’application native conserve son origine locale `https://localhost` et les clés de stockage existantes entre versions.
+### Canal APK direct
+
+L’APK vérifie `https://mon-cahier-de-text.vercel.app/native-release.json` uniquement à l’ouverture de l’aide ou à la demande. Ce fichier décrit **un APK réellement publié**, indépendamment de la version Web. Tant qu’il n’existe pas ou n’est pas valide, l’aide indique qu’aucun fichier de mise à jour n’a été publié.
+
+1. Augmenter la version et compiler/tester le binaire avec la même clé.
+2. Publier l’APK signé sur une release GitHub de ce dépôt ou sur le domaine de l’application.
+3. Générer le manifeste avec `npm run android:publish-metadata -- https://github.com/Abdel00zz/Mon-cahier-de-text/releases/download/v1.2.5/mon-cahier-de-textes-1.2.5-release.apk` (adapter à la release réelle).
+4. Le script télécharge le fichier public et vérifie son SHA-256 et sa taille avant d’écrire `public/native-release.json`. Il refuse le remplacement d’une version déjà annoncée par un binaire différent ou plus ancien. Déployer ensuite le manifeste.
+
+Le client vérifie le paquet, le certificat correspondant à son installation, le numéro de compilation et l’origine HTTPS du lien. Le bouton ouvre le téléchargement dans le navigateur ; Android demande l’installation et contrôle lui-même la signature du fichier. Aucun fichier de mise à jour n’est installé silencieusement et aucune permission d’installation permanente n’est ajoutée à l’application. Conserver la distribution APK et Play comme deux canaux si Play App Signing utilise un certificat différent. Une ancienne version du manifeste ne prouve pas que l’application est à jour.
+
+La PWA vérifie son worker au retour à l’écran après une heure, sans minuteur en arrière-plan. Les vérifications automatiques respectent le mode économie de données et l’absence de réseau ; une erreur réessaie au prochain retour après dix minutes. Le bouton de l’aide permet une vérification explicite, dédupliquée et bornée à douze secondes. Une mise à jour téléchargée n’est pas effacée par une réponse de vérification plus ancienne. Le déploiement s’active à un moment calme ; les fichiers déjà téléchargés peuvent être activés hors ligne. L’application native conserve son origine locale `https://localhost` et les clés de stockage existantes entre versions.
 
 Références : [signature Android et Play App Signing](https://developer.android.com/studio/publish/app-signing), [niveau API Google Play](https://developer.android.com/google/play/requirements/target-sdk), [mises à jour intégrées](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java), [Capacitor Android v7](https://capacitorjs.com/docs/v7/android), [HTTP natif](https://capacitorjs.com/docs/v7/apis/http), [notifications locales](https://capacitorjs.com/docs/v7/apis/local-notifications).

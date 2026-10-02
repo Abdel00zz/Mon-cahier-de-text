@@ -461,12 +461,16 @@
 }
 .guide-credit-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; }
 .guide-version { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.guide-update { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; }
-.guide-update button { min-height: 44px; padding: 8px 12px; color: var(--guide-ink); cursor: pointer; border-radius: 8px; }
+.guide-update { display: grid; justify-items: center; gap: 4px; margin-top: 4px; max-width: 100%; }
+.guide-update-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; }
+.guide-update button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 12px; color: var(--guide-ink); cursor: pointer; border-radius: 8px; }
 .guide-update button:hover { background: var(--guide-soft); }
 .guide-update button:focus-visible { outline: 2px solid var(--guide-link); outline-offset: 2px; }
 .guide-update button:disabled { opacity: .6; cursor: progress; }
-.guide-update p { margin: 0; font-size: 11px; line-height: 1.5; }
+.guide-update p { margin: 0; max-width: 48ch; text-align: center; text-wrap: pretty; font-size: 12px; line-height: 1.5; }
+.guide-update-channel { font-size: 10px; color: var(--guide-muted); }
+.guide-update-progress { display: flex; align-items: center; gap: 8px; width: min(220px, 100%); font-size: 11px; }
+.guide-update-progress progress { width: 100%; height: 4px; accent-color: var(--guide-link); }
 .guide-credit bdi {
   font-weight: 600;
   color: var(--guide-ink);

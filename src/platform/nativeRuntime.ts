@@ -61,6 +61,8 @@ export async function initNativeRuntime(): Promise<void> {
       const route = notificationTarget(extra.url);
       startSafePwaAction(() => { window.location.hash = route.slice(1); });
     });
+    const { NativePush } = await import('./nativePush');
+    await NativePush.addListener('inboxMessage', () => window.dispatchEvent(new Event('admin-message')));
     const navigate = (url: string) => {
       let target: URL;
       try { target = new URL(url); } catch { return; }

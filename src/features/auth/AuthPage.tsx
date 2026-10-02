@@ -376,6 +376,7 @@ export const AuthPage: React.FC<{
   return (
     <div
       ref={pageRef}
+      data-pwa-update-blocked={isSubmitting || Boolean(phone || password || confirmPassword || nom || prenom || setup || draft.cycle)}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
       className="auth-page-shell flex min-h-dvh flex-col"

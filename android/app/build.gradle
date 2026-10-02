@@ -34,6 +34,10 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // Isolated emulator QA cannot overwrite the signed production app/data.
+            if (project.hasProperty('notificationQa')) applicationIdSuffix '.qa'
+        }
         release {
             if (hasUploadKey) signingConfig signingConfigs.release
             minifyEnabled true
@@ -56,6 +60,8 @@ repositories {
 }
 
 dependencies {
+    // Capacitor 7's compatible FCM baseline; Analytics is intentionally absent.
+    implementation 'com.google.firebase:firebase-messaging:24.1.0'
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
@@ -70,11 +76,7 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+if (file('google-services.json').exists()) {
+    // Invalid supplied configuration should fail the build, rather than ship broken push.
+    apply plugin: 'com.google.gms.google-services'
 }

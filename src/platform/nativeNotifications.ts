@@ -2,6 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import type { AppConfig, ClassInfo } from '../types';
 import { readWorkspaceScope, captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { buildNativeReminderPlan } from '../domain/notifications/nativeReminderPlan';
+import { NativePush, connectNativePush, nativeRemoteState } from './nativePush';
 
 const preferenceKey = () => `cdt_native_reminders_v1_${readWorkspaceScope()?.owner ?? 'local'}`;
 const enabled = () => localStorage.getItem(preferenceKey()) === 'true';
@@ -21,7 +22,16 @@ export async function nativeNotificationState(requestPermission = false) {
   const permission = await (requestPermission ? LocalNotifications.requestPermissions() : LocalNotifications.checkPermissions());
   const display: NotificationPermission = permission.display === 'granted' ? 'granted' : permission.display === 'denied' ? 'denied' : 'default';
   if (requestPermission && display === 'granted' && current()) localStorage.setItem(key, 'true');
-  return { permission: display, subscribed: current() && display === 'granted' && enabled(), serverRegistered: false, delivery: 'local' as const,
+  let remote = { available: false, registered: false as boolean | null };
+  if (display === 'granted' && enabled() && current()) {
+    try {
+      await NativePush.setEnabled({ enabled: true });
+      let locale: 'ar' | 'en' | 'fr' = 'ar';
+      try { const stored = JSON.parse(localStorage.getItem('appConfig_v1') ?? '{}').applicationLocale; if (stored === 'en' || stored === 'fr') locale = stored; } catch { /* defaults */ }
+      remote = requestPermission ? await connectNativePush(locale) : await nativeRemoteState();
+    } catch { remote = { available: false, registered: null }; }
+  }
+  return { permission: display, subscribed: current() && display === 'granted' && enabled(), serverRegistered: remote.registered, remoteAvailable: remote.available, delivery: 'local' as const,
     reason: requestPermission && display !== 'granted' ? display === 'denied' ? 'permissionDenied' as const : 'permissionDismissed' as const : undefined };
 }
 
@@ -69,6 +79,9 @@ export async function disableNativeReminders(): Promise<void> {
     const pending = await LocalNotifications.getPending();
     if (!current()) return;
     await LocalNotifications.cancel({ notifications: pending.notifications.filter(item => item.id >= MIN_ID) });
+    const delivered = await LocalNotifications.getDeliveredNotifications();
+    if (!current()) return;
+    await LocalNotifications.removeDeliveredNotifications({ notifications: delivered.notifications.filter(item => item.id >= MIN_ID) });
     fingerprint = '';
   });
   return planning;
@@ -77,7 +90,8 @@ export async function disableNativeReminders(): Promise<void> {
 export async function showNativeNotification(title: string, body: string, key: string, url: string): Promise<boolean> {
   const current = captureWorkspaceLease();
   const owner = readWorkspaceScope()?.owner;
-  if (!(await nativeNotificationState()).subscribed || !current() || !owner) return false;
+  const permission = await LocalNotifications.checkPermissions();
+  if (permission.display !== 'granted' || !enabled() || !current() || !owner) return false;
   await LocalNotifications.createChannel({ id: 'cahier-reminders-quiet', name: 'Mon cahier de textes', importance: 3, vibration: false });
   if (!current() || !enabled()) return false;
   await LocalNotifications.schedule({ notifications: [{ id: nativeNotificationId(key), title, body,

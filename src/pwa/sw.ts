@@ -7,6 +7,7 @@ import { clientsClaim } from 'workbox-core';
 import { readNotificationVibration } from '../infrastructure/push/notificationDevicePreferences';
 import { notificationPresentation } from '../domain/notifications/notificationPresentation';
 import { openNotificationTarget } from './notificationNavigation';
+import { presentInboxPush, updateWorkerInboxBadge, clearWorkerInboxBadge } from './inboxBadge';
 import {
     isPushNotificationKind,
     type PushNotificationKind,
@@ -26,6 +27,21 @@ cleanupOutdatedCaches();
  */
 self.addEventListener('message', event => {
     if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
+    if (event.data?.type === 'INBOX_BADGE' || event.data?.type === 'CLEAR_INBOX_BADGE') {
+        const source = event.source as Client | null;
+        if (!source?.url || new URL(source.url).origin !== self.location.origin) return;
+        event.waitUntil(event.data.type === 'CLEAR_INBOX_BADGE'
+            ? clearWorkerInboxBadge(self.navigator).then(async () => {
+                for (const notification of await self.registration.getNotifications()) {
+                    if (notification.data?.kind === 'admin') notification.close();
+                }
+            })
+            : updateWorkerInboxBadge(self.navigator, event.data, false, async () => {
+                for (const notification of await self.registration.getNotifications()) {
+                    if (notification.data?.kind === 'admin' && notification.data?.badgeOwner === event.data.owner) notification.close();
+                }
+            }));
+    }
 });
 clientsClaim();
 
@@ -144,9 +160,12 @@ self.addEventListener('push', event => {
         const timer = self.setTimeout(() => resolve(false), 500);
         void readNotificationVibration().then(value => { self.clearTimeout(timer); resolve(value); });
     });
-    const showNotification = vibration.then(vibration => {
+    const showNotification = vibration.then(async vibration => {
         const presentation = notificationPresentation(payload, vibration);
-        return self.registration.showNotification(presentation.title, presentation.options);
+        const show = () => self.registration.showNotification(presentation.title, presentation.options);
+        if (kind === 'admin' && payload.badgeOwner) {
+            await presentInboxPush(self.navigator, { owner: payload.badgeOwner, count: payload.badgeCount, updatedAt: payload.timestamp }, show);
+        } else await show();
     });
     const notifyOpenClients = kind === 'admin' && typeof payload.messageId === 'string'
         ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {

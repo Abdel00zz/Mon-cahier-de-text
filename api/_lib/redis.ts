@@ -45,6 +45,8 @@ export const KEYS = {
   pushSubs: 'push:subs',
   /** endpoint Web Push -> téléphone propriétaire (unicité globale). */
   pushEndpointOwners: 'push:endpoint-owners',
+  nativePushOwners: 'push:native-owners',
+  nativePushDevices: (phone: string) => `push:native:${phone}`,
   adminCalendar: 'admin:calendar',
   adminOfficialEvents: 'admin:official-events',
   /** Translation horaire globale publiée par la direction. */
@@ -52,5 +54,6 @@ export const KEYS = {
   /** Surcharge horaire d'un compte ; une valeur nulle hérite du global. */
   adminTimetableClockForUser: (phone: string) => `admin:timetable-clock:${phone}`,
   adminMessages: (phone: string) => `admin:messages:${phone}`,
+  inboxClock: (phone: string) => `admin:inbox-clock:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;

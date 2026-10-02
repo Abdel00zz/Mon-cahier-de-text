@@ -20,6 +20,9 @@ export interface PushNotificationPayload {
   timestamp?: number;
   /** Identifiant du message persistant, pour ouvrir immédiatement la modale si l'app est active. */
   messageId?: string;
+  /** Authoritative unread inbox count; reminders never increment it. */
+  badgeCount?: number;
+  badgeOwner?: string;
 }
 
 export const isPushNotificationKind = (value: unknown): value is PushNotificationKind =>

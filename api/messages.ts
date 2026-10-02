@@ -1,29 +1,27 @@
 import { ApiRequest, ApiResponse, HttpError, parseBody, sendError } from './_lib/http.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
-import { normalizeAdminMessages } from './_lib/adminMessages.js';
+import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import type { AdminMessage } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
+import { waitUntil } from '@vercel/functions';
+import { sendNativeToOwner } from './_lib/nativePush.js';
+import { fcmConfigured } from './_lib/fcm.js';
 
 interface MessageBody {
     action?: string;
     messageId?: unknown;
 }
 
-const readMessages = async (phone: string): Promise<AdminMessage[]> => {
-    const redis = await getRedis();
-    const value = await redis.get<AdminMessage[]>(KEYS.adminMessages(phone));
-    return normalizeAdminMessages(value);
-};
-
 const isMessageId = (value: unknown): value is string =>
     typeof value === 'string' && /^admin-[a-zA-Z0-9-]{8,100}$/.test(value);
 
 const handleList = async (res: ApiResponse, phone: string) => {
-    const messages = await readMessages(phone);
+    const { messages, unreadCount, badgeUpdatedAt } = await readInboxSnapshot(await getRedis(), phone);
     // L'enseignant ne reçoit que les messages qui nécessitent encore son accusé.
-    res.status(200).json({ messages: messages.filter(message => !message.acknowledgedAt) });
+    const pending = messages.filter(message => !message.acknowledgedAt);
+    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt });
 };
 
 const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: string) => {
@@ -43,7 +41,10 @@ const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: str
         write.set(KEYS.adminMessages(phone), messages);
         await write.exec();
     }
-    res.status(200).json({ ok: true, message: messages[index] });
+    const { unreadCount, badgeUpdatedAt } = await readInboxSnapshot(redis, phone);
+    // Reading on desktop updates Android devices without delaying the acknowledgement.
+    if (fcmConfigured()) waitUntil(sendNativeToOwner(phone, { kind: 'badge-sync', badgeCount: unreadCount, timestamp: badgeUpdatedAt }).catch(() => 0));
+    res.status(200).json({ ok: true, message: messages[index], unreadCount, badgeUpdatedAt });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

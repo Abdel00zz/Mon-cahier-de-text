@@ -15,6 +15,7 @@ public class MainActivity extends BridgeActivity {
         SplashScreen.installSplashScreen(this);
         registerPlugin(NativeShellPlugin.class);
         registerPlugin(NativeUpdatesPlugin.class);
+        registerPlugin(NativePushPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         View content = findViewById(android.R.id.content);

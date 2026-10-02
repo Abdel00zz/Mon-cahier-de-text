@@ -1,11 +1,12 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { randomUUID } from 'node:crypto';
-import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages } from './_lib/adminMessages.js';
+import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
 import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
 import { PushEntry, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
+import { deleteNativeDevices, sendNativeToOwner } from './_lib/nativePush.js';
 import {
     ADMIN_COOKIE,
     ADMIN_MAX_AGE,
@@ -713,6 +714,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     pipeline.hdel(KEYS.adminSnapshots, phone);
     pipeline.hdel(KEYS.pushSubs, phone);
     pipeline.del(KEYS.adminMessages(phone));
+    pipeline.del(KEYS.inboxClock(phone));
     pipeline.del(KEYS.adminTimetableClockForUser(phone));
     // L'index global ne doit pas conserver de propriétaire fantôme après une
     // suppression de compte. La vérification d'ownership évite d'effacer une
@@ -727,6 +729,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     }));
     for (const field of ownedFields) if (field) pipeline.hdel(KEYS.pushEndpointOwners, field);
     await pipeline.exec();
+    await deleteNativeDevices(redis, phone);
     res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
 };
 
@@ -763,9 +766,12 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     await write.exec();
 
     const entrySubs = Array.isArray(entry?.subs) ? entry.subs : [];
+    const { unreadCount: badgeCount, badgeUpdatedAt: timestamp } = await readInboxSnapshot(redis, phone);
+    const nativeDelivery = sendNativeToOwner(phone, { kind: 'admin', badgeCount, timestamp }).catch(() => 0);
     // Le message reste disponible dans l'application même sans abonnement push.
     if (!entry || entrySubs.length === 0 || !configureVapid()) {
-        return res.status(200).json({ ok: true, sent: 0, message });
+        const nativeSent = await nativeDelivery;
+        return res.status(200).json({ ok: true, sent: nativeSent, nativeSent, message });
     }
 
     const { survivingSubs, sent } = await sendToEntry({ ...entry, subs: entrySubs }, {
@@ -774,8 +780,10 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         url: '/#/notifications',
         kind: 'admin',
         tag: `cdt-admin-${message.id}`,
-        timestamp: Date.now(),
+        timestamp,
         messageId: message.id,
+        badgeCount,
+        badgeOwner: phone,
     });
     if (survivingSubs.length === 0) await redis.hdel(KEYS.pushSubs, phone);
     else await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
@@ -792,7 +800,8 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         for (const field of ownedFields) if (field) cleanup.hdel(KEYS.pushEndpointOwners, field);
         await cleanup.exec();
     }
-    res.status(200).json({ ok: true, sent, message });
+    const nativeSent = await nativeDelivery;
+    res.status(200).json({ ok: true, sent: sent + nativeSent, nativeSent, message });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

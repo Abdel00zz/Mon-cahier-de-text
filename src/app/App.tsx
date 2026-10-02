@@ -124,7 +124,7 @@ const App: React.FC = () => {
   useTheme(config.theme, config.appTextSize);
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
   useNativeReminders(config, classes, authUser?.phone);
-  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authUser?.phone);
+  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authUser?.phone, config.applicationLocale ?? 'ar');
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');

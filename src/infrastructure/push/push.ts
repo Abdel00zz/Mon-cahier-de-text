@@ -9,6 +9,7 @@ import { notificationPresentation } from '../../domain/notifications/notificatio
 import { isSuccessfulTestResponse } from './pushResponse';
 import { captureWorkspaceLease, readWorkspaceScope } from '../storage/accountWorkspace';
 import { forgetPushCleanup, pendingPushCleanup, rememberPushCleanup } from './pushCleanup';
+import { pendingNativePushCleanup } from './nativePushCleanup';
 
 const VAPID_PUBLIC_KEY = import.meta.env?.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
@@ -39,6 +40,8 @@ export interface PushNotificationState {
     subscribed: boolean;
     /** null signifie que le serveur n'a pas pu être interrogé avec certitude. */
     serverRegistered: boolean | null;
+    /** Android: local reminders may be active while optional FCM remains unconfigured. */
+    remoteAvailable?: boolean;
     reason?: NotificationActivationReason;
 }
 
@@ -204,6 +207,7 @@ const subscribeToPush = async (options: { requestPermission?: boolean; isCurrent
 
 /** Autorisation système puis abonnement serveur si celui-ci est configuré. */
 export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
+    (await import('./appBadge')).enableInboxBadge();
     if (Capacitor.isNativePlatform()) return (await import('../../platform/nativeNotifications')).nativeNotificationState(true);
     const isCurrent = captureWorkspaceLease();
     const native = await requestNativeNotificationPermission();
@@ -258,9 +262,13 @@ export const getPushNotificationState = async (): Promise<PushNotificationState>
 
 export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
     if (Capacitor.isNativePlatform()) {
-        await (await import('../../platform/nativeNotifications')).disableNativeReminders();
-        return { ok: true, hadSubscription: true, serverUnregistered: true, localUnsubscribed: true };
+        const [serverUnregistered] = await Promise.all([
+            (await import('../../platform/nativePush')).disconnectNativePush(),
+            (await import('../../platform/nativeNotifications')).disableNativeReminders(),
+        ]);
+        return { ok: serverUnregistered, hadSubscription: true, serverUnregistered, localUnsubscribed: true };
     }
+    await (await import('./appBadge')).clearInboxBadge();
     if (!pushSupported()) {
         return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
     }
@@ -308,7 +316,10 @@ export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
     };
 };
 
-export const hasPendingPushCleanup = (): boolean => pendingPushCleanup(readWorkspaceScope()?.owner ?? null).length > 0;
+export const hasPendingPushCleanup = (): boolean => {
+    const owner = readWorkspaceScope()?.owner ?? null;
+    return (Capacitor.isNativePlatform() ? pendingNativePushCleanup(owner) : pendingPushCleanup(owner)).length > 0;
+};
 
 /**
  * Notification système LOCALE (sans serveur) via le service worker : visible
@@ -346,6 +357,8 @@ export const showLocalNotification = async (
 
 export const sendTestNotification = async (): Promise<PushTestResult> => {
     if (Capacitor.isNativePlatform()) {
+        const remote = await (await import('../../platform/nativePush')).testNativePush();
+        if (remote) return remote;
         const raw = localStorage.getItem('appConfig_v1');
         const locale: AppLocale = raw ? JSON.parse(raw).applicationLocale ?? 'ar' : 'ar';
         const ok = await (await import('../../platform/nativeNotifications')).showNativeNotification(

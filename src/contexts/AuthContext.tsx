@@ -5,6 +5,7 @@ import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth
 import { toast } from 'sonner';
 import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../infrastructure/storage/accountWorkspace';
 import { unsubscribeFromPush } from '../infrastructure/push/push';
+import { clearInboxBadge, enableInboxBadge } from '../infrastructure/push/appBadge';
 import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../infrastructure/sync/syncTransport';
 
 interface AuthUser {
@@ -69,14 +70,18 @@ const isAuthUser = (value: unknown): value is AuthUser => {
   return typeof user.phone === 'string' && /^\d{8,15}$/.test(user.phone) && typeof user.nom === 'string' && typeof user.prenom === 'string';
 };
 
-const activateUserWorkspace = (user: AuthUser): void => {
+const activateUserWorkspace = async (user: AuthUser, current: () => boolean): Promise<boolean> => {
+  if (readWorkspaceScope()?.owner !== user.phone) await clearInboxBadge();
+  if (!current()) return false;
   switchAccountWorkspace(user.phone, { legacyOwner: readCachedUser()?.phone });
+  enableInboxBadge();
   reloadSyncState();
   applyProfileToConfig(user);
   cacheUser(user);
   localStorage.removeItem(SIGNED_OUT_KEY);
   notifyClassesChanged();
   notifyConfigChanged();
+  return true;
 };
 
 /**
@@ -158,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const cached = readCachedUser();
       try {
         if (localStorage.getItem(SIGNED_OUT_KEY) === 'true') {
+          void clearInboxBadge();
           setUser(null);
           setStatus('anonymous');
           needsValidation = false;
@@ -170,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 8_000);
         if (!current()) return;
         if (!isAuthUser(data.user)) throw new TypeError('Invalid session response');
-        activateUserWorkspace(data.user);
+        if (!(await activateUserWorkspace(data.user, current))) return;
         setUser(data.user);
         setStatus('authenticated');
         needsValidation = false;
@@ -184,6 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setStatus('offline');
           if (navigator.onLine) retryTimer = setTimeout(() => { void verifySession(); }, retryDelayMs(failures++));
         } else {
+          void clearInboxBadge();
           setUser(null);
           setStatus('anonymous');
           needsValidation = false;
@@ -217,7 +224,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await logoutRequest.current;
     const loggedUser = await postAuth({ action: 'login', phone, password });
     if (version !== requestVersion.current) return;
-    activateUserWorkspace(loggedUser);
+    if (!(await activateUserWorkspace(loggedUser, () => version === requestVersion.current))) return;
     setUser(loggedUser);
     setStatus('authenticated');
     setSessionNotice(null);
@@ -241,7 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {setup, ...credentials} = input;
     const createdUser = await postAuth({ action: 'register', ...credentials });
     if (version !== requestVersion.current) return;
-    activateUserWorkspace(createdUser);
+    if (!(await activateUserWorkspace(createdUser, () => version === requestVersion.current))) return;
     let preparationCompleted = false;
     if (setup) {
       try {

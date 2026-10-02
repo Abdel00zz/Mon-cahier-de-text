@@ -1,8 +1,8 @@
 {
   "name": "cahier-de-textes-interactif",
   "private": true,
-  "version": "1.2.3",
-  "androidVersionCode": 5,
+  "version": "1.2.4",
+  "androidVersionCode": 6,
   "type": "module",
   "scripts": {
     "dev": "tsx server/index.ts",
@@ -16,6 +16,8 @@
     "android:signing:backup": "node scripts/android/backup-signing.mjs",
     "android:signing:restore": "node scripts/android/restore-signing.mjs",
     "android:version": "node scripts/android/bump-version.mjs",
+    "android:publish-metadata": "node scripts/android/publish-metadata.mjs",
+    "release": "node scripts/pipeline-release.mjs",
     "android:open": "cap open android",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
@@ -58,6 +60,7 @@
     "@radix-ui/react-slot": "^1.3.0",
     "@radix-ui/react-switch": "^1.3.3",
     "@upstash/redis": "^1.38.0",
+    "@vercel/functions": "^3.9.11",
     "capacitor-webview-print": "^7.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

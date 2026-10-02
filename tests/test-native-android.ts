@@ -10,7 +10,7 @@ const cloud = 'https://mon-cahier-de-text.vercel.app';
 const local = 'https://localhost';
 const owner = '0612345678';
 const bridge = Capacitor as unknown as { PluginHeaders: unknown[]; nativePromise: (plugin: string, method: string, options?: unknown) => Promise<unknown> };
-bridge.PluginHeaders = [{ name: 'LocalNotifications', methods: ['checkPermissions', 'requestPermissions', 'getPending', 'cancel', 'createChannel', 'schedule'].map(name => ({ name, rtype: 'promise' })) }];
+bridge.PluginHeaders = [{ name: 'LocalNotifications', methods: ['checkPermissions', 'requestPermissions', 'getPending', 'cancel', 'createChannel', 'schedule', 'getDeliveredNotifications', 'removeDeliveredNotifications'].map(name => ({ name, rtype: 'promise' })) }];
 bridge.nativePromise = async () => { throw new Error('Missing test bridge handler'); };
 const { nativeNotificationState, showNativeNotification, reconcileNativeReminders, disableNativeReminders } = await import('../src/platform/nativeNotifications');
 const classInfo: ClassInfo = { id: 'c1', name: '1AC 1', level: '1AC', cycle: 'college', subject: 'Mathématiques', teacherName: '', color: '', createdAt: '2026-09-01' };
@@ -154,10 +154,12 @@ test('désactiver annule seulement les alarmes du cahier et réconcilie l’éta
   entries.set(`cdt_native_reminders_v1_${owner}`, 'true');
   const calls = t.mock.method(bridge, 'nativePromise', async (_plugin: string, method: string) => {
     if (method === 'getPending') return { notifications: [{ id: 1_600_000_002 }, { id: 42 }] };
+    if (method === 'getDeliveredNotifications') return { notifications: [{ id: 1_600_000_003 }, { id: 42 }] };
     if (method === 'checkPermissions') return { display: 'granted' };
   });
   await disableNativeReminders();
   assert.deepEqual(calls.mock.calls.find(call => call.arguments[1] === 'cancel')?.arguments[2], { notifications: [{ id: 1_600_000_002 }] });
+  assert.deepEqual(calls.mock.calls.find(call => call.arguments[1] === 'removeDeliveredNotifications')?.arguments[2], { notifications: [{ id: 1_600_000_003 }] });
   assert.equal((await nativeNotificationState()).subscribed, false);
   await reconcileNativeReminders(config, [classInfo], owner);
   assert.equal(calls.mock.calls.filter(call => call.arguments[1] === 'cancel').length, 2);

@@ -1,12 +1,22 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 
-export type NativeUpdateState = 'idle' | 'available' | 'current' | 'downloading' | 'downloaded' | 'store' | 'error';
-export interface UpdateResult { state: NativeUpdateState }
+type NativeUpdateState = 'idle' | 'available' | 'current' | 'downloading' | 'downloaded' | 'store' | 'manual' | 'error';
+export interface UpdateResult {
+  state: NativeUpdateState;
+  source?: 'play' | 'apk';
+  versionCode?: number;
+  availableVersionCode?: number;
+  signatureSha256?: string;
+  progress?: number;
+  downloadUrl?: string;
+  availableVersion?: string;
+}
 export const NativeUpdates = registerPlugin<{
   check(): Promise<UpdateResult>;
   start(): Promise<UpdateResult>;
   complete(): Promise<UpdateResult>;
   openStore(): Promise<void>;
+  openDownload(options: { url: string }): Promise<void>;
   addListener(event: 'stateChanged', listener: (value: UpdateResult) => void): Promise<PluginListenerHandle>;
 }>('NativeUpdates');
 

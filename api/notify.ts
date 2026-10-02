@@ -7,12 +7,17 @@ import { ClassLateness, computeLateness, summarizeForTeacher } from '../src/doma
 import { assertValidTeacherSnapshot } from './_lib/validate.js';
 import type { AppLocale, TeacherSnapshot } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
+import { subscribeNativeDevice, unsubscribeNativeDevice, nativeDeviceStatus, sendNativeToOwner, validateNativeToken } from './_lib/nativePush.js';
 
 interface NotifyBody {
     action?: string;
     subscription?: PushSubscriptionJSON & { device?: string };
     endpoint?: string;
     device?: string;
+    token?: unknown;
+    binding?: unknown;
+    locale?: unknown;
+    installationId?: unknown;
 }
 
 const SEVERITY_RANK: Record<string, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
@@ -476,6 +481,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const { phone } = await requireUser(req);
         if (req.headers['x-workspace-owner'] !== undefined) assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
             const body = parseBody<NotifyBody>(req.body);
+            if (body.action === 'nativeSubscribe') return res.status(200).json(await subscribeNativeDevice(phone, body.token, body.locale, body.installationId));
+            if (body.action === 'nativeUnsubscribe') return res.status(200).json(await unsubscribeNativeDevice(phone, body.token, body.binding));
+            if (body.action === 'nativeStatus') return res.status(200).json(await nativeDeviceStatus(phone, body.token, body.binding));
+            if (body.action === 'nativeTest') {
+                const status = await nativeDeviceStatus(phone, body.token, body.binding);
+                const sent = status.registered ? await sendNativeToOwner(phone, { kind: 'test', timestamp: Date.now() }, validateNativeToken(body.token)) : 0;
+                return res.status(200).json({ ok: sent > 0, sent });
+            }
             if (body.action === 'subscribe') return await handleSubscribe(body, res, phone);
             if (body.action === 'unsubscribe') return await handleUnsubscribe(body, res, phone);
             if (body.action === 'status') return await handleStatus(body, res, phone);

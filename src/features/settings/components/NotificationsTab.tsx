@@ -60,9 +60,9 @@ export const PushActivationCard: React.FC<{
             : t('notifications.state.notAllowed')],
         [t(local ? 'notifications.nativeDevice' : 'notifications.state.browser'), checking ? t('notifications.state.checking')
             : state.subscribed ? t('notifications.state.active') : t('notifications.state.inactive')],
-        ...local ? [] : [[t('notifications.state.server'), checking ? t('notifications.state.checking')
+        [t(local ? 'notifications.nativeRemote' : 'notifications.state.server'), checking ? t('notifications.state.checking')
             : state.serverRegistered === null ? t('notifications.state.unavailable')
-            : state.serverRegistered ? t('notifications.state.registered') : t('notifications.state.notRegistered')]],
+            : state.serverRegistered ? t('notifications.state.registered') : t(local ? 'notifications.nativeRemotePending' : 'notifications.state.notRegistered')],
     ];
     return (
         <StatusNotice
@@ -83,6 +83,11 @@ export const PushActivationCard: React.FC<{
                         : t('notifications.enableReminders')}
                 </Button>
             )}
+            {local && active && state.remoteAvailable && state.serverRegistered !== true && (
+                <Button variant="outline" disabled={busy || checking} onClick={onActivate}>
+                    {t('notifications.nativeConnectMessages')}
+                </Button>
+            )}
             {!unavailable && (active || (blocked && (state.subscribed || state.serverRegistered === true))) && (
                 <Button variant="ghost" disabled={busy || checking} onClick={onDeactivate}>
                     {t('notifications.turnOff')}
@@ -100,6 +105,9 @@ export const PushActivationCard: React.FC<{
                     ))}
                 </dl>
             </details>
+            {local && active && state.serverRegistered !== true && (
+                <p className="basis-full text-xs leading-relaxed text-muted-foreground">{t('notifications.nativeRemotePendingHint')}</p>
+            )}
         </StatusNotice>
     );
 };
@@ -149,7 +157,7 @@ const NotificationKind: React.FC<{
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
     <div className="flex min-w-0 items-center gap-2.5 rounded-md bg-zinc-100 p-2.5 shadow-none dark:bg-zinc-800/80">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
             <Icon className="h-4 w-4" />
         </span>
         <span className="min-w-0">
@@ -364,6 +372,16 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 checked={settings.enabled}
                 onChange={v => patch({ enabled: v })}
             />
+            <div className="flex items-start gap-3 px-1 py-2">
+                <span aria-hidden="true" className="relative mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold text-destructive-foreground">2</span>
+                </span>
+                <div className="min-w-0 text-start">
+                    <p className="text-sm font-semibold text-foreground">{t('notifications.iconBadgeTitle')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('notifications.iconBadgeDescription')}</p>
+                </div>
+            </div>
 
             <Toggle
                 label={t('notifications.vibration')}
