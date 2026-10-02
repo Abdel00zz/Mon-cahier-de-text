@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { millisecondsUntilNextMoroccoDay, startForegroundPolling } from '../src/platform/mobileScheduling';
+import { isForegroundOnline, millisecondsUntilNextMoroccoDay, startForegroundPolling } from '../src/platform/mobileScheduling';
 import { getBundledCalendar, todayInMorocco } from '../src/domain/calendar/calendar';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
 import { startSafePwaAction } from '../src/pwa/safeUpdate';
@@ -13,8 +13,19 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { PushActivationCard } from '../src/features/settings/components/NotificationsTab';
 import { translateLocaleMessage } from '../src/i18n/messages';
 import { unsubscribeFromPush } from '../src/infrastructure/push/push';
+import { onPwaControllerChange } from '../src/pwa/controllerChange';
 
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
+
+test('PWA : premier claim sans rechargement, mises à jour suivantes prises en compte sur la même page', () => {
+  let reloads = 0;
+  const firstVisit = onPwaControllerChange(false, () => { reloads++; });
+  firstVisit(); assert.equal(reloads, 0);
+  firstVisit(); assert.equal(reloads, 1);
+  firstVisit(); assert.equal(reloads, 2);
+  const installedVisit = onPwaControllerChange(true, () => { reloads++; });
+  installedVisit(); assert.equal(reloads, 3);
+});
 
 test('Android : les rappels locaux n’attendent pas un abonnement serveur et le refus ouvre les paramètres système', () => {
   const common = { supported: true, iosNeedsInstall: false, checking: false, busy: false,
@@ -102,6 +113,52 @@ test('synchronisation : aucune requête simultanée, attente après completion',
   finish(true); await flush(); assert.equal(calls, 2);
   finish(true); await flush(); assert.equal(fake.timers.size, 1); assert.equal(fake.delay(), 60000);
   stop();
+});
+
+test('Android visible : pause native sans réveil périodique, reprise unique malgré les événements doublés', async context => {
+  const descriptors = ['window', 'document', 'navigator'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
+  const timers = new Map<number, () => void>();
+  let nextId = 0;
+  const nativeWindow = Object.assign(new EventTarget(), {
+    setTimeout: (callback: () => void) => { timers.set(++nextId, callback); return nextId; },
+    clearTimeout: (id: number) => { timers.delete(id); },
+  });
+  const nativeDocument = Object.assign(new EventTarget(), {
+    visibilityState: 'visible', documentElement: { dataset: { nativeActive: 'true' } },
+  });
+  for (const [key, value] of Object.entries({ window: nativeWindow, document: nativeDocument, navigator: { onLine: true } })) {
+    Object.defineProperty(globalThis, key, { configurable: true, value });
+  }
+  let stop = () => {};
+  context.after(() => {
+    stop();
+    for (const [key, descriptor] of descriptors) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  });
+  let calls = 0;
+  let cancellations = 0;
+  stop = startForegroundPolling(async () => { calls++; return true; }, {
+    interval: 60000, onInactive: () => { cancellations++; },
+  });
+  await flush();
+  assert.equal(calls, 1); assert.equal(timers.size, 1);
+  nativeDocument.documentElement.dataset.nativeActive = 'false';
+  assert.equal(isForegroundOnline(), false);
+  nativeWindow.dispatchEvent(new Event('native-pause'));
+  nativeDocument.dispatchEvent(new Event('visibilitychange'));
+  await flush();
+  assert.equal(cancellations, 1); assert.equal(timers.size, 0); assert.equal(calls, 1);
+  nativeDocument.documentElement.dataset.nativeActive = 'true';
+  nativeWindow.dispatchEvent(new Event('native-resume'));
+  nativeDocument.dispatchEvent(new Event('visibilitychange'));
+  await flush(); await flush();
+  assert.equal(calls, 2); assert.equal(timers.size, 1);
+  stop();
+  nativeWindow.dispatchEvent(new Event('native-resume'));
+  await flush();
+  assert.equal(calls, 2); assert.equal(timers.size, 0);
 });
 
 test('synchronisation : échecs espacés et bornés, économie de données, retour à la cadence normale', async () => {

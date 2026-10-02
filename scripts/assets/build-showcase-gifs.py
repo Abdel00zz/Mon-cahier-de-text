@@ -8,7 +8,7 @@ parser.add_argument("--captures", type=Path, default=Path("tmp/showcase-captures
 parser.add_argument("--capture-scale", type=float, default=0.8,
                     help="Visible content scale in the browser's exported PNG (use 1 for native-sized captures).")
 args = parser.parse_args()
-output = Path("public/showcase")
+output = Path("assets/showcase")
 output.mkdir(parents=True, exist_ok=True)
 
 MATTE = (251, 250, 247)

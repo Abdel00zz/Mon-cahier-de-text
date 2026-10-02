@@ -26,6 +26,7 @@ build/                  plugins Vite, manifeste PWA, budget
 tests/                  tests TypeScript et test PowerShell de publication
 scripts/                validation, benchmarks, assets et aperçus
 public/                 référentiels, polices et images publiques
+assets/                 originaux graphiques et captures historiques non distribués
 docs/                   architecture, guides, exploitation, audits, recherche
 ```
 

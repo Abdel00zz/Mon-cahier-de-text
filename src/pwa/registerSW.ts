@@ -5,6 +5,7 @@ import { startSafePwaAction } from './safeUpdate';
 import { Capacitor } from '@capacitor/core';
 import { startPwaUpdateChecks } from './updateCheck';
 import { webUpdates } from './updateControl';
+import { onPwaControllerChange } from './controllerChange';
 
 /**
  * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
@@ -34,18 +35,16 @@ export const initPwa = (): void => {
     // manifeste installable sans mettre en cache les modules source de Vite.
     if (import.meta.env.DEV) return;
 
-    // La page était-elle DÉJÀ contrôlée au chargement ? Si oui, un changement de
-    // contrôleur = vraie mise à jour → on recharge. Sinon (toute première visite,
-    // premier claim), on ne recharge pas : la page a déjà la dernière version.
-    const hadController = !!navigator.serviceWorker.controller;
+    // Le premier claim n'impose pas de rechargement. Les changements suivants
+    // sont des mises à jour, même pour une page ouverte avant l'installation.
     let reloading = false;
     let cancelReload: (() => void) | undefined;
     const requestReload = () => {
-        if (!hadController || reloading) return;
+        if (reloading) return;
         cancelReload?.();
         cancelReload = startSafePwaAction(() => { reloading = true; window.location.reload(); });
     };
-    navigator.serviceWorker.addEventListener('controllerchange', requestReload);
+    navigator.serviceWorker.addEventListener('controllerchange', onPwaControllerChange(!!navigator.serviceWorker.controller, requestReload));
 
     const updateServiceWorker = registerSW({
         immediate: true,

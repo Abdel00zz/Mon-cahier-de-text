@@ -113,9 +113,7 @@ registerRoute(
 );
 
 /*
- * Illustrations de l'application (accueil, authentification, tableau de bord,
- * captures du guide) : ≈ 1 Mo pour `icone.png` et `dashboard.png`, ≈ 770 Ko par
- * GIF d'accueil, ≈ 380 Ko de captures. Elles sont volontairement HORS précache
+ * Captures illustrées du guide et de l'accueil, volontairement HORS précache
  * pour ne pas alourdir l'installation, mais sans cache à l'usage elles
  * manquaient hors connexion sur les tout premiers écrans (connexion, accueil) —
  * exactement ceux qu'un professeur ouvre avec un réseau incertain.
@@ -129,7 +127,7 @@ registerRoute(
 registerRoute(
     ({ url, request }) => url.origin === self.location.origin
         && (request.destination === 'image' || /\.(?:png|gif|webp|jpg|jpeg)$/.test(url.pathname))
-        && /^\/(?:icone\.png|guide\/|showcase\/)/.test(url.pathname),
+        && /^\/(?:guide\/|showcase\/)/.test(url.pathname),
     new StaleWhileRevalidate({
         cacheName: 'app-illustrations-v1',
         plugins: [

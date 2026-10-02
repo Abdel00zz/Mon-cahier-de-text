@@ -19,4 +19,6 @@ l’interface. Les GIF transparents conservent chaque scène 2,8 secondes et
 utilisent une palette commune. Le cadrage ordinateur est resserré à 1024 × 672 ;
 les portraits restent à 448 × 680. Les WebP transparents servent d’affiches
 statiques pour la pause et la réduction des animations.
-Vérifier les quatre GIF avant de remplacer les fichiers de `public/showcase`.
+Vérifier les quatre GIF avant de remplacer les archives de `assets/showcase`.
+Ces exports historiques sont conservés hors de `public/` : l'accueil utilise
+aujourd'hui un aperçu HTML/SVG et ne télécharge aucun GIF.

@@ -396,7 +396,7 @@ export const AuthPage: React.FC<{
             aria-label={copy.backToHome}
           >
             <img
-              src="/icone.png"
+              src="/icons/icon-192.png"
               width="36"
               height="36"
               alt=""

@@ -22,18 +22,31 @@ export interface ForegroundSchedulerEnvironment {
   subscribe: (wake: () => void) => () => void;
 }
 
+export const isForegroundOnline = (): boolean => document.visibilityState === 'visible'
+  && document.documentElement?.dataset.nativeActive !== 'false' && navigator.onLine;
+
 const browserEnvironment = (): ForegroundSchedulerEnvironment => ({
-  active: () => document.visibilityState === 'visible' && document.documentElement?.dataset.nativeActive !== 'false' && navigator.onLine,
+  active: isForegroundOnline,
   saveData: () => (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true,
   setTimer: (callback, delay) => window.setTimeout(callback, delay),
   clearTimer: timer => window.clearTimeout(timer),
   subscribe: wake => {
-    const windowEvents = ['online', 'offline', 'pageshow'] as const;
-    windowEvents.forEach(event => window.addEventListener(event, wake));
-    document.addEventListener('visibilitychange', wake);
+    let queued = false;
+    let disposed = false;
+    // Android emits both native lifecycle and visibility events for the same
+    // transition. Coalesce the burst to avoid a second request after resume.
+    const onWake = () => {
+      if (queued || disposed) return;
+      queued = true;
+      queueMicrotask(() => { queued = false; if (!disposed) wake(); });
+    };
+    const windowEvents = ['online', 'offline', 'pageshow', 'native-resume', 'native-pause'] as const;
+    windowEvents.forEach(event => window.addEventListener(event, onWake));
+    document.addEventListener('visibilitychange', onWake);
     return () => {
-      windowEvents.forEach(event => window.removeEventListener(event, wake));
-      document.removeEventListener('visibilitychange', wake);
+      disposed = true;
+      windowEvents.forEach(event => window.removeEventListener(event, onWake));
+      document.removeEventListener('visibilitychange', onWake);
     };
   },
 });

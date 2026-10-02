@@ -49,11 +49,11 @@ Les alarmes utilisent une planification économe, sans permission d’alarme exa
 
 Les messages non lus alimentent une notification native groupée et son compteur (`setNumber`). La lecture confirmée met à jour le compteur ; la déconnexion retire la notification et son association au compte, même hors ligne. Android décide d’afficher une pastille ou un nombre selon le lanceur et les réglages utilisateur : Pixel et Samsung ne proposent pas forcément le même rendu. Les nouveaux canaux de rappels/tests désactivent le badge pour ne pas gonfler le nombre de messages. Les réglages de canaux déjà créés restent sous le contrôle d’Android et de l’utilisateur.
 
-La réception des messages de l’administration à application fermée dispose d’un circuit Firebase Cloud Messaging HTTP v1. **Cette intégration nécessite encore une configuration Firebase ; elle n’est pas activée par la présence du code.** Sans configuration, les rappels locaux et la synchronisation au retour restent utilisables, sans crash de démarrage. Les notifications Web Push de la PWA restent indépendantes.
+La réception des messages de l’administration à application fermée utilise Firebase Cloud Messaging HTTP v1. Le projet `cahier-text` dispose maintenant d'une configuration Android locale et de trois variables serveur enregistrées dans Vercel Production. L'autorisation du compte de service a été vérifiée par un appel FCM de validation, sans envoyer de notification réelle. Chaque nouvelle machine de compilation et chaque nouveau déploiement doivent conserver leur configuration ; la présence du code seul ne suffit pas. Les rappels locaux et les notifications Web Push de la PWA restent indépendants.
 
 ### Configuration des messages distants Android
 
-Projet indiqué par le propriétaire : `cahier-text`. Compte de service : `firebase-adminsdk-fbsvc@cahier-text.iam.gserviceaccount.com`. Ces deux identifiants publics figurent dans `.env.example` ; la clé privée serveur et le fichier `google-services.json` restent à fournir séparément. L’extrait `admin.initializeApp({ credential: admin.credential.cert(...) })` est un exemple d’initialisation, pas une clé ni une preuve d’autorisation FCM. Le transport HTTP v1 existant authentifie ce compte sans ajouter l’ensemble du SDK Admin au serveur.
+Projet indiqué par le propriétaire : `cahier-text`. Compte de service : `firebase-adminsdk-fbsvc@cahier-text.iam.gserviceaccount.com`. Ces deux identifiants publics figurent dans `.env.example` ; la clé privée serveur et le fichier `google-services.json` sont configurés séparément et exclus du dépôt. Le transport HTTP v1 authentifie ce compte sans ajouter l’ensemble du SDK Admin au serveur.
 
 1. Dans votre projet Firebase, enregistrer l’application Android **`ma.cahier.textes`**, télécharger sa configuration et l’enregistrer dans `android/app/google-services.json` (ignoré par Git). Le client Firebase Android requiert les services Google Play ; aucun compte Analytics n’est nécessaire à cette implémentation.
 2. Activer l’API Firebase Cloud Messaging HTTP v1. Sur Vercel, ajouter **uniquement côté serveur** `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY` pour un compte de service autorisé à envoyer des messages FCM. La clé privée ne doit jamais être incluse dans le fichier Android, une variable `VITE_*`, une capture ou le dépôt.
@@ -112,9 +112,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.5.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.5-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.5.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
+* `mon-cahier-de-textes-1.2.6.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.6-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.6.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -127,7 +127,7 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run release -- --version 1.2.6 --serial emulator-5580
+npm run release -- --version 1.2.7 --serial emulator-5580
 ```
 
 Le pipeline lance les tests et `npm run check`, augmente la version si `--version` est fourni, compile et vérifie les signatures/ressources, puis contrôle le démarrage sur l’appareil de test choisi. Il produit `validation.json` avec les résultats. Sans `--version`, il reconstruit la version courante. En CI sans émulateur, `--skip-smoke` marque explicitement ce contrôle comme non effectué. Il ne déploie pas le cloud et ne publie pas sur Google Play.

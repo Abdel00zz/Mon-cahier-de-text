@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AdminMessage, AppLocale } from '../types';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { requestSyncJson } from '../infrastructure/sync/syncTransport';
-import { startForegroundPolling } from '../platform/mobileScheduling';
+import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
 import { syncInboxBadge } from '../infrastructure/push/appBadge';
 import { Capacitor } from '@capacitor/core';
 
@@ -31,7 +31,7 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
     const refreshController = useRef<AbortController | null>(null);
 
     const refresh = useCallback(async () => {
-        if (!enabled || !owner || refreshController.current || document.visibilityState !== 'visible' || !navigator.onLine) return;
+        if (!enabled || !owner || refreshController.current || !isForegroundOnline()) return;
         const controller = new AbortController();
         refreshController.current = controller;
         const isCurrent = captureWorkspaceLease();
@@ -52,7 +52,12 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
         if (!enabled || !owner) return;
         let stopConnection = () => {};
         if (Capacitor.isNativePlatform()) {
-            const connect = () => { void import('../platform/nativePush').then(module => module.connectNativePush(locale)).catch(() => {}); };
+            const connect = () => {
+                if (!isForegroundOnline()) return;
+                void import('../platform/nativePush').then(module => {
+                    if (isForegroundOnline()) return module.connectNativePush(locale);
+                }).catch(() => {});
+            };
             connect();
             window.addEventListener('native-resume', connect);
             window.addEventListener('online', connect);

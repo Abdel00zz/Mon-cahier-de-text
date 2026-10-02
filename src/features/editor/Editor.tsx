@@ -55,7 +55,6 @@ import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/domai
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease, registerWorkspaceWriter } from '@/infrastructure/storage/accountWorkspace';
 import { hasMathContent } from '@/lib/text/math';
-import { useMathRuntime, usePendingMathTypesets } from '@/contexts/MathRuntimeContext';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -86,8 +85,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
-  const mathRuntime = useMathRuntime();
-  const pendingMathTypesets = usePendingMathTypesets();
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
@@ -159,15 +156,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   useEffect(() => {
     if (initialMathTypesetComplete || isClassLoading || isConfigLoading) return;
-    if (!notebookHasMath || mathRuntime.status === 'degraded') {
+    if (!notebookHasMath) {
       setInitialMathTypesetComplete(true);
       return;
     }
-    if (mathRuntime.status !== 'ready' || pendingMathTypesets > 0) return;
-
-    // Les composants MathText s'enregistrent pendant les layout effects. Deux
-    // frames sans travail en attente garantissent que la première peinture est
-    // composée, sans imposer de temporisation fixe aux cahiers déjà prêts.
+    // KaTeX compose les formules pendant le rendu. Laisser deux frames pour
+    // leur première peinture, sans moteur asynchrone ni attente artificielle.
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(() => setInitialMathTypesetComplete(true));
@@ -176,7 +170,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       window.cancelAnimationFrame(firstFrame);
       if (secondFrame) window.cancelAnimationFrame(secondFrame);
     };
-  }, [initialMathTypesetComplete, isClassLoading, isConfigLoading, mathRuntime.status, notebookHasMath, pendingMathTypesets]);
+  }, [initialMathTypesetComplete, isClassLoading, isConfigLoading, notebookHasMath]);
 
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
@@ -1073,9 +1067,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // varie (retour à la ligne sur mobile, ouverture de la recherche), un
   // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
   const isLoading = isClassLoading || isConfigLoading;
-  const isInitialMathPreparing = notebookHasMath
-    && !initialMathTypesetComplete
-    && mathRuntime.status !== 'degraded';
+  const isInitialMathPreparing = notebookHasMath && !initialMathTypesetComplete;
 
   if (isLoading) {
     return <EditorSkeleton />;

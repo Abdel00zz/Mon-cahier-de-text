@@ -15,13 +15,12 @@ import { LocaleProvider } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { useAdminMessages } from '../hooks/useAdminMessages';
-import { MathProvider } from '../components/ui/math-provider';
 
 import { useClassManager } from '../hooks/useClassManager';
 import { useTheme } from '../hooks/useTheme';
 import { TabBar, TabType } from '../components/navigation/TabBar';
 import { Modal } from '../components/ui/modal';
-import { CommandPalette } from '../components/ui/CommandPalette';
+import { DeferredMount } from '../components/ui/DeferredMount';
 import { latestClassOpening } from '../infrastructure/storage/classOpening';
 import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from '../infrastructure/notifications/currentSessionNavigation';
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
@@ -35,6 +34,7 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then
 const NotificationsPage = lazy(() => import('../features/dashboard/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const GuideModal = lazy(() => import('../features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
+const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
 const DevoirsView = lazy(() => import('../features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 
@@ -542,13 +542,8 @@ const App: React.FC = () => {
     <>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
         <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
-        {/*
-          Les aperçus de séance du tableau de bord affichent eux aussi des
-          titres saisis en LaTeX. Le contexte doit donc couvrir toute
-          l'application, et pas uniquement la vue de l'éditeur.
-        */}
         <Suspense fallback={<AppBootSkeleton />}>
-          <MathProvider>{appSurface}</MathProvider>
+          {appSurface}
         </Suspense>
 
         {/* Évaluations globales — socle commun Modal */}
@@ -569,32 +564,38 @@ const App: React.FC = () => {
           </Suspense>
         </Modal>
 
-        <Suspense fallback={null}>
-          <GuideModal isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} />
-        </Suspense>
+        <DeferredMount active={isGuideOpen}>
+          <Suspense fallback={null}>
+            <GuideModal isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} />
+          </Suspense>
+        </DeferredMount>
 
-        <CommandPalette
-          isOpen={isCommandPaletteOpen}
-          onClose={() => setCommandPaletteOpen(false)}
-          classes={classes}
-          onSelectClass={(classInfo) => {
-            handleSelectClass(classInfo);
-            setCommandPaletteOpen(false);
-          }}
-          onOpenSettings={() => {
-            handleOpenSettings();
-            setCommandPaletteOpen(false);
-          }}
-          onOpenGuide={() => {
-            setGuideOpen(true);
-            setCommandPaletteOpen(false);
-          }}
-          isDarkMode={config.theme === 'dark'}
-          onToggleDarkMode={() => {
-            const nextTheme = config.theme === 'dark' ? 'light' : 'dark';
-            updateConfig({ theme: nextTheme });
-          }}
-        />
+        <DeferredMount active={isCommandPaletteOpen}>
+          <Suspense fallback={null}>
+            <CommandPalette
+              isOpen={isCommandPaletteOpen}
+              onClose={() => setCommandPaletteOpen(false)}
+              classes={classes}
+              onSelectClass={(classInfo) => {
+                handleSelectClass(classInfo);
+                setCommandPaletteOpen(false);
+              }}
+              onOpenSettings={() => {
+                handleOpenSettings();
+                setCommandPaletteOpen(false);
+              }}
+              onOpenGuide={() => {
+                setGuideOpen(true);
+                setCommandPaletteOpen(false);
+              }}
+              isDarkMode={config.theme === 'dark'}
+              onToggleDarkMode={() => {
+                const nextTheme = config.theme === 'dark' ? 'light' : 'dark';
+                updateConfig({ theme: nextTheme });
+              }}
+            />
+          </Suspense>
+        </DeferredMount>
 
         {adminMessages[0] && (
           <Suspense fallback={null}>

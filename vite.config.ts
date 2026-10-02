@@ -8,6 +8,7 @@ import { BUNDLE_OPTIMIZATION } from './build/optimization';
 import { premiumPerformancePlugin } from './build/vite/performance-plugin';
 import { PWA_MANIFEST } from './build/vite/pwa-manifest';
 import { nativeAssets } from './build/vite/native-assets';
+import { modernMathFonts, pruneLegacyMathFonts } from './build/vite/modern-math-fonts';
 
 const PROJECT_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react(),
             tailwindcss(),
+            pruneLegacyMathFonts(),
             ...(nativeBuild ? [nativeAssets()] : []),
             VitePWA({
                 disable: nativeBuild,
@@ -100,6 +102,7 @@ export default defineConfig(({ mode }) => {
                 '@': path.resolve(PROJECT_ROOT, 'src')
             }
         },
+        css: { postcss: { plugins: [modernMathFonts()] } },
         build: {
             copyPublicDir: !nativeBuild,
             minify: 'terser',

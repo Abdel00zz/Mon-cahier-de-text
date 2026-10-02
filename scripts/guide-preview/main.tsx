@@ -15,7 +15,6 @@ import { SelectionBar } from '../../src/features/editor/SelectionBar';
 import { Header } from '../../src/features/editor/Header';
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { AddContentModal } from '../../src/features/editor/modals/EditItemModal';
-import { MathProvider } from '../../src/components/ui/math-provider';
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
 import { FeedbackPreview } from './FeedbackPreview';
 import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
@@ -110,6 +109,6 @@ function Preview() {
 
 if (import.meta.env.DEV) {
   const root = createRoot(document.getElementById('root')!);
-  root.render(<LocaleProvider locale={locale}><MathProvider><Preview /></MathProvider></LocaleProvider>);
+  root.render(<LocaleProvider locale={locale}><Preview /></LocaleProvider>);
   import.meta.hot?.dispose(() => root.unmount());
 }

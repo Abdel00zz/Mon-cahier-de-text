@@ -39,7 +39,10 @@ if (release) {
   if (!signatureSha256) throw new Error('Verified APK certificate missing.');
   // The Android build copies public assets selectively. Verify the actual signed
   // archives, including the calendars and Arabic fonts needed without a network.
-  const requiredAssets = fs.readdirSync(path.join(root, 'public')).filter(name => /\.(json|ttf)$/.test(name) || name === 'icone.png');
+  const requiredAssets = [
+    ...fs.readdirSync(path.join(root, 'public')).filter(name => /\.(json|ttf)$/.test(name)),
+    'icons/icon-192.png', 'icons/notification-badge-96.png', 'contenus/manifest.json',
+  ];
   for (const [archive, prefix] of [[apk, 'assets/public/'], [aab, 'base/assets/public/']]) {
     const listing = spawnSync(path.join(java, 'bin', process.platform === 'win32' ? 'jar.exe' : 'jar'), ['tf', archive], { env: environment, encoding: 'utf8', windowsHide: true });
     if (listing.error || listing.status !== 0) throw new Error(`Unable to verify assets in ${archive}`);

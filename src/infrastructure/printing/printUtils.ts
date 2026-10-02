@@ -41,27 +41,20 @@ export const printDocument = async (fileName: string = 'cahier-de-textes'): Prom
 export const preparePrintContent = async (root: HTMLElement, timeoutMs = 12000): Promise<void> => {
   let timer: number | undefined;
   try {
-    const runtime = window as unknown as {
-      KaTeX?: { startup?: { promise?: Promise<void> }; typesetPromise?: (elements: Element[]) => Promise<void> };
-    };
     const prepare = (async () => {
       if (!root.isConnected || root.getBoundingClientRect().width === 0) throw new Error('Print surface is not measurable');
       // This also loads ordinary text fonts when the document contains no formula.
       await document.fonts?.ready;
-      if (hasMathSyntax(root.textContent ?? '') || root.querySelector('.katex-display, .math-text')) {
-        // The provider can still be downloading when the teacher opens Print.
-        const deadline = Date.now() + timeoutMs;
-        while (!runtime.KaTeX?.typesetPromise && Date.now() < deadline) {
-          if (!root.isConnected) throw new Error('Print surface detached');
-          await new Promise(resolve => window.setTimeout(resolve, 50));
-        }
-        const math = runtime.KaTeX;
-        if (!math?.typesetPromise) throw new Error('KaTeX unavailable');
-        await math.startup?.promise;
-        await math.typesetPromise([root]);
-        if (root.querySelector('.katex-error, .katex-mathml .katex-error')) throw new Error('Invalid print formula');
+      // KaTeX has already composed the formula during React's render. There is
+      // no global typesetPromise to wait for. Ignore its MathML TeX annotations
+      // while checking that no unrendered formula would be sent to paper.
+      if (root.querySelector('.katex-error')) throw new Error('Invalid print formula');
+      const walker = document.createTreeWalker(root, 4 /* SHOW_TEXT */);
+      let plainText = '';
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.parentElement?.closest('.katex')) plainText += node.textContent ?? '';
       }
-      await document.fonts?.ready;
+      if (hasMathSyntax(plainText)) throw new Error('Unrendered print formula');
       await Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.decode()));
       if (!root.isConnected) throw new Error('Print surface detached');
       // A session taller than an A4 body must fragment; ordinary sessions stay together.
