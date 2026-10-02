@@ -11,6 +11,7 @@
     "api/send-email.ts",
     "api/sync.ts",
     "scripts/test-*.ts",
+    "scripts/benchmark-*.ts",
     "scripts/guide-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",

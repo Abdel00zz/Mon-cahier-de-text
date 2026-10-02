@@ -18,7 +18,7 @@ import { indicesKey, resolveAddAfterTarget } from '@/utils/lessonRows';
 import { buildContentDateOrder } from '@/utils/dateOrder';
 import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
-import { applyContentEdit, applyRemarkEdit, buildContentEditTargetsGrouped, buildSessionTargetsGrouped, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
+import { applyContentEdit, buildContentEditTargetsGrouped, buildSessionTargetsGrouped, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
 import type { ContentDraft } from '@/utils/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
@@ -1082,7 +1082,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }
 
   return (
-    <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root>
+    <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root data-pwa-update-blocked={editorState.saveStatus !== 'saved'}>
       <div className="max-w-screen-2xl mx-auto flex min-h-dvh w-full flex-col px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header

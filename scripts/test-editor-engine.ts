@@ -309,7 +309,7 @@ test('dimanche : la même alerte alimente le cahier et les notifications, sans r
   }
 });
 
-test('barre de sélection : vide masquée, actions seules et mutations verrouillées pendant le calcul', () => {
+test('barre de sélection : annulation tactile, compteur et mutations verrouillées pendant le calcul', () => {
   const noop = () => {};
   const props = { count: 2, hasDate: true, canAdd: true, canAssignDate: true, canEdit: true,
     onAdd: noop, onAssignDate: noop, onAssignToday: noop, onClearDate: noop, onEdit: noop, onDelete: noop, onClear: noop };
@@ -320,10 +320,9 @@ test('barre de sélection : vide masquée, actions seules et mutations verrouill
   const html = render({ isPending: true });
   assert.match(html, /role="toolbar"/);
   assert.match(html, /aria-busy="true"/);
-  // Ni compteur de lignes ni bouton de fermeture : la barre ne porte que des actions.
-  assert.doesNotMatch(html, /sélectionnés|Effacer la sélection|Fermer la sélection/);
-  assert.equal((html.match(/<button\b/g) ?? []).length, 4);
-  assert.equal((html.match(/disabled=""/g) ?? []).length, 4);
+  assert.match(html, /aria-label="Annuler la sélection \(2\)"/);
+  assert.equal((html.match(/<button\b/g) ?? []).length, 5);
+  assert.equal((html.match(/disabled=""/g) ?? []).length, 5);
   assert.ok(!html.includes('overflow-x-auto'));
 });
 

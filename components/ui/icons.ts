@@ -55,7 +55,6 @@ import {
   Download as LucideDownload,
   AlertCircle as LucideCircleAlert,
   CheckCircle2 as LucideCircleCheck,
-  XCircle as LucideCircleX,
   HelpCircle as LucideCircleHelp,
   Info as LucideInfo,
   MapPin as LucideMapPin,
@@ -168,7 +167,6 @@ export const FolderOpen = createIcon(LucideFolderOpen);
 export const Download = createIcon(LucideDownload);
 export const CircleAlert = createIcon(LucideCircleAlert);
 export const CircleCheck = createIcon(LucideCircleCheck);
-export const CircleX = createIcon(LucideCircleX);
 export const CircleHelp = createIcon(LucideCircleHelp);
 export const Info = createIcon(LucideInfo);
 export const MapPin = createIcon(LucideMapPin);

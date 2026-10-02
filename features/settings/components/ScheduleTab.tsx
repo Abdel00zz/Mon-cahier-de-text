@@ -71,6 +71,7 @@ type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const { locale, t } = useLocale();
+    const yearStartId = React.useId();
     const hourNumber = React.useMemo(
         () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, numberingSystem: 'latn', useGrouping: false }),
         [locale],
@@ -213,9 +214,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
-                    <label className="text-xs lg:text-sm font-bold text-foreground/80">{t('schedule.startYear')}</label>
+                    <label htmlFor={yearStartId} className="text-xs lg:text-sm font-bold text-foreground/80">{t('schedule.startYear')}</label>
                     <div className="relative">
                         <input
+                            id={yearStartId}
                             type="date"
                             value={schoolYearStart}
                             onChange={e => setSchoolYearStart(e.target.value)}
@@ -243,7 +245,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         size="sm"
                         ariaLabel={t('schedule.viewLabel')}
                         className="w-max mx-auto sm:mx-0"
-                        tabClassName="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-2.5"
+                        tabClassName="text-xs h-11 px-2 sm:px-2.5"
                     />
                 </div>
             </div>
@@ -265,7 +267,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 return (
                                     <th
                                         key={hour.index}
-                                        className={`border-b border-[#c4bcaf] bg-[#eeeae3] px-1 sm:px-2 py-2 sm:py-3 text-center text-[9px] sm:text-xs lg:text-[13px] font-bold text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc] ${
+                                        className={`border-b border-[#c4bcaf] bg-[#eeeae3] px-1 sm:px-2 py-2 sm:py-3 text-center text-[11px] sm:text-xs lg:text-[13px] font-bold text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc] ${
                                             locale === 'ar'
                                                 ? (isLast ? '' : 'border-l border-[#c4bcaf] dark:border-[#38332c]')
                                                 : (isLast ? '' : 'border-r border-[#c4bcaf] dark:border-[#38332c]')
@@ -364,11 +366,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         <div
                                                             className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
                                                         >
-                                                            <span className="max-w-full break-words whitespace-normal text-balance text-[10px] sm:text-xs lg:text-sm xl:text-[15px] font-semibold tracking-tight leading-tight">
+                                                            <span className="max-w-full break-words whitespace-normal text-balance text-xs lg:text-sm xl:text-[15px] font-semibold tracking-tight leading-tight">
                                                                 {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
                                                             {showSubjectLabels && (
-                                                                <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
+                                                                <span className={`mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
                                                                     {subjectLabel(classInfo.subject)}
                                                                 </span>
                                                             )}

@@ -1,0 +1,15 @@
+/* A tonal reflection crosses readable, stationary lettering. */
+.session-live-text { color: var(--session-accent, var(--class-accent)); }
+@supports (background-clip: text) {
+  .session-live-text {
+    background-image: linear-gradient(105deg, currentColor 0%, currentColor 40%, color-mix(in srgb, currentColor 72%, hsl(var(--foreground))) 49%, currentColor 58%, currentColor 100%);
+    background-size: 260% 100%;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: session-type-reflection 7s ease-in-out infinite;
+  }
+}
+@keyframes session-type-reflection { 0%, 15% { background-position: 100% 50%; } 60%, 100% { background-position: 0% 50%; } }
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .session-live-text { animation: none; background: none; -webkit-text-fill-color: currentColor; }
+}

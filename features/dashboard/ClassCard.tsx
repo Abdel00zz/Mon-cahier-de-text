@@ -16,6 +16,7 @@ import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 import { formatWithOrdinals } from '@/utils/ordinalTypography';
+import { ActiveSessionGlass } from './ActiveSessionGlass';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -66,8 +67,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="class-card__header">
                     {isActiveSession && (
                         <span className="class-card__live">
-                            <span aria-hidden="true" />
-                            {locale === 'ar' ? 'لديك حصة الآن' : locale === 'en' ? 'Live' : 'En cours'}
+                            <ActiveSessionGlass label={t('dashboard.welcome.nowTitle')} />
                         </span>
                     )}
                     <DropdownMenu>

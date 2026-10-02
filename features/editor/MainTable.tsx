@@ -78,7 +78,10 @@ const TableHeader: React.FC = React.memo(() => {
         <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.remark')}</span>
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">
+          <span className="sr-only sm:not-sr-only">{t('editor.remark')}</span>
+          <span className="sm:hidden" aria-hidden="true">{t('editor.remarkShort')}</span>
+        </span>
       </div>
     </div>
   </div>

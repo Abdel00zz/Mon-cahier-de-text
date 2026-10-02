@@ -1,6 +1,7 @@
 import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
+import { requestSyncJson, SyncRequestError } from '../utils/syncTransport';
 
 export interface TeacherDetail {
     user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null; blocked?: boolean } | null;
@@ -36,12 +37,11 @@ export class AdminApiError extends Error {
 }
 
 const request = async (input: string, init?: RequestInit) => {
-    const response = await fetch(input, { credentials: 'same-origin', ...init });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new AdminApiError(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.', response.status);
+    try { return await requestSyncJson<any>(input, { credentials: 'same-origin', ...init }, 15_000); }
+    catch (error) {
+        if (error instanceof SyncRequestError) throw new AdminApiError(error.message, error.status);
+        throw error;
     }
-    return data;
 };
 
 export const adminLogin = (code: string): Promise<void> =>
@@ -72,8 +72,8 @@ export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>
     request(`/api/admin?action=teacher&phone=${encodeURIComponent(phone)}`);
 
 /** Accusés de réception, chargé séparément de la fiche complète du professeur. */
-export const fetchTeacherMessages = async (phone: string): Promise<AdminMessage[]> => {
-    const data = await request(`/api/admin?action=messages&phone=${encodeURIComponent(phone)}`);
+export const fetchTeacherMessages = async (phone: string, signal?: AbortSignal): Promise<AdminMessage[]> => {
+    const data = await request(`/api/admin?action=messages&phone=${encodeURIComponent(phone)}`, { signal });
     return Array.isArray(data?.adminMessages) ? data.adminMessages as AdminMessage[] : [];
 };
 

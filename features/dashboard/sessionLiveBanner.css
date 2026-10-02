@@ -1,0 +1,41 @@
+.session-live-banner {
+  --session-accent: var(--keep-accent, hsl(var(--primary)));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  min-height: 72px;
+  margin-block-end: 24px;
+  padding-block: 8px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: hsl(var(--foreground));
+  text-align: start;
+  cursor: pointer;
+}
+.session-live-banner__content { display: grid; gap: 5px; min-width: 0; }
+.session-live-banner__title { width: fit-content; font-size: 20px; font-weight: 650; line-height: 1.4; letter-spacing: -.025em; }
+.session-live-banner__detail { font-size: 13px; line-height: 1.55; color: hsl(var(--muted-foreground)); text-wrap: pretty; }
+.session-live-banner__action { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--session-accent); }
+.session-live-banner__action-label { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.session-live-banner__arrow { display: grid; place-items: center; width: 44px; height: 44px; transition: transform 200ms ease; }
+.session-live-banner__arrow svg { width: 19px; height: 19px; }
+.session-live-banner[dir='rtl'] .session-live-banner__arrow svg { transform: rotate(180deg); }
+.session-live-banner:focus-visible { outline: 2px solid var(--session-accent); outline-offset: 5px; }
+@media (hover: hover) {
+  .session-live-banner:hover .session-live-banner__arrow { transform: translateX(3px); }
+  .session-live-banner[dir='rtl']:hover .session-live-banner__arrow { transform: translateX(-3px); }
+}
+@media (max-width: 639px) {
+  .session-live-banner { gap: 10px; }
+  .session-live-banner__title { font-size: 19px; }
+  .session-live-banner__detail { font-size: 12px; }
+  .session-live-banner__action-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-live-banner__arrow { transition: none; }
+  .session-live-banner:hover .session-live-banner__arrow,
+  .session-live-banner[dir='rtl']:hover .session-live-banner__arrow { transform: none; }
+}

@@ -4,11 +4,14 @@ import type { PushNotificationKind } from './notificationTypes';
 import type { AppLocale } from '../types';
 import { notificationPresentation } from './notificationPresentation';
 import { isSuccessfulTestResponse } from './pushResponse';
+import { captureWorkspaceLease, readWorkspaceScope } from './accountWorkspace';
+import { forgetPushCleanup, pendingPushCleanup, rememberPushCleanup } from './pushCleanup';
 
 const VAPID_PUBLIC_KEY = import.meta.env?.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
 export const pushSupported = (): boolean =>
     typeof window !== 'undefined' &&
+    window.isSecureContext &&
     'serviceWorker' in navigator &&
     'PushManager' in window &&
     'Notification' in window;
@@ -17,6 +20,7 @@ export const pushSupported = (): boolean =>
 export const isStandalone = (): boolean =>
     typeof window !== 'undefined' &&
     (window.matchMedia?.('(display-mode: standalone)').matches ||
+        window.matchMedia?.('(display-mode: fullscreen)').matches ||
         (navigator as unknown as { standalone?: boolean }).standalone === true);
 
 /** Inclut iPadOS lorsqu'il se présente comme un Mac avec écran tactile. */
@@ -69,14 +73,18 @@ const responseError = (payload: Record<string, unknown> | null): string | undefi
 
 /** Les appels Push ne doivent jamais immobiliser l'écran de réglages ou la
  * déconnexion lorsque le fournisseur réseau ne répond plus. */
-const requestSignal = (): AbortSignal | undefined => {
+const requestPush = async (body: object): Promise<{ response: Response; payload: Record<string, unknown> | null }> => {
+    const owner = readWorkspaceScope()?.owner;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8_000);
     try {
-        return typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
-            ? AbortSignal.timeout(8_000)
-            : undefined;
-    } catch {
-        return undefined;
-    }
+        const response = await fetch('/api/notify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', ...(owner ? { 'X-Workspace-Owner': owner } : {}) },
+            credentials: 'same-origin', signal: controller.signal, body: JSON.stringify(body),
+        });
+        const payload = await readJson(response);
+        return { response, payload };
+    } finally { window.clearTimeout(timer); }
 };
 
 const registrationFlag = (payload: Record<string, unknown> | null): boolean | null => {
@@ -96,7 +104,7 @@ const currentServiceWorkerRegistration = async (): Promise<ServiceWorkerRegistra
 /**
  * Déclenche uniquement la demande NATIVE du navigateur. Cette étape reste
  * utile même sans clé VAPID : les rappels locaux du service worker peuvent
- * alors apparaître sur l'écran verrouillé et dans le volet du téléphone.
+ * alors apparaître dans le volet du téléphone tant que la page reste vivante.
  */
 const requestNativeNotificationPermission = async (): Promise<NativeNotificationActivation> => {
     if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
@@ -138,7 +146,7 @@ const deviceLabel = (): string => {
     return 'Appareil';
 };
 
-const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<PushNotificationState> => {
+const subscribeToPush = async (options: { requestPermission?: boolean; isCurrent?: () => boolean } = {}): Promise<PushNotificationState> => {
     if (!pushSupported()) {
         return { permission: 'unsupported', subscribed: false, serverRegistered: false, reason: 'unsupported' };
     }
@@ -160,6 +168,7 @@ const subscribeToPush = async (options: { requestPermission?: boolean } = {}): P
 
     let subscription: PushSubscription;
     try {
+        if (options.isCurrent && !options.isCurrent()) throw new Error('Workspace changed');
         const registration = await currentServiceWorkerRegistration();
         if (!registration) {
             return { permission, subscribed: false, serverRegistered: false, reason: 'nativeUnavailable' };
@@ -174,14 +183,8 @@ const subscribeToPush = async (options: { requestPermission?: boolean } = {}): P
     }
 
     try {
-        const response = await fetch('/api/notify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            signal: requestSignal(),
-            body: JSON.stringify({ action: 'subscribe', subscription, device: deviceLabel() }),
-        });
-        const payload = await readJson(response);
+        if (options.isCurrent && !options.isCurrent()) throw new Error('Workspace changed');
+        const { response, payload } = await requestPush({ action: 'subscribe', subscription, device: deviceLabel() });
         const registered = registrationFlag(payload);
         const serverRegistered = response.ok && payload?.ok === true && registered !== false;
         return {
@@ -197,10 +200,11 @@ const subscribeToPush = async (options: { requestPermission?: boolean } = {}): P
 
 /** Autorisation système puis abonnement serveur si celui-ci est configuré. */
 export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
+    const isCurrent = captureWorkspaceLease();
     const native = await requestNativeNotificationPermission();
-    if (native.permission !== 'granted') return native;
+    if (native.permission !== 'granted' || !isCurrent()) return native;
 
-    const subscription = await subscribeToPush({ requestPermission: false });
+    const subscription = await subscribeToPush({ requestPermission: false, isCurrent });
     return {
         permission: subscription.permission,
         subscribed: subscription.subscribed,
@@ -233,14 +237,7 @@ export const getPushNotificationState = async (): Promise<PushNotificationState>
     if (!subscription) return { permission, subscribed: false, serverRegistered: false };
 
     try {
-        const response = await fetch('/api/notify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            signal: requestSignal(),
-            body: JSON.stringify({ action: 'status', endpoint: subscription.endpoint }),
-        });
-        const payload = await readJson(response);
+        const { response, payload } = await requestPush({ action: 'status', endpoint: subscription.endpoint });
         const serverRegistered = response.ok && payload?.ok === true ? registrationFlag(payload) : null;
         return {
             permission,
@@ -257,6 +254,8 @@ export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
     if (!pushSupported()) {
         return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
     }
+    const owner = readWorkspaceScope()?.owner ?? null;
+    const isCurrent = captureWorkspaceLease();
 
     let registration: ServiceWorkerRegistration | null;
     let subscription: PushSubscription | null;
@@ -266,43 +265,40 @@ export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
     } catch {
         return { ok: false, hadSubscription: false, serverUnregistered: false, localUnsubscribed: false };
     }
-    if (!registration || !subscription) {
-        return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
-    }
-
-    let localUnsubscribed = false;
-    try {
-        await subscription.unsubscribe();
-        localUnsubscribed = (await registration.pushManager.getSubscription()) === null;
-    } catch {
-        localUnsubscribed = false;
+    const endpoints = new Set(pendingPushCleanup(owner));
+    let localUnsubscribed = !subscription;
+    if (subscription && registration && isCurrent()) {
+        endpoints.add(subscription.endpoint);
+        rememberPushCleanup(owner, subscription.endpoint);
+        try {
+            await subscription.unsubscribe();
+            localUnsubscribed = (await registration.pushManager.getSubscription()) === null;
+        } catch { localUnsubscribed = false; }
     }
 
     // Retirer d'abord l'abonnement local coupe immédiatement les rappels sur
     // cet appareil, même si le réseau est lent. Le serveur est ensuite
     // informé avec l'endpoint mémorisé pour éviter toute fuite de livraison.
-    let serverUnregistered = false;
-    try {
-        const response = await fetch('/api/notify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            signal: requestSignal(),
-            body: JSON.stringify({ action: 'unsubscribe', endpoint: subscription.endpoint }),
-        });
-        const payload = await readJson(response);
-        serverUnregistered = response.ok && payload?.ok === true;
-    } catch {
-        serverUnregistered = false;
-    }
+    const results = await Promise.all([...endpoints].map(async endpoint => {
+        if (!isCurrent()) return false;
+        try {
+            const { response, payload } = await requestPush({ action: 'unsubscribe', endpoint });
+            if (!isCurrent() || !response.ok || payload?.ok !== true) return false;
+            forgetPushCleanup(owner, endpoint);
+            return true;
+        } catch { return false; }
+    }));
+    const serverUnregistered = results.every(Boolean);
 
     return {
         ok: serverUnregistered && localUnsubscribed,
-        hadSubscription: true,
+        hadSubscription: !!subscription,
         serverUnregistered,
         localUnsubscribed,
     };
 };
+
+export const hasPendingPushCleanup = (): boolean => pendingPushCleanup(readWorkspaceScope()?.owner ?? null).length > 0;
 
 /**
  * Notification système LOCALE (sans serveur) via le service worker : visible
@@ -338,14 +334,7 @@ export const sendTestNotification = async (): Promise<PushTestResult> => {
     const registration = await currentServiceWorkerRegistration();
     const subscription = await registration?.pushManager.getSubscription();
     if (!subscription) return { ok: false, sent: 0, error: 'Aucun abonnement sur cet appareil.' };
-    const response = await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        signal: requestSignal(),
-        body: JSON.stringify({ action: 'test', endpoint: subscription.endpoint }),
-    });
-    const payload = await readJson(response);
+    const { response, payload } = await requestPush({ action: 'test', endpoint: subscription.endpoint });
     const sent = typeof payload?.sent === 'number' ? payload.sent : 0;
     return {
         ok: isSuccessfulTestResponse(response.ok, payload),

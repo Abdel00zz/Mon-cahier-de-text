@@ -169,7 +169,8 @@ test('admin append preserves the existing diagnostic and its date', () => {
         { type: 'chapter', title: 'Ancien' },
         { type: 'evaluation_diagnostic', title: 'Bilan', date: '2026-09-09' },
     ], contentDirection: 'ltr' }, 'append');
-    assert.equal(result.lessonsData[0].date, '2026-09-09');
+    assert.equal(result.lessonsData.find(item => item.type === 'evaluation_diagnostic')?.date, '2026-09-09');
+    assert.equal(result.lessonsData[0].title, 'Ancien', 'L’ordre du cahier existant est conservé');
     assert.equal(result.lessonsData.filter(item => item.type === 'evaluation_diagnostic').length, 1);
     assert.equal(result.lessonsData[2].title, 'Fractions');
 });
@@ -209,6 +210,6 @@ test('wiring: staged pull commits follow all downloads and active scope validati
     const source = readFileSync(new URL('../contexts/SyncContext.tsx', import.meta.url), 'utf8');
     assert.match(source, /subscribe\('dirty', \(\) => pullAbortRef.current\?\.abort\(\)\)/);
     assert.match(source, /if \(!isCurrent\(\)\) return;\s*\/\/ No await below[^\n]*\n\s*for \(const commit of commits\) commit\(\);/);
-    assert.match(source, /window.setInterval\(\(\) => \{ void refresh\(\); \}, 15_000\)/);
+    assert.match(source, /startForegroundPolling\(refresh, \{\s*interval: 60_000/);
     assert.doesNotMatch(source, /const refreshClock/);
 });

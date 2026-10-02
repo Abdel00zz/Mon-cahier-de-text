@@ -45,7 +45,6 @@ export function SereneStudyIllustration(props: IllustrationProps) {
     <path d="M53 51L56 54L62 47M53 72L56 75L62 68M53 93L56 96L62 89" className="illustration-success-stroke illustration-draw" strokeWidth="2.8" />
     <path d="M71 51H103M71 72H99M71 93H88" className="illustration-writing" />
     <g className="illustration-pop">
-      <circle cx="119" cy="111" r="23" className="illustration-mint illustration-outline" />
       <path d="M108 111L116 119L131 103" className="illustration-success-stroke" strokeWidth="4" />
     </g>
   </IllustrationFrame>;
@@ -63,7 +62,6 @@ export function ClassroomWelcomeIllustration(props: IllustrationProps) {
     <circle cx="104" cy="83" r="8" className="illustration-note illustration-outline" />
     <path d="M90 108V103Q90 93 104 93Q118 93 118 103V108Z" className="illustration-note illustration-outline" />
     <g className="illustration-pop">
-      <circle cx="126" cy="36" r="17" className="illustration-paper illustration-outline" />
       <path d="M126 29V43M119 36H133" className="illustration-ink" strokeWidth="3" />
     </g>
   </IllustrationFrame>;
@@ -151,7 +149,6 @@ export function CurriculumImportIllustration(props: IllustrationProps) {
     <rect x="102" y="74" width="28" height="21" rx="4" className="illustration-paper" />
     <path d="M107 82H125M107 88H120" className="illustration-writing" />
     <g className="illustration-transfer">
-      <circle cx="75" cy="104" r="20" className="illustration-note illustration-outline" />
       <path d="M64 104H86M79 97L86 104L79 111" className="illustration-ink" strokeWidth="2.8" />
     </g>
   </IllustrationFrame>;

@@ -3,7 +3,7 @@ import { motion, MotionConfig } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
-  Pencil, Trash2, MoreVertical,
+  Pencil, Trash2, MoreVertical, X,
 } from '@/components/ui/icons';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -40,8 +40,8 @@ interface Action {
   disabled?: boolean;
 }
 
-const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean }> = ({
-  icon: Icon, onClick, title, label, accent = false, disabled = false,
+const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean; className?: string }> = ({
+  icon: Icon, onClick, title, label, accent = false, disabled = false, className,
 }) => (
   <motion.button
     type="button"
@@ -58,11 +58,11 @@ const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean }
       accent
         ? 'bg-primary/15 text-primary hover:bg-primary/25 font-semibold'
         : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
-      disabled && 'opacity-50 pointer-events-none'
+      disabled && 'opacity-50 pointer-events-none', className
     )}
   >
     <Icon aria-hidden className="size-[18px] shrink-0" />
-    {label && <span className="hidden whitespace-nowrap font-sans text-xs sm:text-sm font-semibold sm:inline">{label}</span>}
+    {label && <span className="whitespace-nowrap font-sans text-xs sm:text-sm font-semibold">{label}</span>}
   </motion.button>
 );
 
@@ -74,6 +74,8 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 }) => {
   const { t, locale } = useLocale();
   if (count === 0) return null;
+  const displayedCount = new Intl.NumberFormat(locale).format(count);
+  const compactCount = count > 99 ? `${new Intl.NumberFormat(locale).format(99)}+` : displayedCount;
   const secondary: Action[] = [];
   if (onMoveUp) {
     secondary.push({
@@ -101,7 +103,8 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       || !event.currentTarget.contains(event.target)) return;
     if (event.key === 'Escape') { event.preventDefault(); onClear(); return; }
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
+      .filter(button => button.getClientRects().length > 0);
     const current = buttons.indexOf(event.target);
     const step = (event.key === 'ArrowRight' ? 1 : -1) * (locale === 'ar' ? -1 : 1);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
@@ -132,12 +135,15 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           aria-hidden="true"
         />
 
+        <ActionButton icon={X} onClick={onClear}
+          title={t('selection.clear', { count: displayedCount })} label={compactCount} disabled={isPending} />
+
         {canAssignDate && onAssignToday && <ActionButton icon={CalendarCheck} onClick={onAssignToday}
           title={t('selection.dateToday')} label={t('selection.today')} accent disabled={isPending} />}
         {canAssignDate && <ActionButton icon={CalendarDays} onClick={onAssignDate}
           title={t('selection.chooseDate')} disabled={isPending} />}
         {canEdit && onEdit && <ActionButton icon={Pencil} onClick={onEdit}
-          title={t('selection.edit')} disabled={isPending} />}
+          title={t('selection.edit')} disabled={isPending} className="hidden sm:inline-flex" />}
         <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <motion.button
@@ -155,6 +161,9 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" sideOffset={10} collisionPadding={12}
             className="w-max max-w-[calc(100vw-1.5rem)]">
+            {canEdit && onEdit && <DropdownMenuItem onSelect={onEdit} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
+              <Pencil aria-hidden className="size-4" />{t('selection.edit')}
+            </DropdownMenuItem>}
             {secondary.map(({ id, icon: Icon, onClick, title, disabled }) => (
               <DropdownMenuItem key={id} onSelect={onClick} disabled={isPending || disabled} className="min-h-11 gap-3">
                 <Icon aria-hidden className="size-4" />{title}

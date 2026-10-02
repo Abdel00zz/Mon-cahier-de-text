@@ -320,13 +320,13 @@ test('dashboard shows the live session again, wired to the shared detector', () 
     'Les classes actives sont dérivées du détecteur, jamais recomputées',
   );
   assert.match(dashboard, /\{liveClasses\.length > 0 && \(/, 'Le repère n’apparaît que pendant une séance');
-  assert.match(dashboard, /data-session-banner/, 'Le repère est identifiable');
-  assert.match(dashboard, /onClick=\{\(\) => onSelectClass\(liveClasses\[0\]\)\}/, 'Le repère ouvre le cahier visé');
-  assert.match(dashboard, /dashboard\.welcome\.nowTitle/, 'Le libellé localisé est réutilisé');
+  assert.match(dashboard, /<SessionLiveBanner classInfo=\{liveClasses\[0\]\}/, 'Le repère partagé est utilisé');
+  assert.match(dashboard, /onOpen=\{\(\) => onSelectClass\(liveClasses\[0\]\)\}/, 'Le repère ouvre le cahier visé');
+  const banner = readFileSync('features/dashboard/SessionLiveBanner.tsx', 'utf8');
+  assert.match(banner, /data-session-banner/, 'Le repère est identifiable');
+  assert.match(banner, /dashboard\.welcome\.nowTitle/, 'Le libellé localisé est réutilisé');
   // Aucune bannière passive : le repère est un bouton, jamais un simple texte.
-  assert.match(dashboard, /<button\s*\n\s*type="button"\s*\n\s*data-session-banner/, 'Le repère est actionnable');
-  // Le point respirant suit la coupure d’accessibilité motrice de la pastille.
-  const cardStyles = readFileSync('features/dashboard/classCards.css', 'utf8');
-  assert.match(cardStyles, /\.dashboard-live-dot \{[^}]*background: hsl\(var\(--success\)\)/, 'Teinte sémantique de succès');
-  assert.match(cardStyles, /prefers-reduced-motion[\s\S]*\.dashboard-live-dot \{ animation: none; \}/, 'Animation coupée en mouvement réduit');
+  assert.match(banner, /<button\s*\n\s*type="button"/, 'Le repère est actionnable');
+  const effects = readFileSync('features/dashboard/sessionEffects.css', 'utf8');
+  assert.match(effects, /prefers-reduced-motion/, 'Animation adaptée au mouvement réduit');
 });

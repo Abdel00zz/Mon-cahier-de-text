@@ -53,17 +53,6 @@
   border-bottom: 1px solid hsl(var(--border) / .55);
   background: linear-gradient(115deg, hsl(var(--accent) / .4), transparent 70%), hsl(var(--card));
 }
-.modal-motion-surface .modal-pro-header::after {
-  content: '';
-  position: absolute;
-  inset-inline-start: 28px;
-  bottom: -2px;
-  width: 64px;
-  height: 3px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #aebfa2 0 46%, transparent 46% 51%, #c8bed9 51% 76%, transparent 76% 81%, #e7c49f 81%);
-  pointer-events: none;
-}
 .modal-motion-surface .modal-pro-header [data-ui-title] {
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -85,10 +74,10 @@
 
 /* Bouton X avec position haute et dégagement garanti de la ligne séparatrice */
 .modal-motion-surface .dialog-close {
-  width: 36px; 
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: 1px solid hsl(var(--border) / .65);
-  border-radius: 9999px;
+  border-radius: 12px;
   box-shadow: inset 0 1px 0 hsl(var(--card) / .7), 0 1px 2px 0 rgb(0 0 0 / .05);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -209,8 +198,8 @@
   .modal-motion-surface .dialog-close { 
     top: 12px; 
     inset-inline-end: 14px; 
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     background: hsl(var(--muted) / .7);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);

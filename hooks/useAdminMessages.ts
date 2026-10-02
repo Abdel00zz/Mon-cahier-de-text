@@ -1,76 +1,75 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AdminMessage } from '../types';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
+import { requestSyncJson } from '../utils/syncTransport';
+import { startForegroundPolling } from '../utils/mobileScheduling';
 
 interface MessagesResponse {
     messages?: AdminMessage[];
 }
 
-const loadPendingMessages = async (): Promise<AdminMessage[]> => {
-    const response = await fetch('/api/messages', { credentials: 'same-origin', cache: 'no-store' });
-    if (!response.ok) throw new Error('Chargement des messages de la direction impossible.');
-    const data = await response.json() as MessagesResponse;
+const loadPendingMessages = async (owner: string, signal: AbortSignal): Promise<AdminMessage[]> => {
+    const data = await requestSyncJson<MessagesResponse>('/api/messages', {
+        credentials: 'same-origin', headers: { 'X-Workspace-Owner': owner }, signal,
+    }, 15_000);
     return Array.isArray(data.messages) ? data.messages : [];
 };
 
 /**
  * Boîte de réception minimale des messages direction : lecture au démarrage,
- * à l'arrivée d'un push et au retour de l'onglet. Aucun polling permanent :
- * un écran enseignant inactif ne génère donc aucune requête supplémentaire.
+ * à l'arrivée d'un push et au retour de l'onglet. Au premier plan seulement,
+ * une vérification par minute couvre les appareils sans permission Push.
  */
-export const useAdminMessages = (enabled: boolean) => {
+export const useAdminMessages = (enabled: boolean, owner?: string) => {
     const [messages, setMessages] = useState<AdminMessage[]>([]);
-    const refreshInFlightRef = useRef(false);
+    const refreshController = useRef<AbortController | null>(null);
 
     const refresh = useCallback(async () => {
-        if (!enabled || refreshInFlightRef.current) return;
-        refreshInFlightRef.current = true;
+        if (!enabled || !owner || refreshController.current || document.visibilityState !== 'visible' || !navigator.onLine) return;
+        const controller = new AbortController();
+        refreshController.current = controller;
         const isCurrent = captureWorkspaceLease();
         try {
-            const next = await loadPendingMessages();
-            if (isCurrent()) setMessages(next);
+            const next = await loadPendingMessages(owner, controller.signal);
+            if (isCurrent() && !controller.signal.aborted) setMessages(next);
+            return true;
         } finally {
-            refreshInFlightRef.current = false;
+            if (refreshController.current === controller) refreshController.current = null;
         }
-    }, [enabled]);
+    }, [enabled, owner]);
 
     useEffect(() => {
-        if (!enabled) {
-            setMessages([]);
-            return;
-        }
-        void refresh().catch(() => undefined);
+        setMessages([]);
+        if (!enabled || !owner) return;
+        const stopPolling = startForegroundPolling(refresh, {
+            interval: 60_000, onInactive: () => refreshController.current?.abort(),
+        });
 
         const onServiceWorkerMessage = (event: MessageEvent<unknown>) => {
             const data = event.data as { type?: unknown } | null;
             if (data?.type === 'admin-message') void refresh().catch(() => undefined);
         };
-        const onVisibilityChange = () => {
-            if (document.visibilityState === 'visible') void refresh().catch(() => undefined);
-        };
         navigator.serviceWorker?.addEventListener('message', onServiceWorkerMessage);
-        document.addEventListener('visibilitychange', onVisibilityChange);
 
         return () => {
             navigator.serviceWorker?.removeEventListener('message', onServiceWorkerMessage);
-            document.removeEventListener('visibilitychange', onVisibilityChange);
+            stopPolling();
+            refreshController.current?.abort();
+            refreshController.current = null;
         };
-    }, [enabled, refresh]);
+    }, [enabled, owner, refresh]);
 
     const acknowledge = useCallback(async (messageId: string): Promise<void> => {
         const isCurrent = captureWorkspaceLease();
-        const response = await fetch('/api/messages', {
+        if (!enabled || !owner) throw new Error('Session indisponible.');
+        await requestSyncJson('/api/messages', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': owner },
             credentials: 'same-origin',
             body: JSON.stringify({ action: 'acknowledge', messageId }),
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(typeof data?.error === 'string' ? data.error : 'Accusé de réception impossible.');
-        }
+        }, 15_000);
         if (isCurrent()) setMessages(current => current.filter(message => message.id !== messageId));
-    }, []);
+    }, [enabled, owner]);
 
     return { messages, acknowledge };
 };

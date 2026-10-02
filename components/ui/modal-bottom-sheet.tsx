@@ -22,6 +22,7 @@ export interface ModalBottomSheetProps {
   footerClassName?: string;
   dragHandle?: boolean | React.ReactNode;
   hideClose?: boolean;
+  closeDisabled?: boolean;
   swipeToDismiss?: boolean;
   swipeFromBody?: boolean;
   blockDismiss?: boolean;
@@ -68,6 +69,7 @@ export function ModalBottomSheet({
   footerClassName,
   dragHandle = true,
   hideClose = false,
+  closeDisabled = false,
   swipeToDismiss = true,
   swipeFromBody = false,
   blockDismiss = false,
@@ -288,17 +290,18 @@ export function ModalBottomSheet({
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
+              disabled={closeDisabled}
               className={cn(
                 'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
                 'bg-muted/65 hover:bg-muted/95 backdrop-blur-md',
                 'text-muted-foreground hover:text-foreground',
                 'border border-border/60 hover:border-border shadow-2xs hover:shadow-xs',
-                'transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]',
-                'active:scale-[0.92] hover:scale-[1.06]',
+                'transition-[transform,background-color,border-color] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)]',
+                'active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 'cursor-pointer touch-manipulation',
                 // Dimensions équilibrées avec zone tactile étendue
-                'h-9 w-9 sm:h-9 sm:w-9',
+                'h-11 w-11',
                 // Positionnement respectant les arrondis et assurant un dégagement de la ligne séparatrice
                 'end-[max(0.875rem,env(safe-area-inset-right))] sm:end-5',
                 'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-3.5'

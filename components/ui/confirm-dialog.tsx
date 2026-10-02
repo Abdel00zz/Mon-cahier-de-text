@@ -11,7 +11,7 @@ interface ConfirmDialogProps {
     description: string;
     confirmLabel?: string;
     cancelLabel?: string;
-    onConfirm: () => void;
+    onConfirm: () => void | Promise<void>;
     variant?: 'default' | 'destructive';
     /** When provided, the user must type this exact text before confirming. */
     confirmationPhrase?: string;
@@ -32,53 +32,68 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
     const { t } = useLocale();
     const [confirmationValue, setConfirmationValue] = React.useState('');
+    const [pending, setPending] = React.useState(false);
+    const [failure, setFailure] = React.useState(false);
+    const pendingRef = React.useRef(false);
     const requiresTypedConfirmation = Boolean(confirmationPhrase);
     const confirmationIsValid = !requiresTypedConfirmation || confirmationValue === confirmationPhrase;
 
     React.useEffect(() => {
-        if (!open) setConfirmationValue('');
+        if (!open) { setConfirmationValue(''); setFailure(false); }
     }, [open]);
 
-    const handleConfirm = (e: React.MouseEvent) => {
+    const handleConfirm = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirmationIsValid) return;
-        onConfirm();
-        onOpenChange(false);
+        if (!confirmationIsValid || pendingRef.current) return;
+        pendingRef.current = true;
+        setPending(true);
+        setFailure(false);
+        try {
+            await onConfirm();
+            onOpenChange(false);
+        } catch {
+            setFailure(true);
+        } finally {
+            pendingRef.current = false;
+            setPending(false);
+        }
     };
 
     const handleCancel = (e: React.MouseEvent) => {
         e.stopPropagation();
-        onOpenChange(false);
+        if (!pendingRef.current) onOpenChange(false);
     };
 
     return (
         <ModalBottomSheet
             isOpen={open}
-            onClose={() => onOpenChange(false)}
+            onClose={() => { if (!pendingRef.current) onOpenChange(false); }}
             maxWidth="sm"
             mobilePresentation="dialog"
             dragHandle={false}
             swipeToDismiss={false}
-            blockDismiss={requiresTypedConfirmation}
+            blockDismiss={requiresTypedConfirmation || pending}
+            closeDisabled={pending}
+            description={description}
             title={
                 <div className="flex items-center gap-3">
-                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center ${
                         variant === 'destructive' 
-                            ? 'bg-destructive/10 text-destructive' 
-                            : 'bg-primary/10 text-primary'
-                    } shadow-xs`}>
+                            ? 'text-destructive'
+                            : 'text-primary'
+                    }`}>
                         {variant === 'destructive' ? (
                             <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
                         ) : (
                             <CircleHelp className="h-5 w-5 stroke-[2.2]" />
                         )}
                     </span>
-                    <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                    <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
                         {title}
                     </span>
                 </div>
             }
-            bodyClassName="px-5 py-4 sm:px-6 sm:py-5"
+            bodyClassName={requiresTypedConfirmation || failure ? 'px-5 py-3 sm:px-6 sm:py-4' : 'hidden'}
             footerClassName="px-5 py-3.5 sm:px-6 sm:py-4"
             footer={
                 <div className="flex w-full flex-col-reverse items-stretch justify-end gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
@@ -86,6 +101,7 @@ export function ConfirmDialog({
                         type="button"
                         variant="secondary"
                         onClick={handleCancel}
+                        disabled={pending}
                         className="min-h-11 h-auto rounded-xl px-4 py-2 whitespace-normal text-sm font-semibold"
                     >
                         {cancelLabel ?? t('common.cancel')}
@@ -94,15 +110,16 @@ export function ConfirmDialog({
                         type="button"
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
-                        disabled={!confirmationIsValid}
+                        disabled={!confirmationIsValid || pending}
+                        aria-busy={pending}
                         className="min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm"
                     >
-                        {confirmLabel ?? t('common.confirm')}
+                        {pending ? t('common.loading') : confirmLabel ?? t('common.confirm')}
                     </Button>
                 </div>
             }
         >
-            <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+            {failure && <p role="alert" className="mb-3 text-sm leading-relaxed text-destructive">{t('confirm.retryError')}</p>}
             {requiresTypedConfirmation && (
                 <label className="space-y-2 pt-2 block">
                     <span className="block text-xs font-semibold leading-relaxed text-foreground">
@@ -114,7 +131,7 @@ export function ConfirmDialog({
                         onChange={(event) => setConfirmationValue(event.target.value)}
                         placeholder={confirmationPhrase}
                         autoComplete="off"
-                        autoFocus
+                        disabled={pending}
                         className="flex h-11 w-full rounded-xl border border-border/80 bg-muted/40 px-4 text-xs sm:text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
                         aria-label={confirmationHint}
                     />

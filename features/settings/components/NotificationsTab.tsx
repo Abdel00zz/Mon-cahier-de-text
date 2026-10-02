@@ -4,6 +4,7 @@ import { defaultNotificationSettings } from '@/hooks/useConfigManager';
 import {
     activateNativeNotifications,
     getPushNotificationState,
+    hasPendingPushCleanup,
     isIOSDevice,
     isStandalone,
     pushSupported,
@@ -12,10 +13,13 @@ import {
     type PushNotificationState,
 } from '@/utils/push';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
-import { Bell, CalendarCheck, Check, Clock, Download, TriangleAlert, X } from '@/components/ui/icons';
+import { Bell, CalendarCheck, Clock, TriangleAlert, X } from '@/components/ui/icons';
+import { Button } from '@/components/ui/button';
+import { StatusNotice, type NoticeTone } from '@/components/ui/status-notice';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { captureWorkspaceLease } from '@/utils/accountWorkspace';
 
 type Translate = ReturnType<typeof useLocale>['t'];
 
@@ -25,7 +29,7 @@ type Translate = ReturnType<typeof useLocale>['t'];
  * non supporté · installation iOS requise · bloqué (navigateur) · activé ·
  * à activer. Tout en tokens du design system (aucune couleur en dur).
  */
-const PushActivationCard: React.FC<{
+export const PushActivationCard: React.FC<{
     state: PushNotificationState;
     checking: boolean;
     busy: boolean;
@@ -33,148 +37,62 @@ const PushActivationCard: React.FC<{
     onDeactivate: () => void;
     onTest: () => void;
     t: Translate;
-}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, t }) => {
-    const supported = pushSupported();
-    const iosNeedsInstall = isIOSDevice() && !isStandalone();
+    supported?: boolean;
+    iosNeedsInstall?: boolean;
+}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, t, supported = pushSupported(), iosNeedsInstall = isIOSDevice() && !isStandalone() }) => {
     const active = state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
-    const permission = state.permission;
-
-    const stateDetails = (
-        <dl className="mt-3 grid grid-cols-3 gap-1.5" aria-label={t('notifications.state.title')}>
-            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
-                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.permission')}</dt>
-                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
-                    {permission === 'granted'
-                        ? t('notifications.state.allowed')
-                        : permission === 'denied'
-                            ? t('notifications.state.blocked')
-                            : permission === 'unsupported'
-                                ? t('notifications.state.unavailable')
-                                : t('notifications.state.notAllowed')}
-                </dd>
-            </div>
-            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
-                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.browser')}</dt>
-                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
-                    {checking ? t('notifications.state.checking') : state.subscribed ? t('notifications.state.active') : t('notifications.state.inactive')}
-                </dd>
-            </div>
-            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
-                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.server')}</dt>
-                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
-                    {checking || state.serverRegistered === null
-                        ? t('notifications.state.checking')
-                        : state.serverRegistered
-                            ? t('notifications.state.registered')
-                            : t('notifications.state.notRegistered')}
-                </dd>
-            </div>
-        </dl>
-    );
-
-    // Cas informatifs (aucune action possible)
-    if (!supported || iosNeedsInstall) {
-        return (
-            <div className="settings-surface flex items-start gap-3.5 p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground">
-                    {iosNeedsInstall ? <Download className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                </span>
-                <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                        {iosNeedsInstall ? t('notifications.pushIosInstall') : t('notifications.pushUnsupported')}
-                    </p>
-                    {stateDetails}
-                </div>
-            </div>
-        );
-    }
-
-    // Bloqué par le navigateur : ré-autorisation impossible par API.
-    if (permission === 'denied' && !active) {
-        return (
-<div className="info-alert-futuristic flex items-start gap-3.5 rounded-2xl border p-4 shadow-xs backdrop-blur-xl">
-  <span className="info-alert-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl">
-  <TriangleAlert className="h-8 w-8 stroke-[1.8]" />
-                </span>
-                <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.permissionDenied')}</p>
-                    {stateDetails}
-                    {(state.subscribed || state.serverRegistered === true) && (
-                        <button
-                            type="button"
-                            onClick={onDeactivate}
-                            disabled={busy || checking}
-                            className="mt-3 h-9 rounded-md px-3 text-xs font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
-                        >
-                            {t('notifications.turnOff')}
-                        </button>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
-    // Activé : état de succès + test + désactivation.
-    if (active) {
-        return (
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-                <div className="flex items-start gap-3.5">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                        <Check className="h-5 w-5 stroke-[2.5]" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.remindersActive')}</p>
-                        {stateDetails}
-                    </div>
-                </div>
-                <div className="mt-3.5 flex items-center gap-2 pt-2">
-                    <button
-                        type="button"
-                        onClick={onTest}
-                        disabled={busy || checking}
-                        className="h-9.5 flex-1 rounded-md border border-border bg-background text-xs font-bold text-foreground transition-all hover:bg-muted disabled:opacity-50 cursor-pointer shadow-none"
-                    >
-                        {t('notifications.sendTest')}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onDeactivate}
-                        disabled={busy || checking}
-                        className="h-9.5 rounded-md px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
-                    >
-                        {t('notifications.turnOff')}
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    // À activer : le vrai CTA (permission + abonnement en un geste).
-    const label = permission === 'granted' ? t('notifications.finalizeReminders') : t('notifications.enableReminders');
+    const blocked = state.permission === 'denied' && !active;
+    const unavailable = !supported || iosNeedsInstall;
+    const description = iosNeedsInstall ? t('notifications.pushIosInstall')
+        : !supported ? t('notifications.pushUnsupported')
+        : checking ? t('notifications.state.checking')
+        : blocked ? t('notifications.permissionDenied')
+        : active ? t('notifications.remindersActive')
+        : t('notifications.remindersReady');
+    const diagnostics = [
+        [t('notifications.state.permission'), state.permission === 'granted'
+            ? t('notifications.state.allowed')
+            : state.permission === 'denied' ? t('notifications.state.blocked')
+            : state.permission === 'unsupported' ? t('notifications.state.unavailable')
+            : t('notifications.state.notAllowed')],
+        [t('notifications.state.browser'), checking ? t('notifications.state.checking')
+            : state.subscribed ? t('notifications.state.active') : t('notifications.state.inactive')],
+        [t('notifications.state.server'), checking ? t('notifications.state.checking')
+            : state.serverRegistered === null ? t('notifications.state.unavailable')
+            : state.serverRegistered ? t('notifications.state.registered') : t('notifications.state.notRegistered')],
+    ];
     return (
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-            <div className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-xs">
-                    <Bell className="h-5 w-5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
-                    {stateDetails}
-                </div>
-            </div>
-            <button
-                type="button"
-                onClick={onActivate}
-                disabled={busy || checking}
-                className="mt-3.5 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
-            >
-                <Bell className="h-4 w-4" />
-                {label}
-            </button>
-        </div>
+        <StatusNotice
+            tone={blocked ? 'warning' : active ? 'success' : 'info'}
+            title={t('notifications.remindersTitle')}
+            description={description}
+        >
+            {!unavailable && !blocked && (
+                <Button disabled={busy || checking} aria-busy={busy}
+                    onClick={active ? onTest : onActivate}>
+                    {busy ? t('common.loading') : active ? t('notifications.sendTest')
+                        : state.permission === 'granted' ? t('notifications.finalizeReminders')
+                        : t('notifications.enableReminders')}
+                </Button>
+            )}
+            {!unavailable && (active || (blocked && (state.subscribed || state.serverRegistered === true))) && (
+                <Button variant="ghost" disabled={busy || checking} onClick={onDeactivate}>
+                    {t('notifications.turnOff')}
+                </Button>
+            )}
+            <details className="basis-full text-xs text-muted-foreground">
+                <summary className="min-h-11 cursor-pointer rounded-lg py-3 font-medium focus-visible:outline-2 focus-visible:outline-primary">
+                    {t('notifications.state.title')}
+                </summary>
+                <dl className="space-y-2 pb-2">
+                    {diagnostics.map(([label, value]) => (
+                        <div key={label} className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+                            <dt>{label}</dt><dd className="font-medium text-foreground">{value}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </details>
+        </StatusNotice>
     );
 };
 
@@ -238,9 +156,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const l = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
     const settings = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
     const [busy, setBusy] = useState(false);
+    const busyRef = useRef(false);
+    const liveRef = useRef(true);
+    useEffect(() => { liveRef.current = true; return () => { liveRef.current = false; }; }, []);
     const [checking, setChecking] = useState(true);
     const [permissionRevision, setPermissionRevision] = useState(0);
-    const [message, setMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<{ text: string; tone: NoticeTone } | null>(null);
+    const [cleanupPending, setCleanupPending] = useState(hasPendingPushCleanup);
     const [pushState, setPushState] = useState<PushNotificationState>(() => ({
         permission: pushSupported() && typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
         subscribed: false,
@@ -274,91 +196,113 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     // Réconcilie le réglage local avec les trois couches réelles, sans afficher
     // de demande d'autorisation et sans attendre indéfiniment un SW absent.
     useEffect(() => {
+        if (busy) return;
         let cancelled = false;
+        const lease = captureWorkspaceLease();
         setChecking(true);
         void getPushNotificationState()
             .then(state => {
-                if (cancelled) return;
+                if (cancelled || busyRef.current || !lease()) return;
                 setPushState(state);
+                setCleanupPending(hasPendingPushCleanup());
                 if (state.serverRegistered !== null) {
                     const active = stateIsActive(state);
                     if (settingsRef.current.pushEnabled !== active) patch({ pushEnabled: active });
                 }
                 if (state.reason === 'serverStatusUnavailable' || state.reason === 'nativeUnavailable') {
-                    setMessage(t('notifications.statusCheckFailed'));
+                    setMessage({ text: t('notifications.statusCheckFailed'), tone: 'warning' });
                 }
             })
             .catch(() => {
-                if (!cancelled) setMessage(t('notifications.statusCheckFailed'));
+                if (!cancelled && !busyRef.current && lease()) setMessage({ text: t('notifications.statusCheckFailed'), tone: 'warning' });
             })
             .finally(() => {
-                if (!cancelled) setChecking(false);
+                if (!cancelled && lease()) setChecking(false);
             });
         return () => {
             cancelled = true;
         };
-    }, [patch, t, permissionRevision]);
+    }, [patch, t, permissionRevision, busy]);
 
     // Un seul geste : autorisation système + abonnement serveur.
     const handleActivate = async () => {
+        if (busyRef.current) return;
+        busyRef.current = true;
+        const lease = captureWorkspaceLease();
+        const fresh = () => liveRef.current && lease();
         setBusy(true);
         setMessage(null);
         try {
             const result = await activateNativeNotifications();
+            if (!fresh()) return;
             setPushState(result);
             const active = stateIsActive(result);
             patch({ pushEnabled: active });
             if (active) {
-                setMessage(t('notifications.pushEnabled'));
+                setMessage({ text: t('notifications.pushEnabled'), tone: 'success' });
             } else {
                 const reason = result.reason
                     ? t(`notifications.activationReason.${result.reason}`)
                     : t('notifications.unknownReason');
-                setMessage(t('notifications.activationFailed', { reason }));
+                setMessage({ text: t('notifications.activationFailed', { reason }), tone: 'warning' });
             }
         } catch {
-            setMessage(t('notifications.activationUnexpectedError'));
+            if (fresh()) setMessage({ text: t('notifications.activationUnexpectedError'), tone: 'error' });
         } finally {
-            setBusy(false);
+            busyRef.current = false;
+            if (fresh()) { setBusy(false); setCleanupPending(hasPendingPushCleanup()); }
         }
     };
 
     const handleDeactivate = async () => {
+        if (busyRef.current) return;
+        busyRef.current = true;
+        const lease = captureWorkspaceLease();
+        const fresh = () => liveRef.current && lease();
         setBusy(true);
         setMessage(null);
         try {
             const result = await unsubscribeFromPush();
+            if (!fresh()) return;
             const state = await getPushNotificationState();
+            if (!fresh()) return;
             setPushState(state);
             if (state.serverRegistered !== null) patch({ pushEnabled: stateIsActive(state) });
             if (result.ok) {
-                setMessage(t('notifications.pushDisabled'));
+                setMessage({ text: t('notifications.pushDisabled'), tone: 'success' });
             } else if (result.localUnsubscribed && !result.serverUnregistered) {
-                setMessage(t('notifications.pushDisabledCleanupPending'));
+                setMessage({ text: t('notifications.pushDisabledCleanupPending'), tone: 'warning' });
             } else {
-                setMessage(t('notifications.deactivationFailed'));
+                setMessage({ text: t('notifications.deactivationFailed'), tone: 'error' });
             }
         } catch {
-            setMessage(t('notifications.deactivationFailed'));
+            if (fresh()) setMessage({ text: t('notifications.deactivationFailed'), tone: 'error' });
         } finally {
-            setBusy(false);
+            busyRef.current = false;
+            if (fresh()) { setBusy(false); setCleanupPending(hasPendingPushCleanup()); }
         }
     };
 
     const handleTest = async () => {
+        if (busyRef.current) return;
+        busyRef.current = true;
+        const lease = captureWorkspaceLease();
+        const fresh = () => liveRef.current && lease();
         setBusy(true);
         setMessage(null);
         try {
             const result = await sendTestNotification();
-            setMessage(result.ok
-                ? t('notifications.testSuccess')
-                : result.sent === 0
-                    ? t('notifications.testNoDelivery')
-                    : t('notifications.testFailure'));
+            if (!fresh()) return;
+            setMessage({
+                text: result.ok ? t('notifications.testSuccess')
+                    : result.sent === 0 ? t('notifications.testNoDelivery') : t('notifications.testFailure'),
+                tone: result.ok ? 'success' : result.sent === 0 ? 'warning' : 'error',
+            });
         } catch {
-            setMessage(t('notifications.testFailure'));
+            if (fresh()) setMessage({ text: t('notifications.testFailure'), tone: 'error' });
         } finally {
-            setBusy(false);
+            busyRef.current = false;
+            if (fresh()) setBusy(false);
         }
     };
 
@@ -378,6 +322,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 onTest={handleTest}
                 t={t}
             />
+            {(message || cleanupPending) && (
+                <StatusNotice tone={message?.tone ?? 'warning'} title={message?.text ?? t('notifications.pushDisabledCleanupPending')} announce={!!message}>
+                    {cleanupPending && !stateIsActive(pushState) && <Button variant="outline" disabled={busy || checking} onClick={handleDeactivate}>
+                        {l('Terminer la désactivation', 'إتمام إلغاء التفعيل', 'Complete deactivation')}
+                    </Button>}
+                </StatusNotice>
+            )}
 
             <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
                 <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
@@ -400,8 +351,9 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             <Toggle
                 label={t('notifications.vibration')}
-                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Vibration des rappels et notifications sur cet appareil. Les retours tactiles des boutons sont indépendants.', 'اهتزاز التذكيرات والإشعارات على هذا الجهاز. الاستجابة اللمسية للأزرار مستقلة.', 'Reminder and notification vibration on this device. Button haptics are independent.')}
+                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Pour les rappels sur cet appareil. Les retours tactiles des boutons sont séparés.', 'لتذكيرات هذا الجهاز. الاستجابة اللمسية للأزرار مستقلة.', 'For reminders on this device. Button haptics are separate.')}
                 checked={settings.sessionVibration ?? false}
+                disabled={!vibrationSupported}
                 onChange={v => {
                     patch({ sessionVibration: v });
                     if (v && vibrationSupported) {
@@ -425,7 +377,17 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 <span>{l('Délai après la séance (minutes)', 'المهلة بعد الحصة (دقائق)', 'Minutes after the session')}</span>
                 <select className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3" value={settings.missingDateReminderMinutes ?? 5} disabled={!settings.enabled} onChange={event => patch({ missingDateReminderMinutes: Number(event.target.value) })}>{[1, 5, 10, 15, 30].map(value => <option key={value} value={value}>{value}</option>)}</select>
             </label>
-            <p className="px-1 text-xs leading-relaxed text-muted-foreground">{l('La carte de la classe en cours est mise en valeur sur le tableau de bord. La vibration dépend du téléphone et d’une interaction préalable. Une application suspendue ne garantit pas un rappel local à la minute ; les notifications push ont un circuit distinct.', 'تظهر بطاقة القسم الجاري بشكل بارز في لوحة القيادة. يعتمد الاهتزاز على دعم الهاتف وتفاعل سابق. عند تعليق التطبيق لا يضمن التذكير المحلي في الدقيقة؛ الإشعارات الدفعية لها مسار مستقل.', 'The current class card is highlighted on the dashboard. Vibration requires device support and prior interaction. A suspended app cannot guarantee minute-precise local reminders; push notifications use a separate path.')}</p>
+            <details className="px-1 text-xs text-muted-foreground">
+                <summary className="min-h-11 cursor-pointer py-3 font-medium focus-visible:outline-2 focus-visible:outline-primary">
+                    {l('À savoir sur les rappels', 'حول التذكيرات', 'About reminders')}
+                </summary>
+                <p className="pb-3 leading-relaxed">{l('Les rappels locaux nécessitent une page active et peuvent être retardés si l’application est suspendue. La vibration dépend du téléphone et d’une interaction préalable. Les push peuvent arriver application fermée.', 'تتطلب التذكيرات المحلية صفحة نشطة وقد تتأخر عند تعليق التطبيق. يعتمد الاهتزاز على الهاتف وتفاعل سابق. قد تصل إشعارات الدفع والتطبيق مغلق.', 'Local reminders need an active page and may be delayed while the app is suspended. Vibration depends on the device and prior interaction. Push alerts can arrive with the app closed.')}</p>
+                <dl className="space-y-3 pb-3 leading-relaxed">
+                    <div><dt className="font-medium text-foreground">iPhone / iPad</dt><dd>{l('iOS 16.4+ : ouvrez l’application depuis l’écran d’accueil. Si le test est silencieux, vérifiez Notifications et Concentration dans les réglages du téléphone.', 'iOS 16.4 أو أحدث: افتح التطبيق من الشاشة الرئيسية. إذا كان الاختبار صامتاً، تحقق من الإشعارات والتركيز في إعدادات الهاتف.', 'iOS 16.4+: open the app from the Home Screen. If the test is silent, check Notifications and Focus in phone settings.')}</dd></div>
+                    <div><dt className="font-medium text-foreground">Google Pixel / Samsung</dt><dd>{l('Autorisez les notifications du site dans Chrome ou Samsung Internet. Le système peut retarder les alertes en mode économie d’énergie.', 'اسمح بإشعارات الموقع في Chrome أو Samsung Internet. قد يؤخر النظام التنبيهات في وضع توفير الطاقة.', 'Allow site notifications in Chrome or Samsung Internet. Battery Saver may delay alerts.')}</dd></div>
+                    <div><dt className="font-medium text-foreground">{l('Icône et réception', 'الأيقونة والاستقبال', 'Icon and delivery')}</dt><dd>{l('Le logo identifie l’application ; Android utilise aussi un petit pictogramme transparent. Un test transmis par le serveur confirme l’envoi, sa réception doit être vérifiée sur ce téléphone.', 'يمثل الشعار التطبيق؛ ويستخدم Android أيضاً رمزاً صغيراً بخلفية شفافة. يؤكد اختبار الخادم الإرسال، ويجب التحقق من الاستقبال على هذا الهاتف.', 'The logo identifies the app; Android also uses a small transparent glyph. A server-submitted test confirms sending; check receipt on this phone.')}</dd></div>
+                </dl>
+            </details>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="settings-surface flex flex-col justify-between p-4">
@@ -460,8 +422,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 onChange={v => patch({ quietDuringVacations: v })}
             />
 
-            {message && <p role="status" aria-live="polite" className="settings-surface px-3.5 py-2.5 text-xs font-bold text-foreground">{message}</p>}
-
             <AbsencesSection
                 absences={config.absences ?? []}
                 onChange={absences => onChange({ absences })}
@@ -480,9 +440,10 @@ const AbsencesSection: React.FC<{
     const [debut, setDebut] = useState('');
     const [fin, setFin] = useState('');
     const [motif, setMotif] = useState('');
+    const invalidRange = Boolean(debut && fin && fin < debut);
 
     const addAbsence = () => {
-        if (!debut) return;
+        if (!debut || invalidRange) return;
         const effectiveFin = fin && fin >= debut ? fin : debut;
         onChange([...absences, { debut, fin: effectiveFin, motif: motif.trim() || undefined }]);
         setDebut('');
@@ -513,7 +474,7 @@ const AbsencesSection: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => removeAbsence(index)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                                 aria-label={t('notifications.deleteAbsence')}
                             >
                                 <X className="h-3.5 w-3.5" />
@@ -523,38 +484,48 @@ const AbsencesSection: React.FC<{
                 </ul>
             )}
 
-            <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
-                <input
+            <div className="mt-3.5 grid grid-cols-1 items-end gap-3 min-[400px]:grid-cols-2 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
+                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
+                  <span>{t('notifications.absenceStart')}</span>
+                  <input
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    className="h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     aria-label={t('notifications.absenceStart')}
                 />
-                <input
+                </label>
+                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
+                  <span>{t('notifications.absenceEnd')}</span>
+                  <input
                     type="date"
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    className="h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     aria-label={t('notifications.absenceEnd')}
+                    aria-invalid={invalidRange || undefined}
+                    aria-describedby={invalidRange ? 'absence-range-error' : undefined}
                 />
+                </label>
                 <input
                     type="text"
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder={t('notifications.reasonOptional')}
-                    className="col-span-2 h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    aria-label={t('notifications.reasonOptional')}
+                    className="col-span-full h-11 min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
-                <button
+                <Button
                     type="button"
                     onClick={addAbsence}
-                    disabled={!debut}
-                    className="col-span-2 h-10 cursor-pointer rounded-md bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40 sm:col-span-1"
+                    disabled={!debut || invalidRange}
+                    className="col-span-full text-sm sm:col-span-1"
                 >
                     {t('notifications.add')}
-                </button>
+                </Button>
             </div>
+            {invalidRange && <div id="absence-range-error"><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
         </div>
     );
 };

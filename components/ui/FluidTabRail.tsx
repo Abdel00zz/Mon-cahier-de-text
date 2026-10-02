@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 export interface FluidTabItem<T extends string = string> {
   id: T;
@@ -41,13 +42,18 @@ export function FluidTabRail<T extends string = string>({
   tabClassName,
   activeTabClassName,
   inactiveTabClassName,
-  layoutId = 'fluid-tab-pill',
+  layoutId,
   showEdgeArrows = false,
   size = 'md',
   ariaLabel,
 }: FluidTabRailProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const railId = useId();
+  const reducedMotion = useReducedMotion();
+  const { locale } = useLocale();
+  const scrollBehavior: ScrollBehavior = reducedMotion ? 'auto' : 'smooth';
+  const pillId = layoutId ?? `fluid-tab-pill-${railId}`;
 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -98,20 +104,27 @@ export function FluidTabRail<T extends string = string>({
 
   // Déplacement au montage et à chaque changement d'onglet actif
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollToTab(activeId, 'smooth');
+    const frame = requestAnimationFrame(() => {
+      scrollToTab(activeId, scrollBehavior);
       checkOverflow();
-    }, 40);
+    });
 
-    return () => clearTimeout(timer);
-  }, [activeId, scrollToTab, checkOverflow]);
+    return () => cancelAnimationFrame(frame);
+  }, [activeId, scrollToTab, checkOverflow, scrollBehavior]);
 
   // Surveillance du redimensionnement et du scroll
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleScroll = () => checkOverflow();
+    let frame: number | null = null;
+    const handleScroll = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        checkOverflow();
+      });
+    };
     container.addEventListener('scroll', handleScroll, { passive: true });
 
     const resizeObserver = new ResizeObserver(() => {
@@ -122,39 +135,40 @@ export function FluidTabRail<T extends string = string>({
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
+      if (frame !== null) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
     };
   }, [checkOverflow, scrollToTab, activeId]);
 
   const handleSelect = (id: T) => {
     onChange(id);
-    scrollToTab(id, 'smooth');
-    setTimeout(checkOverflow, 250);
   };
 
   const handleScrollStep = (direction: 'left' | 'right') => {
     const container = containerRef.current;
     if (!container) return;
     const delta = direction === 'left' ? -180 : 180;
-    container.scrollBy({ left: delta, behavior: 'smooth' });
+    container.scrollBy({ left: delta, behavior: scrollBehavior });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-      const isRtl = document.documentElement.dir === 'rtl';
-      const step = (e.key === 'ArrowRight' ? (isRtl ? -1 : 1) : (isRtl ? 1 : -1));
-      const nextIndex = Math.max(0, Math.min(items.length - 1, currentIndex + step));
-      if (nextIndex !== currentIndex && !items[nextIndex].disabled) {
-        handleSelect(items[nextIndex].id);
-      }
-    }
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const enabled = items.map((item, index) => item.disabled ? -1 : index).filter(index => index >= 0);
+    if (!enabled.length) return;
+    const isRtl = getComputedStyle(containerRef.current!).direction === 'rtl';
+    const step = e.key === 'ArrowRight' ? (isRtl ? -1 : 1) : (isRtl ? 1 : -1);
+    const position = enabled.indexOf(currentIndex);
+    const nextIndex = e.key === 'Home' ? enabled[0] : e.key === 'End' ? enabled[enabled.length - 1]
+      : enabled[(position + step + enabled.length) % enabled.length];
+    handleSelect(items[nextIndex].id);
+    itemRefs.current[items[nextIndex].id]?.focus({ preventScroll: true });
   };
 
   const sizeClasses = {
-    sm: 'h-8 px-2.5 text-[11px] sm:text-xs rounded-lg gap-1.5',
-    md: 'min-h-9 sm:min-h-10 px-3 py-1 text-xs rounded-xl gap-1.5',
-    lg: 'min-h-10 sm:min-h-11 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm rounded-xl gap-2',
+    sm: 'min-h-11 px-2.5 text-xs rounded-lg gap-1.5',
+    md: 'min-h-11 px-3 py-1 text-xs rounded-xl gap-1.5',
+    lg: 'min-h-11 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm rounded-xl gap-2',
   }[size];
 
   return (
@@ -164,8 +178,8 @@ export function FluidTabRail<T extends string = string>({
         <button
           type="button"
           onClick={() => handleScrollStep('left')}
-          className="absolute -start-2 z-20 hidden h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-all hover:scale-105 active:scale-95 sm:flex cursor-pointer"
-          aria-label="Faire défiler vers la gauche"
+          className="absolute -left-2 z-20 hidden h-11 w-11 items-center justify-center rounded-xl border border-border/70 bg-card/95 text-foreground shadow-sm transition-colors hover:bg-muted sm:flex cursor-pointer"
+          aria-label={locale === 'ar' ? 'التمرير لليسار' : locale === 'en' ? 'Scroll left' : 'Défiler vers la gauche'}
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -174,7 +188,7 @@ export function FluidTabRail<T extends string = string>({
       {/* Masque de dégradé gauche si débordement */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-y-0 start-0 z-10 w-6 bg-gradient-to-r from-background/90 to-transparent transition-opacity duration-200',
+          'pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-background/90 to-transparent transition-opacity duration-200 motion-reduce:transition-none',
           canScrollLeft ? 'opacity-100' : 'opacity-0'
         )}
         aria-hidden="true"
@@ -187,7 +201,7 @@ export function FluidTabRail<T extends string = string>({
         aria-label={ariaLabel}
         className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-2.5 pt-0.5 px-1 no-scrollbar select-none"
         style={{
-          scrollBehavior: 'smooth',
+          scrollBehavior,
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-x',
         }}
@@ -204,11 +218,12 @@ export function FluidTabRail<T extends string = string>({
               role="tab"
               aria-selected={isActive}
               aria-disabled={item.disabled}
+              tabIndex={isActive ? 0 : -1}
               disabled={item.disabled}
               onClick={() => handleSelect(item.id)}
               onKeyDown={e => handleKeyDown(e, index)}
               className={cn(
-                'group relative flex shrink-0 items-center justify-center whitespace-nowrap font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                'group relative flex shrink-0 items-center justify-center whitespace-nowrap font-medium transition-colors duration-150 motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                 sizeClasses,
                 isActive
                   ? cn(
@@ -224,17 +239,17 @@ export function FluidTabRail<T extends string = string>({
               )}
             >
               {/* Pastille coulissante dynamique (Spring Pill) pour fluidité absolue */}
-              {isActive && layoutId && (
+              {isActive && pillId && (
                 <motion.div
-                  layoutId={layoutId}
+                  layoutId={pillId}
                   className="pointer-events-none absolute inset-0 rounded-[inherit] bg-primary/12 dark:bg-primary/20 border border-primary/35 shadow-xs"
-                  transition={{ type: 'spring', stiffness: 480, damping: 34, mass: 0.7 }}
+                  transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 34, mass: 0.7 }}
                 />
               )}
 
               {Icon && (
                 <Icon className={cn(
-                  'relative z-10 shrink-0 transition-transform duration-150 group-active:scale-95',
+                  'relative z-10 shrink-0 transition-transform duration-150 group-active:scale-95 motion-reduce:transform-none motion-reduce:transition-none',
                   size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4',
                   isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                 )} />
@@ -251,7 +266,7 @@ export function FluidTabRail<T extends string = string>({
       {/* Masque de dégradé droit si débordement */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-y-0 end-0 z-10 w-6 bg-gradient-to-l from-background/90 to-transparent transition-opacity duration-200',
+          'pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-background/90 to-transparent transition-opacity duration-200 motion-reduce:transition-none',
           canScrollRight ? 'opacity-100' : 'opacity-0'
         )}
         aria-hidden="true"
@@ -262,8 +277,8 @@ export function FluidTabRail<T extends string = string>({
         <button
           type="button"
           onClick={() => handleScrollStep('right')}
-          className="absolute -end-2 z-20 hidden h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-all hover:scale-105 active:scale-95 sm:flex cursor-pointer"
-          aria-label="Faire défiler vers la droite"
+          className="absolute -right-2 z-20 hidden h-11 w-11 items-center justify-center rounded-xl border border-border/70 bg-card/95 text-foreground shadow-sm transition-colors hover:bg-muted sm:flex cursor-pointer"
+          aria-label={locale === 'ar' ? 'التمرير لليمين' : locale === 'en' ? 'Scroll right' : 'Défiler vers la droite'}
         >
           <ChevronRight className="h-4 w-4" />
         </button>

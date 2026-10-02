@@ -1,6 +1,20 @@
 import React from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
+import { GeometricSpinner } from './GeometricSpinner';
+
+export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay = false }) => {
+  const { t, isRtl } = useLocale();
+  return <div
+    role="status"
+    aria-live="polite"
+    dir={isRtl ? 'rtl' : 'ltr'}
+    className={`flex flex-col items-center justify-center gap-5 bg-background text-foreground ${overlay ? 'fixed inset-0 z-[90]' : 'min-h-[calc(100dvh-6rem)] sm:min-h-[65dvh]'}`}
+  >
+    <GeometricSpinner />
+    <p className="text-sm font-medium text-muted-foreground">{t('common.loading')}</p>
+  </div>;
+};
 
 type AppBootStage = 'workspace' | 'latex';
 
@@ -28,8 +42,8 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       <section className="relative w-full max-w-xs text-center sm:max-w-sm">
-        <div className="mx-auto flex h-11 w-11 items-center justify-center text-primary">
-          <span className="h-7 w-7 animate-spin rounded-full border-2 border-primary/20 border-t-primary motion-reduce:animate-none" aria-hidden="true" />
+        <div className="mx-auto flex h-20 w-20 items-center justify-center">
+          <GeometricSpinner />
         </div>
         <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
           {title}
@@ -47,7 +61,7 @@ export const DashboardSkeleton: React.FC = () => {
     <div className="mx-auto max-w-5xl px-3 sm:px-4">
       <div className="mb-6 flex items-center justify-between pb-3">
         <div className="flex items-center gap-3">
-          <Skeleton className="h-11 w-11 rounded-full" />
+          <GeometricSpinner compact />
           <div>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="mt-2 h-3 w-52" />

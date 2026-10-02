@@ -79,8 +79,10 @@ automatisés.
   durable et doit rester la seule source de vérité pour les notifications qui
   doivent arriver application fermée.
 - **Edge/Service Worker** : réception du Push, affichage système et clic. Le
-  clic est limité à une URL de même origine et attend réellement `focus()` puis
-  `navigate()` avant la fin de `waitUntil`.
+  clic est limité aux routes enseignant. Une fenêtre du cahier est préférée aux
+  pages admin ; son document est conservé et la route est communiquée sans
+  rechargement. La navigation attend la fin d’une saisie/modale. Un échec de
+  focus ouvre une nouvelle fenêtre de l’application.
 - **State** : `permission`, `subscribed`, `serverRegistered` et les préférences
   ne sont pas fusionnés en un booléen. Cette séparation rend les diagnostics et
   les migrations multi-appareils explicites.
@@ -90,6 +92,54 @@ automatisés.
   date, gravité) pour permettre reprise et observabilité sans doublon.
 
 ## Optimisations recommandées ensuite
+
+### Améliorations réalisées le 2 octobre 2026
+
+- Les séances se réveillent au début/à la fin, au rappel configuré et à minuit,
+  sans intervalle de 15 secondes. Le jour marocain partage un seul minuteur,
+  suspendu en arrière-plan, avec les changements de fuseau pris en compte.
+- Les caches des programmes, polices et illustrations sont bornés et peuvent
+  être purgés en cas de quota. La mémoire des cahiers conserve au plus 24
+  cahiers ; cette éviction ne supprime aucune donnée locale. Les claims locaux
+  de rappel sont bornés à 256 avec expiration à 48 heures.
+- Activation et rechargement des nouvelles versions attendent un moment calme,
+  sans champ actif, modale, sauvegarde ou action occupée. Un autre onglet qui
+  active le worker déclenche aussi ce contrôle avant le rechargement.
+- Les push conservent les champs des anciens workers et ajoutent un secours
+  déclaratif Safari (`web_push: 8030`, notification avec destination). Le payload
+  UTF-8 reste inférieur à 3 900 octets ; les cas volumineux gardent le format
+  classique. Les préférences de vibration ne peuvent bloquer l’affichage plus
+  de 500 ms.
+- TTL : fin de séance 120 s, date manquante 15 min, test 5 min, bilan/admin 24 h.
+  Les bilans utilisent une urgence basse et les messages admin normale ; aucun
+  polling silencieux via Push. Les tags remplacent les alertes équivalentes.
+- Une désactivation hors ligne conserve une demande de retrait par compte
+  (maximum 5, durée 14 jours). « Terminer la désactivation » réessaie même quand
+  l’abonnement local a déjà été supprimé. Le stockage indisponible limite ce
+  mécanisme de reprise ; les endpoints expirés restent purgés côté serveur.
+- « Activer les rappels », « Continuer l’activation », « Tester les rappels » :
+  actions distinctes, occupées pendant l’opération, protégées contre doubles
+  clics, fermeture, anciennes réponses et changements de compte. Aucun prompt
+  de permission n’est lancé par les vérifications d’état.
+
+### Vérification sur les téléphones
+
+La réception native reste à tester sur appareils réels avec HTTPS et les clés
+VAPID du déploiement. Les simulations automatisées ne prouvent ni la livraison
+APNs/FCM ni une baisse mesurée de consommation de batterie.
+
+| Téléphone | Vérification native à effectuer |
+| --- | --- |
+| iPhone/iPad iOS 16.4+ | Installer sur l’écran d’accueil, ouvrir cette application, activer avec un geste et recevoir le test écran verrouillé. Contrôler Concentration et le nom/icône d’application. Le secours déclaratif concerne les versions Safari compatibles (introduit avec iOS 18.4). |
+| Google Pixel / Chrome | Autoriser le site, recevoir le test application fermée, vérifier logo et petit badge transparent, toucher pour ouvrir le bon cahier. Refaire en économie d’énergie, qui peut retarder les alertes. |
+| Samsung / Chrome ou Samsung Internet | Même parcours, vérifier le masque de l’icône installée, les notifications du navigateur/site et les restrictions du système. Le rendu exact et les boutons relèvent de la version du navigateur/OS. |
+
+Le cron quotidien existant demeure à 17 h UTC. Les rappels horaires locaux ne
+sont **pas garantis application fermée/suspendue** : un worker ne remplace pas
+un ordonnanceur serveur ou un module natif. La PWA ne demande pas de contourner
+les réglages de batterie du téléphone.
+
+### Pistes restantes
 
 1. Ajouter une métrique par étape (`permission_granted`, `subscription_created`,
    `server_registered`, `delivered`, `expired`) sans enregistrer le contenu ni
@@ -113,3 +163,7 @@ automatisés.
 - Cycle de vie des pages et gel en arrière-plan :
   <https://developer.chrome.com/docs/web-platform/page-lifecycle-api>
 - Limites et planification des cron Vercel : <https://vercel.com/docs/cron-jobs>
+- Secours déclaratif Safari : <https://webkit.org/blog/16535/meet-declarative-web-push/>
+- Format standard : <https://w3c.github.io/push-api/#dfn-declarative-push-message>
+- Notifications Pixel : <https://support.google.com/pixelphone/answer/6111294>
+- Push Samsung Internet : <https://developer.samsung.com/browser/android/web-developer-guide.html>

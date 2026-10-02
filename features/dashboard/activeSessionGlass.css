@@ -1,0 +1,25 @@
+.active-session-glass {
+  --session-glass-light: color-mix(in srgb, var(--class-accent) 12%, var(--class-surface));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  color: var(--class-accent);
+}
+.active-session-glass__label { position: relative; z-index: 1; font-size: 12px; font-weight: 650; line-height: 1.6; }
+.active-session-glass__scene {
+  position: absolute;
+  inset-inline: -10px;
+  inset-block-start: 2px;
+  width: calc(100% + 20px);
+  height: 36px;
+  overflow: visible;
+  opacity: .55;
+  pointer-events: none;
+}
+.active-session-glass__glint { opacity: .65; animation: session-glass-caustic 10s linear infinite; }
+@keyframes session-glass-caustic { to { stroke-dashoffset: -364; } }
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .active-session-glass__scene { display: none; }
+  .active-session-glass__glint { animation: none; }
+}

@@ -337,13 +337,13 @@ html[lang="ar"] .keep-class-title {
     --border: 80 10% 85%;
     --input: 60 16% 96%;
     --ring: 145 19% 29%;
-    --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge doux) */
+    --destructive: 0 68% 42%; /* Deep red keeps light action labels readable through hover. */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 70% 28%;
-    --warning-strong: 38 92% 40%;
-    --destructive-strong: 0 84.2% 50%;
+    --warning-strong: 38 92% 30%;
+    --destructive-strong: 0 68% 40%;
     --alert: 0 78% 56%;
     --alert-strong: 0 74% 42%;
     --scheduled: 226 100% 96.5%; /* #EDF2FE (Bleu indigo de sélection Sketch macOS) */
@@ -388,13 +388,13 @@ html[lang="ar"] .keep-class-title {
     --border: 160 10% 23%;
     --input: 160 10% 18%;
     --ring: 120 18% 72%;
-    --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge vif) */
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62% 70%; /* Soft red with dark ink on dark-theme actions. */
+    --destructive-foreground: 0 48% 12%;
     --success: 142.1 70.6% 45.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
-    --destructive-strong: 0 84.2% 60%;
+    --destructive-strong: 0 62% 72%;
     --alert: 0 72% 62%;
     --alert-strong: 0 84% 74%;
     --scheduled: 226 50% 20%; /* Sélection indigo sombre Sketch */
@@ -875,6 +875,14 @@ html[lang="ar"] .modal-header h2,
     overflow-wrap: anywhere;
   }
 
+  @media (max-width: 639px) {
+    [data-editor-table] {
+      --cdt-table-cols: minmax(3.5rem, 14%) minmax(0, 1fr) minmax(3.5rem, 16%);
+      --editor-description-indent: 0px;
+      --editor-description-padding: 8px;
+    }
+  }
+
   @media (min-width: 768px) {
     [data-editor-table] {
       --cdt-table-cols: minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%);
@@ -940,6 +948,15 @@ html[lang="ar"] .modal-header h2,
   box-shadow: 0 16px 36px -4px rgb(0 0 0 / 0.16), 0 4px 12px -2px rgb(0 0 0 / 0.08), inset 0 1px 0.5px 0 rgb(255 255 255 / 0.45);
   pointer-events: auto;
   position: relative;
+}
+@media (max-width: 639px) {
+  .selection-bar { border-radius: 18px; flex-wrap: nowrap; }
+  /* Ces règles dépassent les utilitaires de colonnes et de taille des champs. */
+  [data-editor-table] .editor-item-description { grid-column: 1 / -1; }
+  :is(input, textarea, select):not([type='checkbox']):not([type='radio']):not([type='range']) {
+    font-size: max(16px, 1em);
+    min-height: 44px;
+  }
 }
 .dark .selection-bar {
   box-shadow: 0 16px 36px -4px rgb(0 0 0 / 0.45), 0 4px 12px -2px rgb(0 0 0 / 0.25), inset 0 1px 0.5px 0 rgb(255 255 255 / 0.15);

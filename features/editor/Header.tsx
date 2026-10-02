@@ -51,7 +51,7 @@ const EditableHeader: React.FC<{
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       dir={isArabic ? 'rtl' : 'ltr'}
-      className={`inline-block -mx-1.5 rounded-[var(--radius-sm,0.375rem)] px-1.5 py-1 text-primary hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-semibold tracking-tight'}`}
+      className={`inline-block min-w-0 max-w-full break-words -mx-1.5 rounded-[var(--radius-sm,0.375rem)] px-1.5 py-1 text-primary hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-semibold tracking-tight'}`}
     >
       {displayValue}
     </span>
@@ -92,17 +92,17 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
           </h1>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-            <div className="inline-flex min-w-0 items-center gap-1.5">
+            <div className="inline-flex min-w-0 max-w-full items-center gap-1.5">
               <User className="h-3.5 w-3.5 shrink-0 text-primary/80 stroke-[2.2]" aria-hidden />
-              <span className="font-medium text-foreground/70">{t('editor.teacher')} :</span>
+              <span className="shrink-0 font-medium text-foreground/70">{t('editor.teacher')} :</span>
               <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
                 {teacherName?.trim() || classInfo.teacherName || t('editor.notProvided')}
               </span>
             </div>
             <span className="hidden sm:inline-block text-border/80 select-none" aria-hidden>|</span>
-            <div className="inline-flex min-w-0 items-center gap-1.5">
+            <div className="inline-flex min-w-0 max-w-full items-center gap-1.5">
               <School className="h-3.5 w-3.5 shrink-0 text-primary/80 stroke-[2.2]" aria-hidden />
-              <span className="font-medium text-foreground/70">{t('editor.establishment')} :</span>
+              <span className="shrink-0 font-medium text-foreground/70">{t('editor.establishment')} :</span>
               <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
                 {establishmentName || t('editor.notProvided')}
               </span>

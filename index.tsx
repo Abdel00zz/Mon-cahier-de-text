@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
 
 // Safeguard against third-party libraries (like Capacitor) attempting to re-assign window.fetch
 // in environments (like AI Studio preview) where it is read-only (getter only).
@@ -42,7 +43,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <SyncProvider>
-        <App />
+        <MotionConfig reducedMotion="user"><App /></MotionConfig>
       </SyncProvider>
     </AuthProvider>
   </React.StrictMode>

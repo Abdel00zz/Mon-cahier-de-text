@@ -18,10 +18,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 min-h-[44px] sm:min-h-[40px] px-4 sm:px-5 py-2.5",
-        sm: "h-8 min-h-[36px] sm:min-h-[32px] px-3 sm:px-3.5 text-xs font-semibold",
+        default: "h-11 min-h-[44px] px-4 sm:px-5 py-2.5",
+        sm: "h-11 min-h-[44px] px-3 sm:px-3.5 text-xs font-semibold",
         lg: "h-11 min-h-[48px] sm:min-h-[44px] px-5 sm:px-6 text-base font-semibold",
-        icon: "h-10 w-10 min-h-[44px] min-w-[44px] sm:h-9 sm:w-9 sm:min-h-[36px] sm:min-w-[36px] p-0",
+        icon: "h-11 w-11 min-h-[44px] min-w-[44px] p-0",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

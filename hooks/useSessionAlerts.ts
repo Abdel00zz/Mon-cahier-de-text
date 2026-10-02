@@ -16,18 +16,22 @@ import { classIdentityFor } from '../utils/classIdentity';
 import { conciseNotificationText } from '../utils/notificationPresentation';
 
 const claimsKey = 'session_alert_claims_v2';
-const memoryClaims = new Set<string>();
+const memoryClaims = new Map<string, number>();
+const claimLifetime = 48 * 3600_000;
 /** Web Locks serialize cooperating tabs; localStorage fallback is best effort on older browsers. */
 async function claimAlert(id: string, isCurrent: () => boolean, deliver: () => Promise<boolean>): Promise<boolean> {
   const claim = async () => {
+    const now = Date.now();
+    for (const [key, timestamp] of memoryClaims) if (now - timestamp >= claimLifetime) memoryClaims.delete(key);
     if (!isCurrent() || memoryClaims.has(id)) return false;
     let entries: Record<string, unknown> = {};
     try {
       const raw = JSON.parse(localStorage.getItem(claimsKey) ?? '{}');
-      entries = Object.fromEntries(Object.entries(raw).filter(([, time]) => typeof time === 'number' && Date.now() - time < 48 * 3600_000));
+      entries = Object.fromEntries(Object.entries(raw).filter(([, time]) => typeof time === 'number' && time <= now && now - time < claimLifetime).slice(-256));
       if (entries[id]) return false;
     } catch { /* In-memory deduplication remains available. */ }
-    memoryClaims.add(id);
+    if (memoryClaims.size >= 256) memoryClaims.delete(memoryClaims.keys().next().value!);
+    memoryClaims.set(id, now);
     try {
       if (!isCurrent() || !await deliver()) {
         memoryClaims.delete(id);
@@ -64,13 +68,14 @@ export function useSessionAlerts(enabled = true) {
   useEffect(() => {
     const bump = () => setTick(value => value + 1);
     const unsubscribers = (['dirty', 'pull-applied', 'config-changed', 'classes-changed'] as const).map(event => subscribe(event, bump));
-    const timer = window.setInterval(bump, 15_000);
     window.addEventListener('storage', bump);
     document.addEventListener('visibilitychange', bump);
-    return () => { unsubscribers.forEach(unsubscribe => unsubscribe()); window.clearInterval(timer); window.removeEventListener('storage', bump); document.removeEventListener('visibilitychange', bump); };
+    window.addEventListener('pageshow', bump);
+    return () => { unsubscribers.forEach(unsubscribe => unsubscribe()); window.removeEventListener('storage', bump); document.removeEventListener('visibilitychange', bump); window.removeEventListener('pageshow', bump); };
   }, []);
   useEffect(() => {
     let cancelled = false;
+    let timer: number | undefined;
     const lease = captureWorkspaceLease();
     const fresh = () => !cancelled && lease();
     if (!enabled) { setCurrent({ key: '', classIds: [] }); return; }
@@ -81,6 +86,8 @@ export function useSessionAlerts(enabled = true) {
       const calendar = await loadHolidayCalendar().catch(() => getBundledCalendar());
       if (!fresh()) return;
       const snapshot = detectSessionAlerts(config, classes, calendar, new Date(), (id, date) => collectSessionDates(readClassLessons(id)).includes(date));
+      // Wake only at the next session boundary/reminder or local midnight.
+      timer = window.setTimeout(() => setTick(value => value + 1), snapshot.nextCheckDelay);
       const classIds = [...new Set(snapshot.current.map(block => block.classId))].sort();
       const key = `${snapshot.today}:${snapshot.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;
       setCurrent(previous => previous.key === key ? previous : { key, classIds });
@@ -120,7 +127,7 @@ export function useSessionAlerts(enabled = true) {
         });
       }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; if (timer !== undefined) window.clearTimeout(timer); };
   }, [tick, enabled]);
   return { current };
 }

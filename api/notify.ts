@@ -6,6 +6,7 @@ import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type Holiday
 import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness.js';
 import { assertValidTeacherSnapshot } from './_lib/validate.js';
 import type { AppLocale, TeacherSnapshot } from '../types.js';
+import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 
 interface NotifyBody {
     action?: string;
@@ -20,9 +21,9 @@ const MAX_ENDPOINT_LENGTH = 2_048;
 const MAX_PUSH_KEY_LENGTH = 512;
 const DEFAULT_QUIET_DURING_VACATIONS = true;
 const TEST_NOTIFICATION_COPY: Record<AppLocale, { title: string; body: string }> = {
-    fr: { title: 'Notifications activées', body: 'Ce téléphone reçoit les rappels de votre cahier.' },
-    en: { title: 'Notifications enabled', body: 'This phone receives your notebook reminders.' },
-    ar: { title: 'الإشعارات مفعّلة', body: 'هذا الهاتف يستقبل تذكيرات دفتر النصوص.' },
+    fr: { title: 'Test de notification', body: 'Test reçu sur ce téléphone. Touchez pour ouvrir votre cahier.' },
+    en: { title: 'Notification test', body: 'Test received on this phone. Tap to open your notebook.' },
+    ar: { title: 'اختبار الإشعارات', body: 'وصل الاختبار إلى هذا الهاتف. اضغط لفتح دفتر النصوص.' },
 };
 
 /*
@@ -472,7 +473,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             return await runCron(req, res);
         }
         if (req.method === 'POST') {
-            const { phone } = await requireUser(req);
+        const { phone } = await requireUser(req);
+        if (req.headers['x-workspace-owner'] !== undefined) assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
             const body = parseBody<NotifyBody>(req.body);
             if (body.action === 'subscribe') return await handleSubscribe(body, res, phone);
             if (body.action === 'unsubscribe') return await handleUnsubscribe(body, res, phone);

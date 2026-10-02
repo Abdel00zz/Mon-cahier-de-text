@@ -14,13 +14,15 @@ Les futurs points d'écriture des classes et cahiers doivent utiliser ce contrat
 
 ## Diffusion vers les interfaces
 
-- Application visible : pull toutes les 15 s et au retour en ligne/au premier plan.
-- Vue d'ensemble admin : rafraîchissement discret toutes les 30 s.
+- Application visible : pull toutes les 60 s après la fin de la requête, immédiat au retour en ligne/au premier plan. Économie de données : 120 s ; erreurs : recul progressif plafonné à 8 minutes. Les modifications locales gardent leur envoi rapide.
+- Vue d'ensemble admin et accusés de réception : toutes les 30 s au premier plan seulement, requêtes bornées à 15 s, sans chevauchement. Une panne réseau conserve la vue admin ouverte.
+- Boîte de réception utilisateur : push immédiat lorsqu’il est reçu, retour au premier plan et vérification toutes les 60 s pour les appareils sans permission Push. Aucun polling en arrière-plan/hors ligne.
 - Aucun rafraîchissement périodique des formulaires admin en cours d'édition.
 - Un push ou une saisie invalide le pull en vol ; les téléchargements sont
   préparés avant les écritures locales. Le changement de compte invalide aussi
   les réponses. Les versions locales perdantes des cahiers sont archivées.
 - Les réglages identiques déjà appliqués ne sont pas réappliqués à chaque tick.
+- Les requêtes notifications/messages des clients récents portent `X-Workspace-Owner` : une session appartenant à un autre compte est refusée. Les actions de notification ignorent les réponses après fermeture ou changement de compte.
 
 ## Imports et publications
 

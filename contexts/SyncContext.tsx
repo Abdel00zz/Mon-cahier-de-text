@@ -28,6 +28,7 @@ import { isContentDirection } from '../utils/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../utils/accountWorkspace';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { assignClassColors } from '../utils/classColors';
+import { startForegroundPolling } from '../utils/mobileScheduling';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -508,7 +509,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setSyncStatus('error');
                         notifySyncError(response.status);
                     }
-                    return;
+                    return false;
                 }
                 const server = (await response.json()) as ServerClassesBlob;
                 if (!isCurrent()) return;
@@ -771,11 +772,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } else {
                     setSyncStatus('synced');
                 }
+                return true;
             } catch (error) {
                 if (isCurrent()) {
                     logger.error('Sync pull failed (offline?)', error);
                     setSyncStatus('offline');
                 }
+                return controller.signal.aborted ? undefined : false;
             } finally {
                 window.clearTimeout(timeout);
                 if (pullAbortRef.current === controller) pullAbortRef.current = null;
@@ -785,19 +788,16 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
         };
-        void refresh();
-        const interval = window.setInterval(() => { void refresh(); }, 15_000);
-        const refreshWhenVisible = () => { void refresh(); };
-        window.addEventListener('online', refreshWhenVisible);
-        document.addEventListener('visibilitychange', refreshWhenVisible);
+        const stopPolling = startForegroundPolling(refresh, {
+            interval: 60_000,
+            onInactive: () => pullAbortRef.current?.abort(),
+        });
 
         return () => {
             cancelled = true;
             pullAbortRef.current?.abort();
             unsubscribeDirty();
-            window.clearInterval(interval);
-            window.removeEventListener('online', refreshWhenVisible);
-            document.removeEventListener('visibilitychange', refreshWhenVisible);
+            stopPolling();
         };
     }, [authStatus, user, schedulePush]);
 

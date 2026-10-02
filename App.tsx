@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { startSafePwaAction } from './pwa/safeUpdate';
+import { notificationTarget } from './utils/notificationPresentation';
 import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
-import { AppBootSkeleton, DashboardSkeleton } from './components/ui/PageSkeleton';
+import { AppBootSkeleton, PageTransitionLoader } from './components/ui/PageSkeleton';
 import { AppLocale, ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
@@ -18,7 +20,6 @@ import { useTheme } from './hooks/useTheme';
 import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
 import { CommandPalette } from './components/ui/CommandPalette';
-import { preloadSettingsPage } from './utils/performance';
 import { latestClassOpening } from './utils/classOpening';
 import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from './utils/currentSessionNavigation';
 import { teachesSeveralSubjects } from './utils/subjectScope';
@@ -120,7 +121,7 @@ const App: React.FC = () => {
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(config.theme, config.appTextSize);
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
-  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
+  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authUser?.phone);
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
@@ -166,11 +167,26 @@ const App: React.FC = () => {
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!('serviceWorker' in navigator)) return;
+    let cancelNavigation: (() => void) | undefined;
+    const onNotification = (event: MessageEvent) => {
+      if (event.data?.type !== 'notification-open') return;
+      const route = notificationTarget(event.data.url);
+      cancelNavigation?.();
+      cancelNavigation = startSafePwaAction(() => { window.location.hash = route.slice(1); });
+    };
+    navigator.serviceWorker.addEventListener('message', onNotification);
+    return () => { cancelNavigation?.(); navigator.serviceWorker.removeEventListener('message', onNotification); };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || authStatus !== 'authenticated') return;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (!navigator.onLine || connection?.saveData || /^(?:slow-)?2g$/.test(connection?.effectiveType ?? '')) return;
     const requestIdle = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1200));
     const cancelIdle = (window as any).cancelIdleCallback || clearTimeout;
     const idleHandle = requestIdle(() => {
-      preloadSettingsPage();
+      if (document.visibilityState !== 'visible') return;
       // Le tableau de bord est déjà visible : préparer l'éditeur avant le
       // premier clic. Sur une URL d'éditeur, préparer plutôt le retour accueil.
       if (initialRouteRef.current?.view === 'editor') {
@@ -180,7 +196,7 @@ const App: React.FC = () => {
       }
     });
     return () => cancelIdle(idleHandle);
-  }, []);
+  }, [authStatus]);
 
   // Une authentification déclenchée depuis une ancienne vue (par exemple les
   // paramètres après une déconnexion) doit reprendre à l'accueil. Cela permet
@@ -378,9 +394,7 @@ const App: React.FC = () => {
   const routeKey = backgroundView === 'editor' && backgroundClass
     ? `editor-${backgroundClass.id}`
     : backgroundView;
-  const routeFallback = backgroundView === 'dashboard'
-    ? <DashboardSkeleton />
-    : <AppBootSkeleton />;
+  const routeFallback = <PageTransitionLoader />;
 
   const activeTab: TabType = isEvaluationsOpen
     ? 'evaluations'
@@ -484,7 +498,7 @@ const App: React.FC = () => {
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>
       {view === 'notifications' && !isAuthView && !isBooting && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<PageTransitionLoader overlay />}>
           <NotificationsPage
             classes={classes}
             config={config}
@@ -496,7 +510,7 @@ const App: React.FC = () => {
         </Suspense>
       )}
       {view === 'settings' && !isAuthView && !isBooting && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<PageTransitionLoader overlay />}>
           <SettingsPage
             onBack={handleBackFromSettings}
             onOpenGuide={() => setGuideOpen(true)}

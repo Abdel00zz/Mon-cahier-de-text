@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { getClassVisual } from '@/utils/classVisuals';
+import { classColorAttributes } from '@/utils/classColors';
 import { useLocale } from '@/i18n/LocaleProvider';
 import {
   BookOpen,
@@ -39,6 +39,7 @@ import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 import { dateTimeFormat } from '@/utils/formatters';
 import { SereneStudyIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration, NotebookOpeningIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
@@ -59,15 +60,14 @@ const ClassIdentityIcon: React.FC<{
   fallback: React.ComponentType<{ className?: string }>;
   compact?: boolean;
 }> = ({ classInfo, fallback: FallbackIcon, compact = false }) => {
-  const visual = classInfo ? getClassVisual(classInfo.name) : null;
   const Icon = classInfo ? Users : FallbackIcon;
 
   return (
     <span
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-full',
+        'flex shrink-0 items-center justify-center',
         compact ? 'h-7 w-7' : 'h-9 w-9',
-        visual?.iconSurfaceClass ?? 'bg-muted text-muted-foreground dark:bg-zinc-800 dark:text-zinc-300'
+        'text-muted-foreground'
       )}
       aria-hidden
     >
@@ -84,40 +84,37 @@ const SignalCard: React.FC<{
   onIgnore: () => void;
   onResolve: () => void;
 }> = ({ signal, classInfo, actionLabel, ignoreLabel, onIgnore, onResolve }) => {
-  const visual = classInfo ? getClassVisual(classInfo.name) : null;
-
   return (
-    <article className="flex flex-col justify-between gap-3 rounded-[18px] border border-border/70 bg-white/75 p-3.5 text-card-foreground shadow-[0_8px_20px_rgba(30,68,76,0.045)] transition-all hover:-translate-y-px hover:border-primary/35 dark:bg-slate-900/75 sm:flex-row sm:items-center">
+    <article {...(classInfo ? classColorAttributes(classInfo) : {})} className="flex flex-col justify-between gap-3 rounded-2xl border border-border/70 bg-card/90 p-4 text-card-foreground transition-colors duration-200 motion-reduce:transition-none hover:border-primary/35 sm:flex-row sm:items-center">
       <div className="flex min-w-0 items-start gap-3">
         <ClassIdentityIcon classInfo={classInfo} fallback={SIGNAL_FALLBACK_ICON[signal.kind]} />
         <div className="min-w-0">
           {signal.className && (
-            <p className={cn('mb-0.5 text-[10px] font-bold uppercase tracking-wide', visual?.iconClass ?? 'text-muted-foreground')}>
+            <p className="mb-1 text-xs font-medium text-muted-foreground" style={classInfo ? { color: 'var(--keep-accent)' } : undefined}>
               {signal.className}
             </p>
           )}
-          <h3 className="truncate text-xs font-bold text-foreground">{signal.title}</h3>
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{signal.detail}</p>
+          <h3 className="text-sm font-semibold leading-snug text-foreground">{signal.title}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{signal.detail}</p>
         </div>
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-2 pt-2 sm:pt-0">
         {signal.dismissible && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={onIgnore}
-            className="min-h-8 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+            className="text-xs"
           >
             {ignoreLabel}
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
+        <Button
           onClick={onResolve}
-          className="min-h-8 rounded-xl bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98] cursor-pointer"
+          className="h-auto min-h-11 whitespace-normal text-xs"
         >
           {actionLabel}
-        </button>
+        </Button>
       </div>
     </article>
   );
@@ -710,16 +707,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const modalTitle = (
     <div className="flex min-w-0 items-center gap-2.5 pe-1">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center text-muted-foreground">
         <AlarmBell className="h-4 w-4" />
       </span>
-      <span className="min-w-0">
-        <span className={cn('flex items-center font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
-          <span>{t('notifications.centerTitle')}</span>
-        </span>
-        <span className="mt-0.5 block text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
-          {t('notifications.allTeachingClasses')}
-        </span>
+      <span className={cn('min-w-0 font-semibold text-foreground', isRtl && 'text-lg leading-tight')}>
+        {t('notifications.centerTitle')}
       </span>
     </div>
   );
@@ -752,6 +744,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       isOpen={isModalOpen}
       onClose={requestClose}
       title={modalTitle}
+      description={t('notifications.allTeachingClasses')}
       maxWidth="5xl"
       mobilePresentation="dialog"
       dragHandle={false}
@@ -847,7 +840,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center justify-between pb-3">
                       <div>
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
-                          <CalendarCheck className="h-4 w-4 text-blue-600" />
+                          <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                           {t('notifications.deadlines')}
                         </h2>
                       </div>
@@ -933,11 +926,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ) : (
                       <div className="divide-y divide-border/60">
                         {rankedOverviews.map(overview => {
-                          const visual = getClassVisual(overview.classInfo.name);
                           const completionRate = Math.min(100, Math.max(0, overview.completionRate));
                           return (
                             <button
                               key={overview.classInfo.id}
+                              {...classColorAttributes(overview.classInfo)}
                               type="button"
                               onClick={() => openClassById(overview.classInfo.id)}
                               className="group block w-full py-4 text-start outline-none transition-colors hover:bg-muted/25 focus-visible:bg-muted/35 sm:px-1"
@@ -950,8 +943,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                               <div className="mt-2 flex items-center gap-2.5">
                                 <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-[3px] bg-muted dark:bg-zinc-800">
                                   <div
-                                    className={cn('h-full rounded-[3px] transition-[width] duration-500', visual.frameBg)}
-                                    style={{ width: `${completionRate}%` }}
+                                    className="h-full rounded-[3px] transition-[width] duration-250 motion-reduce:transition-none"
+                                    style={{ width: `${completionRate}%`, backgroundColor: 'var(--keep-accent)' }}
                                   />
                                 </div>
                                 <span className="w-11 shrink-0 text-end font-mono text-[11px] font-black tabular-nums text-foreground">
@@ -986,7 +979,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center justify-between pb-3">
                       <div>
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
-                          <History className="h-4 w-4 text-blue-600" />
+                          <History className="h-4 w-4 text-muted-foreground" />
                           {t('notifications.activity')}
                         </h2>
                       </div>
@@ -1061,7 +1054,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center justify-between pb-3">
                       <div>
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
-                          <Undo2 className="h-4 w-4 text-blue-600" />
+                          <Undo2 className="h-4 w-4 text-muted-foreground" />
                           {t('notifications.ignored')}
                         </h2>
                       </div>
@@ -1080,21 +1073,21 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             <div className="flex min-w-0 items-center gap-2.5">
                               <ClassIdentityIcon classInfo={classById.get(signal.classId)} fallback={SIGNAL_FALLBACK_ICON[signal.kind]} compact />
                               <div className="min-w-0">
-                              <h3 className="text-xs font-bold text-foreground truncate">
+                              <h3 className="text-sm font-semibold leading-snug text-foreground">
                                 {signal.title}
                               </h3>
-                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                                 {signal.className && <span className="font-semibold me-1">{signal.className} •</span>}
                                 {signal.detail}
                               </p>
                               </div>
                             </div>
-                            <button
+                            <Button variant="outline"
                               onClick={() => restoreSignal(signal)}
-                              className="h-7 px-3 rounded-lg text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/60 border border-blue-200 dark:border-blue-900 transition-colors cursor-pointer shrink-0"
+                              className="shrink-0 text-xs"
                             >
                               {t('notifications.restore')}
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>

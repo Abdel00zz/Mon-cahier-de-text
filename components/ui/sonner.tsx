@@ -1,9 +1,9 @@
 import * as React from "react"
 import {
-  CircleCheck,
+  Check,
   Info,
   Loader2,
-  CircleX,
+  X,
   TriangleAlert,
 } from "./icons"
 import { Toaster as Sonner } from "sonner"
@@ -13,22 +13,24 @@ type ToasterProps = React.ComponentProps<typeof Sonner>
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      theme="light"
+      theme="system"
+      duration={4500}
+      visibleToasts={3}
       className="toaster group font-sans"
       icons={{
-        success: <CircleCheck className="h-4 w-4 text-emerald-500 shrink-0" />,
-        info: <Info className="h-4 w-4 text-cyan-500 shrink-0" />,
-        warning: <TriangleAlert className="h-4 w-4 text-amber-500 shrink-0" />,
-        error: <CircleX className="h-4 w-4 text-red-500 shrink-0" />,
-        loading: <Loader2 className="h-4 w-4 animate-spin shrink-0" />,
+        success: <Check className="h-5 w-5 text-success-strong shrink-0" />,
+        info: <Info className="h-5 w-5 text-primary shrink-0" />,
+        warning: <TriangleAlert className="h-5 w-5 text-warning-strong shrink-0" />,
+        error: <X className="h-5 w-5 text-destructive shrink-0" />,
+        loading: <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none shrink-0" />,
       }}
       toastOptions={{
         classNames: {
-          toast: "!py-2.5 !px-3.5 !min-h-0 !gap-2.5 !rounded-xl !shadow-md !border !border-border/60 !bg-slate-900/95 !text-slate-50 dark:!bg-slate-800/95 dark:!text-slate-100 font-sans tracking-tight leading-tight",
+          toast: "!py-3.5 !px-4 !min-h-0 !gap-3 !rounded-2xl !shadow-lg !border !border-border/70 !bg-card/95 !text-foreground backdrop-blur-md font-sans tracking-tight leading-tight",
           title: "!text-[13px] !font-semibold !leading-snug",
-          description: "!text-[12px] !opacity-90 !leading-snug",
-          actionButton: "!text-[12.5px] !font-semibold !h-9 !px-3 !rounded-lg",
-          cancelButton: "!text-[12.5px] !font-semibold !h-9 !px-3 !rounded-lg",
+          description: "!text-[12px] !text-muted-foreground !leading-relaxed",
+          actionButton: "!text-xs !font-semibold !min-h-11 !px-3 !rounded-xl !bg-primary !text-primary-foreground",
+          cancelButton: "!text-xs !font-semibold !min-h-11 !px-3 !rounded-xl !bg-muted !text-foreground",
           closeButton: "!h-4 !w-4 !text-xs",
         },
       }}
@@ -38,4 +40,3 @@ const Toaster = ({ ...props }: ToasterProps) => {
 }
 
 export { Toaster }
-

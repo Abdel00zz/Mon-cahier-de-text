@@ -7,6 +7,7 @@ interface CachedNotebook {
 }
 
 const cache = new Map<string, CachedNotebook>();
+const MAX_CACHED_NOTEBOOKS = 24;
 
 /**
  * Lecture partagée du cahier local. Plusieurs moteurs (carte, alertes,
@@ -17,10 +18,16 @@ export const readCachedLessons = (classId: string): LessonsData => {
     try {
         const raw = localStorage.getItem(`classData_v1_${classId}`);
         const cached = cache.get(classId);
-        if (cached?.raw === raw) return cached.lessons;
+        if (cached?.raw === raw) {
+            cache.delete(classId);
+            cache.set(classId, cached);
+            return cached.lessons;
+        }
         const parsed = raw ? JSON.parse(raw) : [];
         const lessons = migrateLessonsData(Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []));
+        cache.delete(classId);
         cache.set(classId, { raw, lessons });
+        if (cache.size > MAX_CACHED_NOTEBOOKS) cache.delete(cache.keys().next().value!);
         return lessons;
     } catch {
         return [];

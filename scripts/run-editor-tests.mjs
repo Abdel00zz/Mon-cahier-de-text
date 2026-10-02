@@ -11,5 +11,6 @@ try {
   await import(pathToFileURL(outfile).href);
 } finally {
   await rm(outfile, { force: true });
+  await rm(join(directory, 'tests.css'), { force: true });
   await rmdir(directory);
 }

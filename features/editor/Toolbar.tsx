@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Undo2, Redo2, Save, Search, X, ChevronUp, MoreVertical,
-  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp,
+  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp, Check,
 } from '@/components/ui/icons';
 import { SyncStatusBadge } from '@/components/ui/SyncStatusBadge';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -50,17 +50,22 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   return (
     <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-1.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-1.5">
       <div className="flex min-w-0 items-center justify-start gap-1.5">
-        <SyncStatusBadge />
+        <SyncStatusBadge fallback={
+          <span role="status" className="inline-flex min-w-0 items-center gap-1.5 px-1 text-xs text-muted-foreground">
+            {saveStatus === 'saved' && <Check aria-hidden className="h-4 w-4 shrink-0" />}
+            <span className="truncate">{t(`toolbar.${saveStatus}`)}</span>
+          </span>
+        } />
       </div>
       
       <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner sm:flex">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Undo2 className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Redo2 className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Save className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
       </div>
@@ -74,7 +79,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label={t('toolbar.search')}
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel toolbar-search-panel-mobile"
-            className={`relative h-7 w-7 rounded-lg border-none transition-all duration-150 active:scale-95 ${searchQuery ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'}`}
+            className={`relative h-11 w-11 rounded-lg border-none transition-all duration-150 active:scale-95 ${searchQuery ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'}`}
           >
             <Search className="h-3.5 w-3.5 stroke-[2.2]" />
             {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-foreground" />}
@@ -93,7 +98,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                   onChange={(e) => setLocalSearch(e.target.value)}
                   onCompositionStart={() => setIsComposing(true)}
                   onCompositionEnd={() => setIsComposing(false)}
-                  className="flex-1 h-11 text-base rounded-xl border-border/60 bg-muted/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
+                  className="min-w-0 flex-1 h-11 text-base rounded-xl border-border/60 bg-muted/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
                 />
                 {localSearch && (
                   <button 
@@ -143,7 +148,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-7 w-7 cursor-pointer rounded-lg text-muted-foreground transition-all hover:bg-muted/60 hover:text-foreground active:scale-95"
+              className="relative h-11 w-11 cursor-pointer rounded-lg text-muted-foreground transition-all hover:bg-muted/60 hover:text-foreground active:scale-95"
               aria-label={t('toolbar.actionsMenu')}
             >
               <MoreVertical className="h-3.5 w-3.5 stroke-[2.2]" />

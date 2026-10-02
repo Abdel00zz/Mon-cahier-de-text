@@ -6,6 +6,7 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { clientsClaim } from 'workbox-core';
 import { readNotificationVibration } from '../utils/notificationDevicePreferences';
 import { notificationPresentation } from '../utils/notificationPresentation';
+import { openNotificationTarget } from './notificationNavigation';
 import {
     isPushNotificationKind,
     type PushNotificationKind,
@@ -20,13 +21,12 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 /*
- * Mise à jour AUTOMATIQUE et silencieuse : la nouvelle version s'active dès son
- * installation (skipWaiting) et prend le contrôle des pages ouvertes
- * (clientsClaim), sans invite ni clic. La page se recharge d'elle-même une
- * seule fois (voir registerSW.ts). Les cahiers étant persistés en continu dans
- * le localStorage, aucun risque de perte.
+ * The page requests activation after a safe moment; installation alone must
+ * never interrupt an open form. The first installation still claims clients.
  */
-self.skipWaiting();
+self.addEventListener('message', event => {
+    if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
+});
 clientsClaim();
 
 /*
@@ -53,13 +53,15 @@ registerRoute(
  */
 registerRoute(
     ({ url }) => url.origin === 'https://fonts.googleapis.com',
-    new StaleWhileRevalidate({ cacheName: 'google-fonts-css' })
+    new StaleWhileRevalidate({ cacheName: 'google-fonts-css', plugins: [
+        new ExpirationPlugin({ maxEntries: 8, maxAgeSeconds: 30 * 24 * 3600, purgeOnQuotaError: true }),
+    ] })
 );
 registerRoute(
     ({ url }) => url.origin === 'https://fonts.gstatic.com',
     new CacheFirst({
         cacheName: 'google-fonts-files',
-        plugins: [new ExpirationPlugin({ maxEntries: 24, maxAgeSeconds: 365 * 24 * 3600 })],
+        plugins: [new ExpirationPlugin({ maxEntries: 24, maxAgeSeconds: 365 * 24 * 3600, purgeOnQuotaError: true })],
     })
 );
 
@@ -73,7 +75,10 @@ registerRoute(
     ({ url, request }) => url.origin === self.location.origin
         && url.pathname.startsWith('/contenus/')
         && request.destination !== 'document',
-    new StaleWhileRevalidate({ cacheName: 'predefined-contents' })
+    new StaleWhileRevalidate({ cacheName: 'predefined-contents', plugins: [
+        new ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 180 * 24 * 3600, purgeOnQuotaError: true }),
+        { cacheKeyWillBeUsed: async ({ request }) => new URL(request.url).origin + new URL(request.url).pathname },
+    ] })
 );
 
 /*
@@ -86,7 +91,9 @@ registerRoute(
 registerRoute(
     ({ url }) => url.origin === self.location.origin
         && url.pathname === '/doc_officiel/curriculum.json',
-    new StaleWhileRevalidate({ cacheName: 'official-curriculum' })
+    new StaleWhileRevalidate({ cacheName: 'official-curriculum', plugins: [
+        new ExpirationPlugin({ maxEntries: 2, maxAgeSeconds: 180 * 24 * 3600, purgeOnQuotaError: true }),
+    ] })
 );
 
 /*
@@ -133,7 +140,11 @@ self.addEventListener('push', event => {
         payload = { body: event.data?.text() };
     }
     const kind: PushNotificationKind = isPushNotificationKind(payload.kind) ? payload.kind : 'lateness';
-    const showNotification = readNotificationVibration().then(vibration => {
+    const vibration = new Promise<boolean>(resolve => {
+        const timer = self.setTimeout(() => resolve(false), 500);
+        void readNotificationVibration().then(value => { self.clearTimeout(timer); resolve(value); });
+    });
+    const showNotification = vibration.then(vibration => {
         const presentation = notificationPresentation(payload, vibration);
         return self.registration.showNotification(presentation.title, presentation.options);
     });
@@ -148,27 +159,10 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     if (event.action === 'dismiss') return;
-    const requestedUrl = (event.notification.data?.url as string) || '/';
-    let targetUrl = new URL('/', self.location.origin).href;
-    try {
-        const candidate = new URL(requestedUrl, self.location.origin);
-        // Une charge Push ne doit jamais pouvoir transformer le clic en
-        // redirection vers un domaine externe.
-        if (candidate.origin === self.location.origin) targetUrl = candidate.href;
-    } catch {
-        // URL malformée : retour sûr à l'accueil.
-    }
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-            for (const client of clients) {
-                if ('focus' in client) {
-                    const windowClient = client as WindowClient;
-                    // Retourner la chaîne garantit que waitUntil garde le
-                    // service worker vivant jusqu'au focus ET à la navigation.
-                    return windowClient.focus().then(focused => focused.navigate(targetUrl));
-                }
-            }
-            return self.clients.openWindow(targetUrl);
+            return openNotificationTarget(event.notification.data?.url, self.location.origin, clients,
+                url => self.clients.openWindow(url));
         })
     );
 });

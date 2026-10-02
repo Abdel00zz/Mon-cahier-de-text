@@ -12,11 +12,11 @@ const STATUS_CONFIG: Record<SyncStatus, { labelKey: string; dotClass: string; gl
     error: { labelKey: 'sync.error', dotClass: 'bg-destructive', glowClass: 'shadow-[0_0_0_3px_rgba(239,68,68,0.12),0_0_10px_rgba(239,68,68,0.5)]' },
 };
 
-export const SyncStatusBadge: React.FC = () => {
+export const SyncStatusBadge: React.FC<{ fallback?: React.ReactNode }> = ({ fallback }) => {
     const { syncStatus, syncNow } = useSync();
     const { t } = useLocale();
     const config = STATUS_CONFIG[syncStatus];
-    if (!config.labelKey) return null;
+    if (!config.labelKey) return fallback ?? null;
     const label = t(config.labelKey);
 
     return (
@@ -32,7 +32,7 @@ export const SyncStatusBadge: React.FC = () => {
                 {config.pulse && <span className={`absolute inset-0 rounded-full opacity-45 ${config.dotClass} animate-ping`} />}
                 <span className={`relative h-1.5 w-1.5 rounded-full ${config.dotClass} ${config.glowClass}`} />
             </span>
-            <span className="max-w-28 truncate font-mono text-[9px] font-semibold tracking-wide text-foreground/75 sm:max-w-36 sm:text-[10px]" aria-live="polite">{label}</span>
+            <span className="max-w-28 truncate text-xs font-medium text-foreground/80 sm:max-w-36" aria-live="polite">{label}</span>
         </Button>
     );
 };

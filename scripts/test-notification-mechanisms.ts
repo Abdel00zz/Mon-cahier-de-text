@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import webpush from 'web-push';
-import { notificationPresentation, NOTIFICATION_BADGE } from '../utils/notificationPresentation';
+import { notificationPresentation, NOTIFICATION_BADGE, serializePushNotification } from '../utils/notificationPresentation';
+import { notificationDeliveryPolicy } from '../utils/notificationDelivery';
 import { collectCronCandidates } from '../api/notify';
 import type {
   ClassInfo,
@@ -192,11 +193,34 @@ test('transport Push : message borné, file regroupée, délai limité et abonne
   const result = await sendToEntry({ subs }, { title: 'T'.repeat(200), body: 'نص '.repeat(2000), kind: 'test', tag: 'cdt-test', url: '/#/notifications' });
   assert.equal(result.sent, 1);
   assert.deepEqual(result.survivingSubs, [subs[0], subs[2]]);
-  assert.ok(Buffer.byteLength(calls[0].body) < 2000);
+  assert.ok(Buffer.byteLength(calls[0].body) < 3900);
   assert.equal(calls[0].options.TTL, 300);
   assert.equal(calls[0].options.timeout, 10000);
   assert.match(calls[0].options.topic!, /^[A-Za-z0-9_-]{32}$/);
   assert.equal(calls[0].options.topic, calls[1].options.topic);
+});
+
+test('push déclaratif : secours Safari et format ancien identiques, navigation limitée, Unicode borné', () => {
+  const payload = { title: 'دفتر نصوصي', body: 'راجع دفتر القسم.', kind: 'admin' as const, locale: 'ar' as const, url: '/#/notifications', messageId: 'message-1' };
+  const message = JSON.parse(serializePushNotification(payload));
+  assert.equal(message.web_push, 8030);
+  assert.equal(message.mutable, true);
+  assert.equal(message.notification.title, message.title);
+  assert.equal(message.notification.body, message.body);
+  assert.equal(message.notification.navigate, message.url);
+  assert.equal(message.notification.dir, 'rtl');
+  assert.equal(message.notification.data.messageId, 'message-1');
+  const untrusted = JSON.parse(serializePushNotification({ ...payload, url: 'https://external.test', body: '🧑🏽‍🏫'.repeat(1000), tag: 'ع'.repeat(1000) }));
+  assert.equal(untrusted.url, '/#/notifications');
+  assert.ok(Buffer.byteLength(JSON.stringify(untrusted)) < 3900);
+});
+
+test('push mobile : les rappels urgents expirent, les bilans quotidiens évitent les réveils prioritaires', () => {
+  assert.deepEqual(notificationDeliveryPolicy('session-reminder'), { TTL: 120, urgency: 'high' });
+  assert.deepEqual(notificationDeliveryPolicy('test'), { TTL: 300, urgency: 'high' });
+  assert.deepEqual(notificationDeliveryPolicy('missing-date'), { TTL: 900, urgency: 'normal' });
+  assert.deepEqual(notificationDeliveryPolicy('lateness'), { TTL: 86400, urgency: 'low' });
+  assert.equal(notificationDeliveryPolicy('admin').urgency, 'normal');
 });
 
 const classInfo: ClassInfo = {

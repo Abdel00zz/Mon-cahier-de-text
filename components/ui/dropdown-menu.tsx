@@ -40,7 +40,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "group relative flex cursor-pointer select-none items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium outline-none transition-all duration-150 active:scale-[0.98]",
+      "group relative flex min-h-11 cursor-pointer select-none items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm sm:text-[13px] font-medium outline-none transition-all duration-150 active:scale-[0.98]",
       "text-popover-foreground hover:bg-muted/70 hover:text-foreground focus:bg-muted/80 focus:text-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
       "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[2] [&_svg]:text-muted-foreground/80 group-hover:[&_svg]:text-foreground group-focus:[&_svg]:text-foreground group-hover:[&_svg]:scale-105 [&_svg]:transition-transform",

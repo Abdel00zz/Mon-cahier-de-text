@@ -15,6 +15,7 @@ import katex from 'katex';
  * l'en-tête du fichier). Deux familles :
  *  - les ensembles usuels et l'italique, sans argument ;
  *  - les commandes à argument, lues avec leurs accolades équilibrées.
+ * \itshape est native dans KaTeX et ne nécessite pas de remplacement.
  */
 const KATEX_SETS: Record<string, string> = {
   R: '\\mathbb{R}',
@@ -25,9 +26,6 @@ const KATEX_SETS: Record<string, string> = {
   e: '\\mathrm{e}',
   dif: '\\mathrm{d}',
 };
-
-/** \itshape existe nativement dans KaTeX : rien à étendre, on le documente ici. */
-const KATEX_NATIVE = ['itshape'] as const;
 
 /** Commandes de *document* écrites par erreur dans une formule : absorbées. */
 const DROPPED = ['par', 'noindent', 'smallskip', 'medskip', 'bigskip'];

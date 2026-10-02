@@ -1,6 +1,7 @@
 import { registerSW } from 'virtual:pwa-register';
 import { toast } from 'sonner';
 import { translateLocaleMessage } from '@/i18n/LocaleProvider';
+import { startSafePwaAction } from './safeUpdate';
 
 /**
  * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
@@ -19,11 +20,8 @@ const readRegisteredLocale = (): 'fr' | 'en' | 'ar' => {
 
 /**
  * Service worker, mise à jour AUTOMATIQUE et silencieuse (esprit application
- * native) : aucune invite, aucun bouton « Recharger », aucun message de
- * confirmation. Dès qu'une nouvelle version est publiée, le SW l'active
- * (skipWaiting + clientsClaim) et la page se recharge d'elle-même, une seule
- * fois. Les cahiers sont persistés en continu dans le localStorage : le
- * rechargement ne perd jamais de données.
+ * native). L'activation puis le rechargement attendent la fin des formulaires,
+ * des modales et des sauvegardes locales, y compris dans les autres onglets.
  */
 export const initPwa = (): void => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
@@ -37,14 +35,22 @@ export const initPwa = (): void => {
     // premier claim), on ne recharge pas : la page a déjà la dernière version.
     const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    let cancelActivation: (() => void) | undefined;
+    let cancelReload: (() => void) | undefined;
+    const requestReload = () => {
         if (!hadController || reloading) return;
-        reloading = true;
-        window.location.reload();
-    });
+        cancelReload?.();
+        cancelReload = startSafePwaAction(() => { reloading = true; window.location.reload(); });
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', requestReload);
 
-    registerSW({
+    const updateServiceWorker = registerSW({
         immediate: true,
+        onNeedRefresh() {
+            cancelActivation?.();
+            cancelActivation = startSafePwaAction(() => { void updateServiceWorker(false); });
+        },
+        onNeedReload: requestReload,
         onOfflineReady() {
             toast.success(translateLocaleMessage(readRegisteredLocale(), 'pwa.offlineReady'), {
                 id: 'pwa-offline-ready',

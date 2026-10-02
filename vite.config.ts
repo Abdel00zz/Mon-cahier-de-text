@@ -120,8 +120,8 @@ const PWA_MANIFEST: LocalizedManifest = {
     scope: '/',
     launch_handler: { client_mode: 'navigate-existing' },
     prefer_related_applications: false,
-    theme_color: '#1a56db',
-    background_color: '#F8FAFC',
+    theme_color: '#faf8f5',
+    background_color: '#faf8f5',
     categories: ['education', 'productivity', 'utilities'],
     shortcuts: [
         {
@@ -216,7 +216,8 @@ export default defineConfig(({ mode }) => {
                 strategies: 'injectManifest',
                 srcDir: 'pwa',
                 filename: 'sw.ts',
-                registerType: 'autoUpdate',
+                // Activation automatique pilotée par registerSW, après la saisie en cours.
+                registerType: 'prompt',
                 injectRegister: null, // enregistrement manuel dans registerSW.ts
                 // Référentiels chargés À L'EXÉCUTION par fetch (voir utils/assessments.ts,
                 // utils/assessmentRules.ts et utils/predefinedContent.ts) : sans cette

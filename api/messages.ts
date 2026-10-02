@@ -4,6 +4,7 @@ import { normalizeAdminMessages } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import type { AdminMessage } from '../types.js';
+import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 
 interface MessageBody {
     action?: string;
@@ -49,6 +50,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader('Cache-Control', 'no-store');
     try {
         const { phone } = await requireUser(req);
+        if (req.headers['x-workspace-owner'] !== undefined) assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
         if (req.method === 'GET') return await handleList(res, phone);
         if (req.method === 'POST') {
             const body = parseBody<MessageBody>(req.body);

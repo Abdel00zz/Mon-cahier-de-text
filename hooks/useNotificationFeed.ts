@@ -5,7 +5,7 @@ import { translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useRecentPastAssessments, useUpcomingAssessments } from '@/hooks/useAssessments';
 import { useUpcomingOfficialStudentEvents, UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
 import { daysBetweenISO, UpcomingAssessment } from '@/utils/assessments';
-import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
+import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import {
   ClassSignal,
   collectClassSignals,
@@ -42,6 +42,7 @@ export const useNotificationFeed = (
   locale: AppLocale,
 ): NotificationFeed => {
   const [storageVersion, setStorageVersion] = useState(0);
+  const today = useMoroccoToday();
   const assessments = useUpcomingAssessments(classes, config, 14);
   const pastAssessments = useRecentPastAssessments(classes, config, 10);
   const officialEvents = useUpcomingOfficialStudentEvents(classes, 30);
@@ -55,39 +56,19 @@ export const useNotificationFeed = (
     const onStorage = (event: StorageEvent) => {
       if (!event.key || event.key === 'appConfig_v1' || event.key.startsWith('classData_v1_') || event.key.startsWith('editor_actions_ignored_v1_') || event.key.startsWith('editJournal_v1_') || event.key.startsWith('printMeta_v1_')) refresh();
     };
-    /*
-     * Le retour au premier plan ne modifie rien par lui-même : les écritures
-     * locales passent par le syncBus et celles d'un autre onglet par `storage`.
-     * Seul le changement de JOUR peut invalider le calcul (séances manquées,
-     * devoirs à venir, dates dépassées). On ne recalcule donc que dans ce cas,
-     * au lieu de reparser tous les cahiers à chaque bascule d'application.
-     */
-    let lastComputedDay = todayInMorocco(new Date(), getBundledCalendar());
-    const onVisible = () => {
-      if (document.visibilityState !== 'visible') return;
-      const today = todayInMorocco(new Date(), getBundledCalendar());
-      if (today === lastComputedDay) return;
-      lastComputedDay = today;
-      refresh();
-    };
     window.addEventListener('storage', onStorage);
-    const dayTimer = window.setInterval(onVisible, 30_000);
-    document.addEventListener('visibilitychange', onVisible);
     return () => {
       unsubDirty();
-      window.clearInterval(dayTimer);
       unsubPull();
       unsubNotifications();
       unsubConfig();
       window.removeEventListener('storage', onStorage);
-      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
 
   return useMemo(() => {
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const classNameById = new Map(classes.map(c => [c.id, formatLocalizedClassDisplayName(c.name, locale)]));
-    const today = todayInMorocco(new Date(), getBundledCalendar());
     const inAppEnabled = config.notificationSettings?.enabled ?? true;
     const assessmentLabel = (item: Pick<UpcomingAssessment, 'type' | 'num'>): string => t(
       item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework',
@@ -170,5 +151,5 @@ export const useNotificationFeed = (
       officialEvents,
       attentionCount: inAppEnabled ? insights.length + urgentOfficial : 0,
     };
-  }, [classes, config, assessments, pastAssessments, officialEvents, locale, storageVersion]);
+  }, [classes, config, assessments, pastAssessments, officialEvents, locale, storageVersion, today]);
 };

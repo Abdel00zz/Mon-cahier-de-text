@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { startForegroundPolling } from '../../utils/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
@@ -572,20 +573,21 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
 
         // Un accusé est une petite donnée : on ne recharge jamais les classes
         // ni les cahiers pendant ce rafraîchissement limité à la fiche visible.
-        const refreshWhenVisible = () => {
-            if (document.visibilityState !== 'visible') return;
-            void fetchTeacherMessages(phone)
-                .then(adminMessages => {
-                    if (!cancelled) setData(current => current ? { ...current, adminMessages } : current);
-                })
-                .catch(() => undefined);
+        let messageController: AbortController | null = null;
+        const refreshMessages = async () => {
+            const controller = new AbortController();
+            messageController = controller;
+            try {
+                const adminMessages = await fetchTeacherMessages(phone, controller.signal);
+                if (!cancelled && !controller.signal.aborted) setData(current => current ? { ...current, adminMessages } : current);
+                return true;
+            } finally { if (messageController === controller) messageController = null; }
         };
-        document.addEventListener('visibilitychange', refreshWhenVisible);
-        const interval = window.setInterval(refreshWhenVisible, 30_000);
+        const stopPolling = startForegroundPolling(refreshMessages, { interval: 30_000, onInactive: () => messageController?.abort() });
         return () => {
             cancelled = true;
-            document.removeEventListener('visibilitychange', refreshWhenVisible);
-            window.clearInterval(interval);
+            stopPolling();
+            messageController?.abort();
         };
     }, [phone]);
 

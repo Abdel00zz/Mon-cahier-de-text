@@ -5,6 +5,8 @@ import '../../index.css';
 import { LocaleProvider } from '../../i18n/LocaleProvider';
 import { GuideModal } from '../../features/guide/GuideModal';
 import { ClassCard } from '../../features/dashboard/ClassCard';
+import { SessionLiveBanner } from '../../features/dashboard/SessionLiveBanner';
+import { formatLocalizedClassDisplayName } from '../../constants';
 import { NotificationsPage } from '../../features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../features/settings/components/NotificationsTab';
@@ -12,11 +14,15 @@ import { AppearanceTab } from '../../features/settings/components/AppearanceTab'
 import { AssignDateModal } from '../../features/editor/modals/AssignDateModal';
 import { MainTable } from '../../features/editor/MainTable';
 import { SelectionBar } from '../../features/editor/SelectionBar';
+import { Header } from '../../features/editor/Header';
+import { Toolbar } from '../../features/editor/Toolbar';
 import { AddContentModal } from '../../features/editor/modals/EditItemModal';
 import { MathProvider } from '../../components/ui/math-provider';
+import { PageTransitionLoader } from '../../components/ui/PageSkeleton';
+import { FeedbackPreview } from './FeedbackPreview';
 import { useNotificationFeed } from '../../hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../hooks/useConfigManager';
-import { buildLessonRows } from '../../utils/lessonRows';
+import { buildLessonRows, indicesKey, filterLessonRows } from '../../utils/lessonRows';
 import { deriveSchedules } from '../../utils/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../types';
 
@@ -55,15 +61,31 @@ function Preview() {
   const [config, setConfig] = useState(initialConfig);
   const [open, setOpen] = useState(true);
   const [add, setAdd] = useState(screen === 'add');
+  const [selectedKeys, setSelectedKeys] = useState(() => new Set([
+    indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0, itemIndex: 1 }),
+  ]));
+  const [searchQuery, setSearchQuery] = useState('');
+  const toggleSelection = (indices: Parameters<typeof indicesKey>[0]) => setSelectedKeys(current => {
+    const next = new Set(current);
+    const key = indicesKey(indices);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
   const onChange = (patch: Partial<AppConfig>) => setConfig(current => ({ ...current, ...patch }));
   const feed = useNotificationFeed(classes, config, locale);
   return <>
     {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} /></>}
     {screen === 'pilotage' && <NotificationsPage classes={classes} config={config} feed={feed} onSelectClass={noop} onOpenSettings={noop} onBack={noop} />}
-    {screen !== 'guide' && screen !== 'pilotage' && <main className="mx-auto max-w-[1120px] p-8" dir={isAr ? 'rtl' : 'ltr'}>
-      {screen === 'classes' && <><h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1><div className="grid grid-cols-3 gap-4">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div></>}
+    {screen === 'loading' && <PageTransitionLoader />}
+    {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
+      {screen === 'classes' && <>
+        <SessionLiveBanner classInfo={classes[0]} detail={formatLocalizedClassDisplayName(classes[0].name, locale)} onOpen={noop} />
+        <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div>
+      </>}
       {screen === 'schedule' && <ScheduleTab config={config} classes={classes} onChange={onChange} />}
       {screen === 'notifications' && <NotificationsTab config={config} onChange={onChange} />}
+      {screen === 'feedback' && <FeedbackPreview />}
       {screen === 'appearance' && <AppearanceTab config={config} onConfigChange={onChange} />}
       {screen === 'dates' && <AssignDateModal isOpen={open} onClose={() => setOpen(false)} onApply={noop}
         session={{ source: lessons, intent: 'date', selection: {
@@ -71,12 +93,17 @@ function Preview() {
           date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false,
         } }} />}
       {(screen === 'editor' || screen === 'add') && <>
-        <h1 className="mb-6 text-xl font-semibold">{isAr ? 'دفتر النصوص — الرياضيات' : 'Cahier de textes — Mathématiques'}</h1>
-        <MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} contentDirection="ltr"
-          onClearSearch={noop} onOpenAddContentModal={() => setAdd(true)}
-          showDescriptions selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} />
-        <SelectionBar count={2} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
-          onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={noop} />
+        <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
+        <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop} onSave={noop}
+          onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
+          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <div className="pb-40 sm:pb-24">
+          <MainTable lessonsData={lessons} visibleRows={filterLessonRows(buildLessonRows(lessons), searchQuery)} contentDirection="ltr"
+            onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
+            showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]} />
+        </div>
+        {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
+          onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />}
         <AddContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
           selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />
       </>}
@@ -84,6 +111,8 @@ function Preview() {
   </>;
 }
 
-if (import.meta.env.DEV) createRoot(document.getElementById('root')!).render(
-  <LocaleProvider locale={locale}><MathProvider><Preview /></MathProvider></LocaleProvider>,
-);
+if (import.meta.env.DEV) {
+  const root = createRoot(document.getElementById('root')!);
+  root.render(<LocaleProvider locale={locale}><MathProvider><Preview /></MathProvider></LocaleProvider>);
+  import.meta.hot?.dispose(() => root.unmount());
+}

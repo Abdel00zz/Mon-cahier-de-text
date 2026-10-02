@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { startForegroundPolling } from '../utils/mobileScheduling';
+import { StatusNotice } from '../components/ui/status-notice';
 import type { AdminTeacherSummary } from './api';
 import { AdminApiError, adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
@@ -21,37 +23,38 @@ export const AdminApp: React.FC = () => {
     const [teachers, setTeachers] = useState<AdminTeacherSummary[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [bootChecked, setBootChecked] = useState(false);
+    const [overviewError, setOverviewError] = useState<string | null>(null);
+    const generation = useRef(0);
 
     const loadOverview = useCallback(async () => {
+        const revision = ++generation.current;
         setIsLoading(true);
         try {
             const { teachers: list } = await fetchOverview();
+            if (revision !== generation.current) return;
             setTeachers(list);
+            setOverviewError(null);
             setView(current => (current.name === 'locked' ? { name: 'overview' } : current));
-        } catch {
-            setView({ name: 'locked' });
+        } catch (error) {
+            if (revision !== generation.current) return;
+            if (error instanceof AdminApiError && error.status === 401) setView({ name: 'locked' });
+            else setOverviewError('Actualisation indisponible. Vérifiez la connexion puis réessayez.');
         } finally {
-            setIsLoading(false);
+            if (revision === generation.current) setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        (async () => {
-            try {
-                const { teachers: list } = await fetchOverview();
-                setTeachers(list);
-                setView({ name: 'overview' });
-            } catch {
-                setView({ name: 'locked' });
-            } finally {
-                setBootChecked(true);
-            }
-        })();
-    }, []);
+        let cancelled = false;
+        void loadOverview().finally(() => { if (!cancelled) setBootChecked(true); });
+        return () => { cancelled = true; generation.current++; };
+    }, [loadOverview]);
 
     const handleLogout = useCallback(async () => {
+        generation.current++;
         await adminLogout().catch(() => undefined);
         setTeachers([]);
+        setIsLoading(false);
         setView({ name: 'locked' });
     }, []);
 
@@ -68,23 +71,20 @@ export const AdminApp: React.FC = () => {
             try {
                 const result = await fetchOverview(requestController.signal);
                 if (!stopped && !requestController.signal.aborted) setTeachers(result.teachers);
+                return true;
             } catch (error) {
                 if (!stopped && error instanceof AdminApiError && error.status === 401) setView({ name: 'locked' });
+                return requestController.signal.aborted ? undefined : false;
             } finally {
                 window.clearTimeout(timeout);
                 controller = null;
             }
         };
-        const interval = window.setInterval(() => { void refresh(); }, 30_000);
-        const wake = () => { void refresh(); };
-        window.addEventListener('online', wake);
-        document.addEventListener('visibilitychange', wake);
+        const stopPolling = startForegroundPolling(refresh, { interval: 30_000, onInactive: () => controller?.abort() });
         return () => {
             stopped = true;
             controller?.abort();
-            window.clearInterval(interval);
-            window.removeEventListener('online', wake);
-            document.removeEventListener('visibilitychange', wake);
+            stopPolling();
         };
     }, [view.name, isLoading]);
 
@@ -132,6 +132,7 @@ export const AdminApp: React.FC = () => {
                     Gérer les vacances
                 </button>
             </div>
+            {overviewError && <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-8"><StatusNotice tone="warning" title={overviewError} announce /></div>}
             <TeacherList
                 teachers={teachers}
                 isLoading={isLoading}
