@@ -1,18 +1,3 @@
-/* A warm white canvas shared with the transparent editorial artwork. */
-.auth-artisan-showcase {
-  position: relative;
-  overflow: hidden;
-  border-inline-end: 0;
-  background: linear-gradient(145deg, #f8f7f3 0%, #fdfcfa 58%, #f5f7f4 100%);
-}
-.auth-artisan-showcase::before {
-  content: none;
-}
-.dark .auth-artisan-showcase { background: linear-gradient(145deg, #252b29, #202625 65%, #262b2b); }
-
-/* Accueil : hiérarchie premium, couleurs cohérentes et lecture immédiate. */
-.landing-artisan-shell .auth-action { border-radius: 0.9rem; }
-  .landing-artisan-shell .auth-action { min-height: 3rem; letter-spacing: -0.01em; }
 /* Onboarding: neutral surfaces and one accent, in both themes. */
 .onboarding-artisan-shell {
   overflow-x: hidden;

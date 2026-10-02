@@ -1,70 +1,63 @@
-import { Sparkles, Calendar, Bell, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarDays, Check } from 'lucide-react';
+import { Cloud, PenLine } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
-import { AppShowcaseMedia } from '@/components/ui/AppShowcaseMedia';
+import { AppPhonePreview } from '@/components/ui/AppPhonePreview';
 import type { AppLocale } from '@/types';
 import './landing.css';
 
 const COPY = {
   fr: {
-    title: 'Gagnez du temps.', emphasis: 'Enseignez mieux.',
-    start: 'Préparez votre première classe, puis finalisez votre inscription pour retrouver votre cahier.',
-    login: 'Se connecter', register: 'Créer un compte',
-    badges: ['Saisie rapide et intelligente', 'Calendrier scolaire officiel', 'Notifications importantes'],
-    preview: 'Votre cahier, partout avec vous.',
+    eyebrow: 'Pensé pour votre quotidien d’enseignant', title: 'Votre journée,', emphasis: 'plus simplement.',
+    detail: 'Vos classes, vos séances et votre planning. Un cahier clair, toujours à portée de main.',
+    start: 'Préparez votre classe, puis créez votre compte pour la conserver.',
+    login: 'Se connecter', register: 'Préparer mon cahier',
+    reassurance: 'Sur téléphone, tablette et ordinateur', preview: 'Votre cahier dans votre téléphone',
+    features: [
+      { title: 'Rédigez sans effort', detail: 'Des contenus prêts à adapter à vos séances.' },
+      { title: 'Gardez le bon rythme', detail: 'Un planning lié au calendrier scolaire officiel.' },
+      { title: 'Retrouvez votre travail', detail: 'Vos cahiers synchronisés entre vos appareils.' },
+    ],
   },
   ar: {
-    title: 'وقت أقل للتعبئة.', emphasis: 'وقت أكثر للتدريس.',
-    start: 'أعدّ قسمك الأول، ثم أكمل التسجيل لحفظ دفتر نصوصك والعودة إليه.',
-    login: 'تسجيل الدخول', register: 'إنشاء حساب جديد',
-    badges: ['تعبئة سريعة وذكية', 'التقويم المدرسي الرسمي', 'إشعارات مهمة'],
-    preview: 'دفترك، أينما كنت.',
+    eyebrow: 'مصمّم ليومك كأستاذ', title: 'يومك الدراسي،', emphasis: 'بكل بساطة.',
+    detail: 'أقسامك وحصصك وجدولك. دفتر واضح، دائماً في متناول يدك.',
+    start: 'أعدّ قسمك، ثم أنشئ حسابك لحفظه.', login: 'تسجيل الدخول', register: 'إعداد دفتري',
+    reassurance: 'على الهاتف والجهاز اللوحي والحاسوب', preview: 'دفتر نصوصك على هاتفك',
+    features: [
+      { title: 'دوّن بسهولة', detail: 'محتويات جاهزة لتكييفها مع حصصك.' },
+      { title: 'نظّم حصصك', detail: 'جدول مرتبط بالتقويم المدرسي الرسمي.' },
+      { title: 'عملك معك دائماً', detail: 'مزامنة دفاترك بين أجهزتك.' },
+    ],
   },
 } as const;
-const FEATURE_ICONS = [Sparkles, Calendar, Bell];
-const FEATURE_VARIANTS = [
-  'landing-badge-smart',
-  'landing-badge-calendar',
-  'landing-badge-notifications',
-] as const;
+const FEATURE_ICONS = [PenLine, CalendarDays, Cloud];
 
 export function LandingPage({ locale, onLogin, onRegister }: {
   locale: AppLocale; onLogin: () => void; onRegister: () => void;
 }) {
   const ar = locale === 'ar';
-  const language = ar ? 'ar' : 'fr';
-  const copy = COPY[language];
-
-  const renderBadges = (extraClass: string) => (
-    <ul className={`landing-features ${extraClass}`}>
-      {copy.badges.map((text, index) => {
-        const Icon = FEATURE_ICONS[index];
-        const variantClass = FEATURE_VARIANTS[index] ?? '';
-        return (
-          <li key={text} className={`landing-badge ${variantClass}`}>
-            <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>{text}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-
+  const copy = COPY[ar ? 'ar' : 'fr'];
+  const Forward = ar ? ArrowLeft : ArrowRight;
   return <main className="landing-editorial" dir={ar ? 'rtl' : 'ltr'}>
     <div className="landing-composition auth-view-enter">
       <section className="landing-copy">
+        <p className="landing-eyebrow"><span aria-hidden="true" />{copy.eyebrow}</p>
         <h1 tabIndex={-1}>{copy.title}<br /><span>{copy.emphasis}</span></h1>
+        <p className="landing-detail">{copy.detail}</p>
         <div className="landing-actions">
-          <Button type="button" onClick={onRegister} className="landing-primary"><span>{copy.register}</span><ArrowUpRight aria-hidden="true" className="rtl:-scale-x-100" /></Button>
-          <Button type="button" variant="outline" onClick={onLogin} className="landing-secondary"><span>{copy.login}</span></Button>
+          <Button type="button" onClick={onRegister} className="landing-primary"><span>{copy.register}</span><Forward aria-hidden="true" /></Button>
+          <Button type="button" variant="outline" onClick={onLogin} className="landing-secondary">{copy.login}</Button>
         </div>
         <p className="landing-start">{copy.start}</p>
-        {renderBadges('landing-features-desktop')}
+        <p className="landing-reassurance"><Check aria-hidden="true" />{copy.reassurance}</p>
       </section>
-      <section className="landing-gallery" aria-label={copy.preview}>
-        <AppShowcaseMedia locale={locale} loading="eager" showPreview={false} />
-        <p className="landing-gallery-caption">{copy.preview}</p>
-      </section>
-      {renderBadges('landing-features-mobile')}
+      <section className="landing-gallery" aria-label={copy.preview}><AppPhonePreview locale={locale} /></section>
+      <ul className="landing-features">
+        {copy.features.map((feature, index) => {
+          const Icon = FEATURE_ICONS[index];
+          return <li key={feature.title}><span className="landing-feature-icon"><Icon aria-hidden="true" /></span><div><h2>{feature.title}</h2><p>{feature.detail}</p></div></li>;
+        })}
+      </ul>
     </div>
   </main>;
 }

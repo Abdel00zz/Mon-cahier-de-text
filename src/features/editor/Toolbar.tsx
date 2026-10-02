@@ -60,10 +60,10 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
 
       <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner sm:flex">
         <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
-          <Undo2 className="h-3.5 w-3.5 stroke-[2.5]" />
+          <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
         <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
-          <Redo2 className="h-3.5 w-3.5 stroke-[2.5]" />
+          <Redo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-3.5 w-3.5 stroke-[2.5]" />
         </Button>
         <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Save className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -165,11 +165,11 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             {/* On mobile screens, show undo/redo/save inside the menu */}
             <div className="sm:hidden">
               <DropdownMenuItem onClick={onUndo} disabled={!canUndo}>
-                <Undo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+                <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-3.5 w-3.5 stroke-[2.2]" />
                 <span>{t('toolbar.undo')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onRedo} disabled={!canRedo}>
-                <Redo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+                <Redo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-3.5 w-3.5 stroke-[2.2]" />
                 <span>{t('toolbar.redo')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'}>

@@ -622,7 +622,7 @@ html[lang="ar"] .modal-header h2,
   }
 
   .auth-page-shell {
-    background-color: hsl(var(--card));
+    background-color: hsl(var(--background));
     font-family: var(--font-sans);
   }
 
@@ -736,10 +736,6 @@ html[lang="ar"] .modal-header h2,
   .dark .glass-card {
     background: rgba(15, 23, 42, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .dark .auth-page-shell {
-    background-color: #202124;
   }
 
   

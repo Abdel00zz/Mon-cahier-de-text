@@ -18,12 +18,14 @@ import {
   Loader2,
   TriangleAlert,
   LockKeyhole,
+  ArrowLeft,
+  ArrowRight,
 } from "@/components/ui/icons";
-import { CountryFlag } from "@/components/ui/CountryFlags";
 import type { AppLocale } from "@/types";
 import { AuthShowcase } from "./AuthShowcase";
 import { LandingPage } from "./LandingPage";
 import "./authMotion.css";
+import "./auth-layout.css";
 import {
   formatMoroccanPhone,
   isCompleteMoroccanPhone,
@@ -62,8 +64,8 @@ const AUTH_COPY = {
       "Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.",
     accountBlocked:
       "Votre accès a été suspendu par votre établissement. Contactez la direction pour le rétablir.",
-    welcomeTitle: "Votre cahier de textes numérique vous attend.",
-    welcomeDetail: "Votre cahier dans votre téléphone. Élégant, pratique et intelligent.",
+    welcomeTitle: "Heureux de vous retrouver.",
+    welcomeDetail: "Connectez-vous pour retrouver vos classes et vos séances.",
     login: "Se connecter",
     createAccount: "Créer un compte",
     modeLabel: "Accès au compte",
@@ -104,8 +106,8 @@ const AUTH_COPY = {
       "أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.",
     accountBlocked:
       "تم إيقاف ولوجك من طرف إدارتك. تواصل مع الإدارة لاستعادة الدخول.",
-    welcomeTitle: "دفتر نصوصك الرقمي في انتظارك",
-    welcomeDetail: "دفتر نصوصك في هاتفك. أنيق، عملي، وذكي",
+    welcomeTitle: "سعداء بعودتك.",
+    welcomeDetail: "سجّل دخولك للعودة إلى أقسامك وحصصك.",
     login: "تسجيل الدخول",
     createAccount: "إنشاء حساب جديد",
     modeLabel: "الولوج إلى الحساب",
@@ -133,7 +135,7 @@ const AUTH_COPY = {
   },
 } as const;
 const FIELD_CLASS =
-  "h-12 rounded-xl border border-border bg-background/60 px-4 text-base font-normal text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary";
+  "auth-field placeholder:text-muted-foreground";
 const LABEL_CLASS = "mb-2 block text-sm font-medium";
 
 const PasswordInput = ({
@@ -170,13 +172,14 @@ const PasswordInput = ({
           onKeyUp={detectCaps}
           onBlur={() => setCapsLock(false)}
           autoComplete={autoComplete}
+          enterKeyHint={autoComplete === 'current-password' ? 'go' : 'next'}
           required={required}
           minLength={minLength}
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
           aria-describedby={capsLock ? id + "-caps" : undefined}
-          className={FIELD_CLASS + " pe-12"}
+          className={FIELD_CLASS + " auth-password"}
         />
         <button
           type="button"
@@ -184,7 +187,7 @@ const PasswordInput = ({
           aria-label={visible ? copy.hidePassword : copy.showPassword}
           aria-pressed={visible}
           aria-controls={id}
-          className="absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-[8px] text-stone-500 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-stone-400 dark:hover:text-white"
+          className="auth-password-toggle focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {visible ? (
             <EyeOff className="h-4.5 w-4.5" aria-hidden="true" />
@@ -375,11 +378,9 @@ export const AuthPage: React.FC<{
       ref={pageRef}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
-      className={`auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100 ${
-        view === "landing" ? "auth-page-shell-landing" : ""
-      }`}
+      className="auth-page-shell flex min-h-dvh flex-col"
     >
-      <header className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
+      <header className="auth-header">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
           <button
             type="button"
@@ -389,7 +390,7 @@ export const AuthPage: React.FC<{
               }
             }}
             disabled={isSubmitting}
-            className="group flex min-h-11 min-w-0 items-center gap-2 sm:gap-2.5 rounded-lg text-start transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer"
+            className="auth-brand focus-visible:outline-2 focus-visible:outline-offset-2"
             title={copy.backToHome}
             aria-label={copy.backToHome}
           >
@@ -398,13 +399,13 @@ export const AuthPage: React.FC<{
               width="36"
               height="36"
               alt=""
-              className="h-9 w-9 shrink-0 rounded-[8px] object-contain transition-transform group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+              className="object-contain"
             />
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold leading-tight group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+              <p className="auth-brand__name">
                 {copy.brand}
               </p>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
+              <p className="auth-brand__detail">
                 {copy.teacherAccess}
               </p>
             </div>
@@ -414,7 +415,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="inline-flex w-fit shrink-0 items-center gap-0.5 rounded-[12px] border border-stone-300/70 bg-stone-100/70 p-0.5 shadow-xs dark:border-stone-600 dark:bg-stone-900/60"
+          className="auth-languages"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
@@ -427,16 +428,8 @@ export const AuthPage: React.FC<{
                 onLocaleChange(value);
               }}
               aria-pressed={displayLocale === value}
-              className={
-                "flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-[9px] px-2.5 text-xs font-medium transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
-                (displayLocale === value
-                  ? value === 'ar'
-                    ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-sm shadow-emerald-900/15"
-                    : "bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-sm shadow-blue-900/15"
-                  : "text-muted-foreground hover:bg-muted/80")
-              }
+              className="auth-choice focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              <CountryFlag code={value} className="h-3 w-4.5" />
               <span>{value === "ar" ? "العربية" : "FR"}</span>
             </button>
           ))}
@@ -471,18 +464,20 @@ export const AuthPage: React.FC<{
         </Suspense>
       )}
       {view === "auth" && (
-        <div dir="ltr" className="auth-view-enter grid flex-1 lg:grid-cols-2">
+        <div className="auth-view-enter auth-access-layout">
           <AuthShowcase locale={displayLocale} />
-          <main dir={displayLocale === 'ar' ? 'rtl' : 'ltr'} className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
-            <div className="mx-auto w-full max-w-[400px]">
+          <main dir={displayLocale === 'ar' ? 'rtl' : 'ltr'} className="auth-form-main">
+            <div className="auth-form-content">
+              <button type="button" disabled={isSubmitting} onClick={() => navigateTo('landing')} className="auth-back auth-action focus-visible:outline-2 focus-visible:outline-offset-2">
+                {displayLocale === 'ar' ? <ArrowRight aria-hidden="true" /> : <ArrowLeft aria-hidden="true" />}{copy.backToHome}
+              </button>
               <h1
                 tabIndex={-1}
                 id={id + "-title"}
-                className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl"
               >
                 {isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+              <p className="auth-form-detail">
                 {isRegister
                   ? copy.savePreparationDetail
                   : setup
@@ -502,7 +497,7 @@ export const AuthPage: React.FC<{
               <div
                 role="group"
                 aria-label={copy.modeLabel}
-                className="paper-segments my-6 grid grid-cols-2 gap-1 rounded-[14px] border border-border/60 p-1"
+                className="auth-modes"
               >
                 {(["login", "register"] as const).map((value) => (
                   <button
@@ -512,13 +507,13 @@ export const AuthPage: React.FC<{
                     aria-pressed={mode === value}
                     aria-controls={id + "-form"}
                     onClick={() => switchMode(value)}
-                    className="relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
+                    className="auth-choice focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     {mode === value && (
                       <motion.span
                         layoutId={id + "-active-mode"}
                         aria-hidden="true"
-                        className="absolute inset-0 rounded-lg border border-border bg-card shadow-sm"
+                        className="auth-mode-active"
                         transition={
                           reducedMotion
                             ? { duration: 0 }
@@ -594,6 +589,7 @@ export const AuthPage: React.FC<{
                         name="phone"
                         type="tel"
                         inputMode="tel"
+                        enterKeyHint="next"
                         dir="ltr"
                         value={phone}
                         onChange={(event) =>
@@ -606,7 +602,7 @@ export const AuthPage: React.FC<{
                           phoneValid ? id + "-phone-valid" : undefined
                         }
                         className={
-                          FIELD_CLASS + " pr-11 text-left tabular-nums"
+                          FIELD_CLASS + " auth-phone text-left tabular-nums"
                         }
                       />
                       {phoneValid && (
@@ -712,7 +708,7 @@ export const AuthPage: React.FC<{
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="min-h-12 w-full px-5 py-3 text-sm font-semibold disabled:cursor-wait"
+                    className="auth-submit auth-action disabled:cursor-wait"
                   >
                     {isSubmitting && (
                       <Loader2
@@ -728,7 +724,7 @@ export const AuthPage: React.FC<{
                   </Button>
                 </fieldset>
               </form>
-              <p className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+              <p className="auth-secure">
                 <LockKeyhole
                   className="h-3.5 w-3.5 shrink-0"
                   aria-hidden="true"

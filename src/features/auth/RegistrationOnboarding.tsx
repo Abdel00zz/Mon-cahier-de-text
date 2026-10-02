@@ -24,6 +24,7 @@ import {
   normalizeGroupNumber,
 } from "@/domain/classes/classGroup";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
 
@@ -58,8 +59,8 @@ const Chip = ({
     className={cn(
       "auth-choice inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3 py-2 text-center text-sm font-bold focus-visible:outline-2 transition-all duration-150 active:scale-[0.97]",
       active
-        ? "bg-[#7033e3] border-[#7033e3] text-white shadow-sm"
-        : "bg-transparent border-border text-foreground hover:bg-black/5 dark:hover:bg-white/10",
+        ? "bg-primary/10 border-primary/50 text-primary"
+        : "bg-card border-border text-foreground hover:bg-muted",
     )}
   >
     {children}
@@ -104,7 +105,7 @@ export function RegistrationOnboarding({
   const subjectLabel = ar ? "المادة الدراسية" : "Matière";
 
   return (
-    <main className="auth-view-enter mx-auto w-full max-w-3xl flex-1 px-3 py-5 sm:px-6 sm:py-10">
+    <main className="auth-view-enter mx-auto w-full max-w-2xl flex-1 px-6 py-5 sm:py-10">
       <h1
         tabIndex={-1}
         className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
@@ -129,7 +130,7 @@ export function RegistrationOnboarding({
         className="sr-only"
       />
       <form
-        className="keep-surface overflow-hidden rounded-[12px] p-4 shadow-lg sm:p-5"
+        className="overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
           if (prepared) onComplete(prepared);
@@ -293,13 +294,13 @@ export function RegistrationOnboarding({
           )}
         </div>
         <div className="mt-6 flex justify-end">
-          <button
+          <Button
             type="submit"
             disabled={!prepared}
-            className="auth-action artistic-cta-button min-h-11 w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white shadow-md focus-visible:outline-2 disabled:opacity-50 cursor-pointer"
+            className="auth-action min-h-12 w-full px-5 py-3 sm:w-auto"
           >
             {ar ? "متابعة التسجيل" : "Continuer l’inscription"}
-          </button>
+          </Button>
         </div>
       </form>
     </main>

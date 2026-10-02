@@ -19,6 +19,7 @@
     "tests/test-*.ts",
     "scripts/benchmarks/benchmark-*.ts",
     "scripts/guide-preview/main.tsx",
+    "scripts/auth-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",
     "scripts/ux-preview/main.tsx"

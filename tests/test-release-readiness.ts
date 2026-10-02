@@ -24,7 +24,7 @@ test('version du guide, Android et fichier de verrouillage restent cohérents', 
 });
 
 test('l’allègement Android conserve les cours, les polices et les captures du guide', () => {
-  for (const file of ['doc_officiel/curriculum.json', 'contenus/manifest.json', 'contenus/mathematiques/1ac-mathematiques.json', 'guide/current/editor-ar.webp', 'arabswell-3.ttf', 'showcase/notebook-sculpture.png']) assert.ok(isNativeAsset(file), file);
+  for (const file of ['doc_officiel/curriculum.json', 'contenus/manifest.json', 'contenus/mathematiques/1ac-mathematiques.json', 'guide/current/editor-ar.webp', 'arabswell-3.ttf']) assert.ok(isNativeAsset(file), file);
   assert.equal(isNativeAsset('doc_officiel/source.jpeg'), false);
   assert.equal(isNativeAsset('showcase/portrait-fr.gif'), false);
   assert.equal(isNativeAsset('showcase\\portrait-fr.gif'), false);
