@@ -1,4 +1,4 @@
-/* Shared material language: warm paper, sage ink, quiet tactile depth.
+/* Shared material language: pastel notes, indigo ink, quiet tactile depth.
    Component-layer rules deliberately leave consumer utilities in control. */
 @layer components {
   .paper-button {
@@ -8,9 +8,20 @@
       border-color 180ms, box-shadow 180ms, opacity 180ms;
   }
   .paper-button:is([data-variant='default'], [data-variant='accent'], [data-variant='charcoal'], [data-variant='destructive']) {
-    background-image: linear-gradient(170deg, rgb(255 255 255 / .08), transparent 55%, rgb(20 30 23 / .07));
+    background-image: none;
     border-color: rgb(255 255 255 / .12);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / .13), 0 4px 9px -6px hsl(var(--foreground) / .4);
+  }
+  /* A short solid lip makes the primary action feel pressable without layout shifts. */
+  .paper-button:is([data-variant='default'], [data-variant='accent']) {
+    --button-lip: color-mix(in srgb, hsl(var(--primary)) 76%, hsl(var(--foreground)));
+    border-color: hsl(var(--primary) / .35);
+    border-block-end: 2px solid var(--button-lip);
+    box-shadow: 0 3px 0 var(--button-lip), 0 5px 10px -7px hsl(var(--primary) / .24);
+  }
+  .paper-button:is([data-variant='default'], [data-variant='accent']):active:not(:disabled) {
+    border-block-end-color: hsl(var(--primary));
+    box-shadow: 0 1px 0 var(--button-lip);
   }
   .paper-button:is([data-variant='outline'], [data-variant='secondary']) {
     box-shadow: inset 0 1px 0 hsl(var(--card) / .9), 0 2px 3px -2px hsl(var(--foreground) / .16);

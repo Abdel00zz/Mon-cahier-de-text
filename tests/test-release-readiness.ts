@@ -77,14 +77,21 @@ const contrast = (foreground: string, background: string) => {
   const values = [luminance(rgb(foreground)), luminance(rgb(background))].sort((a, b) => b - a);
   return (values[0] + .05) / (values[1] + .05);
 };
+const mixedColor = (foreground: string, background: string, fraction: number) => {
+  const front = rgb(foreground);
+  const back = rgb(background);
+  return `#${front.map((value, i) => Math.round((value * fraction + back[i] * (1 - fraction)) * 255).toString(16).padStart(2, '0')).join('')}`;
+};
 
 test('les tokens de texte et d’action gardent le contraste AA sur les deux thèmes', () => {
   const css = fs.readFileSync('src/styles/index.css', 'utf8');
-  const light = css.slice(css.indexOf('--background: 45'), css.indexOf('--background: 160'));
-  const dark = css.slice(css.indexOf('--background: 160'));
+  const paletteStart = css.indexOf('--background:');
+  const darkStart = css.indexOf('  .dark {', paletteStart);
+  const light = css.slice(paletteStart, darkStart);
+  const dark = css.slice(darkStart);
   for (const [name, section] of [['clair', light], ['sombre', dark]]) {
     const token = (key: string) => section.match(new RegExp(`--${key}: ([\\d. %]+);`))![1].replaceAll('%', '');
-    for (const [ink, surface] of [['foreground', 'background'], ['card-foreground', 'card'], ['muted-foreground', 'background'], ['muted-foreground', 'muted'], ['primary-foreground', 'primary'], ['destructive-foreground', 'destructive'], ['scheduled-foreground', 'scheduled']]) {
+    for (const [ink, surface] of [['foreground', 'background'], ['card-foreground', 'card'], ['muted-foreground', 'background'], ['muted-foreground', 'muted'], ['primary-foreground', 'primary'], ['secondary-foreground', 'secondary'], ['accent-foreground', 'accent'], ['success-strong', 'background'], ['destructive-foreground', 'destructive'], ['scheduled-foreground', 'scheduled']]) {
       const ratio = contrast(token(ink), token(surface));
       assert.ok(ratio >= 4.5, `${name}: ${ink}/${surface} = ${ratio.toFixed(2)}`);
     }
@@ -101,6 +108,8 @@ test('les huit couleurs de classe et les couleurs supplémentaires restent lisib
     for (const ink of [token('accent')!, light ? '#343a40' : '#e3e6e8', light ? '#5f666d' : '#acb4bd']) {
       assert.ok(contrast(ink, surface) >= 4.5, `${name}: ${ink}/${surface}`);
     }
+    const cell = mixedColor(token('vivid')!, surface, light ? .12 : .22);
+    assert.ok(contrast(token('accent')!, cell) >= 4.5, `${name}: timetable ${token('accent')}/${cell}`);
   }
   for (let hue = 0; hue < 360; hue++) {
     assert.ok(contrast(`${hue} 60 28`, `${hue} 60 97`) >= 4.5, `custom light ${hue}`);

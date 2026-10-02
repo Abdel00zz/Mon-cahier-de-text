@@ -123,8 +123,8 @@
   --ui-font-latin: var(--font-latin-body);
   --ui-radius-control: 0.75rem;
   --ui-radius-surface: 1.25rem;
-  --ui-shadow-surface: 0 14px 34px -26px rgb(27 48 39 / 0.42);
-  --ui-focus-ring: 0 0 0 3px hsl(155 45% 32% / 0.14);
+  --ui-shadow-surface: 0 14px 34px -26px hsl(var(--foreground) / 0.32);
+  --ui-focus-ring: 0 0 0 3px hsl(var(--primary) / 0.16);
   --ui-space-page: clamp(1rem, 3vw, 1.5rem);
   --ui-space-section: clamp(1rem, 2.5vw, 1.5rem);
 }
@@ -321,29 +321,30 @@ html[lang="ar"] .keep-class-title {
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Palette calme et contemporaine : ivoire chaud, graphite doux, vert sauge. */
-    --background: 45 24% 96%;
-    --foreground: 160 16% 16%;
-    --card: 45 33% 99%;
-    --card-foreground: 160 16% 16%;
-    --popover: 45 33% 99%;
-    --popover-foreground: 160 16% 16%;
-    --primary: 145 19% 29%;
+    /* Learning palette: Quizlet-inspired indigo actions, fresh green successes,
+       Keep-inspired pastel notes. Saturation stays on actions and class cards. */
+    --background: 240 33% 97.6%;
+    --foreground: 235 28% 19%;
+    --card: 240 33% 99%;
+    --card-foreground: 235 28% 19%;
+    --popover: 240 33% 99%;
+    --popover-foreground: 235 28% 19%;
+    --primary: 234 100% 63%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 85 14% 93%;
-    --secondary-foreground: 160 16% 20%;
-    --muted: 75 12% 94%;
-    --muted-foreground: 160 8% 39%;
-    --accent: 95 20% 91%;
-    --accent-foreground: 155 45% 24%;
-    --border: 80 10% 85%;
-    --input: 60 16% 96%;
-    --ring: 145 19% 29%;
+    --secondary: 238 50% 95%;
+    --secondary-foreground: 235 28% 24%;
+    --muted: 240 22% 95%;
+    --muted-foreground: 236 12% 39%;
+    --accent: 238 90% 96%;
+    --accent-foreground: 235 75% 40%;
+    --border: 238 20% 86%;
+    --input: 240 24% 97%;
+    --ring: 234 100% 63%;
     --destructive: 0 68% 42%; /* Deep red keeps light action labels readable through hover. */
     --destructive-foreground: 0 0% 98%;
-    --success: 142.1 76.2% 36.3%;
+    --success: 99 80% 27%;
     --warning: 38 92% 50%;
-    --success-strong: 142.1 70% 28%;
+    --success-strong: 99 80% 25%;
     --warning-strong: 38 92% 30%;
     --destructive-strong: 0 68% 40%;
     --alert: 0 78% 56%;
@@ -356,7 +357,7 @@ html[lang="ar"] .keep-class-title {
     --dock-shadow: 0 10px 30px rgba(33, 33, 35, 0.06);
     --chart-1: 42.5 100% 49.6%;
     --chart-2: 226 80% 55%;
-    --chart-3: 142.1 76.2% 36.3%;
+    --chart-3: 99 80% 39%;
     --chart-4: 199 89% 48%;
     --chart-5: 262 83% 58%;
 
@@ -372,29 +373,29 @@ html[lang="ar"] .keep-class-title {
 
   .dark {
     color-scheme: only dark;
-    /* Mode sombre : profondeur graphite et accent sauge désaturé. */
-    --background: 160 14% 9%;
-    --foreground: 150 18% 94%;
-    --card: 160 12% 13%;
-    --card-foreground: 150 18% 94%;
-    --popover: 160 12% 14%;
-    --popover-foreground: 150 18% 94%;
-    --primary: 120 18% 72%;
-    --primary-foreground: 160 16% 12%;
-    --secondary: 160 10% 19%;
-    --secondary-foreground: 150 18% 94%;
-    --muted: 160 10% 18%;
-    --muted-foreground: 150 8% 68%;
-    --accent: 155 28% 20%;
-    --accent-foreground: 155 42% 78%;
-    --border: 160 10% 23%;
-    --input: 160 10% 18%;
-    --ring: 120 18% 72%;
+    /* Night palette: ink-blue layers and softer indigo, never a color inversion. */
+    --background: 235 25% 11%;
+    --foreground: 240 32% 94%;
+    --card: 235 23% 16%;
+    --card-foreground: 240 32% 94%;
+    --popover: 235 23% 18%;
+    --popover-foreground: 240 32% 94%;
+    --primary: 234 100% 80%;
+    --primary-foreground: 235 40% 14%;
+    --secondary: 237 24% 23%;
+    --secondary-foreground: 240 32% 94%;
+    --muted: 235 20% 22%;
+    --muted-foreground: 236 18% 73%;
+    --accent: 237 34% 25%;
+    --accent-foreground: 234 100% 85%;
+    --border: 235 19% 29%;
+    --input: 235 20% 22%;
+    --ring: 234 100% 80%;
     --destructive: 0 62% 70%; /* Soft red with dark ink on dark-theme actions. */
     --destructive-foreground: 0 48% 12%;
-    --success: 142.1 70.6% 45.3%;
+    --success: 99 65% 66%;
     --warning: 38 92% 50%;
-    --success-strong: 142.1 76% 55%;
+    --success-strong: 99 65% 70%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 62% 72%;
     --alert: 0 72% 62%;
@@ -407,7 +408,7 @@ html[lang="ar"] .keep-class-title {
     --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
     --chart-1: 42.5 100% 50%;
     --chart-2: 226 80% 65%;
-    --chart-3: 30 80% 55%;
+    --chart-3: 99 65% 60%;
     --chart-4: 199 89% 58%;
     --chart-5: 262 83% 58%;
   }
@@ -436,7 +437,7 @@ html[lang="ar"] .keep-class-title {
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-image: radial-gradient(circle at 12% 0%, hsl(155 35% 92% / 0.42), transparent 32rem);
+    background-image: none;
     min-width: 0;
     min-height: 100dvh;
     scroll-behavior: smooth;
@@ -1425,8 +1426,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dialog-close { width: 2.25rem; height: 2.25rem; border-radius: 9999px; }
   .dialog-close:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
   .modal-pro-surface input:not([type="radio"]):not([type="checkbox"]), .modal-pro-surface textarea, .modal-pro-surface select { min-height: 2.75rem; border-radius: 0.75rem; }
-  .modal-pro-surface input:focus-visible, .modal-pro-surface textarea:focus-visible, .modal-pro-surface select:focus-visible { border-color: hsl(155 45% 32% / 0.58); box-shadow: 0 0 0 3px hsl(155 45% 32% / 0.12); outline: none; }
-  .modal-pro-surface [role="radio"], .modal-pro-surface input[type="radio"] { accent-color: hsl(155 45% 32%); }
+  .modal-pro-surface input:focus-visible, .modal-pro-surface textarea:focus-visible, .modal-pro-surface select:focus-visible { border-color: hsl(var(--primary) / 0.58); box-shadow: var(--ui-focus-ring); outline: none; }
+  .modal-pro-surface [role="radio"], .modal-pro-surface input[type="radio"] { accent-color: hsl(var(--primary)); }
   .modal-pro-surface label:has(input[type="radio"]), .modal-pro-surface label:has([role="radio"]) { min-height: 2.75rem; }
   @media (max-width: 639px) {
     .modal-pro-surface { width: calc(100vw - 1rem); max-height: calc(100dvh - 0.5rem); margin-inline: 0.5rem; border-radius: 1.25rem 1.25rem 0 0; }
@@ -1667,21 +1668,21 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   /* Palette chromatique des classes : teintes modernes, fraîches et équilibrées */
   .keep-surface[data-keep-tone="sand"],
-  [data-keep-tone="sand"] { --keep-vivid: #FFC701; --keep-light: #FFFDF2; --keep-dark: #261F10; --keep-border: #F7E7B4; --keep-accent: #8A5A00; --keep-accent-soft: rgb(138 90 0 / 0.10); } /* Ambre solaire */
+  [data-keep-tone="sand"] { --keep-vivid: #FFC701; --keep-light: #FFF1B8; --keep-dark: #261F10; --keep-border: #E8D69A; --keep-accent: #8A5A00; --keep-accent-soft: rgb(138 90 0 / 0.10); } /* Ambre solaire */
   .keep-surface[data-keep-tone="coral"],
-  [data-keep-tone="coral"] { --keep-vivid: #FE7235; --keep-light: #FFF6F1; --keep-dark: #2A1D15; --keep-border: #FBD4C0; --keep-accent: #A43E10; --keep-accent-soft: rgb(164 62 16 / 0.10); } /* Orange mandarine */
+  [data-keep-tone="coral"] { --keep-vivid: #FE7235; --keep-light: #FFE3D5; --keep-dark: #2A1D15; --keep-border: #EFC4AF; --keep-accent: #A43E10; --keep-accent-soft: rgb(164 62 16 / 0.10); } /* Orange mandarine */
   .keep-surface[data-keep-tone="lime"],
-  [data-keep-tone="lime"] { --keep-vivid: #E5FE96; --keep-light: #FAFDEE; --keep-dark: #1E2611; --keep-border: #E2F2AF; --keep-accent: #4A6A00; --keep-accent-soft: rgb(74 106 0 / 0.10); } /* Lime printanier */
+  [data-keep-tone="lime"] { --keep-vivid: #89DA38; --keep-light: #E7F5C9; --keep-dark: #1E2611; --keep-border: #CCDEAB; --keep-accent: #3F6200; --keep-accent-soft: rgb(63 98 0 / 0.10); } /* Vert frais */
   .keep-surface[data-keep-tone="mint"],
-  [data-keep-tone="mint"] { --keep-vivid: #21C08B; --keep-light: #F1FBF7; --keep-dark: #14231E; --keep-border: #BFE9D7; --keep-accent: #0B6B4F; --keep-accent-soft: rgb(11 107 79 / 0.10); } /* Émeraude fraîche */
+  [data-keep-tone="mint"] { --keep-vivid: #21C08B; --keep-light: #DBF3E7; --keep-dark: #14231E; --keep-border: #B5DCC8; --keep-accent: #0B6B4F; --keep-accent-soft: rgb(11 107 79 / 0.10); } /* Émeraude fraîche */
   .keep-surface[data-keep-tone="sky"],
-  [data-keep-tone="sky"] { --keep-vivid: #38BDF8; --keep-light: #F1F9FE; --keep-dark: #152230; --keep-border: #BFDDF6; --keep-accent: #0A5E9E; --keep-accent-soft: rgb(10 94 158 / 0.10); } /* Azur lumineux */
+  [data-keep-tone="sky"] { --keep-vivid: #38BDF8; --keep-light: #DEEEFF; --keep-dark: #152230; --keep-border: #BBD4ED; --keep-accent: #0A5E9E; --keep-accent-soft: rgb(10 94 158 / 0.10); } /* Azur lumineux */
   .keep-surface[data-keep-tone="indigo"],
-  [data-keep-tone="indigo"] { --keep-vivid: #4D4AFD; --keep-light: #F4F4FF; --keep-dark: #1B1B33; --keep-border: #CFCFFA; --keep-accent: #3431D2; --keep-accent-soft: rgb(52 49 210 / 0.10); } /* Indigo électrique */
+  [data-keep-tone="indigo"] { --keep-vivid: #4255FF; --keep-light: #E9E8FF; --keep-dark: #1B1B33; --keep-border: #CCCAF0; --keep-accent: #3431D2; --keep-accent-soft: rgb(52 49 210 / 0.10); } /* Indigo électrique */
   .keep-surface[data-keep-tone="lavender"],
-  [data-keep-tone="lavender"] { --keep-vivid: #E28CF8; --keep-light: #FBF5FE; --keep-dark: #271D31; --keep-border: #ECD4F9; --keep-accent: #8C2BA8; --keep-accent-soft: rgb(140 43 168 / 0.10); } /* Orchidée digitale */
+  [data-keep-tone="lavender"] { --keep-vivid: #E28CF8; --keep-light: #F2E2FA; --keep-dark: #271D31; --keep-border: #DEC3EB; --keep-accent: #8C2BA8; --keep-accent-soft: rgb(140 43 168 / 0.10); } /* Orchidée digitale */
   .keep-surface[data-keep-tone="rose"],
-  [data-keep-tone="rose"] { --keep-vivid: #F43F5E; --keep-light: #FFF5F7; --keep-dark: #2B1A20; --keep-border: #FBD1D9; --keep-accent: #B01B3C; --keep-accent-soft: rgb(176 27 60 / 0.10); } /* Framboise vive */
+  [data-keep-tone="rose"] { --keep-vivid: #F43F5E; --keep-light: #FCE1E7; --keep-dark: #2B1A20; --keep-border: #EABFC9; --keep-accent: #B01B3C; --keep-accent-soft: rgb(176 27 60 / 0.10); } /* Framboise vive */
 
   /*
    * Badge de palier : rectangle épuré très compact (arrondi subtil 5px/6px),
@@ -1724,11 +1725,10 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dark .keep-surface[data-keep-tone="rose"],
   .dark [data-keep-tone="rose"] { --keep-vivid: #EE5A76; --keep-border: #6A3543; --keep-accent: #F79FB0; --keep-accent-soft: rgb(247 159 176 / 0.14); }
 
-  /* Cellules d'emploi du temps : même teinte que la carte de classe, un cran
-     plus soutenue (25 % de la teinte vive dans la surface claire, 22 % dans la
-     surface sombre). Le texte garde l'accent lisible AA du ton. */
+  /* Cells reuse the class palette. A 12% vivid tint preserves AA text on
+     the stronger light pastels; the dark-theme mix remains 22%. */
   [data-keep-tone] {
-    --keep-cell: color-mix(in srgb, var(--keep-vivid) 25%, var(--keep-light));
+    --keep-cell: color-mix(in srgb, var(--keep-vivid) 12%, var(--keep-light));
     --keep-cell-ink: var(--keep-accent);
   }
   [data-class-color] {

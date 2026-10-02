@@ -38,7 +38,7 @@ public class NativeShellPlugin extends Plugin {
 
     @PluginMethod
     public void setAppearance(PluginCall call) {
-        String background = call.getString("background", "#f7f6f2");
+        String background = call.getString("background", "#f7f7fb");
         if (!background.matches("#[0-9a-fA-F]{6}")) {
             call.reject("Invalid background color");
             return;

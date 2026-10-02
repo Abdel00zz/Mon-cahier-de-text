@@ -3,10 +3,10 @@
 [data-dashboard-surface] {
     position: relative;
     min-height: 100dvh;
-    background-color: var(--canvas-rose, #f7f6f2);
+    background-color: var(--canvas-rose, #f7f7fb);
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.16' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.12'/%3E%3C/svg%3E"),
-        linear-gradient(to right, var(--canvas-mint, #f2f5f2) 0%, var(--canvas-rose, #f7f6f2) 45%, var(--canvas-sky, #f1f4f3) 80%);
+        linear-gradient(to right, var(--canvas-mint, #f3f8f5) 0%, var(--canvas-rose, #f7f7fb) 45%, var(--canvas-sky, #f2f4fc) 80%);
     background-repeat: repeat, no-repeat;
     background-size: 24px 24px, 100% 100%;
 
@@ -14,10 +14,10 @@
 
 /* Mode sombre : dégradé étagé profond, grille carrée discrète */
 .dark [data-dashboard-surface] {
-    background-color: #1b211f;
+    background-color: var(--canvas-rose-dark, #191b2b);
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.035' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.025'/%3E%3C/svg%3E"),
-        linear-gradient(to right, var(--canvas-mint-dark, #18201d) 0%, var(--canvas-rose-dark, #1b211f) 45%, var(--canvas-sky-dark, #192120) 80%);
+        linear-gradient(to right, var(--canvas-mint-dark, #171e21) 0%, var(--canvas-rose-dark, #191b2b) 45%, var(--canvas-sky-dark, #1b2032) 80%);
     background-repeat: repeat, no-repeat;
     background-size: 24px 24px, 100% 100%;
 

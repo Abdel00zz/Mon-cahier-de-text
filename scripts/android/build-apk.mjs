@@ -13,7 +13,8 @@ if (!/^\d+\.\d+\.\d+$/.test(metadata.version) || !Number.isInteger(metadata.andr
 run(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'android'], environment);
 run(process.execPath, ['node_modules/@capacitor/cli/bin/capacitor', 'sync', 'android'], environment);
 fs.writeFileSync(path.join(root, 'android/local.properties'), `sdk.dir=${sdk.replaceAll('\\', '/').replaceAll(':', '\\:')}\n`);
-gradle(release ? ['bundleRelease', 'assembleRelease', 'lintRelease'] : ['assembleDebug'], toolchain);
+gradle([...(process.argv.includes('--clean') ? [':app:clean'] : []),
+  ...(release ? ['bundleRelease', 'assembleRelease', 'lintRelease'] : ['assembleDebug'])], toolchain);
 const outputs = path.join(root, 'artifacts/android');
 fs.mkdirSync(outputs, { recursive: true });
 const publish = (source, filename) => {

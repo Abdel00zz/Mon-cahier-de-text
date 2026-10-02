@@ -5,7 +5,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 
 const STATUS_CONFIG: Record<SyncStatus, { labelKey: string; dotClass: string; glowClass: string; pulse?: boolean }> = {
     idle: { labelKey: '', dotClass: '', glowClass: '' },
-    synced: { labelKey: 'sync.synced', dotClass: 'bg-success', glowClass: 'shadow-[0_0_0_2px_rgba(16,185,129,0.12),0_0_5px_rgba(16,185,129,0.35)]' },
+    synced: { labelKey: 'sync.synced', dotClass: 'bg-success', glowClass: 'shadow-[0_0_0_2px_hsl(var(--success)/0.12),0_0_5px_hsl(var(--success)/0.35)]' },
     syncing: { labelKey: 'sync.syncing', dotClass: 'bg-warning', glowClass: 'shadow-[0_0_0_3px_rgba(245,158,11,0.12),0_0_10px_rgba(245,158,11,0.55)]', pulse: true },
     pending: { labelKey: 'sync.pending', dotClass: 'bg-warning', glowClass: 'shadow-[0_0_0_3px_rgba(245,158,11,0.12),0_0_10px_rgba(245,158,11,0.45)]', pulse: true },
     offline: { labelKey: 'sync.offline', dotClass: 'bg-muted-foreground', glowClass: 'shadow-[0_0_0_3px_rgba(100,116,139,0.12)]' },

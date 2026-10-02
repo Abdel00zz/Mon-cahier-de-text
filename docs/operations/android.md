@@ -22,6 +22,8 @@ Sur cette machine, une chaîne Java / SDK / Gradle portable est également dispo
 
 Pour développer dans Android Studio : `npm run android:sync`, puis `npm run android:open`. Toute modification du cahier doit être recompilée et synchronisée avant de relancer l’application native. Une modification de `VITE_NATIVE_API_ORIGIN` nécessite une nouvelle compilation ; cette valeur doit être une origine HTTPS sans chemin ni identifiants.
 
+Si le fusionneur de ressources Android signale un cache incrémental incohérent après une modification d’icône, relancer `npm run android:release -- --clean`. Cette option nettoie uniquement les sorties de compilation du module Android avant de reconstruire et vérifier les fichiers signés.
+
 ## Intégration au téléphone
 
 | Fonction | Comportement |
@@ -78,9 +80,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.0.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.0-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.0.txt` pour diagnostiquer le code réduit.
+* `mon-cahier-de-textes-1.2.1.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.1-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.1.txt` pour diagnostiquer le code réduit.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -93,7 +95,7 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run android:version -- 1.2.1
+npm run android:version -- 1.2.2
 npm test
 npm run check
 npm run android:release

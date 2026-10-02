@@ -8,17 +8,17 @@ import type { CSSProperties } from 'react';
  * ────────────────────────────────────────────────────────────────────────── */
 
 const DASHBOARD_CANVAS = {
-    /** Papier chaud et gris sauge, sans aplat saturé. */
+    /** Neutres indigo et menthe : les notes colorées gardent la priorité. */
     colors: {
-        mint: '#f2f5f2',
-        rose: '#f7f6f2',
-        sky: '#f1f4f3',
+        mint: '#f3f8f5',
+        rose: '#f7f7fb',
+        sky: '#f2f4fc',
     },
     /** Mode sombre : versions étagées profondes et désaturées */
     darkColors: {
-        mint: '#18201d',
-        rose: '#1b211f',
-        sky: '#192120',
+        mint: '#171e21',
+        rose: '#191b2b',
+        sky: '#1b2032',
     },
 } as const;
 

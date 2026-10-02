@@ -8,7 +8,7 @@
   --class-vivid: var(--keep-vivid, #ffc701);
   --class-accent: var(--keep-accent, #8a5a00);
   --class-surface: var(--keep-light, #fcfaf6);
-  --class-border: color-mix(in srgb, var(--class-accent) 26%, var(--class-surface));
+  --class-border: color-mix(in srgb, var(--class-accent) 17%, var(--class-surface));
   --class-ink: #343a40;
   --class-muted: #5f666d;
   position: relative;
@@ -24,7 +24,7 @@
   border-radius: 22px;
   color: var(--class-ink);
   background: var(--class-surface);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .75), 0 2px 4px rgb(40 48 58 / .025), 0 8px 24px -20px rgb(40 48 58 / .18);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38), 0 2px 4px rgb(40 48 58 / .025), 0 8px 24px -20px rgb(40 48 58 / .14);
   transition: transform 250ms var(--ease-spring), box-shadow 250ms ease, border-color 200ms ease;
 }
 /* Filet de couleur en tête de carte : supprimé sur demande — la teinte se lit
@@ -45,7 +45,7 @@
   inset: 0;
   pointer-events: none;
   background-color: var(--class-accent);
-  opacity: .095;
+  opacity: .045;
   -webkit-mask-image: var(--class-texture);
   mask-image: var(--class-texture);
   -webkit-mask-size: 300px 300px;
@@ -108,7 +108,7 @@
   vertical-align: baseline;
   color: var(--class-accent);
 }
-.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent); color: var(--class-muted); }
+.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
    en interface latine — en arabe, `--font-sans` porte la fonte locale
@@ -132,7 +132,7 @@
 .class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
 @media (hover: hover) and (pointer: fine) {
   .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(245 248 252 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(40 48 58 / .15); }
-  .class-card:hover .class-card__texture { opacity: .15; }
+  .class-card:hover .class-card__texture { opacity: .075; }
   .class-card:hover .class-card__arrow { transform: translateX(3px); }
   .class-card[dir="rtl"]:hover .class-card__arrow { transform: scaleX(-1) translateX(3px); }
 }

@@ -8,7 +8,7 @@ import type { CSSProperties } from 'react';
  *    2. `TITLE_RECIPES`  — la graisse et l'interlettrage par rôle.
  *
  *  Après un changement de famille, mettre à jour le CHARGEMENT de la police :
- *    • latin  : la requête Google Fonts dans `index.html` ;
+ *    • latin  : les polices locales dans `styles/fonts.css` ;
  *    • arabe  : le fichier dans `public/` + son `@font-face` dans `index.css`.
  *
  *  Les composants (`ClassCard`, `ClassListItem`, `Dashboard`) n'écrivent JAMAIS

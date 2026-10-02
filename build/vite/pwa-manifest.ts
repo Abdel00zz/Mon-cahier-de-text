@@ -68,8 +68,8 @@ export const PWA_MANIFEST: LocalizedManifest = {
     scope: '/',
     launch_handler: { client_mode: 'navigate-existing' },
     prefer_related_applications: false,
-    theme_color: '#f7f6f2',
-    background_color: '#f7f6f2',
+    theme_color: '#f7f7fb',
+    background_color: '#f7f7fb',
     categories: ['education', 'productivity', 'utilities'],
     shortcuts: [
         {
