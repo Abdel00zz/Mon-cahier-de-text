@@ -448,8 +448,8 @@
 }
 .guide-pagination button,
 .guide-empty button {
-  min-height: 32px;
-  padding: 4px 12px;
+  min-height: 44px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -478,15 +478,22 @@
 /* Pied de page compact */
 .guide-credit {
   flex-shrink: 0;
-  padding: 4px 12px;
+  padding: 8px 12px;
   border-top: 1px solid var(--guide-border);
   background: var(--guide-surface);
   color: var(--guide-muted);
   text-align: center;
   font-size: 10.5px;
   line-height: 1.35;
-  opacity: 0.75;
 }
+.guide-credit-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; }
+.guide-version { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.guide-update { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; }
+.guide-update button { min-height: 44px; padding: 8px 12px; color: var(--guide-ink); cursor: pointer; border-radius: 8px; }
+.guide-update button:hover { background: var(--guide-soft); }
+.guide-update button:focus-visible { outline: 2px solid var(--guide-link); outline-offset: 2px; }
+.guide-update button:disabled { opacity: .6; cursor: progress; }
+.guide-update p { margin: 0; font-size: 11px; line-height: 1.5; }
 .guide-credit bdi {
   font-weight: 600;
   color: var(--guide-ink);

@@ -1,9 +1,11 @@
 @import "tailwindcss";
+@import "./fonts.css";
 @import "katex/dist/katex.min.css";
 @import "../components/ui/modal-motion.css";
 @import "../components/ui/paper-controls.css";
 @import "../features/dashboard/classCards.css";
 @import "../features/dashboard/dashboardCanvas.css";
+@import "./mobile-performance.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
@@ -331,7 +333,7 @@ html[lang="ar"] .keep-class-title {
     --secondary: 85 14% 93%;
     --secondary-foreground: 160 16% 20%;
     --muted: 75 12% 94%;
-    --muted-foreground: 160 8% 43%;
+    --muted-foreground: 160 8% 39%;
     --accent: 95 20% 91%;
     --accent-foreground: 155 45% 24%;
     --border: 80 10% 85%;
@@ -1927,7 +1929,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
    Deux polices embarquées, aucune dépendance distante :
    · Arabswell 3      (/arabswell-3.ttf)      → texte arabe
    · Maghribi Font 3  (/maghribi-font-3.ttf)  → titres arabes
-   Le duo latin (DM Sans / Rubik) vient de Google Fonts (voir index.html).
+   Les polices latines sont également embarquées (styles/fonts.css).
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* Déclaration @font-face pour la police locale Maghribi Font 3 */

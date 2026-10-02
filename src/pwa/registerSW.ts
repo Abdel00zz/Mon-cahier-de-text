@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { startSafePwaAction } from './safeUpdate';
 import { Capacitor } from '@capacitor/core';
+import { startPwaUpdateChecks } from './updateCheck';
 
 /**
  * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
@@ -48,6 +49,9 @@ export const initPwa = (): void => {
 
     const updateServiceWorker = registerSW({
         immediate: true,
+        onRegisteredSW(_url, registration) {
+            if (registration) startPwaUpdateChecks(registration);
+        },
         onNeedRefresh() {
             cancelActivation?.();
             cancelActivation = startSafePwaAction(() => { void updateServiceWorker(false); });

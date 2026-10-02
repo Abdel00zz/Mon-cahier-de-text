@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- These icons are resolved by name by Capacitor, outside R8's static graph. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_notebook,@drawable/ic_notebook_foreground,@xml/config" />

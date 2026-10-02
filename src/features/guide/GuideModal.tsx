@@ -5,6 +5,8 @@ import { Search, X, CircleHelp, ChevronRight, ChevronLeft, Menu } from '@/compon
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
+import { APP_VERSION } from '@/platform/appVersion';
+import { NativeUpdateControl } from './NativeUpdateControl';
 import './guide.css';
 
 interface GuideModalProps { isOpen: boolean; onClose: () => void }
@@ -158,7 +160,11 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
         </div>
       </div>
       <footer className="guide-credit" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
-        {isAr ? <>الفكرة والتصميم: <bdi>بدوح عبد المالك</bdi></> : <>Idée et conception : <bdi>BOUDOUH ABDELMALEK</bdi></>}
+        <div className="guide-credit-line">
+          <span>{isAr ? <>الفكرة والتصميم: <bdi>بدوح عبد المالك</bdi></> : <>Idée et conception : <bdi>BOUDOUH ABDELMALEK</bdi></>}</span>
+          <span className="guide-version" aria-label={isAr ? `الإصدار ${APP_VERSION}` : `Version ${APP_VERSION}`}><bdi dir="ltr">v{APP_VERSION}</bdi></span>
+        </div>
+        {isOpen && <NativeUpdateControl lang={lang} />}
       </footer>
     </Modal>
   );

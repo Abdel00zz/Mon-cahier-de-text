@@ -2,6 +2,7 @@ import { Capacitor, registerPlugin } from '@capacitor/core';
 import { notificationTarget } from '../domain/notifications/notificationPresentation';
 import { readWorkspaceScope } from '../infrastructure/storage/accountWorkspace';
 import { startSafePwaAction } from '../pwa/safeUpdate';
+import { readThemeBackground } from './themeColor';
 
 const NativeShell = registerPlugin<{
   setAppearance(options: { background: string; dark: boolean }): Promise<void>;
@@ -28,9 +29,10 @@ export async function initNativeRuntime(): Promise<void> {
       const dark = document.documentElement.classList.contains('dark');
       if (dark === previousDark) return;
       previousDark = dark;
-      void NativeShell.setAppearance({ background: dark ? '#1f1d1a' : '#f7f5f2', dark }).catch(() => {});
+      const background = readThemeBackground();
+      void NativeShell.setAppearance({ background, dark }).catch(() => {});
       void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {});
-      void StatusBar.setBackgroundColor({ color: dark ? '#1f1d1a' : '#f7f5f2' }).catch(() => {});
+      void StatusBar.setBackgroundColor({ color: background }).catch(() => {});
     };
     applySystemTheme();
     new MutationObserver(applySystemTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });

@@ -28,6 +28,10 @@ android/app/src/main/assets/capacitor.config.json
 android/app/src/main/assets/capacitor.plugins.json
 *.jks
 *.keystore
+*.p12
+*.pfx
+**/credentials.dpapi.json
+android/key.properties
 *.local
 .env
 .env.*

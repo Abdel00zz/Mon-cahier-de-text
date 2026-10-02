@@ -1,42 +1,35 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { androidToolchain, run, gradle, root } from './toolchain.mjs';
+import { loadSigningEnvironment } from './load-signing.mjs';
 
-const root = fileURLToPath(new URL('../..', import.meta.url));
-const portableJava = path.join(root, 'tmp/android-toolchain/jdk');
-const java = process.env.JAVA_HOME || (fs.existsSync(portableJava)
-  ? fs.readdirSync(portableJava).map(name => path.join(portableJava, name)).find(directory => fs.existsSync(path.join(directory, 'bin/java.exe')))
-  : undefined);
-const candidates = [process.env.ANDROID_HOME, process.env.ANDROID_SDK_ROOT,
-  process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Android/Sdk'), path.join(root, 'tmp/android-toolchain/sdk')];
-const sdk = candidates.find(directory => directory && fs.existsSync(path.join(directory, 'platforms/android-35/android.jar')));
-if (!java || !sdk) throw new Error('Java 21 et Android SDK 35 requis. Configurer JAVA_HOME et ANDROID_HOME ; voir docs/operations/android.md.');
-const environment = { ...process.env, JAVA_HOME: java, ANDROID_HOME: sdk, ANDROID_SDK_ROOT: sdk };
-const run = (command, args, cwd = root) => {
-  const result = spawnSync(command, args, { cwd, env: environment, stdio: 'inherit', windowsHide: true });
-  if (result.error) throw result.error;
-  if (result.status !== 0) process.exit(result.status ?? 1);
+const release = process.argv.includes('--release');
+const toolchain = androidToolchain();
+if (release) toolchain.environment = loadSigningEnvironment(toolchain.environment);
+const { java, sdk, environment } = toolchain;
+const metadata = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+if (!/^\d+\.\d+\.\d+$/.test(metadata.version) || !Number.isInteger(metadata.androidVersionCode) || metadata.androidVersionCode < 1 || metadata.androidVersionCode > 2_100_000_000) throw new Error('Invalid Android version metadata.');
+run(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'android'], environment);
+run(process.execPath, ['node_modules/@capacitor/cli/bin/capacitor', 'sync', 'android'], environment);
+fs.writeFileSync(path.join(root, 'android/local.properties'), `sdk.dir=${sdk.replaceAll('\\', '/').replaceAll(':', '\\:')}\n`);
+gradle(release ? ['bundleRelease', 'assembleRelease', 'lintRelease'] : ['assembleDebug'], toolchain);
+const outputs = path.join(root, 'artifacts/android');
+fs.mkdirSync(outputs, { recursive: true });
+const publish = (source, filename) => {
+  const destination = path.join(outputs, filename);
+  fs.copyFileSync(path.join(root, 'android/app/build/outputs', source), destination);
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(destination)).digest('hex');
+  fs.writeFileSync(`${destination}.sha256`, `${hash}  ${filename}\n`);
+  console.log(`${filename}: ${(fs.statSync(destination).size / 1_000_000).toFixed(2)} MB, SHA256 ${hash}`);
+  return destination;
 };
-run(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'android']);
-run(process.execPath, ['node_modules/@capacitor/cli/bin/capacitor', 'sync', 'android']);
-fs.writeFileSync(path.join(root, 'android/local.properties'), `sdk.dir=${sdk.replaceAll('\\', '/')}\n`);
-const android = path.join(root, 'android');
-const portableGradle = path.join(root, 'tmp/android-toolchain/gradle/gradle-8.11.1');
-const launcher = path.join(portableGradle, 'lib/gradle-gradle-cli-main-8.11.1.jar');
-const portable = fs.existsSync(launcher);
-// Invoke Java directly: paths with spaces stay intact, with no shell interpolation.
-run(path.join(java, process.platform === 'win32' ? 'bin/java.exe' : 'bin/java'), [
-  '-Xmx64m', '-Xms64m',
-  ...(portable ? [`-javaagent:${path.join(portableGradle, 'lib/agents/gradle-instrumentation-agent-8.11.1.jar')}`] : []),
-  '-classpath', portable ? launcher : path.join(android, 'gradle/wrapper/gradle-wrapper.jar'),
-  portable ? 'org.gradle.launcher.GradleMain' : 'org.gradle.wrapper.GradleWrapperMain',
-  'assembleDebug', '--no-daemon', '--max-workers=2',
-], android);
-const destination = path.join(root, 'artifacts/android/mon-cahier-de-textes-debug.apk');
-fs.mkdirSync(path.dirname(destination), { recursive: true });
-fs.copyFileSync(path.join(android, 'app/build/outputs/apk/debug/app-debug.apk'), destination);
-const hash = crypto.createHash('sha256').update(fs.readFileSync(destination)).digest('hex');
-fs.writeFileSync(`${destination}.sha256`, `${hash}  ${path.basename(destination)}\n`);
-console.log(`APK installable : ${destination}\nSHA256 : ${hash}`);
+if (release) {
+  const aab = publish('bundle/release/app-release.aab', `mon-cahier-de-textes-${metadata.version}.aab`);
+  const apk = publish('apk/release/app-release.apk', `mon-cahier-de-textes-${metadata.version}-release.apk`);
+  run(path.join(java, 'bin', process.platform === 'win32' ? 'jarsigner.exe' : 'jarsigner'), ['-verify', aab], environment);
+  run(path.join(java, 'bin', process.platform === 'win32' ? 'java.exe' : 'java'), ['-jar', path.join(sdk, 'build-tools/35.0.0/lib/apksigner.jar'), 'verify', '--verbose', '--print-certs', apk], environment);
+  fs.copyFileSync(path.join(root, 'android/app/build/outputs/mapping/release/mapping.txt'), path.join(outputs, `mapping-${metadata.version}.txt`));
+  run(path.join(java, 'bin', process.platform === 'win32' ? 'keytool.exe' : 'keytool'), ['-exportcert', '-rfc', '-keystore', environment.ANDROID_UPLOAD_STORE_FILE, '-alias', environment.ANDROID_UPLOAD_KEY_ALIAS, '-storepass:env', 'ANDROID_UPLOAD_STORE_PASSWORD', '-file', path.join(outputs, 'upload-certificate.pem')], environment);
+  fs.writeFileSync(path.join(outputs, 'release.json'), JSON.stringify({ version: metadata.version, versionCode: metadata.androidVersionCode, package: 'ma.cahier.textes', targetSdk: 36, artifacts: [path.basename(aab), path.basename(apk)], signed: true }, null, 2) + '\n');
+} else publish('apk/debug/app-debug.apk', 'mon-cahier-de-textes-debug.apk');

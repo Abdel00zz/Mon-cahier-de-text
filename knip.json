@@ -1,5 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
+    "@fontsource-variable/dm-sans",
+    "@fontsource-variable/roboto-slab",
+    "@fontsource-variable/rubik",
+    "@fontsource/lato"
+  ],
   "entry": [
     "src/admin/index.tsx",
     "api/admin.ts",

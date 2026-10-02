@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppTextSize, ThemeMode } from '@/types';
+import { readThemeBackground } from '@/platform/themeColor';
 
 /**
  * Crans de densité de texte.
@@ -65,7 +66,7 @@ export function useTheme(configTheme?: ThemeMode, appTextSize?: AppTextSize) {
     }
 
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
-      meta.setAttribute('content', isDark ? '#121214' : '#faf9f9');
+      meta.setAttribute('content', readThemeBackground());
     });
 
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');

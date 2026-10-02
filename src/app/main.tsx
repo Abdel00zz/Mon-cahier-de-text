@@ -32,6 +32,10 @@ import { initNativeRuntime } from '../platform/nativeRuntime';
 import '../styles/index.css';
 
 initApplePlatform();
+const updateVisibility = () => { document.documentElement.dataset.appVisible = String(document.visibilityState === 'visible'); };
+updateVisibility();
+document.addEventListener('visibilitychange', updateVisibility);
+import.meta.hot?.dispose(() => document.removeEventListener('visibilitychange', updateVisibility));
 void initNativeRuntime().catch(error => console.warn('Native initialization failed', error));
 initPwa();
 

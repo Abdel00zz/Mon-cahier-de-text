@@ -1,0 +1,18 @@
+/* Android pauses its WebView without always changing document.visibilityState. */
+html[data-native-active="false"] *,
+html[data-native-active="false"] *::before,
+html[data-native-active="false"] *::after,
+html[data-app-visible="false"] *,
+html[data-app-visible="false"] *::before,
+html[data-app-visible="false"] *::after {
+  animation-play-state: paused !important;
+}
+
+/* Opaque, legible surfaces use less GPU bandwidth than stacked mobile glass. */
+@media (pointer: coarse) {
+  html:root .selection-bar {
+    background: hsl(var(--card) / .97);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}

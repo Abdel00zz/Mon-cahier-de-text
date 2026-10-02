@@ -6,8 +6,8 @@ export interface SafePwaActionEnvironment {
 }
 
 function canApplyPwaAction(): boolean {
-  if (document.visibilityState !== 'visible') return false;
-  if (document.querySelector('[role="dialog"], [data-pwa-update-blocked="true"], [aria-busy="true"]')) return false;
+  if (document.visibilityState !== 'visible' || document.documentElement.dataset.nativeActive === 'false') return false;
+  if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-pwa-update-blocked="true"], [aria-busy="true"]')) return false;
   const focused = document.activeElement;
   return !(focused instanceof HTMLElement && focused.matches('input, textarea, select, [contenteditable]:not([contenteditable="false"])'));
 }
