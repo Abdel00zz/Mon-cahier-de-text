@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { androidToolchain, run, gradle, root } from './toolchain.mjs';
 import { loadSigningEnvironment } from './load-signing.mjs';
 
@@ -30,6 +31,16 @@ if (release) {
   const apk = publish('apk/release/app-release.apk', `mon-cahier-de-textes-${metadata.version}-release.apk`);
   run(path.join(java, 'bin', process.platform === 'win32' ? 'jarsigner.exe' : 'jarsigner'), ['-verify', aab], environment);
   run(path.join(java, 'bin', process.platform === 'win32' ? 'java.exe' : 'java'), ['-jar', path.join(sdk, 'build-tools/35.0.0/lib/apksigner.jar'), 'verify', '--verbose', '--print-certs', apk], environment);
+  // The Android build copies public assets selectively. Verify the actual signed
+  // archives, including the calendars and Arabic fonts needed without a network.
+  const requiredAssets = fs.readdirSync(path.join(root, 'public')).filter(name => /\.(json|ttf)$/.test(name) || name === 'icone.png');
+  for (const [archive, prefix] of [[apk, 'assets/public/'], [aab, 'base/assets/public/']]) {
+    const listing = spawnSync(path.join(java, 'bin', process.platform === 'win32' ? 'jar.exe' : 'jar'), ['tf', archive], { env: environment, encoding: 'utf8', windowsHide: true });
+    if (listing.error || listing.status !== 0) throw new Error(`Unable to verify assets in ${archive}`);
+    const entries = new Set(listing.stdout.split(/\r?\n/));
+    for (const name of requiredAssets) if (!entries.has(prefix + name)) throw new Error(`Required Android asset missing: ${name}`);
+  }
+  console.log(`Offline assets verified in APK and AAB: ${requiredAssets.length} calendars, data files, fonts and icons.`);
   fs.copyFileSync(path.join(root, 'android/app/build/outputs/mapping/release/mapping.txt'), path.join(outputs, `mapping-${metadata.version}.txt`));
   run(path.join(java, 'bin', process.platform === 'win32' ? 'keytool.exe' : 'keytool'), ['-exportcert', '-rfc', '-keystore', environment.ANDROID_UPLOAD_STORE_FILE, '-alias', environment.ANDROID_UPLOAD_KEY_ALIAS, '-storepass:env', 'ANDROID_UPLOAD_STORE_PASSWORD', '-file', path.join(outputs, 'upload-certificate.pem')], environment);
   fs.writeFileSync(path.join(outputs, 'release.json'), JSON.stringify({ version: metadata.version, versionCode: metadata.androidVersionCode, package: 'ma.cahier.textes', targetSdk: 36, artifacts: [path.basename(aab), path.basename(apk)], signed: true }, null, 2) + '\n');

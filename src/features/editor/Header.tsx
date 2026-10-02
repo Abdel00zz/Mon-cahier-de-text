@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
 
   return (
     <div className="rtl-flow relative mb-0 mt-0 px-1 pb-4 pt-2 sm:px-2 sm:pb-5 sm:pt-3">
-      <div dir="ltr" className="flex items-center gap-4 sm:gap-5">
+      <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="flex items-center gap-4 sm:gap-5">
         {onBack && (
           <button
             type="button"

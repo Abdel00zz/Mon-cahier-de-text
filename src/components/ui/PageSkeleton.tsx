@@ -1,11 +1,12 @@
 import React from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
-import { GeometricSpinner } from './GeometricSpinner';
+import { LoadingSpinner } from './LoadingSpinner';
+import { LoadingMessage } from './LoadingMessage';
 import './page-loading.css';
 
 export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay = false }) => {
-  const { t, isRtl } = useLocale();
+  const { isRtl } = useLocale();
   return <div
     role="status"
     aria-live="polite"
@@ -13,8 +14,8 @@ export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay 
     className={`page-transition-loader bg-background text-foreground${overlay ? ' page-transition-loader--overlay' : ''}`}
   >
     <div className="page-transition-loader__content">
-      <GeometricSpinner />
-      <p className="font-sans text-sm font-medium text-muted-foreground">{t('common.loading')}</p>
+      <LoadingSpinner />
+      <LoadingMessage className="font-sans text-sm font-medium text-muted-foreground" />
     </div>
   </div>;
 };
@@ -46,12 +47,14 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
     >
       <section className="relative w-full max-w-xs text-center sm:max-w-sm">
         <div className="mx-auto flex h-20 w-20 items-center justify-center">
-          <GeometricSpinner />
+          <LoadingSpinner />
         </div>
         <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
           {title}
         </p>
-        <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">{detail}</p>
+        {isLatexLoading
+          ? <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">{detail}</p>
+          : <LoadingMessage className="mt-1 font-sans text-xs text-muted-foreground" />}
       </section>
     </div>
   );
@@ -64,7 +67,7 @@ export const DashboardSkeleton: React.FC = () => {
     <div className="mx-auto max-w-5xl px-3 sm:px-4">
       <div className="mb-6 flex items-center justify-between pb-3">
         <div className="flex items-center gap-3">
-          <GeometricSpinner compact />
+          <LoadingSpinner compact />
           <div>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="mt-2 h-3 w-52" />

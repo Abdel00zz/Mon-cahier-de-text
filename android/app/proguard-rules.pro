@@ -1,21 +1,18 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Capacitor discovers plugins, permission annotations and callbacks at runtime.
+# Retain the annotation types too: R8 full mode otherwise loses the permission
+# metadata used by LocalNotifications.checkPermissions during startup.
+-keepattributes RuntimeVisibleAnnotations,RuntimeInvisibleAnnotations,AnnotationDefault,InnerClasses,EnclosingMethod
+-keep class com.getcapacitor.** { *; }
+-keep class ma.cahier.textes.** { *; }
+-keep class com.capacitorjs.plugins.** extends com.getcapacitor.Plugin { *; }
+-keep class io.simsek.plugins.webviewprint.WebviewPrintPlugin { *; }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Lifecycle callbacks and the Play update bridge also cross platform boundaries.
+-keep class androidx.core.splashscreen.** { *; }
+-keep class com.google.android.play.core.appupdate.** { *; }
+-keep class com.google.android.play.core.install.** { *; }
+-keepattributes SourceFile,LineNumberTable

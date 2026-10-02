@@ -57,6 +57,14 @@ Les animations CSS s’arrêtent en arrière-plan. La barre d’actions tactile 
 
 Avant une distribution : exécuter `npm test` et `npm run check`, compiler l’APK, vérifier sa signature avec `apksigner`, puis tester sur un téléphone réel : connexion / déconnexion, changements de compte, synchronisation aller-retour, clavier arabe, impression, permission de notifications, rappel écran verrouillé et reconnexion.
 
+Tester aussi le démarrage du fichier **release signé**, car les tests Web et une compilation réussie ne détectent pas les fermetures du processus Android. Sur un émulateur ou un appareil de test connecté, choisir explicitement son identifiant retourné par `adb devices`, puis lancer :
+
+```bash
+npm run android:smoke -- --serial emulator-5580
+```
+
+Ce contrôle installe la version signée en mise à jour, redémarre l’application et vérifie qu’elle reste au premier plan pendant 20 secondes. Il conserve les données locales. Les journaux sont enregistrés dans `tmp/android-startup-crash.log` et `tmp/android-startup-activity.log`. L’option `--apk chemin/vers/fichier.apk` permet de reproduire un problème avec une version précise. Ce contrôle ne remplace pas les essais des parcours et services sur appareil réel.
+
 L’APK `debug` est destiné aux essais. Le paquet `release` est réduit avec R8 et la suppression des ressources inutilisées. Les plugins Capacitor et les icônes résolues par nom sont conservés. Les sauvegardes automatiques Android des cookies et données du compte sont exclues, y compris les transferts entre appareils ; utiliser la synchronisation authentifiée ou l’export du cahier.
 
 ## Signature et Google Play
@@ -80,9 +88,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.1.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.1-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.1.txt` pour diagnostiquer le code réduit.
+* `mon-cahier-de-textes-1.2.2.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.2-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.2.txt` pour diagnostiquer le code réduit.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -95,7 +103,7 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run android:version -- 1.2.2
+npm run android:version -- 1.2.3
 npm test
 npm run check
 npm run android:release

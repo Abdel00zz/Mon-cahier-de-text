@@ -3,6 +3,7 @@ package ma.cahier.textes;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import com.getcapacitor.Logger;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -25,12 +26,29 @@ public class NativeUpdatesPlugin extends Plugin {
 
     @Override
     public void load() {
-        manager = AppUpdateManagerFactory.create(getContext());
-        listener = state -> {
-            String status = installStatus(state.installStatus());
-            if (status != null) notifyListeners("stateChanged", result(status));
-        };
-        manager.registerListener(listener);
+        try {
+            manager = AppUpdateManagerFactory.create(getContext());
+            listener = state -> {
+                String status = installStatus(state.installStatus());
+                if (status != null) notifyListeners("stateChanged", result(status));
+            };
+            manager.registerListener(listener);
+        } catch (Exception unsupportedStore) {
+            manager = null;
+            listener = null;
+            Logger.warn("Google Play updates unavailable; continuing with the installed app.");
+        }
+    }
+
+    private interface UpdateAction { void run(AppUpdateManager updateManager); }
+
+    private void withManager(PluginCall call, UpdateAction action) {
+        if (manager == null) {
+            call.resolve(result("store"));
+            return;
+        }
+        try { action.run(manager); }
+        catch (Exception unsupportedStore) { call.resolve(result("store")); }
     }
 
     private JSObject result(String state) {
@@ -58,36 +76,36 @@ public class NativeUpdatesPlugin extends Plugin {
 
     @PluginMethod
     public void check(PluginCall call) {
-        manager.getAppUpdateInfo()
+        withManager(call, updateManager -> updateManager.getAppUpdateInfo()
             .addOnSuccessListener(info -> call.resolve(result(updateStatus(info))))
-            .addOnFailureListener(error -> call.resolve(result("store")));
+            .addOnFailureListener(error -> call.resolve(result("store"))));
     }
 
     @PluginMethod
     public void start(PluginCall call) {
         // Always request a fresh, single-use update intent after the teacher's tap.
-        manager.getAppUpdateInfo().addOnSuccessListener(info -> {
+        withManager(call, updateManager -> updateManager.getAppUpdateInfo().addOnSuccessListener(info -> {
             if (!"available".equals(updateStatus(info))) {
                 call.resolve(result(updateStatus(info)));
                 return;
             }
-            getActivity().runOnUiThread(() -> manager.startUpdateFlow(info, getActivity(),
+            getActivity().runOnUiThread(() -> withManager(call, activeManager -> activeManager.startUpdateFlow(info, getActivity(),
                 AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build())
                 .addOnSuccessListener(code -> call.resolve(result(code == Activity.RESULT_OK ? "downloading" : "idle")))
-                .addOnFailureListener(error -> call.resolve(result("error"))));
-        }).addOnFailureListener(error -> call.resolve(result("store")));
+                .addOnFailureListener(error -> call.resolve(result("error")))));
+        }).addOnFailureListener(error -> call.resolve(result("store"))));
     }
 
     @PluginMethod
     public void complete(PluginCall call) {
-        manager.getAppUpdateInfo().addOnSuccessListener(info -> {
+        withManager(call, updateManager -> updateManager.getAppUpdateInfo().addOnSuccessListener(info -> {
             if (info.installStatus() != InstallStatus.DOWNLOADED) {
                 call.resolve(result(updateStatus(info)));
                 return;
             }
-            manager.completeUpdate().addOnSuccessListener(value -> call.resolve(result("current")))
-                .addOnFailureListener(error -> call.resolve(result("error")));
-        }).addOnFailureListener(error -> call.resolve(result("store")));
+            withManager(call, activeManager -> activeManager.completeUpdate().addOnSuccessListener(value -> call.resolve(result("current")))
+                .addOnFailureListener(error -> call.resolve(result("error"))));
+        }).addOnFailureListener(error -> call.resolve(result("store"))));
     }
 
     @PluginMethod
@@ -111,6 +129,8 @@ public class NativeUpdatesPlugin extends Plugin {
 
     @Override
     protected void handleOnDestroy() {
-        if (manager != null && listener != null) manager.unregisterListener(listener);
+        try {
+            if (manager != null && listener != null) manager.unregisterListener(listener);
+        } catch (Exception unsupportedStore) { Logger.warn("Google Play update listener already unavailable."); }
     }
 }

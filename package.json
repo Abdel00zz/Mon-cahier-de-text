@@ -1,8 +1,8 @@
 {
   "name": "cahier-de-textes-interactif",
   "private": true,
-  "version": "1.2.1",
-  "androidVersionCode": 3,
+  "version": "1.2.2",
+  "androidVersionCode": 4,
   "type": "module",
   "scripts": {
     "dev": "tsx server/index.ts",
@@ -11,6 +11,7 @@
     "android:sync": "npm run build:android:web && cap sync android",
     "android:apk": "node scripts/android/build-apk.mjs",
     "android:release": "node scripts/android/build-apk.mjs --release",
+    "android:smoke": "node scripts/android/smoke-test.mjs",
     "android:signing": "node scripts/android/prepare-signing.mjs",
     "android:signing:backup": "node scripts/android/backup-signing.mjs",
     "android:signing:restore": "node scripts/android/restore-signing.mjs",
