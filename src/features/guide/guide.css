@@ -89,37 +89,10 @@
   letter-spacing: normal;
 }
 
-.guide-languages {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px;
-  border-radius: 6px;
-  background: var(--guide-soft);
-  border: 1px solid var(--guide-border);
-  gap: 2px;
-}
 .learning-guide button,
 .guide-search input,
 .guide-mobile-toc select {
   font: inherit;
-}
-.guide-languages button {
-  min-height: 24px;
-  padding: 1px 7px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--guide-muted);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  transition: all 120ms ease;
-}
-.guide-languages button[aria-pressed="true"] {
-  color: var(--guide-ink);
-  background: var(--guide-surface);
-  font-weight: 700;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 
 .learning-guide button:focus-visible,

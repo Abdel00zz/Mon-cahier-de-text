@@ -13,7 +13,7 @@ interface GuideModalProps { isOpen: boolean; onClose: () => void }
 
 export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
   const { locale } = useLocale();
-  const [lang, setLang] = useState<'fr' | 'ar'>(locale === 'ar' ? 'ar' : 'fr');
+  const lang = locale === 'ar' ? 'ar' : 'fr';
   const [query, setQuery] = useState('');
   const [chapterId, setChapterId] = useState('start');
   const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -27,7 +27,6 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
 
   useEffect(() => {
     if (!isOpen) return;
-    setLang(locale === 'ar' ? 'ar' : 'fr');
     setQuery('');
     setChapterId('start');
   }, [isOpen, locale]);
@@ -39,7 +38,6 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
     setChapterId(id);
     headingRef.current?.focus({ preventScroll: true });
   };
-  const changeLanguage = (next: 'fr' | 'ar') => { setLang(next); setQuery(''); };
   const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
 
   return (
@@ -63,10 +61,6 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
             </button>
             <CircleHelp size={16} className="text-primary shrink-0 opacity-80" aria-hidden="true" />
             <span className="guide-title">{isAr ? 'دليل الاستخدام' : 'Guide d’utilisation'}</span>
-          </div>
-          <div className="guide-languages" aria-label={isAr ? 'لغة الدليل' : 'Langue du guide'}>
-            <button type="button" lang="fr" aria-pressed={!isAr} onClick={() => changeLanguage('fr')}>FR</button>
-            <button type="button" lang="ar" aria-pressed={isAr} onClick={() => changeLanguage('ar')}>العربية</button>
           </div>
         </div>
       }>
