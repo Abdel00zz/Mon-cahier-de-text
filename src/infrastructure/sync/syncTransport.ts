@@ -1,3 +1,4 @@
+import { apiFetch } from '../../platform/nativeHttp';
 /** Transport partagé : délais bornés, erreurs typées et budgets en octets UTF-8. */
 export class SyncRequestError extends Error {
   constructor(message: string, public status = 0, public code?: string, public retryAfter?: string | null) {
@@ -30,7 +31,7 @@ export const requestSyncJson = async <T>(
   if (options.signal?.aborted) controller.abort();
   const timeout = setTimeout(abort, timeoutMs);
   try {
-    const response = await fetch(url, { ...options, cache: 'no-store', signal: controller.signal });
+    const response = await apiFetch(url, { ...options, cache: 'no-store', signal: controller.signal });
     const data = await response.json().catch(error => {
       if (response.ok) throw error;
       return {};

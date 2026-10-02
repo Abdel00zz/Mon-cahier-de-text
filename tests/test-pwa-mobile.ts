@@ -16,6 +16,24 @@ import { unsubscribeFromPush } from '../src/infrastructure/push/push';
 
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
 
+test('Android : les rappels locaux n’attendent pas un abonnement serveur et le refus ouvre les paramètres système', () => {
+  const common = { supported: true, iosNeedsInstall: false, checking: false, busy: false,
+    onActivate: () => {}, onDeactivate: () => {}, onTest: () => {}, onOpenSettings: () => {},
+    t: (key: string, values?: Record<string, string | number>) => translateLocaleMessage('fr', key, values),
+  };
+  const active = renderToStaticMarkup(createElement(PushActivationCard, { ...common,
+    state: { permission: 'granted', subscribed: true, serverRegistered: false, delivery: 'local' },
+  }));
+  assert.match(active, /Tester les rappels/);
+  assert.doesNotMatch(active, /Continuer l’activation/);
+  const blocked = renderToStaticMarkup(createElement(PushActivationCard, { ...common,
+    state: { permission: 'denied', subscribed: false, serverRegistered: false, delivery: 'local' },
+  }));
+  assert.match(blocked, /Ouvrir les paramètres Android/);
+  assert.match(blocked, /paramètres Android de l’application/);
+  assert.doesNotMatch(blocked, /réglages du navigateur/);
+});
+
 test('boutons d’activation : permission, continuation, refus, test et opérations désactivées', () => {
   const common = { supported: true, iosNeedsInstall: false, checking: false, busy: false,
     onActivate: () => {}, onDeactivate: () => {}, onTest: () => {},

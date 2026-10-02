@@ -7,7 +7,6 @@ import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/cahier/Button';
 import { ClassCard } from './ClassCard';
-import { SessionLiveBanner } from './SessionLiveBanner';
 import { ClassListItem } from './ClassListItem';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
@@ -230,25 +229,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         [classes, config.dashboardClassOrder],
     );
     const activeSessionIds = useMemo(() => new Set(activeSessionClassIds), [activeSessionClassIds]);
-    /*
-     * « Séance en cours » : le détecteur partagé (`useSessionAlerts`) transmet
-     * les classes actives à `App`, qui les passe ici. La carte les met en avant,
-     * et cet encart les annonce en tête de page — sinon le professeur n'a plus
-     * aucun repère de la séance qui commence quand il est sur l'accueil.
-     */
-    const liveClasses = useMemo(
-        () => classes.filter(classInfo => activeSessionIds.has(classInfo.id)),
-        [classes, activeSessionIds],
-    );
-    const liveDetail = useMemo(() => {
-        if (liveClasses.length === 0) return '';
-        if (liveClasses.length === 1) {
-            return formatLocalizedClassDisplayName(liveClasses[0].name, locale);
-        }
-        const names = liveClasses.slice(0, 2).map(classInfo => formatLocalizedClassDisplayName(classInfo.name, locale));
-        const extra = liveClasses.length > 2 ? ` +${liveClasses.length - 2}` : '';
-        return names.join(locale === 'ar' ? '، ' : ', ') + extra;
-    }, [liveClasses, locale]);
     const filteredClasses = useMemo(() => prioritizeActiveClasses(
         persistedClassOrder
             .map(id => classById.get(id))
@@ -315,10 +295,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
-
-                    {liveClasses.length > 0 && (
-                        <SessionLiveBanner classInfo={liveClasses[0]} detail={liveDetail} onOpen={() => onSelectClass(liveClasses[0])} />
-                    )}
 
                     {classes.length > 0 && (
                         <div className="mb-4 sm:mb-6">

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mon cahier de textes</string>
+    <string name="title_activity_main">Mon cahier de textes</string>
+    <string name="package_name">ma.cahier.textes</string>
+    <string name="custom_url_scheme">ma.cahier.textes</string>
+</resources>

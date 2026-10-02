@@ -1,3 +1,4 @@
+import { apiFetch } from '../../platform/nativeHttp';
 import { AppLocale, ScheduleSlot } from '../../types.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel) : sans lui,
 // le runtime lève ERR_IMPORT_ATTRIBUTE_MISSING et la fonction plante au
@@ -140,7 +141,7 @@ let cachedCalendar: HolidayCalendar | null = null;
 export const loadHolidayCalendar = async (): Promise<HolidayCalendar> => {
     if (cachedCalendar) return cachedCalendar;
     try {
-        const response = await fetch('/api/calendar', { cache: 'no-cache' });
+        const response = await apiFetch('/api/calendar', { cache: 'no-cache' });
         if (response.ok) {
             cachedCalendar = validateHolidayCalendar(await response.json());
             return cachedCalendar;

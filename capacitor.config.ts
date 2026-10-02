@@ -1,0 +1,16 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'ma.cahier.textes',
+  appName: 'Mon cahier de textes',
+  webDir: 'dist-android',
+  android: { allowMixedContent: false, webContentsDebuggingEnabled: false },
+  server: { androidScheme: 'https', hostname: 'localhost' },
+  plugins: {
+    SplashScreen: { launchAutoHide: false, launchShowDuration: 230, backgroundColor: '#f7f5f2', showSpinner: false },
+    StatusBar: { overlaysWebView: true, style: 'LIGHT' },
+    LocalNotifications: { smallIcon: 'ic_stat_notebook', iconColor: '#73624e' },
+  },
+};
+
+export default config;

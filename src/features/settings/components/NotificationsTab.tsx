@@ -36,17 +36,20 @@ export const PushActivationCard: React.FC<{
     onActivate: () => void;
     onDeactivate: () => void;
     onTest: () => void;
+    onOpenSettings?: () => void;
     t: Translate;
     supported?: boolean;
     iosNeedsInstall?: boolean;
-}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, t, supported = pushSupported(), iosNeedsInstall = isIOSDevice() && !isStandalone() }) => {
-    const active = state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
+}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, onOpenSettings, t, supported = pushSupported(), iosNeedsInstall = isIOSDevice() && !isStandalone() }) => {
+    const local = state.delivery === 'local';
+    const active = state.permission === 'granted' && state.subscribed && (local || state.serverRegistered === true);
     const blocked = state.permission === 'denied' && !active;
     const unavailable = !supported || iosNeedsInstall;
     const description = iosNeedsInstall ? t('notifications.pushIosInstall')
         : !supported ? t('notifications.pushUnsupported')
         : checking ? t('notifications.state.checking')
-        : blocked ? t('notifications.permissionDenied')
+        : blocked ? t(local ? 'notifications.nativePermissionDenied' : 'notifications.permissionDenied')
+        : local ? t('notifications.nativeRemindersDescription')
         : active ? t('notifications.remindersActive')
         : t('notifications.remindersReady');
     const diagnostics = [
@@ -55,18 +58,23 @@ export const PushActivationCard: React.FC<{
             : state.permission === 'denied' ? t('notifications.state.blocked')
             : state.permission === 'unsupported' ? t('notifications.state.unavailable')
             : t('notifications.state.notAllowed')],
-        [t('notifications.state.browser'), checking ? t('notifications.state.checking')
+        [t(local ? 'notifications.nativeDevice' : 'notifications.state.browser'), checking ? t('notifications.state.checking')
             : state.subscribed ? t('notifications.state.active') : t('notifications.state.inactive')],
-        [t('notifications.state.server'), checking ? t('notifications.state.checking')
+        ...local ? [] : [[t('notifications.state.server'), checking ? t('notifications.state.checking')
             : state.serverRegistered === null ? t('notifications.state.unavailable')
-            : state.serverRegistered ? t('notifications.state.registered') : t('notifications.state.notRegistered')],
+            : state.serverRegistered ? t('notifications.state.registered') : t('notifications.state.notRegistered')]],
     ];
     return (
         <StatusNotice
             tone={blocked ? 'warning' : active ? 'success' : 'info'}
-            title={t('notifications.remindersTitle')}
+            title={t(local ? 'notifications.nativeRemindersTitle' : 'notifications.remindersTitle')}
             description={description}
         >
+            {local && blocked && onOpenSettings && (
+                <Button variant="outline" disabled={busy || checking} onClick={onOpenSettings}>
+                    {t('notifications.nativeOpenSettings')}
+                </Button>
+            )}
             {!unavailable && !blocked && (
                 <Button disabled={busy || checking} aria-busy={busy}
                     onClick={active ? onTest : onActivate}>
@@ -179,7 +187,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
     const stateIsActive = (state: PushNotificationState) =>
-        state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
+        state.permission === 'granted' && state.subscribed && (state.delivery === 'local' || state.serverRegistered === true);
 
     useEffect(() => {
         const refresh = () => {
@@ -240,6 +248,8 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             patch({ pushEnabled: active });
             if (active) {
                 setMessage({ text: t('notifications.pushEnabled'), tone: 'success' });
+            } else if (result.delivery === 'local' && result.permission === 'denied') {
+                setMessage({ text: t('notifications.nativePermissionDenied'), tone: 'warning' });
             } else {
                 const reason = result.reason
                     ? t(`notifications.activationReason.${result.reason}`)
@@ -318,6 +328,12 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 checking={checking}
                 busy={busy}
                 onActivate={handleActivate}
+                onOpenSettings={() => {
+                    const lease = captureWorkspaceLease();
+                    void import('@/platform/nativeRuntime').then(module => module.openNativeNotificationSettings()).catch(() => {
+                        if (liveRef.current && lease()) setMessage({ text: t('notifications.nativePermissionDenied'), tone: 'warning' });
+                    });
+                }}
                 onDeactivate={handleDeactivate}
                 onTest={handleTest}
                 t={t}

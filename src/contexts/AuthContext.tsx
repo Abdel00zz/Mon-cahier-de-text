@@ -1,3 +1,4 @@
+import { apiFetch } from '@/platform/nativeHttp';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, notifyConfigChanged, reloadSyncState, touchClassSyncMeta, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
 import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth/registrationSetup';
@@ -113,7 +114,7 @@ const applyProfileToConfig = (user: AuthUser): void => {
 };
 
 const postAuth = async (payload: Record<string, unknown>): Promise<AuthUser> => {
-  const response = await fetch('/api/auth', {
+  const response = await apiFetch('/api/auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
@@ -292,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     notifyConfigChanged();
     setUser(null);
     setStatus('anonymous');
-    logoutRequest.current = fetch('/api/auth', {
+    logoutRequest.current = apiFetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',

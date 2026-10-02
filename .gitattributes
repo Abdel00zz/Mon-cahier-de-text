@@ -6,6 +6,8 @@
 /tests/** text=auto eol=lf
 /scripts/** text=auto eol=lf
 /docs/** text=auto eol=lf
+/android/** text=auto eol=lf
+/android/gradlew.bat text eol=crlf
 /*.ts text eol=lf
 /*.json text eol=lf
 /*.html text eol=lf
@@ -13,4 +15,6 @@
 /AGENTS.md text eol=lf
 /.editorconfig text eol=lf
 /.gitattributes text eol=lf
+/.gitignore text eol=lf
+/.env.example text eol=lf
 *.ps1 text eol=crlf

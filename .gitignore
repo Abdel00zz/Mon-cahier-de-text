@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-android/
+artifacts/
 dist-ssr
 tmp/
 coverage/
@@ -20,6 +22,12 @@ coverage/
 android/.gradle/
 android/build/
 android/app/build/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+*.jks
+*.keystore
 *.local
 .env
 .env.*

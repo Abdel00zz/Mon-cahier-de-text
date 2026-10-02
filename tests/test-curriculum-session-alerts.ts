@@ -309,24 +309,14 @@ test('timetable edits and assessment reservations immediately update expected pa
   assert.equal(analyse(classInfo, lessons, { reservedHours: { '2026-09-14': 20 } }).expectedRate, 0);
 });
 
-test('dashboard shows the live session again, wired to the shared detector', () => {
+test('dashboard identifies the live session on its class card without a duplicate banner', () => {
   const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
-  // Le détecteur partagé transmet les classes actives au tableau de bord :
-  // il doit les annoncer en tête de page, pas seulement sur les cartes.
+  // Le détecteur partagé alimente uniquement le repère de la carte.
   assert.match(dashboard, /activeSessionClassIds = \[\]/, 'Le tableau de bord reçoit les classes actives');
-  assert.match(
-    dashboard,
-    /const liveClasses = useMemo\(\s*\n\s*\(\) => classes\.filter\(classInfo => activeSessionIds\.has\(classInfo\.id\)\),/,
-    'Les classes actives sont dérivées du détecteur, jamais recomputées',
-  );
-  assert.match(dashboard, /\{liveClasses\.length > 0 && \(/, 'Le repère n’apparaît que pendant une séance');
-  assert.match(dashboard, /<SessionLiveBanner classInfo=\{liveClasses\[0\]\}/, 'Le repère partagé est utilisé');
-  assert.match(dashboard, /onOpen=\{\(\) => onSelectClass\(liveClasses\[0\]\)\}/, 'Le repère ouvre le cahier visé');
-  const banner = readFileSync('src/features/dashboard/SessionLiveBanner.tsx', 'utf8');
-  assert.match(banner, /data-session-banner/, 'Le repère est identifiable');
-  assert.match(banner, /dashboard\.welcome\.nowTitle/, 'Le libellé localisé est réutilisé');
-  // Aucune bannière passive : le repère est un bouton, jamais un simple texte.
-  assert.match(banner, /<button\s*\n\s*type="button"/, 'Le repère est actionnable');
+  assert.doesNotMatch(dashboard, /SessionLiveBanner|data-session-banner/);
+  const card = readFileSync('src/features/dashboard/ClassCard.tsx', 'utf8');
+  assert.match(card, /ActiveSessionGlass label=\{t\('dashboard.welcome.nowTitle'\)\}/);
+  assert.match(dashboard, /isActiveSession=\{isActiveSession\}/);
   const effects = readFileSync('src/features/dashboard/sessionEffects.css', 'utf8');
   assert.match(effects, /prefers-reduced-motion/, 'Animation adaptée au mouvement réduit');
 });

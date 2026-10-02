@@ -1,3 +1,6 @@
+import { apiFetch } from '../../platform/nativeHttp';
+import { Capacitor } from '@capacitor/core';
+import { translateLocaleMessage } from '../../i18n/messages';
 // Helpers d'abonnement Web Push côté client.
 
 import type { PushNotificationKind } from '../../domain/notifications/notificationTypes';
@@ -10,11 +13,11 @@ import { forgetPushCleanup, pendingPushCleanup, rememberPushCleanup } from './pu
 const VAPID_PUBLIC_KEY = import.meta.env?.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
 export const pushSupported = (): boolean =>
-    typeof window !== 'undefined' &&
+    Capacitor.isNativePlatform() || (typeof window !== 'undefined' &&
     window.isSecureContext &&
     'serviceWorker' in navigator &&
     'PushManager' in window &&
-    'Notification' in window;
+    'Notification' in window);
 
 /** iOS n'autorise le push que depuis une PWA installée (display-mode standalone). */
 export const isStandalone = (): boolean =>
@@ -30,6 +33,7 @@ export const isIOSDevice = (): boolean =>
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 export interface PushNotificationState {
+    delivery?: 'local' | 'web-push';
     permission: NotificationPermission | 'unsupported';
     /** Abonnement présent dans PushManager sur ce navigateur. */
     subscribed: boolean;
@@ -78,7 +82,7 @@ const requestPush = async (body: object): Promise<{ response: Response; payload:
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 8_000);
     try {
-        const response = await fetch('/api/notify', {
+        const response = await apiFetch('/api/notify', {
             method: 'POST', headers: { 'Content-Type': 'application/json', ...(owner ? { 'X-Workspace-Owner': owner } : {}) },
             credentials: 'same-origin', signal: controller.signal, body: JSON.stringify(body),
         });
@@ -200,6 +204,7 @@ const subscribeToPush = async (options: { requestPermission?: boolean; isCurrent
 
 /** Autorisation système puis abonnement serveur si celui-ci est configuré. */
 export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
+    if (Capacitor.isNativePlatform()) return (await import('../../platform/nativeNotifications')).nativeNotificationState(true);
     const isCurrent = captureWorkspaceLease();
     const native = await requestNativeNotificationPermission();
     if (native.permission !== 'granted' || !isCurrent()) return native;
@@ -215,6 +220,7 @@ export const activateNativeNotifications = async (): Promise<NativeNotificationA
 
 /** Lit l'état réel sans jamais déclencher de demande d'autorisation. */
 export const getPushNotificationState = async (): Promise<PushNotificationState> => {
+    if (Capacitor.isNativePlatform()) return (await import('../../platform/nativeNotifications')).nativeNotificationState();
     if (!pushSupported()) {
         return { permission: 'unsupported', subscribed: false, serverRegistered: false, reason: 'unsupported' };
     }
@@ -251,6 +257,10 @@ export const getPushNotificationState = async (): Promise<PushNotificationState>
 };
 
 export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
+    if (Capacitor.isNativePlatform()) {
+        await (await import('../../platform/nativeNotifications')).disableNativeReminders();
+        return { ok: true, hadSubscription: true, serverUnregistered: true, localUnsubscribed: true };
+    }
     if (!pushSupported()) {
         return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
     }
@@ -318,6 +328,10 @@ export const showLocalNotification = async (
     locale?: AppLocale,
 ): Promise<boolean> => {
     try {
+        if (Capacitor.isNativePlatform()) {
+            if (!isCurrent()) return false;
+            return (await import('../../platform/nativeNotifications')).showNativeNotification(title, body, tag, url);
+        }
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
         if (!('serviceWorker' in navigator)) return false;
         const registration = await currentServiceWorkerRegistration();
@@ -331,6 +345,15 @@ export const showLocalNotification = async (
 };
 
 export const sendTestNotification = async (): Promise<PushTestResult> => {
+    if (Capacitor.isNativePlatform()) {
+        const raw = localStorage.getItem('appConfig_v1');
+        const locale: AppLocale = raw ? JSON.parse(raw).applicationLocale ?? 'ar' : 'ar';
+        const ok = await (await import('../../platform/nativeNotifications')).showNativeNotification(
+            translateLocaleMessage(locale, 'notifications.remindersTitle'),
+            translateLocaleMessage(locale, 'notifications.nativeTestBody'), 'native-test', '/#/notifications',
+        );
+        return { ok, sent: ok ? 1 : 0 };
+    }
     const registration = await currentServiceWorkerRegistration();
     const subscription = await registration?.pushManager.getSubscription();
     if (!subscription) return { ok: false, sent: 0, error: 'Aucun abonnement sur cet appareil.' };

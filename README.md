@@ -51,6 +51,7 @@ La grille `timetable` est la source de vérité de l’emploi du temps. Les `sch
 | `src/constants/`, `src/types.ts`, `src/i18n/` | Types, constantes, traductions et contexte de langue |
 | `src/admin/` | Interface d’administration, compilée séparément |
 | `src/pwa/`, `src/styles/` | Service worker, cycle de vie PWA et styles globaux |
+| `android/`, `capacitor.config.ts` | Application Android, ressources natives et plugins système |
 | `api/` | Fonctions serverless, authentification, Redis et push |
 | `server/` | Serveur local ; simulations des API dans `server/dev/` |
 | `build/` | Budget des bundles, plugins Vite et manifeste PWA |
@@ -64,6 +65,8 @@ L’alias `@/` pointe vers `src/`. Les API restent à la racine pour leur décou
 La documentation détaillée se trouve dans [docs/architecture/architecture.md](docs/architecture/architecture.md). Les bancs de prévisualisation (`scripts/guide-preview/`) ne sont pas des entrées de compilation et ne sont jamais publiés.
 
 ## Développement
+
+L’APK Android se compile avec `npm run android:apk`. Les prérequis, les rappels système et la préparation d’une distribution sont décrits dans [docs/operations/android.md](docs/operations/android.md).
 
 ```bash
 npm run dev

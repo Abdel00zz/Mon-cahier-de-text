@@ -11,20 +11,26 @@ import { PWA_MANIFEST } from './build/vite/pwa-manifest';
 const PROJECT_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
+    const nativeBuild = mode === 'android';
+    const entries: Record<string, string> = { main: path.resolve(PROJECT_ROOT, 'index.html') };
+    if (!nativeBuild) entries.admin = path.resolve(PROJECT_ROOT, 'admin.html');
     const env = loadEnv(mode, '.', '');
     const port = Number(process.env.PORT || env.PORT) || 3000;
     return {
+        define: { __NATIVE_API_ORIGIN__: JSON.stringify(env.VITE_NATIVE_API_ORIGIN || 'https://mon-cahier-de-text.vercel.app') },
         server: {
             port,
             host: true,
             strictPort: false,
             allowedHosts: true,
             hmr: { },
+            watch: { ignored: ['**/tmp/**', '**/android/**', '**/dist-android/**', '**/artifacts/**'] },
         },
         plugins: [
             react(),
             tailwindcss(),
             VitePWA({
+                disable: nativeBuild,
                 strategies: 'injectManifest',
                 srcDir: 'src/pwa',
                 filename: 'sw.ts',
@@ -94,17 +100,14 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             minify: 'terser',
-            outDir: 'dist',
+            outDir: nativeBuild ? 'dist-android' : 'dist',
             assetsDir: 'assets',
             emptyOutDir: true,
             // Un seul budget fait foi (build/optimization.ts) : le seuil de
             // Rollup et celui du plugin ne peuvent plus diverger.
             chunkSizeWarningLimit: BUNDLE_OPTIMIZATION.CHUNK_WARN_LIMIT_KB,
             rollupOptions: {
-                input: {
-                    main: path.resolve(PROJECT_ROOT, 'index.html'),
-                    admin: path.resolve(PROJECT_ROOT, 'admin.html')
-                },
+                input: entries,
                 output: {
                     manualChunks: BUNDLE_OPTIMIZATION.MANUAL_CHUNKS
                 }

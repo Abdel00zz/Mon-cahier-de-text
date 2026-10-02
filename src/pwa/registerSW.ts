@@ -2,6 +2,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { toast } from 'sonner';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { startSafePwaAction } from './safeUpdate';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
@@ -24,6 +25,7 @@ const readRegisteredLocale = (): 'fr' | 'en' | 'ar' => {
  * des modales et des sauvegardes locales, y compris dans les autres onglets.
  */
 export const initPwa = (): void => {
+    if (Capacitor.isNativePlatform()) return;
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
     // En développement, vite-plugin-pwa injecte son worker dédié. Il rend le

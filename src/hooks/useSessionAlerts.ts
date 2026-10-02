@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
 import { writeNotificationVibration } from '../infrastructure/push/notificationDevicePreferences';
 import { detectSessionAlerts } from '../domain/notifications/sessionAlertEngine';
@@ -79,6 +80,7 @@ export function useSessionAlerts(enabled = true) {
     const lease = captureWorkspaceLease();
     const fresh = () => !cancelled && lease();
     if (!enabled) { setCurrent({ key: '', classIds: [] }); return; }
+    if (Capacitor.isNativePlatform() && (document.visibilityState !== 'visible' || document.documentElement.dataset.nativeActive === 'false')) return;
     const config = readCachedConfig();
     let classes: ClassInfo[] = [];
     try { const value = JSON.parse(localStorage.getItem('classManager_v1') ?? '[]'); if (Array.isArray(value)) classes = value; } catch { /* No class means no target. */ }

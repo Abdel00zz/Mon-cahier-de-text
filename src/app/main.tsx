@@ -28,9 +28,11 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { SyncProvider } from '../contexts/SyncContext';
 import { initPwa } from '../pwa/registerSW';
 import { initApplePlatform } from '../platform/applePlatform';
+import { initNativeRuntime } from '../platform/nativeRuntime';
 import '../styles/index.css';
 
 initApplePlatform();
+void initNativeRuntime().catch(error => console.warn('Native initialization failed', error));
 initPwa();
 
 const rootElement = document.getElementById('root');

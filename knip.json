@@ -16,9 +16,5 @@
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",
     "scripts/ux-preview/main.tsx"
-  ],
-  "ignoreDependencies": [
-    "@capacitor/android",
-    "@capacitor/cli"
   ]
 }

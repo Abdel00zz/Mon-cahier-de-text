@@ -1,3 +1,4 @@
+import { apiFetch } from '../../platform/nativeHttp';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel), inline par
 // Vite côté navigateur, voir utils/calendar.ts.
 import officialEventsJson from '../../../public/official-student-events.json' with { type: 'json' };
@@ -184,7 +185,7 @@ export const getOfficialStudentEventsFile = (): OfficialStudentEventsFile => cac
 export const loadOfficialStudentEvents = async (force = false): Promise<OfficialStudentEventsFile> => {
     if (!force && cached !== bundled) return cached;
     try {
-        const response = await fetch('/api/official-events', { cache: 'no-cache' });
+        const response = await apiFetch('/api/official-events', { cache: 'no-cache' });
         if (!response.ok) return cached;
         cached = validateOfficialStudentEventsFile(await response.json());
     } catch {

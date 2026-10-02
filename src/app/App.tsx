@@ -7,6 +7,7 @@ import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkel
 import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
+import { useNativeReminders } from '../hooks/useNativeReminders';
 import { useAuth } from '../contexts/AuthContext';
 import { AUTH_REQUIRED } from '../config/features';
 import { normalizeOfficialClassName } from '../constants';
@@ -122,6 +123,7 @@ const App: React.FC = () => {
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(config.theme, config.appTextSize);
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
+  useNativeReminders(config, classes, authUser?.phone);
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authUser?.phone);
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
@@ -322,6 +324,16 @@ const App: React.FC = () => {
       handleBackToDashboard();
     }
   }, [handleBackToDashboard]);
+
+  useEffect(() => {
+    const back = (event: Event) => {
+      if (view === 'editor') { event.preventDefault(); handleBackToDashboard(); }
+      else if (view === 'settings') { event.preventDefault(); handleBackFromSettings(); }
+      else if (view === 'notifications') { event.preventDefault(); handleBackFromNotifications(); }
+    };
+    window.addEventListener('native-back', back);
+    return () => window.removeEventListener('native-back', back);
+  }, [view, handleBackToDashboard, handleBackFromSettings, handleBackFromNotifications]);
 
   // Handle browser back / forward buttons
   useEffect(() => {

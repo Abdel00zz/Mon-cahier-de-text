@@ -23,7 +23,7 @@ export interface ForegroundSchedulerEnvironment {
 }
 
 const browserEnvironment = (): ForegroundSchedulerEnvironment => ({
-  active: () => document.visibilityState === 'visible' && navigator.onLine,
+  active: () => document.visibilityState === 'visible' && document.documentElement?.dataset.nativeActive !== 'false' && navigator.onLine,
   saveData: () => (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true,
   setTimer: (callback, delay) => window.setTimeout(callback, delay),
   clearTimer: timer => window.clearTimeout(timer),

@@ -5,8 +5,6 @@ import '../../src/styles/index.css';
 import { LocaleProvider } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
-import { SessionLiveBanner } from '../../src/features/dashboard/SessionLiveBanner';
-import { formatLocalizedClassDisplayName } from '../../src/constants';
 import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../src/features/settings/components/NotificationsTab';
@@ -79,7 +77,6 @@ function Preview() {
     {screen === 'loading' && <PageTransitionLoader />}
     {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'classes' && <>
-        <SessionLiveBanner classInfo={classes[0]} detail={formatLocalizedClassDisplayName(classes[0].name, locale)} onOpen={noop} />
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div>
       </>}

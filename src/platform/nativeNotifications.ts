@@ -1,0 +1,87 @@
+import { LocalNotifications } from '@capacitor/local-notifications';
+import type { AppConfig, ClassInfo } from '../types';
+import { readWorkspaceScope, captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
+import { buildNativeReminderPlan } from '../domain/notifications/nativeReminderPlan';
+
+const preferenceKey = () => `cdt_native_reminders_v1_${readWorkspaceScope()?.owner ?? 'local'}`;
+const enabled = () => localStorage.getItem(preferenceKey()) === 'true';
+const MIN_ID = 1_600_000_000;
+let planning = Promise.resolve();
+let fingerprint = '';
+
+export const nativeNotificationId = (key: string): number => {
+  let hash = 2166136261;
+  for (const character of key) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  return MIN_ID + (hash >>> 0) % 200_000_000;
+};
+
+export async function nativeNotificationState(requestPermission = false) {
+  const key = preferenceKey();
+  const current = captureWorkspaceLease();
+  const permission = await (requestPermission ? LocalNotifications.requestPermissions() : LocalNotifications.checkPermissions());
+  const display: NotificationPermission = permission.display === 'granted' ? 'granted' : permission.display === 'denied' ? 'denied' : 'default';
+  if (requestPermission && display === 'granted' && current()) localStorage.setItem(key, 'true');
+  return { permission: display, subscribed: current() && display === 'granted' && enabled(), serverRegistered: false, delivery: 'local' as const,
+    reason: requestPermission && display !== 'granted' ? display === 'denied' ? 'permissionDenied' as const : 'permissionDismissed' as const : undefined };
+}
+
+export function reconcileNativeReminders(config: AppConfig, classes: ClassInfo[], owner?: string): Promise<void> {
+  const current = captureWorkspaceLease();
+  planning = planning.catch(() => {}).then(async () => {
+    if (!current()) return;
+    const permission = await LocalNotifications.checkPermissions();
+    if (!current()) return;
+    const plan = owner && enabled() && config.notificationSettings?.pushEnabled && permission.display === 'granted'
+      ? buildNativeReminderPlan(config, classes) : [];
+    const signature = JSON.stringify([owner, config.notificationSettings?.sessionVibration, plan]);
+    if (signature === fingerprint) return;
+    const pending = await LocalNotifications.getPending();
+    if (!current()) return;
+    const obsolete = pending.notifications.filter(item => item.id >= MIN_ID);
+    if (obsolete.length) await LocalNotifications.cancel({ notifications: obsolete });
+    if (!current()) return;
+    if (plan.length) {
+      const vibration = config.notificationSettings?.sessionVibration === true;
+      const channelId = vibration ? 'cahier-reminders-vibrate' : 'cahier-reminders-quiet';
+      await LocalNotifications.createChannel({ id: channelId, name: 'Mon cahier de textes', importance: 3, vibration });
+      if (!current()) return;
+      const used = new Set<number>();
+      await LocalNotifications.schedule({ notifications: plan.map(item => {
+        let id = nativeNotificationId(item.key);
+        while (used.has(id)) id++;
+        used.add(id);
+        return { id, title: item.title, body: item.body, channelId, smallIcon: 'ic_stat_notebook',
+          schedule: { at: item.at, allowWhileIdle: false }, autoCancel: true,
+          extra: { url: item.url, owner, key: item.key } };
+      }) });
+    }
+    fingerprint = signature;
+  });
+  return planning;
+}
+
+export async function disableNativeReminders(): Promise<void> {
+  const current = captureWorkspaceLease();
+  localStorage.removeItem(preferenceKey());
+  // Serialize with an in-flight schedule so disabling cannot leave late alarms behind.
+  planning = planning.catch(() => {}).then(async () => {
+    if (!current()) return;
+    const pending = await LocalNotifications.getPending();
+    if (!current()) return;
+    await LocalNotifications.cancel({ notifications: pending.notifications.filter(item => item.id >= MIN_ID) });
+    fingerprint = '';
+  });
+  return planning;
+}
+
+export async function showNativeNotification(title: string, body: string, key: string, url: string): Promise<boolean> {
+  const current = captureWorkspaceLease();
+  const owner = readWorkspaceScope()?.owner;
+  if (!(await nativeNotificationState()).subscribed || !current() || !owner) return false;
+  await LocalNotifications.createChannel({ id: 'cahier-reminders-quiet', name: 'Mon cahier de textes', importance: 3, vibration: false });
+  if (!current() || !enabled()) return false;
+  await LocalNotifications.schedule({ notifications: [{ id: nativeNotificationId(key), title, body,
+    channelId: 'cahier-reminders-quiet', smallIcon: 'ic_stat_notebook', autoCancel: true,
+    extra: { url, owner } }] });
+  return current();
+}

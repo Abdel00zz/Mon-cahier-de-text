@@ -70,11 +70,12 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
 
   return (
     <div className="rtl-flow relative mb-0 mt-0 px-1 pb-4 pt-2 sm:px-2 sm:pb-5 sm:pt-3">
-      <div className="flex items-center gap-4 sm:gap-5">
+      <div dir="ltr" className="flex items-center gap-4 sm:gap-5">
         {onBack && (
           <button
             type="button"
             onClick={handleBack}
+            dir={locale === 'ar' ? 'rtl' : 'ltr'}
             className="editor-back-button"
             title={locale === 'ar' ? 'الرجوع إلى الأقسام' : locale === 'en' ? 'Back to classes' : 'Retour aux classes'}
             aria-label={locale === 'ar' ? 'الرجوع إلى الأقسام' : locale === 'en' ? 'Back to classes' : 'Retour aux classes'}
@@ -82,7 +83,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
             <ArrowLeft className="editor-back-button__arrow" size={19} strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
-        <header className="min-w-0 flex-1 text-start">
+        <header dir={locale === 'ar' ? 'rtl' : 'ltr'} className="min-w-0 flex-1 text-start">
           <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-semibold tracking-tight text-base sm:text-lg lg:text-xl leading-[1.3] text-foreground">
             <EditableHeader
               value={classInfo.name}

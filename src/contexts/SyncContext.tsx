@@ -1,3 +1,4 @@
+import { apiFetch } from '@/platform/nativeHttp';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
@@ -134,7 +135,7 @@ interface RemoteLessonsBlob {
 
 const fetchLessonsBlob = async (classId: string, owner: string, signal: AbortSignal): Promise<RemoteLessonsBlob | null> => {
     try {
-        const response = await fetch(`/api/sync?classId=${encodeURIComponent(classId)}`, {
+        const response = await apiFetch(`/api/sync?classId=${encodeURIComponent(classId)}`, {
             credentials: 'same-origin',
             headers: { 'X-Workspace-Owner': owner },
             signal,
@@ -323,7 +324,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (!isCurrent()) return;
                 const isFirst = i === 0;
                 const includeSettings = isFirst && work.classesListDirty;
-                const response = await fetch('/api/sync', {
+                const response = await apiFetch('/api/sync', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': currentUser.phone },
                     signal: controller.signal,
@@ -503,7 +504,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const isCurrent = () => !cancelled && !controller.signal.aborted && !pushingRef.current && workspaceIsCurrent(scope);
             setSyncStatus('syncing');
             try {
-                const response = await fetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': user.phone }, signal: controller.signal });
+                const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': user.phone }, signal: controller.signal });
                 if (!response.ok) {
                     if (isCurrent()) {
                         setSyncStatus('error');
