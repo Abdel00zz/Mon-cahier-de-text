@@ -61,11 +61,13 @@ Projet indiqué par le propriétaire : `cahier-text`. Compte de service : `fireb
 4. Sur un appareil réel Pixel/Samsung, se connecter puis activer les notifications dans les paramètres du cahier. Le diagnostic « Messages de l’administration » doit indiquer « Enregistré ». Le bouton de test utilise alors le serveur FCM ; lorsqu’il n’est pas raccordé, il teste uniquement la notification locale.
 5. Envoyer un message depuis l’administration, vérifier la réception à application fermée, le compteur, l’ouverture, l’accusé de lecture et une déconnexion hors ligne. Tester aussi le renouvellement du token et le changement de compte. Un arrêt forcé Android peut suspendre les réceptions jusqu’à la réouverture : ne pas le confondre avec une fermeture normale.
 
+Les deux fichiers Firebase ont des rôles différents : `google-services.json` configure l’application Android ; le JSON contenant `private_key` authentifie uniquement le serveur. Garder ce second fichier dans un dossier privé hors du dépôt et du module Android. Le serveur lit ses trois valeurs via les variables FCM sur Vercel, jamais depuis les ressources de l’APK. Toute clé privée partagée dans un message doit être remplacée avant de poursuivre sa configuration.
+
 Les envois FCM contiennent une association aléatoire à l’appareil, un compteur et un horodatage ; aucun texte confidentiel du professeur n’est exposé sur l’écran verrouillé. Le service natif refuse les associations révoquées et les compteurs anciens. Un token expiré est retiré du serveur ; une erreur transitoire le conserve. Le renouvellement du token est réconcilié au retour dans l’application. Les inscriptions/transferts/retraits d’appareils utilisent Redis Lua atomique et une limite de cinq appareils par compte. Un retrait serveur échoué reste sans effet local grâce à la révocation de l’association ; son entrée est récupérée à la prochaine inscription, à expiration du token ou à la suppression du compte.
 
 La PWA utilise `setAppBadge`/`clearAppBadge` lorsqu’ils sont disponibles. Sur iOS/iPadOS, cela nécessite une application installée sur l’écran d’accueil et l’autorisation système correspondante. Le worker conserve le dernier compteur confirmé, refuse les push d’un autre compte et efface les notifications de messages après la lecture de la dernière. Une erreur réseau ne remplace pas le compteur par zéro. Sans réception d’un nouveau push, la lecture depuis un autre appareil est réconciliée à la prochaine ouverture/vérification au premier plan.
 
-Tests natifs isolés : après `cap sync android`, lancer `:app:connectedDebugAndroidTest -PnotificationQa` sur un émulateur Android 13+. L’identifiant `.qa` évite toute modification des données de l’application de production. Ces tests couvrent les canaux, le compteur, la lecture, les push dupliqués, les associations et la déconnexion ; ils ne remplacent pas un test FCM réel avec votre projet Firebase.
+Tests natifs isolés : après `cap sync android`, lancer `:app:connectedDebugAndroidTest -PnotificationQa` sur un émulateur Android 13+. L’identifiant `.qa` évite toute modification des données de l’application de production. Cette variante ne charge pas la configuration Firebase de production, réservée au paquet `ma.cahier.textes`. Ces tests couvrent les canaux, le compteur, la lecture, les push dupliqués, les associations et la déconnexion ; ils ne remplacent pas un test FCM réel avec votre projet Firebase.
 
 La compilation native désactive le service worker et exclut l’entrée d’administration. Les vérifications périodiques du cloud s’arrêtent quand l’application est masquée, hors ligne ou en pause native.
 
@@ -110,9 +112,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.4.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.4-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.4.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
+* `mon-cahier-de-textes-1.2.5.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.5-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.5.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -125,7 +127,7 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run release -- --version 1.2.5 --serial emulator-5580
+npm run release -- --version 1.2.6 --serial emulator-5580
 ```
 
 Le pipeline lance les tests et `npm run check`, augmente la version si `--version` est fourni, compile et vérifie les signatures/ressources, puis contrôle le démarrage sur l’appareil de test choisi. Il produit `validation.json` avec les résultats. Sans `--version`, il reconstruit la version courante. En CI sans émulateur, `--skip-smoke` marque explicitement ce contrôle comme non effectué. Il ne déploie pas le cloud et ne publie pas sur Google Play.
@@ -148,7 +150,7 @@ L’APK vérifie `https://mon-cahier-de-text.vercel.app/native-release.json` uni
 
 1. Augmenter la version et compiler/tester le binaire avec la même clé.
 2. Publier l’APK signé sur une release GitHub de ce dépôt ou sur le domaine de l’application.
-3. Générer le manifeste avec `npm run android:publish-metadata -- https://github.com/Abdel00zz/Mon-cahier-de-text/releases/download/v1.2.5/mon-cahier-de-textes-1.2.5-release.apk` (adapter à la release réelle).
+3. Générer le manifeste avec `npm run android:publish-metadata -- https://github.com/Abdel00zz/Mon-cahier-de-text/releases/download/v1.2.6/mon-cahier-de-textes-1.2.6-release.apk` (adapter à la release réelle).
 4. Le script télécharge le fichier public et vérifie son SHA-256 et sa taille avant d’écrire `public/native-release.json`. Il refuse le remplacement d’une version déjà annoncée par un binaire différent ou plus ancien. Déployer ensuite le manifeste.
 
 Le client vérifie le paquet, le certificat correspondant à son installation, le numéro de compilation et l’origine HTTPS du lien. Le bouton ouvre le téléchargement dans le navigateur ; Android demande l’installation et contrôle lui-même la signature du fichier. Aucun fichier de mise à jour n’est installé silencieusement et aucune permission d’installation permanente n’est ajoutée à l’application. Conserver la distribution APK et Play comme deux canaux si Play App Signing utilise un certificat différent. Une ancienne version du manifeste ne prouve pas que l’application est à jour.

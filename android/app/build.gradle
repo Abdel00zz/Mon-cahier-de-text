@@ -76,7 +76,8 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-if (file('google-services.json').exists()) {
+if (file('google-services.json').exists() && !project.hasProperty('notificationQa')) {
     // Invalid supplied configuration should fail the build, rather than ship broken push.
+    // The isolated .qa test application is not registered with production Firebase.
     apply plugin: 'com.google.gms.google-services'
 }
