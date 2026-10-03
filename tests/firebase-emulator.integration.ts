@@ -4,6 +4,12 @@ import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertFails } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirestoreStore } from '../api/_lib/firestoreStore.js';
+import { subscribeFirestoreWebPush, unsubscribeFirestoreWebPush, reconcileFirestoreWebPush } from '../api/_lib/firestoreWebPush.js';
+import { pushEndpointField, type PushEntry } from '../api/_lib/webpush.js';
+import { initializeApp, deleteApp } from 'firebase-admin/app';
+import { initializeFirestore, Timestamp } from 'firebase-admin/firestore';
+import { randomBytes } from 'node:crypto';
+import { snapshotFirestore, encryptBackup, decryptBackup, restoreFirestoreEmulator } from '../scripts/firebase/backup-format.js';
 import { beginAccountWrite, saveVersionedDocument } from '../api/_lib/atomicWrite.js';
 import { KEYS, type RedisClient } from '../api/_lib/redis.js';
 import { readInboxSnapshot } from '../api/_lib/adminMessages.js';
@@ -111,6 +117,82 @@ test('Firestore preserves notebooks, settings, revisions, inbox and NX writes', 
   await store.set('nullable', null);
   assert.equal(await store.set('nullable', 'overwrite', { nx: true }), null);
   assert.equal((await store.db.doc('users/' + teacherUid(phone)).get()).data()?.role, 'teacher');
+});
+
+test('Firestore Web Push keeps parallel devices, reserves ownership, and protects new bindings from late cleanup', async () => {
+  const number = '0615557788';
+  await store.set(KEYS.user(number), {phone: number, nom: 'Push', prenom: 'QA'});
+  const normalize = (value: unknown): PushEntry => value && typeof value === 'object' && Array.isArray((value as PushEntry).subs) ? value as PushEntry : {subs: []};
+  const subscription = (id: string) => ({endpoint: `https://push.example.test/${id}`, keys: {p256dh: 'test-public-key', auth: 'test-auth-key'}});
+  await Promise.all(['one', 'two'].map(id => subscribeFirestoreWebPush(store, number, subscription(id), normalize)));
+  const attempted = (await store.hget<PushEntry>(KEYS.pushSubs, number))!.subs;
+  assert.equal(attempted.length, 2);
+  await subscribeFirestoreWebPush(store, number, subscription('one'), normalize);
+  await reconcileFirestoreWebPush(store, number, attempted, []);
+  const current = (await store.hget<PushEntry>(KEYS.pushSubs, number))!.subs;
+  assert.equal(current.length, 1); assert.equal(current[0].endpoint, subscription('one').endpoint);
+  assert.equal(await store.hget(KEYS.pushEndpointOwners, pushEndpointField(subscription('one').endpoint)), number);
+  await store.set(KEYS.user('other-web-qa'), {phone: 'other-web-qa', nom: 'Other', prenom: 'QA'});
+  await assert.rejects(subscribeFirestoreWebPush(store, 'other-web-qa', subscription('one'), normalize));
+  assert.equal(await unsubscribeFirestoreWebPush(store, number, subscription('one').endpoint, normalize), true);
+  assert.equal(await store.hget(KEYS.pushEndpointOwners, pushEndpointField(subscription('one').endpoint)), null);
+});
+
+test('Firestore admin/user circuits preserve imports, dates, acknowledgements and class tombstones', async () => {
+  const number = '0617779988';
+  const registered = await call(authHandler, {method: 'POST', headers: {}, body: {action: 'register', phone: number, nom: 'Circuit', prenom: 'QA', password: 'Test-password-123'}});
+  assert.equal(registered.status, 201);
+  const teacherHeaders = {cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': number};
+  const adminHeaders = {cookie: `${ADMIN_COOKIE}=${await signSession({role: 'admin'}, 60)}`};
+  const postAdmin = (body: unknown) => call(adminHandler, {method: 'POST', headers: adminHeaders, body});
+  const created = await postAdmin({action: 'upsertTeacherClass', phone: number, classInfo: {name: '1AC1', cycle: 'college', subject: 'Mathématiques'}});
+  assert.equal(created.status, 200);
+  const classInfo = (created.body as {classInfo: {id: string}}).classInfo;
+  const initial = await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}});
+  assert.equal(initial.status, 200);
+  const expectedUpdatedAt = (initial.body as {updatedAt: string}).updatedAt;
+  const lessonsPayload = [{type: 'chapter', title: 'الأعداد', items: [{type: 'exercice', title: 'الحساب', description: '$x^2$', date: '2026-10-03'}]}];
+  assert.equal((await postAdmin({action: 'importClassLessons', phone: number, classId: classInfo.id, lessonsPayload, importMode: 'replace', expectedUpdatedAt})).status, 200);
+  assert.equal((await postAdmin({action: 'importClassLessons', phone: number, classId: classInfo.id, lessonsPayload, importMode: 'replace', expectedUpdatedAt: '2020-01-01T00:00:00Z'})).status, 409);
+  const imported = await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}});
+  assert.equal((imported.body as {contentDirection: string}).contentDirection, 'rtl');
+  assert.ok(JSON.stringify(imported.body).includes('الأعداد'));
+  assert.equal((await postAdmin({action: 'saveAssessmentDate', phone: number, classId: 'missing-class', assessmentId: 'controle-1', date: '2026-10-10'})).status, 404);
+  assert.equal((await postAdmin({action: 'saveAssessmentDate', phone: number, classId: classInfo.id, assessmentId: 'controle-1', date: '2026-10-10'})).status, 200);
+  const stalePush = await call(syncHandler, {method: 'POST', headers: teacherHeaders, body: {classes: [classInfo], schedules: [], timetable: [], settings: {assessmentDates: {[classInfo.id]: {'controle-1': '2026-10-09'}}}, settingsUpdatedAt: '2020-01-01T00:00:00Z', lessons: [{classId: classInfo.id, lessonsData: [{type: 'chapter', title: 'Stale'}], updatedAt: '2020-01-01T00:00:00Z'}]}});
+  assert.equal(stalePush.status, 200);
+  const workspace = await call(syncHandler, {method: 'GET', headers: teacherHeaders});
+  assert.equal((workspace.body as {settings: {assessmentDates: Record<string, Record<string, string>>}}).settings.assessmentDates[classInfo.id]['controle-1'], '2026-10-10');
+  assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body);
+  const notification = await postAdmin({action: 'notifyTeacher', phone: number, message: 'Votre cahier est prêt.'});
+  assert.equal(notification.status, 200);
+  const inbox = await call(messagesHandler, {method: 'GET', headers: teacherHeaders});
+  const messages = (inbox.body as {messages: {id: string}[]; unreadCount: number});
+  assert.equal(messages.unreadCount, 1);
+  assert.equal((await call(messagesHandler, {method: 'POST', headers: teacherHeaders, body: {action: 'acknowledge', messageId: messages.messages[0].id}})).status, 200);
+  assert.equal(((await call(messagesHandler, {method: 'GET', headers: teacherHeaders})).body as {unreadCount: number}).unreadCount, 0);
+  assert.equal((await postAdmin({action: 'deleteTeacherClass', phone: number, classId: classInfo.id})).status, 200);
+  assert.equal((await call(syncHandler, {method: 'POST', headers: teacherHeaders, body: {classes: [classInfo], schedules: [], timetable: []}})).status, 200);
+  const afterDelete = await call(syncHandler, {method: 'GET', headers: teacherHeaders});
+  const deletedWorkspace = afterDelete.body as {classes: unknown[]; deletedClasses: Record<string, unknown>};
+  assert.deepEqual(deletedWorkspace.classes, []);
+  assert.ok(deletedWorkspace.deletedClasses[classInfo.id]);
+  assert.equal((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).status, 404);
+});
+
+test('Firestore backup restores an encrypted consistent snapshot to an empty isolated emulator', async () => {
+  await store.db.doc('cloud_records/backup-typed').set({json: JSON.stringify({text: 'رياضيات 🧮'}), expiresAt: Timestamp.fromMillis(1_800_000_000_123)});
+  const original = await snapshotFirestore(store.db, 'demo-cahier-text');
+  const key = randomBytes(32); const backup = decryptBackup(encryptBackup(original, key), key);
+  const app = initializeApp({projectId: 'demo-cahier-text-backup'}, 'backup-restore');
+  const target = initializeFirestore(app, {preferRest: false});
+  try {
+    const result = await restoreFirestoreEmulator(backup);
+    assert.equal(result.comparisonVerified, true);
+    assert.equal(result.restoredDocuments, original.records.length);
+    assert.deepEqual((await snapshotFirestore(target, 'demo-cahier-text-backup')).records, original.records);
+    await assert.rejects(restoreFirestoreEmulator(backup), /empty/);
+  } finally { await target.terminate(); await deleteApp(app); }
 });
 
 test('transactions enforce document versions and rate limits with expiry', async () => {

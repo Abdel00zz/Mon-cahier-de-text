@@ -3,7 +3,9 @@ import test from 'node:test';
 import { analyzeContentJson } from '../src/domain/notebook/contentDiagnostics';
 import { prepareImportedLessons } from '../src/domain/notebook/importPipeline';
 import { parseBoundedJson } from '../src/domain/notebook/jsonInput';
-import { restoreBackup, validateBackup } from '../src/infrastructure/storage/backup';
+import { buildFullBackup, restoreBackup, serializeBackup, validateBackup } from '../src/infrastructure/storage/backup';
+import { createArchive, downloadArchive, listArchives } from '../src/infrastructure/storage/archives';
+import { assertValidLessonsPayload } from '../api/_lib/validate';
 import { writeStorageBatch } from '../src/infrastructure/storage/storageBatch';
 import { subscribe } from '../src/infrastructure/sync/syncBus';
 
@@ -72,6 +74,59 @@ class MemoryStorage {
   }
   removeItem(key: string) { this.values.delete(key); }
 }
+
+test('sauvegarde : un cahier corrompu ne devient jamais un export vide', () => {
+  const storage = new MemoryStorage();
+  Object.defineProperty(globalThis, 'localStorage', {value: storage, configurable: true});
+  storage.setItem('classManager_v1', JSON.stringify([info]));
+  try {
+    for (const value of ['{invalide', '{"lessonsData":null}']) {
+      storage.setItem(`classData_v1_${info.id}`, value);
+      assert.throws(buildFullBackup, /illisibles/);
+      assert.equal(storage.getItem(`classData_v1_${info.id}`), value);
+    }
+  } finally { Reflect.deleteProperty(globalThis, 'localStorage'); }
+});
+
+test('sauvegarde : export complet multi-cahiers réimportable, textes et dates exacts', () => {
+  const data = backup();
+  data.classes[0].lessonsData[0].title = '  الرياضيات $x$  ';
+  data.classes.push({...structuredClone(data.classes[0]), classInfo: {...info, id: 'second'}});
+  const serialized = serializeBackup(data);
+  assert.deepEqual(validateBackup(parseBoundedJson(serialized)), data);
+  assert.ok(serialized.length < JSON.stringify(data, null, 2).length);
+});
+
+test('archives : données corrompues refusées, archives Unicode réimportables et taille exacte', () => {
+  const storage = new MemoryStorage();
+  Object.defineProperty(globalThis, 'localStorage', {value: storage, configurable: true});
+  storage.setItem('classManager_v1', JSON.stringify([info]));
+  const notebookKey = `classData_v1_${info.id}`;
+  try {
+    storage.setItem(notebookKey, '{invalide');
+    assert.equal(createArchive('2025-2026'), null);
+    assert.deepEqual(listArchives(), []);
+    assert.equal(storage.getItem(notebookKey), '{invalide');
+    const lessons = [{type: 'chapter', title: '  الرياضيات 🧮  '}];
+    storage.setItem(notebookKey, JSON.stringify(lessons));
+    const meta = createArchive('2025-2026');
+    assert.ok(meta);
+    const payload = storage.getItem(`archive_v1_${meta.id}`)!;
+    assert.equal(meta.bytes, Buffer.byteLength(payload));
+    assert.deepEqual(validateBackup(parseBoundedJson(payload)).classes[0].lessonsData, lessons);
+    storage.setItem(`archive_v1_${meta.id}`, '{"invalid":true}');
+    assert.equal(downloadArchive(meta), false);
+  } finally { Reflect.deleteProperty(globalThis, 'localStorage'); }
+});
+
+test('synchro : structures et doublons invalides refusés avant stockage, valeurs intactes', () => {
+  const valid = [{classId: info.id, lessonsData: [{type: 'chapter', title: '  الرياضيات  ', items: [{type: 'exercice', page: 12, description: '$x^2$'}]}]}];
+  assert.deepEqual(assertValidLessonsPayload(valid, new Set([info.id]))[0].lessonsData, valid[0].lessonsData);
+  assert.throws(() => assertValidLessonsPayload([...valid, ...valid], new Set([info.id, 'other'])), /dupliqué/);
+  for (const lessonsData of [[null], [{type: 'chapter', items: {bad: true}}], Array(12_001).fill({type: 'chapter'})]) {
+    assert.throws(() => assertValidLessonsPayload([{classId: info.id, lessonsData}], new Set([info.id])));
+  }
+});
 test('échec de stockage : retour aux anciennes valeurs, y compris les clés absentes', () => {
   const storage = new MemoryStorage();
   storage.values.set('config', 'old');

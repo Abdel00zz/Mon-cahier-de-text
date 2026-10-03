@@ -44,7 +44,10 @@
     "test:modals": "tsx tests/test-modal-motion.ts",
     "test:guide": "tsx tests/test-guide.ts",
     "test:firebase": "node scripts/firebase/test-emulators.mjs",
-    "firebase:migrate": "tsx scripts/firebase/migrate.ts"
+    "firebase:migrate": "tsx scripts/firebase/migrate.ts",
+    "firebase:verify": "node scripts/firebase/deploy-cloud.mjs",
+    "firebase:backup": "tsx scripts/firebase/backup-cloud.ts",
+    "firebase:backup:rehearse": "node scripts/firebase/rehearse-backup.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.2",

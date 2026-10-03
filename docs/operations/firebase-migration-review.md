@@ -1,6 +1,6 @@
 # Relecture du guide de migration Firebase
 
-Le guide fourni le 2 octobre 2026 décrit une architecture possible. Cette livraison prépare Firebase Cloud Messaging Android et conserve le backend Vercel/Upstash, l’authentification et les cahiers existants. Une connexion FCM ne nécessite pas de migrer Firestore, Authentication et Hosting simultanément.
+Cette relecture historique concerne le guide fourni le 2 octobre 2026. La migration du 3 octobre utilise désormais Firebase Authentication et Firestore, avec les API et l'URL conservées sur Vercel. Pour l'état actuel, consulter la [migration réalisée](firebase-migration.md) et les [procédures de sauvegarde](firebase-backup.md). Les remarques ci-dessous expliquent les risques du guide initial ; elles ne décrivent pas toutes l'implémentation livrée.
 
 ## Corrections nécessaires avant une migration
 

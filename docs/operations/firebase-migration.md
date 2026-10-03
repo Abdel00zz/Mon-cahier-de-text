@@ -25,6 +25,8 @@ Le SDK Admin est fixé à 13.10.0 : la branche 14 charge une dépendance CommonJ
 
 ## Exploitation et retour arrière
 
+La [procédure de sauvegarde Firebase](firebase-backup.md) fournit l'export chiffré, sa vérification et la répétition de restauration locale. Elle distingue les données Firestore de Firebase Authentication et précise les protections gérées qui restent à configurer.
+
 L'export ne supprime ni ne modifie la source. Une fois Firestore utilisé, Redis devient périmé : ne jamais remettre aveuglément `CLOUD_PROVIDER=redis`. Suspendre les écritures, sauvegarder Firestore, réconcilier les changements depuis la bascule, puis vérifier la restauration avant de réouvrir l'ancien backend. Les règles testées, la sauvegarde, le journal d'import et la révision Git doivent accompagner toute évolution du schéma.
 
 Le budget d'appels en erreur utilise `expiresAt` et ignore immédiatement les enregistrements expirés. Leur nettoyage physique par TTL Firestore doit être activé séparément si souhaité ; il n'est pas supposé actif. Le blocage est contrôlé par les API à chaque requête ; les données déjà présentes hors ligne ne peuvent pas être retirées d'un appareil déconnecté. Le cache et les notifications Android restent ceux de la version existante ; cette migration serveur ne nécessite pas de nouvelle signature APK.

@@ -2,6 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
+import { reconcileFirestoreWebPush } from './_lib/firestoreWebPush.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
@@ -408,6 +409,7 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
     const write = await beginAccountWrite(redis, phone);
     const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
     if (!blob) throw new HttpError(404, 'Données de l\'enseignant introuvables.');
+    if (!blob.classes.some(info => info.id === body.classId)) throw new HttpError(404, 'Classe introuvable.');
     const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
     const forClass = { ...(assessmentDates[body.classId] ?? {}) };
     if (body.date) forClass[body.assessmentId] = body.date;
@@ -792,6 +794,11 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         badgeCount,
         badgeOwner: phone,
     });
+    if (isFirestoreStore(redis)) {
+        await reconcileFirestoreWebPush(redis, phone, entrySubs, survivingSubs);
+        const nativeSent = await nativeDelivery;
+        return res.status(200).json({ ok: true, sent: sent + nativeSent, nativeSent, message });
+    }
     if (survivingSubs.length === 0) await redis.hdel(KEYS.pushSubs, phone);
     else await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
     const removedEndpoints = entrySubs

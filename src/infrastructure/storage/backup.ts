@@ -1,6 +1,7 @@
 import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../../types.js';
 import { assignClassColors } from '../../domain/classes/classColors.js';
-import { prepareImportedLessons } from '../../domain/notebook/importPipeline.js';
+import { assertNotebookStructure } from '../../domain/notebook/notebookValidation.js';
+import { MAX_JSON_FILE_BYTES } from '../../domain/notebook/jsonInput.js';
 import { writeStorageBatch } from './storageBatch.js';
 import {
     markClassDeleted,
@@ -36,8 +37,8 @@ const readJSON = (key: string): unknown => {
     try {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : undefined;
-    } catch {
-        return undefined;
+    } catch (cause) {
+        throw new Error(`Sauvegarde interrompue : données illisibles (${key}). La copie locale est conservée.`, { cause });
     }
 };
 
@@ -47,10 +48,12 @@ const isContentDirection = (value: unknown): value is ContentDirection =>
 /** Accepte les anciens tableaux et les nouveaux instantanés `{ lessonsData, contentDirection }`. */
 const readNotebook = (value: unknown): { lessonsData: LessonsData; contentDirection?: ContentDirection } => {
     if (Array.isArray(value)) return { lessonsData: value as LessonsData };
-    if (!value || typeof value !== 'object') return { lessonsData: [] };
+    if (value === undefined) return { lessonsData: [] };
+    if (!value || typeof value !== 'object') throw new Error('Données de cahier illisibles.');
     const record = value as { lessonsData?: unknown; contentDirection?: unknown };
+    if (!Array.isArray(record.lessonsData)) throw new Error('Données de cahier illisibles.');
     return {
-        lessonsData: Array.isArray(record.lessonsData) ? record.lessonsData as LessonsData : [],
+        lessonsData: record.lessonsData as LessonsData,
         ...(isContentDirection(record.contentDirection) ? { contentDirection: record.contentDirection } : {}),
     };
 };
@@ -80,7 +83,7 @@ export const buildFullBackup = (): FullBackup => {
 
 export const downloadBackup = (): void => {
     const backup = buildFullBackup();
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const blob = new Blob([serializeBackup(backup)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -93,6 +96,16 @@ export const downloadBackup = (): void => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value);
+
+/** Export and restore share the same file budget; no silently unusable downloads. */
+export function serializeBackup(value: unknown): string {
+    const data = validateBackup(value);
+    const json = JSON.stringify(data);
+    if (new TextEncoder().encode(json).byteLength > MAX_JSON_FILE_BYTES) {
+        throw new Error('Sauvegarde trop volumineuse. Exportez les cahiers séparément.');
+    }
+    return json;
+}
 
 /** Validate the entire file before touching configuration or any existing notebook. */
 export function validateBackup(value: unknown): FullBackup {
@@ -120,17 +133,7 @@ export function validateBackup(value: unknown): FullBackup {
         if (entry.printMeta != null && !isRecord(entry.printMeta)) throw new Error('Métadonnées d’impression invalides.');
         // Validate bounded structure and fields, but preserve the exact exported
         // values, including intentional spacing and legacy date representations.
-        const prepared = prepareImportedLessons(entry.lessonsData);
-        if (prepared.report.repairedContainers || prepared.report.repairedTexts
-            || prepared.lessonsData.length !== entry.lessonsData.length) throw new Error(`Contenu endommagé dans la classe ${index + 1}.`);
-        const pending: unknown[] = [...entry.lessonsData];
-        while (pending.length) {
-            const node = pending.pop();
-            if (!isRecord(node)) throw new Error(`Élément de cours invalide dans la classe ${index + 1}.`);
-            for (const field of ['sections', 'subsections', 'subsubsections', 'items']) {
-                if (Array.isArray(node[field])) pending.push(...node[field]);
-            }
-        }
+        assertNotebookStructure(entry.lessonsData);
     }
     return value as unknown as FullBackup;
 }

@@ -1,4 +1,6 @@
 import { apiFetch } from '../../platform/nativeHttp';
+export const syncJsonBytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
+
 /** Transport partagé : délais bornés, erreurs typées et budgets en octets UTF-8. */
 export class SyncRequestError extends Error {
   constructor(message: string, public status = 0, public code?: string, public retryAfter?: string | null) {

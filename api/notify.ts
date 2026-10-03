@@ -1,6 +1,7 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { PushEntry, PushSubscriptionJSON, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
-import { getRedis, KEYS } from './_lib/redis.js';
+import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
+import { subscribeFirestoreWebPush, unsubscribeFirestoreWebPush, reconcileFirestoreWebPush } from './_lib/firestoreWebPush.js';
 import { requireUser } from './_lib/auth.js';
 import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
 import { ClassLateness, computeLateness, summarizeForTeacher } from '../src/domain/calendar/lateness.js';
@@ -102,7 +103,7 @@ const normalizeEntry = (value: unknown): PushEntry => {
             const sub = validateSubscription(raw);
             if (!seen.has(sub.endpoint)) {
                 seen.add(sub.endpoint);
-                subs.push(sub);
+                subs.push({ ...sub, ...(typeof (raw as {binding?: unknown}).binding === 'string' ? {binding: (raw as {binding: string}).binding} : {}) });
             }
         } catch {
             // Une ancienne entrée corrompue ne doit pas interrompre le cron.
@@ -181,6 +182,10 @@ const handleSubscribe = async (body: NotifyBody, res: ApiResponse, phone: string
     });
     const redis = await getRedis();
     const field = ownerField(subscription.endpoint);
+    if (isFirestoreStore(redis)) {
+        await subscribeFirestoreWebPush(redis, phone, subscription, normalizeEntry);
+        return res.status(200).json({ ok: true, registered: true });
+    }
     let currentOwner = await redis.hget<string>(KEYS.pushEndpointOwners, field);
     if (!currentOwner) {
         const legacyOwner = await findLegacyEndpointOwner(redis, subscription.endpoint, phone);
@@ -233,6 +238,10 @@ const handleSubscribe = async (body: NotifyBody, res: ApiResponse, phone: string
 const handleUnsubscribe = async (body: NotifyBody, res: ApiResponse, phone: string) => {
     const endpoint = validateEndpoint(body.endpoint);
     const redis = await getRedis();
+    if (isFirestoreStore(redis)) {
+        const removed = await unsubscribeFirestoreWebPush(redis, phone, endpoint, normalizeEntry);
+        return res.status(200).json({ ok: true, removed });
+    }
     const existing = normalizeEntry(await redis.hget<PushEntry>(KEYS.pushSubs, phone));
     const subs = existing.subs.filter(sub => sub.endpoint !== endpoint);
     if (subs.length !== existing.subs.length) {
@@ -283,10 +292,13 @@ const handleTest = async (body: NotifyBody, res: ApiResponse, phone: string) => 
         timestamp: Date.now(),
     });
     const untouched = entry.subs.filter(sub => !targetSubs.some(target => target.endpoint === sub.endpoint));
-    await persistEntry(redis, phone, { ...entry, subs: [...untouched, ...survivingSubs] });
-    await releaseEndpointOwners(redis, phone, targetSubs
-        .filter(sub => !survivingSubs.some(next => next.endpoint === sub.endpoint))
-        .map(sub => sub.endpoint));
+    if (isFirestoreStore(redis)) await reconcileFirestoreWebPush(redis, phone, targetSubs, survivingSubs);
+    else {
+        await persistEntry(redis, phone, { ...entry, subs: [...untouched, ...survivingSubs] });
+        await releaseEndpointOwners(redis, phone, targetSubs
+            .filter(sub => !survivingSubs.some(next => next.endpoint === sub.endpoint))
+            .map(sub => sub.endpoint));
+    }
     // HTTP 200 signifie « requête traitée », pas « notification livrée » : le
     // client lit `sent` et affiche le résultat métier exact.
     res.status(200).json({ ok: sent > 0, sent });
@@ -429,6 +441,14 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
         }));
 
         const nowISO = new Date().toISOString();
+        if (isFirestoreStore(redis)) {
+            await Promise.all(results.map(({ candidate, survivingSubs, sent }) => {
+                totalSent += sent;
+                return reconcileFirestoreWebPush(redis, candidate.phone, candidate.entry.subs, survivingSubs,
+                    sent > 0 ? { lastNotifiedAt: nowISO, lastSeverity: candidate.severity } : undefined);
+            }));
+            continue;
+        }
         const pipeline = redis.pipeline();
         const deadEndpoints: Array<{ phone: string; endpoint: string }> = [];
         for (const { candidate, survivingSubs, sent } of results) {

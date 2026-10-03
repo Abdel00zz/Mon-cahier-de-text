@@ -1,5 +1,6 @@
 import { HttpError } from './http.js';
 import { isClassColor } from '../../src/domain/classes/classColors.js';
+import { assertNotebookStructure } from '../../src/domain/notebook/notebookValidation.js';
 import type {
   AppConfig,
   AppLocale,
@@ -341,13 +342,16 @@ export const assertValidLessonsPayload = (
   if (lessons === undefined) return [];
   if (!Array.isArray(lessons)) throw new HttpError(400, 'Cahiers synchronisés invalides.');
   if (lessons.length > validClassIds.size) throw new HttpError(400, 'Trop de cahiers dans la synchronisation.');
-
+  const seenClassIds = new Set<string>();
   return lessons.map(raw => {
     if (!raw || typeof raw !== 'object') throw new HttpError(400, 'Cahier invalide.');
     const entry = raw as { classId?: unknown; lessonsData?: unknown; contentDirection?: unknown; updatedAt?: unknown };
     const classId = assertStringField(entry.classId, 'Classe du cahier', 120);
     if (!validClassIds.has(classId)) throw new HttpError(400, 'Cahier rattaché à une classe inconnue.');
-    if (!Array.isArray(entry.lessonsData)) throw new HttpError(400, 'Données de cahier invalides.');
+    if (seenClassIds.has(classId)) throw new HttpError(400, 'Cahier dupliqué dans la synchronisation.');
+    seenClassIds.add(classId);
+    try { assertNotebookStructure(entry.lessonsData); }
+    catch (error) { throw new HttpError(400, error instanceof Error ? error.message : 'Données de cahier invalides.'); }
     const contentDirection: ContentDirection | undefined =
       entry.contentDirection === 'rtl' || entry.contentDirection === 'ltr'
         ? entry.contentDirection

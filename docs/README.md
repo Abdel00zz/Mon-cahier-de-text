@@ -5,6 +5,7 @@
 | Comprendre les dossiers et choisir où ajouter du code | [Architecture](architecture/architecture.md) |
 | Utiliser le cahier et rédiger des contenus | [Guides](guides/) |
 | Déployer, vérifier la synchronisation ou les notifications | [Exploitation](operations/) |
+| Sauvegarder Firestore et répéter une restauration | [Sauvegarde Firebase](operations/firebase-backup.md) |
 | Compiler et tester l’application Android | [Android](operations/android.md) |
 | Consulter les analyses UX, mobile et données | [Audits](audits/) |
 | Retrouver les transcriptions des documents officiels | [Recherche](research/) |

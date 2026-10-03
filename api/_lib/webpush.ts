@@ -12,7 +12,7 @@ export interface PushSubscriptionJSON {
 }
 
 export interface PushEntry {
-    subs: Array<PushSubscriptionJSON & { device?: string }>;
+    subs: Array<PushSubscriptionJSON & { device?: string; binding?: string }>;
     lastNotifiedAt?: string;
     lastSeverity?: string;
 }

@@ -29,7 +29,8 @@ import { isContentDirection } from '../domain/notebook/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storage/accountWorkspace';
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
-import { startForegroundPolling } from '../platform/mobileScheduling';
+import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
+import { requestSyncJson, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -187,6 +188,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const debounceRef = useRef<number | null>(null);
     const scheduledPushAtRef = useRef<number | null>(null);
     const pushingRef = useRef(false);
+    const retryAttemptRef = useRef(0);
     const immediatePushRequestedRef = useRef(false);
     const pushAbortRef = useRef<AbortController | null>(null);
     const pullAbortRef = useRef<AbortController | null>(null);
@@ -222,6 +224,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const currentUser = userRef.current;
         const scope = readWorkspaceScope();
         if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== currentUser.phone || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
+        if (!options?.keepalive && !isForegroundOnline()) return;
 
         pullAbortRef.current?.abort();
         const controller = new AbortController();
@@ -269,7 +272,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         lessonsData,
                         contentDirection,
                         updatedAt: syncMeta[id]?.localUpdatedAt ?? now,
-                        bytes: JSON.stringify({ lessonsData, contentDirection }).length,
+                        bytes: syncJsonBytes({ classId: id, lessonsData, contentDirection, updatedAt: syncMeta[id]?.localUpdatedAt ?? now }),
                     };
                 });
 
@@ -318,51 +321,49 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const pushedIds: string[] = [];
             let serverTime: string | null = null;
             let pushedSettingsAt: string | null = null;
-            let failure: { status: number; message?: string; code?: string; firstBatch: boolean } | null = null;
+            let failure: { status: number; message?: string; code?: string; retryAfter?: string | null; firstBatch: boolean } | null = null;
 
             for (let i = 0; i < batches.length; i++) {
                 if (!isCurrent()) return;
                 const isFirst = i === 0;
                 const includeSettings = isFirst && work.classesListDirty;
-                const response = await apiFetch('/api/sync', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': currentUser.phone },
-                    signal: controller.signal,
-                    credentials: 'same-origin',
-                    // keepalive : la requête survit à la fermeture de la page (flush
-                    // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
-                    // travail en attente sera resynchronisé au prochain démarrage.
-                    keepalive: options?.keepalive === true,
-                    body: JSON.stringify({
-                        classes,
-                        schedules,
-                        timetable: config.timetable ?? [],
-                        // métadonnées portées par le premier lot uniquement
-                        settings: includeSettings ? extractSyncableSettings(config) : undefined,
-                        settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
-                        // Nouveau format horodaté ; deletedClassIds reste envoyé
-                        // pour que les déploiements serveur précédents le comprennent.
-                        deletedClasses: isFirst ? work.deletedClasses : [],
-                        deletedClassIds: isFirst ? work.deletedClassIds : [],
-                        lessons: batches[i].map(({ classId, lessonsData, contentDirection, updatedAt }) => ({ classId, lessonsData, contentDirection, updatedAt })),
-                        snapshot: isFirst ? snapshot : undefined,
-                    }),
-                });
+                let data: { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean };
+                try {
+                    data = await requestSyncJson('/api/sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': currentUser.phone },
+                        signal: controller.signal,
+                        credentials: 'same-origin',
+                        // keepalive : la requête survit à la fermeture de la page (flush
+                        // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
+                        // travail en attente sera resynchronisé au prochain démarrage.
+                        keepalive: options?.keepalive === true,
+                        body: JSON.stringify({
+                            classes,
+                            schedules,
+                            timetable: config.timetable ?? [],
+                            // métadonnées portées par le premier lot uniquement
+                            settings: includeSettings ? extractSyncableSettings(config) : undefined,
+                            settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
+                            // Nouveau format horodaté ; deletedClassIds reste envoyé
+                            // pour que les déploiements serveur précédents le comprennent.
+                            deletedClasses: isFirst ? work.deletedClasses : [],
+                            deletedClassIds: isFirst ? work.deletedClassIds : [],
+                            lessons: batches[i].map(({ classId, lessonsData, contentDirection, updatedAt }) => ({ classId, lessonsData, contentDirection, updatedAt })),
+                            snapshot: isFirst ? snapshot : undefined,
+                        }),
+                    });
 
-                if (!isCurrent()) return;
-                if (!response.ok) {
-                    let message: string | undefined;
-                    let code: string | undefined;
-                    try {
-                        const error = (await response.json()) as { error?: string; code?: string };
-                        message = error.error;
-                        code = error.code;
-                    } catch { /* corps non JSON */ }
-                    failure = { status: response.status, message, code, firstBatch: isFirst };
+                } catch (error) {
+                    if (!isCurrent()) return;
+                    const networkError = error instanceof SyncRequestError ? error
+                        : error instanceof TypeError ? new SyncRequestError('Connexion interrompue.')
+                        : error instanceof SyntaxError ? new SyncRequestError('Réponse serveur invalide.', 502) : null;
+                    if (!networkError) throw error;
+                    failure = { status: networkError.status, message: networkError.message, code: networkError.code,
+                        retryAfter: networkError.retryAfter, firstBatch: isFirst };
                     break;
                 }
-
-                const data = (await response.json()) as { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean };
                 if (!isCurrent()) return;
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
                 if (includeSettings && data.settingsAccepted !== false) pushedSettingsAt = settingsUpdatedAt;
@@ -384,6 +385,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (pushedSettingsAt) markSettingsSynced(pushedSettingsAt);
                 clearPendingWork(work);
                 lastErrorKeyRef.current = null;
+                retryAttemptRef.current = 0;
                 setLastSyncAt(serverTime ?? new Date().toISOString());
                 setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
                 succeeded = true;
@@ -407,18 +409,18 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     deletedClasses: failure.firstBatch ? [] : work.deletedClasses,
                 });
             }
-            setSyncStatus('error');
-            if (failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
-            // 5xx / 429 : panne passagère → nouvel essai automatique dans 1 min.
-            // 401 (reconnexion) et 413 (cahier trop gros) : inutile d'insister.
-            if (failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT') {
+            setSyncStatus(failure.status === 0 ? 'offline' : 'error');
+            if (failure.status !== 0 && failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
+            // Bounded jitter and Retry-After avoid synchronized retries and preserve dirty work.
+            if (failure.status === 0 || failure.status === 408 || failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT') {
+                const delay = retryDelayMs(retryAttemptRef.current++, failure.retryAfter);
                 if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
-                scheduledPushAtRef.current = Date.now() + 60_000;
+                scheduledPushAtRef.current = Date.now() + delay;
                 debounceRef.current = window.setTimeout(() => {
                     debounceRef.current = null;
                     scheduledPushAtRef.current = null;
                     void push();
-                }, 60_000);
+                }, delay);
             }
         } catch (error) {
             if (!isCurrent()) return;
@@ -812,7 +814,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         const handleOnline = () => {
-            if (hasPendingWork()) schedulePush(1_000);
+            if (isForegroundOnline() && hasPendingWork()) schedulePush(1_000);
         };
 
         const flush = () => {
@@ -823,11 +825,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         window.addEventListener('online', handleOnline);
+        window.addEventListener('native-resume', handleOnline);
+        document.addEventListener('visibilitychange', handleOnline);
         document.addEventListener('visibilitychange', flush);
         window.addEventListener('pagehide', flush);
         return () => {
             unsubscribeDirty();
             window.removeEventListener('online', handleOnline);
+            window.removeEventListener('native-resume', handleOnline);
+            document.removeEventListener('visibilitychange', handleOnline);
             document.removeEventListener('visibilitychange', flush);
             window.removeEventListener('pagehide', flush);
             if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);

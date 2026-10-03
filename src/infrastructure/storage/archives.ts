@@ -1,4 +1,4 @@
-import { FullBackup, buildFullBackup } from './backup.js';
+import { FullBackup, buildFullBackup, serializeBackup } from './backup.js';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '../../domain/calendar/calendar.js';
 
 /**
@@ -21,7 +21,7 @@ export interface ArchiveMeta {
     yearLabel: string;
     createdAt: string;
     classCount: number;
-    /** taille approximative en octets (information de gestion du stockage) */
+    /** Taille du fichier JSON en octets UTF-8. */
     bytes: number;
 }
 
@@ -55,23 +55,25 @@ export const currentYearLabel = (schoolYearStart?: string): string => {
  * Peut échouer si le stockage local est plein (retourne null).
  */
 export const createArchive = (yearLabel: string): ArchiveMeta | null => {
-    const backup = buildFullBackup();
-    const payload = JSON.stringify(backup);
-    const meta: ArchiveMeta = {
-        id: `${yearLabel.replace(/[^0-9-]/g, '')}-${Date.now().toString(36)}`,
-        yearLabel,
-        createdAt: new Date().toISOString(),
-        classCount: backup.classes.length,
-        bytes: payload.length,
-    };
+    let writtenId: string | null = null;
     try {
+        const backup = buildFullBackup();
+        const payload = serializeBackup(backup);
+        const meta: ArchiveMeta = {
+            id: `${yearLabel.replace(/[^0-9-]/g, '')}-${Date.now().toString(36)}`,
+            yearLabel,
+            createdAt: new Date().toISOString(),
+            classCount: backup.classes.length,
+            bytes: new TextEncoder().encode(payload).byteLength,
+        };
         localStorage.setItem(entryKey(meta.id), payload);
+        writtenId = meta.id;
         writeIndex([...listArchives(), meta]);
         return meta;
     } catch {
         // quota dépassé : proposer plutôt le téléchargement du fichier
         try {
-            localStorage.removeItem(entryKey(meta.id));
+            if (writtenId) localStorage.removeItem(entryKey(writtenId));
         } catch { /* rien à nettoyer */ }
         return null;
     }
@@ -99,7 +101,9 @@ export const deleteArchive = (id: string): void => {
 export const downloadArchive = (meta: ArchiveMeta): boolean => {
     const backup = readArchive(meta.id);
     if (!backup) return false;
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    let payload: string;
+    try { payload = serializeBackup(backup); } catch { return false; }
+    const blob = new Blob([payload], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
