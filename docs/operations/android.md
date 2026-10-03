@@ -112,9 +112,9 @@ Sur une autre machine ou en CI, fournir les quatre variables privées `ANDROID_U
 
 La commande produit, dans `artifacts/android/` :
 
-* `mon-cahier-de-textes-1.2.6.aab` : fichier signé à envoyer à Google Play ;
-* `mon-cahier-de-textes-1.2.6-release.apk` : APK signé pour essais directs ;
-* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.6.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
+* `mon-cahier-de-textes-1.2.7.aab` : fichier signé à envoyer à Google Play ;
+* `mon-cahier-de-textes-1.2.7-release.apk` : APK signé pour essais directs ;
+* leurs empreintes SHA-256, le certificat public, `release.json` et `mapping-1.2.7.txt` pour diagnostiquer le code réduit. Les noms suivent toujours la version du projet.
 
 La compilation exécute aussi `lintRelease`, `jarsigner -verify` et `apksigner verify`. Dans Play Console, activer **Play App Signing** avec une clé de signature gérée par Google et utiliser le certificat d’envoi pour les prochains AAB. Google signe les APK distribués aux utilisateurs. L’APK direct et l’installation Play peuvent donc avoir des certificats différents : tester le vrai circuit de mise à jour sur la piste de test interne Play.
 
@@ -127,7 +127,7 @@ Le fichier signé prépare l’envoi, sans effectuer de publication. Restent à 
 `package.json` est la source unique : `version` est affichée à côté du créateur au bas du guide et utilisée comme `versionName`, `androidVersionCode` est le numéro de compilation Android.
 
 ```bash
-npm run release -- --version 1.2.7 --serial emulator-5580
+npm run release -- --version 1.2.8 --serial emulator-5580
 ```
 
 Le pipeline lance les tests et `npm run check`, augmente la version si `--version` est fourni, compile et vérifie les signatures/ressources, puis contrôle le démarrage sur l’appareil de test choisi. Il produit `validation.json` avec les résultats. Sans `--version`, il reconstruit la version courante. En CI sans émulateur, `--skip-smoke` marque explicitement ce contrôle comme non effectué. Il ne déploie pas le cloud et ne publie pas sur Google Play.
@@ -150,7 +150,7 @@ L’APK vérifie `https://mon-cahier-de-text.vercel.app/native-release.json` uni
 
 1. Augmenter la version et compiler/tester le binaire avec la même clé.
 2. Publier l’APK signé sur une release GitHub de ce dépôt ou sur le domaine de l’application.
-3. Générer le manifeste avec `npm run android:publish-metadata -- https://github.com/Abdel00zz/Mon-cahier-de-text/releases/download/v1.2.6/mon-cahier-de-textes-1.2.6-release.apk` (adapter à la release réelle).
+3. Générer le manifeste avec `npm run android:publish-metadata -- https://github.com/Abdel00zz/Mon-cahier-de-text/releases/download/v1.2.7/mon-cahier-de-textes-1.2.7-release.apk` (adapter à la release réelle).
 4. Le script télécharge le fichier public et vérifie son SHA-256 et sa taille avant d’écrire `public/native-release.json`. Il refuse le remplacement d’une version déjà annoncée par un binaire différent ou plus ancien. Déployer ensuite le manifeste.
 
 Le client vérifie le paquet, le certificat correspondant à son installation, le numéro de compilation et l’origine HTTPS du lien. Le bouton ouvre le téléchargement dans le navigateur ; Android demande l’installation et contrôle lui-même la signature du fichier. Aucun fichier de mise à jour n’est installé silencieusement et aucune permission d’installation permanente n’est ajoutée à l’application. Conserver la distribution APK et Play comme deux canaux si Play App Signing utilise un certificat différent. Une ancienne version du manifeste ne prouve pas que l’application est à jour.
