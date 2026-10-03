@@ -7,9 +7,14 @@ import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPA
 import { unsubscribeFromPush } from '../infrastructure/push/push';
 import { clearInboxBadge, enableInboxBadge } from '../infrastructure/push/appBadge';
 import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../infrastructure/sync/syncTransport';
+import { accountOwner, isAccountId } from '../domain/auth/accountIdentity';
+import { clearGoogleSignIn, googleSignIn } from '../platform/googleAuth';
 
 interface AuthUser {
+  id?: string;
   phone: string;
+  email?: string;
+  provider?: 'password' | 'google.com';
   nom: string;
   prenom: string;
   /** Marqueur serveur : l'accueil a été terminé ou ignoré par ce compte. */
@@ -22,6 +27,7 @@ interface RegisterInput {
   nom: string;
   prenom: string;
   phone: string;
+  email?: string;
   password: string;
   setup?: RegistrationSetup;
 }
@@ -31,7 +37,8 @@ interface AuthContextValue {
   status: AuthStatus;
   /** Motif d'une session close par la direction : explaine sur l'ecran de connexion. */
   sessionNotice: 'blocked' | null;
-  login: (phone: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  loginGoogle: (locale: string, setup?: RegistrationSetup) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   completeWelcome: () => Promise<void>;
   logout: () => Promise<void>;
@@ -67,13 +74,14 @@ const cacheUser = (user: AuthUser | null): void => {
 const isAuthUser = (value: unknown): value is AuthUser => {
   if (!value || typeof value !== 'object') return false;
   const user = value as Partial<AuthUser>;
-  return typeof user.phone === 'string' && /^\d{8,15}$/.test(user.phone) && typeof user.nom === 'string' && typeof user.prenom === 'string';
+  return typeof user.phone === 'string' && isAccountId(user.id ?? user.phone) && typeof user.nom === 'string' && typeof user.prenom === 'string';
 };
 
 const activateUserWorkspace = async (user: AuthUser, current: () => boolean): Promise<boolean> => {
-  if (readWorkspaceScope()?.owner !== user.phone) await clearInboxBadge();
+  if (readWorkspaceScope()?.owner !== accountOwner(user)) await clearInboxBadge();
   if (!current()) return false;
-  switchAccountWorkspace(user.phone, { legacyOwner: readCachedUser()?.phone });
+  const cached = readCachedUser();
+  switchAccountWorkspace(accountOwner(user), { legacyOwner: cached ? accountOwner(cached) : undefined });
   enableInboxBadge();
   reloadSyncState();
   applyProfileToConfig(user);
@@ -118,7 +126,7 @@ const applyProfileToConfig = (user: AuthUser): void => {
   }
 };
 
-const postAuth = async (payload: Record<string, unknown>): Promise<AuthUser> => {
+const postAuth = async (payload: Record<string, unknown>, onCreated?: (created: boolean) => void): Promise<AuthUser> => {
   const response = await apiFetch('/api/auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -127,9 +135,10 @@ const postAuth = async (payload: Record<string, unknown>): Promise<AuthUser> => 
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.');
+    throw Object.assign(new Error(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.'), { code: data.code });
   }
   if (!isAuthUser(data.user)) throw new Error('Réponse de connexion invalide. Réessayez.');
+  onCreated?.(data.isNewAccount === true);
   return data.user;
 };
 
@@ -137,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
       const cached = readCachedUser();
-      return localStorage.getItem(SIGNED_OUT_KEY) !== 'true' && cached?.phone === readWorkspaceScope()?.owner ? cached : null;
+      return localStorage.getItem(SIGNED_OUT_KEY) !== 'true' && cached && accountOwner(cached) === readWorkspaceScope()?.owner ? cached : null;
     } catch { return null; }
   });
   const [status, setStatus] = useState<AuthStatus>(() => user ? 'offline' : 'loading');
@@ -169,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           needsValidation = false;
           return;
         }
-        if (!readWorkspaceScope() && cached) switchAccountWorkspace(cached.phone, { legacyOwner: cached.phone });
+        if (!readWorkspaceScope() && cached) switchAccountWorkspace(accountOwner(cached), { legacyOwner: accountOwner(cached) });
         if (!navigator.onLine) throw new TypeError('Offline');
         const data = await requestSyncJson<{ user: AuthUser }>('/api/auth?action=me', {
           credentials: 'same-origin', signal: controller.signal,
@@ -184,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!current()) return;
         const rejected = error instanceof SyncRequestError && (error.status === 401 || error.status === 403);
         // La session locale permet de travailler, jamais d'autoriser un push cloud.
-        if (isRetryableSyncError(error) && cached && readWorkspaceScope()?.owner === cached.phone) {
+        if (isRetryableSyncError(error) && cached && readWorkspaceScope()?.owner === accountOwner(cached)) {
           reloadSyncState();
           setUser(cached);
           setStatus('offline');
@@ -218,11 +227,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const login = useCallback(async (phone: string, password: string) => {
+  const login = useCallback(async (identifier: string, password: string) => {
     const version = ++requestVersion.current;
     initialRequest.current?.abort();
     await logoutRequest.current;
-    const loggedUser = await postAuth({ action: 'login', phone, password });
+    const loggedUser = await postAuth({ action: 'login', ...(identifier.includes('@') ? { email: identifier } : { phone: identifier }), password });
     if (version !== requestVersion.current) return;
     if (!(await activateUserWorkspace(loggedUser, () => version === requestVersion.current))) return;
     setUser(loggedUser);
@@ -234,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const scope = readWorkspaceScope();
     const version = requestVersion.current;
     const completedUser = await postAuth({ action: 'completeWelcome' });
-    if (version !== requestVersion.current || !workspaceIsCurrent(scope) || completedUser.phone !== scope?.owner) return;
+    if (version !== requestVersion.current || !workspaceIsCurrent(scope) || accountOwner(completedUser) !== scope?.owner) return;
     setUser(completedUser);
     setStatus('authenticated');
     cacheUser(completedUser);
@@ -252,7 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let preparationCompleted = false;
     if (setup) {
       try {
-        const classId = applyRegistrationSetup(setup, createdUser.phone);
+        const classId = applyRegistrationSetup(setup, accountOwner(createdUser));
         if (classId) {
           preparationCompleted = setup.preparationCompleted === true;
           touchClassSyncMeta(classId); touchSettingsSyncMeta();
@@ -272,6 +281,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [completeWelcome]);
 
+  const loginGoogle = useCallback(async (locale: string, setup?: RegistrationSetup) => {
+    const version = ++requestVersion.current;
+    initialRequest.current?.abort();
+    await logoutRequest.current;
+    const payload = await googleSignIn(locale);
+    let isNewAccount = false;
+    const loggedUser = await postAuth(payload, created => { isNewAccount = created; });
+    if (version !== requestVersion.current) return;
+    if (!(await activateUserWorkspace(loggedUser, () => version === requestVersion.current))) return;
+    // Apply a prepared class only to a newly created account, never to a returning teacher.
+    if (setup && isNewAccount) {
+      try {
+        const classId = applyRegistrationSetup(setup, accountOwner(loggedUser));
+        if (classId) {
+          touchClassSyncMeta(classId); touchSettingsSyncMeta(); markClassDirty(classId); markClassesListDirty();
+          notifyClassesChanged(); notifyConfigChanged();
+        }
+      } catch {
+        toast.error(locale === 'ar' ? 'أضف قسمك من لوحة التحكم.' : 'Ajoutez votre classe depuis le tableau de bord.');
+      }
+    }
+    setUser(loggedUser); setStatus('authenticated'); setSessionNotice(null);
+  }, []);
+
   const logout = useCallback(async () => {
     ++requestVersion.current;
     initialRequest.current?.abort();
@@ -288,7 +321,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
     localStorage.setItem(SIGNED_OUT_KEY, 'true');
     try {
-      switchAccountWorkspace(null, { legacyOwner: readCachedUser()?.phone });
+      const cached = readCachedUser();
+      switchAccountWorkspace(null, { legacyOwner: cached ? accountOwner(cached) : undefined });
     } catch (error) {
       if (previousSignedOut === null) localStorage.removeItem(SIGNED_OUT_KEY);
       else localStorage.setItem(SIGNED_OUT_KEY, previousSignedOut);
@@ -309,6 +343,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }).then(() => undefined, () => undefined);
     // A following login waits for this cookie-clearing response (bounded offline).
     await logoutRequest.current;
+    await clearGoogleSignIn();
   }, []);
 
   useEffect(() => {
@@ -317,7 +352,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event.key !== WORKSPACE_SCOPE_KEY && event.key !== SIGNED_OUT_KEY && event.key !== null) return;
       // Another tab switched the active workspace. Drop stale component state
       // before accepting further input; the next boot verifies the current session.
-      if (readWorkspaceScope()?.revision !== revision || (user && readWorkspaceScope()?.owner !== user.phone)) {
+      if (readWorkspaceScope()?.revision !== revision || (user && readWorkspaceScope()?.owner !== accountOwner(user))) {
         initialRequest.current?.abort();
         document.getElementById('root')?.setAttribute('inert', '');
         window.location.reload();
@@ -328,11 +363,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const value = useMemo(
-    () => ({ user, status, sessionNotice, login, register, completeWelcome, logout }),
-    [user, status, sessionNotice, login, register, completeWelcome, logout]
+    () => ({ user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout }),
+    [user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout]
   );
 
-  const workspaceKey = `${user?.phone ?? 'anonymous'}:${readWorkspaceScope()?.revision ?? 'legacy'}`;
+  const workspaceKey = `${user ? accountOwner(user) : 'anonymous'}:${readWorkspaceScope()?.revision ?? 'legacy'}`;
   return <AuthContext.Provider value={value}><React.Fragment key={workspaceKey}>{children}</React.Fragment></AuthContext.Provider>;
 };
 

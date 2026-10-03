@@ -1,39 +1,34 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { WebviewPrint } from 'capacitor-webview-print';
 import { hasMathSyntax } from '../../lib/text/math';
 
-/**
- * Fonction utilitaire pour l'impression qui fonctionne sur toutes les plateformes
- * Utilise le plugin capacitor-webview-print sur iOS/Android
- * Utilise window.print() sur le web
- */
-export const printDocument = async (fileName: string = 'cahier-de-textes'): Promise<boolean> => {
+export type PrintOutcome = 'completed' | 'confirmation-required' | 'cancelled' | 'failed';
+const NativePrint = registerPlugin<{ print(options: { name: string }): Promise<{ status: PrintOutcome }> }>('NativePrint');
+
+/** Opening a preview is not proof of printing. Android waits for the job. */
+export const printDocument = async (fileName: string = 'cahier-de-textes'): Promise<PrintOutcome> => {
   const platform = Capacitor.getPlatform();
   try {
-    if (platform !== 'web') {
+    if (platform === 'android') {
+      const result = await NativePrint.print({ name: fileName });
+      return ['completed', 'confirmation-required', 'cancelled'].includes(result.status) ? result.status : 'failed';
+    } else if (platform !== 'web') {
       if (!WebviewPrint?.print) {
         throw new Error('Le plugin WebviewPrint n\'est pas correctement initialisé');
       }
       // The native implementations return status fields absent from the plugin's typings.
       const result = await WebviewPrint.print({ name: fileName }) as unknown as { printed?: boolean; isCancelled?: boolean; isFailed?: boolean } | undefined;
-      return result?.printed !== false && !result?.isCancelled && !result?.isFailed;
+      if (result?.isCancelled) return 'cancelled';
+      if (result?.isFailed || result?.printed === false) return 'failed';
+      return result?.printed === true ? 'completed' : 'confirmation-required';
     } else {
       if (typeof window.print !== 'function') throw new Error('La fonction d\'impression est indisponible.');
       window.print();
-      return true;
+      return 'confirmation-required';
     }
   } catch {
-    // Les WebViews natives peuvent parfois ne pas avoir le plugin synchronisé.
-    if (platform !== 'web') {
-      try {
-        if (typeof window.print !== 'function') return false;
-        window.print();
-        return true;
-      } catch (fallbackError) {
-        void fallbackError;
-      }
-    }
-    return false;
+    // window.print() may be a silent no-op inside Android WebView.
+    return 'failed';
   }
 };
 

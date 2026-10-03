@@ -51,6 +51,7 @@ const getAuthSecret = (): string => {
 };
 
 export interface SessionPayload {
+  accountId?: string;
   phone?: string;
   role?: 'teacher' | 'admin';
 }
@@ -82,7 +83,7 @@ const verifySession = async (token: string): Promise<SessionPayload | null> => {
     }
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as SessionPayload & { exp?: number };
     if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
-    return { phone: payload.phone, role: payload.role };
+    return { accountId: payload.accountId, phone: payload.phone, role: payload.role };
   } catch {
     return null;
   }
@@ -114,11 +115,12 @@ export const clearCookie = (res: ApiResponse, name: string): void => {
 export const requireUser = async (req: ApiRequest): Promise<{ phone: string }> => {
   const token = readCookie(req, SESSION_COOKIE);
   const payload = token ? await verifySession(token) : null;
-  if (!payload?.phone) {
+  const owner = payload?.accountId ?? payload?.phone;
+  if (!owner) {
     throw new HttpError(401, 'Session expirée. Veuillez vous reconnecter.');
   }
   const redis = await getRedis();
-  const user = await redis.get<{ blocked?: boolean }>(KEYS.user(payload.phone));
+  const user = await redis.get<{ blocked?: boolean }>(KEYS.user(owner));
   if (!user) {
     throw new HttpError(401, 'Compte introuvable. Veuillez vous reconnecter.');
   }
@@ -127,7 +129,8 @@ export const requireUser = async (req: ApiRequest): Promise<{ phone: string }> =
     // expirée, pour expliquer la situation au professeur au lieu d'un échec muet.
     throw new HttpError(403, 'Ce compte a été bloqué par la direction. Contactez votre établissement.', 'ACCOUNT_BLOCKED');
   }
-  return { phone: payload.phone };
+  // `phone` remains the internal compatibility alias for existing API/storage contracts.
+  return { phone: owner };
 };
 
 export const requireAdmin = async (req: ApiRequest): Promise<void> => {

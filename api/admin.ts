@@ -4,6 +4,7 @@ import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMess
 import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
 import { reconcileFirestoreWebPush } from './_lib/firestoreWebPush.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
+import { accountFirebaseUid } from './_lib/authAccounts.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
 import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
@@ -69,6 +70,9 @@ interface ClassesBlob {
 }
 
 interface StoredUser {
+    id?: string;
+    firebaseUid?: string;
+    email?: string;
     phone: string;
     nom: string;
     prenom: string;
@@ -170,6 +174,8 @@ const handleOverview = async (res: ApiResponse) => {
         const messages = normalizeAdminMessages(records[index * 2 + 1]);
         return [{
             ...snapshot,
+            contactPhone: user.phone,
+            email: user.email,
             blocked: user?.blocked === true,
             pendingMessages: messages.filter(message => !message.acknowledgedAt).length,
             lastMessageAt: messages[0]?.createdAt ?? null,
@@ -369,7 +375,9 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     res.status(200).json({
         user: user
             ? {
+                id: user.id ?? user.phone,
                 phone: user.phone,
+                email: user.email,
                 nom: user.nom,
                 prenom: user.prenom,
                 createdAt: user.createdAt,
@@ -696,7 +704,7 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     const blocked = body.blocked !== false;
     write.set(KEYS.user(phone), { ...user, blocked });
     await write.exec();
-    if (isFirestoreStore(redis)) await firebaseAuth().updateUser(teacherUid(phone), { disabled: blocked });
+    if (isFirestoreStore(redis)) await firebaseAuth().updateUser(accountFirebaseUid(user), { disabled: blocked });
     res.status(200).json({ ok: true, blocked });
 };
 
@@ -705,9 +713,10 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const redis = await getRedis();
     const pipeline = await beginAccountWrite(redis, phone);
-    const [classesBlob, pushEntry] = await Promise.all([
+    const [classesBlob, pushEntry, user] = await Promise.all([
         redis.get<ClassesBlob>(KEYS.classes(phone)),
         redis.hget<PushEntry>(KEYS.pushSubs, phone),
+        redis.get<StoredUser>(KEYS.user(phone)),
     ]);
 
     pipeline.del(KEYS.user(phone));
@@ -735,7 +744,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     await pipeline.exec();
     await deleteNativeDevices(redis, phone);
     if (isFirestoreStore(redis)) {
-        await firebaseAuth().deleteUser(teacherUid(phone)).catch(error => {
+        await firebaseAuth().deleteUser(user ? accountFirebaseUid(user) : teacherUid(phone)).catch(error => {
             if (error.code !== 'auth/user-not-found') throw error;
         });
     }

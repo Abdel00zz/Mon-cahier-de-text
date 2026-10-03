@@ -24,6 +24,10 @@ import {
 import type { AppLocale } from "@/types";
 import { AuthShowcase } from "./AuthShowcase";
 import { LandingPage } from "./LandingPage";
+import { GoogleSignInButton } from './GoogleSignInButton';
+import { prepareGoogleAuth } from '@/platform/googleAuth';
+import { apiFetch } from '@/platform/nativeHttp';
+import { authErrorMessage } from './authErrors';
 import "./authMotion.css";
 import "./auth-layout.css";
 import {
@@ -72,6 +76,20 @@ const AUTH_COPY = {
     name: "Nom",
     firstName: "Prénom",
     phone: "Numéro de téléphone",
+    phoneOptional: "Téléphone · facultatif",
+    contactOptional: "Ajouter un numéro de contact (facultatif)",
+    contactHelp: "Aucun numéro n’est nécessaire pour utiliser votre cahier.",
+    email: "Adresse e-mail",
+    google: "Continuer avec Google",
+    emailDivider: "ou avec votre e-mail",
+    legacyPhone: "Compte existant par téléphone ?",
+    useEmail: "Utiliser mon e-mail",
+    forgotPassword: "Mot de passe oublié ?",
+    resetTitle: "Retrouvez votre accès.",
+    resetDetail: "Recevez un lien pour choisir un nouveau mot de passe.",
+    resetSubmit: "Envoyer le lien",
+    resetSent: "Si un compte utilise cet e-mail, vous recevrez un lien. Vérifiez aussi vos courriers indésirables.",
+    backToLogin: "Retour à la connexion",
     phoneComplete: "Format du numéro valide",
     password: "Mot de passe",
     confirmPassword: "Confirmer le mot de passe",
@@ -114,6 +132,20 @@ const AUTH_COPY = {
     name: "الاسم العائلي",
     firstName: "الاسم الشخصي",
     phone: "رقم الهاتف",
+    phoneOptional: "الهاتف · اختياري",
+    contactOptional: "إضافة رقم للتواصل (اختياري)",
+    contactHelp: "لا تحتاج إلى رقم هاتف لاستعمال دفترك.",
+    email: "البريد الإلكتروني",
+    google: "المتابعة باستخدام Google",
+    emailDivider: "أو ببريدك الإلكتروني",
+    legacyPhone: "لديك حساب برقم الهاتف؟",
+    useEmail: "استعمال البريد الإلكتروني",
+    forgotPassword: "نسيت كلمة المرور؟",
+    resetTitle: "استعد الولوج إلى حسابك.",
+    resetDetail: "ستتوصل برابط لاختيار كلمة مرور جديدة.",
+    resetSubmit: "إرسال الرابط",
+    resetSent: "إذا كان هناك حساب بهذا البريد، ستتوصل برابط. تحقق أيضاً من البريد غير المرغوب فيه.",
+    backToLogin: "العودة إلى تسجيل الدخول",
     phoneComplete: "صيغة الرقم صحيحة",
     password: "كلمة المرور",
     confirmPassword: "تأكيد كلمة المرور",
@@ -216,7 +248,7 @@ export const AuthPage: React.FC<{
   /** Motif d'une session close par la direction : affiché avant le formulaire. */
   notice?: "blocked" | null;
 }> = ({ locale, onLocaleChange, notice = null }) => {
-  const { login, register } = useAuth();
+  const { login, register, loginGoogle } = useAuth();
   const displayLocale: AuthLocale = locale === "ar" ? "ar" : "fr";
   const copy = AUTH_COPY[displayLocale];
   const reducedMotion = useReducedMotion();
@@ -251,6 +283,11 @@ export const AuthPage: React.FC<{
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState('');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -272,6 +309,7 @@ export const AuthPage: React.FC<{
         Boolean(setupRef.current),
       );
       setError(null);
+      setResetMode(false); setResetSent(false);
       setMode(route.mode);
       setView(route.view);
       const hash = authRouteHash(route.view, route.mode);
@@ -319,10 +357,36 @@ export const AuthPage: React.FC<{
       ?.querySelector<HTMLElement>("h1")
       ?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [view, mode]);
+  }, [view, mode, resetMode]);
   useEffect(() => {
     if (error) errorRef.current?.focus();
   }, [error]);
+
+  useEffect(() => {
+    if (view === 'auth') void prepareGoogleAuth().catch(() => undefined);
+  }, [view]);
+
+  const handleGoogle = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true; setIsSubmitting(true); setGoogleBusy(true); setError(null);
+    try { await loginGoogle(displayLocale, isRegister && setup ? { ...setup, applicationLocale: displayLocale } : undefined); }
+    catch (error) { setError(error instanceof WorkspaceSwitchError ? copy.workspaceError : authErrorMessage(error, displayLocale)); }
+    finally { submittingRef.current = false; setIsSubmitting(false); setGoogleBusy(false); }
+  };
+
+  const handleReset = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true; setIsSubmitting(true); setError(null);
+    try {
+      const response = await apiFetch('/api/auth', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resetPassword', email, locale: displayLocale }), signal: AbortSignal.timeout(15_000) });
+      const data = await response.json();
+      if (!response.ok) throw Object.assign(new Error(data.error), { code: data.code });
+      setResetSent(true);
+    } catch (error) { setError(authErrorMessage(error, displayLocale)); }
+    finally { submittingRef.current = false; setIsSubmitting(false); }
+  };
 
   const switchMode = (next: Mode) => navigateTo("auth", next);
 
@@ -342,13 +406,13 @@ export const AuthPage: React.FC<{
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      // Preserve the backend contract, including legacy accounts with shorter local numbers.
-      if (mode === "login") await login(phone, password);
+      if (mode === "login") await login(loginMethod === 'phone' ? phone : email, password);
       else
         await register({
           nom: nom.trim(),
           prenom: prenom.trim(),
           phone,
+          email: email.trim(),
           password,
           ...(setup
             ? { setup: { ...setup, applicationLocale: displayLocale } }
@@ -363,9 +427,7 @@ export const AuthPage: React.FC<{
           ? copy.accountBlocked
           : err instanceof WorkspaceSwitchError
             ? copy.workspaceError
-            : displayLocale === "fr" && err instanceof Error
-              ? err.message
-              : copy.unknownError,
+            : authErrorMessage(err, displayLocale),
       );
     } finally {
       submittingRef.current = false;
@@ -376,7 +438,7 @@ export const AuthPage: React.FC<{
   return (
     <div
       ref={pageRef}
-      data-pwa-update-blocked={isSubmitting || Boolean(phone || password || confirmPassword || nom || prenom || setup || draft.cycle)}
+      data-pwa-update-blocked={isSubmitting || Boolean(email || phone || password || confirmPassword || nom || prenom || setup || draft.cycle)}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
       className="auth-page-shell flex min-h-dvh flex-col"
@@ -476,10 +538,10 @@ export const AuthPage: React.FC<{
                 tabIndex={-1}
                 id={id + "-title"}
               >
-                {isRegister ? copy.savePreparation : copy.welcomeTitle}
+                {resetMode ? copy.resetTitle : isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
               <p className="auth-form-detail">
-                {isRegister
+                {resetMode ? copy.resetDetail : isRegister
                   ? copy.savePreparationDetail
                   : setup
                     ? copy.existingAccountHint
@@ -495,7 +557,7 @@ export const AuthPage: React.FC<{
                   {copy.returnToPreparation}
                 </button>
               )}
-              <div
+              {!resetMode && <div
                 role="group"
                 aria-label={copy.modeLabel}
                 className="auth-modes"
@@ -527,7 +589,20 @@ export const AuthPage: React.FC<{
                     </span>
                   </button>
                 ))}
-              </div>
+              </div>}
+              {!resetMode && <>
+                <GoogleSignInButton label={copy.google} busy={googleBusy} disabled={isSubmitting} onClick={() => void handleGoogle()} />
+                <div className="auth-divider"><span>{loginMethod === 'phone' && !isRegister ? copy.phone : copy.emailDivider}</span></div>
+              </>}
+              {resetMode ? <form onSubmit={handleReset} aria-busy={isSubmitting} className="mt-6 space-y-4">
+                <label htmlFor={id + '-reset-email'} className={LABEL_CLASS}>{copy.email}</label>
+                <Input id={id + '-reset-email'} type="email" inputMode="email" dir="ltr" autoComplete="email" required
+                  value={email} onChange={event => { setEmail(event.target.value); setResetSent(false); }} disabled={isSubmitting} className={FIELD_CLASS} />
+                {resetSent && <p role="status" className="auth-reset-success">{copy.resetSent}</p>}
+                {error && <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">{error}</p>}
+                <Button type="submit" disabled={isSubmitting || resetSent} className="auth-submit">{isSubmitting ? copy.wait : copy.resetSubmit}</Button>
+                <button type="button" disabled={isSubmitting} className="auth-link" onClick={() => { setResetMode(false); setError(null); }}>{copy.backToLogin}</button>
+              </form> : <>
               <form
                 key={mode}
                 className="auth-reveal"
@@ -580,7 +655,13 @@ export const AuthPage: React.FC<{
                       </div>
                     </div>
                   )}
-                  <div>
+                  {(isRegister || loginMethod === 'email') && <div>
+                    <label htmlFor={id + '-email'} className={LABEL_CLASS}>{copy.email}</label>
+                    <Input id={id + '-email'} name="email" type="email" inputMode="email" enterKeyHint="next" dir="ltr"
+                      value={email} onChange={event => setEmail(event.target.value)} autoComplete={isRegister ? 'email' : 'username'}
+                      autoCapitalize="none" autoCorrect="off" spellCheck={false} required maxLength={254} placeholder="vous@exemple.com" className={FIELD_CLASS} />
+                  </div>}
+                  {!isRegister && loginMethod === 'phone' && <div>
                     <label htmlFor={id + "-phone"} className={LABEL_CLASS}>
                       {copy.phone}
                     </label>
@@ -617,7 +698,7 @@ export const AuthPage: React.FC<{
                         </span>
                       )}
                     </div>
-                  </div>
+                  </div>}
                   <div>
                     <label htmlFor={id + "-password"} className={LABEL_CLASS}>
                       {copy.password}
@@ -696,6 +777,14 @@ export const AuthPage: React.FC<{
                       )}
                     </div>
                   )}
+                  {isRegister && <details className="auth-optional">
+                    <summary>{copy.contactOptional}</summary>
+                    <label htmlFor={id + '-contact'} className={LABEL_CLASS}>{copy.phoneOptional}</label>
+                    <Input id={id + '-contact'} name="tel" type="tel" inputMode="tel" autoComplete="tel" dir="ltr"
+                      value={phone} onChange={event => setPhone(formatMoroccanPhone(event.target.value))} className={FIELD_CLASS} placeholder="06 12 34 56 78" />
+                    <p>{copy.contactHelp}</p>
+                  </details>}
+                  {!isRegister && loginMethod === 'email' && <button type="button" className="auth-link auth-forgot" onClick={() => { setResetMode(true); setResetSent(false); setError(null); }}>{copy.forgotPassword}</button>}
                   {error && (
                     <p
                       ref={errorRef}
@@ -725,6 +814,10 @@ export const AuthPage: React.FC<{
                   </Button>
                 </fieldset>
               </form>
+              {!isRegister && <button type="button" disabled={isSubmitting} className="auth-link auth-legacy" onClick={() => { setLoginMethod(method => method === 'email' ? 'phone' : 'email'); setError(null); }}>
+                {loginMethod === 'email' ? copy.legacyPhone : copy.useEmail}
+              </button>}
+              </>}
               <p className="auth-secure">
                 <LockKeyhole
                   className="h-3.5 w-3.5 shrink-0"

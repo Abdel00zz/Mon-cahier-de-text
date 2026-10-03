@@ -6,6 +6,7 @@
 | Utiliser le cahier et rédiger des contenus | [Guides](guides/) |
 | Déployer, vérifier la synchronisation ou les notifications | [Exploitation](operations/) |
 | Sauvegarder Firestore et répéter une restauration | [Sauvegarde Firebase](operations/firebase-backup.md) |
+| Configurer la connexion Google et e-mail | [Connexion Firebase](operations/firebase-sign-in.md) |
 | Compiler et tester l’application Android | [Android](operations/android.md) |
 | Consulter les analyses UX, mobile et données | [Audits](audits/) |
 | Retrouver les transcriptions des documents officiels | [Recherche](research/) |

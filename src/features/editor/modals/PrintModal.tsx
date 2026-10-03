@@ -138,7 +138,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       title: t('print.newOnly'),
       subtitle: newDates.length > 0
         ? t(newDates.length === 1 ? 'print.newSubtitleOne' : 'print.newSubtitleMany', { count: number.format(newDates.length) })
-        : t('print.noNew'),
+        : t(totalDates === 0 ? 'print.noDates' : 'print.noNew'),
       badge: recommendNew ? t('print.recommended') : undefined,
       disabled: newDates.length === 0,
       icon: CalendarCheck,

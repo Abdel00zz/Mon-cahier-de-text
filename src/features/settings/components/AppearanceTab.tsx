@@ -90,7 +90,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             size="sm"
             onClick={resetDefaults}
             disabled={isDefault}
-            className="h-8 cursor-pointer gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+            className="h-11 min-w-11 cursor-pointer gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+            aria-label={t('settings.appearance.resetDefaults')}
             title={t('settings.appearance.resetDefaults')}
           >
             <RotateCcw className="h-3.5 w-3.5" />

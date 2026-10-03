@@ -253,6 +253,10 @@ La synchronisation valide ses classes, réglages et cahiers avant un envoi. Un J
 
 Les changements de compte isolent données, archives, badges et réponses réseau en vol avec un propriétaire et une révision locale. Une identité mise en cache autorise le travail hors connexion ; elle ne donne pas à elle seule le droit d'envoyer au serveur.
 
+Les comptes Google/e-mail ont une identité stable distincte du téléphone facultatif. Les anciens comptes et contrats d'API nommés `phone` restent compatibles : cet alias transporte le propriétaire interne, jamais le contact facultatif d'un nouveau compte. Firebase Auth reste transitoire sur le client, la session applicative utilise le cookie HttpOnly et les règles continuent à refuser l'accès direct. Voir [la connexion Firebase](../operations/firebase-sign-in.md).
+
+L'impression fige le cahier avant préparation des polices/formules. Android suit le travail système via `NativePrint` ; une annulation n'enregistre rien. Le Web et les travaux natifs non confirmés demandent une confirmation explicite. L'historique conserve les empreintes du contenu réellement imprimé, par date ; une correction devient une nouveauté. Les préférences des anciens historiques sont conservées, leurs lancements non confirmés ne masquent plus les séances.
+
 Les sauvegardes locales restaurent l'espace enseignant, puis rejoignent cette synchronisation. La sauvegarde cloud chiffrée porte uniquement sur Firestore : Authentication et secrets restent un périmètre séparé. Voir [la procédure de restauration](../operations/firebase-backup.md).
 
 Le code de l'APK est embarqué. Une mise à jour de ses ressources exige une nouvelle compilation signée avec un `versionCode` supérieur. La PWA reçoit un nouveau service worker ; Android utilise le canal Play ou un manifeste d'APK réellement publié. Les deux circuits attendent la fin des saisies/sauvegardes avant un redémarrage. Voir [la distribution Android](../operations/android.md).

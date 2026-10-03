@@ -8,6 +8,7 @@ import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
 import { useNativeReminders } from '../hooks/useNativeReminders';
+import { accountOwner } from '../domain/auth/accountIdentity';
 import { useAuth } from '../contexts/AuthContext';
 import { AUTH_REQUIRED } from '../config/features';
 import { normalizeOfficialClassName } from '../constants';
@@ -123,8 +124,9 @@ const App: React.FC = () => {
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(config.theme, config.appTextSize);
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
-  useNativeReminders(config, classes, authUser?.phone);
-  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authUser?.phone, config.applicationLocale ?? 'ar');
+  const authOwner = authUser ? accountOwner(authUser) : undefined;
+  useNativeReminders(config, classes, authOwner);
+  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authOwner, config.applicationLocale ?? 'ar');
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
@@ -136,8 +138,8 @@ const App: React.FC = () => {
    */
   const sessionClaimRef = useRef<{ scope: string; key: string }>({ scope: 'local', key: '' });
   useEffect(() => {
-    sessionClaimRef.current = { scope: authUser?.phone ?? 'local', key: currentSession.key };
-  }, [authUser?.phone, currentSession.key]);
+    sessionClaimRef.current = { scope: authOwner ?? 'local', key: currentSession.key };
+  }, [authOwner, currentSession.key]);
   /*
    * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
    * clic sur la carte, ouverture automatique, lien profond d'une notification
@@ -148,8 +150,8 @@ const App: React.FC = () => {
    */
   useEffect(() => {
     if (view !== 'editor') return;
-    markCurrentSessionHandled(authUser?.phone ?? 'local', currentSession.key);
-  }, [authUser?.phone, currentSession.key, view]);
+    markCurrentSessionHandled(authOwner ?? 'local', currentSession.key);
+  }, [authOwner, currentSession.key, view]);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   /*
    * Une seule matière ne se distingue de rien : ses libellés et badges sont
@@ -471,9 +473,9 @@ const App: React.FC = () => {
     const classInfo = classes.find(item => item.id === currentSession.classIds[0]);
     if (!classInfo) return;
 
-    if (!claimCurrentSessionAutoOpen(authUser?.phone ?? 'local', currentSession.key)) return;
+    if (!claimCurrentSessionAutoOpen(authOwner ?? 'local', currentSession.key)) return;
     handleSelectClass(classInfo);
-  }, [authUser?.phone, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
+  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
 
   const appSurface = (
     <div

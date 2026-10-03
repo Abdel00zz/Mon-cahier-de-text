@@ -29,6 +29,23 @@
 .auth-page-shell :is(button, input):focus-visible { outline-color: hsl(var(--primary)); }
 .auth-page-shell button:disabled { cursor: default; opacity: .5; }
 .auth-showcase { display: none; }
+.auth-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 52px; padding: 12px 18px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 14px; font-weight: 600; cursor: pointer; }
+.auth-google svg { flex-shrink: 0; }
+.auth-google:hover { background: hsl(var(--muted) / .65); border-color: hsl(var(--muted-foreground) / .5); }
+.auth-divider { display: flex; align-items: center; gap: 14px; margin-block: 22px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: hsl(var(--border)); }
+.auth-link { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding-inline: 6px; border-radius: 8px; color: hsl(var(--primary)); font-size: 13px; font-weight: 550; cursor: pointer; }
+.auth-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.auth-forgot { display: flex; margin-inline-start: auto; margin-block: -8px; }
+.auth-legacy { width: 100%; margin-top: 12px; color: hsl(var(--muted-foreground)); }
+.auth-optional { border-block: 1px solid hsl(var(--border)); padding-block: 4px; }
+.auth-optional summary { display: flex; align-items: center; min-height: 44px; font-size: 13px; color: hsl(var(--muted-foreground)); cursor: pointer; }
+.auth-optional summary::before { content: '+'; margin-inline-end: 10px; font-size: 18px; }
+.auth-optional[open] summary::before { content: '−'; }
+.auth-optional summary:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; border-radius: 8px; }
+.auth-optional p { margin-block: 10px; color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 1.7; }
+.auth-reset-success { padding: 14px; border-radius: 12px; background: hsl(var(--muted)); font-size: 14px; line-height: 1.7; }
+.auth-error { padding: 12px; border-radius: 8px; color: hsl(var(--destructive)); background: hsl(var(--destructive) / .08); font-size: 14px; line-height: 1.7; }
 @media (min-width: 1024px) {
   .auth-access-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding: 12px 28px 32px; gap: 40px; }
   .auth-form-main { align-self: start; padding: 32px 24px; }

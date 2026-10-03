@@ -87,9 +87,10 @@ export class FirestoreView {
     if (options.nx && await this.exists(recordPath(key))) return null;
     await this.write(recordPath(key), value, { key, ...(options.ex ? { expiresAt: Timestamp.fromMillis(Date.now() + options.ex * 1000) } : {}) });
     if (key.startsWith('user:') && value && typeof value === 'object') {
-      const user = value as { phone: string; nom: string; prenom: string; blocked?: boolean };
-      const ref = this.db.doc(`users/${teacherUid(user.phone)}`);
-      this.pending.set(ref.path, { ref, data: { phone: user.phone, nom: user.nom, prenom: user.prenom, role: 'teacher', blocked: user.blocked === true } });
+      const user = value as { phone: string; email?: string; nom: string; prenom: string; blocked?: boolean };
+      const owner = key.slice(5);
+      const ref = this.db.doc(`users/${teacherUid(owner)}`);
+      this.pending.set(ref.path, { ref, data: { accountId: owner, phone: user.phone, ...(user.email ? { email: user.email } : {}), nom: user.nom, prenom: user.prenom, role: 'teacher', blocked: user.blocked === true } });
     }
     return 'OK';
   }

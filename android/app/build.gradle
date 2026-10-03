@@ -62,6 +62,9 @@ repositories {
 dependencies {
     // Capacitor 7's compatible FCM baseline; Analytics is intentionally absent.
     implementation 'com.google.firebase:firebase-messaging:24.1.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"

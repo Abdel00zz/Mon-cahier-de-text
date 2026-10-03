@@ -16,6 +16,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NativeShellPlugin.class);
         registerPlugin(NativeUpdatesPlugin.class);
         registerPlugin(NativePushPlugin.class);
+        registerPlugin(NativeGoogleAuthPlugin.class);
+        registerPlugin(NativePrintPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         View content = findViewById(android.R.id.content);

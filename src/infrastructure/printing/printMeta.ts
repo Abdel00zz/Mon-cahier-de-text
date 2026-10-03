@@ -19,8 +19,10 @@ export interface PrintPrefs {
 }
 
 export interface PrintMeta {
+    version: 2;
     lastPrintedAt: string | null;
     printedDates: string[];
+    confirmedContent: Record<string, string>;
     /** préférences d'impression mémorisées (taille, aération, pagination) */
     prefs?: PrintPrefs;
 }
@@ -52,26 +54,32 @@ export const readPrintMeta = (classId: string): PrintMeta => {
         const raw = localStorage.getItem(key(classId));
         if (raw) {
             const parsed = JSON.parse(raw) as PrintMeta;
-            const printedDates = normalizeDateKeys(parsed.printedDates);
-            const lastPrintedAt = typeof parsed.lastPrintedAt === 'string' && !Number.isNaN(Date.parse(parsed.lastPrintedAt))
+            // v1 recorded opening the preview, including cancelled jobs. Keep
+            // layout preferences, but never treat those launches as a print.
+            const confirmedContent = parsed.version === 2 && parsed.confirmedContent && typeof parsed.confirmedContent === 'object'
+                ? Object.fromEntries(Object.entries(parsed.confirmedContent).filter(([date, signature]) => date.trim() && typeof signature === 'string' && /^[a-f0-9]{16}$/.test(signature)))
+                : {};
+            const printedDates = normalizeDateKeys(Object.keys(confirmedContent));
+            const lastPrintedAt = parsed.version === 2 && typeof parsed.lastPrintedAt === 'string' && !Number.isNaN(Date.parse(parsed.lastPrintedAt))
                 ? parsed.lastPrintedAt
                 : null;
-            return { lastPrintedAt, printedDates, prefs: normalizePrintPrefs(parsed.prefs) };
+            return { version: 2, lastPrintedAt, printedDates, confirmedContent, prefs: normalizePrintPrefs(parsed.prefs) };
         }
     } catch {
         // corrompu : on repart de zéro
     }
-    return { lastPrintedAt: null, printedDates: [] };
+    return { version: 2, lastPrintedAt: null, printedDates: [], confirmedContent: {} };
 };
 
-export const recordPrint = (classId: string, printedDates: string[]): boolean => {
+/** Call only after a completed native job or explicit confirmation on the web. */
+export const recordPrint = (classId: string, signatures: Record<string, string>): boolean => {
     const existing = readPrintMeta(classId);
-    const merged = normalizeDateKeys([...existing.printedDates, ...printedDates]);
+    const confirmedContent = { ...existing.confirmedContent, ...signatures };
     try {
         localStorage.setItem(
             key(classId),
             // préserve les préférences déjà mémorisées
-            JSON.stringify({ lastPrintedAt: new Date().toISOString(), printedDates: merged, prefs: existing.prefs } satisfies PrintMeta)
+            JSON.stringify({ version: 2, lastPrintedAt: new Date().toISOString(), printedDates: normalizeDateKeys(Object.keys(confirmedContent)), confirmedContent, prefs: existing.prefs } satisfies PrintMeta)
         );
         return true;
     } catch {
@@ -100,11 +108,36 @@ export const collectSessionDates = (lessonsData: LessonsData): string[] => {
     return Array.from(dates).sort();
 };
 
-/** Dates jamais imprimées jusqu'ici. */
-export const getNewDates = (lessonsData: LessonsData, classId: string): string[] => {
-    const printed = new Set(readPrintMeta(classId).printedDates);
-    return collectSessionDates(lessonsData).filter(date => !printed.has(date));
+/** A content revision on the same date is new too. One traversal, bounded depth. */
+export const sessionPrintSignatures = (lessonsData: LessonsData): Record<string, string> => {
+    const contextByKey = new Map<string, string>();
+    const contentByDate = new Map<string, string[]>();
+    for (const row of buildLessonRows(lessonsData)) {
+        const scalarFields = Object.entries(row.data)
+            .filter(([key, value]) => !key.startsWith('_') && key !== 'id' && key !== 'separatorAfter' && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'))
+            .sort(([a], [b]) => a.localeCompare(b));
+        const own = JSON.stringify(scalarFields);
+        contextByKey.set(row.key, own);
+        const date = typeof row.data.date === 'string' ? row.data.date.trim() : '';
+        if (!date) continue;
+        const content = JSON.stringify([...row.ancestorKeys.map(key => contextByKey.get(key)), own]);
+        const pieces = contentByDate.get(date) ?? [];
+        pieces.push(content); contentByDate.set(date, pieces);
+    }
+    return Object.fromEntries([...contentByDate].sort(([a], [b]) => a.localeCompare(b)).map(([date, pieces]) => {
+        const content = JSON.stringify(pieces);
+        let a = 2166136261, b = 3339675911;
+        for (let index = 0; index < content.length; index++) {
+            const value = content.charCodeAt(index);
+            a = Math.imul(a ^ value, 16777619);
+            b = Math.imul(b ^ value, 2246822519);
+        }
+        return [date, (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0')];
+    }));
 };
+
+export const getNewDates = (lessonsData: LessonsData, classId: string, meta = readPrintMeta(classId)): string[] =>
+    Object.entries(sessionPrintSignatures(lessonsData)).filter(([date, signature]) => meta.confirmedContent[date] !== signature).map(([date]) => date);
 
 const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
     if (typeof node !== 'object' || node === null) return false;

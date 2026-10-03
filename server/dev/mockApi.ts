@@ -13,6 +13,7 @@ import crypto from 'crypto';
 
 
 const DEV_PHONE = '0600000000';
+const DEV_EMAIL = 'professeur@example.test';
 const DEV_PASSWORD = '00000000';
 
 interface DevWorkspace {
@@ -22,12 +23,15 @@ interface DevWorkspace {
 
 export function setupMockApi(app: express.Express) {
     const DEV_USER = {
+        id: DEV_PHONE,
         phone: DEV_PHONE,
+        email: DEV_EMAIL,
         nom: 'Dev',
         prenom: 'Prof',
         hasCompletedWelcome: false,
     };
     let sessionUser: Record<string, unknown> | null = null;
+    const emailAccounts = new Map<string, { user: Record<string, unknown>; password: string }>();
     let classesBlob: Record<string, unknown> | null = null;
     let devCalendar: any = structuredClone(getBundledCalendar());
     let devOfficialEvents: any = structuredClone(getOfficialStudentEventsFile());
@@ -64,7 +68,7 @@ export function setupMockApi(app: express.Express) {
     const hasSession = (req: import('http').IncomingMessage) =>
         /cdt_dev_session=1/.test(req.headers.cookie ?? '');
     const currentSessionPhone = (): string => {
-        const phone = sessionUser?.phone;
+        const phone = sessionUser?.id ?? sessionUser?.phone;
         return typeof phone === 'string' && phone ? phone : DEV_PHONE;
     };
     const workspaceForCurrentSession = (): { phone: string; workspace: DevWorkspace } => {
@@ -94,6 +98,9 @@ export function setupMockApi(app: express.Express) {
 
             app.use('/api/auth', async (req, res) => {
                 if (req.method === 'GET') {
+                    if (new URL(req.originalUrl, 'http://localhost').searchParams.get('action') === 'config') {
+                        return send(res, 503, { error: 'Google est disponible avec le serveur Firebase de production.', code: 'AUTH_UNAVAILABLE' });
+                    }
                     if (hasSession(req) && !devTeacherBlocked) return send(res, 200, { user: sessionUser ?? DEV_USER });
                     if (devTeacherBlocked) return send(res, 403, { error: 'Ce compte a été bloqué par la direction. Contactez votre établissement.', code: 'ACCOUNT_BLOCKED' });
                     return send(res, 401, { error: 'Non connecté.' });
@@ -103,7 +110,14 @@ export function setupMockApi(app: express.Express) {
                     try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
                     if (body.action === 'login') {
                         if (devTeacherBlocked) return send(res, 403, { error: 'Ce compte a été bloqué par la direction. Contactez votre établissement.', code: 'ACCOUNT_BLOCKED' });
-                        if (phoneMatches(body.phone) && body.password === DEV_PASSWORD) {
+                        const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+                        const account = emailAccounts.get(email);
+                        if (account && body.password === account.password) {
+                            sessionUser = account.user;
+                            res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
+                            return send(res, 200, { user: sessionUser });
+                        }
+                        if ((email === DEV_EMAIL || phoneMatches(body.phone)) && body.password === DEV_PASSWORD) {
                             sessionUser = DEV_USER;
                             res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
                             return send(res, 200, { user: DEV_USER });
@@ -111,12 +125,16 @@ export function setupMockApi(app: express.Express) {
                         return send(res, 401, { error: 'Téléphone ou mot de passe incorrect. (dev : 06000000 / 00000000)' });
                     }
                     if (body.action === 'register') {
+                        const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+                        if (email && (email === DEV_EMAIL || emailAccounts.has(email))) return send(res, 409, { error: 'Compte existant.', code: 'ACCOUNT_EXISTS' });
                         sessionUser = {
-                            phone: String(body.phone ?? DEV_PHONE).replace(/\D/g, ''),
+                            ...(email ? { id: `acct_${crypto.randomBytes(16).toString('hex')}`, email } : {}),
+                            phone: String(body.phone ?? (email ? '' : DEV_PHONE)).replace(/\D/g, ''),
                             nom: String(body.nom ?? 'Dev'),
                             prenom: String(body.prenom ?? 'Prof'),
                             hasCompletedWelcome: false,
                         };
+                        if (email) emailAccounts.set(email, { user: sessionUser, password: String(body.password ?? '') });
                         res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
                         return send(res, 200, { user: sessionUser });
                     }
@@ -130,6 +148,9 @@ export function setupMockApi(app: express.Express) {
                         res.setHeader('Set-Cookie', 'cdt_dev_session=; Path=/; Max-Age=0');
                         return send(res, 200, { ok: true });
                     }
+                    if (['google', 'googleNative', 'resetPassword'].includes(String(body.action))) return send(res, 503, {
+                        error: 'Ce service utilise Firebase dans l’application de production.', code: 'AUTH_UNAVAILABLE',
+                    });
                     return send(res, 400, { error: 'Action inconnue.' });
                 }
                 send(res, 405, { error: 'Méthode non autorisée.' });

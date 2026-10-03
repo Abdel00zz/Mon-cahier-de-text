@@ -22,6 +22,8 @@ import type { ApiRequest, ApiResponse } from '../api/_lib/http.js';
 import { subscribeNativeDevice, unsubscribeNativeDevice, nativeDeviceStatus } from '../api/_lib/nativePush.js';
 import { importFirebaseTeacher, verifyFirebasePassword } from '../api/_lib/firebaseIdentity.js';
 import { firebaseAuth, teacherUid } from '../api/_lib/firebaseAdmin.js';
+import { firebaseIdentityRequest } from '../api/_lib/firebaseSignIn.js';
+import { firebaseAccountId } from '../api/_lib/authAccounts.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
 const store = new FirestoreStore();
@@ -63,6 +65,86 @@ async function call(handler: (req: ApiRequest, res: ApiResponse) => Promise<unkn
   await handler(req, res);
   return { status, body, headers };
 }
+
+test('email accounts work without phone across authentication, sync, messages, push and administration', async () => {
+  process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
+  const email = 'teacher-no-phone@example.com'; const password = 'Strong-password-123';
+  const register = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', email, password, nom: 'Teacher', prenom: 'Email' } });
+  assert.equal(register.status, 201);
+  const { user } = register.body as { user: { id: string; email: string; phone: string } };
+  assert.match(user.id, /^acct_[a-f0-9]{32}$/); assert.equal(user.phone, ''); assert.equal(user.email, email);
+  assert.ok(!JSON.stringify(register.body).includes('firebaseUid'));
+  assert.ok(!JSON.stringify(register.body).includes(password));
+  assert.ok(!JSON.stringify(register.body).includes('passwordHash'));
+  const identity = await firebaseAuth().getUserByEmail(email);
+  assert.equal(firebaseAccountId(identity), user.id);
+  assert.equal((await store.db.doc(`users/${teacherUid(user.id)}`).get()).data()?.phone, '');
+  const duplicate = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', email: email.toUpperCase(), password, nom: 'Duplicate', prenom: 'Test' } });
+  assert.equal(duplicate.status, 409);
+  assert.equal((await firebaseAuth().getUserByEmail(email)).uid, identity.uid);
+  const invalid = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'login', email, password: 'wrong' } });
+  assert.equal(invalid.status, 401);
+  const login = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'login', email, password } });
+  assert.equal(login.status, 200);
+  const cookie = String(login.headers['Set-Cookie']).split(';')[0];
+  const headers = { cookie, 'x-workspace-owner': user.id };
+  assert.equal((await call(syncHandler, { method: 'POST', headers, body: { classes: [], schedules: [], timetable: [] } })).status, 200);
+  assert.equal((await call(syncHandler, { method: 'GET', headers })).status, 200);
+  assert.equal((await call(syncHandler, { method: 'GET', headers: { cookie, 'x-workspace-owner': '0612345678' } })).status, 409);
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'notifyTeacher', phone: user.id, message: 'Votre cahier est prêt.' } })).status, 200);
+  assert.equal((await call(messagesHandler, { method: 'GET', headers })).status, 200);
+  const completed = await call(authHandler, { method: 'POST', headers, body: { action: 'completeWelcome' } });
+  assert.equal(completed.status, 200);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id } })).status, 200);
+  assert.equal((await firebaseAuth().getUser(identity.uid)).disabled, true);
+  assert.equal((await call(authHandler, { method: 'GET', headers, query: { action: 'me' } })).status, 403);
+  assert.equal((await call(authHandler, { method: 'POST', headers: {}, body: { action: 'login', email, password } })).status, 403);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'deleteTeacher', phone: user.id } })).status, 200);
+  await assert.rejects(firebaseAuth().getUser(identity.uid));
+});
+
+test('optional contact numbers never identify or merge email accounts', async () => {
+  const register = (email: string, phone = '') => call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', email, phone, password: 'Strong-password-123', nom: 'Test', prenom: 'Contact' } });
+  const first = await register('contact-first@example.com', '0612345678');
+  const second = await register('contact-second@example.com', '0612345678');
+  assert.equal(first.status, 201); assert.equal(second.status, 201);
+  assert.notEqual((first.body as any).user.id, (second.body as any).user.id);
+  assert.equal((await register('bad-contact@example.com', '123')).status, 400);
+  const phoneLogin = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'login', phone: '0612345678', password: 'Strong-password-123' } });
+  assert.equal(phoneLogin.status, 401);
+});
+
+test('Google provisions one account, preserves profiles, rejects non-Google tokens and observes admin revocation', async () => {
+  process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
+  const now = Math.floor(Date.now() / 1000);
+  const mockGoogleToken = `${Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url')}.${Buffer.from(JSON.stringify({ sub: 'google-emulator-teacher', email: 'google-teacher@gmail.com', email_verified: true, name: 'Google Teacher', iat: now, exp: now + 3600 })).toString('base64url')}.`;
+  const native = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'googleNative', idToken: mockGoogleToken } });
+  assert.equal(native.status, 200, JSON.stringify(native.body));
+  const { user } = native.body as { user: { id: string; phone: string } };
+  assert.equal(user.phone, ''); assert.equal((native.body as any).isNewAccount, true);
+  const firebase = await firebaseIdentityRequest('signInWithIdp', { postBody: new URLSearchParams({ id_token: mockGoogleToken, providerId: 'google.com' }).toString(), requestUri: 'http://localhost', returnSecureToken: true });
+  const again = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'google', idToken: firebase.idToken } });
+  assert.equal(again.status, 200); assert.equal((again.body as any).user.id, user.id); assert.equal((again.body as any).isNewAccount, false);
+  const password = await firebaseIdentityRequest('signInWithPassword', { email: 'contact-first@example.com', password: 'Strong-password-123', returnSecureToken: true });
+  const forged = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'google', idToken: password.idToken } });
+  assert.equal(forged.status, 401);
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id } })).status, 200);
+  assert.equal((await call(authHandler, { method: 'POST', headers: {}, body: { action: 'google', idToken: firebase.idToken } })).status, 401);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'deleteTeacher', phone: user.id } })).status, 200);
+  await assert.rejects(firebaseAuth().getUser(firebase.localId!));
+});
+
+test('password recovery hides account existence and public configuration contains no server credential', async () => {
+  for (const email of ['contact-first@example.com', 'unknown-account@example.com']) {
+    const result = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'resetPassword', email, locale: 'ar' } });
+    assert.equal(result.status, 200); assert.deepEqual(result.body, { ok: true });
+  }
+  const config = await call(authHandler, { method: 'GET', headers: {}, query: { action: 'config' } });
+  assert.equal(config.status, 200);
+  assert.deepEqual(Object.keys(config.body as object).sort(), ['apiKey', 'authDomain', 'projectId']);
+});
 
 test('existing HTTP contracts work across registration, sync, admin messages, block and deletion', async () => {
   process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';

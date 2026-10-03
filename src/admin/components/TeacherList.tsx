@@ -136,7 +136,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 !q ||
                 teacherNameOf(teacher).toLowerCase().includes(q) ||
                 `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
-                teacher.phone.includes(q);
+                (teacher.email ?? '').toLowerCase().includes(q) || (teacher.contactPhone ?? teacher.phone).includes(q);
             const matchesCycle = cycleFilter === 'all' || (teacher.classes ?? []).some(c => c.cycle === cycleFilter);
             const matchesSubject = subjectFilter === 'all' || (teacher.classes ?? []).some(c => c.subject === subjectFilter);
             const matchesSeverity =
@@ -387,7 +387,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                         <span className={`h-2 w-2 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} title={teacher.blocked ? 'Compte bloqué' : SEVERITY_META[severity].label} />
                                         <span className="truncate">{teacherNameOf(teacher)}</span>
                                     </div>
-                                    <div className="text-xs text-muted-foreground">{teacher.phone}</div>
+                                    <div dir="auto" className="text-xs text-muted-foreground truncate">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-lg font-black text-primary">{completion}%</div>

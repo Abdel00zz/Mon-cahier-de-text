@@ -619,7 +619,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             )}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            {phone} · dernière synchro {timeAgo(data.user?.lastSyncAt ?? data.snapshot?.lastSyncAt ?? null)}
+                            {data.user?.email || data.user?.phone || 'Compte enseignant'} · dernière synchro {timeAgo(data.user?.lastSyncAt ?? data.snapshot?.lastSyncAt ?? null)}
                         </p>
                         {/*
                          * Matières déclarées dans le profil : la direction voit ce

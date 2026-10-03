@@ -80,7 +80,7 @@ public class NativePushPlugin extends Plugin {
         String token = call.getString("token", "");
         String binding = call.getString("binding", "");
         SharedPreferences prefs = InboxNotifications.preferences(getContext());
-        if (!owner.matches("[0-9]{8,15}") || !binding.matches("[a-zA-Z0-9-]{16,100}")
+        if (!InboxNotifications.validOwner(owner) || !binding.matches("[a-zA-Z0-9-]{16,100}")
             || token.isEmpty() || !token.equals(prefs.getString("token", "")) || !prefs.getBoolean("enabled", false)) {
             call.reject("Device or account changed"); return;
         }

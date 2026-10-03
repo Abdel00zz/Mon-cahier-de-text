@@ -51,8 +51,12 @@ final class InboxNotifications {
         update(context, owner, count, updatedAt, locale, false);
     }
 
+    static boolean validOwner(String owner) {
+        return owner != null && owner.matches("(?:[0-9]{8,15}|acct_[a-f0-9]{32})");
+    }
+
     static synchronized void update(Context context, String owner, int count, long updatedAt, String locale, boolean newMessage) {
-        if (owner == null || !owner.matches("[0-9]{8,15}") || count < 0 || updatedAt <= 0) return;
+        if (!validOwner(owner) || count < 0 || updatedAt <= 0) return;
         SharedPreferences prefs = preferences(context);
         boolean sameOwner = owner.equals(prefs.getString("owner", ""));
         if (sameOwner && prefs.getLong("updatedAt", 0) > updatedAt) return;

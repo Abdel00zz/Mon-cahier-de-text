@@ -1,4 +1,5 @@
 import { apiFetch } from '@/platform/nativeHttp';
+import { accountOwner } from '../domain/auth/accountIdentity';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
@@ -200,13 +201,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const push = useCallback(async (options?: { keepalive?: boolean }) => {
         const currentUser = userRef.current;
         const scope = readWorkspaceScope();
-        if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== currentUser.phone || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
+        if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== accountOwner(currentUser) || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
         if (!options?.keepalive && !isForegroundOnline()) return;
 
         pullAbortRef.current?.abort();
         const controller = new AbortController();
         pushAbortRef.current = controller;
-        const isCurrent = () => !controller.signal.aborted && userRef.current?.phone === currentUser.phone && workspaceIsCurrent(scope);
+        const isCurrent = () => !controller.signal.aborted && userRef.current && accountOwner(userRef.current) === accountOwner(currentUser) && workspaceIsCurrent(scope);
 
         pushingRef.current = true;
         setSyncStatus('syncing');
@@ -300,7 +301,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     data = await requestSyncJson('/api/sync', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': currentUser.phone },
+                        headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': accountOwner(currentUser) },
                         signal: controller.signal,
                         credentials: 'same-origin',
                         // keepalive : la requête survit à la fermeture de la page (flush
@@ -420,7 +421,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pushingRef.current = false;
         immediatePushRequestedRef.current = false;
         if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
-    }, [authStatus, user?.phone]);
+    }, [authStatus, user?.id, user?.phone]);
 
     const schedulePush = useCallback(
         (delayMs: number = PUSH_DEBOUNCE_MS) => {
@@ -460,7 +461,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (authStatus !== 'authenticated' || !user) return;
         let cancelled = false;
         const scope = readWorkspaceScope();
-        if (scope?.owner !== user.phone || !workspaceIsCurrent(scope)) return;
+        if (scope?.owner !== accountOwner(user) || !workspaceIsCurrent(scope)) return;
         let inFlight = false;
         let associationOffered = false;
         const unsubscribeDirty = subscribe('dirty', () => pullAbortRef.current?.abort());
@@ -474,7 +475,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const isCurrent = () => !cancelled && !controller.signal.aborted && !pushingRef.current && workspaceIsCurrent(scope);
             setSyncStatus('syncing');
             try {
-                const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': user.phone }, signal: controller.signal });
+                const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': accountOwner(user) }, signal: controller.signal });
                 if (!response.ok) {
                     if (isCurrent()) {
                         setSyncStatus('error');
@@ -616,7 +617,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // ce cas, on conserve le cahier local et on applique seulement
                         // ses métadonnées (nom, matière, cycle).
                         const shouldFetchLessons = localIndex === -1 || serverIsNewer;
-                        const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id, user.phone, controller.signal) : null;
+                        const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id, accountOwner(user), controller.signal) : null;
                         if (!isCurrent()) return;
                         if (blob) {
                             const contentDirection = isContentDirection(blob.contentDirection)
@@ -646,7 +647,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     } else if (action === 'requeue') {
                         // le local va écraser le cloud au prochain push : archiver la version cloud perdante
                         if (conflict) {
-                            const blob = await fetchLessonsBlob(serverClass.id, user.phone, controller.signal);
+                            const blob = await fetchLessonsBlob(serverClass.id, accountOwner(user), controller.signal);
                             if (!isCurrent()) return;
                             if (blob) commits.push(() => backupConflictVersion(serverClass.id, blob.lessonsData ?? [], 'cloud'));
                             conflictNames.push(serverClass.name);

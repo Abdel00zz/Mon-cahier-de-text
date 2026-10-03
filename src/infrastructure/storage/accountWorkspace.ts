@@ -1,4 +1,5 @@
 /** Account-local snapshots. Never include auth cookies/tokens or another snapshot. */
+import { isAccountId } from '../../domain/auth/accountIdentity';
 export const WORKSPACE_SCOPE_KEY = 'workspaceScope_v1';
 export const WORKSPACE_SNAPSHOT_PREFIX = 'workspaceSnapshot_v1_';
 export interface WorkspaceScope { owner: string | null; revision: string }
@@ -38,7 +39,7 @@ const PREFIXES = [
   'archive_', 'assessmentSnooze_', 'latenessSnooze_', 'editor_actions_ignored_v1_',
 ];
 export const isWorkspaceKey = (key: string): boolean => EXACT_KEYS.has(key) || PREFIXES.some(prefix => key.startsWith(prefix));
-const validOwner = (owner: unknown): owner is string => typeof owner === 'string' && /^\d{8,15}$/.test(owner);
+const validOwner = isAccountId;
 
 export class WorkspaceSwitchError extends Error {
   constructor() { super('Impossible de changer de compte sans préserver les données locales. Libérez de l’espace puis réessayez.'); }

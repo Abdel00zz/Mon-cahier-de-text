@@ -75,6 +75,19 @@ public class InboxNotificationsTest {
     private static final class TestService extends CahierMessagingService {
         TestService(Context context) { attachBaseContext(context); }
     }
+    @Test public void googleAndEmailAccountBadgesStayIsolated() throws Exception {
+        String google = "acct_0123456789abcdef0123456789abcdef";
+        String email = "acct_fedcba9876543210fedcba9876543210";
+        InboxNotifications.update(context, google, 2, 100, "fr"); settle();
+        assertEquals(2, inbox().getNotification().number);
+        InboxNotifications.preferences(context).edit().putString("binding", BINDING).commit();
+        InboxNotifications.update(context, email, 1, 1, "ar"); settle();
+        assertEquals(1, inbox().getNotification().number);
+        assertEquals(email, InboxNotifications.preferences(context).getString("owner", ""));
+        assertEquals("", InboxNotifications.preferences(context).getString("binding", ""));
+        assertFalse(InboxNotifications.validOwner("teacher@example.test"));
+        assertFalse(InboxNotifications.validOwner("acct_invalid"));
+    }
     @Test public void pushBindingDuplicateAndLogout() throws Exception {
         InboxNotifications.update(context, OWNER, 0, 1, "fr");
         InboxNotifications.preferences(context).edit().putString("binding", BINDING).commit();

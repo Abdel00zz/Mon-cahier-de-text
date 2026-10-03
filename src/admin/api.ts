@@ -4,7 +4,7 @@ import type { OfficialStudentEventsFile } from '../domain/evaluations/officialSt
 import { requestSyncJson, SyncRequestError } from '../infrastructure/sync/syncTransport';
 
 export interface TeacherDetail {
-    user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null; blocked?: boolean } | null;
+    user: { id?: string; phone: string; email?: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null; blocked?: boolean } | null;
     classes: ClassInfo[];
     schedules: ClassSchedule[];
     classMeta: Record<string, { updatedAt: string }>;
@@ -27,6 +27,8 @@ export interface TeacherPrintSettings {
 
 /** Données de pilotage réservées à la vue d'ensemble administrative. */
 export type AdminTeacherSummary = TeacherSnapshot & {
+    contactPhone?: string;
+    email?: string;
     blocked: boolean;
     pendingMessages: number;
     lastMessageAt: string | null;

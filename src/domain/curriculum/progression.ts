@@ -100,7 +100,7 @@ const computeClassSnapshot = (
 };
 
 export const computeTeacherSnapshot = (
-    user: { phone: string; nom: string; prenom: string },
+    user: { id?: string; phone: string; nom: string; prenom: string },
     classes: ClassInfo[],
     schedules: ClassSchedule[] | undefined,
     notificationSettings: NotificationSettings | undefined,
@@ -111,7 +111,7 @@ export const computeTeacherSnapshot = (
     /** Identité affichée (nom d'usage, matières déclarées) telle que la voit la direction. */
     identity?: { displayName?: string; subjects?: string[] },
 ): TeacherSnapshot => ({
-    phone: user.phone,
+    phone: user.id ?? user.phone,
     nom: user.nom,
     prenom: user.prenom,
     ...(identity?.displayName?.trim() ? { displayName: identity.displayName.trim() } : {}),

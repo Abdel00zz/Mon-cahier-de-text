@@ -109,7 +109,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200/60 dark:border-amber-500/30">
+              <span className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                 <RefreshCw className={cn('h-3.5 w-3.5 stroke-[2.2]', (isSyncing || syncStatus === 'syncing') && 'animate-spin')} />
               </span>
               <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('account.sync')}</h3>
@@ -140,16 +140,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
       {/* 2. Session utilisateur & Déconnexion (compact et encadré) */}
       {user && (
         <section className="rounded-xl border border-border/70 p-3 sm:p-3.5 bg-card/60">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground border border-border/60">
                 <User className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate font-mono">{user.phone}</p>
-                <p className="text-[10.5px] text-muted-foreground truncate">
-                  {teacherDisplayName(config.defaultTeacherName, user)}
-                </p>
+                <p className="text-sm font-semibold text-foreground break-words">{teacherDisplayName(config.defaultTeacherName, user)}</p>
+                {(user.email || user.phone) && <p dir="auto" className="mt-0.5 text-xs leading-relaxed text-muted-foreground break-all">{user.email || user.phone}</p>}
               </div>
             </div>
 
@@ -162,7 +160,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
               disabled={isLoggingOut}
               whileTap={reducedMotion ? undefined : { scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-rose-200/80 bg-rose-50/70 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 transition-colors cursor-pointer select-none disabled:opacity-50"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-rose-200/80 bg-rose-50/70 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               <LogOut className="h-3.5 w-3.5 stroke-[2.2]" />
               <span>{t('account.signOut')}</span>

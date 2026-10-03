@@ -26,7 +26,7 @@ import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection,
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
-import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/infrastructure/printing/printMeta';
+import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures } from '@/infrastructure/printing/printMeta';
 import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
 import { appendJournal } from '@/infrastructure/storage/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
@@ -107,7 +107,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [initialMathTypesetComplete, setInitialMathTypesetComplete] = useState(false);
   const isPrintingRef = useRef(false);
   const [printSnapshot, setPrintSnapshot] = useState<React.ComponentProps<typeof PrintView> | null>(null);
-  useEffect(() => { setPrintSnapshot(null); }, [initialClassInfo.id]);
+  const [pendingPrintConfirmation, setPendingPrintConfirmation] = useState<{ classId: string; signatures: Record<string, string> } | null>(null);
+  useEffect(() => { setPrintSnapshot(null); setPendingPrintConfirmation(null); }, [initialClassInfo.id]);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
   /*
    * Ordre chronologique : chaque contenu daté connaît son plus proche
@@ -759,13 +760,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const printStats = useMemo(() => {
       const meta = readPrintMeta(classInfo.id);
       const allDates = collectSessionDates(lessonsData);
-      const printedSet = new Set(meta.printedDates);
+      const newDates = getNewDates(lessonsData, classInfo.id, meta);
       return {
           totalDates: allDates.length,
           allDates,
           // Évite une seconde lecture/parsing du même printMeta local.
-          newDates: allDates.filter(date => !printedSet.has(date)),
-          printedDates: meta.printedDates,
+          newDates,
+          printedDates: allDates.filter(date => !newDates.includes(date)),
           lastPrintedAt: meta.lastPrintedAt,
           prefs: meta.prefs ?? null,
       };
@@ -852,6 +853,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           datesToRecord = validSelectedDates;
       }
 
+      // Capture the content being printed, not edits received while the
+      // system dialog or a remote printer is still processing the job.
+      const currentSignatures = sessionPrintSignatures(lessonsData);
+      const signatures = Object.fromEntries(datesToRecord.map(date => [date, currentSignatures[date]]));
+
       isPrintingRef.current = true;
       setIsPrinting(true);
 
@@ -876,18 +882,20 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               await preparePrintContent(root);
               if (!workspaceIsActive()) return;
 
-              const started = await printDocument('cahier-de-textes');
+              const outcome = await printDocument('cahier-de-textes');
               if (!workspaceIsActive()) return;
-              if (!started) {
+              if (outcome === 'cancelled') { setPrintSnapshot(null); return; }
+              if (outcome === 'failed') {
                   setPrintSnapshot(null);
                   showNotification(t('editorNotice.printUnavailable'), 'error');
                   return;
               }
 
-              // Le service confirme ici que le dialogue a été lancé. Les
-              // moteurs WebView ne remontent pas toujours la confirmation
-              // finale de l’utilisateur ; l’état est donc nommé « lancé ».
-              const historySaved = recordPrint(classId, datesToRecord);
+              if (outcome === 'confirmation-required') {
+                  setPendingPrintConfirmation({ classId, signatures });
+                  return;
+              }
+              const historySaved = recordPrint(classId, signatures);
               if (!historySaved) {
                   showNotification(t('editorNotice.printHistoryError'), 'warning');
               }
@@ -899,10 +907,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           } finally {
               isPrintingRef.current = false;
               setIsPrinting(false);
-              // Rafraîchit aussi les préférences sauvegardées en cas d'échec,
-              // et l'historique après une impression lancée.
+              // Refresh preferences even when the preview was cancelled.
               setPrintMetaVersion(version => version + 1);
-              // Keep the frozen surface: Android may resolve before its print adapter reads it.
+              // Keep the frozen surface for queued jobs awaiting confirmation.
           }
       };
 
@@ -1225,6 +1232,23 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         onSkip={dismissTimetableNudge}
         onFill={fillTimetableFromNudge}
         className={classInfo.name}
+      />
+
+      <ConfirmDialog
+        open={pendingPrintConfirmation !== null}
+        onOpenChange={open => { if (!open) setPendingPrintConfirmation(null); }}
+        title={t('print.confirmTitle')}
+        description={t('print.confirmDescription')}
+        confirmLabel={t('print.confirmDone')}
+        cancelLabel={t('print.confirmNotDone')}
+        variant="default"
+        onConfirm={() => {
+          if (!pendingPrintConfirmation || !workspaceIsActive()) return;
+          if (!recordPrint(pendingPrintConfirmation.classId, pendingPrintConfirmation.signatures)) {
+            showNotification(t('editorNotice.printHistoryError'), 'warning');
+          }
+          setPrintMetaVersion(version => version + 1);
+        }}
       />
 
       <ConfirmDialog

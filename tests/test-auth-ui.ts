@@ -106,9 +106,9 @@ test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de li
   // Les actions de classe restent une liste déroulante dans les deux vues.
   assert.match(card, /MoreVertical/);
   assert.match(list, /MoreVertical/);
-  // Profil modifié : abandonner ou confirmer, alignés en fin de ligne.
-  assert.match(settings, /hasProfileChanges && \(/);
-  assert.match(settings, /sm:justify-between/);
+  // Profil modifié : deux actions dans le pied fixe, en ordre logique RTL/LTR.
+  assert.match(settings, /footer=\{hasProfileChanges \? footer : undefined\}/);
+  assert.match(settings, /grid w-full grid-cols-2/);
 });
 
 test('éditeur : la hiérarchie typographique du titre de chapitre reste verrouillée', () => {
