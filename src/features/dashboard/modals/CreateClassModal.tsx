@@ -282,7 +282,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         footerClassName="border-t border-border/70 bg-background"
         footer={<fieldset disabled={submitting} className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-11 items-center gap-2">
-            {editingClass && onDelete && <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)} className="h-11 w-full rounded-[12px] px-4 text-xs font-semibold sm:w-auto sm:text-sm"><Trash2 className="h-4 w-4" />{t('dashboard.delete')}</Button>}
+            {editingClass && onDelete && <Button type="button" variant="ghost" onClick={() => setConfirmDelete(true)} className="h-11 w-full rounded-xl px-4 text-destructive hover:bg-destructive/5 hover:text-destructive sm:w-auto"><Trash2 aria-hidden />{t('dashboard.delete')}</Button>}
             {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-11 w-full rounded-[12px] px-4 text-xs font-semibold sm:w-auto sm:text-sm">
               <ArrowLeft className="h-4 w-4 shrink-0 rtl:rotate-180" />{copy.back}
             </Button>}

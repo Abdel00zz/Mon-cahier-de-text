@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import type { AppConfig } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSync } from '@/contexts/SyncContext';
-import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { teacherDisplayName } from '@/domain/classes/teacherIdentity';
 import { RefreshCw, TriangleAlert, CircleCheck, Clock, CircleAlert, LogOut, User } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 const timeAgo = (iso: string, locale: string, unknownDate: string): string => {
   const then = new Date(iso).getTime();
@@ -28,11 +29,14 @@ interface AccountTabProps {
 export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
   const { locale, t } = useLocale();
   const { user, logout } = useAuth();
+  const { impact } = useHapticFeedback();
+  const reducedMotion = useReducedMotion();
   const { syncStatus, lastSyncAt, syncNow } = useSync();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSync = async () => {
+    impact('medium');
     setIsSyncing(true);
     try {
       await syncNow();
@@ -118,43 +122,51 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
             )}
           </div>
 
-          <Button
+          <motion.button
             type="button"
             onClick={handleSync}
             disabled={isSyncing || syncStatus === 'syncing'}
-            className="min-h-11 px-3 gap-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary border border-primary/30 text-xs font-bold shadow-xs transition-colors active:scale-95 cursor-pointer sm:shrink-0"
+            whileTap={reducedMotion ? undefined : { scale: 0.94 }}
+            whileHover={reducedMotion ? undefined : { scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary border border-primary/30 px-3.5 text-xs font-bold shadow-xs transition-colors cursor-pointer sm:shrink-0 select-none disabled:opacity-50 disabled:pointer-events-none"
           >
-            <RefreshCw className={cn('h-3 w-3', (isSyncing || syncStatus === 'syncing') && 'animate-spin')} />
+            <RefreshCw className={cn('h-3.5 w-3.5 stroke-[2.2]', (isSyncing || syncStatus === 'syncing') && 'animate-spin')} />
             <span>{t('account.syncNow')}</span>
-          </Button>
+          </motion.button>
         </div>
       </section>
 
       {/* 2. Session utilisateur & Déconnexion (compact et encadré) */}
       {user && (
-        <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
+        <section className="rounded-xl border border-border/70 p-3 sm:p-3.5 bg-card/60">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                <User className="h-3 w-3" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground border border-border/60">
+                <User className="h-4 w-4" />
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-foreground truncate font-mono">{user.phone}</p>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-[10.5px] text-muted-foreground truncate">
                   {teacherDisplayName(config.defaultTeacherName, user)}
                 </p>
               </div>
             </div>
 
-            <button
+            <motion.button
               type="button"
-              onClick={handleLogout}
+              onClick={() => {
+                impact('medium');
+                handleLogout();
+              }}
               disabled={isLoggingOut}
-              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg border border-rose-200/80 bg-rose-50/70 px-2 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 transition-colors cursor-pointer"
+              whileTap={reducedMotion ? undefined : { scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-rose-200/80 bg-rose-50/70 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 transition-colors cursor-pointer select-none disabled:opacity-50"
             >
-              <LogOut className="h-3 w-3" />
+              <LogOut className="h-3.5 w-3.5 stroke-[2.2]" />
               <span>{t('account.signOut')}</span>
-            </button>
+            </motion.button>
           </div>
         </section>
       )}

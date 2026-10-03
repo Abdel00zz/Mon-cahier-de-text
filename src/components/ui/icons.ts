@@ -83,6 +83,10 @@ import {
   Highlighter as LucideHighlighter,
   Sparkles as LucideSparkles,
   Copy as LucideCopy,
+  HardDriveDownload as LucideHardDriveDownload,
+  HardDriveUpload as LucideHardDriveUpload,
+  FolderArchive as LucideFolderArchive,
+  Mail as LucideMail,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -195,3 +199,7 @@ export const Underline = createIcon(LucideUnderline);
 export const Highlighter = createIcon(LucideHighlighter);
 export const Sparkles = createIcon(LucideSparkles);
 export const Copy = createIcon(LucideCopy);
+export const HardDriveDownload = createIcon(LucideHardDriveDownload);
+export const HardDriveUpload = createIcon(LucideHardDriveUpload);
+export const FolderArchive = createIcon(LucideFolderArchive);
+export const Mail = createIcon(LucideMail);

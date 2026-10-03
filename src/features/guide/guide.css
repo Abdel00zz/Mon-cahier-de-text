@@ -61,8 +61,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid var(--guide-border);
   background: var(--guide-soft);
@@ -507,18 +507,19 @@
   }
 @media (max-width: 767px) {
   .learning-guide {
-  width: calc(100vw - 1rem);
-  max-width: calc(100vw - 1rem);
-  max-height: calc(100dvh - 1rem);
+  width: auto;
+  max-width: none;
   }
   .learning-guide .learning-guide-header {
-  padding: 12px 16px;
+  padding-inline-start: 18px;
+  padding-inline-end: 64px;
+  padding-bottom: 14px;
   }
   .guide-heading {
     padding-inline-end: 28px;
   }
   .guide-title {
-    font-size: 13px;
+    font-size: 15px;
   }
   .guide-layout {
     display: flex;

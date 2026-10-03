@@ -1,4 +1,4 @@
-/** Development-only capture entry. Real components, fictitious data, no account provider. */
+/** Development-only capture entry. Real components and fictitious teaching data. */
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../../src/styles/index.css';
@@ -17,6 +17,10 @@ import { Toolbar } from '../../src/features/editor/Toolbar';
 import { AddContentModal } from '../../src/features/editor/modals/EditItemModal';
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
 import { FeedbackPreview } from './FeedbackPreview';
+import { ModalGallery } from './ModalGallery';
+import { LandingPage } from '../../src/features/auth/LandingPage';
+import { AuthPage } from '../../src/features/auth/AuthPage';
+import { AuthProvider } from '../../src/contexts/AuthContext';
 import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
@@ -24,7 +28,7 @@ import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 
 const params = new URLSearchParams(location.search);
-const locale = params.get('lang') === 'ar' ? 'ar' : 'fr';
+const locale = params.get('lang') === 'ar' ? 'ar' : params.get('lang') === 'en' ? 'en' : 'fr';
 const screen = params.get('screen') ?? 'guide';
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
 const classes: ClassInfo[] = ['1AC 1', '2AC 2', '3AC 1'].map((name, i) => ({
@@ -74,7 +78,10 @@ function Preview() {
     {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} /></>}
     {screen === 'pilotage' && <NotificationsPage classes={classes} config={config} feed={feed} onSelectClass={noop} onOpenSettings={noop} onBack={noop} />}
     {screen === 'loading' && <PageTransitionLoader />}
+    {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
+    {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
     {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
+      {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'classes' && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div>

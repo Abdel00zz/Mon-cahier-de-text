@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { TriangleAlert, FileUp } from '@/components/ui/icons';
+import { HardDriveUpload, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
+import { StatusNotice } from '@/components/ui/status-notice';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -77,8 +78,8 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive shadow-xs">
-            <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <HardDriveUpload className="h-5 w-5 stroke-[1.8]" aria-hidden />
           </span>
           <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             {t('settings.importModal.title')}
@@ -91,49 +92,28 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
       footerClassName="border-t-0 bg-background/60"
       footer={
-        <div className="flex items-center justify-end gap-2.5 w-full">
-          <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
-            {t('common.cancel')}
-          </Button>
-          <Button
-            type="button"
-            onClick={handleImport}
-            variant="destructive"
-            disabled={!fileContent || !isConfirmed || isReading}
-            aria-busy={isReading}
-            className="rounded-xl font-bold px-5 h-10 text-xs sm:text-sm shadow-sm"
-          >
-            {t('settings.importModal.importAction')}
+        <div className="flex w-full items-center justify-end gap-3">
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="destructive" onClick={handleImport} disabled={!fileContent || !isConfirmed || isReading}>
+            <HardDriveUpload aria-hidden />{t('settings.importModal.importAction')}
           </Button>
         </div>
       }
     >
       <div className="space-y-4">
-        {readError && <p role="alert" className="text-sm text-destructive">{readError}</p>}
-        <div className="p-4 bg-destructive/[0.08] dark:bg-destructive/15 text-destructive rounded-xl border border-destructive/30 shadow-xs">
-          <div className="flex gap-3">
-            <TriangleAlert className="h-5 w-5 shrink-0 text-destructive mt-0.5" />
-            <div>
-              <p className="font-bold text-xs sm:text-sm">{t('settings.importModal.irreversibleTitle')}</p>
-              <p className="text-xs mt-1 leading-relaxed text-destructive/90">
-                {t('settings.importModal.warningBeforeAll')}
-                <strong className="underline decoration-destructive font-extrabold mx-1">{t('settings.importModal.all')}</strong>
-                {t('settings.importModal.warningAfterAll')}
-              </p>
-            </div>
-          </div>
-        </div>
-
+        {readError && <StatusNotice tone="error" title={t('transfer.checkFile')} description={readError} announce />}
+        <StatusNotice tone="warning" title={t('settings.importModal.irreversibleTitle')}
+          description={<>{t('settings.importModal.warningBeforeAll')} <strong>{t('settings.importModal.all')}</strong> {t('settings.importModal.warningAfterAll')}</>} />
         <div>
           <label
             htmlFor="platform-json-file-input"
-            className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
+            className="file-picker group relative inline-flex min-h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 p-5 text-center transition-all hover:border-primary/50 hover:bg-muted/40"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border/80 shadow-2xs mb-2 text-destructive">
-              <FileUp className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-border/80 shadow-xs mb-2.5 text-muted-foreground transition-transform duration-200 group-hover:scale-105">
+              <FileUp className="h-6 w-6 stroke-[1.8]" aria-hidden />
             </div>
-            <span className="font-bold text-xs sm:text-sm text-foreground">
-              {fileName || t('settings.importModal.chooseFile')}
+            <span className="max-w-full break-all font-semibold text-sm text-foreground">
+              {isReading ? t('common.loading') : fileName || t('settings.importModal.chooseFile')}
             </span>
             <span className="text-[11px] text-muted-foreground font-medium mt-1">{t('settings.importModal.jsonOnly')}</span>
           </label>
@@ -142,7 +122,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
 
         {fileContent && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-            <label className="flex items-center justify-center gap-3 cursor-pointer text-foreground">
+            <label className="flex min-h-11 items-center gap-3 cursor-pointer text-foreground">
               <Checkbox
                 checked={isConfirmed}
                 onCheckedChange={(checked) => setIsConfirmed(checked === true)}

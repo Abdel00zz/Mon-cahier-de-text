@@ -49,8 +49,21 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
             type="button"
             role="tab"
             aria-selected={active}
+            tabIndex={active || (!options.some(item => item.value === value && !item.disabled) && option === options.find(item => !item.disabled)) ? 0 : -1}
             disabled={option.disabled}
             onClick={() => onChange(option.value as T)}
+            onKeyDown={event => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              const tabs = Array.from(containerRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+              const current = tabs.indexOf(event.currentTarget);
+              if (current < 0 || tabs.length === 0) return;
+              const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
+              const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+                : (current + ((event.key === 'ArrowRight') !== rtl ? 1 : -1) + tabs.length) % tabs.length;
+              event.preventDefault();
+              tabs[next].focus();
+              tabs[next].click();
+            }}
             className={cn(
               'flex min-h-11 shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors duration-200 motion-reduce:transition-none active:scale-[0.98] cursor-pointer',
               active

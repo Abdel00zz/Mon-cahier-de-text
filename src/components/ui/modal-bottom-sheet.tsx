@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from './icons';
 import { cn } from '@/lib/utils';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { normalizeSheetDetents } from '@/platform/sheetGesture';
+import { acquireModalLayer } from '@/platform/modalStack';
 
 export interface ModalBottomSheetProps {
   isOpen?: boolean;
@@ -90,6 +91,13 @@ export function ModalBottomSheet({
   }, [onDismissRequest, onClose]);
 
   const effectiveOpen = Boolean(isOpen);
+  const [layer, setLayer] = useState(0);
+  useLayoutEffect(() => {
+    if (!effectiveOpen) return;
+    const lease = acquireModalLayer();
+    setLayer(lease.layer);
+    return lease.release;
+  }, [effectiveOpen]);
   const detentSignature = mobileDetents.join(',');
   // Depend on values rather than a fresh array supplied by the parent on each render.
   const detents = useMemo(() => normalizeSheetDetents(detentSignature ? detentSignature.split(',').map(Number) : []), [detentSignature]);
@@ -158,6 +166,7 @@ export function ModalBottomSheet({
       <DialogPrimitive.Portal>
         {/* Backdrop Scrim Overlay with Glass Blur */}
         <DialogPrimitive.Overlay
+          style={{ zIndex: 100 + layer * 20 }}
           className={cn(
             'modal-motion-overlay fixed inset-0 z-[100]'
           )}
@@ -192,6 +201,7 @@ export function ModalBottomSheet({
           )}
           style={{
             '--sheet-detent': activeDetent,
+            zIndex: 110 + layer * 20,
           } as React.CSSProperties}
           data-mobile-presentation={mobilePresentation}
           data-has-handle={Boolean(dragHandle && isCompactSheet)}

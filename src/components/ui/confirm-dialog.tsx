@@ -3,6 +3,8 @@ import { ModalBottomSheet } from './modal-bottom-sheet';
 import { Button } from './button';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { TriangleAlert, CircleHelp } from '@/components/ui/icons';
+import { Input } from './input';
+import { StatusNotice } from './status-notice';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -96,7 +98,7 @@ export function ConfirmDialog({
             bodyClassName={requiresTypedConfirmation || failure ? 'px-5 py-3 sm:px-6 sm:py-4' : 'hidden'}
             footerClassName="px-5 py-3.5 sm:px-6 sm:py-4"
             footer={
-                <div className="flex w-full flex-col-reverse items-stretch justify-end gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex w-full flex-col-reverse items-stretch gap-2.5 sm:grid sm:grid-cols-2">
                     <Button
                         type="button"
                         variant="secondary"
@@ -119,13 +121,13 @@ export function ConfirmDialog({
                 </div>
             }
         >
-            {failure && <p role="alert" className="mb-3 text-sm leading-relaxed text-destructive">{t('confirm.retryError')}</p>}
+            {failure && <StatusNotice tone="error" title={t('confirm.retryError')} announce className="mb-3" />}
             {requiresTypedConfirmation && (
                 <label className="space-y-2 pt-2 block">
                     <span className="block text-xs font-semibold leading-relaxed text-foreground">
                         {confirmationHint}
                     </span>
-                    <input
+                    <Input
                         type="text"
                         value={confirmationValue}
                         onChange={(event) => setConfirmationValue(event.target.value)}

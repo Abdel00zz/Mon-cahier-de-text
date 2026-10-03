@@ -45,7 +45,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                     </span>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="block truncate text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                            <span className="block break-words text-base font-semibold leading-snug text-foreground sm:text-xl">
                                 {t('evaluationsSheet.title', { className })}
                             </span>
                             {showsSubjectLabels && classInfo.subject && (
@@ -55,7 +55,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                                 </span>
                             )}
                         </div>
-                        <p className="truncate text-xs font-medium text-muted-foreground mt-0.5">
+                        <p className="text-xs leading-relaxed text-muted-foreground mt-1">
                             {t('evaluations.assessments')} · {t('evaluations.activities')}
                         </p>
                     </div>

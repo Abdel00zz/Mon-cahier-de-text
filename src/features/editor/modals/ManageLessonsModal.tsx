@@ -231,20 +231,20 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   return (
                     <li
                       key={itemKey(item)}
-                      className="flex items-center gap-3 rounded-xl border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs transition-all hover:border-border hover:shadow-xs"
+                      className="flex flex-wrap items-center gap-3 rounded-xl border border-border/80 bg-background px-3.5 py-3 shadow-2xs transition-colors hover:border-border"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/60">
                         <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5 stroke-[2.2]`} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span dir="auto" className="block truncate text-start text-xs font-bold text-foreground">
+                        <span dir="auto" className="block break-words text-start text-sm font-semibold text-foreground">
                           <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
                         </span>
-                        <span className="mt-0.5 block truncate text-[11px] font-medium text-muted-foreground">
+                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                           {t(item.type === 'free' ? 'addContent.free' : `manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
                         </span>
                       </span>
-                      <span className="flex shrink-0 items-center gap-1.5">
+                      <span className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-border/50 pt-2 sm:w-auto sm:border-0 sm:pt-0">
                         <span className="flex overflow-hidden rounded-xl border border-border/80 bg-muted/30">
                           <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-9 w-9 rounded-none border-0 p-0 hover:bg-muted disabled:opacity-25" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
                             <ArrowUp className="h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" />

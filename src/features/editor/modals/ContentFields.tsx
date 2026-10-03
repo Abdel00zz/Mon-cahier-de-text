@@ -41,7 +41,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   const title = String(value[titleField] ?? '');
   const description = String(value.description ?? '');
   const source = titleOnly ? title : `${title}\n${description}`;
-  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground';
+  const labelClass = 'mb-2 block text-sm font-medium text-foreground';
   const fieldClass = 'h-11 rounded-xl border-border';
   return <div className="space-y-4" dir={contentDirection}>
     {!titleOnly && !free && <>

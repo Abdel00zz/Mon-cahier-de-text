@@ -232,28 +232,17 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Choix du mode */}
         <div className="rounded-2xl border border-border/70 bg-background p-3 sm:p-4 shadow-xs space-y-3">
-          <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-muted/60 p-1.5" role="tablist" aria-label={t('print.typeAria')}>
-            {printModes.map(item => {
-              const Icon = item.icon;
-              const selected = mode === item.value;
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  role="tab"
-                  disabled={item.disabled}
-                  aria-selected={selected}
-                  onClick={() => setMode(item.value)}
-                  className={`flex min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2 text-xs font-bold transition-all ${
-                    selected ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35'
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0 stroke-[2.2]" />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <Segmented<PrintMode>
+            value={mode}
+            onChange={setMode}
+            ariaLabel={t('print.typeAria')}
+            className="grid w-full grid-cols-3"
+            options={printModes.map(item => ({
+              value: item.value,
+              disabled: item.disabled || isPrinting,
+              label: <span className="flex min-w-0 flex-wrap items-center justify-center gap-1.5"><item.icon className="h-4 w-4 shrink-0" aria-hidden /><span className="whitespace-normal">{item.label}</span></span>,
+            }))}
+          />
           <div className="px-1">
             <div className="flex items-center gap-2">
               <p className="text-xs sm:text-sm font-bold text-foreground">{activeMode.title}</p>

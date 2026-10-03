@@ -27,7 +27,16 @@ import {
   CircleCheck,
   Save,
   Palette,
+  HardDriveDownload,
+  HardDriveUpload,
+  FolderArchive,
+  Cloud,
+  BookOpen,
+  Mail,
+  ShieldCheck,
+  Undo2,
 } from '@/components/ui/icons';
+import { SquareActionButton } from '@/components/ui/SquareActionButton';
 
 const ScheduleTab = React.lazy(() => import('./components/ScheduleTab').then(m => ({ default: m.ScheduleTab })));
 const NotificationsTab = React.lazy(() => import('./components/NotificationsTab').then(m => ({ default: m.NotificationsTab })));
@@ -66,7 +75,7 @@ const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[
   { key: 'prepa', icon: FlaskConical },
 ];
 
-const SETTINGS_MOBILE_DETENTS = [0.68, 0.92];
+const SETTINGS_MOBILE_DETENTS = [0.72, 0.94];
 const SETTINGS_INTERFACE_LOCALES = localeMetadata.filter(option => option.value === 'fr' || option.value === 'ar');
 
 interface ConfigModalProps {
@@ -578,33 +587,72 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
       case 'donnees':
         return (
-          <div className="space-y-3 sm:space-y-3.5">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-3">{t('settings.exportTitle')}</h3>
-                </div>
-                <Button
-                  type="button"
-                  onClick={onExportPlatform}
-                  className="h-8.5 w-full rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 cursor-pointer"
-                >
-                  {t('settings.exportAction')}
-                </Button>
-              </div>
+          <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
+            {/* Bento Grid d'actions carrées hyper-adaptées au tactile mobile */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+              <SquareActionButton
+                icon={HardDriveDownload}
+                variant="amber"
+                title={t('settings.exportTitle')}
+                subtitle={t('settings.exportAction')}
+                badge={locale === 'ar' ? 'تصدير' : locale === 'en' ? 'Backup' : 'Sauvegarde'}
+                onClick={onExportPlatform}
+                ariaLabel={t('settings.exportTitle')}
+              />
 
-              <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-3">{t('settings.importTitle')}</h3>
+              <SquareActionButton
+                icon={HardDriveUpload}
+                variant="blue"
+                title={t('settings.importTitle')}
+                subtitle={t('settings.importAction')}
+                badge={locale === 'ar' ? 'استيراد' : locale === 'en' ? 'Restore' : 'Restauration'}
+                onClick={onOpenImport}
+                ariaLabel={t('settings.importTitle')}
+              />
+
+              <SquareActionButton
+                icon={FolderArchive}
+                variant="emerald"
+                title={t('settings.item.archives')}
+                subtitle={locale === 'ar' ? 'السنوات السابقة' : locale === 'en' ? 'Previous school years' : 'Historique annuel'}
+                badge={locale === 'ar' ? 'أرشيف' : locale === 'en' ? 'Archives' : 'Archives'}
+                onClick={() => handleSelectCategory('archives')}
+                ariaLabel={t('settings.item.archives')}
+              />
+
+              <SquareActionButton
+                icon={Cloud}
+                variant="purple"
+                title={t('settings.item.account')}
+                subtitle={locale === 'ar' ? 'المزامنة بين أجهزتك' : locale === 'en' ? 'Sync across your devices' : 'Synchroniser mes appareils'}
+                badge={locale === 'ar' ? 'مزامنة' : locale === 'en' ? 'Sync' : 'Cloud'}
+                onClick={() => handleSelectCategory('compte')}
+                ariaLabel={t('settings.item.account')}
+              />
+            </div>
+
+            {/* Fiche récapitulative sécurité & souveraineté locale */}
+            <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 sm:p-4 backdrop-blur-md shadow-2xs">
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-2xs">
+                  <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
+                </span>
+                <div className="min-w-0 space-y-1">
+                  <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                    {locale === 'ar' ? 'احتفظ بنسخة من بياناتك' : locale === 'en' ? 'Keep a copy of your work' : 'Gardez une copie de votre travail'}
+                  </h4>
+                  <p className="text-[11px] sm:text-xs leading-relaxed text-muted-foreground">
+                    {locale === 'ar'
+                      ? 'نزّل أقسامك ودروسك وإعداداتك في ملف واحد. يمكنك استيراده لاحقًا أو نقله إلى جهاز آخر، بالإضافة إلى المزامنة عبر حسابك.'
+                      : locale === 'en' ? 'Download your classes, lessons and settings in one file. Import it later or move it to another device, alongside account synchronization.'
+                      : 'Téléchargez vos classes, séances et réglages dans un seul fichier. Vous pourrez le restaurer ou le transférer, en complément de la synchronisation de votre compte.'}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      JSON
+                    </span>
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onOpenImport}
-                  className="w-full border-border bg-background text-xs font-bold hover:bg-muted transition-all cursor-pointer rounded-xl h-8.5"
-                >
-                  {t('settings.importAction')}
-                </Button>
               </div>
             </div>
           </div>
@@ -621,57 +669,51 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
       case 'assistance':
         return (
-          <div className="space-y-3 sm:space-y-3.5">
-            {/* Plan Info Card */}
-            <div className="rounded-xl border border-border bg-card p-3 sm:p-3.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30">
-                  <CircleCheck className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground">
-                    {t('settings.support.planTitle')}
-                  </h3>
-                </div>
-              </div>
+          <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
+            {/* Bento Grid d'assistance tactile mobile */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+              <SquareActionButton
+                icon={BookOpen}
+                variant="primary"
+                title={t('settings.support.guideTitle')}
+                subtitle={locale === 'ar' ? 'دليل الاستخدام خطوة بخطوة' : locale === 'en' ? 'Step-by-step guide' : 'Prise en main pas à pas'}
+                badge={locale === 'ar' ? 'دليل' : locale === 'en' ? 'Guide' : 'Tutoriel'}
+                onClick={() => requestExit('guide')}
+                ariaLabel={t('settings.support.guideTitle')}
+              />
+
+              <SquareActionButton
+                icon={Mail}
+                variant="amber"
+                title={t('settings.support.feedbackTitle')}
+                subtitle="support@cahier-textes.ma"
+                badge={locale === 'ar' ? 'دعم' : 'Contact'}
+                onClick={() => window.open('mailto:support@cahier-textes.ma', '_blank')}
+                ariaLabel={t('settings.support.feedbackTitle')}
+              />
             </div>
 
-            {/* List of actions */}
-            <div className="rounded-xl border border-border bg-card overflow-hidden divide-y-0 space-y-0.5">
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-transparent">
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
+            {/* Carte état de l'appareil & plan */}
+            <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 sm:p-4 backdrop-blur-md shadow-2xs space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30">
+                    <CircleCheck className="h-4.5 w-4.5 stroke-[2.2]" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xs sm:text-sm font-bold text-foreground truncate">
+                      {t('settings.support.planTitle')}
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {t('settings.support.devicesTitle')}
+                    </p>
+                  </div>
                 </div>
-                <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 ring-1 ring-emerald-500/20 shrink-0">
+
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 ring-1 ring-emerald-500/20 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {t('settings.support.connected')}
                 </span>
-              </div>
-
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-transparent border-t border-border/50">
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.guideTitle')}</h4>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => requestExit('guide')}
-                  className="text-xs font-medium cursor-pointer border-border rounded-lg h-11 px-3 shrink-0"
-                >
-                  {t('settings.support.openGuide')}
-                </Button>
-              </div>
-
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-transparent border-t border-border/50">
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.feedbackTitle')}</h4>
-                </div>
-                <a
-                  href="mailto:support@cahier-textes.ma"
-                  className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline shrink-0"
-                >
-                  {t('settings.support.contact')}
-                </a>
               </div>
             </div>
           </div>
@@ -686,21 +728,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     <div className="space-y-2.5">
       {hasProfileChanges && (
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => requestExit()}
-            className="min-h-10 sm:min-h-11 rounded-xl border border-border/60 px-4 text-xs font-medium cursor-pointer"
-          >
-            {t('settings.discardProfile')}
+          <Button variant="secondary" onClick={() => requestExit()}>
+            <Undo2 aria-hidden />
+            <span>{t('settings.discardProfile')}</span>
           </Button>
 
-          <Button
-            type="button"
-            onClick={handleSave}
-            className="min-h-10 sm:min-h-11 gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/30 border border-primary/30 px-4 text-xs font-semibold cursor-pointer"
-          >
-            <Save className="h-4 w-4" />
+          <Button onClick={handleSave}>
+            <Save aria-hidden />
             <span>{t('settings.saveProfile')}</span>
           </Button>
         </div>
@@ -920,13 +954,14 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       title={t('settings.title')}
       maxWidth="5xl"
       mobileDetents={SETTINGS_MOBILE_DETENTS}
-      initialMobileDetent={0.62}
+      initialMobileDetent={0.94}
       className="settings-modal-sheet overflow-hidden sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-[1200px] sm:rounded-2xl"
       headerClassName="border-b border-border/70 lg:px-5 lg:py-3.5"
       bodyClassName="p-3 sm:p-3.5 lg:p-4"
+      footer={hasProfileChanges ? footer : undefined}
     >
       {/* Mobile Horizontal Tabs Selector avec déplacement fluide et centrage dynamique */}
-      <div className="flex lg:hidden mb-2.5 -mx-1 px-1">
+      <div className="settings-mobile-navigation sticky top-0 z-20 flex lg:hidden mb-5 -mx-1 px-1 pb-3 bg-card">
         <FluidTabRail<SettingsCategory>
           items={mobileSettingItems}
           activeId={activeCategory}
@@ -957,9 +992,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </section>
           </div>
 
-          <div className="mt-3 pt-1 lg:mt-4">
-            {footer}
-          </div>
         </main>
       </div>
     </Modal>
@@ -971,7 +1003,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       confirmLabel={t('settings.discardProfile')}
       cancelLabel={t('settings.keepEditing')}
       onConfirm={() => { if (pendingExit) finishExit(pendingExit); }}
-      variant="default"
+      variant="destructive"
     />
     </>
   );

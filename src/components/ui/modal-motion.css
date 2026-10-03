@@ -8,9 +8,9 @@
 
 /* Overlay avec blur intensifié et gradient subtil */
 .modal-motion-overlay {
-  background: linear-gradient(180deg, rgb(38 47 39 / .2), rgb(38 47 39 / .4));
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background: hsl(var(--foreground) / .3);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 .dark .modal-motion-overlay { 
   background: linear-gradient(180deg, rgb(8 13 20 / .58), rgb(8 13 20 / .72)); 
@@ -25,6 +25,8 @@
   --modal-keyboard-inset: max(0px, calc(100dvh - var(--modal-visible-height) - var(--modal-visible-top)));
   border-color: hsl(var(--border) / .85);
   background: hsl(var(--card));
+  font-family: var(--font-sans);
+  isolation: isolate;
   box-shadow: 
     inset 0 1px 0 rgb(255 255 255 / .65),
     0 8px 16px -8px rgb(38 47 39 / .1),
@@ -51,12 +53,27 @@
 /* Header avec bordure discrète */
 .modal-motion-surface .modal-pro-header {
   border-bottom: 1px solid hsl(var(--border) / .55);
-  background: linear-gradient(115deg, hsl(var(--accent) / .4), transparent 70%), hsl(var(--card));
+  background: hsl(var(--card));
+  gap: 4px;
 }
 .modal-motion-surface .modal-pro-header [data-ui-title] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: -0.02em;
+  line-height: 1.4;
+  text-wrap: balance;
 }
+.modal-motion-surface .modal-pro-header [data-ui-title] :is(div, span) { min-width: 0; }
+.modal-motion-surface [data-description] { max-width: 48rem; line-height: 1.55; text-wrap: pretty; }
+.modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select) { min-height: 44px; }
+.modal-motion-surface :is(label:has(input[type="radio"]), label:has([role="radio"]), label:has([role="checkbox"])) { min-height: 44px; }
+.modal-motion-surface :is([role="radio"], input[type="radio"]) { accent-color: hsl(var(--primary)); }
+.modal-motion-surface .modal-pro-footer button { white-space: normal; height: auto; min-height: 44px; font-size: 14px; line-height: 1.4; }
+.modal-motion-surface .modal-pro-footer > * { min-width: 0; }
+.modal-motion-surface button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
+.modal-motion-surface summary { min-height: 44px; align-content: center; cursor: pointer; }
 
 /* Body avec scroll optimisé */
 .modal-motion-surface .modal-body { 
@@ -67,7 +84,7 @@
 
 /* Footer avec ombre remontante subtile */
 .modal-motion-surface .modal-pro-footer {
-  background: color-mix(in srgb, hsl(var(--muted)) 32%, hsl(var(--card)));
+  background: hsl(var(--card));
   border-top: 1px solid hsl(var(--border) / .6); 
   box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .18); 
 }
@@ -191,7 +208,7 @@
     gap: 4px; 
   }
   .modal-motion-surface[data-has-handle="true"] .modal-pro-header { 
-    padding-top: 50px; 
+    padding-top: 48px;
   }
   
   /* Bouton X mobile : toujours situé en haut dans le coin, ne touche jamais la ligne séparatrice */
@@ -210,7 +227,7 @@
   
   /* Body mobile avec padding généreux */
   .modal-motion-surface .modal-body { 
-    padding: 22px 20px; 
+    padding: 20px 18px;
   }
   .modal-motion-surface[data-has-handle="true"] > .modal-body:first-of-type { 
     padding-top: 56px; 
@@ -218,12 +235,14 @@
   
   /* Footer mobile avec boutons tactiles */
   .modal-motion-surface .modal-pro-footer { 
-    padding: 16px 20px max(16px, env(safe-area-inset-bottom, 0px)); 
-    gap: 12px; 
+    padding: 14px 18px max(14px, env(safe-area-inset-bottom, 0px));
+    gap: 10px;
   }
   .modal-motion-surface .modal-pro-footer :is(button, [role="button"]) { 
     min-height: 48px;
-    border-radius: 14px;
+    border-radius: 12px;
+    min-width: 0;
+    flex: 1 1 auto;
   }
   
   /* Anti-zoom Safari sur focus input */
@@ -239,6 +258,14 @@
   html[data-keyboard="open"] .modal-motion-surface .modal-pro-footer { 
     padding-block: 12px; 
   }
+}
+
+/* Short landscape screens keep both the content and the action row reachable. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal-motion-surface { max-height: calc(var(--modal-visible-height) - 16px); }
+  .modal-motion-surface .modal-pro-header { padding-block: 12px; }
+  .modal-motion-surface[data-has-handle="true"] .modal-pro-header { padding-top: 40px; }
+  .modal-motion-surface .modal-pro-footer { padding-block: 10px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { FileDown, FileUp } from '@/components/ui/icons';
+import { FileDown, FileUp, HardDriveDownload, HardDriveUpload, Loader2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Segmented } from '@/components/ui/segmented';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { MAX_JSON_FILE_BYTES, parseBoundedJson } from '@/domain/notebook/jsonInput';
+import { StatusNotice } from '@/components/ui/status-notice';
 
 interface DataTransferModalProps {
   isOpen: boolean;
@@ -97,6 +98,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      blockDismiss={isImporting}
+      closeDisabled={isImporting}
       title={
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
@@ -113,19 +116,13 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
       footerClassName="border-t-0 bg-background"
       footer={
-        <div className="flex items-center justify-end gap-2.5 w-full">
-          <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
-            {t('common.close')}
-          </Button>
-          {panel === 'export' ? (
-            <Button type="button" onClick={onExport} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm">
-              {t('transfer.export')}
-            </Button>
-          ) : (
-            <Button type="button" onClick={handleImport} disabled={!jsonText || isReading || isImporting} aria-busy={isImporting} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm">
-              {t('transfer.import')}
-            </Button>
-          )}
+        <div className="flex w-full items-center justify-end gap-3">
+          <Button variant="secondary" onClick={onClose} disabled={isImporting}>{t('common.close')}</Button>
+          {panel === 'export' ? <Button onClick={onExport}><HardDriveDownload aria-hidden />{t('transfer.export')}</Button>
+            : <Button onClick={() => void handleImport()} disabled={!jsonText || isReading || isImporting} aria-busy={isImporting}>
+                {isImporting ? <Loader2 aria-hidden className="animate-spin motion-reduce:animate-none" /> : <HardDriveUpload aria-hidden />}
+                {isImporting ? t('common.loading') : t('transfer.import')}
+              </Button>}
         </div>
       }
     >
@@ -136,8 +133,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           ariaLabel={t('transfer.typeAria')}
           className="grid w-full grid-cols-2 max-w-sm mx-auto"
           options={[
-            { value: 'import', label: t('transfer.import') },
-            { value: 'export', label: t('transfer.export') },
+            { value: 'import', label: t('transfer.import'), disabled: isImporting },
+            { value: 'export', label: t('transfer.export'), disabled: isImporting },
           ]}
         />
 
@@ -156,32 +153,31 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
         ) : (
           <section className="space-y-4">
             {message && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-4 py-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200" role="status">
-                <p className="font-bold">{t('transfer.checkFile')}</p>
-                <p className="mt-0.5 text-amber-800/90 dark:text-amber-300">{message}</p>
-              </div>
+              <StatusNotice tone="error" title={t('transfer.checkFile')} description={message} announce />
             )}
 
             <div>
               <label
                 htmlFor="data-transfer-json-file"
-                className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
+                className="file-picker inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 px-5 py-5 text-center text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border/80 shadow-2xs mb-2 text-primary">
                   <FileUp className="h-5 w-5 stroke-[2.2]" aria-hidden />
                 </div>
-                <span className="text-xs sm:text-sm font-bold text-foreground">{fileName || t('transfer.chooseFile')}</span>
+                <span className="max-w-full break-all text-sm font-semibold text-foreground">{isReading ? t('common.loading') : fileName || t('transfer.chooseFile')}</span>
                 <span className="mt-1 text-[11px] text-muted-foreground font-medium">{t('transfer.fileLimit')}</span>
               </label>
-              <input type="file" id="data-transfer-json-file" accept=".json,application/json" onChange={handleFileChange} className="sr-only" />
+              <input type="file" id="data-transfer-json-file" accept=".json,application/json" onChange={handleFileChange} disabled={isImporting} className="sr-only" />
             </div>
 
             <details className="group rounded-xl bg-background border border-border/70 px-4 py-3 shadow-xs">
-              <summary className="cursor-pointer text-xs font-bold text-muted-foreground transition-colors hover:text-foreground list-none flex items-center justify-between">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                 <span>{t('transfer.pasteJson')}</span>
                 <span className="text-[10px] uppercase font-bold text-primary font-mono">{jsonText ? 'JSON ✓' : '+'}</span>
               </summary>
               <Textarea
+                aria-label={t('transfer.pasteJson')}
+                disabled={isImporting}
                 value={jsonText}
                 onChange={event => {
                   readRequestRef.current += 1;

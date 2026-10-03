@@ -103,19 +103,19 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         <CurriculumProgressLabel classInfo={classInfo} config={config} lessonsData={lessonsData} />
         <section className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('analysis.overview')}</h3>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 [&>div]:min-w-0 [&>div]:p-2.5 sm:[&>div]:p-4 [&_.text-3xl]:text-2xl sm:[&_.text-3xl]:text-3xl">
-            <div className="rounded-2xl border border-border/70 bg-background shadow-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">{t('analysis.completion')}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>div]:min-w-0 [&>div]:p-4 [&_.text-3xl]:text-2xl sm:[&_.text-3xl]:text-3xl">
+            <div className="col-span-2 rounded-2xl border border-border/70 bg-card shadow-xs sm:col-span-1">
+              <div className="mb-2 text-xs font-medium text-muted-foreground">{t('analysis.completion')}</div>
               <div className="text-3xl font-black tracking-tight text-foreground">{number.format(stats.completionRate)}%</div>
               <div className="text-xs text-muted-foreground font-medium mt-1.5">{t('analysis.plannedOfTotal', { planned: number.format(stats.plannedCount), total: number.format(stats.totalItems) })}</div>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background shadow-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">{t('analysis.sessions')}</div>
+              <div className="mb-2 text-xs font-medium text-muted-foreground">{t('analysis.sessions')}</div>
               <div className="text-3xl font-black tracking-tight text-foreground">{number.format(stats.sessionsCount)}</div>
               <div className="text-xs text-muted-foreground font-medium mt-1.5">{t('analysis.distinctDays')}</div>
             </div>
             <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] shadow-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-primary mb-1.5">{t('analysis.toPlan')}</div>
+              <div className="mb-2 text-xs font-medium text-[var(--workspace-active-ink)]">{t('analysis.toPlan')}</div>
               <div className="text-3xl font-black tracking-tight text-primary">{number.format(stats.unplannedItems.length)}</div>
               <div className="text-xs text-muted-foreground font-medium mt-1.5">{t('analysis.withoutDate')}</div>
             </div>

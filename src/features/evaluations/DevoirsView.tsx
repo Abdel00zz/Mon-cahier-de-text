@@ -1169,8 +1169,8 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             }}
             onBlur={() => commitDraft(draft)}
             placeholder={t('evaluations.studentPlaceholder')}
+            aria-label={t('evaluations.studentPlaceholder')}
             className="h-10 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            autoFocus
           />
           <button
             type="button"

@@ -13,7 +13,7 @@ export const formFieldVariants = cva(
     variants: {
       size: {
         default: 'h-11 rounded-xl px-3.5 py-2',
-        sm: 'h-8 rounded-md px-2 py-1 text-xs',
+        sm: 'h-11 sm:h-8 rounded-lg px-2.5 py-1 text-base sm:text-xs',
         lg: 'h-12 rounded-xl px-4 py-3 text-base',
       },
       variant: {

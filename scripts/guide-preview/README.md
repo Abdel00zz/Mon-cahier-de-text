@@ -1,8 +1,9 @@
 # Captures du guide
 
 Cette entrée Vite de développement monte les **composants de production**, avec des
-classes et contenus fictifs. Aucun fournisseur de compte ou de synchronisation
-n’est monté. Les réglages du banc restent en mémoire React. Ne pas activer les
+classes et contenus fictifs. Aucun fournisseur de synchronisation cloud n’est monté.
+Les paramètres et la connexion utilisent le fournisseur de compte sur l’origine locale.
+Les réglages du banc restent en mémoire React. Ne pas activer les
 notifications système ni utiliser un compte enseignant pour réaliser les captures.
 
 ## Reproduire
@@ -38,3 +39,8 @@ simulée. L’horloge et les données d’exemple ne décrivent aucun compte ré
 - Tester recherche accentuée/arabe, résultat vide, changement de langue, lecture
   RTL/LTR, ouverture d’image, navigation clavier, fermeture et thème sombre.
 - Cette entrée n’est pas une entrée de compilation Vite et ne doit pas être publiée.
+# Atelier des modales
+
+`?screen=modals&modal=settings&lang=fr` présente les composants réels avec des données fictives. La galerie permet d'inspecter 20 fenêtres (classes, séances, impression, sauvegardes, paramètres, aide et administration), en français, arabe ou anglais et dans les deux thèmes. Les actions de démonstration ne sauvegardent pas de données dans le cloud. Les évaluations permettent aussi d'ouvrir les formulaires imbriqués d'activité, de devoir et d'absence.
+
+`?screen=auth&lang=fr` affiche l'accueil et la connexion réels. Ne soumettez pas de véritables identifiants dans cet aperçu. `?screen=feedback&lang=fr` simule les états d'activation des notifications sans demander de permission ni envoyer de push.

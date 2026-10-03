@@ -12,7 +12,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         className={cn(
           formFieldVariants({ size, variant }),
-          "min-h-[90px] py-3",
+          "h-auto min-h-[90px] py-3",
           className
         )}
         ref={ref}
