@@ -1,7 +1,7 @@
 /* ── Niveaux de classes (système marocain) ────────────────────────────────── */
 
 import type { Cycle, AppLocale } from '../types';
-import { toDisplayText } from '../lib/text/textValue';
+import { toDisplayText } from '../lib/text/textValue.js';
 
 export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
   college: ['1AC', '2AC', '3AC'],

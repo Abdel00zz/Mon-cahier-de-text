@@ -1,7 +1,7 @@
 import type { AppLocale } from '../../types.js';
 import type { ClassIdentity } from './classIdentity';
-import { formatCompactTierLabel, formatStreamSigla } from '../../constants/class-levels';
-import { toDisplayText } from '../../lib/text/textValue';
+import { formatCompactTierLabel, formatStreamSigla } from '../../constants/class-levels.js';
+import { toDisplayText } from '../../lib/text/textValue.js';
 
 /**
  * Abréviation LISIBLE du nom d'une classe dans une cellule d'emploi du temps.

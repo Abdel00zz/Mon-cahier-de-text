@@ -1,4 +1,4 @@
-import { apiFetch } from '../../platform/nativeHttp';
+import { apiFetch } from '../../platform/nativeHttp.js';
 import { AppLocale, ScheduleSlot } from '../../types.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel) : sans lui,
 // le runtime lève ERR_IMPORT_ATTRIBUTE_MISSING et la fonction plante au

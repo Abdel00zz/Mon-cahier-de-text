@@ -7,9 +7,9 @@ import {
     lookupClassLevelIdentity,
     tierForLevelCode,
     type ClassTierKey,
-} from '../../constants/class-levels';
-import { parseClassName } from './classAbbreviation';
-import { toDisplayText } from '../../lib/text/textValue';
+} from '../../constants/class-levels.js';
+import { parseClassName } from './classAbbreviation.js';
+import { toDisplayText } from '../../lib/text/textValue.js';
 
 /**
  * Identité lisible d'une classe : le palier (badge) et la filière (branche).

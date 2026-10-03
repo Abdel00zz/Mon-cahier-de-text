@@ -1,4 +1,4 @@
-import { apiFetch } from '../../platform/nativeHttp';
+import { apiFetch } from '../../platform/nativeHttp.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel), inline par
 // Vite côté navigateur, voir utils/calendar.ts.
 import officialEventsJson from '../../../public/official-student-events.json' with { type: 'json' };

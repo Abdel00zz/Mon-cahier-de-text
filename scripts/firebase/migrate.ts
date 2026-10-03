@@ -5,7 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { parseArgs, parseEnv } from 'node:util';
 import { Redis } from '@upstash/redis';
 import { FirestoreStore } from '../../api/_lib/firestoreStore.js';
-import { importFirebaseTeacher, type MigratableUser } from '../../api/_lib/firebaseIdentity.js';
+import { firebasePasswordImport, importFirebaseTeacher, type MigratableUser } from '../../api/_lib/firebaseIdentity.js';
 import { isCahierRecord } from './source-scope.js';
 
 type ExportRecord = { key: string; type: string; value: unknown; expiresAt?: number };
@@ -22,6 +22,7 @@ process.env.FCM_CLIENT_EMAIL = credentials.client_email;
 process.env.FCM_PRIVATE_KEY = credentials.private_key;
 const target = new FirestoreStore();
 let records: ExportRecord[] = [];
+let source: Redis | undefined;
 
 if (values['source-env']) {
   if (!values['source-frozen']) throw new Error('Freeze the legacy application before export, then pass --source-frozen');
@@ -33,7 +34,7 @@ if (values['source-env']) {
   const url = sourceEnv.UPSTASH_REDIS_REST_URL || sourceEnv.KV_REST_API_URL;
   const token = sourceEnv.UPSTASH_REDIS_REST_TOKEN || sourceEnv.KV_REST_API_TOKEN;
   if (!url || !token) throw new Error('Legacy Redis credentials missing');
-  const source = new Redis({ url, token });
+  source = new Redis({ url, token });
   const keys = new Set<string>();
   let cursor = '0';
   do {
@@ -68,8 +69,28 @@ if (values['source-env']) {
 }
 
 const users = records.filter(record => record.key.startsWith('user:')).map(record => record.value as MigratableUser);
+for (const user of users) {
+  if (!user || typeof user.phone !== 'string' || typeof user.nom !== 'string' || typeof user.prenom !== 'string') throw new Error('Invalid source teacher account');
+  firebasePasswordImport(user);
+  if (!records.some(record => record.key === `user:${user.phone}` && record.value === user)) throw new Error('Source account key does not match its phone');
+}
+if (records.some(record => record.type === 'hash' && record.expiresAt)) throw new Error('Expiring source hashes require explicit migration support');
+async function verifySourceUnchanged() {
+  if (!source) return;
+  const keys = new Set<string>(); let cursor = '0';
+  do {
+    const result = await source.scan(cursor, { count: 100 }); cursor = String(result[0]);
+    result[1].filter(isCahierRecord).forEach(key => keys.add(key));
+  } while (cursor !== '0');
+  if (!isDeepStrictEqual([...keys].sort(), records.map(record => record.key).sort())) throw new Error('Source keys changed; keep maintenance enabled and reconcile');
+  for (const record of records) {
+    const value = record.type === 'string' ? await source.get(record.key) : await source.hgetall(record.key);
+    if (!isDeepStrictEqual(value, record.value)) throw new Error('Source changed; keep maintenance enabled and reconcile');
+  }
+}
 console.log(JSON.stringify({ dryRun: !values.apply, users: users.length, records: records.length, project: 'cahier-text' }));
 if (values.apply) {
+  await verifySourceUnchanged();
   for (const user of users) await importFirebaseTeacher(user);
   for (const record of records) {
     if (record.type === 'string') {
@@ -88,6 +109,7 @@ if (values.apply) {
       }
     }
   }
+  await verifySourceUnchanged();
   for (const record of records) {
     const copied = record.type === 'string' ? await target.get(record.key) : await target.hgetall(record.key);
     if (!isDeepStrictEqual(copied, record.value)) throw new Error('Post-import comparison failed');
