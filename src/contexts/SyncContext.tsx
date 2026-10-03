@@ -3,7 +3,6 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
 import { teacherDeclaredSubjects, teacherDisplayName } from '../domain/classes/teacherIdentity';
-import { migrateLessonsData } from '../domain/notebook/dataUtils';
 import { toast } from 'sonner';
 import {
     clearPendingWork,
@@ -31,6 +30,10 @@ import { withCurriculumSettings } from '../domain/classes/classCurriculumSetting
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
 import { requestSyncJson, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
+import { readLocalSyncSnapshot } from '../infrastructure/sync/localSnapshot';
+import { LocalSyncDataError } from '../infrastructure/storage/localJson';
+import { readCachedConfig } from '../infrastructure/storage/configStorage';
+import { readStoredNotebook } from '../infrastructure/storage/notebookStorage';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -46,49 +49,10 @@ const PUSH_DEBOUNCE_MS = 20_000;
 /** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
 const MAX_PUSH_BYTES = 700_000;
 
-const readLocalClasses = (): ClassInfo[] => {
-    try {
-        return assignClassColors(JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[]);
-    } catch {
-        return [];
-    }
+const syncText = (key: string, values: Record<string, string | number> = {}): string => {
+    const locale = readCachedConfig().applicationLocale;
+    return translateLocaleMessage(locale === 'fr' || locale === 'en' || locale === 'ar' ? locale : 'ar', key, values);
 };
-
-interface LocalNotebookSnapshot {
-    lessonsData: LessonsData;
-    contentDirection?: ContentDirection;
-}
-
-/** Lit le cahier et sa direction dans le même instantané local. */
-const readLocalNotebook = (classId: string): LocalNotebookSnapshot => {
-    try {
-        const raw = localStorage.getItem(`classData_v1_${classId}`);
-        const parsed = raw ? JSON.parse(raw) : [];
-        const lessons = Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []);
-        return {
-            lessonsData: migrateLessonsData(lessons),
-            contentDirection: Array.isArray(parsed) || !isContentDirection(parsed?.contentDirection)
-                ? undefined
-                : parsed.contentDirection,
-        };
-    } catch {
-        return { lessonsData: [] };
-    }
-};
-
-const readLocalLessons = (classId: string): LessonsData => readLocalNotebook(classId).lessonsData;
-
-const readLocalConfig = (): Partial<AppConfig> => {
-    try {
-        const raw = localStorage.getItem('appConfig_v1');
-        return raw ? (JSON.parse(raw) as Partial<AppConfig>) : {};
-    } catch {
-        return {};
-    }
-};
-
-const syncText = (key: string, values: Record<string, string | number> = {}): string =>
-    translateLocaleMessage(readLocalConfig().applicationLocale ?? 'ar', key, values);
 
 /** Nettoie les références d'une classe supprimée, même si la suppression vient d'un autre appareil. */
 const removeDeletedClassReferences = (
@@ -204,7 +168,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (lastErrorKeyRef.current === key) return;
         // Pendant l'onboarding, ne pas interrompre l'utilisateur : l'erreur de
         // synchro reste visible via l'état « Erreur » une fois le parcours fini.
-        if (readLocalConfig().hasCompletedWelcome !== true) return;
+        if (readCachedConfig().hasCompletedWelcome !== true) return;
         lastErrorKeyRef.current = key;
         if (status === 401) {
             toast.error(syncText('sync.sessionExpired'), { duration: 10_000 });
@@ -217,6 +181,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 message ? syncText('sync.failedWithMessage', { message }) : syncText('sync.failed'),
                 { duration: 8_000 }
             );
+        }
+    }, []);
+
+    const reportSyncFailure = useCallback((error: unknown) => {
+        logger.error('Synchronization failed', error);
+        if (error instanceof LocalSyncDataError) {
+            setSyncStatus('error');
+            if (lastErrorKeyRef.current !== 'local-data') {
+                lastErrorKeyRef.current = 'local-data';
+                toast.error(syncText('sync.localDataUnreadable'), { duration: 10_000 });
+            }
+        } else {
+            setSyncStatus('offline');
         }
     }, []);
 
@@ -237,8 +214,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let succeeded = false;
 
         try {
-            const classes = readLocalClasses();
-            const config = readLocalConfig();
+            const local = readLocalSyncSnapshot();
+            const { classes, config } = local;
             // schedules toujours re-dérivés de la grille : l'instantané poussé au
             // cron reflète la règle de fusion des créneaux consécutifs, même si
             // le localStorage porte encore d'anciens schedules non normalisés.
@@ -250,15 +227,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // une seule lecture/migration par classe et par push : le corps du
             // push ET l'instantané réutilisent le même résultat
-            const notebookCache = new Map<string, LocalNotebookSnapshot>();
-            const readNotebookCached = (classId: string): LocalNotebookSnapshot => {
-                let notebook = notebookCache.get(classId);
-                if (!notebook) {
-                    notebook = readLocalNotebook(classId);
-                    notebookCache.set(classId, notebook);
-                }
-                return notebook;
-            };
+            const readNotebookCached = (classId: string) => local.notebooks.get(classId) ?? { lessonsData: [] };
             const readLessonsCached = (classId: string): LessonsData => {
                 return readNotebookCached(classId).lessonsData;
             };
@@ -424,8 +393,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         } catch (error) {
             if (!isCurrent()) return;
-            logger.error('Sync push failed (offline?)', error);
-            setSyncStatus('offline');
+            reportSyncFailure(error);
         } finally {
             if (pushAbortRef.current === controller) {
                 pushingRef.current = false;
@@ -445,7 +413,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
         }
-    }, []);
+    }, [reportSyncFailure]);
 
     useEffect(() => () => {
         pushAbortRef.current?.abort();
@@ -517,7 +485,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const server = (await response.json()) as ServerClassesBlob;
                 if (!isCurrent()) return;
 
-                const localClasses = readLocalClasses();
+                const local = readLocalSyncSnapshot(localStorage, { includeNotebooks: false });
+                const { classes: localClasses, config: localConfig } = local;
                 const syncMeta = readSyncMeta();
 
                 const remoteDeletedIds = new Set(Object.keys(server.deletedClasses ?? {}));
@@ -530,7 +499,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && needsAssociation) {
                     // Refusing notebook association must not disable the admin clock.
                     if (server.timetableClock !== undefined) {
-                        const config = readLocalConfig();
+                        const config = localConfig;
                         const timetableClock = normalizeTimetableClock(server.timetableClock);
                         if (JSON.stringify(config.timetableClock) !== JSON.stringify(timetableClock)) {
                             localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock }));
@@ -625,13 +594,21 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return { serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer };
                     });
 
+                // Only validate notebooks about to be replaced/backed up. An unchanged
+                // pull never reparses every course; the strict reader shares the bounded cache.
+                for (const decision of decisions) {
+                    if (decision.localIndex !== -1 && (decision.serverIsNewer || decision.conflict)) {
+                        local.notebooks.set(decision.serverClass.id, readStoredNotebook(decision.serverClass.id));
+                    }
+                }
+
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
                 await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, serverIsNewer }) => {
                     if (!isCurrent()) return;
                     if (action === 'apply') {
                         // le cloud va remplacer le local : archiver la version locale perdante
                         if (conflict) {
-                            commits.push(() => backupConflictVersion(serverClass.id, readLocalLessons(serverClass.id), 'local'));
+                            commits.push(() => backupConflictVersion(serverClass.id, local.notebooks.get(serverClass.id)?.lessonsData ?? [], 'local'));
                             conflictNames.push(serverClass.name);
                         }
                         // Les champs d'une classe administrée doivent se mettre à jour
@@ -707,7 +684,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  * local), on restaure l'ensemble depuis le cloud. Sinon on
                  * respecte les réglages locaux (l'état push reste par appareil).
                  */
-                const localConfig = readLocalConfig();
                 const cleanedConfig = removeDeletedClassReferences(localConfig, deletedIds);
                 let nextConfig = cleanedConfig.config;
                 let configChanged = cleanedConfig.changed;
@@ -778,8 +754,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return true;
             } catch (error) {
                 if (isCurrent()) {
-                    logger.error('Sync pull failed (offline?)', error);
-                    setSyncStatus('offline');
+                    reportSyncFailure(error);
                 }
                 return controller.signal.aborted ? undefined : false;
             } finally {
@@ -802,7 +777,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubscribeDirty();
             stopPolling();
         };
-    }, [authStatus, user, schedulePush]);
+    }, [authStatus, user, schedulePush, reportSyncFailure]);
 
     // ── Déclencheurs : événements dirty, retour en ligne, fermeture ─────────
     useEffect(() => {

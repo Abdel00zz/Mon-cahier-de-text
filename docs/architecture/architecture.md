@@ -105,7 +105,7 @@ Les accès au stockage et les échanges réseau sont identifiables dans `src/inf
 2. Est-ce une primitive visuelle sans logique métier ? `src/components/ui`.
 3. Est-ce un état React réutilisé par plusieurs parcours ? `src/hooks`.
 4. Est-ce une règle ou transformation sans React ? Le sous-domaine adapté de `src/domain`.
-5. Est-ce un secret, une session serveur ou un accès Redis ? `api/_lib`.
+5. Est-ce un secret, une session serveur ou un accès Firebase/Redis ? `api/_lib`.
 6. Est-ce une donnée officielle statique ? `public` avec validation côté code.
 7. Est-ce une lecture de stockage, une sauvegarde ou un transport réseau ? `src/infrastructure`.
 8. Est-ce un test, un outil ou un brouillon ? Respectivement `tests`, `scripts/<usage>` ou `tmp`.
@@ -150,7 +150,7 @@ Les projections de séance consommées par les cartes et les notifications parte
 
 `src/domain/evaluations/assessments.ts` valide le JSON officiel à l’exécution puis fusionne, dans une seule fonction métier, le planning officiel, les dates ajustées et les devoirs manuels. Les identifiants officiels incluent le millésime scolaire ; les anciennes clés sans année restent lisibles uniquement pour migration.
 
-Les alertes, le modal d’évaluations et les rappels d’absences consomment la même liste résolue. `src/domain/evaluations/assessmentSync.ts` rapproche ensuite chaque devoir avec un bloc du cahier par type, numéro et proximité de date, sans réutiliser le même bloc. L’API valide les structures d’évaluation avant de les enregistrer dans Redis.
+Les alertes, le modal d’évaluations et les rappels d’absences consomment la même liste résolue. `src/domain/evaluations/assessmentSync.ts` rapproche ensuite chaque devoir avec un bloc du cahier par type, numéro et proximité de date, sans réutiliser le même bloc. L’API valide les structures d’évaluation avant de les enregistrer dans le stockage cloud configuré.
 
 ### Date
 
@@ -227,3 +227,34 @@ Le virtualiseur utilise l’intersection réelle avec la fenêtre, des mesures i
 Les écarts horaires et les classes sans créneau passent par le flux de notifications vers les repères du Centre de pilotage. Le panneau d’avertissements redondant des paramètres a été retiré.
 
 Vérification des indices, fusions, dates multiples, virtualisation et délimiteurs : `npm run test:editor`.
+
+## Circuits Firebase, Web et Android
+
+```mermaid
+flowchart LR
+  UI[Interface enseignant / direction] --> HTTP[API HTTP]
+  Local[Stockage local par compte] <--> Sync[Synchronisation et contrôle des versions]
+  UI <--> Local
+  Sync <--> HTTP
+  Android[Capacitor Android] --> NativeHTTP[Transport HTTPS natif]
+  NativeHTTP --> HTTP
+  HTTP --> Guard[Session, propriétaire, rôle, validation]
+  Guard --> Identity[Firebase Authentication]
+  Guard --> Store[Transactions Firestore]
+  Store --> Messages[Messages et associations d'appareils]
+  Messages --> FCM[FCM Android / Web Push PWA]
+```
+
+`CLOUD_PROVIDER=firestore` sélectionne `FirestoreStore`. Le nom historique `getRedis` et les clés métier restent une interface de compatibilité ; le chemin Firebase exécute des transactions Firestore, sans interpréter les scripts Lua du fournisseur historique. Les révisions protègent les écritures concurrentes de la direction et des enseignants, y compris après suppression/recréation d'un compte.
+
+Les règles Firestore refusent tout accès direct du client. Les API Node.js Vercel utilisent Firebase Admin et doivent donc contrôler elles-mêmes session, propriétaire, compte bloqué, rôle et données avant toute écriture. Aucun SDK Admin ni secret serveur n'entre dans les bundles Web ou Android. Les champs JSON sont exemptés d'indexation ; les accès actuels utilisent des chemins déterministes, sans index composite.
+
+La synchronisation valide ses classes, réglages et cahiers avant un envoi. Un JSON local illisible déclenche une erreur récupérable et conserve la file de modifications ; il ne devient pas un tableau vide à envoyer. Avant un remplacement cloud, les copies locales concernées sont validées. La lecture stricte des cahiers partage le cache borné à 24 entrées utilisé par les projections visuelles. Un pull inchangé ne relit pas tous les cours.
+
+Les changements de compte isolent données, archives, badges et réponses réseau en vol avec un propriétaire et une révision locale. Une identité mise en cache autorise le travail hors connexion ; elle ne donne pas à elle seule le droit d'envoyer au serveur.
+
+Les sauvegardes locales restaurent l'espace enseignant, puis rejoignent cette synchronisation. La sauvegarde cloud chiffrée porte uniquement sur Firestore : Authentication et secrets restent un périmètre séparé. Voir [la procédure de restauration](../operations/firebase-backup.md).
+
+Le code de l'APK est embarqué. Une mise à jour de ses ressources exige une nouvelle compilation signée avec un `versionCode` supérieur. La PWA reçoit un nouveau service worker ; Android utilise le canal Play ou un manifeste d'APK réellement publié. Les deux circuits attendent la fin des saisies/sauvegardes avant un redémarrage. Voir [la distribution Android](../operations/android.md).
+
+Contrôles : `npm run check:architecture`, `npm test`, `npm run test:firebase` et `npm run release -- --serial <appareil-de-test>`. Les tests Firebase refusent une exécution sans émulateurs et ne doivent jamais viser une base de production.
