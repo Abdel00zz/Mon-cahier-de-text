@@ -1,6 +1,6 @@
 # Migration Firestore et Authentication
 
-La migration conserve l'URL Vercel, les contrats HTTP, les cookies de session et le moteur local Web/PWA/Android. Firebase Authentication vérifie les mots de passe des enseignants ; Firestore remplace le stockage serveur. L'adaptateur conserve les révisions, les dates imposées par la direction et les associations de notifications. Il ne remplace pas encore les appels de synchronisation par des écouteurs Firestore clients.
+La migration conserve l'URL Vercel, les contrats HTTP, les cookies de session et le moteur local Web/PWA/Android. Firebase Authentication vérifie les mots de passe des enseignants ; Firestore remplace le stockage serveur. Le runtime Vercel est fixé à Node 24 LTS, compatible avec le SDK Admin et ses dépendances ESM. L'adaptateur conserve les révisions, les dates imposées par la direction et les associations de notifications. Il ne remplace pas encore les appels de synchronisation par des écouteurs Firestore clients.
 
 ## Données et sécurité
 
