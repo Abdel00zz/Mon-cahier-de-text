@@ -1,0 +1,12 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "private", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "workspace", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "notebooks", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "parts", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "teacher_snapshots", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "entries", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "cloud_records", "fieldPath": "json", "indexes": [] }
+  ]
+}

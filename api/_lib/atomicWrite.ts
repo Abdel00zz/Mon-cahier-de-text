@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { HttpError } from './http.js';
-import { KEYS, type RedisClient } from './redis.js';
+import { KEYS, isFirestoreStore, type RedisClient } from './redis.js';
 
 /** Every account writer must acquire this revision BEFORE reading its inputs.
  * No expiring lock: a delayed request can never commit over a newer revision.
@@ -18,6 +18,19 @@ export const beginAccountWrite = async (redis: RedisClient, phone: string) => {
         },
         hdel(key: string, field: string) { commands.push(['HDEL', key, field]); },
         async exec() {
+            if (isFirestoreStore(redis)) {
+                return redis.atomic(async view => {
+                    if ((await view.get<string>(revisionKey) ?? '') !== revision) throw new HttpError(409, 'Données modifiées pendant la sauvegarde. Rechargez puis réessayez.', 'WRITE_CONFLICT');
+                    if (!await view.get(KEYS.user(phone))) throw new HttpError(404, 'Compte supprimé.');
+                    for (const [command, key, field, value] of commands) {
+                        if (command === 'SET') await view.set(key, JSON.parse(field));
+                        else if (command === 'DEL') await view.del(key);
+                        else if (command === 'HSET') await view.hset(key, { [field]: JSON.parse(value) });
+                        else if (command === 'HDEL') await view.hdel(key, field);
+                    }
+                    await view.set(revisionKey, randomUUID());
+                });
+            }
             const result = await redis.eval<unknown[], number>(`
 if (redis.call('GET', KEYS[1]) or '') ~= ARGV[1] then return 0 end
 if redis.call('EXISTS', KEYS[2]) == 0 then return -1 end
@@ -45,6 +58,13 @@ export const saveVersionedDocument = async (
 ): Promise<void> => {
     if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0 || value.version !== expectedVersion + 1) {
         throw new HttpError(400, 'Version invalide.');
+    }
+    if (isFirestoreStore(redis)) {
+        return redis.atomic(async view => {
+            const current = await view.get<{ version: number }>(key);
+            if ((current?.version ?? initialVersion) !== expectedVersion) throw new HttpError(409, 'Ce document a été modifié par une autre session. Rechargez avant de publier.');
+            await view.set(key, value);
+        });
     }
     const result = await redis.eval<unknown[], number>(`
 local raw = redis.call('GET', KEYS[1])

@@ -9,7 +9,10 @@ import {
   signSession,
   verifyPassword,
 } from './_lib/auth.js';
-import { getRedis, KEYS } from './_lib/redis.js';
+import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
+import { importFirebaseTeacher, verifyFirebasePassword } from './_lib/firebaseIdentity.js';
+import { beginAccountWrite } from './_lib/atomicWrite.js';
+import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { assertName, assertPassword, normalizePhone } from './_lib/validate.js';
 interface StoredUser {
   phone: string;
@@ -80,12 +83,15 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
     throw new HttpError(409, 'Un compte existe déjà avec ce numéro de téléphone.');
   }
 
+  let firebaseCreated = false;
   try {
+    if (isFirestoreStore(redis)) firebaseCreated = await importFirebaseTeacher(user, false);
     await redis.hset(KEYS.adminSnapshots, { [phone]: initialAdminSnapshot(user) });
   } catch (error) {
     // Évite un compte créé mais invisible dans l'administration si la seconde
     // écriture Redis échoue. Le numéro reste ainsi disponible pour un nouvel essai.
     await redis.del(KEYS.user(phone)).catch(() => undefined);
+    if (firebaseCreated) await firebaseAuth().deleteUser(teacherUid(phone)).catch(() => undefined);
     throw error;
   }
 
@@ -102,14 +108,20 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
 
   const redis = await getRedis();
   const rateKey = KEYS.loginRateLimit(phone);
-  const attempts = Number(await redis.incr(rateKey));
-  if (attempts === 1) await redis.expire(rateKey, LOGIN_WINDOW_SECONDS);
+  const attempts = isFirestoreStore(redis) ? await redis.atomic(async view => {
+    const count = await view.incr(rateKey);
+    if (count === 1) await view.expire(rateKey, LOGIN_WINDOW_SECONDS);
+    return count;
+  }) : Number(await redis.incr(rateKey));
+  if (!isFirestoreStore(redis) && attempts === 1) await redis.expire(rateKey, LOGIN_WINDOW_SECONDS);
   if (attempts > LOGIN_MAX_ATTEMPTS) {
     throw new HttpError(429, 'Trop de tentatives. Réessayez dans quelques minutes.');
   }
 
   const user = await redis.get<StoredUser>(KEYS.user(phone));
-  if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
+  if (!user || !(isFirestoreStore(redis)
+    ? await verifyFirebasePassword(phone, body.password)
+    : await verifyPassword(body.password, user.passwordHash))) {
     throw new HttpError(401, INVALID_CREDENTIALS);
   }
 
@@ -149,11 +161,13 @@ const handleMe = async (req: ApiRequest, res: ApiResponse) => {
 const handleCompleteWelcome = async (req: ApiRequest, res: ApiResponse) => {
   const { phone } = await requireUser(req);
   const redis = await getRedis();
+  const write = await beginAccountWrite(redis, phone);
   const user = await redis.get<StoredUser>(KEYS.user(phone));
   if (!user) throw new HttpError(404, 'Compte introuvable.');
 
   const updatedUser: StoredUser = { ...user, hasCompletedWelcome: true };
-  await redis.set(KEYS.user(phone), updatedUser);
+  write.set(KEYS.user(phone), updatedUser);
+  await write.exec();
   res.status(200).json({ user: publicUser(updatedUser) });
 };
 

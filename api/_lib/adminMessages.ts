@@ -1,5 +1,5 @@
 import type { AdminMessage } from '../../src/types.js';
-import { KEYS, type RedisClient } from './redis.js';
+import { KEYS, isFirestoreStore, type RedisClient } from './redis.js';
 import { HttpError } from './http.js';
 
 export const MAX_ADMIN_MESSAGES_PER_TEACHER = 60;
@@ -29,7 +29,14 @@ export const recentAdminMessages = (value: unknown): AdminMessage[] =>
 /** Read count + order in one Redis operation. HTTP/FCM completion order and
  * clocks on different Vercel instances must not restore an already-read badge. */
 export async function readInboxSnapshot(redis: RedisClient, phone: string) {
-    const snapshot = await redis.eval<unknown[], [unknown, number] | null>(`
+    const snapshot = isFirestoreStore(redis) ? await redis.atomic(async view => {
+        if (!await view.get(KEYS.user(phone))) return null;
+        const messages = await view.get(KEYS.adminMessages(phone)) ?? [];
+        const previous = Number(await view.get(KEYS.inboxClock(phone)) ?? 0);
+        const timestamp = Math.max(Date.now(), previous + 1);
+        await view.set(KEYS.inboxClock(phone), timestamp);
+        return [messages, timestamp] as [unknown, number];
+    }) : await redis.eval<unknown[], [unknown, number] | null>(`
 if redis.call('EXISTS', KEYS[3]) == 0 then return nil end
 local messages = redis.call('GET', KEYS[1]) or '[]'
 local clock = redis.call('TIME')

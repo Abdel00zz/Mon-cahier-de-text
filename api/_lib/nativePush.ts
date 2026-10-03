@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { HttpError } from './http.js';
-import { getRedis, KEYS, type RedisClient } from './redis.js';
+import { getRedis, KEYS, isFirestoreStore, type RedisClient } from './redis.js';
 import { fcmConfigured, sendNativePush, type NativeInboxPush, type NativePushDevice } from './fcm.js';
 
 const fieldFor = (token: string): string => createHash('sha256').update(token).digest('hex');
@@ -20,7 +20,24 @@ export async function subscribeNativeDevice(phone: string, raw: unknown, locale:
     const field = fieldFor(token);
     const device: NativePushDevice = { token, binding: randomUUID(), locale: locale === 'fr' || locale === 'en' ? locale : 'ar', installationId };
     // Atomic ownership transfer: a late unsubscribe cannot remove a newer binding.
-    const [result, binding] = await redis.eval<unknown[], [number, string]>(`
+    const [result, binding] = isFirestoreStore(redis) ? await redis.atomic(async view => {
+        if (!await view.get(KEYS.user(phone))) return [-1, ''] as [number, string];
+        const oldOwner = await view.hget<string>(KEYS.nativePushOwners, field);
+        const devicesKey = KEYS.nativePushDevices(phone);
+        const devices = await view.hgetall<Record<string, NativePushDevice>>(devicesKey) ?? {};
+        const existing = devices[field];
+        const replaced = Object.keys(devices).filter(key => key !== field && devices[key].installationId === installationId);
+        if (!existing && Object.keys(devices).length - replaced.length >= 5) return [0, ''] as [number, string];
+        if (existing && oldOwner === phone) device.binding = existing.binding;
+        for (const replacedField of replaced) {
+            await view.hdel(devicesKey, replacedField);
+            if (await view.hget(KEYS.nativePushOwners, replacedField) === phone) await view.hdel(KEYS.nativePushOwners, replacedField);
+        }
+        if (oldOwner && oldOwner !== phone) await view.hdel(KEYS.nativePushDevices(oldOwner), field);
+        await view.hset(KEYS.nativePushOwners, { [field]: phone });
+        await view.hset(devicesKey, { [field]: device });
+        return [1, device.binding] as [number, string];
+    }) : await redis.eval<unknown[], [number, string]>(`
 if redis.call('EXISTS', KEYS[3]) == 0 then return {-1, ''} end
 local oldRaw = redis.call('HGET', KEYS[1], ARGV[1])
 local oldOwner = oldRaw and cjson.decode(oldRaw) or nil
@@ -51,6 +68,16 @@ return {1, device.binding}`, [KEYS.nativePushOwners, KEYS.nativePushDevices(phon
 }
 
 async function removeDevice(redis: RedisClient, phone: string, token: string, binding: string): Promise<void> {
+    if (isFirestoreStore(redis)) {
+        return redis.atomic(async view => {
+            const field = fieldFor(token);
+            const device = await view.hget<NativePushDevice>(KEYS.nativePushDevices(phone), field);
+            const owner = await view.hget<string>(KEYS.nativePushOwners, field);
+            if (device?.binding !== binding || owner !== phone) return;
+            await view.hdel(KEYS.nativePushDevices(phone), field);
+            await view.hdel(KEYS.nativePushOwners, field);
+        });
+    }
     await redis.eval(`
 local raw = redis.call('HGET', KEYS[2], ARGV[1])
 if not raw or cjson.decode(raw).binding ~= ARGV[3] then return 0 end

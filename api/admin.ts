@@ -1,7 +1,8 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
-import { getRedis, KEYS } from './_lib/redis.js';
+import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
+import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
 import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
@@ -693,6 +694,7 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     const blocked = body.blocked !== false;
     write.set(KEYS.user(phone), { ...user, blocked });
     await write.exec();
+    if (isFirestoreStore(redis)) await firebaseAuth().updateUser(teacherUid(phone), { disabled: blocked });
     res.status(200).json({ ok: true, blocked });
 };
 
@@ -730,6 +732,11 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     for (const field of ownedFields) if (field) pipeline.hdel(KEYS.pushEndpointOwners, field);
     await pipeline.exec();
     await deleteNativeDevices(redis, phone);
+    if (isFirestoreStore(redis)) {
+        await firebaseAuth().deleteUser(teacherUid(phone)).catch(error => {
+            if (error.code !== 'auth/user-not-found') throw error;
+        });
+    }
     res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
 };
 

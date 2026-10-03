@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All writes use the privileged API, which validates ownership, roles,
+    // blocked accounts, body size and account revisions before each operation.
+    // Authentication users must never read password hashes or device tokens.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

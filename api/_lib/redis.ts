@@ -1,6 +1,8 @@
 import { HttpError } from './http.js';
+import { FirestoreStore } from './firestoreStore.js';
 
 export type RedisClient = import('@upstash/redis').Redis;
+export const isFirestoreStore = (store: RedisClient): store is RedisClient & FirestoreStore => store instanceof FirestoreStore;
 
 let client: RedisClient | null = null;
 let redisCtor: Promise<typeof import('@upstash/redis').Redis> | null = null;
@@ -13,7 +15,12 @@ let redisCtor: Promise<typeof import('@upstash/redis').Redis> | null = null;
  * il rendrait les comptes invisibles entre les fonctions auth, sync et admin.
  */
 export const getRedis = async (): Promise<RedisClient> => {
+  if (process.env.CLOUD_MIGRATION_FREEZE === '1') throw new HttpError(503, 'Migration cloud en cours. Vos modifications locales seront synchronisées après la reprise.');
   if (client) return client;
+  if (process.env.CLOUD_PROVIDER === 'firestore') {
+    client = new FirestoreStore() as unknown as RedisClient;
+    return client;
+  }
 
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
