@@ -39,7 +39,7 @@ if (extensionless.size) { console.error('Node ESM requires explicit import exten
 fs.writeFileSync(path.join(output, 'package.json'), JSON.stringify({ type: 'module' }));
 for (const entry of entries) {
   const url = pathToFileURL(path.join(output, 'api', path.basename(entry, '.ts') + '.js')).href;
-  const result = spawnSync(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(url)})`], { stdio: 'pipe', windowsHide: true });
+  const result = spawnSync(process.execPath, ['--no-experimental-require-module', '--input-type=module', '-e', `await import(${JSON.stringify(url)})`], { stdio: 'pipe', windowsHide: true });
   if (result.status !== 0) {
     console.error(path.basename(entry), result.stderr.toString()); process.exit(1);
   }

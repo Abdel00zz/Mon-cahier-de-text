@@ -4,6 +4,8 @@ La migration conserve l'URL Vercel, les contrats HTTP, les cookies de session et
 
 ## Données et sécurité
 
+Le SDK Admin est fixé à 13.10.0 : la branche 14 charge une dépendance CommonJS/ESM incompatible avec le chargeur Vercel observé. Le contrôle `check:api` désactive l'interopération expérimentale de `require()` pour reproduire cette contrainte, même sur Node 24. Réévaluer ce verrou lors d'une mise à jour du SDK, avec les tests et une preuve de fonctionnement sur Vercel. [Incident SDK](https://github.com/firebase/firebase-admin-node/issues/3181).
+
 - `users/{uid}/private/account` contient le compte serveur ; `workspace` conserve classes, paramètres et boîte de réception ; `notebooks` conserve les cahiers. Les identifiants techniques sont dérivés du téléphone. Cette adresse interne ne fournit pas une récupération de mot de passe par e-mail.
 - Les valeurs JSON volumineuses sont découpées en fragments UTF-8 de 600 000 octets, lus et remplacés dans une transaction. Les révisions empêchent les écritures concurrentes périmées ; les versions protègent les publications globales.
 - `teacher_snapshots` et les index de notifications sont réservés au serveur. Les règles refusent tout accès direct depuis un SDK client, même authentifié. Les API contrôlent session, blocage, propriétaire et limites de taille.
