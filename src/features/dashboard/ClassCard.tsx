@@ -1,6 +1,7 @@
 import { memo, useMemo, type FC } from 'react';
 import type { ClassInfo } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Clock, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
 import {
@@ -17,6 +18,7 @@ import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 import { ActiveSessionGlass } from './ActiveSessionGlass';
+import './classCardLoading.css';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -42,6 +44,16 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
     const tone = color['data-keep-tone'];
+    // Préparation du cahier : la carte garde sa géométrie, un voile discret
+    // signale que le contenu de cette classe est encore en route. Un cahier déjà
+    // présent n'affiche rien — l'enseignant ne voit un scintillement que
+    // lorsqu'il y a réellement quelque chose à attendre.
+    const progress = useSyncProgress();
+    const hasNotebook = useMemo(() => {
+        try { return localStorage.getItem(`classData_v1_${classInfo.id}`) !== null; } catch { return true; }
+    }, [classInfo.id, progress.done, progress.state]);
+    const preparing = !hasNotebook
+        && (progress.state === 'pulling' || (progress.state === 'notebooks' && progress.done < progress.total));
     const subtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale), [classInfo.lastOpenedAt, locale]);
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -53,6 +65,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             dir={isRtl ? 'rtl' : 'ltr'}
             {...color}
             data-session-active={isActiveSession ? 'true' : undefined}
+            data-preparing={preparing ? 'true' : undefined}
             className={cn('class-card group', isActiveSession && 'class-card--active')}
         >
             <button
@@ -63,6 +76,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="class-card__open"
             />
             <span className="class-card__texture" aria-hidden="true" />
+            {preparing && <span className="class-card__loading" aria-hidden="true" />}
             <div className="class-card__body">
                 <div className="class-card__header">
                     {isActiveSession && (

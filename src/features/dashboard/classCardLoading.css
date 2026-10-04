@@ -1,0 +1,29 @@
+/* Voile de préparation d'une carte de classe.
+   La carte garde EXACTEMENT sa géométrie (hauteur fixe, cible de 44 px) : seul
+   un scintillement discret signale que le cahier est encore en route. Il
+   disparaît en 220 ms quand le contenu est là (AGENTS.md : 150 à 300 ms). */
+.class-card__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(100deg, transparent 20%, hsl(var(--card) / 0.55) 50%, transparent 80%);
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: class-card-loading 1.6s ease-in-out infinite;
+  transition: opacity 220ms ease-out;
+}
+
+@keyframes class-card-loading {
+  from { background-position: 120% 0; }
+  to { background-position: -60% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .class-card__loading {
+    animation: none;
+    background-image: none;
+    background-color: hsl(var(--card) / 0.35);
+  }
+}

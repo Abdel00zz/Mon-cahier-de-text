@@ -52,8 +52,14 @@ const browserEnvironment = (): PrefetchEnvironment => {
         saveData: connection?.saveData === true,
         effectiveType: connection?.effectiveType ?? '',
         visible: document.visibilityState === 'visible',
-        requestIdle: idle.requestIdleCallback ?? ((task: () => void) => window.setTimeout(task, 1200)),
-        cancelIdle: idle.cancelIdleCallback ?? window.clearTimeout,
+        // `requestIdleCallback` et `cancelIdleCallback` exigent que `this` soit
+        // `window` : appelées détachées, elles lèvent « Illegal invocation »
+        // (contrairement à setTimeout, qui tolère un appel direct).
+        requestIdle: task => idle.requestIdleCallback ? idle.requestIdleCallback(task) : window.setTimeout(task, 1200),
+        cancelIdle: handle => {
+            if (idle.cancelIdleCallback) idle.cancelIdleCallback(handle);
+            else window.clearTimeout(handle);
+        },
     };
 };
 
