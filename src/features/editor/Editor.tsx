@@ -61,6 +61,14 @@ import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
+/*
+ * Cahiers déjà « placés » pendant cette session : un cahier s'ouvre sur son
+ * dernier contenu daté la PREMIÈRE fois seulement (voir l'effet de placement).
+ * Revenir depuis le tableau de bord restaure ensuite la position laissée par
+ * l'enseignant, sans que le cahier ne reprenne la main.
+ */
+const placedNotebooks = new Set<string>();
+
 export interface EditorProps {
     classInfo: ClassInfo;
     /** ouvre la page Paramètres (utilisé pour renseigner l'emploi du temps) */
@@ -132,6 +140,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
   const consumedSessionFocusRef = useRef<string | null>(null);
+  const placementTimerRef = useRef<number | null>(null);
   const [printMetaVersion, setPrintMetaVersion] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
   const [initialMathTypesetComplete, setInitialMathTypesetComplete] = useState(false);
@@ -619,6 +628,37 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
     return () => window.clearTimeout(clearTimer);
   }, [classInfo.id, isClassLoading, lessonsData]);
+
+  /*
+   * Ouverture d'un cahier : on se place directement sur le DERNIER CONTENU
+   * DATÉ — le bas de la dernière séance — plutôt qu'en haut d'un cahier de
+   * deux cents lignes. Le repère est celui d'un lien profond : MainTable sait
+   * défiler jusqu'à une ligne, virtualisée ou non. Il est relâché juste après,
+   * sinon la moindre édition ramènerait l'enseignant de force sur cette ligne.
+   */
+  useEffect(() => {
+    if (isClassLoading || placedNotebooks.has(classInfo.id)) return;
+    placedNotebooks.add(classInfo.id);
+    // Un lien profond (notification) a déjà désigné sa ligne : il prime.
+    if (consumedSessionFocusRef.current !== null) return;
+
+    for (let index = allRows.length - 1; index >= 0; index -= 1) {
+      const row = allRows[index];
+      const declaredDate = (row.data as { date?: unknown }).date;
+      if (typeof declaredDate !== 'string' || declaredDate.length === 0) continue;
+      setSessionFocusKey(row.key);
+      placementTimerRef.current = window.setTimeout(() => {
+        placementTimerRef.current = null;
+        setSessionFocusKey(current => (current === row.key ? null : current));
+      }, 1200);
+      return;
+    }
+    // Cahier sans aucune date : rien à viser, rien à faire.
+  }, [allRows, classInfo.id, isClassLoading]);
+
+  useEffect(() => () => {
+    if (placementTimerRef.current !== null) window.clearTimeout(placementTimerRef.current);
+  }, []);
 
   /*
    * Deep-link du centre de notifications : ouvre directement la modale visée

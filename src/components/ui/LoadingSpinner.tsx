@@ -1,11 +1,20 @@
 import './loading-spinner.css';
 
-/** The surrounding loading region supplies the accessible status message. */
+/**
+ * Quatre pastilles qui parcourent un carré, décalées d'un quart de tour :
+ * l'indicateur des écrans de chargement (démarrage, changement de vue,
+ * tableau de bord). Les pastilles sont des `span` et non des `hr` : dans un
+ * conteneur `span` décoratif, un `hr` serait du flux interdit en HTML (et son
+ * rôle implicite `separator` n'aurait aucun sens ici).
+ *
+ * Le composant reste purement décoratif : la région qui l'accueille porte le
+ * message accessible (`role="status"`, `aria-live`).
+ */
 export function LoadingSpinner({ compact = false }: { compact?: boolean }) {
   return <span aria-hidden="true" className={`loading-spinner${compact ? ' loading-spinner--compact' : ''}`}>
-    <svg viewBox="0 0 48 48" focusable="false">
-      <circle className="loading-spinner__track" cx="24" cy="24" r="20" />
-      <circle className="loading-spinner__arc" cx="24" cy="24" r="20" pathLength="100" />
-    </svg>
+    <span className="loading-spinner__dot" />
+    <span className="loading-spinner__dot" />
+    <span className="loading-spinner__dot" />
+    <span className="loading-spinner__dot" />
   </span>;
 }

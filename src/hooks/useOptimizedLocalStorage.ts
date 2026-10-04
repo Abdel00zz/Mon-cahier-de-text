@@ -1,53 +1,49 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { logger } from '../lib/logger';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
+
+/*
+ * Lecture SYNCHRONE : `localStorage` rend la valeur immédiatement. La lire dans
+ * un effet obligeait à annoncer `isLoading: true` au premier rendu — le
+ * tableau de bord peignait donc une image de squelette PLEIN ÉCRAN avant
+ * d'afficher son contenu, pour une attente qui n'existait pas. La valeur est
+ * maintenant prête avant le premier rendu.
+ */
+function readStoredValue<T>(key: string, defaultValue: T): { value: T; error: string | null } {
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue === null || storedValue === '') return { value: defaultValue, error: null };
+    try {
+      return { value: JSON.parse(storedValue) as T, error: null };
+    } catch (parseErr) {
+      // Ancien format possible: valeur texte brute au lieu de JSON ("college").
+      if (typeof defaultValue === 'string') return { value: storedValue as T, error: null };
+      throw parseErr;
+    }
+  } catch (err) {
+    logger.error(`Failed to load ${key} from localStorage`, err);
+    return { value: defaultValue, error: `Erreur de chargement: ${key}` };
+  }
+}
 
 export function useOptimizedLocalStorage<T>(
   key: string,
   defaultValue: T,
   debounceMs: number = 1500
 ) {
-  const [value, setValue] = useState<T>(defaultValue);
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const initializedRef = useRef(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    if (!workspaceIsActive()) {
-      // Un changement de compte invalide cette instance, mais ne doit jamais
-      // laisser un écran consommateur bloqué derrière son squelette.
-      setIsLoading(false);
-      initializedRef.current = true;
-      return;
-    }
-    try {
-      const storedValue = localStorage.getItem(key);
-      if (storedValue) {
-        try {
-          const parsed = JSON.parse(storedValue);
-          setValue(parsed);
-        } catch (parseErr) {
-          if (typeof defaultValue === 'string') {
-            // Ancien format possible: valeur texte brute au lieu de JSON ("college").
-            setValue(storedValue as T);
-            localStorage.setItem(key, JSON.stringify(storedValue));
-          } else {
-            throw parseErr;
-          }
-        }
-      }
-      setError(null);
-    } catch (err) {
-      logger.error(`Failed to load ${key} from localStorage`, err);
-      setError(`Erreur de chargement: ${key}`);
-    } finally {
-      setIsLoading(false);
-      initializedRef.current = true;
-    }
-  }, [key, workspaceIsActive]);
+  // Un changement de compte invalide cette instance : on ne lit rien (la
+  // valeur appartiendrait au compte précédent) et on n'écrit rien.
+  const [initial] = useState(() => workspaceIsActive()
+    ? readStoredValue(key, defaultValue)
+    : { value: defaultValue, error: null });
+  const [value, setValue] = useState<T>(initial.value);
+  const [error, setError] = useState<string | null>(initial.error);
+  const initializedRef = useRef(true);
+  // Aucune attente : la valeur est déjà connue au premier rendu. Le drapeau
+  // reste exposé pour les écrans qui gardent un squelette en filet de sécurité.
+  const isLoading = false;
 
   // Debounced save to localStorage
   const debouncedSave = useDebouncedCallback((valueToSave: T) => {

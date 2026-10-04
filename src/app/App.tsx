@@ -220,8 +220,18 @@ const App: React.FC = () => {
         ? notificationsOrigin
         : { view, activeClass };
     const key = getScrollKey(visibleRoute.view, visibleRoute.activeClass);
-    const top = scrollPositionsRef.current[key] ?? 0;
+    const remembered = scrollPositionsRef.current[key];
+    const top = remembered ?? 0;
     const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
+    /*
+     * Un cahier ouvert pour la PREMIÈRE fois se place lui-même sur son dernier
+     * contenu daté (voir Editor). On descend une fois à zéro pour ne pas hériter
+     * du défilement du tableau de bord, mais on ne réimpose surtout pas cette
+     * position 220 ms plus tard : cela annulerait son placement.
+     */
+    if (visibleRoute.view === 'editor' && remembered === undefined) {
+      return () => window.cancelAnimationFrame(animationFrame);
+    }
     const settleTimer = window.setTimeout(() => window.scrollTo(0, top), 220);
 
     return () => {
