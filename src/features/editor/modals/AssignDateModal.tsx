@@ -3,7 +3,6 @@ import { Modal } from '@/components/ui/modal';
 import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
-import { ContentDirection } from '@/types';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
 import { todayInMorocco } from '@/domain/calendar/calendar';
@@ -17,8 +16,6 @@ interface AssignDateModalProps {
   session: SessionEditorState;
   /** validation intelligente : alertes live pour la date choisie (emploi du temps, fériés, vacances, absences) */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
-  /** Sens du cahier : la remarque suit la langue du contenu. */
-  contentDirection?: ContentDirection;
 }
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
@@ -33,9 +30,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   onApply,
   session,
   getDateWarnings,
-  contentDirection = 'ltr',
 }) => {
-  const { t, locale } = useLocale();
+  const { t, locale, isRtl } = useLocale();
   const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
   const number = useMemo(() => new Intl.NumberFormat(localeCode), [localeCode]);
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
@@ -43,7 +39,14 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const [remark, setRemark] = useState('');
   const [dateChanged, setDateChanged] = useState(false);
   const [remarkChanged, setRemarkChanged] = useState(false);
-  const isRtlContent = contentDirection === 'rtl';
+  /*
+   * Sens de saisie de la remarque : elle suit SON écriture, jamais celle du
+   * cahier — un texte arabe commence à droite même dans un cahier latin, et un
+   * texte latin commence à gauche dans une interface arabe. Un champ vide garde
+   * le sens de l'interface, pour que le repère d'aide soit bien orienté (même
+   * règle que les champs de contenu, voir ContentFields).
+   */
+  const fieldDir = remark ? 'auto' : isRtl ? 'rtl' : 'ltr';
   const { selection, intent, patch } = session;
   const selectedCount = selection.targets.length;
 
@@ -263,7 +266,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             id="assign-date-remark"
             value={remark}
             onChange={event => { setRemark(event.target.value); setRemarkChanged(true); }}
-            dir={isRtlContent ? 'rtl' : 'ltr'}
+            dir={fieldDir}
             rows={3}
             placeholder={t(selection.mixedRemarks ? 'assignDate.keepRemarks' : 'remark.placeholder')}
             className="min-h-[88px] w-full resize-y rounded-xl border border-border bg-background p-3 text-sm font-medium leading-relaxed text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"

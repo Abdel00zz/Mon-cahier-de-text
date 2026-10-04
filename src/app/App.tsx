@@ -7,6 +7,8 @@ import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
 import { useBootstrapProgress } from '../hooks/useBootstrapProgress';
+import { useSyncProgress } from '../hooks/useSyncProgress';
+import { shouldShowBootScreen } from '../domain/sync/bootScreen';
 import { startIdlePrefetch } from './prefetch';
 import { useNativeReminders } from '../hooks/useNativeReminders';
 import { accountOwner } from '../domain/auth/accountIdentity';
@@ -170,6 +172,22 @@ const App: React.FC = () => {
     [classes, teacherName],
   );
   const bootProgress = useBootstrapProgress();
+  const syncProgress = useSyncProgress();
+  /*
+   * L'écran d'attente suit le VRAI chargement (voir domain/sync/bootScreen) :
+   * configuration locale, session, puis premier rapatriement cloud —  celui qui
+   * applique l'emploi du temps puis les classes. Il ne couvrait auparavant que
+   * la vérification de session, donc la progression réelle s'affichait toujours
+   * à zéro et l'écran disparaissait avant que l'espace n'arrive. Aucun blocage :
+   * hors ligne ou en échec, le signal retombe et l'application reprend la main.
+   */
+  const isBooting = shouldShowBootScreen({
+    configLoading: isConfigLoading,
+    authLoading: AUTH_REQUIRED && authStatus === 'loading',
+    authenticated: !AUTH_REQUIRED || authStatus === 'authenticated',
+    firstLoadRunning: syncProgress.state === 'pulling',
+    firstLoadComplete: bootProgress.complete,
+  });
 
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
 
@@ -369,8 +387,8 @@ const App: React.FC = () => {
   const backgroundClass = backgroundRoute.activeClass;
 
   const renderContent = () => {
-    // En attente du chargement (auth ignorée si AUTH_REQUIRED est désactivé).
-    if (isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading')) {
+    // Écran d'attente : configuration, session, ou premier chargement cloud.
+    if (isBooting) {
       return <AppBootSkeleton progress={bootProgress} />;
     }
     // Page d'authentification (uniquement si l'auth est activée).
@@ -426,7 +444,6 @@ const App: React.FC = () => {
   }, [view, handleBackToDashboard, handleOpenNotifications, handleOpenSettings]);
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
-  const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
 
   // L'accueil ne masque la navigation que pendant le vrai premier parcours :
   // aucune classe et compte non validé. Si des classes existent déjà,
