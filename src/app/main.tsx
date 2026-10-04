@@ -27,16 +27,18 @@ import App from './App';
 import { AuthProvider } from '../contexts/AuthContext';
 import { SyncProvider } from '../contexts/SyncContext';
 import { initPwa } from '../pwa/registerSW';
-import { initApplePlatform } from '../platform/applePlatform';
+import { initAppViewport } from '../platform/appViewport';
 import { initNativeRuntime } from '../platform/nativeRuntime';
 import '../styles/index.css';
 
-initApplePlatform();
+initAppViewport();
 const updateVisibility = () => { document.documentElement.dataset.appVisible = String(document.visibilityState === 'visible'); };
 updateVisibility();
 document.addEventListener('visibilitychange', updateVisibility);
 import.meta.hot?.dispose(() => document.removeEventListener('visibilitychange', updateVisibility));
 void initNativeRuntime().catch(error => console.warn('Native initialization failed', error));
+// Protège les cahiers locaux contre l'éviction automatique du navigateur.
+void import('../infrastructure/storage/safeStorage').then(module => module.requestPersistentStorage()).catch(() => {});
 initPwa();
 
 const rootElement = document.getElementById('root');
