@@ -41,6 +41,7 @@ export interface OnboardingCopy {
     sectionProfile: string;
     sectionSubjects: string;
     sectionClasses: string;
+    classIntro: string;
     sectionSchedule: string;
     languageSelect: string;
     fullName: string;

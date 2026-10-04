@@ -105,6 +105,7 @@ export const OnboardingPage = ({
       lang={lang}
       step={step}
       title={titles[step - 1]}
+      subtitle={step === 3 ? copy.classIntro : undefined}
       copy={copy}
       theme={config.theme ?? 'light'}
       onThemeChange={(theme) => onConfigChange({ theme })}

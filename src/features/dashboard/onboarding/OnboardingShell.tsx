@@ -12,6 +12,7 @@ interface OnboardingShellProps {
   lang: ModalLang;
   step: OnboardingStep;
   title: string;
+  subtitle?: string;
   copy: OnboardingCopy;
   theme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
@@ -30,6 +31,7 @@ export function OnboardingShell({
   lang,
   step,
   title,
+  subtitle,
   copy,
   theme,
   onThemeChange,
@@ -180,6 +182,11 @@ export function OnboardingShell({
         </h1>
         <StepIllustration key={step} size={104} className="onboarding-heading-illustration" />
         </div>
+        {subtitle && (
+          <p className="onboarding-step-intro mb-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {subtitle}
+          </p>
+        )}
         {step === 4 && (
           <p className="mb-5 text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
             {copy.scheduleOptional}
