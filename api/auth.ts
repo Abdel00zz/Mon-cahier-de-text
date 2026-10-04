@@ -126,12 +126,33 @@ const handleEmailRegister = async (body: AuthBody, res: ApiResponse) => {
   return await openSession(createdUser!, res, 201, true);
 };
 
+/**
+ * Vrai quand l'adresse existe déjà, mais uniquement via Google : le compte n'a
+ * donc aucun mot de passe Firebase. Sans ce message, le professeur croit à une
+ * faute de frappe et réessaie indéfiniment.
+ */
+const googleOnlyAccount = async (email: string): Promise<boolean> => {
+  try {
+    const record = await firebaseAuth().getUserByEmail(email);
+    const providers = record.providerData.map(provider => provider.providerId);
+    return providers.includes('google.com') && !providers.includes('password');
+  } catch {
+    return false; // Adresse inconnue : la réponse générique reste la bonne.
+  }
+};
+
 const handleEmailLogin = async (body: AuthBody, res: ApiResponse) => {
   const email = normalizeEmail(body.email);
   if (typeof body.password !== 'string' || !body.password || body.password.length > 128) throw new HttpError(400, 'Mot de passe manquant.');
   const { redis, rateKey } = await limitAttempts(email);
   await firebaseStore();
-  const identity = await firebaseIdentityRequest('signInWithPassword', { email, password: body.password, returnSecureToken: true });
+  const identity = await firebaseIdentityRequest('signInWithPassword', { email, password: body.password, returnSecureToken: true })
+    .catch(async (error: unknown) => {
+      if (error instanceof HttpError && error.code === 'INVALID_CREDENTIALS' && await googleOnlyAccount(email)) {
+        throw new HttpError(409, 'Ce compte se connecte avec Google.', 'PROVIDER_GOOGLE');
+      }
+      throw error;
+    });
   if (!identity.localId) throw new HttpError(401, 'Identifiants incorrects.', 'INVALID_CREDENTIALS');
   const record = await firebaseAuth().getUser(identity.localId);
   const user = await redis.get<StoredUser>(KEYS.user(firebaseAccountId(record)));
@@ -158,6 +179,14 @@ const handleGoogle = async (body: AuthBody, res: ApiResponse, native: boolean) =
   let user = await redis.get<StoredUser>(KEYS.user(id));
   let isNewAccount = false;
   if (!user) {
+    // Un professeur ne doit jamais obtenir deux espaces : si Firebase a créé une
+    // seconde identité pour la même adresse (liaison des comptes désactivée),
+    // on refuse au lieu de provisionner un espace vide qui ferait disparaître
+    // les cahiers aux yeux de l'enseignant.
+    const owner = await firebaseAuth().getUserByEmail(decoded.email!).catch(() => null);
+    if (owner && owner.uid !== record.uid) {
+      throw new HttpError(409, 'Un compte existe déjà avec cette adresse e-mail. Connectez-vous avec votre méthode habituelle.', 'ACCOUNT_EXISTS');
+    }
     const parts = (record.displayName ?? '').trim().split(/\s+/);
     const provisioned = await createFirebaseAccount({ id, firebaseUid: record.uid, email: normalizeEmail(record.email), phone: '',
       prenom: parts.shift()?.slice(0, 60) || 'Enseignant', nom: parts.join(' ').slice(0, 60), provider: 'google.com',

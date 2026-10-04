@@ -54,7 +54,15 @@ public class NativeGoogleAuthPlugin extends Plugin {
                         }
                         @Override public void onError(GetCredentialException exception) {
                             pending = null;
-                            call.reject("Connexion Google interrompue.", exception instanceof GetCredentialCancellationException ? "AUTH_CANCELLED" : "GOOGLE_UNAVAILABLE");
+                            // Google renvoie DEVELOPER_ERROR (code 10) quand l'empreinte du
+                            // certificat qui signe l'APK n'est pas enregistrée dans le projet
+                            // Firebase. Le dire explicitement évite de chercher du côté du
+                            // compte Google du téléphone.
+                            String detail = exception.getMessage() == null ? "" : exception.getMessage();
+                            boolean misconfigured = detail.contains("DEVELOPER_ERROR") || detail.contains("ApiException: 10");
+                            call.reject("Connexion Google interrompue.",
+                                exception instanceof GetCredentialCancellationException ? "AUTH_CANCELLED"
+                                    : misconfigured ? "GOOGLE_NOT_CONFIGURED" : "GOOGLE_UNAVAILABLE");
                         }
                     });
             } catch (Exception exception) { pending = null; call.reject("Connexion Google indisponible.", "GOOGLE_UNAVAILABLE"); }

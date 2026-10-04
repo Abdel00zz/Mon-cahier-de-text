@@ -27,6 +27,7 @@ import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/
 import { translateLocaleMessage } from '../i18n/messages';
 import { isContentDirection } from '../domain/notebook/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storage/accountWorkspace';
+import { bootstrapStore } from '../infrastructure/sync/bootstrapStore';
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
@@ -742,6 +743,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         localChanged = true;
                     } catch { /* stockage plein */ }
                 }
+                // Réglages et emploi du temps appliqués : première étape du
+                // premier chargement (voir domain/sync/bootstrapProgress).
+                bootstrapStore.markTimetable();
 
                 const coloredClasses = assignClassColors(mergedClasses);
                 if (coloredClasses.some((item, index) => item.color !== mergedClasses[index].color)) {
@@ -753,6 +757,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     writeSyncMeta(syncMeta);
                     notifyPullApplied();
                 }
+                // La liste des classes est écrite : le premier chargement est
+                // complet même si rien n'avait changé localement.
+                bootstrapStore.markClasses();
 
                 setLastSyncAt(server.updatedAt || null);
                 if (hasPendingWork()) {

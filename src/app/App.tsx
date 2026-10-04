@@ -5,6 +5,7 @@ import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkel
 import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
+import { useBootstrapProgress } from '../hooks/useBootstrapProgress';
 import { useNativeReminders } from '../hooks/useNativeReminders';
 import { accountOwner } from '../domain/auth/accountIdentity';
 import { useAuth } from '../contexts/AuthContext';
@@ -166,6 +167,7 @@ const App: React.FC = () => {
     () => teachesSeveralSubjects(classes, teacherName),
     [classes, teacherName],
   );
+  const bootProgress = useBootstrapProgress();
 
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
 
@@ -369,7 +371,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     // En attente du chargement (auth ignorée si AUTH_REQUIRED est désactivé).
     if (isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading')) {
-      return <AppBootSkeleton />;
+      return <AppBootSkeleton progress={bootProgress} />;
     }
     // Page d'authentification (uniquement si l'auth est activée).
     if (AUTH_REQUIRED && authStatus === 'anonymous') {

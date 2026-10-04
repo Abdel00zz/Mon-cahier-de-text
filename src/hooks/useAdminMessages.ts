@@ -3,6 +3,7 @@ import type { AdminMessage, AppLocale } from '../types';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { requestSyncJson } from '../infrastructure/sync/syncTransport';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
+import { runInboxLongPoll } from '../infrastructure/messages/inboxLongPoll';
 import { syncInboxBadge } from '../infrastructure/push/appBadge';
 import { Capacitor } from '@capacitor/core';
 
@@ -10,6 +11,7 @@ interface MessagesResponse {
     messages?: AdminMessage[];
     unreadCount?: number;
     badgeUpdatedAt?: number;
+    signature?: string;
 }
 
 const loadPendingMessages = async (owner: string, signal: AbortSignal): Promise<MessagesResponse> => {
@@ -69,10 +71,32 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
             interval: 60_000, onInactive: () => refreshController.current?.abort(),
         });
 
+        // Temps réel : le serveur retient la requête et rend la main dès qu'un
+        // message arrive ou qu'un accusé est enregistré. Le repli d'une minute
+        // ci-dessus reste actif si cette boucle s'arrête.
+        let realtimeActive = true;
+        const realtimeController = new AbortController();
+        const pageVisible = () => typeof document === 'undefined' || document.visibilityState === 'visible';
+        void runInboxLongPoll<MessagesResponse>({
+            wait: 8_000,
+            isActive: () => realtimeActive && isForegroundOnline() && pageVisible(),
+            load: ({ wait, since }) => requestSyncJson<MessagesResponse>(
+                `/api/messages?wait=${wait}&since=${encodeURIComponent(since)}`,
+                { credentials: 'same-origin', headers: { 'X-Workspace-Owner': owner }, signal: realtimeController.signal },
+                wait + 12_000),
+            onPage: page => {
+                if (!Array.isArray(page.messages) || !captureWorkspaceLease()()) return;
+                setMessages(page.messages);
+                void syncInboxBadge(owner, page.unreadCount ?? page.messages.length, page.badgeUpdatedAt ?? Date.now(), locale);
+            },
+        }).catch(() => {});
+
         const onNativeMessage = () => { void refresh().catch(() => {}); };
         window.addEventListener('admin-message', onNativeMessage);
 
         return () => {
+            realtimeActive = false;
+            realtimeController.abort();
             window.removeEventListener('admin-message', onNativeMessage);
             stopPolling();
             refreshController.current?.abort();

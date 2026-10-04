@@ -1,4 +1,4 @@
-import { ApiRequest, ApiResponse, HttpError, parseBody, sendError } from './_lib/http.js';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
@@ -17,11 +17,43 @@ interface MessageBody {
 const isMessageId = (value: unknown): value is string =>
     typeof value === 'string' && /^admin-[a-zA-Z0-9-]{8,100}$/.test(value);
 
-const handleList = async (res: ApiResponse, phone: string) => {
-    const { messages, unreadCount, badgeUpdatedAt } = await readInboxSnapshot(await getRedis(), phone);
+const LONG_POLL_LIMIT_MS = 8_000;
+const LONG_POLL_INTERVAL_MS = 1_500;
+const MAX_SIGNATURE_LENGTH = 200;
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+/**
+ * Signature stable de la boîte : elle change quand un message arrive ou quand un
+ * accusé est enregistré, et ne dépend d'aucune horloge. Le snapshot, lui, avance
+ * son horloge à chaque lecture : il ne peut donc pas servir de signal.
+ */
+const inboxSignature = (messages: AdminMessage[]): string => {
+    const newest = messages[0];
+    return `${messages.filter(message => !message.acknowledgedAt).length}|${newest?.id ?? ''}|${newest?.createdAt ?? ''}`;
+};
+
+/**
+ * Attente active : la requête est retenue jusqu'à ce que la signature change,
+ * sinon elle répond à l'échéance et le client relance. La sonde est en lecture
+ * seule (elle ne touche pas l'horloge de boîte).
+ */
+const handleList = async (res: ApiResponse, phone: string, wait: number, since: string) => {
+    const redis = await getRedis();
+    if (wait > 0 && since) {
+        const deadline = Date.now() + wait;
+        for (;;) {
+            const current = inboxSignature(normalizeAdminMessages(await redis.get<AdminMessage[]>(KEYS.adminMessages(phone))));
+            if (current !== since) break;
+            const remaining = deadline - Date.now();
+            if (remaining <= 0) break;
+            await sleep(Math.min(LONG_POLL_INTERVAL_MS, remaining));
+        }
+    }
+    const { messages, unreadCount, badgeUpdatedAt } = await readInboxSnapshot(redis, phone);
     // L'enseignant ne reçoit que les messages qui nécessitent encore son accusé.
     const pending = messages.filter(message => !message.acknowledgedAt);
-    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt });
+    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt, signature: inboxSignature(messages) });
 };
 
 const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: string) => {
@@ -52,7 +84,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     try {
         const { phone } = await requireUser(req);
         if (req.headers['x-workspace-owner'] !== undefined) assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
-        if (req.method === 'GET') return await handleList(res, phone);
+        if (req.method === 'GET') {
+            const wait = Math.min(Math.max(Number(getQueryParam(req, 'wait')) || 0, 0), LONG_POLL_LIMIT_MS);
+            const since = (getQueryParam(req, 'since') ?? '').slice(0, MAX_SIGNATURE_LENGTH);
+            return await handleList(res, phone, wait, since);
+        }
         if (req.method === 'POST') {
             const body = parseBody<MessageBody>(req.body);
             if (body.action === 'acknowledge') return await handleAcknowledge(body, res, phone);

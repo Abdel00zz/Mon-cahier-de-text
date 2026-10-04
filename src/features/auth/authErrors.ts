@@ -6,11 +6,12 @@ export function authErrorMessage(error: unknown, locale: 'fr' | 'ar'): string | 
     INVALID_CREDENTIALS: ['Vérifiez votre e-mail et votre mot de passe.', 'تحقق من بريدك الإلكتروني وكلمة المرور.'],
     ACCOUNT_EXISTS: ['Ce compte existe déjà. Connectez-vous ou réinitialisez votre mot de passe.', 'هذا الحساب موجود. سجّل الدخول أو أعد تعيين كلمة المرور.'],
     ACCOUNT_BLOCKED: ['Accès suspendu. Contactez votre établissement.', 'تم إيقاف الولوج. تواصل مع إدارتك.'],
+    PROVIDER_GOOGLE: ['Ce compte se connecte avec Google. Continuez avec Google.', 'هذا الحساب يُسجّل الدخول عبر Google. تابع باستعمال Google.'],
     TOO_MANY_ATTEMPTS: ['Réessayez dans quelques minutes.', 'أعد المحاولة بعد بضع دقائق.'],
     'auth/popup-blocked': ['Autorisez la fenêtre Google, puis réessayez.', 'اسمح بنافذة Google ثم أعد المحاولة.'],
     'auth/account-exists-with-different-credential': ['Connectez-vous avec votre méthode habituelle pour retrouver ce compte.', 'استعمل طريقة تسجيل دخولك المعتادة لهذا الحساب.'],
     'auth/unauthorized-domain': ['Connexion Google en cours de configuration. Utilisez votre e-mail.', 'جارٍ إعداد Google. استعمل بريدك الإلكتروني.'],
-    GOOGLE_NOT_CONFIGURED: ['Google Android doit être configuré. Utilisez votre e-mail.', 'يلزم إعداد Google على أندرويد. استعمل بريدك الإلكتروني.'],
+    GOOGLE_NOT_CONFIGURED: ['Connexion Google indisponible sur cette version de l’application. Utilisez votre e-mail.', 'تسجيل Google غير متاح في هذه النسخة من التطبيق. استعمل بريدك الإلكتروني.'],
     GOOGLE_UNAVAILABLE: ['Ajoutez un compte Google dans les réglages du téléphone ou utilisez votre e-mail.', 'أضف حساب Google من إعدادات الهاتف أو استعمل بريدك الإلكتروني.'],
     GOOGLE_REAUTH_REQUIRED: ['Sélectionnez à nouveau votre compte Google.', 'اختر حساب Google من جديد.'],
   };

@@ -49,5 +49,10 @@ test('Google cancellation is silent and actionable failures are localized', () =
   assert.equal(authErrorMessage({ code: 'auth/popup-closed-by-user' }, 'ar'), null);
   assert.match(authErrorMessage({ code: 'auth/popup-blocked' }, 'fr')!, /Autorisez/);
   assert.match(authErrorMessage({ code: 'GOOGLE_UNAVAILABLE' }, 'ar')!, /الهاتف/);
+  // Les trois méthodes restent distinguées : mot de passe, Google, ou adresse déjà utilisée ailleurs.
+  assert.match(authErrorMessage({ code: 'PROVIDER_GOOGLE' }, 'fr')!, /Google/);
+  assert.match(authErrorMessage({ code: 'PROVIDER_GOOGLE' }, 'ar')!, /Google/);
+  assert.match(authErrorMessage({ code: 'auth/account-exists-with-different-credential' }, 'fr')!, /habituelle/);
+  assert.match(authErrorMessage({ code: 'ACCOUNT_EXISTS' }, 'fr')!, /existe déjà/);
   assert.ok(!authErrorMessage({ code: 'auth/internal-error' }, 'fr')!.includes('auth/'));
 });

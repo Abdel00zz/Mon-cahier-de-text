@@ -3,6 +3,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 import { LoadingSpinner } from './LoadingSpinner';
 import { LoadingMessage } from './LoadingMessage';
+import type { BootstrapProgress, BootstrapStep } from '@/domain/sync/bootstrapProgress';
 import './page-loading.css';
 
 export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay = false }) => {
@@ -26,12 +27,21 @@ interface AppBootSkeletonProps {
   stage?: AppBootStage;
   /** Couvre l'application pendant que le moteur LaTeX finit réellement de charger. */
   overlay?: boolean;
+  /** Progression réelle du premier chargement depuis le cloud. */
+  progress?: BootstrapProgress;
 }
 
-export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'workspace', overlay = false }) => {
+/** Libellés des étapes : clés littérales, jamais construites par concaténation. */
+const STEP_LABELS: Record<BootstrapStep, string> = {
+  timetable: 'boot.progress.timetable',
+  classes: 'boot.progress.classes',
+};
+
+export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'workspace', overlay = false, progress }) => {
   const { isRtl, t } = useLocale();
 
   const isLatexLoading = stage === 'latex';
+  const showsProgress = !isLatexLoading && progress !== undefined;
   const title = isLatexLoading
     ? t('boot.latex.title')
     : t('boot.workspace.title');
@@ -55,6 +65,40 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
         {isLatexLoading
           ? <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">{detail}</p>
           : <LoadingMessage className="mt-1 font-sans text-xs text-muted-foreground" />}
+        {showsProgress && (
+          <div className="mt-5 text-start">
+            <ol className="space-y-1.5">
+              {progress.steps.map((step, index) => {
+                const state = progress.complete || index < progress.index ? 'done' : index === progress.index ? 'active' : 'pending';
+                return (
+                  <li key={step} className="flex items-center gap-2 font-sans text-xs text-muted-foreground">
+                    <span
+                      aria-hidden="true"
+                      className={`size-1.5 shrink-0 rounded-full transition-colors duration-200 ${state === 'pending' ? 'bg-muted-foreground/40' : 'bg-primary'}`}
+                    />
+                    <span className={state === 'pending' ? undefined : 'font-medium text-foreground'}>{t(STEP_LABELS[step])}</span>
+                  </li>
+                );
+              })}
+            </ol>
+            <div
+              className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress.percent}
+              aria-label={t('boot.progress.ariaLabel', { percent: progress.percent })}
+            >
+              <span
+                className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                style={{ width: `${progress.percent}%` }}
+              />
+            </div>
+            {progress.complete && (
+              <p className="mt-2 font-sans text-xs font-medium text-foreground">{t('boot.progress.done')}</p>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
