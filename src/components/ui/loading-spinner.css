@@ -1,34 +1,76 @@
+/*
+ * Indicateur de chargement : quatre pastilles qui parcourent un carré en
+ * boucle (2 s, décalées de 0,5 s), d'après le modèle fourni.
+ *
+ * Géométrie : le modèle d'origine posait des pastilles de 40 % dans une boîte
+ * de 100 % et les déplaçait de 160 % — soit 104 % d'étendue, rognée en silence
+ * par les parents en `overflow-hidden`. On garde EXACTEMENT les mêmes
+ * proportions en rapportant la pastille à l'étendue réelle de l'orbit :
+ * 40 / 104 = 38,46 %, et 160 % de cette pastille = 61,54 % → la pastille
+ * occupe 61,54 % à 100 % de la boîte. L'animation tient donc pile dans la
+ * place qui lui est réservée.
+ *
+ * Le décalage est exprimé en propriétés PHYSIQUES (`left`) et non logiques :
+ * le `translate` de l'animation est physique, un `inset-inline-start` en
+ * écriture arabe poserait la pastille à droite et la ferait sortir de la boîte.
+ *
+ * Accessibilité : le composant est `aria-hidden` (la région qui l'accueille
+ * porte le `role="status"`), et sous `prefers-reduced-motion` l'animation
+ * s'arrête sur les quatre positions du carré — la marque reste lisible et
+ * rien ne clignote.
+ */
 .loading-spinner {
   --spinner-size: 48px;
+  --spinner-dot: 38.46%;
+  --loading-dot-1: #19a68c;
+  --loading-dot-2: #f63d3a;
+  --loading-dot-3: #fda543;
+  --loading-dot-4: #193b48;
+  position: relative;
   display: inline-block;
   flex: 0 0 var(--spinner-size);
   width: var(--spinner-size);
   height: var(--spinner-size);
-  color: hsl(var(--primary));
   pointer-events: none;
   vertical-align: middle;
 }
 .loading-spinner--compact { --spinner-size: 32px; }
-.loading-spinner > svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: center;
-  animation: loading-spinner-turn 1.6s linear infinite;
+
+/* Le mode sombre n'est pas une inversion : #193b48 disparaîtrait sur le fond
+   sombre et le rouge vif y vibre. Teintes éclaircies et légèrement désaturées
+   (AGENTS.md § 9.5). */
+.dark .loading-spinner {
+  --loading-dot-1: #2fd3b4;
+  --loading-dot-2: #ff7a76;
+  --loading-dot-3: #ffc06a;
+  --loading-dot-4: #93bccd;
 }
-.loading-spinner circle { fill: none; stroke: currentColor; stroke-width: 2.5; }
-.loading-spinner__track { opacity: .12; }
-.loading-spinner__arc {
-  stroke-linecap: round;
-  stroke-dasharray: 24 76;
-  animation: loading-spinner-sweep 1.6s cubic-bezier(.4, 0, .2, 1) infinite;
+
+.loading-spinner__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--spinner-dot);
+  height: var(--spinner-dot);
+  border-radius: 50%;
+  animation: loading-spinner-orbit 2s ease infinite;
 }
-@keyframes loading-spinner-turn { to { transform: rotate(360deg); } }
-@keyframes loading-spinner-sweep {
-  0% { stroke-dasharray: 8 92; stroke-dashoffset: 0; }
-  50% { stroke-dasharray: 70 30; stroke-dashoffset: -18; }
-  100% { stroke-dasharray: 8 92; stroke-dashoffset: -100; }
+.loading-spinner__dot:nth-child(1) { background: var(--loading-dot-1); animation-delay: -1.5s; }
+.loading-spinner__dot:nth-child(2) { background: var(--loading-dot-2); animation-delay: -1s; }
+.loading-spinner__dot:nth-child(3) { background: var(--loading-dot-3); animation-delay: -.5s; }
+.loading-spinner__dot:nth-child(4) { background: var(--loading-dot-4); }
+
+@keyframes loading-spinner-orbit {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(160%, 0); }
+  50% { transform: translate(160%, 160%); }
+  75% { transform: translate(0, 160%); }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .loading-spinner > svg, .loading-spinner__arc { animation: none; }
+  .loading-spinner__dot { animation: none; }
+  .loading-spinner__dot:nth-child(1) { transform: translate(0, 0); }
+  .loading-spinner__dot:nth-child(2) { transform: translate(160%, 0); }
+  .loading-spinner__dot:nth-child(3) { transform: translate(160%, 160%); }
+  .loading-spinner__dot:nth-child(4) { transform: translate(0, 160%); }
 }
