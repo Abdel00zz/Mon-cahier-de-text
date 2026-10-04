@@ -1,34 +1,45 @@
 .loading-spinner {
   --spinner-size: 48px;
+  --spinner-dot-size: calc(var(--spinner-size) * 0.4);
   display: inline-block;
+  position: relative;
   flex: 0 0 var(--spinner-size);
   width: var(--spinner-size);
   height: var(--spinner-size);
-  color: hsl(var(--primary));
   pointer-events: none;
   vertical-align: middle;
 }
-.loading-spinner--compact { --spinner-size: 32px; }
-.loading-spinner > svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: center;
-  animation: loading-spinner-turn 1.6s linear infinite;
+.loading-spinner--compact {
+  --spinner-size: 32px;
 }
-.loading-spinner circle { fill: none; stroke: currentColor; stroke-width: 2.5; }
-.loading-spinner__track { opacity: .12; }
-.loading-spinner__arc {
-  stroke-linecap: round;
-  stroke-dasharray: 24 76;
-  animation: loading-spinner-sweep 1.6s cubic-bezier(.4, 0, .2, 1) infinite;
+.loading-spinner__dot {
+  position: absolute;
+  width: var(--spinner-dot-size);
+  height: var(--spinner-dot-size);
+  border-radius: 999px;
+  animation: loading-spinner-orbit 2s ease infinite;
 }
-@keyframes loading-spinner-turn { to { transform: rotate(360deg); } }
-@keyframes loading-spinner-sweep {
-  0% { stroke-dasharray: 8 92; stroke-dashoffset: 0; }
-  50% { stroke-dasharray: 70 30; stroke-dashoffset: -18; }
-  100% { stroke-dasharray: 8 92; stroke-dashoffset: -100; }
+.loading-spinner__dot:nth-child(1) {
+  background: #19a68c;
+  animation-delay: -1.5s;
+}
+.loading-spinner__dot:nth-child(2) {
+  background: #f63d3a;
+  animation-delay: -1s;
+}
+.loading-spinner__dot:nth-child(3) {
+  background: #fda543;
+  animation-delay: -0.5s;
+}
+.loading-spinner__dot:nth-child(4) {
+  background: #193b48;
+}
+@keyframes loading-spinner-orbit {
+  0%, 100% { transform: translate(0); }
+  25% { transform: translate(150%); }
+  50% { transform: translate(150%, 150%); }
+  75% { transform: translate(0, 150%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .loading-spinner > svg, .loading-spinner__arc { animation: none; }
+  .loading-spinner__dot { animation: none; }
 }
