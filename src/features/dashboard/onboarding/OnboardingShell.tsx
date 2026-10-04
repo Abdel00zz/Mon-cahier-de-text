@@ -116,6 +116,30 @@ export function OnboardingShell({
           (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
         }
       >
+        {finishing && (
+          <div className="onboarding-finish-layer" role="status" aria-live="polite">
+            <div className="onboarding-finish-card">
+              <div className="onboarding-finish-orbit" aria-hidden="true">
+                <span />
+              </div>
+              <div className="onboarding-finish-copy">
+                <p className="onboarding-finish-kicker">{copy.brand}</p>
+                <h2>{copy.finishing}</h2>
+                <p>{copy.configurationCompleted}</p>
+              </div>
+              <ol className="onboarding-finish-list" aria-label={copy.step(step, ONBOARDING_TOTAL_STEPS)}>
+                {stepLabels.map((label, index) => (
+                  <li key={label} className={index < step ? 'is-complete' : index === step - 1 ? 'is-current' : ''}>
+                    <span className="onboarding-finish-mark" aria-hidden="true">
+                      {index < step ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                    </span>
+                    <span>{label}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        )}
         <div className="mb-4 flex items-center justify-between gap-3 text-sm text-muted-foreground sm:mb-6">
           <span className="font-medium">{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
