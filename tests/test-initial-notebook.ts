@@ -33,6 +33,21 @@ test('cahier initial : un contenu illisible rend null au lieu d’écraser le ca
   assert.equal(readInitialNotebook({ classId: 'c3', locale: 'fr', storage: storage(entries) }), null);
 });
 
+test('cahier initial : sans direction enregistrée, le contenu décide — un cahier latin reste ltr en interface arabe', () => {
+  const entries = { [notebookStorageKey('c7')]: JSON.stringify([item('Leçon', '2026-10-01'), item('Exercice', '2026-10-02')]) };
+  const notebook = readInitialNotebook({ classId: 'c7', locale: 'ar', storage: storage(entries) })!;
+  assert.equal(notebook.direction, 'ltr');
+  // La déduction est persistée : plus de détection refaite sur chaque appareil.
+  assert.equal(notebook.repaired, true);
+});
+
+test('cahier initial : une direction enregistrée n’est jamais écrasée par la déduction', () => {
+  const entries = { [notebookStorageKey('c8')]: JSON.stringify({ lessonsData: [item('Leçon')], contentDirection: 'rtl' }) };
+  const notebook = readInitialNotebook({ classId: 'c8', locale: 'fr', storage: storage(entries) })!;
+  assert.equal(notebook.direction, 'rtl');
+  assert.equal(notebook.repaired, false);
+});
+
 test('cahier initial : la clé d’une classe ne peut pas servir une autre classe', () => {
   const entries = { [notebookStorageKey('c4')]: JSON.stringify([item('Classe 4')]) };
   assert.equal(readInitialNotebook({ classId: 'c5', locale: 'fr', storage: storage(entries) })!.lessons.length, 1);
@@ -45,5 +60,6 @@ test('cahier initial : un ancien cahier en tableau simple reste lisible', () => 
   const entries = { [notebookStorageKey('c6')]: JSON.stringify([item('Ancien format', '2026-09-01')]) };
   const notebook = readInitialNotebook({ classId: 'c6', locale: 'fr', storage: storage(entries) })!;
   assert.equal((notebook.lessons[0] as { title?: string }).title, 'Ancien format');
-  assert.equal(notebook.repaired, false);
+  // Sans direction enregistrée, elle est déduite du contenu puis persistée.
+  assert.equal(notebook.repaired, true);
 });

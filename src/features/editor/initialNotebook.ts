@@ -6,7 +6,10 @@ import { withStarterDiagnostic } from '../../domain/notebook/starterDiagnostic';
 export interface InitialNotebook {
     lessons: LessonsData;
     direction: ContentDirection;
-    /** Le diagnostic de départ vient d'être ajouté : la version corrigée doit être persistée. */
+    /**
+     * Une correction doit être persistée : diagnostic de départ ajouté, ou
+     * direction déduite du contenu alors que le cahier n'en portait aucune.
+     */
     repaired: boolean;
 }
 
@@ -44,7 +47,14 @@ export const readInitialNotebook = (options: {
         const normalizedLessons = migratedLessons.length === 0
             ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(direction))
             : migratedLessons;
-        return { lessons: normalizedLessons, direction, repaired: normalizedLessons !== migratedLessons };
+        // Un cahier sans direction enregistrée est DÉDUIT de son contenu (et non de
+        // la langue de l'interface) : un cahier latin s'ouvre ainsi de gauche à
+        // droite même dans une interface arabe. La déduction est persistée, comme
+        // le diagnostic de départ, pour ne plus dépendre d'une détection refaite
+        // sur chaque appareil. `readStoredContentDirection` peut rendre `null` ou
+        // `undefined` : on teste l'absence, pas une valeur précise.
+        const repaired = normalizedLessons !== migratedLessons || !storedDirection;
+        return { lessons: normalizedLessons, direction, repaired };
     } catch {
         return null;
     }

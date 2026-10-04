@@ -4,7 +4,7 @@ import { useSelectionEngine, createSelectionState } from './hooks/useSelectionEn
 import { useBulkOperations } from './hooks/useBulkOperations';
 import { useSessionAssignment } from './hooks/useSessionAssignment';
 import { useImmer } from 'use-immer';
-import { readInitialNotebook } from './initialNotebook';
+import { readInitialNotebook, notebookStorageKey } from './initialNotebook';
 import { toast } from 'sonner';
 import { Header } from './Header';
 import { Toolbar } from './Toolbar';
@@ -105,9 +105,29 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     searchQuery: '',
     // La langue du contenu est indépendante de celle de l'interface : un
     // enseignant peut conserver l'UI française avec un cahier arabe, ou inversement.
-    contentDirection: defaultContentDirection(locale) as ContentDirection,
+    // La direction ENREGISTRÉE dans le cahier prime sur la langue de l'interface :
+    // c'est elle qui garde un texte latin lisible de gauche à droite dans un
+    // cahier arabe (et l'inverse).
+    contentDirection: (initialNotebook?.direction ?? defaultContentDirection(locale)) as ContentDirection,
     newlyAddedIds: [] as string[],
   });
+
+  // Un cahier vierge reçoit son diagnostic de départ : la version corrigée est
+  // persistée dès l'ouverture, comme avant la lecture synchrone, pour qu'elle
+  // survive au retour au tableau de bord et parte vers les autres appareils.
+  useEffect(() => {
+    if (!initialNotebook?.repaired || !workspaceIsActive()) return;
+    try {
+      localStorage.setItem(notebookStorageKey(initialClassInfo.id), JSON.stringify({
+        lessonsData: initialNotebook.lessons,
+        contentDirection: initialNotebook.direction,
+      }));
+      touchClassSyncMeta(initialClassInfo.id);
+      markClassDirty(initialClassInfo.id);
+    } catch { /* stockage plein : le cahier reste en mémoire */ }
+    // Une seule fois, pour la classe ouverte : les changements de classe passent par loadData.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
