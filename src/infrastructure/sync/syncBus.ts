@@ -4,6 +4,42 @@
 
 export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed' | 'notifications-changed';
 
+/**
+ * Avancement du rapatriement cloud, publié pour l'interface.
+ *
+ * `state` décrit la phase : `pulling` pendant la liste et l'emploi du temps,
+ * `ready` une fois la liste appliquée, puis `notebooks` pendant la préparation
+ * des cahiers (la ou les classes en cours sont alors renseignées).
+ * Les abonnés évitent ainsi tout écran bloquant : ils affichent l'avancement.
+ */
+export interface SyncProgress {
+    state: 'idle' | 'pulling' | 'ready' | 'notebooks' | 'failed';
+    /** Nombre de cahiers à préparer ; 0 tant que la liste n'est pas connue. */
+    total: number;
+    done: number;
+    classId: string | null;
+}
+
+const IDLE_PROGRESS: SyncProgress = { state: 'idle', total: 0, done: 0, classId: null };
+let syncProgress: SyncProgress = IDLE_PROGRESS;
+const progressListeners = new Set<(value: SyncProgress) => void>();
+
+/** Fusionne un avancement partiel ; une valeur identique ne réveille personne. */
+export const notifySyncProgress = (next: Partial<SyncProgress>): void => {
+    const value: SyncProgress = { ...syncProgress, ...next };
+    if (value.state === syncProgress.state && value.total === syncProgress.total
+        && value.done === syncProgress.done && value.classId === syncProgress.classId) return;
+    syncProgress = value;
+    progressListeners.forEach(listener => listener(value));
+};
+
+export const readSyncProgress = (): SyncProgress => syncProgress;
+
+export const subscribeSyncProgress = (listener: (value: SyncProgress) => void): (() => void) => {
+    progressListeners.add(listener);
+    return () => { progressListeners.delete(listener); };
+};
+
 type SyncListener = (source?: symbol) => void;
 
 const listeners = new Map<SyncEvent, Set<SyncListener>>();

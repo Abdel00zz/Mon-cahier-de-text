@@ -28,6 +28,7 @@ import { translateLocaleMessage } from '../i18n/messages';
 import { isContentDirection } from '../domain/notebook/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storage/accountWorkspace';
 import { bootstrapStore } from '../infrastructure/sync/bootstrapStore';
+import { notifySyncProgress } from '../infrastructure/sync/syncBus';
 import { measurements, MEASURES } from '../platform/performanceMarks';
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
@@ -487,6 +488,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             measurements.start(MEASURES.syncStart);
             measurements.start(MEASURES.syncTimetable);
             measurements.start(MEASURES.syncClasses);
+            notifySyncProgress({ state: 'pulling', total: 0, done: 0, classId: null });
             try {
                 const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': accountOwner(user) }, signal: controller.signal });
                 if (!response.ok) {
@@ -767,6 +769,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 bootstrapStore.markClasses();
                 measurements.end(MEASURES.syncClasses);
                 measurements.end(MEASURES.syncStart);
+                notifySyncProgress({ state: 'ready', total: coloredClasses.length, done: 0, classId: null });
 
                 setLastSyncAt(server.updatedAt || null);
                 if (hasPendingWork()) {
@@ -778,6 +781,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return true;
             } catch (error) {
                 if (isCurrent()) {
+                    notifySyncProgress({ state: 'failed' });
                     reportSyncFailure(error);
                 }
                 return controller.signal.aborted ? undefined : false;
