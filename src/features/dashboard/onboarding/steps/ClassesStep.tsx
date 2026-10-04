@@ -194,11 +194,11 @@ export const ClassesStep = memo<ClassesStepProps>(
 
     return (
       <div className="w-full space-y-4">
-        {/* Conteneur principal épuré, doux et spacieux Style Vercel avec fond #fcfcfc */}
-        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[#fcfcfc] p-4 shadow-xs transition-all dark:border-[hsl(var(--border))] dark:bg-[#18181b] sm:p-7 md:p-8">
+        {/* Première classe, selon les cycles et matières sélectionnés. */}
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-card p-4 shadow-xs transition-all dark:border-[hsl(var(--border))] dark:bg-card sm:p-7 md:p-8">
           {/* Barre supérieure : Titre épuré sans bouton 'تسمية حرة' */}
           <div className="mb-4 flex items-center gap-2.5 sm:mb-6">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[#facc15]" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--workspace-active-ink)]" />
             <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 sm:text-base">
               {isAr ? 'تحديد قسمك الأول (نموذج للبدء)' : 'Votre première classe (modèle de départ)'}
             </h2>
@@ -217,10 +217,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                     <button
                       key={cycle}
                       type="button"
+                      aria-pressed={selectedCycle === cycle}
                       onClick={() => setSelectedCycle(cycle)}
-                      className={`touch-manipulation rounded-lg px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:text-sm ${
+                      className={`min-h-11 touch-manipulation rounded-lg px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:text-sm ${
                         selectedCycle === cycle
-                          ? 'bg-[#7033e3] text-white shadow-xs font-bold'
+                          ? 'bg-[var(--workspace-active-ink)] text-white shadow-xs font-bold'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -245,10 +246,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                       <button
                         key={level}
                         type="button"
-                        onClick={() => setSelectedLevel(level)}
+                        aria-pressed={isSelected}
+                      onClick={() => setSelectedLevel(level)}
                         className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                           isSelected
-                            ? 'border-2 border-[#7033e3] bg-[#7033e3]/10 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/20 dark:text-[#c4b5fd]'
+                            ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-fill)] text-[var(--workspace-active-ink)] font-bold shadow-xs  dark:bg-[var(--workspace-active-ink)]/20 '
                             : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                         }`}
                       >
@@ -286,10 +288,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                         <button
                           key={group.key}
                           type="button"
-                          onClick={() => handleSelectPalier(group.key)}
+                          aria-pressed={isSelected}
+                      onClick={() => handleSelectPalier(group.key)}
                           className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                             isSelected
-                              ? 'border-2 border-[#7033e3] bg-[#7033e3]/10 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/20 dark:text-[#c4b5fd]'
+                              ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-fill)] text-[var(--workspace-active-ink)] font-bold shadow-xs  dark:bg-[var(--workspace-active-ink)]/20 '
                               : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                           }`}
                         >
@@ -319,10 +322,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                           <button
                             key={level}
                             type="button"
-                            onClick={() => setSelectedLevel(level)}
+                            aria-pressed={isSelected}
+                      onClick={() => setSelectedLevel(level)}
                             className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer sm:px-4 sm:py-2.5 sm:text-sm ${
                               isSelected
-                                ? 'border-2 border-[#7033e3] bg-[#7033e3]/15 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/25 dark:text-[#c4b5fd]'
+                                ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-fill)] text-[var(--workspace-active-ink)] font-bold shadow-xs  dark:bg-[var(--workspace-active-ink)]/25 '
                                 : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:text-foreground'
                             }`}
                           >
@@ -347,10 +351,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                     <button
                       key={num}
                       type="button"
+                      aria-pressed={isSelected}
                       onClick={() => setGroupInput(num)}
                       className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 cursor-pointer ${
                         isSelected
-                          ? 'border-2 border-[#7033e3] bg-[#7033e3] text-white shadow-xs'
+                          ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-ink)] text-white shadow-xs'
                           : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted'
                       }`}
                     >
@@ -364,7 +369,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                   value={groupInput}
                   onChange={(e) => setGroupInput(sanitizeGroupNumberInput(e.target.value))}
                   aria-label={isAr ? 'رقم مخصص' : 'Numéro libre'}
-                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[#7033e3] focus:outline-none"
+                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[var(--workspace-active-ink)] focus:outline-none"
                 />
               </div>
             </div>
@@ -382,10 +387,11 @@ export const ClassesStep = memo<ClassesStepProps>(
                       <button
                         key={subject}
                         type="button"
-                        onClick={() => setSelectedSubject(subject)}
+                        aria-pressed={isSelected}
+                      onClick={() => setSelectedSubject(subject)}
                         className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer sm:px-4 sm:text-sm ${
                           isSelected
-                            ? 'bg-[#7033e3] text-white font-bold shadow-xs border border-[#7033e3]'
+                            ? 'bg-[var(--workspace-active-ink)] text-white font-bold shadow-xs border border-[var(--workspace-active-ink)]'
                             : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400'
                         }`}
                       >
@@ -400,7 +406,7 @@ export const ClassesStep = memo<ClassesStepProps>(
 
           {/* Aperçu instantané Style Néo-Éditorial */}
           <div className="mt-5 text-center sm:mt-6">
-            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-[#7033e3]/30 bg-[#7033e3]/10 px-4 py-2 text-xs font-bold text-[#7033e3] dark:text-[#c4b5fd] sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm shadow-2xs">
+            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-[var(--workspace-active-ink)]/30 bg-[var(--workspace-active-fill)] px-4 py-2 text-xs font-bold text-[var(--workspace-active-ink)]  sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm shadow-2xs">
               <span className="truncate">{previewClassName}</span>
               <span className="text-neutral-400 dark:text-neutral-500">•</span>
               <span className="font-semibold text-foreground/80 truncate">
@@ -411,28 +417,31 @@ export const ClassesStep = memo<ClassesStepProps>(
         </div>
 
         {/* Barre de navigation directe avec boutons tactiles ergonomiques */}
-        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+        <div className="onboarding-navigation onboarding-class-navigation">
           {onBack ? (
             <button
               type="button"
               onClick={onBack}
+              disabled={isSubmitting}
+              aria-label={copy.back}
               className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-              <span>{copy.back}</span>
+              <span className="onboarding-back-label">{copy.back}</span>
             </button>
           ) : (
             <div />
           )}
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="onboarding-class-next flex min-w-0 items-center gap-2.5 w-full sm:w-auto">
             {onSkip && (
               <button
                 type="button"
                 onClick={onSkip}
+                disabled={isSubmitting}
                 className="inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
-                <span>{copy.ignoreClass}</span>
+                <span>{isAr ? 'تخطي' : 'Passer'}</span>
               </button>
             )}
 
@@ -440,13 +449,13 @@ export const ClassesStep = memo<ClassesStepProps>(
               type="button"
               disabled={!isFormValid || isSubmitting}
               onClick={handleCreateClass}
-              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md shadow-[#7033e3]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md  active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
-              <span>{isAr ? 'إنشاء هذا القسم والمتابعة' : 'Créer la classe et continuer'}</span>
+              <span>{isSubmitting ? copy.addingClass : isAr ? 'إنشاء قسمي' : 'Créer ma classe'}</span>
               {isAr ? (
-                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 stroke-[2.5]" />
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 " />
               ) : (
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 " />
               )}
             </button>
           </div>

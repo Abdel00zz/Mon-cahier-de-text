@@ -55,6 +55,8 @@ import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/domai
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease, registerWorkspaceWriter } from '@/infrastructure/storage/accountWorkspace';
 import { hasMathContent } from '@/lib/text/math';
+import { useSync } from '@/contexts/SyncContext';
+import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -83,6 +85,7 @@ type ActiveModal =
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   const { t, locale } = useLocale();
+  const { syncNow } = useSync();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
@@ -417,17 +420,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     if (saveStatusRef.current === 'saved') return true;
     if (withVisualStatus) setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
-      localStorage.setItem(getStorageKey(), JSON.stringify({
-        lessonsData: lessonsDataRef.current,
-        contentDirection: contentDirectionRef.current,
-      }));
-      touchClassSyncMeta(classInfo.id);
-      markClassDirty(classInfo.id);
+      saveNotebook(classInfo.id, lessonsDataRef.current, contentDirectionRef.current);
       saveStatusRef.current = 'saved';
       if (withVisualStatus) {
-        setTimeout(() => setEditorState(draft => {
-          if (draft.saveStatus === 'saving') draft.saveStatus = 'saved';
-        }), 500);
+        setEditorState(draft => { draft.saveStatus = 'saved'; });
       }
       return true;
     } catch (error) {
@@ -439,15 +435,26 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       return false;
     }
-  }, [getStorageKey, classInfo.id, showNotification, setEditorState, t, workspaceIsActive]);
+  }, [classInfo.id, showNotification, setEditorState, t, workspaceIsActive]);
 
   useEffect(() => registerWorkspaceWriter(() => (
     workspaceIsActive() ? persistCurrentData(false) : true
   )), [persistCurrentData, workspaceIsActive]);
 
   const saveData = useCallback(() => {
-    persistCurrentData(true);
-  }, [persistCurrentData]);
+    if (persistCurrentData(true)) void syncNow();
+  }, [persistCurrentData, syncNow]);
+
+  useEffect(() => {
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        if (!activeModal) saveData();
+      }
+    };
+    window.addEventListener('keydown', handleSaveShortcut);
+    return () => window.removeEventListener('keydown', handleSaveShortcut);
+  }, [saveData, activeModal]);
 
   // Garantie locale : quitter rapidement après une édition ne peut plus annuler
   // la dernière saisie avant que l'autosauvegarde différée ait eu le temps de partir.
@@ -511,12 +518,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [setEditorState, showNotification, t, workspaceIsActive]);
 
   useEffect(() => {
-    if (isClassLoading || isConfigLoading || saveStatus === 'saved') return;
+    if (isClassLoading || isConfigLoading || saveStatus !== 'unsaved') return;
     const handler = setTimeout(() => {
-      saveData();
+      persistCurrentData(true);
     }, 1500);
     return () => clearTimeout(handler);
-  }, [lessonsData, contentDirection, isClassLoading, isConfigLoading, saveStatus, saveData]);
+  }, [lessonsData, contentDirection, isClassLoading, isConfigLoading, saveStatus, persistCurrentData]);
 
   useEffect(() => {
     loadData();
@@ -978,6 +985,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [setState, showNotification, setEditorState, contentEditTargets, t]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
+      if (!workspaceIsActive()) return false;
       try {
         const { lessonsData: preparedLessons, report, direction } = prepareImportedLessons(data);
         if (preparedLessons.length === 0) {
@@ -985,22 +993,32 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return false;
         }
 
-        setSelectionState(createSelectionState());
-        setState(currentData => {
-            const combined = mode === 'replace' ? preparedLessons : [...currentData, ...preparedLessons];
-            // L'évaluation diagnostique ouvre chaque cahier, y compris importé :
-            // un diagnostic déjà présent est conservé (remonté, sans doublon),
-            // sinon il est injecté en tête.
-            return withStarterDiagnostic(combined, contentLocaleFromDirection(direction.direction));
-        }, 'import-data');
         // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
         // toutes ses colonnes. Un import de remplacement (ou le premier import)
         // adopte immédiatement l'écriture détectée à partir du titre.
         const shouldAdoptImportedDirection = mode === 'replace' || isNotebookAwaitingContent;
+        const nextDirection = shouldAdoptImportedDirection ? direction.direction : contentDirectionRef.current;
+        const combined = mode === 'replace' ? preparedLessons : [...lessonsDataRef.current, ...preparedLessons];
+        const nextLessons = withStarterDiagnostic(combined, contentLocaleFromDirection(nextDirection));
+        // Persist before closing the import dialog or announcing success. On failure,
+        // keep both the existing editor and the dialog available for recovery.
+        try {
+          saveNotebook(classInfo.id, nextLessons, nextDirection);
+        } catch (error) {
+          logger.error('Failed to store imported notebook', error);
+          showNotification(t('editorNotice.saveError'), 'error');
+          return false;
+        }
+        lessonsDataRef.current = nextLessons;
+        contentDirectionRef.current = nextDirection;
+        saveStatusRef.current = 'saved';
+        setSelectionState(createSelectionState());
+        setState(() => nextLessons, 'import-data');
         setEditorState(draft => {
-          if (shouldAdoptImportedDirection) draft.contentDirection = direction.direction;
-          draft.saveStatus = 'unsaved';
+          draft.contentDirection = nextDirection;
+          draft.saveStatus = 'saved';
         });
+        void syncNow();
         handleModalClose();
         const directionNotice = shouldAdoptImportedDirection
           ? t('editorNotice.importDirection', { direction: direction.direction.toUpperCase() })
@@ -1017,7 +1035,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         showNotification(t('editorNotice.importInvalidStructure'), "error");
         return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState, isNotebookAwaitingContent, t]);
+  }, [setState, showNotification, handleModalClose, setEditorState, isNotebookAwaitingContent, t, workspaceIsActive, classInfo.id, syncNow]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setSelectionState(createSelectionState());

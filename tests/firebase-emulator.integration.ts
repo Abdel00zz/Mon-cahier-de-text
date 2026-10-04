@@ -24,6 +24,8 @@ import { importFirebaseTeacher, verifyFirebasePassword } from '../api/_lib/fireb
 import { firebaseAuth, teacherUid } from '../api/_lib/firebaseAdmin.js';
 import { firebaseIdentityRequest } from '../api/_lib/firebaseSignIn.js';
 import { firebaseAccountId } from '../api/_lib/authAccounts.js';
+import { encodeSyncPayload } from '../src/infrastructure/sync/syncTransport.js';
+import { SYNC_ENCODING } from '../src/infrastructure/sync/syncProtocol.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
 const store = new FirestoreStore();
@@ -260,6 +262,38 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   assert.deepEqual(deletedWorkspace.classes, []);
   assert.ok(deletedWorkspace.deletedClasses[classInfo.id]);
   assert.equal((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).status, 404);
+});
+
+test('large imported notebook crosses the HTTP contract and is restored intact from Firestore', async () => {
+  const number = '0617779977';
+  const registered = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', phone: number, nom: 'Import', prenom: 'QA', password: 'Test-password-123' } });
+  assert.equal(registered.status, 201);
+  const headers = { cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': number };
+  const capabilities = await call(syncHandler, { method: 'GET', headers, query: { scope: 'capabilities' } });
+  assert.equal((capabilities.body as { encoding: string }).encoding, SYNC_ENCODING);
+  const classInfo = { id: 'large-import', name: '1AC1', cycle: 'college', subject: 'Mathématiques', teacherName: 'QA', establishment: 'Test', color: 'sky' };
+  const lessonsData = [{ type: 'chapter', title: 'الأعداد', items: Array.from({ length: 500 }, (_, i) => ({ type: 'cours', title: `درس ${i}`, description: 'الجبر 🧮 $x^2$ définition. '.repeat(100) })) }];
+  const updatedAt = new Date().toISOString();
+  const body = { classes: [classInfo], schedules: [], timetable: [], lessons: [{ classId: classInfo.id, lessonsData, contentDirection: 'rtl', updatedAt }] };
+  assert.ok(Buffer.byteLength(JSON.stringify(body)) > 950_000);
+  const wire = await encodeSyncPayload(body);
+  const pushed = await call(syncHandler, { method: 'POST', headers, body: wire });
+  assert.equal(pushed.status, 200, JSON.stringify(pushed.body));
+  assert.deepEqual((pushed.body as { acceptedClassIds: string[] }).acceptedClassIds, [classInfo.id]);
+  const pulled = await call(syncHandler, { method: 'GET', headers, query: { classId: classInfo.id } });
+  assert.equal(pulled.status, 200);
+  assert.deepEqual(pulled.body, { lessonsData, contentDirection: 'rtl', updatedAt });
+  const oldDevice = await call(syncHandler, { method: 'POST', headers, body: {
+    ...body, lessons: [{ ...body.lessons[0], lessonsData: [{ type: 'chapter', title: 'Older offline draft' }], updatedAt: '2020-01-01T00:00:00Z' }],
+  } });
+  assert.equal(oldDevice.status, 200);
+  assert.deepEqual((oldDevice.body as { acceptedClassIds: string[] }).acceptedClassIds, []);
+  assert.deepEqual((await call(syncHandler, { method: 'GET', headers, query: { classId: classInfo.id } })).body, pulled.body);
+  const wrongOwner = await call(syncHandler, { method: 'POST', headers: { ...headers, 'x-workspace-owner': phone }, body: wire });
+  assert.equal(wrongOwner.status, 409);
+  const invalid = await encodeSyncPayload({ ...body, lessons: [{ ...body.lessons[0], classId: 'another-class' }] });
+  assert.equal((await call(syncHandler, { method: 'POST', headers, body: invalid })).status, 400);
+  assert.deepEqual((await call(syncHandler, { method: 'GET', headers, query: { classId: classInfo.id } })).body, pulled.body);
 });
 
 test('Firestore backup restores an encrypted consistent snapshot to an empty isolated emulator', async () => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/ui/icons';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';

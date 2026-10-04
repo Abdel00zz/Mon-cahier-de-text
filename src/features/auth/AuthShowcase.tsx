@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/ui/icons';
 import { Cloud } from '@/components/ui/icons';
 import { AppPhonePreview } from '@/components/ui/AppPhonePreview';
 

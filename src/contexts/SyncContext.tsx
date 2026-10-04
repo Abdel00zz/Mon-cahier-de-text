@@ -30,7 +30,7 @@ import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storag
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
-import { requestSyncJson, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
+import { requestSyncJson, requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
 import { readLocalSyncSnapshot } from '../infrastructure/sync/localSnapshot';
 import { LocalSyncDataError } from '../infrastructure/storage/localJson';
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
@@ -46,7 +46,7 @@ interface SyncContextValue {
 
 const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {} });
 
-const PUSH_DEBOUNCE_MS = 20_000;
+const PUSH_DEBOUNCE_MS = 3_000;
 /** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
 const MAX_PUSH_BYTES = 700_000;
 
@@ -101,15 +101,14 @@ interface RemoteLessonsBlob {
 
 const fetchLessonsBlob = async (classId: string, owner: string, signal: AbortSignal): Promise<RemoteLessonsBlob | null> => {
     try {
-        const response = await apiFetch(`/api/sync?classId=${encodeURIComponent(classId)}`, {
+        return await requestSyncJson<RemoteLessonsBlob>(`/api/sync?classId=${encodeURIComponent(classId)}`, {
             credentials: 'same-origin',
             headers: { 'X-Workspace-Owner': owner },
             signal,
         });
-        return response.ok ? ((await response.json()) as RemoteLessonsBlob) : null;
     } catch (error) {
-        if (!signal.aborted) logger.error('Pull d\'une classe impossible', error);
-        return null;
+        if (error instanceof SyncRequestError && error.status === 404) return null;
+        throw error;
     }
 };
 
@@ -157,6 +156,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const immediatePushRequestedRef = useRef(false);
     const pushAbortRef = useRef<AbortController | null>(null);
     const pullAbortRef = useRef<AbortController | null>(null);
+    const refreshRef = useRef<(() => Promise<boolean | void>) | null>(null);
     const authStatusRef = useRef(authStatus);
     authStatusRef.current = authStatus;
     const userRef = useRef(user);
@@ -193,16 +193,22 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 lastErrorKeyRef.current = 'local-data';
                 toast.error(syncText('sync.localDataUnreadable'), { duration: 10_000 });
             }
+        } else if (error instanceof SyncRequestError && error.status !== 0) {
+            setSyncStatus('error');
+            notifySyncError(error.status, error.message);
         } else {
             setSyncStatus('offline');
         }
-    }, []);
+    }, [notifySyncError]);
 
     const push = useCallback(async (options?: { keepalive?: boolean }) => {
         const currentUser = userRef.current;
         const scope = readWorkspaceScope();
         if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== accountOwner(currentUser) || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
-        if (!options?.keepalive && !isForegroundOnline()) return;
+        if (!options?.keepalive && !isForegroundOnline()) {
+            if (!navigator.onLine) setSyncStatus('offline');
+            return;
+        }
 
         pullAbortRef.current?.abort();
         const controller = new AbortController();
@@ -251,7 +257,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
              * Un push monolithique avec plusieurs gros cahiers (programmes
              * officiels) échouait alors À CHAQUE tentative, c'est la cause
              * du badge « Erreur de synchro » permanent. Chaque lot reste sous
-             * ~700 Ko ; un cahier volumineux part seul dans son propre lot.
+             * ~700 Ko ; un cahier volumineux part seul et est compressé par
+             * le transport après vérification de la taille du corps complet.
              */
             const batches: (typeof entries)[] = [];
             let current: typeof entries = [];
@@ -291,6 +298,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const pushedIds: string[] = [];
             let serverTime: string | null = null;
             let pushedSettingsAt: string | null = null;
+            let requiresPull = false;
             let failure: { status: number; message?: string; code?: string; retryAfter?: string | null; firstBatch: boolean } | null = null;
 
             for (let i = 0; i < batches.length; i++) {
@@ -299,7 +307,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const includeSettings = isFirst && work.classesListDirty;
                 let data: { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean };
                 try {
-                    data = await requestSyncJson('/api/sync', {
+                    data = await requestSyncPush({
+                        classes, schedules, timetable: config.timetable ?? [],
+                        settings: includeSettings ? extractSyncableSettings(config) : undefined,
+                        settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
+                        deletedClasses: isFirst ? work.deletedClasses : [],
+                        deletedClassIds: isFirst ? work.deletedClassIds : [],
+                        lessons: batches[i].map(({ classId, lessonsData, contentDirection, updatedAt }) => ({ classId, lessonsData, contentDirection, updatedAt })),
+                        snapshot: isFirst ? snapshot : undefined,
+                    }, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': accountOwner(currentUser) },
                         signal: controller.signal,
@@ -308,20 +324,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
                         // travail en attente sera resynchronisé au prochain démarrage.
                         keepalive: options?.keepalive === true,
-                        body: JSON.stringify({
-                            classes,
-                            schedules,
-                            timetable: config.timetable ?? [],
-                            // métadonnées portées par le premier lot uniquement
-                            settings: includeSettings ? extractSyncableSettings(config) : undefined,
-                            settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
-                            // Nouveau format horodaté ; deletedClassIds reste envoyé
-                            // pour que les déploiements serveur précédents le comprennent.
-                            deletedClasses: isFirst ? work.deletedClasses : [],
-                            deletedClassIds: isFirst ? work.deletedClassIds : [],
-                            lessons: batches[i].map(({ classId, lessonsData, contentDirection, updatedAt }) => ({ classId, lessonsData, contentDirection, updatedAt })),
-                            snapshot: isFirst ? snapshot : undefined,
-                        }),
                     });
 
                 } catch (error) {
@@ -337,6 +339,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (!isCurrent()) return;
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
                 if (includeSettings && data.settingsAccepted !== false) pushedSettingsAt = settingsUpdatedAt;
+                if (includeSettings && data.settingsAccepted === false) requiresPull = true;
                 for (const entry of batches[i]) {
                     pushedIds.push(entry.classId);
                     // point de synchro commun local/cloud (détection de conflit)
@@ -346,6 +349,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // An authoritative admin import rejected this older payload.
                         // Keep a recovery copy even on a device never synced before.
                         backupConflictVersion(entry.classId, entry.lessonsData, 'local');
+                        requiresPull = true;
                     }
                 }
             }
@@ -357,7 +361,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 lastErrorKeyRef.current = null;
                 retryAttemptRef.current = 0;
                 setLastSyncAt(serverTime ?? new Date().toISOString());
-                setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
+                setSyncStatus(hasPendingWork() || requiresPull ? 'pending' : 'synced');
                 succeeded = true;
                 return;
             }
@@ -411,6 +415,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         scheduledPushAtRef.current = null;
                         void push();
                     }, 0);
+                } else if (succeeded && isCurrent() && !hasPendingWork() && !options?.keepalive) {
+                    // Reconcile rejected older imports/settings before claiming that
+                    // local content is identical to the authoritative cloud version.
+                    window.setTimeout(() => { if (isCurrent()) void refreshRef.current?.(); }, 0);
                 }
             }
         }
@@ -452,7 +460,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             immediatePushRequestedRef.current = true;
             return Promise.resolve();
         }
-        return push();
+        return hasPendingWork() ? push() : Promise.resolve(refreshRef.current?.()).then(() => {});
     }, [push]);
 
     // Pull initial + diffusion continue. Aucun chevauchement ; une saisie ou
@@ -512,7 +520,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // (dont l'essai conservé à l'inscription) sont déjà autorisées.
                     // Proposition NON bloquante pour les autres cahiers locaux.
                     // L'application conseille, le professeur décide et rien n'est interrompu.
-                    setSyncStatus('synced');
+                    setSyncStatus('idle');
                     if (!associationOffered) toast.info(
                         syncText('sync.localNotLinked', { count: localClasses.length }),
                         {
@@ -619,6 +627,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         const shouldFetchLessons = localIndex === -1 || serverIsNewer;
                         const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id, accountOwner(user), controller.signal) : null;
                         if (!isCurrent()) return;
+                        if (shouldFetchLessons && serverUpdatedAt && !blob) throw new SyncRequestError('Le cahier cloud est momentanément indisponible. Réessayez la synchronisation.', 502);
                         if (blob) {
                             const contentDirection = isContentDirection(blob.contentDirection)
                                 ? blob.contentDirection
@@ -767,12 +776,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
         };
+        refreshRef.current = refresh;
         const stopPolling = startForegroundPolling(refresh, {
             interval: 60_000,
             onInactive: () => pullAbortRef.current?.abort(),
         });
 
         return () => {
+            if (refreshRef.current === refresh) refreshRef.current = null;
             cancelled = true;
             pullAbortRef.current?.abort();
             unsubscribeDirty();

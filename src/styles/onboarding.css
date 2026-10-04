@@ -1,0 +1,123 @@
+/* One quiet material system for setup before and after registration. */
+.onboarding-studio, .registration-studio {
+  --setup-ink: var(--workspace-active-ink);
+  --setup-fill: var(--workspace-active-fill);
+  --setup-ease: cubic-bezier(.2,.8,.2,1);
+}
+.onboarding-artisan-shell.onboarding-studio {
+  overflow-x: clip;
+  background: radial-gradient(ellipse at 95% 8%, hsl(var(--primary) / .035), transparent 48%), hsl(var(--background));
+}
+.onboarding-studio .onboarding-artisan-header {
+  background: hsl(var(--background) / .94); backdrop-filter: blur(18px) saturate(140%);
+  border-color: hsl(var(--border) / .65); box-shadow: inset 0 -1px 0 hsl(var(--card) / .6);
+}
+.onboarding-theme-control { position: relative; flex: 0 0 44px; width: 44px; height: 44px; }
+.onboarding-theme-control svg { position: absolute; top: 12px; inset-inline-start: 12px; pointer-events: none; }
+.onboarding-theme-select { width: 44px; height: 44px; appearance: none; color: transparent; cursor: pointer; border: 1px solid hsl(var(--border)); border-radius: 13px; background: hsl(var(--card)); }
+.onboarding-theme-select option { color: hsl(var(--foreground)); background: hsl(var(--card)); }
+.onboarding-studio main { position: relative; z-index: 1; padding-top: 12px; }
+.onboarding-progress-caption { font-size: 11px; min-height: 44px; }
+.onboarding-stepper { margin-bottom: 8px; }
+.onboarding-step {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 0; border-top: 3px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground)); font-size: 11px; transition: color 180ms, border-color 180ms;
+}
+.onboarding-step-mark { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; font-size: 10px; font-variant-numeric: tabular-nums; }
+.onboarding-step[aria-current] { color: var(--setup-ink); border-color: var(--setup-ink); font-weight: 700; }
+.onboarding-step[data-complete] { border-color: hsl(var(--success-strong)); }
+.onboarding-step[data-complete] .onboarding-step-mark { color: hsl(var(--success-strong)); }
+.onboarding-studio .onboarding-heading { min-height: 142px; margin-bottom: 12px; }
+.onboarding-eyebrow { color: hsl(var(--muted-foreground)); font-size: 10px; line-height: 1.6; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+[dir="rtl"] .onboarding-eyebrow { letter-spacing: 0; font-size: 11px; }
+.onboarding-studio .onboarding-heading h1, .registration-studio h1 {
+  font-family: var(--font-sans); font-size: clamp(26px, 4vw, 36px); line-height: 1.14; letter-spacing: -.035em; font-weight: 650; text-wrap: balance;
+}
+[dir="rtl"].onboarding-studio h1, [dir="rtl"].registration-studio h1 { letter-spacing: 0; line-height: 1.55; }
+.onboarding-heading-illustration { flex: 0 0 144px; }
+.onboarding-step-content { min-width: 0; border: 0; padding: 0; }
+.onboarding-cycle-card {
+  display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 15px;
+  text-align: start; border: 1px solid hsl(var(--border)); border-radius: 20px;
+  background: hsl(var(--card)); box-shadow: inset 0 1px 0 hsl(var(--background) / .65), 0 4px 12px -8px hsl(var(--foreground) / .12);
+}
+.onboarding-cycle-symbol { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; border: 1px solid hsl(var(--border) / .7); color: hsl(var(--muted-foreground)); background: linear-gradient(150deg, hsl(var(--card)), hsl(var(--muted))); }
+.onboarding-cycle-copy { min-width: 0; flex: 1; }
+.onboarding-cycle-check { width: 21px; height: 21px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; border: 1px solid hsl(var(--border)); color: var(--setup-ink); }
+.onboarding-cycle-card[aria-pressed="true"] .onboarding-cycle-check { border-color: var(--setup-ink); background: var(--setup-ink); color: hsl(var(--card)); }
+.onboarding-studio .keep-choice:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--setup-fill); border-color: var(--setup-ink); color: var(--setup-ink); }
+.onboarding-studio .keep-surface { border-radius: 16px; }
+.onboarding-studio .artistic-cta-button, .registration-studio .registration-dock button {
+  background: var(--setup-ink); color: hsl(var(--card)); border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 hsl(var(--card) / .12), 0 6px 16px -10px hsl(var(--foreground) / .3);
+}
+.onboarding-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding-bottom: 24px; }
+.onboarding-class-next { min-width: 0; }
+.onboarding-class-next button:first-child:not(:last-child) { flex: 0 0 auto; }
+.onboarding-studio :is(button, select, input), .registration-studio :is(button, input) { transition: transform 200ms var(--setup-ease), background-color 180ms, border-color 180ms; }
+.onboarding-studio :is(button, select, input):focus-visible, .registration-studio :is(button, input):focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
+.onboarding-studio button:not(:disabled):active, .registration-studio button:not(:disabled):active { transform: scale(.98); }
+.onboarding-studio [data-onboarding-subjects] { border-radius: 16px; }
+
+/* First notebook preparation: visible progress, large choices and a live summary. */
+.registration-studio { padding: 24px; }
+.registration-progress { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.registration-progress li { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 3px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 12px; }
+.registration-progress li[aria-current] { border-color: var(--setup-ink); color: var(--setup-ink); font-weight: 600; }
+.registration-progress li>span { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid hsl(var(--border)); border-radius: 50%; font-size: 11px; }
+.registration-progress li[aria-current]>span { background: var(--setup-fill); border-color: transparent; }
+.registration-hero { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.registration-hero>div { min-width: 0; flex: 1; }
+.registration-hero>.dynamic-illustration { flex: 0 0 168px; }
+.registration-form { border: 1px solid hsl(var(--border)); border-radius: 24px; padding: 22px; background: hsl(var(--card)); box-shadow: 0 10px 30px -24px hsl(var(--foreground) / .18); }
+.registration-studio .auth-choice { border-radius: 12px; font-weight: 500; }
+.registration-studio .auth-choice[aria-pressed="true"] { background: var(--setup-fill); border-color: var(--setup-ink); color: var(--setup-ink); }
+.registration-cycle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.registration-cycle-grid .auth-choice { position: relative; min-width: 0; min-height: 116px; flex-direction: column; gap: 12px; padding: 16px 7px; font-size: 12px; line-height: 1.5; border-radius: 17px; }
+.registration-cycle-grid .auth-choice>span:not(.registration-cycle-check) { min-height: 36px; display: flex; align-items: center; }
+.registration-cycle-check { position: absolute; top: 7px; inset-inline-end: 7px; display: grid; place-items: center; width: 14px; height: 14px; }
+.registration-studio input, .registration-studio [role="combobox"] { border-radius: 12px; min-height: 48px; }
+.registration-preview { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 15px; border: 1px solid hsl(var(--border)); border-radius: 15px; background: hsl(var(--muted) / .4); }
+.registration-preview>div { min-width: 0; flex: 1; }
+.registration-preview p { font-size: 14px; font-weight: 600; }
+.registration-preview span { font-size: 12px; color: hsl(var(--muted-foreground)); }
+.registration-preview>svg:last-child { color: hsl(var(--success-strong)); }
+.registration-dock { padding: 22px 0; }
+.registration-dock>p { font-size: 12px; color: hsl(var(--muted-foreground)); margin-bottom: 10px; text-align: center; }
+.registration-dock button { min-height: 52px; width: 100%; border-radius: 16px; gap: 12px; font-weight: 600; }
+@media (min-width: 640px) {
+  .onboarding-cycle-card { flex-direction: column; text-align: center; min-height: 190px; padding: 22px 14px; }
+  .onboarding-cycle-check { position: absolute; inset-inline-end: 10px; top: 10px; }
+  .onboarding-studio main { padding-top: 22px; }
+}
+@media (max-width: 639px) {
+  .onboarding-studio main { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .onboarding-studio .onboarding-heading { min-height: 122px; }
+  .onboarding-heading-illustration { width: 118px; flex-basis: 118px; }
+  .onboarding-studio .onboarding-heading h1 { font-size: 27px; }
+  .onboarding-stepper { gap: 8px; }
+  .onboarding-step { font-size: 10px; gap: 4px; }
+  .onboarding-navigation { position: fixed; z-index: 30; inset-inline: 0; bottom: 0; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; margin: 0; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid hsl(var(--border) / .7); background: hsl(var(--background) / .95); backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 -10px 30px -25px hsl(var(--foreground) / .2); }
+  .onboarding-navigation button { min-height: 50px; padding: 12px; border-radius: 15px; }
+  .onboarding-class-navigation button { font-size: 12px; }
+  .onboarding-class-next button.artistic-cta-button { flex: 1; padding-inline: 10px; }
+  .onboarding-back-label { display: none; }
+  .onboarding-navigation[data-first-step] { grid-template-columns: 1fr; }
+  .onboarding-navigation[data-first-step]>button:first-child { display: none; }
+  .registration-studio { padding: 18px 16px calc(120px + env(safe-area-inset-bottom)); }
+  .registration-progress { margin-bottom: 16px; }
+  .registration-hero { gap: 0; margin-bottom: 22px; }
+  .registration-hero>.dynamic-illustration { width: 116px; flex-basis: 116px; }
+  .registration-hero h1 { font-size: 28px; }
+  .registration-hero p:not(.onboarding-eyebrow) { font-size: 12px; line-height: 1.6; }
+  .registration-form { padding: 16px; border-radius: 22px; }
+  .registration-cycle-grid { gap: 8px; }
+  .registration-cycle-grid .auth-choice { min-height: 112px; padding-inline: 6px; font-size: 11px; }
+  .registration-dock { position: fixed; z-index: 30; bottom: 0; inset-inline: 0; padding: 10px 16px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid hsl(var(--border) / .7); background: hsl(var(--background) / .95); backdrop-filter: blur(18px) saturate(140%); }
+  .registration-dock>p { font-size: 11px; margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-studio :is(button, select, input), .onboarding-step, .registration-studio :is(button, input) { transition: none; }
+  .onboarding-studio button:not(:disabled):active, .registration-studio button:not(:disabled):active { transform: none; }
+}

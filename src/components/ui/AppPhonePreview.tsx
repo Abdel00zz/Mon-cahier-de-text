@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Bell, BookOpen, CalendarDays, Check, Clock, LayoutGrid, MoreHorizontal, Settings, Signal, Wifi, BatteryFull } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, BookOpen, CalendarDays, Check, Clock, LayoutGrid, MoreHorizontal, Settings, Signal, Wifi, BatteryFull } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import type { AppLocale } from '@/types';
 import './app-phone-preview.css';

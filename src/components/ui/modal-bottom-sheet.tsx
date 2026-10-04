@@ -128,6 +128,30 @@ export function ModalBottomSheet({
     setActiveDetentIndex(closestIndex);
   }, [detents, effectiveOpen, initialMobileDetent]);
 
+  /*
+   * Hauteur adaptative : un contenu plus haut que le palier d'ouverture ouvre
+   * la feuille au palier suivant. Sans cela, une modale longue s'ouvrait
+   * tronquée et l'enseignant devait tirer la poignée pour voir la suite.
+   * Vérification sur deux frames : au premier passage, le corps n'est pas
+   * encore contraint par le plafond de hauteur, donc « rien ne déborde ».
+   */
+  useLayoutEffect(() => {
+    if (!effectiveOpen || !isCompactSheet || detents.length < 2) return;
+    let frame = 0;
+    let cancelled = false;
+    const settle = () => {
+      if (cancelled) return;
+      const body = contentRef.current?.querySelector<HTMLElement>('.modal-body');
+      if (body && body.scrollHeight > body.clientHeight + 4) {
+        setActiveDetentIndex(index => Math.min(index + 1, detents.length - 1));
+        return;
+      }
+      if (frame++ < 2) frameId = window.requestAnimationFrame(settle);
+    };
+    let frameId = window.requestAnimationFrame(settle);
+    return () => { cancelled = true; window.cancelAnimationFrame(frameId); };
+  }, [effectiveOpen, isCompactSheet, detents.length]);
+
   const activeDetent = detents[Math.min(activeDetentIndex, detents.length - 1)] ?? detents[0];
   const canExpand = isCompactSheet && activeDetentIndex < detents.length - 1;
   const canCollapse = isCompactSheet && activeDetentIndex > 0;

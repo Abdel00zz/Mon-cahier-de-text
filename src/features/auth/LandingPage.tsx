@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CalendarDays, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarDays, Check } from '@/components/ui/icons';
 import { Cloud, PenLine } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { AppPhonePreview } from '@/components/ui/AppPhonePreview';

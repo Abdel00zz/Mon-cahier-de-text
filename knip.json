@@ -27,6 +27,8 @@
     "scripts/auth-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",
-    "scripts/ux-preview/main.tsx"
+    "scripts/ux-preview/main.tsx",
+    "scripts/visual-review/*.tsx",
+    "scripts/assets/*.mjs"
   ]
 }
