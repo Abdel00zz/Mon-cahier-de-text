@@ -1,0 +1,42 @@
+/* Liseré de synchronisation : une ligne de 2 px sous la barre du haut.
+   Position fixe : aucun décalage de mise en page, aucun élément bloquant. */
+.sync-strip {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 2px;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+  background-image: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.85), transparent);
+  background-repeat: no-repeat;
+  background-size: 38% 100%;
+  background-position: -38% 0;
+}
+
+.sync-strip[data-state='syncing'] {
+  opacity: 1;
+  animation: sync-strip-slide 1.3s ease-in-out infinite;
+}
+
+/* Un envoi en attente avance plus lentement : le travail est fait, l'envoi attend. */
+.sync-strip[data-state='pending'] {
+  opacity: 1;
+  animation: sync-strip-slide 2.6s ease-in-out infinite;
+}
+
+@keyframes sync-strip-slide {
+  from { background-position: -38% 0; }
+  to { background-position: 138% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-strip[data-state='syncing'],
+  .sync-strip[data-state='pending'] {
+    animation: none;
+    opacity: 0.6;
+    background-size: 100% 100%;
+    background-position: 0 0;
+  }
+}

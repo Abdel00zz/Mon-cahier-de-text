@@ -619,6 +619,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
 
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
+                // Avancement publié pour l'interface : chaque cahier rapatrié fait
+                // avancer la préparation, sans écran bloquant. La règle de sûreté
+                // reste intacte (aucune écriture avant la fin des lectures).
+                const notebookTotal = decisions.filter(decision => decision.action === 'apply' && (decision.localIndex === -1 || decision.serverIsNewer)).length;
+                let notebooksDone = 0;
                 await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, serverIsNewer }) => {
                     if (!isCurrent()) return;
                     if (action === 'apply') {
@@ -649,6 +654,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             const syncedAt = blob.updatedAt ?? serverUpdatedAt ?? new Date().toISOString();
                             syncMeta[serverClass.id] = { localUpdatedAt: syncedAt, lastSyncedAt: syncedAt };
                             localChanged = true;
+                            notebooksDone += 1;
+                            notifySyncProgress({ state: 'notebooks', total: notebookTotal, done: notebooksDone, classId: serverClass.id });
                         }
                         if (localIndex === -1) {
                             mergedClasses.push(serverClass);

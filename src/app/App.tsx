@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRe
 import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
 import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkeleton';
+import { SyncStrip } from '../components/ui/SyncStrip';
 import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
@@ -520,6 +521,8 @@ const App: React.FC = () => {
     <>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
         <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
+        {/* Liseré de synchronisation : discret, sans écran bloquant. */}
+        <SyncStrip />
         <Suspense fallback={<AppBootSkeleton />}>
           {appSurface}
         </Suspense>
