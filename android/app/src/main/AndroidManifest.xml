@@ -25,6 +25,12 @@
         <service android:name=".CahierMessagingService" android:exported="false">
             <intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter>
         </service>
+        <!-- Reprogramme la liaison push après rotation du jeton FCM, application
+             fermée. Aucune dépendance ajoutée : JobScheduler est fourni par Android. -->
+        <service
+            android:name=".PushRegistrationJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"

@@ -20,6 +20,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NativePrintPlugin.class);
         super.onCreate(savedInstanceState);
         NotificationCenter.ensure(this);
+        PushRegistrationJob.scheduleKeepAlive(this);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         View content = findViewById(android.R.id.content);
         ViewCompat.setOnApplyWindowInsetsListener(content, (view, windowInsets) -> {

@@ -11,7 +11,12 @@ public class CahierMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String token) {
         SharedPreferences prefs = InboxNotifications.preferences(this);
-        if (!token.equals(prefs.getString("token", ""))) prefs.edit().putString("token", token).remove("binding").apply();
+        if (token.equals(prefs.getString("token", ""))) return;
+        // The old token invalidates the server binding: re-register in the
+        // background, otherwise direction messages are dropped until the
+        // application is opened again.
+        prefs.edit().putString("token", token).remove("binding").apply();
+        PushRegistrationJob.scheduleResubscribe(this);
     }
 
     @Override
