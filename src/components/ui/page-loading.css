@@ -21,3 +21,22 @@
     min-height: calc(100dvh - 5.75rem - env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Une navigation rapide ne doit rien afficher : l'indicateur n'apparaît qu'après
+   250 ms d'attente réelle, en fondu de 150 ms (AGENTS.md : 150 à 300 ms). */
+.page-transition-loader {
+  opacity: 0;
+  animation: page-transition-appear 150ms ease-out 250ms forwards;
+}
+
+@keyframes page-transition-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-loader {
+    opacity: 1;
+    animation: none;
+  }
+}

@@ -28,6 +28,7 @@ import { translateLocaleMessage } from '../i18n/messages';
 import { isContentDirection } from '../domain/notebook/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storage/accountWorkspace';
 import { bootstrapStore } from '../infrastructure/sync/bootstrapStore';
+import { measurements, MEASURES } from '../platform/performanceMarks';
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
@@ -483,6 +484,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 30_000);
             const isCurrent = () => !cancelled && !controller.signal.aborted && !pushingRef.current && workspaceIsCurrent(scope);
             setSyncStatus('syncing');
+            measurements.start(MEASURES.syncStart);
+            measurements.start(MEASURES.syncTimetable);
+            measurements.start(MEASURES.syncClasses);
             try {
                 const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': accountOwner(user) }, signal: controller.signal });
                 if (!response.ok) {
@@ -746,6 +750,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Réglages et emploi du temps appliqués : première étape du
                 // premier chargement (voir domain/sync/bootstrapProgress).
                 bootstrapStore.markTimetable();
+                measurements.end(MEASURES.syncTimetable);
 
                 const coloredClasses = assignClassColors(mergedClasses);
                 if (coloredClasses.some((item, index) => item.color !== mergedClasses[index].color)) {
@@ -760,6 +765,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // La liste des classes est écrite : le premier chargement est
                 // complet même si rien n'avait changé localement.
                 bootstrapStore.markClasses();
+                measurements.end(MEASURES.syncClasses);
+                measurements.end(MEASURES.syncStart);
 
                 setLastSyncAt(server.updatedAt || null);
                 if (hasPendingWork()) {

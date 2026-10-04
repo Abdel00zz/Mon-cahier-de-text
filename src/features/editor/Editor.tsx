@@ -4,6 +4,7 @@ import { useSelectionEngine, createSelectionState } from './hooks/useSelectionEn
 import { useBulkOperations } from './hooks/useBulkOperations';
 import { useSessionAssignment } from './hooks/useSessionAssignment';
 import { useImmer } from 'use-immer';
+import { readInitialNotebook } from './initialNotebook';
 import { toast } from 'sonner';
 import { Header } from './Header';
 import { Toolbar } from './Toolbar';
@@ -86,12 +87,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   const { t, locale } = useLocale();
   const { syncNow } = useSync();
-  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
+  // Lecture SYNCHRONE du cahier avant le premier rendu : la classe s'ouvre
+  // directement sur son tableau. Une lecture illisible (`null`) retombe sur le
+  // chargement différé et son écran d'attente, jamais sur un cahier vide.
+  const [initialNotebook] = useState(() => readInitialNotebook({ classId: initialClassInfo.id, locale }));
+  const initialNotebookRef = useRef<{ classId: string } | null>(initialNotebook ? { classId: initialClassInfo.id } : null);
+  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
-    isClassLoading: true,
+    // Faux quand la lecture synchrone a réussi : plus aucun squelette à l'ouverture.
+    isClassLoading: !initialNotebook,
     saveStatus: 'saved' as 'saved' | 'saving' | 'unsaved',
     activeModal: null as ActiveModal,
     editingIndices: null as Indices | null,
@@ -376,6 +383,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [setEditorState]);
 
   const loadData = useCallback(() => {
+    // Cahier déjà en mémoire (lecture synchrone du premier rendu) : recharger
+    // réinitialiserait l'historique d'annulation sans rien apporter.
+    if (initialNotebookRef.current?.classId === classInfo.id) {
+      initialNotebookRef.current = null;
+      return;
+    }
     setEditorState(draft => { draft.isClassLoading = true; });
     try {
       const raw = localStorage.getItem(getStorageKey());

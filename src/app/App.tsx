@@ -6,6 +6,7 @@ import { AppLocale, ClassInfo } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
 import { useBootstrapProgress } from '../hooks/useBootstrapProgress';
+import { startIdlePrefetch } from './prefetch';
 import { useNativeReminders } from '../hooks/useNativeReminders';
 import { accountOwner } from '../domain/auth/accountIdentity';
 import { useAuth } from '../contexts/AuthContext';
@@ -173,21 +174,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined' || authStatus !== 'authenticated') return;
-    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
-    if (!navigator.onLine || connection?.saveData || /^(?:slow-)?2g$/.test(connection?.effectiveType ?? '')) return;
-    const requestIdle = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1200));
-    const cancelIdle = (window as any).cancelIdleCallback || clearTimeout;
-    const idleHandle = requestIdle(() => {
-      if (document.visibilityState !== 'visible') return;
-      // Le tableau de bord est déjà visible : préparer l'éditeur avant le
-      // premier clic. Sur une URL d'éditeur, préparer plutôt le retour accueil.
-      if (initialRouteRef.current?.view === 'editor') {
-        void import('../features/dashboard/Dashboard');
-      } else {
-        void import('../features/editor/Editor');
-      }
-    });
-    return () => cancelIdle(idleHandle);
+    // Tous les écrans sont préparés pendant l'inactivité : la navigation ne doit
+    // plus afficher d'écran de chargement (voir app/prefetch).
+    return startIdlePrefetch({ initialView: initialRouteRef.current?.view });
   }, [authStatus]);
 
   // Une authentification déclenchée depuis une ancienne vue (par exemple les
