@@ -3,13 +3,13 @@ import { cn } from '@/lib/utils';
 import './dynamic-illustrations.css';
 
 interface IllustrationProps { className?: string; size?: number; }
-type Materials = Record<'paper' | 'edge' | 'blue' | 'mint' | 'metal' | 'shadow' | 'halo', string>;
+type Materials = Record<'paper' | 'edge' | 'blue' | 'mint' | 'metal' | 'shadow', string>;
 
-/** Original optical illustrations: opaque faces, translucent edges, soft directional light.
+/** Original painted-storybook scenes: cream paper objects over a sky-and-hills vignette.
  * IDs are instance-local, so scenes can coexist in a dashboard or a modal. */
 function Studio({ children, className, size = 140 }: IllustrationProps & { children: (m: Materials) => ReactNode }) {
   const id = useId().replace(/:/g, '');
-  const m = Object.fromEntries(['paper', 'edge', 'blue', 'mint', 'metal', 'shadow', 'halo'].map(key => [key, `url(#${id}-${key})`])) as Materials;
+  const m = Object.fromEntries(['paper', 'edge', 'blue', 'mint', 'metal', 'shadow'].map(key => [key, `url(#${id}-${key})`])) as Materials;
   return <div aria-hidden="true" className={cn('dynamic-illustration', className)} style={{ '--illustration-size': `${size}px` } as CSSProperties}>
     <svg viewBox="0 0 240 240" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -18,14 +18,50 @@ function Studio({ children, className, size = 140 }: IllustrationProps & { child
         <linearGradient id={`${id}-blue`} x1="0" y1="0" x2="1" y2="1"><stop className="art-blue-top" /><stop offset=".52" className="art-blue-mid" /><stop offset="1" className="art-blue-bottom" /></linearGradient>
         <linearGradient id={`${id}-mint`} x1="0" y1="0" x2="1" y2="1"><stop className="art-mint-top" /><stop offset="1" className="art-mint-bottom" /></linearGradient>
         <linearGradient id={`${id}-metal`} x1="0" y1="0" x2="1" y2="0"><stop className="art-metal-edge" /><stop offset=".35" className="art-metal-light" /><stop offset="1" className="art-metal-edge" /></linearGradient>
-        <radialGradient id={`${id}-halo`}><stop className="art-halo" stopOpacity=".28" /><stop offset="1" className="art-halo" stopOpacity="0" /></radialGradient>
+        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1"><stop className="art-sky-top" /><stop offset=".72" className="art-sky-horizon" /></linearGradient>
+        <radialGradient id={`${id}-sun`}><stop className="art-sun-core" /><stop offset="1" className="art-sun-edge" /></radialGradient>
+        <clipPath id={`${id}-vignette`}><circle cx="120" cy="124" r="106" /></clipPath>
         <filter id={`${id}-shadow`} x="-35%" y="-30%" width="175%" height="190%" colorInterpolationFilters="sRGB"><feDropShadow dx="0" dy="7" stdDeviation="5" floodColor="var(--art-shadow)" floodOpacity=".18" /><feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="var(--art-shadow)" floodOpacity=".08" /></filter>
       </defs>
-      <ellipse cx="120" cy="135" rx="116" ry="94" fill={m.halo} />
+      <Backdrop id={id} />
       <g className="art-scene">{children(m)}</g>
     </svg>
   </div>;
 }
+/** Soft cumulus built from overlapping circles, with a shaded underside. */
+function Cloud({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
+  return <g transform={`translate(${x} ${y}) scale(${scale})`}>
+    <ellipse cx="18" cy="9" rx="24" ry="6" className="art-cloud-shade" />
+    <circle cx="4" cy="2" r="9" className="art-cloud" /><circle cx="17" cy="-5" r="13" className="art-cloud" />
+    <circle cx="31" cy="1" r="9" className="art-cloud" /><rect x="-4" y="1" width="44" height="9" rx="4.5" className="art-cloud" />
+  </g>;
+}
+
+/** Shared painted vignette: sky, sun (moon at night), clouds, layered hills, motes. */
+function Backdrop({ id }: { id: string }) {
+  return <g>
+    <g clipPath={`url(#${id}-vignette)`}>
+      <rect x="0" y="0" width="240" height="240" fill={`url(#${id}-sky)`} />
+      <circle cx="180" cy="56" r="58" fill={`url(#${id}-sun)`} />
+      <g className="art-cloud-drift"><Cloud x={38} y={58} scale={1.05} /></g>
+      <g className="art-cloud-drift art-cloud-drift--slow"><Cloud x={150} y={92} scale={.7} /></g>
+      <path d="M0 168Q46 140 96 156T196 144T250 158V240H0Z" className="art-hill-far" />
+      <path d="M-10 192Q58 162 128 184T252 176V240H-10Z" className="art-hill-near" />
+      <path d="M-10 214Q70 198 150 210T252 204V240H-10Z" className="art-hill-front" />
+    </g>
+    <circle cx="120" cy="124" r="106" className="art-rim" />
+    <g><circle cx="34" cy="132" r="2.2" className="art-mote art-mote-float" /><circle cx="206" cy="120" r="1.8" className="art-mote art-mote-float" /><circle cx="196" cy="186" r="2.4" className="art-mote art-mote-float" /></g>
+  </g>;
+}
+
+/** A small pistachio leaf, the recurring hand-painted signature of the set. */
+function Leaf({ x, y, rotate = 0, m }: { x: number; y: number; rotate?: number; m: Materials }) {
+  return <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
+    <path d="M0 0C10-11 25-12 33-7C25 4 11 7 0 0Z" fill={m.blue} />
+    <path d="M3 -1Q17 -5 30 -7" className="art-leaf-vein" />
+  </g>;
+}
+
 function Panel({ m, x, y, width, height, radius = 18, fill, children }: { m: Materials; x: number; y: number; width: number; height: number; radius?: number; fill?: string; children?: ReactNode }) {
   return <g>
     <rect x={x} y={y + 3} width={width} height={height} rx={radius} className="art-depth" />
@@ -49,7 +85,7 @@ export function NotebookOpeningIllustration(props: IllustrationProps) {
       <path d="M117 72V174" className="art-fold" />
       <path d="M45 66Q79 61 110 74M124 74Q154 61 189 66" className="art-specular" />
       <Writing x={55} y={91} width={43} /><Writing x={55} y={126} width={38} /><Writing x={133} y={91} width={43} />
-      <rect x="133" y="122" width="40" height="27" rx="8" fill={m.blue} opacity=".22" />
+      <rect x="133" y="122" width="40" height="27" rx="8" fill={m.blue} opacity=".22" /><Leaf m={m} x={150} y={160} rotate={-18} />
     </g>
     <g className="art-detail"><g transform="rotate(28 182 124)" filter={m.shadow}>
       <rect x="176" y="58" width="13" height="118" rx="6.5" fill={m.metal} stroke={m.edge} />
@@ -66,7 +102,7 @@ export function SereneStudyIllustration(props: IllustrationProps) {
       <rect x="76" y="55" width="52" height="8" rx="4" className="art-heading" />
       {[86, 115, 144].map((y, i) => <g key={y}><rect x="76" y={y - 7} width="15" height="15" rx="5" fill={m.mint} opacity=".35" /><Checkmark x={83} y={y} size={.34} /><path d={`M103 ${y}H${i === 2 ? 134 : 152}`} className="art-writing" /></g>)}
     </Panel></g>
-    <g className="art-detail" filter={m.shadow}><circle cx="178" cy="169" r="31" fill={m.mint} stroke={m.edge} strokeWidth="1.5" /><path d="M153 161A26 26 0 0 1 188 146" className="art-specular" /><Checkmark x={178} y={169} size={1.1} /></g>
+    <g className="art-detail" filter={m.shadow}><circle cx="178" cy="169" r="31" fill={m.mint} stroke={m.edge} strokeWidth="1.5" /><path d="M153 161A26 26 0 0 1 188 146" className="art-specular" /><Checkmark x={178} y={169} size={1.1} /><Leaf m={m} x={196} y={140} rotate={-40} /></g>
   </>}</Studio>;
 }
 
@@ -79,7 +115,7 @@ export function ClassroomWelcomeIllustration(props: IllustrationProps) {
       <circle cx="150" cy="119" r="13" fill={m.mint} /><path d="M125 160C125 133 175 133 175 160Q175 166 169 166H131Q125 166 125 160Z" fill={m.mint} />
       <path d="M78 111Q84 106 91 109M141 111Q147 106 154 109" className="art-specular" />
     </Panel></g>
-    <g className="art-detail" filter={m.shadow}><circle cx="187" cy="63" r="23" fill={m.paper} stroke={m.edge} strokeWidth="1.5" /><path d="M187 53V73M177 63H197" className="art-accent-line" /></g>
+    <g className="art-detail" filter={m.shadow}><circle cx="187" cy="63" r="23" fill={m.paper} stroke={m.edge} strokeWidth="1.5" /><path d="M187 53V73M177 63H197" className="art-accent-line" /><Leaf m={m} x={198} y={44} rotate={-30} /></g>
   </>}</Studio>;
 }
 

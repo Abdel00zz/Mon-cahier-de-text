@@ -42,7 +42,7 @@ const THEME_OPTIONS: ThemeOption[] = [
     icon: Moon,
     labelKey: 'settings.appearance.themeDark',
     descKey: 'settings.appearance.themeDarkDesc',
-    tint: 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400',
+    tint: 'bg-primary/15 border-primary/30 text-primary',
   },
   {
     id: 'system',

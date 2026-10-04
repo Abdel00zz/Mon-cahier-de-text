@@ -467,14 +467,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Book}
                 label={tc('manageLessons.type.chapter')}
 
-                colorClass="text-indigo-600 dark:text-indigo-400"
+                colorClass="text-primary"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
                 label={t('addContent.section')}
 
-                colorClass="text-violet-600 dark:text-violet-400"
+                colorClass="text-emerald-700 dark:text-emerald-300"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip={t('addContent.sectionTooltip')}

@@ -8,17 +8,17 @@ import type { CSSProperties } from 'react';
  * ────────────────────────────────────────────────────────────────────────── */
 
 const DASHBOARD_CANVAS = {
-    /** Neutres indigo et menthe : les notes colorées gardent la priorité. */
+    /** Neutres teintés pistache : les notes colorées gardent la priorité. */
     colors: {
-        mint: '#f3f8f5',
-        rose: '#f7f7fb',
-        sky: '#f2f4fc',
+        mint: '#f2f7ea',
+        rose: '#f7f8f1',
+        sky: '#eff5ee',
     },
     /** Mode sombre : versions étagées profondes et désaturées */
     darkColors: {
-        mint: '#171e21',
-        rose: '#191b2b',
-        sky: '#1b2032',
+        mint: '#141a13',
+        rose: '#161a14',
+        sky: '#18201a',
     },
 } as const;
 

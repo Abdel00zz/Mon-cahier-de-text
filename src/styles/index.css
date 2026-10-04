@@ -324,45 +324,46 @@ html[lang="ar"] .keep-class-title {
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Learning palette: Quizlet-inspired indigo actions, fresh green successes,
-       Keep-inspired pastel notes. Saturation stays on actions and class cards. */
-    --background: 240 33% 97.6%;
-    --foreground: 235 28% 19%;
-    --card: 240 33% 99%;
-    --card-foreground: 235 28% 19%;
-    --popover: 240 33% 99%;
-    --popover-foreground: 235 28% 19%;
-    --primary: 234 100% 63%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 238 50% 95%;
-    --secondary-foreground: 235 28% 24%;
-    --muted: 240 22% 95%;
-    --muted-foreground: 236 12% 39%;
-    --accent: 238 90% 96%;
-    --accent-foreground: 235 75% 40%;
-    --border: 238 20% 86%;
-    --input: 240 24% 97%;
-    --ring: 234 100% 63%;
+    /* Pistachio palette: warm cream paper, forest ink, a modern pistachio
+       accent (#547D31 on actions, AA 4.6:1 with light text). Neutrals carry a
+       1–5 % pistachio tint; success stays emerald so it never reads as brand. */
+    --background: 68 33% 96%;      /* #F7F8F1 */
+    --foreground: 100 18% 15%;     /* forest ink, never pure black */
+    --card: 70 40% 99%;
+    --card-foreground: 100 18% 15%;
+    --popover: 70 40% 99%;
+    --popover-foreground: 100 18% 15%;
+    --primary: 92 44% 34%;         /* #547D31 pistache profond */
+    --primary-foreground: 70 40% 98%;
+    --secondary: 85 32% 92%;
+    --secondary-foreground: 100 18% 20%;
+    --muted: 80 20% 93%;
+    --muted-foreground: 95 8% 35%;
+    --accent: 88 48% 92%;
+    --accent-foreground: 95 48% 24%;
+    --border: 85 16% 84%;
+    --input: 75 25% 97%;
+    --ring: 92 44% 40%;
     --destructive: 0 68% 42%; /* Deep red keeps light action labels readable through hover. */
     --destructive-foreground: 0 0% 98%;
-    --success: 99 80% 27%;
+    --success: 152 62% 28%;
     --warning: 38 92% 50%;
-    --success-strong: 99 80% 25%;
+    --success-strong: 152 62% 25%;
     --warning-strong: 38 92% 30%;
     --destructive-strong: 0 68% 40%;
     --alert: 0 78% 56%;
     --alert-strong: 0 74% 42%;
-    --scheduled: 226 100% 96.5%; /* #EDF2FE (Bleu indigo de sélection Sketch macOS) */
-    --scheduled-foreground: 226 80% 36%; /* #1E40AF */
-    --badge-bg: 226 100% 96.5%; /* #EDF2FE */
-    --badge-border: 226 80% 88%; /* #BFDBFE */
-    --badge-text: 226 80% 36%; /* #1E40AF */
-    --dock-shadow: 0 10px 30px rgba(33, 33, 35, 0.06);
+    --scheduled: 88 55% 93%;       /* pistache très clair */
+    --scheduled-foreground: 95 50% 25%;
+    --badge-bg: 88 55% 93%;
+    --badge-border: 88 35% 80%;
+    --badge-text: 95 50% 25%;
+    --dock-shadow: 0 10px 30px rgba(38, 48, 28, 0.07);
     --chart-1: 42.5 100% 49.6%;
-    --chart-2: 226 80% 55%;
-    --chart-3: 99 80% 39%;
+    --chart-2: 92 44% 42%;
+    --chart-3: 152 55% 36%;
     --chart-4: 199 89% 48%;
-    --chart-5: 262 83% 58%;
+    --chart-5: 24 80% 55%;
 
     --radius-sm: 6px;
     --radius-md: 8px;
@@ -376,44 +377,45 @@ html[lang="ar"] .keep-class-title {
 
   .dark {
     color-scheme: only dark;
-    /* Night palette: ink-blue layers and softer indigo, never a color inversion. */
-    --background: 235 25% 11%;
-    --foreground: 240 32% 94%;
-    --card: 235 23% 16%;
-    --card-foreground: 240 32% 94%;
-    --popover: 235 23% 18%;
-    --popover-foreground: 240 32% 94%;
-    --primary: 234 100% 80%;
-    --primary-foreground: 235 40% 14%;
-    --secondary: 237 24% 23%;
-    --secondary-foreground: 240 32% 94%;
-    --muted: 235 20% 22%;
-    --muted-foreground: 236 18% 73%;
-    --accent: 237 34% 25%;
-    --accent-foreground: 234 100% 85%;
-    --border: 235 19% 29%;
-    --input: 235 20% 22%;
-    --ring: 234 100% 80%;
+    /* Night palette: forest-night layers (cards lighter than the ground),
+       softened text and a desaturated pistachio; never a color inversion. */
+    --background: 100 14% 9%;      /* #161A14 */
+    --foreground: 80 20% 92%;
+    --card: 100 12% 13%;
+    --card-foreground: 80 20% 92%;
+    --popover: 100 12% 15%;
+    --popover-foreground: 80 20% 92%;
+    --primary: 88 42% 66%;         /* pistache adouci */
+    --primary-foreground: 100 35% 11%;
+    --secondary: 100 10% 19%;
+    --secondary-foreground: 80 20% 92%;
+    --muted: 100 9% 18%;
+    --muted-foreground: 85 10% 70%;
+    --accent: 95 18% 21%;
+    --accent-foreground: 88 50% 78%;
+    --border: 100 9% 25%;
+    --input: 100 9% 18%;
+    --ring: 88 42% 66%;
     --destructive: 0 62% 70%; /* Soft red with dark ink on dark-theme actions. */
     --destructive-foreground: 0 48% 12%;
-    --success: 99 65% 66%;
+    --success: 152 45% 62%;
     --warning: 38 92% 50%;
-    --success-strong: 99 65% 70%;
+    --success-strong: 152 45% 66%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 62% 72%;
     --alert: 0 72% 62%;
     --alert-strong: 0 84% 74%;
-    --scheduled: 226 50% 20%; /* Sélection indigo sombre Sketch */
-    --scheduled-foreground: 226 100% 88%;
-    --badge-bg: 226 50% 20%;
-    --badge-border: 226 50% 30%;
-    --badge-text: 226 100% 85%;
-    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+    --scheduled: 95 28% 18%;
+    --scheduled-foreground: 88 55% 82%;
+    --badge-bg: 95 28% 18%;
+    --badge-border: 95 22% 28%;
+    --badge-text: 88 55% 80%;
+    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
     --chart-1: 42.5 100% 50%;
-    --chart-2: 226 80% 65%;
-    --chart-3: 99 65% 60%;
+    --chart-2: 88 42% 62%;
+    --chart-3: 152 45% 55%;
     --chart-4: 199 89% 58%;
-    --chart-5: 262 83% 58%;
+    --chart-5: 24 80% 62%;
   }
 
   * {

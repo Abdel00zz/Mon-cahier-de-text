@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4255FF</color>
-    <color name="colorPrimaryDark">#273395</color>
-    <color name="colorAccent">#4255FF</color>
+    <!-- Pistache moderne : accent des actions, aligné sur --primary (92 44% 34%). -->
+    <color name="colorPrimary">#547D31</color>
+    <color name="colorPrimaryDark">#36521E</color>
+    <color name="colorAccent">#547D31</color>
 </resources>
