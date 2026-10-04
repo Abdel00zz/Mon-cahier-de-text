@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
-import { ArrowLeft, ArrowRight, BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
+import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
 import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
 import './authMotion.css';
 
@@ -331,7 +331,6 @@ export function RegistrationOnboarding({
             className="auth-action min-h-12 w-full px-5 py-3 sm:w-auto"
           >
             {ar ? "متابعة التسجيل" : "Continuer l’inscription"}
-            {ar ? <ArrowLeft size={19} /> : <ArrowRight size={19} />}
           </Button>
         </div>
     </main>

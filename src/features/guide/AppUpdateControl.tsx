@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Download, RefreshCw, Check } from '@/components/ui/icons';
 import { NativeUpdates, supportsNativeUpdates, canRestartForUpdate, type UpdateResult } from '@/platform/nativeUpdates';
-import { startSafePwaAction } from '@/pwa/safeUpdate';
-import { webUpdates } from '@/pwa/updateControl';
+import { startSafePwaAction } from '@/platform/safeUpdate';
+import { webUpdates } from '@/platform/appUpdates';
 import { toast } from 'sonner';
 
 let cancelInstall: (() => void) | undefined;

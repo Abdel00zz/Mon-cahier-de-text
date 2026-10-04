@@ -8,7 +8,7 @@ Le système comporte trois couches qui ne doivent pas être confondues :
 | --- | --- | --- | --- |
 | Alerte dans l’application | `useNotificationFeed` + préférences locales | Non | `notificationSettings.enabled` |
 | Rappel local de séance | `useSessionAlerts` + `setTimeout` + Service Worker | Seulement tant que la page reste vivante (ou reprend rapidement) | appareil courant |
-| Push serveur | `/api/notify` + cron Vercel + Web Push | Oui, après abonnement valide | abonnement Redis |
+| Push serveur (APK) | `/api/notify` (routes natives) + FCM HTTP v1 | Oui, appareil inscrit | `push:native-owners`, `push:native:<téléphone>` |
 
 La permission du navigateur, l’abonnement présent dans `PushManager` et
 l’enregistrement du endpoint côté serveur sont trois états distincts. L’écran
@@ -18,19 +18,25 @@ redemander la permission.
 ## Flux d’activation
 
 1. L’enseignant appuie explicitement sur « Activer les rappels ».
-2. Le navigateur demande la permission système (une seule fois).
-3. Le Service Worker crée ou réutilise l’abonnement Push.
-4. Le client envoie le endpoint et ses clés à `POST /api/notify`.
-5. Redis réserve atomiquement l’endpoint dans `push:endpoint-owners`, puis le
-   rattache au téléphone courant (maximum cinq appareils).
-6. Le client ne marque `pushEnabled` que lorsque les trois états sont positifs.
+2. Android demande la permission système (une seule fois).
+3. Le client enregistre l’appareil auprès de `POST /api/notify` (action native)
+   avec son jeton FCM et un identifiant d’installation.
+4. Firestore conserve l’association appareil ↔ téléphone (maximum cinq
+   appareils) ; `push:native-owners` en garde l’index.
+5. Le client ne marque `pushEnabled` que lorsque la permission et
+   l’enregistrement sont confirmés.
 
-À la désactivation, l’abonnement local est retiré en premier pour couper
-immédiatement les rappels de l’appareil. La suppression serveur est tentée
-ensuite ; si le réseau est absent, l’interface signale que le serveur n’a pas
-confirmé le retrait et invite à réessayer avec le même compte.
+À la désactivation, l’appareil est retiré des deux côtés ; une coupure réseau
+laisse une entrée de nettoyage locale, rejouée à la prochaine ouverture.
 
-## Flux quotidien du cron
+Sur le web, il n’y a plus d’abonnement à créer : l’autorisation accordée suffit
+aux rappels locaux de la page ouverte (voir « Web Push retiré »).
+
+## Flux quotidien (tâche planifiée native — à venir)
+
+Ce qui suit décrit l’ancien cron Vercel, retiré avec le Web Push. La tâche
+planifiée native est en cours de reconstruction : elle doit alimenter le push
+Android sans dépendre d’une page web ouverte.
 
 Le cron `GET /api/notify` est protégé par `CRON_SECRET`. Il :
 
@@ -67,15 +73,13 @@ prudente : l’écart avec l’emploi du temps reste une estimation. Le rappel l
 affiche le délai réellement configuré, et une absence de date n’est pas présentée
 comme une preuve que la séance n’a pas eu lieu.
 
-Le cron respecte `notifyPrefs.enabled === false`. Les tags limitent l’empilement
-à l’écran, et le `topic` Web Push remplace les messages équivalents encore en
-attente de livraison. Les tests demandés depuis les clients récents ciblent
-uniquement leur propre abonnement. Aucun envoi réel n’est nécessaire aux tests
-automatisés.
+Les tags limitent l’empilement à l’écran. Les tests demandés depuis les clients
+récents ciblent uniquement leur propre appareil. Aucun envoi réel n’est
+nécessaire aux tests automatisés.
 
 ## Lecture Node / Edge / State / LangGraph
 
-- **Node/serveur** : authentification, Redis, VAPID et cron. Cette partie est
+- **Node/serveur** : authentification, Redis et FCM HTTP v1. Cette partie est
   durable et doit rester la seule source de vérité pour les notifications qui
   doivent arriver application fermée.
 - **Edge/Service Worker** : réception du Push, affichage système et clic. Le
@@ -125,7 +129,7 @@ automatisés.
 ### Vérification sur les téléphones
 
 La réception native reste à tester sur appareils réels avec HTTPS et les clés
-VAPID du déploiement. Les simulations automatisées ne prouvent ni la livraison
+FCM du déploiement. Les simulations automatisées ne prouvent ni la livraison
 APNs/FCM ni une baisse mesurée de consommation de batterie.
 
 | Téléphone | Vérification native à effectuer |
@@ -155,6 +159,17 @@ les réglages de batterie du téléphone.
 5. Tester chaque changement sur Android Chrome, iOS/iPadOS PWA installée,
    navigateur de bureau, mode avion, multi-onglets et deux comptes utilisant
    successivement le même profil navigateur.
+
+Le rappel automatique quotidien dépend de la tâche planifiée native : il
+alimente le push Android sans intervention de la page web.
+
+## Web Push retiré
+
+Le push navigateur (VAPID, `push:subs`, `push:endpoint-owners`, cron Vercel) a
+été supprimé : seules les notifications de l’application Android passent par
+`/api/notify` (FCM HTTP v1). Sur le web, le fil de messages et le badge
+s’affichent à l’ouverture. Les anciennes entrées se purgent avec
+`npm run firebase:purge-webpush` (simulation), puis `-- --apply`.
 
 ## Références plateforme
 

@@ -40,9 +40,9 @@ export const PushActivationCard: React.FC<{
     t: Translate;
     supported?: boolean;
     iosNeedsInstall?: boolean;
-}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, onOpenSettings, t, supported = pushSupported(), iosNeedsInstall = isIOSDevice() && !isStandalone() }) => {
+}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, onOpenSettings, t, supported = pushSupported(), iosNeedsInstall = supported && isIOSDevice() && !isStandalone() }) => {
     const local = state.delivery === 'local';
-    const active = state.permission === 'granted' && state.subscribed && (local || state.serverRegistered === true);
+    const active = state.permission === 'granted' && (local ? state.subscribed : state.remoteAvailable === false);
     const blocked = state.permission === 'denied' && !active;
     const unavailable = !supported || iosNeedsInstall;
     const description = iosNeedsInstall ? t('notifications.pushIosInstall')
@@ -183,6 +183,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         permission: pushSupported() && typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
         subscribed: false,
         serverRegistered: null,
+        remoteAvailable: false,
     }));
     const settingsRef = useRef(settings);
     settingsRef.current = settings;
@@ -194,8 +195,10 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     }, [onChange]);
 
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
+    // Web : la livraison distante a été retirée, les rappels locaux sont actifs
+    // dès que l'autorisation est accordée. Android : l'état FCM fait foi.
     const stateIsActive = (state: PushNotificationState) =>
-        state.permission === 'granted' && state.subscribed && (state.delivery === 'local' || state.serverRegistered === true);
+        state.permission === 'granted' && (state.delivery === 'local' ? state.subscribed : state.remoteAvailable === false);
 
     useEffect(() => {
         const refresh = () => {
@@ -225,7 +228,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     const active = stateIsActive(state);
                     if (settingsRef.current.pushEnabled !== active) patch({ pushEnabled: active });
                 }
-                if (state.reason === 'serverStatusUnavailable' || state.reason === 'nativeUnavailable') {
+                if (state.reason === 'nativeUnavailable') {
                     setMessage({ text: t('notifications.statusCheckFailed'), tone: 'warning' });
                 }
             })

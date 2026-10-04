@@ -50,11 +50,11 @@ La grille `timetable` est la source de vérité de l’emploi du temps. Les `sch
 | `src/lib/`, `src/platform/` | Outils communs et intégration aux appareils |
 | `src/constants/`, `src/types.ts`, `src/i18n/` | Types, constantes, traductions et contexte de langue |
 | `src/admin/` | Interface d’administration, compilée séparément |
-| `src/pwa/`, `src/styles/` | Service worker, cycle de vie PWA et styles globaux |
+| `src/styles/` | Styles globaux : thème, jetons de design et animations |
 | `android/`, `capacitor.config.ts` | Application Android, ressources natives et plugins système |
 | `api/` | Fonctions serverless, authentification, Redis et push |
 | `server/` | Serveur local ; simulations des API dans `server/dev/` |
-| `build/` | Budget des bundles, plugins Vite et manifeste PWA |
+| `build/` | Budget des bundles et plugins Vite |
 | `tests/` | Suites de tests et leurs lanceurs |
 | `scripts/` | Validation, benchmarks, génération d’assets et aperçus de développement |
 | `public/` | Contenus officiels, calendrier, guide et icônes |
@@ -100,7 +100,7 @@ changements locaux, conflit de rebase (abandon propre, aucun marqueur, aucun sta
 
 ## Technologies
 
-React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, KaTeX, Vercel Functions, Upstash Redis, Workbox et Capacitor.
+React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, KaTeX, Vercel Functions, Upstash Redis et Capacitor.
 
 ## Sécurité et robustesse
 

@@ -1,7 +1,7 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { notificationTarget } from '../domain/notifications/notificationPresentation';
 import { readWorkspaceScope } from '../infrastructure/storage/accountWorkspace';
-import { startSafePwaAction } from '../pwa/safeUpdate';
+import { startSafePwaAction } from './safeUpdate';
 import { readThemeBackground } from './themeColor';
 
 const NativeShell = registerPlugin<{

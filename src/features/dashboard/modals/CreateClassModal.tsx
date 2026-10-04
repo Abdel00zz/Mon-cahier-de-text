@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, ArrowRight, Check, GraduationCap, Settings, Trash2, Sparkles } from '@/components/ui/icons';
+import { Check, GraduationCap, Settings, Trash2, Sparkles } from '@/components/ui/icons';
 import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
@@ -284,13 +284,13 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-11 items-center gap-2">
             {editingClass && onDelete && <Button type="button" variant="ghost" onClick={() => setConfirmDelete(true)} className="h-11 w-full rounded-xl px-4 text-destructive hover:bg-destructive/5 hover:text-destructive sm:w-auto"><Trash2 aria-hidden />{t('dashboard.delete')}</Button>}
             {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-11 w-full rounded-[12px] px-4 text-xs font-semibold sm:w-auto sm:text-sm">
-              <ArrowLeft className="h-4 w-4 shrink-0 rtl:rotate-180" />{copy.back}
+              {copy.back}
             </Button>}
           </div>}
           <div className="grid grid-cols-2 gap-2 sm:ms-auto sm:flex sm:items-center">
             <Button type="button" variant="outline" onClick={onClose} className="h-11 w-full rounded-xl border-border bg-background px-4 text-xs font-semibold shadow-xs sm:w-auto sm:text-sm">{copy.cancel}</Button>
-            {step === 'cycle' && <Button type="button" onClick={() => chooseCycle(cycle)} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}<ArrowRight className="h-4 w-4 shrink-0 rtl:rotate-180" /></Button>}
-            {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}<ArrowRight className="h-4 w-4 shrink-0 rtl:rotate-180" /></Button>}
+            {step === 'cycle' && <Button type="button" onClick={() => chooseCycle(cycle)} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}</Button>}
+            {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}</Button>}
             {(editingClass || step === 'details') && (
               <AnimatedSubmitButton
                 type="submit"

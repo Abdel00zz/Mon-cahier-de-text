@@ -142,8 +142,11 @@ test('un test de notification interrompu par un changement de compte n’est pas
   const entries = workspace(t);
   entries.set(`cdt_native_reminders_v1_${owner}`, 'true');
   const calls = t.mock.method(bridge, 'nativePromise', async (_plugin: string, method: string) => {
-    if (method === 'checkPermissions') return { display: 'granted' };
-    if (method === 'createChannel') entries.set(WORKSPACE_SCOPE_KEY, JSON.stringify({ owner: '0699999999', revision: 'b' }));
+    if (method === 'checkPermissions') {
+      // The lease is lost between the permission check and the send.
+      entries.set(WORKSPACE_SCOPE_KEY, JSON.stringify({ owner: '0699999999', revision: 'b' }));
+      return { display: 'granted' };
+    }
   });
   assert.equal(await showNativeNotification('Test', 'Rappel', 'test', '/#/notifications'), false);
   assert.equal(calls.mock.calls.some(call => call.arguments[1] === 'schedule'), false);
@@ -165,7 +168,7 @@ test('désactiver annule seulement les alarmes du cahier et réconcilie l’éta
   assert.equal(calls.mock.calls.filter(call => call.arguments[1] === 'cancel').length, 2);
 });
 
-test('activer planifie les rappels Android sans réveil forcé ni doublon au prochain rendu', async t => {
+test('activer planifie les rappels Android en veille profonde, sans doublon au prochain rendu', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-09-14T07:00:00Z') });
   const entries = workspace(t);
   entries.set(`cdt_native_reminders_v1_${owner}`, 'true');
@@ -178,7 +181,7 @@ test('activer planifie les rappels Android sans réveil forcé ni doublon au pro
   assert.equal(scheduled.notifications.length, 2);
   for (const item of scheduled.notifications) {
     assert.ok(Number.isInteger(item.id) && item.id < 2_147_483_647);
-    assert.equal(item.schedule.allowWhileIdle, false);
+    assert.equal(item.schedule.allowWhileIdle, true);
     assert.ok(item.schedule.at.getTime() > Date.now());
     assert.equal(item.smallIcon, 'ic_stat_notebook');
     assert.equal(item.extra.owner, owner);

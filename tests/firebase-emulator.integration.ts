@@ -4,8 +4,6 @@ import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertFails } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirestoreStore } from '../api/_lib/firestoreStore.js';
-import { subscribeFirestoreWebPush, unsubscribeFirestoreWebPush, reconcileFirestoreWebPush } from '../api/_lib/firestoreWebPush.js';
-import { pushEndpointField, type PushEntry } from '../api/_lib/webpush.js';
 import { initializeApp, deleteApp } from 'firebase-admin/app';
 import { initializeFirestore, Timestamp } from 'firebase-admin/firestore';
 import { randomBytes } from 'node:crypto';
@@ -201,25 +199,6 @@ test('Firestore preserves notebooks, settings, revisions, inbox and NX writes', 
   await store.set('nullable', null);
   assert.equal(await store.set('nullable', 'overwrite', { nx: true }), null);
   assert.equal((await store.db.doc('users/' + teacherUid(phone)).get()).data()?.role, 'teacher');
-});
-
-test('Firestore Web Push keeps parallel devices, reserves ownership, and protects new bindings from late cleanup', async () => {
-  const number = '0615557788';
-  await store.set(KEYS.user(number), {phone: number, nom: 'Push', prenom: 'QA'});
-  const normalize = (value: unknown): PushEntry => value && typeof value === 'object' && Array.isArray((value as PushEntry).subs) ? value as PushEntry : {subs: []};
-  const subscription = (id: string) => ({endpoint: `https://push.example.test/${id}`, keys: {p256dh: 'test-public-key', auth: 'test-auth-key'}});
-  await Promise.all(['one', 'two'].map(id => subscribeFirestoreWebPush(store, number, subscription(id), normalize)));
-  const attempted = (await store.hget<PushEntry>(KEYS.pushSubs, number))!.subs;
-  assert.equal(attempted.length, 2);
-  await subscribeFirestoreWebPush(store, number, subscription('one'), normalize);
-  await reconcileFirestoreWebPush(store, number, attempted, []);
-  const current = (await store.hget<PushEntry>(KEYS.pushSubs, number))!.subs;
-  assert.equal(current.length, 1); assert.equal(current[0].endpoint, subscription('one').endpoint);
-  assert.equal(await store.hget(KEYS.pushEndpointOwners, pushEndpointField(subscription('one').endpoint)), number);
-  await store.set(KEYS.user('other-web-qa'), {phone: 'other-web-qa', nom: 'Other', prenom: 'QA'});
-  await assert.rejects(subscribeFirestoreWebPush(store, 'other-web-qa', subscription('one'), normalize));
-  assert.equal(await unsubscribeFirestoreWebPush(store, number, subscription('one').endpoint, normalize), true);
-  assert.equal(await store.hget(KEYS.pushEndpointOwners, pushEndpointField(subscription('one').endpoint)), null);
 });
 
 test('Firestore admin/user circuits preserve imports, dates, acknowledgements and class tombstones', async () => {

@@ -170,19 +170,17 @@ Le référentiel administratif marocain utilisé par le profil et l’impression
 
 Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 
-1. **Notifications Web Push serveur (`api/notify.ts`, `src/pwa/sw.ts`)** :
-   - Déclenchées par le cron Vercel quotidien ou par un message de la direction.
-   - Délivrées par le système d'exploitation via le push service du navigateur (FCM, Apple Push Service, etc.).
-   - Fonctionnent **même lorsque l'application ou l'onglet est complètement fermé**.
+1. **Notifications natives Android (`@capacitor/local-notifications`, plugins `NativePush`/`NativeShell`)** :
+   - Seul canal capable de réveiller le téléphone, y compris application fermée.
+   - Contrat, canaux et planification décrits dans `docs/operations/notifications-natives.md`.
 
-2. **Rappels locaux de fin de séance (`src/hooks/useSessionAlerts.ts`, `src/infrastructure/push/push.ts`)** :
-   - Déclenchés par les timers JavaScript de la page active (1 minute avant la fin et 5 minutes après si le cahier n'est pas daté).
-   - Affichent un toast, émettent une vibration et affichent une notification système via `ServiceWorkerRegistration.showNotification()` si l'autorisation est accordée.
+2. **Notifications en cours de session (`src/hooks/useSessionAlerts.ts`, `src/infrastructure/push/push.ts`)** :
+   - Déclenchées par les timers JavaScript de la page active (1 minute avant la fin et 5 minutes après si le cahier n'est pas daté).
+   - Sur le Web, l'application n'enregistre aucun service worker : le fil de messages reste dans l'application (toast, vibration, badge) et aucun avis système hors application n'est promis.
    - **Limitation assumée** : lorsque l'application est **complètement fermée** (processus tué ou déchargé par le système d'exploitation mobile), les timers JavaScript ne tournent plus. L'interface documente honnêtement cette limitation au lieu de faire croire à une fiabilité impossible en pur Web/PWA standard.
 
 **Évolutions possibles pour réveiller le téléphone application fermée :**
-- **Option A (Web Push serveur planifié)** : Un worker Upstash QStash ou un cron serveur qui planifie les envois Push aux heures de fin de séance déduites de l'emploi du temps synchronisé.
-- **Option B (Notifications locales natives Capacitor)** : Utilisation du plugin natif `@capacitor/local-notifications` qui enregistre les réveils directement dans le système d'exploitation (`AlarmManager` sur Android, `UNUserNotificationCenter` sur iOS), garantissant la sonnerie même processus arrêté.
+- **Option retenue (Notifications locales natives Capacitor)** : le plugin natif `@capacitor/local-notifications` enregistre les réveils directement dans le système d'exploitation (`AlarmManager` sur Android, `UNUserNotificationCenter` sur iOS), garantissant la sonnerie même processus arrêté. C'est la seule voie retenue : le Web Push a été retiré du produit (`docs/operations/notifications-natives.md`).
 
 
 ## Performance
@@ -192,9 +190,9 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 - MathProvider partage la promesse de démarrage KaTeX entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
 - Aucun script de mesure tierce (analytics) n’est chargé : le premier affichage ne dépend d’aucun réseau externe.
 - Administration et application enseignant sont deux entrées séparées.
-- Workbox précache uniquement les ressources nécessaires.
+- Aucun service worker n'est enregistré : le préchargement se limite au découpage de chunks produit par Vite.
 - Le budget avertit au-delà de 320 kB par chunk non compressé.
-- Les dépendances directes correspondent aux imports réels ; Workbox est déclaré explicitement.
+- Les dépendances directes correspondent aux imports réels ; aucune dépendance de service worker n'est conservée.
 
 ## Qualité
 

@@ -1,43 +1,24 @@
 package ma.cahier.textes;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 /** One real, private inbox notification supplies launcher dots/counts without polling. */
 final class InboxNotifications {
-    static final String CHANNEL = "cahier-messages";
+    static final String CHANNEL = NotificationCenter.MESSAGES;
     static final int ID = 1_500_000_001;
     static SharedPreferences preferences(Context context) {
         return context.getSharedPreferences("cahier_push", Context.MODE_PRIVATE);
     }
 
+    /** Channel creation lives in {@link NotificationCenter}: nothing is created here. */
     static void channels(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        NotificationManager manager = context.getSystemService(NotificationManager.class);
-        if (manager == null) return;
-        NotificationChannel messages = new NotificationChannel(CHANNEL, "Messages · Mon cahier de textes", NotificationManager.IMPORTANCE_DEFAULT);
-        messages.setDescription("Messages non lus de l’administration");
-        messages.setShowBadge(true);
-        messages.setSound(null, null);
-        messages.enableVibration(false);
-        manager.createNotificationChannel(messages);
-        for (String id : new String[] { "cahier-reminders-quiet", "cahier-reminders-vibrate", "cahier-tests" }) {
-            NotificationChannel channel = new NotificationChannel(id,
-                id.equals("cahier-tests") ? "Tests" : "Rappels de séances", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setShowBadge(false);
-            channel.enableVibration(id.endsWith("vibrate"));
-            if (!id.endsWith("vibrate")) channel.setSound(null, null);
-            manager.createNotificationChannel(channel);
-        }
+        NotificationCenter.ensure(context);
     }
 
     static synchronized void clear(Context context) {
@@ -89,7 +70,7 @@ final class InboxNotifications {
             .setData(Uri.parse("cahier://notifications")).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(context, ID, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.ic_stat_notebook).setColor(Color.rgb(66, 85, 255))
+            .setSmallIcon(R.drawable.ic_stat_notebook).setColor(NotificationCenter.COLOR)
             .setContentTitle(title).setContentText(body).setStyle(new NotificationCompat.BigTextStyle().bigText(body))
             .setNumber(count).setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
             .setContentIntent(open).setAutoCancel(false).setOnlyAlertOnce(true)

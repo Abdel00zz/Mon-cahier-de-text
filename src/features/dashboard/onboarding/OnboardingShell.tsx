@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Check, ChevronLeft, ChevronRight, Loader2, Sun, Moon, Laptop } from '@/components/ui/icons';
+import { Check, Loader2, Sun, Moon, Laptop } from '@/components/ui/icons';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
 import { ONBOARDING_TOTAL_STEPS } from './types';
@@ -183,10 +183,6 @@ export function OnboardingShell({
               aria-label={copy.back}
               className="inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-card px-5 py-3 text-sm font-semibold text-foreground/80 shadow-sm hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
             >
-              <ChevronLeft
-                className="h-4 w-4 rtl:rotate-180"
-                aria-hidden="true"
-              />
               <span className="onboarding-back-label">{copy.back}</span>
             </button>
             <button
@@ -202,10 +198,6 @@ export function OnboardingShell({
                 />
               )}
               <span>{finishing ? copy.finishing : primaryLabel}</span>
-              <ChevronRight
-                className="h-4 w-4 shrink-0 rtl:rotate-180 stroke-[2.5]"
-                aria-hidden="true"
-              />
             </button>
           </footer>
         )}

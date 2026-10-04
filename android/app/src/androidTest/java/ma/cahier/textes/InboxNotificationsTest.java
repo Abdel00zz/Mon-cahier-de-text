@@ -53,7 +53,7 @@ public class InboxNotificationsTest {
         assertNotNull(inbox()); assertEquals(3, inbox().getNotification().number);
         assertEquals(InboxNotifications.CHANNEL, inbox().getNotification().getChannelId());
         assertTrue(manager.getNotificationChannel(InboxNotifications.CHANNEL).canShowBadge());
-        assertFalse(manager.getNotificationChannel("cahier-reminders-quiet").canShowBadge());
+        assertFalse(manager.getNotificationChannel("cahier-reminders").canShowBadge());
         assertFalse(manager.getNotificationChannel("cahier-tests").canShowBadge());
         assertEquals(android.app.Notification.VISIBILITY_PRIVATE, inbox().getNotification().visibility);
         manager.cancel(InboxNotifications.ID); settle();

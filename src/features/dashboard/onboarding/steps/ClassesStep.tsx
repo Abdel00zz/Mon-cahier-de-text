@@ -15,11 +15,6 @@ import {
   sanitizeGroupNumberInput,
 } from '@/domain/classes/classGroup';
 import { classCyclePolicy } from '../../modals/classCreationFlow';
-import {
-  ArrowRight,
-  ArrowLeft,
-  ChevronLeft,
-} from '@/components/ui/icons';
 import type { ClassInfo, Cycle } from '@/types';
 import type { ModalLang, OnboardingCopy } from '../types';
 
@@ -426,7 +421,6 @@ export const ClassesStep = memo<ClassesStepProps>(
               aria-label={copy.back}
               className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
-              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               <span className="onboarding-back-label">{copy.back}</span>
             </button>
           ) : (
@@ -452,11 +446,6 @@ export const ClassesStep = memo<ClassesStepProps>(
               className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md  active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
               <span>{isSubmitting ? copy.addingClass : isAr ? 'إنشاء قسمي' : 'Créer ma classe'}</span>
-              {isAr ? (
-                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 " />
-              ) : (
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 " />
-              )}
             </button>
           </div>
         </div>
