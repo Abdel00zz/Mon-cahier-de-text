@@ -1115,23 +1115,23 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
 }
 
 .artistic-cta-button {
-  background-color: #7033e3;
+  background-color: #718f3f;
   color: #ffffff !important;
   border-radius: 8px;
   font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(112, 51, 227, 0.32);
+  box-shadow: 0 4px 14px 0 rgba(113, 143, 63, 0.32);
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .artistic-cta-button:hover {
-  background-color: #5f27cb;
-  box-shadow: 0 6px 20px 0 rgba(112, 51, 227, 0.42);
+  background-color: #5f7c32;
+  box-shadow: 0 6px 20px 0 rgba(113, 143, 63, 0.42);
   transform: translateY(-1px);
 }
 
 .artistic-cta-button:active {
   transform: scale(0.96);
-  box-shadow: 0 2px 8px 0 rgba(112, 51, 227, 0.25);
+  box-shadow: 0 2px 8px 0 rgba(113, 143, 63, 0.25);
 }
 
 
