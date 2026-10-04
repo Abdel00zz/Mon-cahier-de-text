@@ -2,11 +2,23 @@
   "indexes": [],
   "fieldOverrides": [
     { "collectionGroup": "private", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "private", "fieldPath": "key", "indexes": [] },
     { "collectionGroup": "workspace", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "workspace", "fieldPath": "key", "indexes": [] },
+    { "collectionGroup": "workspace", "fieldPath": "parts", "indexes": [] },
     { "collectionGroup": "notebooks", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "notebooks", "fieldPath": "key", "indexes": [] },
+    { "collectionGroup": "notebooks", "fieldPath": "parts", "indexes": [] },
     { "collectionGroup": "parts", "fieldPath": "json", "indexes": [] },
     { "collectionGroup": "teacher_snapshots", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "teacher_snapshots", "fieldPath": "key", "indexes": [] },
+    { "collectionGroup": "teacher_snapshots", "fieldPath": "field", "indexes": [] },
     { "collectionGroup": "entries", "fieldPath": "json", "indexes": [] },
-    { "collectionGroup": "cloud_records", "fieldPath": "json", "indexes": [] }
+    { "collectionGroup": "entries", "fieldPath": "key", "indexes": [] },
+    { "collectionGroup": "entries", "fieldPath": "field", "indexes": [] },
+    { "collectionGroup": "cloud_records", "fieldPath": "json", "indexes": [] },
+    { "collectionGroup": "cloud_records", "fieldPath": "key", "indexes": [] },
+    { "collectionGroup": "cloud_records", "fieldPath": "parts", "indexes": [] },
+    { "collectionGroup": "cloud_records", "fieldPath": "expiresAt", "ttl": true, "indexes": [] }
   ]
 }
