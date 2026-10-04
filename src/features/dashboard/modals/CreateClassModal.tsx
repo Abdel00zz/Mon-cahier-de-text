@@ -99,7 +99,14 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = props => (
 const ClassFormSession: React.FC<CreateClassModalProps> = ({
   isOpen, onClose, onCreate, defaultCycle = 'lycee', teacherSubjects = EMPTY_SUBJECTS, teacherCycles = EMPTY_CYCLES, existingClasses = EMPTY_CLASSES, editingClass = null, onUpdate, onDelete,
 }) => {
-  const { locale, t } = useLocale();
+  const { locale, t, isRtl } = useLocale();
+  /*
+   * Sens de saisie des champs libres : ils suivent leur ÉCRITURE — un nom de
+   * classe ou une matière écrit en arabe commence à droite, même dans une
+   * interface latine — et le sens de l'interface quand ils sont vides (même
+   * règle que les champs de contenu, voir ContentFields).
+   */
+  const fieldDir = (text: string) => (text ? 'auto' : isRtl ? 'rtl' : 'ltr');
   const copy = COPY[locale] ?? COPY.fr;
   const [initial] = useState(() => initialClassDraft(teacherCycles, uniqueValues(teacherSubjects), defaultCycle, editingClass));
   const [cycle, setCycle] = useState<Cycle>(initial.cycle);
@@ -234,7 +241,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           </button>
         </div>
         {customMode ? (
-          <Input id="edit-class-level" value={customLevel} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-11 rounded-lg border border-border bg-background text-foreground text-sm" />
+          <Input id="edit-class-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-11 rounded-lg border border-border bg-background text-foreground text-sm" />
         ) : (
           <Select value={level} onValueChange={value => { setLevel(value); setLevelGroupKey(levelGroups.find(item => item.levels.includes(value))?.key ?? ''); }}>
             <SelectTrigger id="edit-class-level" className="!h-11 rounded-[8px] border-border bg-background text-sm"><SelectValue placeholder={copy.level} /></SelectTrigger>
@@ -252,7 +259,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           <div className="grid gap-1.5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center sm:gap-3">
             <label htmlFor="edit-class-subject" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>
             {customMode ? (
-              <Input id="edit-class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" />
+              <Input id="edit-class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" />
             ) : (
               <Select value={subject} onValueChange={setSubject}><SelectTrigger id="edit-class-subject" className="!h-11 rounded-[8px] border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-[12px]">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>
             )}
@@ -356,13 +363,13 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
           {step === 'level' && <section className="space-y-3">
             <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setLevelGroupKey(''); setGroup(''); }} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
-            {customMode ? <Input value={customLevel} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-2xl border border-border bg-background text-foreground px-4" autoFocus /> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
+            {customMode ? <Input value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-2xl border border-border bg-background text-foreground px-4" autoFocus /> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
           </section>}
 
           {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)} tone={keepToneForClass(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
           {step === 'details' && <section className="space-y-3"><div className="keep-surface p-4"><div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-start"><div><p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-1 text-lg font-medium tracking-tight text-foreground">{selectedClassLabel}</p><p id="group-help" className={cn('mt-1 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div><div className="min-w-0 self-start"><label htmlFor="class-group" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.group}</label><Input id="class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 w-full rounded-[12px] border border-border bg-background text-center text-sm font-medium text-foreground shadow-none focus:border-primary" /></div></div>
-            {showSubjectChoice && <div className="mt-3 border-t border-border/55 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-[8px] border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-[12px]">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}
+            {showSubjectChoice && <div className="mt-3 border-t border-border/55 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-[8px] border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-[12px]">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}
           </div></section>}
           </div>}
           {editConfiguration}

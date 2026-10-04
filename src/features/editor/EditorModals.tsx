@@ -127,7 +127,6 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             onApply={onApplySession}
             session={sessionEditor}
             getDateWarnings={getDateWarnings}
-            contentDirection={contentDirection}
           />
         );
       case 'addContent':

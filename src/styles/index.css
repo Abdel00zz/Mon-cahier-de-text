@@ -801,15 +801,15 @@ html[lang="ar"] .modal-header h2,
     --editor-description-padding: 8px;
   }
 
-  .editor-type-chapter { font-size: var(--editor-fs-chapter); --editor-lh: 1.25; line-height: var(--editor-lh); color: #2b6d73; }
+  .editor-type-chapter { font-size: var(--editor-fs-chapter); line-height: 1.25; color: #2b6d73; }
   .dark .editor-type-chapter { color: #91cec8; }
   
-  .editor-type-top { font-size: var(--editor-fs-top); --editor-lh: 1.3; line-height: var(--editor-lh); }
-  .editor-type-section { font-size: var(--editor-fs-section); --editor-lh: 1.3; line-height: var(--editor-lh); }
-  .editor-type-subsection { font-size: var(--editor-fs-subsection); --editor-lh: 1.35; line-height: var(--editor-lh); }
-  .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); --editor-lh: 1.35; line-height: var(--editor-lh); }
-  .editor-type-item-title { font-size: var(--editor-fs-item-title); --editor-lh: 1.5; line-height: var(--editor-lh); }
-  .editor-type-description { font-size: var(--editor-fs-description); --editor-lh: 1.6; line-height: var(--editor-lh); }
+  .editor-type-top { font-size: var(--editor-fs-top); line-height: 1.3; }
+  .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
+  .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
+  .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); line-height: 1.35; }
+  .editor-type-item-title { font-size: var(--editor-fs-item-title); line-height: 1.5; }
+  .editor-type-description { font-size: var(--editor-fs-description); line-height: 1.6; }
   .editor-type-page { font-size: var(--editor-fs-page); line-height: 1.25; }
   .editor-type-badge {
     font-size: var(--editor-fs-badge) !important;
@@ -836,7 +836,7 @@ html[lang="ar"] .modal-header h2,
 
   [data-editor-table][dir="rtl"] .editor-type-item-title,
   [data-editor-table][dir="rtl"] .editor-type-description {
-    --editor-lh: 1.5;
+    line-height: 1.5;
   }
 
   /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
@@ -875,57 +875,6 @@ html[lang="ar"] .modal-header h2,
   [data-editor-table] .editor-type-remark,
   [data-editor-table] .editor-type-table-side {
     overflow-wrap: anywhere;
-  }
-
-  /* ── Traits du cahier : UN TRAIT PAR LIGNE ÉCRITE ──────────────────────
-     Le pas n'est PAS deviné : c'est la hauteur de ligne réelle du bloc qui
-     écrit (son interligne, exposée en jeton), et la phase part de sa boîte de
-     contenu. Le trait tombe donc sous CHAQUE ligne écrite — titres repliés
-     sur deux lignes compris — quelle que soit la taille de texte choisie et
-     dans les deux écritures. Aucun motif posé « au hasard » sur la cellule.
-     La marge rouge du modèle est retirée : aucun filet vertical, comme
-     partout dans l'éditeur.
-     `--editor-paper-rule` est hérité, donc le passer à `transparent`
-     efface les traits d'un coup (une ligne visée reste un aplat franc). */
-  [data-editor-table] {
-    --editor-paper-rule: hsl(var(--border) / .72);
-  }
-
-  [data-editor-table] :is(
-    .editor-type-chapter,
-    .editor-type-top,
-    .editor-type-section,
-    .editor-type-subsection,
-    .editor-type-subsubsection,
-    .editor-type-item-title,
-    .editor-type-description
-  ) {
-    /* Le pas d'un bloc EST sa hauteur de ligne (taille de police × son
-       interligne) : le trait tombe donc sous CHAQUE ligne écrite, et il
-       suit la taille de texte choisie comme l'interligne de l'arabe. */
-    --text-rule-step: calc(1em * var(--editor-lh));
-    background-image: repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent calc(var(--text-rule-step) - 1px),
-      var(--editor-paper-rule) calc(var(--text-rule-step) - 1px),
-      var(--editor-paper-rule) var(--text-rule-step)
-    );
-    /* La phase part de la BOÎTE DE CONTENU : les marges internes (les
-       encadrés de description, les retraits) ne décalent donc rien. */
-    background-origin: content-box;
-    background-repeat: repeat-y;
-    /* Mesuré : avec les interlignes serrés des titres de structure (1,25 à
-       1,35), l'encre descend d'environ 1 px sous la boîte de ligne et le trait
-       frôlait la descendante. Ce décalage de 2 px remet chaque trait SOUS le
-       texte, sans changer le pas (donc sans dérive d'une ligne à l'autre). */
-    background-position: 0 2px;
-  }
-
-  /* Ligne visée ou en cours d'édition : aplat franc, le papier s'efface. */
-  [data-editor-table] [data-row-state~="selected"],
-  [data-editor-table] [data-row-state~="editing"] {
-    --editor-paper-rule: transparent;
   }
 
   @media (max-width: 639px) {
