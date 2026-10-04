@@ -220,7 +220,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setSelectedCycle(cycle)}
                       className={`touch-manipulation rounded-lg px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:text-sm ${
                         selectedCycle === cycle
-                          ? 'bg-[#718f3f] text-white shadow-xs font-bold'
+                          ? 'bg-[hsl(var(--primary))] text-white shadow-xs font-bold'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -248,7 +248,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                         onClick={() => setSelectedLevel(level)}
                         className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                           isSelected
-                            ? 'border-2 border-[#718f3f] bg-[#718f3f]/10 text-[#718f3f] font-bold shadow-xs dark:border-[#9bb968] dark:bg-[#718f3f]/20 dark:text-[#dceabf]'
+                            ? 'border-2 border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] font-bold shadow-xs dark:border-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/20 dark:text-[#dceabf]'
                             : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                         }`}
                       >
@@ -289,7 +289,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                           onClick={() => handleSelectPalier(group.key)}
                           className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                             isSelected
-                              ? 'border-2 border-[#718f3f] bg-[#718f3f]/10 text-[#718f3f] font-bold shadow-xs dark:border-[#9bb968] dark:bg-[#718f3f]/20 dark:text-[#dceabf]'
+                              ? 'border-2 border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] font-bold shadow-xs dark:border-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/20 dark:text-[#dceabf]'
                               : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                           }`}
                         >
@@ -322,7 +322,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                             onClick={() => setSelectedLevel(level)}
                             className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer sm:px-4 sm:py-2.5 sm:text-sm ${
                               isSelected
-                                ? 'border-2 border-[#718f3f] bg-[#718f3f]/15 text-[#718f3f] font-bold shadow-xs dark:border-[#9bb968] dark:bg-[#718f3f]/25 dark:text-[#dceabf]'
+                                ? 'border-2 border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/15 text-[hsl(var(--primary))] font-bold shadow-xs dark:border-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/25 dark:text-[#dceabf]'
                                 : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:text-foreground'
                             }`}
                           >
@@ -350,7 +350,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setGroupInput(num)}
                       className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 cursor-pointer ${
                         isSelected
-                          ? 'border-2 border-[#718f3f] bg-[#718f3f] text-white shadow-xs'
+                          ? 'border-2 border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-white shadow-xs'
                           : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted'
                       }`}
                     >
@@ -364,7 +364,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                   value={groupInput}
                   onChange={(e) => setGroupInput(sanitizeGroupNumberInput(e.target.value))}
                   aria-label={isAr ? 'رقم مخصص' : 'Numéro libre'}
-                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[#718f3f] focus:outline-none"
+                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[hsl(var(--primary))] focus:outline-none"
                 />
               </div>
             </div>
@@ -385,7 +385,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                         onClick={() => setSelectedSubject(subject)}
                         className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer sm:px-4 sm:text-sm ${
                           isSelected
-                            ? 'bg-[#718f3f] text-white font-bold shadow-xs border border-[#718f3f]'
+                            ? 'bg-[hsl(var(--primary))] text-white font-bold shadow-xs border border-[hsl(var(--primary))]'
                             : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400'
                         }`}
                       >
@@ -400,7 +400,7 @@ export const ClassesStep = memo<ClassesStepProps>(
 
           {/* Aperçu instantané Style Néo-Éditorial */}
           <div className="mt-5 text-center sm:mt-6">
-            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-[#718f3f]/30 bg-[#718f3f]/10 px-4 py-2 text-xs font-bold text-[#718f3f] dark:text-[#dceabf] sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm shadow-2xs">
+            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-[hsl(var(--primary))]/30 bg-[hsl(var(--primary))]/10 px-4 py-2 text-xs font-bold text-[hsl(var(--primary))] dark:text-[#dceabf] sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm shadow-2xs">
               <span className="truncate">{previewClassName}</span>
               <span className="text-neutral-400 dark:text-neutral-500">•</span>
               <span className="font-semibold text-foreground/80 truncate">
@@ -440,7 +440,7 @@ export const ClassesStep = memo<ClassesStepProps>(
               type="button"
               disabled={!isFormValid || isSubmitting}
               onClick={handleCreateClass}
-              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md shadow-[#718f3f]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md shadow-[hsl(var(--primary))]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
               <span>{isAr ? 'إنشاء هذا القسم والمتابعة' : 'Créer la classe et continuer'}</span>
               {isAr ? (

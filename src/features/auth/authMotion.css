@@ -1,5 +1,7 @@
-/* Onboarding: neutral surfaces and one accent, in both themes. */
+/* Onboarding: neutral surfaces and one pistachio accent, in both themes. */
 .onboarding-artisan-shell {
+  --onboarding-pistachio: var(--workspace-active-ink);
+  --onboarding-pistachio-soft: var(--workspace-active-fill);
   overflow-x: hidden;
   background: hsl(var(--background));
 }
@@ -70,15 +72,23 @@
   letter-spacing: -0.035em;
 }
 .onboarding-step {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
   padding-block: 0.75rem;
   border-bottom: 2px solid hsl(var(--border));
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
-  transition: color 180ms ease, border-color 180ms ease;
+  transition: color 180ms ease, border-color 180ms ease, transform 180ms var(--ease-spring-smooth);
 }
+.onboarding-step > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.onboarding-step:hover { transform: translateY(-1px); }
 .onboarding-step-mark {
   display: inline-flex;
   align-items: center;
