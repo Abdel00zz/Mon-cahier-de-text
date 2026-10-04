@@ -5,6 +5,7 @@ import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesCh
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { CLASS_STORAGE_KEY, DEFAULT_STARTER_CLASSES, readStoredClasses } from '../infrastructure/storage/localClassStorage';
 import { assignClassColors } from '../domain/classes/classColors';
+import { removeQuarantine } from '../infrastructure/storage/safeStorage';
 
 const DATA_PREFIX = 'classData_v1_';
 
@@ -102,6 +103,7 @@ export const useClassManager = () => {
         for (const prefix of [DATA_PREFIX, 'editJournal_v1_', 'printMeta_v1_', 'editor_actions_ignored_v1_']) {
             localStorage.removeItem(prefix + classId);
         }
+        removeQuarantine(classId);
     }, [persistClassesNow, workspaceIsActive]);
 
     const updateClass = useCallback((classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {

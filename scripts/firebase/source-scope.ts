@@ -5,6 +5,6 @@ export function isCahierRecord(key: string): boolean {
     || /^revision:account:\d{6,15}$/.test(key)
     || /^admin:(messages|inbox-clock|timetable-clock):\d{6,15}$/.test(key)
     || /^admin:(snapshots|calendar|official-events|timetable-clock)$/.test(key)
-    || /^push:(subs|endpoint-owners|native-owners)$/.test(key)
+    || /^push:native-owners$/.test(key)
     || /^push:native:\d{6,15}$/.test(key);
 }

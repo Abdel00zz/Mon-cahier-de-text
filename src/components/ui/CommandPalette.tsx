@@ -6,11 +6,11 @@ import {
   Sun,
   Moon,
   Settings,
-  HelpCircle,
+  CircleHelp,
   Calendar,
   ArrowRight,
   Command as CommandIcon,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { ClassInfo } from '@/types';
 
 interface CommandItem {
@@ -133,7 +133,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         title: 'Guide méthodologique',
         subtitle: 'Documentation pédagogique et fiches de prise en main',
         category: 'navigation',
-        icon: HelpCircle,
+        icon: CircleHelp,
         onSelect: () => {
           onOpenGuide();
           onClose();

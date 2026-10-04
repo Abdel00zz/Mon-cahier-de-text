@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Check, ChevronLeft, ChevronRight, Loader2 } from '@/components/ui/icons';
+import { Check, Loader2, Sun, Moon, Laptop } from '@/components/ui/icons';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
 import { ONBOARDING_TOTAL_STEPS } from './types';
@@ -57,7 +57,7 @@ export function OnboardingShell({
     <div
       dir={rtl ? 'rtl' : 'ltr'}
       lang={lang}
-      className="onboarding-keep onboarding-artisan-shell flex min-h-dvh flex-col bg-background text-foreground"
+      className="onboarding-keep onboarding-artisan-shell onboarding-studio flex min-h-dvh flex-col bg-background text-foreground"
     >
       <header className="onboarding-artisan-header sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-3">
@@ -71,7 +71,7 @@ export function OnboardingShell({
             />
             <span className="text-sm font-bold tracking-tight truncate">{copy.brand}</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <div
               className="flex gap-1"
               role="group"
@@ -93,6 +93,7 @@ export function OnboardingShell({
                 </button>
               ))}
             </div>
+            <div className="onboarding-theme-control">
             <label className="sr-only" htmlFor="onboarding-theme">
               {rtl ? 'المظهر' : 'Thème'}
             </label>
@@ -101,12 +102,14 @@ export function OnboardingShell({
               value={theme}
               disabled={finishing}
               onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-              className="keep-surface min-h-11 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="onboarding-theme-select"
             >
               <option value="light">{rtl ? 'فاتح' : 'Clair'}</option>
               <option value="dark">{rtl ? 'داكن' : 'Sombre'}</option>
               <option value="system">{rtl ? 'النظام' : 'Système'}</option>
             </select>
+            {theme === 'dark' ? <Moon size={20} /> : theme === 'light' ? <Sun size={20} /> : <Laptop size={20} />}
+            </div>
           </div>
         </div>
       </header>
@@ -116,7 +119,7 @@ export function OnboardingShell({
           (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
         }
       >
-        <div className="mb-4 flex items-center justify-between gap-3 text-sm text-muted-foreground sm:mb-6">
+        <div className="onboarding-progress-caption flex items-center justify-between gap-3 text-sm text-muted-foreground">
           <span className="font-medium">{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
             type="button"
@@ -129,7 +132,7 @@ export function OnboardingShell({
         </div>
         <ol
           aria-label={copy.step(step, ONBOARDING_TOTAL_STEPS)}
-          className="onboarding-stepper mb-6 grid grid-cols-4 gap-2 sm:mb-8"
+          className="onboarding-stepper grid grid-cols-4 gap-2"
         >
           {stepLabels.map((label, index) => (
             <li
@@ -146,7 +149,9 @@ export function OnboardingShell({
             </li>
           ))}
         </ol>
-        <div className="onboarding-heading mb-4 flex items-center justify-between gap-3">
+        <div className="onboarding-heading flex items-center justify-between gap-3">
+        <div className="min-w-0">
+        <p className="onboarding-eyebrow">{rtl ? 'مساحتك التعليمية' : 'Votre espace pédagogique'}</p>
         <h1
           ref={headingRef}
           tabIndex={-1}
@@ -154,7 +159,8 @@ export function OnboardingShell({
         >
           {title}
         </h1>
-        <StepIllustration key={step} size={104} className="onboarding-heading-illustration" />
+        </div>
+        <StepIllustration key={step} size={144} className="onboarding-heading-illustration" />
         </div>
         {step === 4 && (
           <p className="mb-5 text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
@@ -169,18 +175,15 @@ export function OnboardingShell({
           {children}
         </fieldset>
         {step !== 3 && (
-          <footer className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 pb-6">
+          <footer className="onboarding-navigation" data-first-step={step === 1 || undefined}>
             <button
               type="button"
               disabled={step === 1 || finishing}
               onClick={onBack}
+              aria-label={copy.back}
               className="inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-card px-5 py-3 text-sm font-semibold text-foreground/80 shadow-sm hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
             >
-              <ChevronLeft
-                className="h-4 w-4 rtl:rotate-180"
-                aria-hidden="true"
-              />
-              {copy.back}
+              <span className="onboarding-back-label">{copy.back}</span>
             </button>
             <button
               type="button"
@@ -195,10 +198,6 @@ export function OnboardingShell({
                 />
               )}
               <span>{finishing ? copy.finishing : primaryLabel}</span>
-              <ChevronRight
-                className="h-4 w-4 shrink-0 rtl:rotate-180 stroke-[2.5]"
-                aria-hidden="true"
-              />
             </button>
           </footer>
         )}

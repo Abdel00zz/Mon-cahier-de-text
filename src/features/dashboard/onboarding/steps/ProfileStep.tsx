@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Input } from '@/components/ui/input';
-import { Check } from '@/components/ui/icons';
+import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
 import { ONBOARDING_CYCLES } from '../content';
 import type { Cycle } from '@/types';
 import type { OnboardingCopy } from '../types';
@@ -36,6 +36,7 @@ export const ProfileStep = memo<ProfileStepProps>(
       >
         {ONBOARDING_CYCLES.map(({ key }) => {
           const isSelected = cycles.includes(key);
+          const Icon = key === 'college' ? School : key === 'lycee' ? BookOpen : GraduationCap;
           return (
             <button
               key={key}
@@ -48,19 +49,22 @@ export const ProfileStep = memo<ProfileStepProps>(
                     : [...cycles, key],
                 )
               }
-              className={`keep-choice group relative flex min-h-[96px] sm:min-h-[140px] flex-col items-center justify-center rounded-xl border p-3.5 sm:p-5 text-center transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+              className={`onboarding-cycle-card keep-choice group relative rounded-xl border transition-all duration-200 cursor-pointer active:scale-[0.98] ${
                 isSelected
                   ? 'border-primary bg-primary/10'
                   : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted/60'
               }`}
             >
-              {isSelected && <Check className="absolute end-2 top-2 h-4 w-4" aria-hidden="true" />}
+              <span className="onboarding-cycle-symbol"><Icon size={24} /></span>
+              <span className="onboarding-cycle-copy">
               <span className="block text-sm font-bold text-foreground sm:text-lg leading-snug">
                 {copy.cycleLabels[key]}
               </span>
               <span className="mt-1 sm:mt-2 block text-xs leading-relaxed text-muted-foreground sm:text-[13px] max-w-[230px]">
                 {copy.cycleDescriptions[key]}
               </span>
+              </span>
+              <span className="onboarding-cycle-check" aria-hidden="true">{isSelected && <Check size={15} />}</span>
             </button>
           );
         })}

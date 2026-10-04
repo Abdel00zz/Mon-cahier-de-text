@@ -6,21 +6,16 @@ const isIOSDevice = (): boolean => {
 };
 
 /**
- * Ajustements de plateforme qui ne peuvent pas être exprimés uniquement en
- * CSS : iPadOS en mode bureau, hauteur réellement visible avec le clavier et
- * mode d'installation sur l'écran d'accueil.
+ * Ajustements de plateforme qui ne peuvent pas être exprimés uniquement en CSS :
+ * hauteur réellement visible lorsque le clavier virtuel s'ouvre, plateforme
+ * détectée, et état « clavier ouvert » pour les barres et les feuilles modales.
+ *
+ * Ce module a remplacé `applePlatform.ts` : le mode d'installation PWA
+ * (`display-mode`, `data-standalone`) est parti avec l'application installable.
  */
-export const initApplePlatform = (): (() => void) => {
+export const initAppViewport = (): (() => void) => {
     const root = document.documentElement;
-    const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
-    const displayMode = window.matchMedia('(display-mode: standalone)');
-    const appleDevice = isIOSDevice();
-
-    root.dataset.platform = appleDevice ? 'ios' : 'web';
-
-    const updateDisplayMode = () => {
-        root.dataset.standalone = String(displayMode.matches || navigatorWithStandalone.standalone === true);
-    };
+    root.dataset.platform = isIOSDevice() ? 'ios' : 'web';
 
     let viewportFrame: number | null = null;
     const applyViewport = () => {
@@ -42,16 +37,13 @@ export const initApplePlatform = (): (() => void) => {
         if (viewportFrame === null) viewportFrame = window.requestAnimationFrame(applyViewport);
     };
 
-    updateDisplayMode();
     applyViewport();
-    displayMode.addEventListener?.('change', updateDisplayMode);
     window.visualViewport?.addEventListener('resize', updateViewport);
     window.visualViewport?.addEventListener('scroll', updateViewport);
     window.addEventListener('orientationchange', updateViewport);
     window.addEventListener('resize', updateViewport);
 
     return () => {
-        displayMode.removeEventListener?.('change', updateDisplayMode);
         window.visualViewport?.removeEventListener('resize', updateViewport);
         window.visualViewport?.removeEventListener('scroll', updateViewport);
         window.removeEventListener('orientationchange', updateViewport);

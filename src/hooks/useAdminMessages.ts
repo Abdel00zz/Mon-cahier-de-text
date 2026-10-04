@@ -69,16 +69,10 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
             interval: 60_000, onInactive: () => refreshController.current?.abort(),
         });
 
-        const onServiceWorkerMessage = (event: MessageEvent<unknown>) => {
-            const data = event.data as { type?: unknown } | null;
-            if (data?.type === 'admin-message') void refresh().catch(() => undefined);
-        };
-        navigator.serviceWorker?.addEventListener('message', onServiceWorkerMessage);
         const onNativeMessage = () => { void refresh().catch(() => {}); };
         window.addEventListener('admin-message', onNativeMessage);
 
         return () => {
-            navigator.serviceWorker?.removeEventListener('message', onServiceWorkerMessage);
             window.removeEventListener('admin-message', onNativeMessage);
             stopPolling();
             refreshController.current?.abort();

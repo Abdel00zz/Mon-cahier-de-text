@@ -13,9 +13,4 @@ export function writeNotificationVibration(enabled: boolean): Promise<void> {
   return pendingWrite;
 }
 
-export async function readNotificationVibration(): Promise<boolean> {
-  try {
-    const response = await (await caches.open(CACHE)).match(KEY);
-    return response ? (await response.json()).vibration === true : false;
-  } catch { return false; }
-}
+/** Device-local preference shared with the service worker, including offline. */

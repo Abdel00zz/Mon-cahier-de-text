@@ -6,7 +6,6 @@ Le projet est prepare pour un deploiement Vercel avec :
 
 - build Vite optimise vers `dist`
 - assets caches longtemps par Vercel
-- endpoint serverless `/api/send-email` pour Resend
 - secrets gardes cote serveur
 - authentification enseignant et administration par cookies securises
 - synchronisation persistante dans Upstash Redis
@@ -21,19 +20,10 @@ ADMIN_SECRET=un-code-administrateur-d-au-moins-6-caracteres
 CRON_SECRET=une-valeur-aleatoire-privee
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
-RESEND_API_KEY=...
-RESEND_FROM_EMAIL=Cahier <notifications@votre-domaine.com>
-RESEND_DEFAULT_TO_EMAIL=admin@votre-domaine.com
-VAPID_PRIVATE_KEY=...
-VAPID_PUBLIC_KEY=...
-VAPID_SUBJECT=mailto:admin@votre-domaine.com
-VITE_VAPID_PUBLIC_KEY=...
 ```
 
 Configurez-les au minimum pour l'environnement **Production**. Les apercus
 Vercel qui doivent utiliser le cloud ont besoin des memes variables.
-
-`RESEND_FROM_EMAIL` doit utiliser un domaine verifie dans Resend.
 
 Certaines integrations Vercel injectent `KV_REST_API_URL` et
 `KV_REST_API_TOKEN` a la place des deux variables `UPSTASH_*`. Le serveur
@@ -44,23 +34,13 @@ modification des variables.
 
 ## Envoi email
 
-Le navigateur ne contacte jamais Resend directement. Il appelle :
-
-```txt
-POST /api/send-email
-```
-
-Exemple de payload :
-
-```json
-{
-  "subject": "Notification cahier",
-  "text": "Message simple",
-  "to": "admin@votre-domaine.com"
-}
-```
-
-Si `to` est absent, l'API utilise `RESEND_DEFAULT_TO_EMAIL`.
+La route `POST /api/send-email` a ete **supprimee le 4 octobre 2026** : aucun
+écran ne l'appelait et elle restait joignable **sans authentification**, ce qui
+permettait d'envoyer des messages depuis le domaine du projet (phishing ou spam
+en son nom). L'application n'envoie plus d'email : le support passe par WhatsApp
+(`src/constants/support.ts`) et l'administration notifie les professeurs dans
+l'application (fil de messages et notifications natives). Les variables
+`RESEND_*` ne sont plus lues et peuvent etre retirees de Vercel.
 
 ## Commandes de verification
 

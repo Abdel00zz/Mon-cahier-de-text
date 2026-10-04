@@ -161,11 +161,12 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const prefix = toDisplayText(item.type).toUpperCase();
       const title = (toDisplayText(item.title) || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
       return (
-        <MathText source={title}>
-          <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
-            {title}
-          </div>
-        </MathText>
+        // Pas de MaybeKaTeX ici : ses enfants sont un arbre riche, il rendrait
+        // le titre tel quel. `HighlightedText` est la seule composition qui
+        // traduise les formules en KaTeX, sur papier comme à l'écran.
+        <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
+          <HighlightedText text={title} />
+        </div>
       );
     }
 
@@ -297,7 +298,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div className={`print-lesson-item ${lessonIndentClass}`}>
               <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
-              <span dir={textDirectionAttribute(item.title)} className="print-item-title">{item.title || ''}</span>
+              {/* Même composition que l'écran : un titre « Limite $x^2$ » ne
+                  doit jamais partir en TeX brut sur le papier. */}
+              <span dir={textDirectionAttribute(item.title)} className="print-item-title"><HighlightedText text={item.title} /></span>
               {item.page && <span className="print-item-page"> p. {item.page}</span>}
               {allowDescription && (
                 <div dir={textDirectionAttribute(item.description)} className="print-item-description">

@@ -4,9 +4,11 @@
 @import "../components/ui/modal-motion.css";
 @import "../components/ui/paper-controls.css";
 @import "../components/ui/action-tile.css";
+@import "../components/ui/icons.css";
 @import "../features/dashboard/classCards.css";
 @import "../features/dashboard/dashboardCanvas.css";
 @import "./mobile-performance.css";
+@import "./onboarding.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */

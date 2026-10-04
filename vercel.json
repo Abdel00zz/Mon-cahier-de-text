@@ -8,9 +8,6 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" }
   ],
-  "crons": [
-    { "path": "/api/notify", "schedule": "0 17 * * *" }
-  ],
   "headers": [
     {
       "source": "/native-release.json",
@@ -40,12 +37,6 @@
           "key": "Cache-Control",
           "value": "public, max-age=604800, stale-while-revalidate=86400"
         }
-      ]
-    },
-    {
-      "source": "/manifest.webmanifest",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     },
     {

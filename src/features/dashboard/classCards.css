@@ -115,8 +115,6 @@
    (Arabswell 3) qu'un Lato forcé ferait perdre. */
 :is(html[lang='fr'], html[lang='en']) :is(.class-card__status, .class-card__live) { font-family: var(--font-lato); }
 .class-card__clock { width: 13px; height: 13px; flex-shrink: 0; }
-.class-card__arrow { width: 16px; height: 16px; flex-shrink: 0; color: var(--class-accent); transition: transform 250ms var(--ease-spring); }
-.class-card[dir="rtl"] .class-card__arrow { transform: scaleX(-1); }
 /* Unboxed liquid lettering is reserved for the active class. */
 .class-card__live {
   display: inline-flex;
@@ -133,8 +131,6 @@
 @media (hover: hover) and (pointer: fine) {
   .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(245 248 252 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(40 48 58 / .15); }
   .class-card:hover .class-card__texture { opacity: .075; }
-  .class-card:hover .class-card__arrow { transform: translateX(3px); }
-  .class-card[dir="rtl"]:hover .class-card__arrow { transform: scaleX(-1) translateX(3px); }
 }
 .class-card:has(.class-card__open:active) { transform: scale(.988); }
 @media (max-width: 639px) {
@@ -147,6 +143,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .class-card, .class-card *, .class-card:hover, .class-card:has(.class-card__open:active) { transition: none; transform: none; }
-  .class-card:hover .class-card__arrow { transform: none; }
-  .class-card[dir="rtl"] .class-card__arrow, .class-card[dir="rtl"]:hover .class-card__arrow { transform: scaleX(-1); }
 }

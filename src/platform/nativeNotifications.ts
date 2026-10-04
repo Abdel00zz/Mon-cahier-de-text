@@ -51,17 +51,17 @@ export function reconcileNativeReminders(config: AppConfig, classes: ClassInfo[]
     if (obsolete.length) await LocalNotifications.cancel({ notifications: obsolete });
     if (!current()) return;
     if (plan.length) {
-      const vibration = config.notificationSettings?.sessionVibration === true;
-      const channelId = vibration ? 'cahier-reminders-vibrate' : 'cahier-reminders-quiet';
-      await LocalNotifications.createChannel({ id: channelId, name: 'Mon cahier de textes', importance: 3, vibration });
-      if (!current()) return;
+      // Channels belong to the native notification centre: this layer only supplies
+      // the plan, never a channel definition.
       const used = new Set<number>();
       await LocalNotifications.schedule({ notifications: plan.map(item => {
         let id = nativeNotificationId(item.key);
         while (used.has(id)) id++;
         used.add(id);
-        return { id, title: item.title, body: item.body, channelId, smallIcon: 'ic_stat_notebook',
-          schedule: { at: item.at, allowWhileIdle: false }, autoCancel: true,
+        return { id, title: item.title, body: item.body, channelId: 'cahier-reminders', smallIcon: 'ic_stat_notebook',
+          // allowWhileIdle: exact when the teacher granted exact alarms, otherwise
+          // setAndAllowWhileIdle, which still pierces Doze (see docs/operations/notifications-natives.md).
+          schedule: { at: item.at, allowWhileIdle: true }, autoCancel: true,
           extra: { url: item.url, owner, key: item.key } };
       }) });
     }
@@ -92,10 +92,9 @@ export async function showNativeNotification(title: string, body: string, key: s
   const owner = readWorkspaceScope()?.owner;
   const permission = await LocalNotifications.checkPermissions();
   if (permission.display !== 'granted' || !enabled() || !current() || !owner) return false;
-  await LocalNotifications.createChannel({ id: 'cahier-reminders-quiet', name: 'Mon cahier de textes', importance: 3, vibration: false });
   if (!current() || !enabled()) return false;
   await LocalNotifications.schedule({ notifications: [{ id: nativeNotificationId(key), title, body,
-    channelId: 'cahier-reminders-quiet', smallIcon: 'ic_stat_notebook', autoCancel: true,
+    channelId: 'cahier-reminders', smallIcon: 'ic_stat_notebook', autoCancel: true,
     extra: { url, owner } }] });
   return current();
 }

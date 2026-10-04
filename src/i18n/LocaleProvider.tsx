@@ -35,15 +35,8 @@ export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children
       : locale === 'en'
         ? 'My lesson notebook'
         : 'Mon cahier de textes';
-    const shortAppName = locale === 'ar'
-      ? 'دفتر نصوصي'
-      : locale === 'en'
-        ? 'My notebook'
-        : 'Mon cahier';
-
     document.title = appName;
     document.querySelector<HTMLMetaElement>('meta[name="application-name"]')?.setAttribute('content', appName);
-    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', shortAppName);
   }, [isRtl, locale, manageDocument]);
 
   const value = useMemo<LocaleContextValue>(() => ({

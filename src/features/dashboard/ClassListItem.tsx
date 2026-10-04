@@ -5,7 +5,7 @@ import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
-import { ChevronRight, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
+import { MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -123,7 +123,6 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         )}
                     </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
             </button>
             <div
                 role="group"

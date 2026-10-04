@@ -35,7 +35,7 @@ const EXACT_KEYS = new Set([
   'syncMeta_v1', 'settingsSyncMeta_v1', 'archives_v1_index', 'onboarding_lang_v1',
 ]);
 const PREFIXES = [
-  'classData_v1_', 'classDataConflict_v1_', 'editJournal_v1_', 'printMeta_v1_',
+  'classData_v1_', 'classDataConflict_v1_', 'classDataQuarantine_v1_', 'editJournal_v1_', 'printMeta_v1_',
   'archive_', 'assessmentSnooze_', 'latenessSnooze_', 'editor_actions_ignored_v1_',
 ];
 export const isWorkspaceKey = (key: string): boolean => EXACT_KEYS.has(key) || PREFIXES.some(prefix => key.startsWith(prefix));

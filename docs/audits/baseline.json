@@ -1,0 +1,117 @@
+{
+  "label": "baseline",
+  "measuredAt": "2026-10-04T11:44:27.024Z",
+  "version": "1.2.10",
+  "versionCode": 12,
+  "android": {
+    "minSdk": 23,
+    "targetSdk": 36,
+    "compileSdk": 36
+  },
+  "builds": [
+    {
+      "name": "web",
+      "buildMs": null,
+      "totalBytes": 7755914,
+      "fileCount": 200,
+      "jsChunks": 71,
+      "totals": {
+        "other": 73198,
+        "fonts": 877692,
+        "data": 1103261,
+        "js": 2377150,
+        "css": 363455,
+        "images": 2961158
+      },
+      "initialBytes": 1253183,
+      "initialFiles": 7,
+      "externalUrlsInIndex": [],
+      "largestJs": [
+        {
+          "file": "assets/math-BB0HV8RG.js",
+          "bytes": 263523
+        },
+        {
+          "file": "assets/index-B3bAohWF.js",
+          "bytes": 222755
+        },
+        {
+          "file": "assets/react-BUHxYmp7.js",
+          "bytes": 220329
+        },
+        {
+          "file": "assets/index.esm-DlHezboZ.js",
+          "bytes": 196447
+        },
+        {
+          "file": "assets/i18n-DzcUX41C.js",
+          "bytes": 190223
+        },
+        {
+          "file": "assets/main-DALX0PmJ.js",
+          "bytes": 175418
+        },
+        {
+          "file": "assets/ui-D5rZwgs_.js",
+          "bytes": 129147
+        },
+        {
+          "file": "assets/GuideModal-ClmMpGg8.js",
+          "bytes": 109464
+        }
+      ]
+    },
+    {
+      "name": "android",
+      "buildMs": null,
+      "totalBytes": 4875159,
+      "fileCount": 147,
+      "jsChunks": 66,
+      "totals": {
+        "fonts": 877692,
+        "data": 884418,
+        "js": 2249933,
+        "css": 363453,
+        "other": 66701,
+        "images": 432962
+      },
+      "initialBytes": 1247675,
+      "initialFiles": 5,
+      "externalUrlsInIndex": [],
+      "largestJs": [
+        {
+          "file": "assets/main-DJqwpNkE.js",
+          "bytes": 392666
+        },
+        {
+          "file": "assets/math-BB0HV8RG.js",
+          "bytes": 263523
+        },
+        {
+          "file": "assets/react-CGdqmk4y.js",
+          "bytes": 220329
+        },
+        {
+          "file": "assets/index.esm-DlHezboZ.js",
+          "bytes": 196447
+        },
+        {
+          "file": "assets/i18n-fXyp8WsR.js",
+          "bytes": 190223
+        },
+        {
+          "file": "assets/Editor-DAA0qGoB.js",
+          "bytes": 147477
+        },
+        {
+          "file": "assets/ui-Ddq8eDm_.js",
+          "bytes": 129147
+        },
+        {
+          "file": "assets/GuideModal-CzklepFJ.js",
+          "bytes": 111197
+        }
+      ]
+    }
+  ]
+}

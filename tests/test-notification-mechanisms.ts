@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import webpush from 'web-push';
 import { notificationPresentation, NOTIFICATION_BADGE, serializePushNotification } from '../src/domain/notifications/notificationPresentation';
-import { notificationDeliveryPolicy } from '../src/domain/notifications/notificationDelivery';
-import { collectCronCandidates } from '../api/notify';
 import type {
   ClassInfo,
   ClassSchedule,
@@ -23,7 +20,6 @@ import {
   computeTeacherSnapshot,
 } from '../src/domain/curriculum/progression';
 import { isSuccessfulTestResponse } from '../src/infrastructure/push/pushResponse';
-import { pushEndpointField, sendToEntry } from '../api/_lib/webpush.js';
 import { assertValidTeacherSnapshot } from '../api/_lib/validate.js';
 import { isHoliday, isVacation } from '../src/domain/calendar/calendar.js';
 
@@ -160,18 +156,6 @@ test('rappel ciblé : une classe ouvre son cahier, estimation prudente, aucun fa
   }
 });
 
-test('cron : désactivation respectée, ciblage unique, anti-spam et absences', () => {
-  const snapshot = computeTeacherSnapshot({ phone: '0612345678', nom: 'Test', prenom: 'Prof' }, [classInfo], [schedule], notificationSettings, () => [], undefined, '2025-09-08', 'fr');
-  const entry = { subs: [{ endpoint: 'https://push.example.test/a', keys: { auth: 'a'.repeat(20), p256dh: 'b'.repeat(20) } }] };
-  const candidates = (value = snapshot, push = entry) => collectCronCandidates({ [snapshot.phone]: value }, { [snapshot.phone]: push }, '2026-02-09', calendar());
-  assert.equal(candidates().length, 1);
-  assert.equal(candidates()[0].url, '/#/classe/class-a');
-  assert.equal(candidates()[0].locale, 'fr');
-  assert.equal(candidates({ ...snapshot, notifyPrefs: { ...snapshot.notifyPrefs!, enabled: false } }).length, 0);
-  assert.equal(candidates({ ...snapshot, absences: [{ debut: '2026-02-09', fin: '2026-02-10' }] }).length, 0);
-  assert.equal(candidates(snapshot, { ...entry, lastNotifiedAt: new Date().toISOString(), lastSeverity: 'critical' } as typeof entry)[0].wouldSend, false);
-});
-
 test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
   assert.equal(isSuccessfulTestResponse(true, { ok: false, sent: 0 }), false);
   assert.equal(isSuccessfulTestResponse(true, { ok: true, sent: 0 }), false);
@@ -179,25 +163,6 @@ test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
   assert.equal(isSuccessfulTestResponse(true, null), false);
   assert.equal(isSuccessfulTestResponse(false, { ok: true, sent: 1 }), false);
   assert.equal(isSuccessfulTestResponse(true, { ok: true, sent: 1 }), true);
-});
-
-test('transport Push : message borné, file regroupée, délai limité et abonnements morts nettoyés', async context => {
-  const calls: { body: string; options: webpush.RequestOptions }[] = [];
-  context.mock.method(webpush, 'sendNotification', async (sub: webpush.PushSubscription, body: string, options: webpush.RequestOptions) => {
-    calls.push({ body, options });
-    if (sub.endpoint.endsWith('dead')) throw Object.assign(new Error('gone'), { statusCode: 410 });
-    if (sub.endpoint.endsWith('retry')) throw Object.assign(new Error('timeout'), { statusCode: 503 });
-    return { statusCode: 201, headers: {}, body: '' };
-  });
-  const subs = ['ok', 'dead', 'retry'].map(id => ({ endpoint: `https://push.example.test/${id}`, keys: { auth: 'a', p256dh: 'b' } }));
-  const result = await sendToEntry({ subs }, { title: 'T'.repeat(200), body: 'نص '.repeat(2000), kind: 'test', tag: 'cdt-test', url: '/#/notifications' });
-  assert.equal(result.sent, 1);
-  assert.deepEqual(result.survivingSubs, [subs[0], subs[2]]);
-  assert.ok(Buffer.byteLength(calls[0].body) < 3900);
-  assert.equal(calls[0].options.TTL, 300);
-  assert.equal(calls[0].options.timeout, 10000);
-  assert.match(calls[0].options.topic!, /^[A-Za-z0-9_-]{32}$/);
-  assert.equal(calls[0].options.topic, calls[1].options.topic);
 });
 
 test('push déclaratif : secours Safari et format ancien identiques, navigation limitée, Unicode borné', () => {
@@ -213,14 +178,6 @@ test('push déclaratif : secours Safari et format ancien identiques, navigation 
   const untrusted = JSON.parse(serializePushNotification({ ...payload, url: 'https://external.test', body: '🧑🏽‍🏫'.repeat(1000), tag: 'ع'.repeat(1000) }));
   assert.equal(untrusted.url, '/#/notifications');
   assert.ok(Buffer.byteLength(JSON.stringify(untrusted)) < 3900);
-});
-
-test('push mobile : les rappels urgents expirent, les bilans quotidiens évitent les réveils prioritaires', () => {
-  assert.deepEqual(notificationDeliveryPolicy('session-reminder'), { TTL: 120, urgency: 'high' });
-  assert.deepEqual(notificationDeliveryPolicy('test'), { TTL: 300, urgency: 'high' });
-  assert.deepEqual(notificationDeliveryPolicy('missing-date'), { TTL: 900, urgency: 'normal' });
-  assert.deepEqual(notificationDeliveryPolicy('lateness'), { TTL: 86400, urgency: 'low' });
-  assert.equal(notificationDeliveryPolicy('admin').urgency, 'normal');
 });
 
 const classInfo: ClassInfo = {
@@ -311,12 +268,6 @@ test('snapshot : progression, emploi du temps et préférences sont projetés', 
     { weekday: 3, sessions: 1 },
   ]);
   assert.equal(snapshot.classes[0].sessionsPerWeek, 3);
-});
-
-test('endpoint Push : l’empreinte est stable et distincte', () => {
-  const endpoint = 'https://push.example.test/send/abc';
-  assert.equal(pushEndpointField(endpoint), pushEndpointField(endpoint));
-  assert.notEqual(pushEndpointField(endpoint), pushEndpointField(`${endpoint}/other`));
 });
 
 test('snapshot : une projection mal formée est rejetée à la frontière serveur', () => {

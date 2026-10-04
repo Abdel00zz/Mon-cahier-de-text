@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, Laptop, Check, Type, RotateCcw } from 'lucide-react';
+import { Sun, Moon, Laptop, Check, Type, Undo2 } from '@/components/ui/icons';
 import { AppConfig, AppTextSize, ThemeMode } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Button } from '@/components/ui/button';
@@ -94,7 +94,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             aria-label={t('settings.appearance.resetDefaults')}
             title={t('settings.appearance.resetDefaults')}
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            <Undo2 className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('settings.appearance.resetDefaults')}</span>
           </Button>
         </div>

@@ -1,4 +1,5 @@
 import { apiFetch } from '../../platform/nativeHttp';
+import { MAX_SYNC_EXPANDED_BYTES, MAX_SYNC_WIRE_BYTES, SYNC_ENCODING } from './syncProtocol';
 export const syncJsonBytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
 
 /** Transport partagé : délais bornés, erreurs typées et budgets en octets UTF-8. */
@@ -53,3 +54,34 @@ export const requestSyncJson = async <T>(
     options.signal?.removeEventListener('abort', abort);
   }
 };
+
+/** Large imported notebooks use the browser's native gzip stream, without a bundled codec. */
+export async function encodeSyncPayload(value: unknown): Promise<string> {
+  const json = JSON.stringify(value);
+  const bytes = new TextEncoder().encode(json);
+  if (bytes.byteLength <= MAX_SYNC_WIRE_BYTES) return json;
+  if (bytes.byteLength > MAX_SYNC_EXPANDED_BYTES) throw new SyncRequestError('Le cahier dépasse la capacité de synchronisation de 3 Mio. Les données restent sur cet appareil.', 413);
+  if (typeof CompressionStream === 'undefined') throw new SyncRequestError('Mettez à jour Android System WebView pour envoyer ce cahier volumineux. Les données restent sur cet appareil.', 413);
+  const compressed = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+  // Chunk conversion avoids the argument limit of String.fromCharCode on large buffers.
+  let binary = '';
+  for (let i = 0; i < compressed.length; i += 8192) binary += String.fromCharCode(...compressed.subarray(i, i + 8192));
+  const envelope = JSON.stringify({ encoding: SYNC_ENCODING, data: btoa(binary) });
+  if (new TextEncoder().encode(envelope).byteLength > MAX_SYNC_WIRE_BYTES) throw new SyncRequestError('Ce cahier reste trop volumineux après compression. Répartissez le contenu entre plusieurs cahiers ; la copie locale est conservée.', 413);
+  return envelope;
+}
+
+export async function requestSyncPush<T>(value: unknown, options: RequestInit): Promise<T> {
+  const bytes = syncJsonBytes(value);
+  // A pagehide request cannot wait for gzip or negotiate an upload. Keep it queued.
+  if (options.keepalive && bytes > 60_000) throw new SyncRequestError('Envoi repris à la prochaine ouverture.');
+  if (bytes > MAX_SYNC_WIRE_BYTES) {
+    const capabilities = await requestSyncJson<{ encoding?: string }>('/api/sync?scope=capabilities', {
+      headers: options.headers, credentials: options.credentials, signal: options.signal,
+    });
+    if (capabilities.encoding !== SYNC_ENCODING) throw new SyncRequestError('Le serveur doit être mis à jour pour synchroniser ce cahier volumineux. La copie locale est conservée.', 413);
+  }
+  const body = await encodeSyncPayload(value);
+  options.signal?.throwIfAborted();
+  return requestSyncJson<T>('/api/sync', { ...options, method: 'POST', body });
+}

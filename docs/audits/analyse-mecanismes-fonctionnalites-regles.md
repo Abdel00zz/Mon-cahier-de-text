@@ -16,7 +16,6 @@ L'application est une **PWA offline-first** pour enseignants marocains, organis�
 |---|---|---|
 | Application enseignant | Classes, cahiers, évaluations, paramètres | `src/app/main.tsx` / `src/app/App.tsx` (React 19 + Vite) |
 | Administration | Publication calendrier / bulletin / programmes | `admin.html` + `admin/` |
-| Service worker | Précache, Web Push, clic système | `src/pwa/sw.ts` (Workbox) |
 
 **Cinq principes structurants se dégagent du code :**
 

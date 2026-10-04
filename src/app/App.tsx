@@ -1,6 +1,4 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { startSafePwaAction } from '../pwa/safeUpdate';
-import { notificationTarget } from '../domain/notifications/notificationPresentation';
 import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
 import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkeleton';
@@ -170,19 +168,6 @@ const App: React.FC = () => {
   );
 
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
-
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-    let cancelNavigation: (() => void) | undefined;
-    const onNotification = (event: MessageEvent) => {
-      if (event.data?.type !== 'notification-open') return;
-      const route = notificationTarget(event.data.url);
-      cancelNavigation?.();
-      cancelNavigation = startSafePwaAction(() => { window.location.hash = route.slice(1); });
-    };
-    navigator.serviceWorker.addEventListener('message', onNotification);
-    return () => { cancelNavigation?.(); navigator.serviceWorker.removeEventListener('message', onNotification); };
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || authStatus !== 'authenticated') return;

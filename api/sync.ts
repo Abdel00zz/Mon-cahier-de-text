@@ -1,7 +1,9 @@
-import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
-import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
+import { assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
+import { decodeSyncPayload } from './_lib/syncPayload.js';
+import { MAX_SYNC_EXPANDED_BYTES, SYNC_ENCODING } from '../src/infrastructure/sync/syncProtocol.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../src/types.js';
@@ -91,9 +93,11 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
 };
 
 const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
-    const redis = await getRedis();
     const classId = getQueryParam(req, 'classId');
     const scope = getQueryParam(req, 'scope');
+    if (scope === 'capabilities') return res.status(200).json(process.env.CLOUD_PROVIDER === 'firestore'
+        ? { encoding: SYNC_ENCODING, maxExpandedBytes: MAX_SYNC_EXPANDED_BYTES } : {});
+    const redis = await getRedis();
 
     if (classId) {
         const blob = await redis.get<LessonsBlob>(KEYS.lessons(phone, classId));
@@ -117,8 +121,7 @@ const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
 };
 
 const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
-    assertBodySize(req.body);
-    const body = parseBody<SyncPushBody>(req.body);
+    const body = await decodeSyncPayload<SyncPushBody>(req.body, process.env.CLOUD_PROVIDER === 'firestore');
 
     const redis = await getRedis();
     const pipeline = await beginAccountWrite(redis, phone);
@@ -184,8 +187,14 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const adminLessonsUpdatedAt = { ...(existing.adminLessonsUpdatedAt ?? {}) };
     const acceptedLessons = lessons.filter(entry => {
         const watermark = adminLessonsUpdatedAt[entry.classId];
-        return !watermark || entry.updatedAt > watermark;
+        const remoteUpdatedAt = classMeta[entry.classId]?.updatedAt;
+        // A device reconnecting with old work must not replace a newer notebook.
+        // Compare instants, including legacy timestamps with timezone offsets.
+        return (!watermark || Date.parse(entry.updatedAt) > Date.parse(watermark))
+            && (!remoteUpdatedAt || Date.parse(entry.updatedAt) >= Date.parse(remoteUpdatedAt));
     });
+    const acceptedIds = new Set(acceptedLessons.map(entry => entry.classId));
+    const rejectedIds = new Set(lessons.filter(entry => !acceptedIds.has(entry.classId)).map(entry => entry.classId));
     for (const entry of acceptedLessons) {
         classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
         delete adminLessonsUpdatedAt[entry.classId];
@@ -243,7 +252,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         const incomingById = new Map(snapshot.classes.map(item => [item.id, item]));
         snapshot.classes = classes.flatMap(classInfo => {
             const previous = previousById.get(classInfo.id);
-            const entry = adminLessonsUpdatedAt[classInfo.id] && previous
+            const entry = rejectedIds.has(classInfo.id) || (adminLessonsUpdatedAt[classInfo.id] && previous)
                 ? previous : incomingById.get(classInfo.id) ?? previous;
             return entry ? [{ ...entry, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle }] : [];
         });

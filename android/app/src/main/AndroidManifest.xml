@@ -3,6 +3,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Opt-in exact alarms: the teacher grants them in the system settings and the
+         local-notifications plugin falls back to setAndAllowWhileIdle when refused.
+         USE_EXACT_ALARM is never declared (reserved for alarm/calendar apps by Play). -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="false"

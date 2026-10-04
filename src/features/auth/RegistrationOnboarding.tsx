@@ -27,6 +27,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
+import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
+import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
+import './authMotion.css';
 
 const CYCLES: Cycle[] = ["college", "lycee", "prepa"];
 const CYCLE_LABELS = {
@@ -103,20 +106,35 @@ export function RegistrationOnboarding({
   const invalidGroup = normalizeGroupNumber(group) === null;
   const groupLabel = ar ? "رقم الفوج" : "N° de groupe";
   const subjectLabel = ar ? "المادة الدراسية" : "Matière";
+  const guidance = !cycle ? (ar ? 'اختر السلك الذي تدرّس فيه' : 'Choisissez votre cycle d’enseignement')
+    : !level ? (ar ? 'اختر مستوى قسمك' : 'Choisissez le niveau de votre classe')
+    : !subject ? (ar ? 'اختر المادة الدراسية' : 'Choisissez votre matière')
+    : invalidGroup ? (ar ? 'أدخل رقم الفوج من 1 إلى 99' : 'Indiquez un groupe de 1 à 99')
+    : (ar ? 'قسمك جاهز للخطوة التالية' : 'Votre classe est prête pour la suite');
 
   return (
-    <main className="auth-view-enter mx-auto w-full max-w-2xl flex-1 px-6 py-5 sm:py-10">
+    <main className="registration-studio auth-view-enter mx-auto w-full max-w-2xl flex-1" dir={ar ? 'rtl' : 'ltr'}>
+      <ol className="registration-progress" aria-label={ar ? 'تقدّم الإعداد' : 'Progression de la préparation'}>
+        <li aria-current="step"><span>1</span>{ar ? 'قسمك' : 'Votre classe'}</li>
+        <li><span>2</span>{ar ? 'حسابك' : 'Votre compte'}</li>
+      </ol>
+      <div className="registration-hero">
+      <div>
+      <p className="onboarding-eyebrow">{ar ? 'بداية على مقاسك' : 'Un départ à votre image'}</p>
       <h1
         tabIndex={-1}
         className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
       >
-        {ar ? "لنبدأ بقسمك الأول." : "Commençons par votre première classe."}
+        {ar ? "دفترك يبدأ هنا." : "Votre cahier prend forme."}
       </h1>
-      <p className="mb-6 mt-3 max-w-xl text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
         {ar
-          ? "اختر السلك، المستوى والمادة. سيتم تخصيص دفتر نصوصك تلقائياً فور تأكيد حسابك."
-          : "Choisissez votre cycle, votre classe et votre matière. Vous créerez ensuite votre compte pour les conserver."}
+          ? "قسمك، مادتك، ودفتر جاهز للتخصيص. ستنشئ حسابك في الخطوة التالية."
+          : "Votre classe, votre matière, un cahier prêt à personnaliser. Le compte vient à l’étape suivante."}
       </p>
+      </div>
+      <NotebookOpeningIllustration size={168} />
+      </div>
       <div
         role="progressbar"
         aria-label={
@@ -130,7 +148,8 @@ export function RegistrationOnboarding({
         className="sr-only"
       />
       <form
-        className="overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-6"
+        id={id + '-form'}
+        className="registration-form"
         onSubmit={(event) => {
           event.preventDefault();
           if (prepared) onComplete(prepared);
@@ -144,8 +163,10 @@ export function RegistrationOnboarding({
             >
               {ar ? "1. السلك التعليمي" : "1. Cycle"}
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {CYCLES.map((value) => (
+            <div className="registration-cycle-grid">
+              {CYCLES.map((value) => {
+                const Icon = value === 'college' ? School : value === 'lycee' ? BookOpen : GraduationCap;
+                return (
                 <Chip
                   key={value}
                   active={cycle === value}
@@ -159,9 +180,11 @@ export function RegistrationOnboarding({
                     })
                   }
                 >
-                  {CYCLE_LABELS[locale][value]}
+                  <Icon size={23} />
+                  <span>{CYCLE_LABELS[locale][value]}</span>
+                  <span className="registration-cycle-check" aria-hidden="true">{cycle === value && <Check size={12} />}</span>
                 </Chip>
-              ))}
+              ); })}
             </div>
           </div>
           {hasBranch && (
@@ -293,16 +316,23 @@ export function RegistrationOnboarding({
             </div>
           )}
         </div>
-        <div className="mt-6 flex justify-end">
+        {prepared && <div className="registration-preview" role="status" aria-live="polite">
+          <BookOpen size={24} />
+          <div><p>{formatLocalizedClassDisplayName(prepared.className, locale)}</p><span>{formatLocalizedSubjectDisplayName(prepared.subject, locale)}</span></div>
+          <Check size={18} />
+        </div>}
+      </form>
+        <div className="registration-dock">
+          <p aria-live="polite">{guidance}</p>
           <Button
             type="submit"
+            form={id + '-form'}
             disabled={!prepared}
             className="auth-action min-h-12 w-full px-5 py-3 sm:w-auto"
           >
             {ar ? "متابعة التسجيل" : "Continuer l’inscription"}
           </Button>
         </div>
-      </form>
     </main>
   );
 }

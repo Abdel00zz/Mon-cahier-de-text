@@ -56,3 +56,33 @@ Les routes `api/*` utilisent **Vercel Node.js 24**, avec Firebase Admin côté s
 Les sauvegardes planifiées gérées, PITR et exports Google Cloud constituent des options complémentaires à configurer selon le budget et les droits du projet. Les exports gérés nécessitent la facturation et consomment des lectures / écritures ; cet audit n'a activé aucun service payant. [Récupération Firestore](https://firebase.google.com/docs/firestore/disaster-recovery), [exports et imports](https://firebase.google.com/docs/firestore/manage-data/export-import).
 
 L'export local est exécuté à la demande. Il n'a pas de planificateur automatique, et son succès ne garantit pas la livraison d'une notification sur un téléphone réel. Ce dernier contrôle exige un appareil et ses permissions système.
+
+## Décision du 4 octobre 2026 — forfait gratuit (Spark)
+
+Les règles de facturation de la documentation officielle de Firestore ferment deux portes :
+
+- **Une seule base gratuite par projet**, et **la création d'une base nommée impose d'activer la facturation**. Une seconde base (par exemple `europe-west1`) ne peut donc pas coexister gratuitement avec `(default)` : une base européenne gratuite exige un **nouveau projet**.
+- **Les suppressions TTL, les données PITR, les sauvegardes gérées, les restaurations et les clonages sont exclus du quota gratuit.**
+
+Conséquences retenues :
+
+- La base reste `cahier-text/(default)`, région `nam5`. Aucune migration de région n'est engagée : elle imposerait un second projet, une migration Firebase Authentication (`firebase auth:export` puis `auth:import` avec les hachages `SCRYPT`), un nouveau `google-services.json`, une nouvelle clé Web et une republication de l'APK (même clé de signature). Le gain attendu ne justifie pas ce risque.
+- **Le nettoyage des entrées expirées ne dépend pas du TTL** : le budget d'appels en erreur filtre `expiresAt` à la lecture. Le TTL reste une optimisation facultative, jamais un prérequis.
+- **L'export chiffré décrit ci-dessus remplace les sauvegardes gérées** : instantané cohérent, relecture, empreinte et restauration répétée en émulateur. PITR et exports Google Cloud sont des compléments payants, pas des dépendances.
+
+### Planificateur gratuit
+
+Sur un poste Windows, une tâche planifiée du système suffit et n'ajoute aucun coût. Elle exécute la même commande que la section « Export cloud protégé », avec un nom de fichier horodaté, puis la vérification mensuelle :
+
+```powershell
+$taskScript = Join-Path $env:LOCALAPPDATA 'MonCahierDeTextes\backup-task.ps1'
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -ExecutionPolicy Bypass -File "' + $taskScript + '"')
+$trigger = New-ScheduledTaskTrigger -Daily -At 21:00
+Register-ScheduledTask -TaskName 'Cahier de textes - sauvegarde Firestore' -Action $action -Trigger $trigger
+```
+
+Le script appelé contient les deux commandes `npm run firebase:backup` (export horodaté) et `npm run firebase:backup:rehearse` (vérification). Conserver l'archive et la clé sur des supports distincts, jamais dans Git ni dans le paquet Android.
+
+### Levier gratuit pour la latence
+
+Les fonctions `api/*` s'exécutent en `cdg1` (Paris) alors que Firestore est en `nam5` (États-Unis) : chaque aller-retour Firestore traverse l'Atlantique, et une requête de synchronisation en enchaîne plusieurs. Déplacer les seules fonctions (`"regions": ["iad1"]` dans `vercel.json`) rapproche l'API de la base sans changer de forfait, au prix d'un aller-retour plus long entre le Maroc et les États-Unis. Le choix se tranche par une mesure sur l'API réelle (`/api/sync` depuis un client de production), jamais par intuition ; aucune valeur n'est modifiée à ce stade.

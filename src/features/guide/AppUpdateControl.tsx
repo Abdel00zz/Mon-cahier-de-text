@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ArrowDownToLine, RefreshCw, Check } from 'lucide-react';
+import { Download, RefreshCw, Check } from '@/components/ui/icons';
 import { NativeUpdates, supportsNativeUpdates, canRestartForUpdate, type UpdateResult } from '@/platform/nativeUpdates';
-import { startSafePwaAction } from '@/pwa/safeUpdate';
-import { webUpdates } from '@/pwa/updateControl';
+import { startSafePwaAction } from '@/platform/safeUpdate';
+import { webUpdates } from '@/platform/appUpdates';
 import { toast } from 'sonner';
 
 let cancelInstall: (() => void) | undefined;
@@ -120,7 +120,7 @@ export function AppUpdateControl({ lang }: { lang: 'fr' | 'ar' }) {
     {native && <span className="guide-update-channel" dir="ltr">{result.source === 'apk' ? 'APK' : result.source === 'play' ? 'Google Play' : 'Android'}</span>}
     <div className="guide-update-actions">
       <button type="button" onClick={() => { void act(); }} disabled={busy || state === 'checking' || state === 'downloading' || state === 'applying' || pending || state === 'unavailable' || (!online && !ready)} aria-busy={busy || state === 'checking'}>
-        {ready ? <ArrowDownToLine size={14} aria-hidden="true" /> : state === 'current' ? <Check size={14} aria-hidden="true" /> : <RefreshCw size={14} aria-hidden="true" />}{label}
+        {ready ? <Download size={14} aria-hidden="true" /> : state === 'current' ? <Check size={14} aria-hidden="true" /> : <RefreshCw size={14} aria-hidden="true" />}{label}
       </button>
       {pending && <button type="button" onClick={later}>{ar ? 'لاحقًا' : 'Plus tard'}</button>}
     </div>

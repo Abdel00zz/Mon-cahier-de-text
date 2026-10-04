@@ -5,7 +5,7 @@ import { rgbToHex } from '../src/platform/themeColor';
 import { APP_VERSION, ANDROID_BUILD } from '../src/platform/appVersion';
 import { canRestartForUpdate } from '../src/platform/nativeUpdates';
 import { isNativeAsset } from '../build/vite/native-assets';
-import { startPwaUpdateChecks } from '../src/pwa/updateCheck';
+import { startAppUpdateChecks } from '../src/platform/appUpdates';
 
 test('une surface CSS opaque se convertit sans ambiguïté pour les barres Android', () => {
   assert.equal(rgbToHex('rgb(247, 246, 242)'), '#f7f6f2');
@@ -45,23 +45,19 @@ test('une installation attend visibilité, fin des modales, des champs et des sa
   doc.documentElement.dataset.nativeActive = 'true'; doc.visibilityState = 'hidden'; assert.equal(canRestartForUpdate(), false);
 });
 
-test('les vérifications de mise à jour PWA se font au retour, avec délai et sans doublon', async () => {
+test('les vérifications de mise à jour se font à l ouverture puis au retour, sans doublon horaire', async () => {
   let now = 0;
   let active = true;
   let wake = () => {};
-  let finish!: () => void;
   let calls = 0;
-  const stop = startPwaUpdateChecks({ update: () => { calls++; return new Promise<void>(resolve => { finish = resolve; }); } }, {
+  const stop = startAppUpdateChecks({
     active: () => active, now: () => now, subscribe: check => { wake = check; return () => { wake = () => {}; }; },
-  });
-  wake(); assert.equal(calls, 0);
-  now = 3600_000; active = false; wake(); assert.equal(calls, 0);
-  active = true; wake(); wake(); assert.equal(calls, 1);
-  now += 3600_000; wake(); assert.equal(calls, 1); // Previous request still running.
-  finish(); await new Promise(resolve => setImmediate(resolve));
-  wake(); assert.equal(calls, 2);
-  finish(); await new Promise(resolve => setImmediate(resolve));
-  stop(); now += 3600_000; wake(); assert.equal(calls, 2);
+  }, { check: () => { calls += 1; } });
+  assert.equal(calls, 1); // vérification immédiate à l'ouverture
+  now = 3600_000; active = false; wake(); assert.equal(calls, 1);
+  active = true; wake(); wake(); assert.equal(calls, 2);
+  now += 3600_000; wake(); assert.equal(calls, 3);
+  stop(); now += 3600_000; wake(); assert.equal(calls, 3);
 });
 
 const rgb = (value: string): number[] => value.startsWith('#')

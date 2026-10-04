@@ -2,7 +2,7 @@ import { memo, useMemo, type FC } from 'react';
 import type { ClassInfo } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { ArrowRight, Clock, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
+import { Clock, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuSeparator, DropdownMenuTrigger,
@@ -125,7 +125,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <span className="class-card__status" title={subtext}>
                     {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{subtext}</time> : subtext}
                 </span>
-                <ArrowRight className="class-card__arrow" aria-hidden="true" />
             </div>
         </article>
     );

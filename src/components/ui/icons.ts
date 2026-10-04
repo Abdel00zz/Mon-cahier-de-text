@@ -1,203 +1,121 @@
 import React from 'react';
-import type { LucideProps } from 'lucide-react';
-import {
-  Cloud as LucideCloud,
-  PenLine as LucidePenLine,
-  LockKeyhole as LucideLockKeyhole,
-  Plus as LucidePlus,
-  X as LucideX,
-  Check as LucideCheck,
-  CheckCheck as LucideCheckCheck,
-  CheckSquare as LucideCheckSquare,
-  Settings as LucideSettings,
-  Trash2 as LucideTrash2,
-  LayoutGrid as LucideLayoutGrid,
-  CalendarDays as LucideCalendarDays,
-  CalendarRange as LucideCalendarRange,
-  CalendarCheck as LucideCalendarCheck,
-  CalendarPlus as LucideCalendarPlus,
-  CalendarX as LucideCalendarX,
-  Clock as LucideClock,
-  ArrowLeft as LucideArrowLeft,
-  ArrowRight as LucideArrowRight,
-  ArrowUp as LucideArrowUp,
-  ArrowDown as LucideArrowDown,
-  AlertTriangle as LucideAlertTriangle,
-  RotateCcw as LucideUndo2,
-  RotateCw as LucideRedo2,
-  Save as LucideSave,
-  History as LucideHistory,
-  Search as LucideSearch,
-  ChevronUp as LucideChevronUp,
-  ChevronDown as LucideChevronDown,
-  ChevronLeft as LucideChevronLeft,
-  ChevronRight as LucideChevronRight,
-  MoreVertical as LucideMoreVertical,
-  FileInput as LucideFileInput,
-  FileText as LucideFileText,
-  FileUp as LucideFileUp,
-  FileDown as LucideFileDown,
-  FileSignature as LucideFileSignature,
-  ListChecks as LucideListChecks,
-  Network as LucideListTree,
-  PieChart as LucidePieChart,
-  Printer as LucidePrinter,
-  Bell as LucideBell,
-  BellRing as LucideBellRing,
-  BookOpen as LucideBookOpen,
-  Book as LucideBook,
-  Pencil as LucidePencil,
-  School as LucideSchool,
-  GraduationCap as LucideGraduationCap,
-  FlaskConical as LucideFlaskConical,
-  GripHorizontal as LucideGripHorizontal,
-  FolderOpen as LucideFolderOpen,
-  Download as LucideDownload,
-  AlertCircle as LucideCircleAlert,
-  CheckCircle2 as LucideCircleCheck,
-  HelpCircle as LucideCircleHelp,
-  Info as LucideInfo,
-  MapPin as LucideMapPin,
-  GitFork as LucideNetwork,
-  TestTube as LucideTestTube,
-  Home as LucideHome,
-  Sigma as LucideSigma,
-  Eye as LucideEye,
-  EyeOff as LucideEyeOff,
-  Database as LucideDatabase,
-  User as LucideUser,
-  Loader2 as LucideLoader2,
-  Users as LucideUsers,
-  Menu as LucideMenu,
-  ShieldCheck as LucideShieldCheck,
-  RefreshCw as LucideRefreshCw,
-  LogOut as LucideLogOut,
-  Award,
-  Palette as LucidePalette,
-  Bold as LucideBold,
-  Braces as LucideBraces,
-  Italic as LucideItalic,
-  List as LucideList,
-  ListOrdered as LucideListOrdered,
-  Underline as LucideUnderline,
-  Highlighter as LucideHighlighter,
-  Sparkles as LucideSparkles,
-  Copy as LucideCopy,
-  HardDriveDownload as LucideHardDriveDownload,
-  HardDriveUpload as LucideHardDriveUpload,
-  FolderArchive as LucideFolderArchive,
-} from 'lucide-react';
 
-export interface AppIconProps extends LucideProps {
-  className?: string;
+/** Ionicons 8 outlines, normalized to a 24px grid, plus matching editorial symbols.
+ * Attribution: assets/branding/IONICONS-LICENSE. No icon font or runtime download. */
+interface AppIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
-  strokeWidth?: number;
-  style?: React.CSSProperties;
-  'aria-hidden'?: boolean | 'true' | 'false';
-  'aria-label'?: string;
+  absoluteStrokeWidth?: boolean;
 }
-
-const createIcon = (LucideComponent: React.ComponentType<LucideProps>): React.FC<AppIconProps> => {
-  const IconComponent: React.FC<AppIconProps> = ({
-    size = 18,
-    strokeWidth = 2,
-    className = '',
-    ...props
-  }) => {
-    return React.createElement(LucideComponent, {
-      size,
-      strokeWidth,
-      className,
-      ...props,
-    });
-  };
-
-  IconComponent.displayName = `Icon(${LucideComponent.displayName || 'LucideIcon'})`;
-  return IconComponent;
+type IconNode = readonly [string, Record<string, string | number>];
+const createIcon = (name: string, nodes: readonly IconNode[]) => {
+  const Icon = React.forwardRef<SVGSVGElement, AppIconProps>(({
+    size = 18, strokeWidth = 1.65, absoluteStrokeWidth = false, className = '', children, ...props
+  }, ref) => React.createElement('svg', {
+    ref, xmlns: 'http://www.w3.org/2000/svg', width: size, height: size, viewBox: '0 0 24 24',
+    fill: 'none', stroke: 'currentColor', strokeWidth, strokeLinecap: 'round', strokeLinejoin: 'round',
+    focusable: false, 'aria-hidden': props['aria-label'] || props['aria-labelledby'] ? undefined : true,
+    role: props['aria-label'] || props['aria-labelledby'] ? 'img' : undefined,
+    className: ('app-icon ' + className).trim(), ...props,
+  }, nodes.map(([tag, attrs], key) => React.createElement(tag, {
+    ...attrs, key, ...(absoluteStrokeWidth ? { vectorEffect: 'non-scaling-stroke' } : {}),
+  })), children));
+  Icon.displayName = name;
+  return Icon;
 };
 
-export const Plus = createIcon(LucidePlus);
-export const X = createIcon(LucideX);
-export const Check = createIcon(LucideCheck);
-export const CheckCheck = createIcon(LucideCheckCheck);
-export const CheckSquare = createIcon(LucideCheckSquare);
-export const Settings = createIcon(LucideSettings);
-export const Trash2 = createIcon(LucideTrash2);
-export const LayoutGrid = createIcon(LucideLayoutGrid);
-export const CalendarDays = createIcon(LucideCalendarDays);
-export const CalendarRange = createIcon(LucideCalendarRange);
-export const CalendarCheck = createIcon(LucideCalendarCheck);
-export const CalendarPlus = createIcon(LucideCalendarPlus);
-export const CalendarX = createIcon(LucideCalendarX);
-export const Clock = createIcon(LucideClock);
-export const ArrowLeft = createIcon(LucideArrowLeft);
-export const ArrowRight = createIcon(LucideArrowRight);
-export const ArrowUp = createIcon(LucideArrowUp);
-export const ArrowDown = createIcon(LucideArrowDown);
-export const TriangleAlert = createIcon(LucideAlertTriangle);
-export const Undo2 = createIcon(LucideUndo2);
-export const Redo2 = createIcon(LucideRedo2);
-export const Save = createIcon(LucideSave);
-export const History = createIcon(LucideHistory);
-export const Search = createIcon(LucideSearch);
-export const ChevronUp = createIcon(LucideChevronUp);
-export const ChevronDown = createIcon(LucideChevronDown);
-export const ChevronLeft = createIcon(LucideChevronLeft);
-export const ChevronRight = createIcon(LucideChevronRight);
-export const MoreVertical = createIcon(LucideMoreVertical);
-export const FileInput = createIcon(LucideFileInput);
-export const FileText = createIcon(LucideFileText);
-export const FileUp = createIcon(LucideFileUp);
-export const FileDown = createIcon(LucideFileDown);
-export const FileSignature = createIcon(LucideFileSignature);
-export const ListChecks = createIcon(LucideListChecks);
-export const ListTree = createIcon(LucideListTree);
-export const PieChart = createIcon(LucidePieChart);
-export const Printer = createIcon(LucidePrinter);
-export const Bell = createIcon(LucideBell);
-export const AlarmBell = createIcon(LucideBellRing);
-export const BookOpen = createIcon(LucideBookOpen);
-export const Book = createIcon(LucideBook);
-export const Pencil = createIcon(LucidePencil);
-export const Cloud = createIcon(LucideCloud);
-export const PenLine = createIcon(LucidePenLine);
-export const LockKeyhole = createIcon(LucideLockKeyhole);
-export const School = createIcon(LucideSchool);
-export const GraduationCap = createIcon(LucideGraduationCap);
-export const FlaskConical = createIcon(LucideFlaskConical);
-export const GripHorizontal = createIcon(LucideGripHorizontal);
-export const FolderOpen = createIcon(LucideFolderOpen);
-export const Download = createIcon(LucideDownload);
-export const CircleAlert = createIcon(LucideCircleAlert);
-export const CircleCheck = createIcon(LucideCircleCheck);
-export const CircleHelp = createIcon(LucideCircleHelp);
-export const Info = createIcon(LucideInfo);
-export const MapPin = createIcon(LucideMapPin);
-export const Network = createIcon(LucideNetwork);
-export const TestTube = createIcon(LucideTestTube);
-export const Home = createIcon(LucideHome);
-export const Sigma = createIcon(LucideSigma);
-export const Eye = createIcon(LucideEye);
-export const EyeOff = createIcon(LucideEyeOff);
-export const Database = createIcon(LucideDatabase);
-export const User = createIcon(LucideUser);
-export const Loader2 = createIcon(LucideLoader2);
-export const Users = createIcon(LucideUsers);
-export const Menu = createIcon(LucideMenu);
-export const ShieldCheck = createIcon(LucideShieldCheck);
-export const RefreshCw = createIcon(LucideRefreshCw);
-export const LogOut = createIcon(LucideLogOut);
-export const AwardIcon = createIcon(Award);
-export const Palette = createIcon(LucidePalette);
-export const Bold = createIcon(LucideBold);
-export const Braces = createIcon(LucideBraces);
-export const Italic = createIcon(LucideItalic);
-export const List = createIcon(LucideList);
-export const ListOrdered = createIcon(LucideListOrdered);
-export const Underline = createIcon(LucideUnderline);
-export const Highlighter = createIcon(LucideHighlighter);
-export const Sparkles = createIcon(LucideSparkles);
-export const Copy = createIcon(LucideCopy);
-export const HardDriveDownload = createIcon(LucideHardDriveDownload);
-export const HardDriveUpload = createIcon(LucideHardDriveUpload);
-export const FolderArchive = createIcon(LucideFolderArchive);
+export const Plus = createIcon('Plus', [["path",{"d":"M12 5.25v13.5M18.75 12H5.25","fill":"none","stroke":"currentColor"}]]);
+export const X = createIcon('X', [["path",{"d":"M17.25 17.25L6.75 6.75M17.25 6.75L6.75 17.25","fill":"none","stroke":"currentColor"}]]);
+export const Check = createIcon('Check', [["path",{"d":"M19.5 6L9 18l-4.5-4.5","fill":"none","stroke":"currentColor"}]]);
+export const CheckCheck = createIcon('CheckCheck', [["path",{"d":"M21.75 6L11.25 18l-4.5-4.5M6.75 18l-4.5-4.5M17.25 6L10.875 13.313","fill":"none","stroke":"currentColor"}]]);
+export const CheckSquare = createIcon('CheckSquare', [["path",{"d":"M16.5 8.25L10.2 15.75 7.5 12.75","fill":"none","stroke":"currentColor"}],["rect",{"width":18,"height":18,"x":3,"y":3,"rx":2.25,"ry":2.25,"fill":"none","stroke":"currentColor"}]]);
+export const Settings = createIcon('Settings', [["path",{"d":"M12.295 9.015a3 3 0 1 0 2.69 2.69 3.006 3.006 0 0 0-2.69-2.69M19.518 12a7.219 7.219 0 0 1-0.071 0.975l2.119 1.662a0.507 0.507 0 0 1 0.115 0.644l-2.005 3.469a0.507 0.507 0 0 1-0.616 0.215l-2.105-0.847a0.755 0.755 0 0 0-0.711 0.082A7.711 7.711 0 0 1 15.234 18.788a0.747 0.747 0 0 0-0.413 0.569l-0.316 2.244a0.519 0.519 0 0 1-0.5 0.43h-4.01a0.521 0.521 0 0 1-0.501-0.416l-0.315-2.241a0.753 0.753 0 0 0-0.422-0.573 7.266 7.266 0 0 1-1.006-0.589 0.75 0.75 0 0 0-0.708-0.08l-2.104 0.847a0.507 0.507 0 0 1-0.616-0.215l-2.005-3.469a0.506 0.506 0 0 1 0.115-0.644l1.791-1.406a0.752 0.752 0 0 0 0.281-0.66c-0.017-0.195-0.027-0.39-0.027-0.586s0.01-0.388 0.027-0.579a0.75 0.75 0 0 0-0.284-0.654l-1.791-1.406A0.507 0.507 0 0 1 2.319 8.719l2.005-3.469a0.507 0.507 0 0 1 0.616-0.215l2.105 0.847a0.755 0.755 0 0 0 0.711-0.082A7.711 7.711 0 0 1 8.766 5.213a0.747 0.747 0 0 0 0.413-0.57l0.316-2.244A0.519 0.519 0 0 1 9.995 1.969h4.01a0.521 0.521 0 0 1 0.501 0.416l0.315 2.241a0.753 0.753 0 0 0 0.422 0.573 7.266 7.266 0 0 1 1.006 0.589 0.75 0.75 0 0 0 0.708 0.08l2.104-0.847a0.507 0.507 0 0 1 0.616 0.215l2.005 3.469a0.506 0.506 0 0 1-0.115 0.644l-1.791 1.406a0.752 0.752 0 0 0-0.283 0.66c0.015 0.194 0.026 0.389 0.025 0.585","fill":"none","stroke":"currentColor"}]]);
+export const Trash2 = createIcon('Trash2', [["path",{"d":"M5.25 5.25l0.938 15c0.045 0.867 0.675 1.5 1.5 1.5h8.624c0.828 0 1.447-0.633 1.5-1.5l0.938-15","fill":"none","stroke":"currentColor"}],["path",{"d":"M3.75 5.25h16.5","stroke":"currentColor","fill":"currentColor"}],["path",{"d":"M9 5.25V3.375h0a1.122 1.122 0 0 1 1.125-1.125h3.75a1.122 1.122 0 0 1 1.125 1.125h0v1.875M12 8.25v10.5M8.625 8.25l0.375 10.5M15.375 8.25l-0.375 10.5","fill":"none","stroke":"currentColor"}]]);
+export const LayoutGrid = createIcon('LayoutGrid', [["rect",{"width":8.25,"height":8.25,"x":2.25,"y":2.25,"rx":0.938,"ry":0.938,"fill":"none","stroke":"currentColor"}],["rect",{"width":8.25,"height":8.25,"x":13.5,"y":2.25,"rx":0.938,"ry":0.938,"fill":"none","stroke":"currentColor"}],["rect",{"width":8.25,"height":8.25,"x":2.25,"y":13.5,"rx":0.938,"ry":0.938,"fill":"none","stroke":"currentColor"}],["rect",{"width":8.25,"height":8.25,"x":13.5,"y":13.5,"rx":0.938,"ry":0.938,"fill":"none","stroke":"currentColor"}]]);
+export const Clock = createIcon('Clock', [["path",{"d":"M12 3C7.031 3 3 7.031 3 12s4.031 9 9 9 9-4.031 9-9S16.969 3 12 3Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 6v6.75h4.5","fill":"none","stroke":"currentColor"}]]);
+export const ArrowLeft = createIcon('ArrowLeft', [["path",{"d":"M11.438 18.75L4.688 12l6.75-6.75M5.625 12h13.688","fill":"none","stroke":"currentColor"}]]);
+export const ArrowRight = createIcon('ArrowRight', [["path",{"d":"M12.563 5.25l6.749 6.75-6.75 6.75M18.375 12H4.688","fill":"none","stroke":"currentColor"}]]);
+export const ArrowUp = createIcon('ArrowUp', [["path",{"d":"M5.25 11.438l6.75-6.751 6.75 6.75M12 5.625v13.688","fill":"none","stroke":"currentColor"}]]);
+export const ArrowDown = createIcon('ArrowDown', [["path",{"d":"M5.25 12.563l6.75 6.749 6.75-6.75M12 18.375V4.688","fill":"none","stroke":"currentColor"}]]);
+export const TriangleAlert = createIcon('TriangleAlert', [["path",{"d":"M4.011 20.918h15.978a1.5 1.5 0 0 0 1.32-2.211L13.321 3.871c-0.567-1.052-2.075-1.052-2.642 0L2.691 18.707a1.5 1.5 0 0 0 1.32 2.211","fill":"none","stroke":"currentColor"}],["path",{"d":"M11.731 9.159l0.269 5.719 0.269-5.717a0.269 0.269 0 0 0-0.272-0.281h0a0.269 0.269 0 0 0-0.266 0.279","fill":"none","stroke":"currentColor"}],["path",{"fill":"currentColor","d":"M12 18.621a0.938 0.938 0 1 1 0.938-0.937 0.938 0.938 0 0 1-0.938 0.937","stroke":"none"}]]);
+export const Undo2 = createIcon('Undo2', [['path', { d: 'M8.5 5 3.5 10l5 5M4 10h9.25a5.25 5.25 0 0 1 0 10.5' }]]);
+export const Redo2 = createIcon('Redo2', [['path', { d: 'm15.5 5 5 5-5 5M20 10h-9.25a5.25 5.25 0 0 0 0 10.5' }]]);
+export const Save = createIcon('Save', [['path', { d: 'M12 3v10m-4-4 4 4 4-4M3.5 14v4.5a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V14' }]]);
+export const History = createIcon('History', [["path",{"d":"M3.6 9A8.6 8.6 0 1 1 4.8 18M3.6 3.8V9H8.8M12 7.3V12L15.4 14"}]]);
+export const Search = createIcon('Search', [["path",{"d":"M10.364 3a7.364 7.364 0 1 0 7.363 7.364A7.364 7.364 0 0 0 10.364 3Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M15.857 15.857L21 21","fill":"none","stroke":"currentColor"}]]);
+export const ChevronUp = createIcon('ChevronUp', [["path",{"d":"M5.25 15.375l6.75-6.75 6.75 6.75","fill":"none","stroke":"currentColor"}]]);
+export const ChevronDown = createIcon('ChevronDown', [["path",{"d":"M5.25 8.625l6.75 6.75 6.75-6.75","fill":"none","stroke":"currentColor"}]]);
+export const ChevronLeft = createIcon('ChevronLeft', [["path",{"d":"M15.375 5.25L8.625 12l6.75 6.75","fill":"none","stroke":"currentColor"}]]);
+export const ChevronRight = createIcon('ChevronRight', [["path",{"d":"M8.625 5.25l6.75 6.75-6.75 6.75","fill":"none","stroke":"currentColor"}]]);
+export const MoreVertical = createIcon('MoreVertical', [["circle",{"cx":12,"cy":12,"r":1.5,"fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":19.5,"r":1.5,"fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":4.5,"r":1.5,"fill":"none","stroke":"currentColor"}]]);
+export const MoreHorizontal = createIcon('MoreHorizontal', [["circle",{"cx":12,"cy":12,"r":1.5,"fill":"none","stroke":"currentColor"}],["circle",{"cx":19.5,"cy":12,"r":1.5,"fill":"none","stroke":"currentColor"}],["circle",{"cx":4.5,"cy":12,"r":1.5,"fill":"none","stroke":"currentColor"}]]);
+export const ListChecks = createIcon('ListChecks', [["path",{"d":"M10 5H21M10 12H21M10 19H21M2.5 5L4 6.5L6.5 3.5M2.5 12L4 13.5L6.5 10.5M2.5 19L4 20.5L6.5 17.5"}]]);
+export const ListTree = createIcon('ListTree', [["path",{"d":"M4.5 3.5V18.5Q4.5 20 6 20H8M4.5 12H8M11 4H20M11 12H20M11 20H20"}]]);
+export const PieChart = createIcon('PieChart', [["path",{"d":"M12.002 3.78Q12.372 3.75 12.75 3.75c4.969 0 9 4.031 9 9s-4.031 9-9 9A9.004 9.004 0 0 1 4.178 15.499","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 2.25C6.615 2.25 2.25 6.615 2.25 12a9.717 9.717 0 0 0 0.848 3.984L12 12Z","fill":"none","stroke":"currentColor"}]]);
+export const Printer = createIcon('Printer', [["path",{"d":"M18 17.25h1.125a1.881 1.881 0 0 0 1.875-1.875V7.875a1.881 1.881 0 0 0-1.875-1.875H4.875a1.881 1.881 0 0 0-1.875 1.875v7.5a1.881 1.881 0 0 0 1.875 1.875h1.125","fill":"none","stroke":"currentColor"}],["rect",{"width":12,"height":9.75,"x":6,"y":11.25,"rx":1.14,"ry":1.14,"fill":"none","stroke":"currentColor"}],["path",{"d":"M18 6v-1.125a1.881 1.881 0 0 0-1.875-1.875H7.875a1.881 1.881 0 0 0-1.875 1.875v1.125","fill":"none","stroke":"currentColor"}],["circle",{"cx":18.375,"cy":8.625,"r":1.125,"fill":"currentColor","stroke":"none"}]]);
+export const Bell = createIcon('Bell', [["path",{"d":"M20.047 16.473C18.844 15 17.994 14.25 17.994 10.188 17.994 6.469 16.095 5.144 14.531 4.5c-0.208-0.085-0.403-0.281-0.466-0.495C13.791 3.072 13.022 2.25 12 2.25s-1.791 0.823-2.063 1.756c-0.063 0.216-0.259 0.408-0.466 0.494-1.565 0.645-3.463 1.965-3.463 5.688C6.006 14.25 5.156 15 3.952 16.473 3.454 17.084 3.891 18 4.763 18h14.479c0.868 0 1.302-0.919 0.805-1.527M15 18v0.75a3 3 0 0 1-6 0v-0.75","fill":"none","stroke":"currentColor"}]]);
+export const AlarmBell = createIcon('AlarmBell', [["path",{"d":"M20.047 16.473C18.844 15 17.994 14.25 17.994 10.188 17.994 6.469 16.095 5.144 14.531 4.5c-0.208-0.085-0.403-0.281-0.466-0.495C13.791 3.072 13.022 2.25 12 2.25s-1.791 0.823-2.063 1.756c-0.063 0.216-0.259 0.408-0.466 0.494-1.565 0.645-3.463 1.965-3.463 5.688C6.006 14.25 5.156 15 3.952 16.473 3.454 17.084 3.891 18 4.763 18h14.479c0.868 0 1.302-0.919 0.805-1.527M15 18v0.75a3 3 0 0 1-6 0v-0.75","fill":"none","stroke":"currentColor"}],["path",{"d":"M3.8 3.8L2.2 6.8M20.2 3.8L21.8 6.8"}]]);
+export const BookOpen = createIcon('BookOpen', [["path",{"d":"M12 7.5c0.75-2.961 3.583-4.472 9.75-4.5a0.747 0.747 0 0 1 0.75 0.75v13.5a0.75 0.75 0 0 1-0.75 0.75c-6 0-8.318 1.21-9.75 3-1.424-1.781-3.75-3-9.75-3-0.463 0-0.75-0.377-0.75-0.84V3.75a0.747 0.747 0 0 1 0.75-0.75c6.167 0.028 9 1.539 9.75 4.5M12 7.5v13.5","fill":"none","stroke":"currentColor"}]]);
+export const Book = createIcon('Book', [["rect",{"width":15,"height":19.5,"x":4.5,"y":2.25,"rx":2.25,"ry":2.25,"fill":"none","stroke":"currentColor"}],["path",{"d":"M15 2.25v19.5","fill":"none","stroke":"currentColor"}]]);
+export const Pencil = createIcon('Pencil', [["path",{"d":"M17.069 5.871L4.078 18.891l-1.078 2.109 2.109-1.078 13.02-12.991zM19.72 3.22l-1.06 1.06 1.06 1.061 1.06-1.061a0.75 0.75 0 0 0 0-1.06h0a0.75 0.75 0 0 0-1.06 0","fill":"none","stroke":"currentColor"}]]);
+export const PenLine = createIcon('PenLine', [["path",{"d":"M18 10.5v8.625a1.875 1.875 0 0 1-1.875 1.875H4.875a1.875 1.875 0 0 1-1.875-1.875V7.875a1.875 1.875 0 0 1 1.875-1.875h7.851","fill":"none","stroke":"currentColor"}],["path",{"d":"M21.56 2.496a0.753 0.753 0 0 0-1.089-0.026L19.891 3.047a0.375 0.375 0 0 0 0 0.53l0.532 0.531a0.375 0.375 0 0 0 0.532 0l0.565-0.563c0.286-0.285 0.313-0.75 0.04-1.049M18.719 4.219L10.257 12.666a0.422 0.422 0 0 0-0.108 0.184L9.758 14.016a0.183 0.183 0 0 0 0.227 0.227l1.165-0.391a0.422 0.422 0 0 0 0.184-0.108L19.781 5.281a0.422 0.422 0 0 0 0-0.593l-0.466-0.469a0.422 0.422 0 0 0-0.596 0","fill":"currentColor","stroke":"none"}]]);
+export const Cloud = createIcon('Cloud', [["path",{"d":"M18.75 11.25c-0.417-4.197-3.328-6.75-6.75-6.75-3.234 0-5.317 2.259-6 4.5-2.813 0.281-5.25 2.043-5.25 5.25 0 3.094 2.531 5.25 5.625 5.25h12.188c2.578 0 4.688-1.286 4.687-4.125 0-2.804-2.484-4.02-4.5-4.125Z","fill":"none","stroke":"currentColor"}]]);
+export const LockKeyhole = createIcon('LockKeyhole', [["path",{"d":"M15.75 9.75v-4.453a3.75 3.75 0 0 0-7.5 0v4.453","fill":"none","stroke":"currentColor"}],["rect",{"width":15,"height":12.75,"x":4.5,"y":9.75,"rx":2.25,"ry":2.25,"fill":"none","stroke":"currentColor"}]]);
+export const School = createIcon('School', [['path', { d: 'M3.5 20.5V9L12 3.5L20.5 9V20.5M2 20.5H22M9 20.5V15H15V20.5M7 10H7.01M17 10H17.01M7 14H7.01M17 14H17.01' }], ['circle', { cx: 12, cy: 8.5, r: 1.4 }]]);
+export const GraduationCap = createIcon('GraduationCap', [["path",{"d":"M1.5 9L12 3l10.5 6-10.5 6z","fill":"none","stroke":"currentColor"}],["path",{"d":"M5.25 11.25v6l6.75 3.75 6.75-3.75V11.25M22.5 17.25V9M12 15v6","fill":"none","stroke":"currentColor"}]]);
+export const FlaskConical = createIcon('FlaskConical', [["path",{"d":"M8.25 2.25h7.5M5.531 14.25h12.938M9.75 2.25v4.382a3.005 3.005 0 0 1-0.463 1.602L3.432 17.507C2.269 19.349 3.592 21.75 5.769 21.75h12.462c2.177 0 3.501-2.401 2.337-4.243L14.713 8.234a3.005 3.005 0 0 1-0.463-1.602V2.25","fill":"none","stroke":"currentColor"}]]);
+export const GripHorizontal = createIcon('GripHorizontal', [["circle",{"cx":6,"cy":9,"r":1.1,"fill":"currentColor","stroke":"none"}],["circle",{"cx":12,"cy":9,"r":1.1,"fill":"currentColor","stroke":"none"}],["circle",{"cx":18,"cy":9,"r":1.1,"fill":"currentColor","stroke":"none"}],["circle",{"cx":6,"cy":15,"r":1.1,"fill":"currentColor","stroke":"none"}],["circle",{"cx":12,"cy":15,"r":1.1,"fill":"currentColor","stroke":"none"}],["circle",{"cx":18,"cy":15,"r":1.1,"fill":"currentColor","stroke":"none"}]]);
+export const FolderOpen = createIcon('FolderOpen', [["path",{"d":"M3 9v-3.375a1.875 1.875 0 0 1 1.875-1.875h3.557a1.875 1.875 0 0 1 1.041 0.315l1.305 0.87a1.875 1.875 0 0 0 1.04 0.315H19.125a1.875 1.875 0 0 1 1.875 1.875v1.875","fill":"none","stroke":"currentColor"}],["path",{"d":"M22.495 10.62L21.735 18.375a1.875 1.875 0 0 1-1.872 1.875H4.137a1.875 1.875 0 0 1-1.872-1.875L1.505 10.62A1.5 1.5 0 0 1 3 9h18.005a1.5 1.5 0 0 1 1.49 1.62","fill":"none","stroke":"currentColor"}]]);
+export const Download = createIcon('Download', [["path",{"d":"M15.75 8.25h1.875a1.875 1.875 0 0 1 1.875 1.875v9.75a1.875 1.875 0 0 1-1.875 1.875H6.375a1.875 1.875 0 0 1-1.875-1.875V10.125a1.875 1.875 0 0 1 1.875-1.875h1.875","fill":"none","stroke":"currentColor"}],["path",{"d":"M8.25 12.75l3.75 3.75 3.75-3.75M12 2.25v13.5","fill":"none","stroke":"currentColor"}]]);
+export const MapPin = createIcon('MapPin', [["path",{"d":"M12 2.25c-3.727 0-6.75 2.878-6.75 6.422 0 4.078 4.5 10.541 6.152 12.773a0.739 0.739 0 0 0 1.196 0C14.25 19.214 18.75 12.753 18.75 8.672c0-3.544-3.023-6.422-6.75-6.422","fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":9,"r":2.25,"fill":"none","stroke":"currentColor"}]]);
+export const Network = createIcon('Network', [["circle",{"cx":6,"cy":4.5,"r":2.25,"fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":19.5,"r":2.25,"fill":"none","stroke":"currentColor"}],["path",{"d":"M12 12v5.25","fill":"none","stroke":"currentColor"}],["circle",{"cx":18,"cy":4.5,"r":2.25,"fill":"none","stroke":"currentColor"}],["path",{"d":"M6 6.75c0 3.5 3.231 5.25 6 5.25M18 6.75c0 3.5-3.231 5.25-6 5.25","fill":"none","stroke":"currentColor"}]]);
+export const TestTube = createIcon('TestTube', [["path",{"d":"M13 3.5L20.5 11M14.5 5L4.4 15.1A3.2 3.2 0 0 0 8.9 19.6L19 9.5M8 11.5L12.5 16"}]]);
+export const Home = createIcon('Home', [["path",{"d":"M3.75 9.938v11.062a0.75 0.75 0 0 0 0.75 0.75h4.5V15.375a1.125 1.125 0 0 1 1.125-1.125h3.75a1.125 1.125 0 0 1 1.125 1.125v6.375h4.5a0.75 0.75 0 0 0 0.75-0.75V9.938","fill":"none","stroke":"currentColor"}],["path",{"d":"M22.5 12L12.51 2.438c-0.234-0.247-0.782-0.25-1.02-0.001L1.5 12M18.75 8.391V3h-2.25v3.234","fill":"none","stroke":"currentColor"}]]);
+export const Sigma = createIcon('Sigma', [["path",{"d":"M19 4.5H5.5L12 12L5.5 19.5H19"}]]);
+export const Eye = createIcon('Eye', [["path",{"d":"M11.984 5.25c-3.653 0-7.401 2.115-10.351 6.344a0.75 0.75 0 0 0-0.013 0.833C3.887 15.975 7.584 18.75 11.984 18.75c4.352 0 8.125-2.783 10.396-6.34a0.757 0.757 0 0 0 0-0.819C20.104 8.076 16.303 5.25 11.984 5.25","fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":12,"r":3.75,"fill":"none","stroke":"currentColor"}]]);
+export const EyeOff = createIcon('EyeOff', [["path",{"d":"M20.25 21a0.746 0.746 0 0 1-0.53-0.22l-16.5-16.5a0.75 0.75 0 0 1 1.06-1.06l16.5 16.5A0.75 0.75 0 0 1 20.25 21M11.984 18c-1.945 0-3.82-0.576-5.574-1.711-1.597-1.031-3.035-2.508-4.158-4.266v-0.003c0.935-1.339 1.958-2.472 3.058-3.385a0.094 0.094 0 0 0 0.007-0.138L4.383 7.565a0.094 0.094 0 0 0-0.127-0.006c-1.168 0.984-2.252 2.192-3.238 3.606a1.496 1.496 0 0 0-0.03 1.666c1.238 1.937 2.831 3.569 4.607 4.718C7.594 18.844 9.745 19.5 11.984 19.5a11.208 11.208 0 0 0 3.553-0.59 0.094 0.094 0 0 0 0.036-0.155l-1.011-1.011a0.188 0.188 0 0 0-0.18-0.047 9.6 9.6 0 0 1-2.398 0.303M23.008 11.184c-1.24-1.918-2.85-3.548-4.653-4.712C16.359 5.182 14.156 4.5 11.984 4.5a10.655 10.655 0 0 0-3.51 0.601 0.094 0.094 0 0 0-0.036 0.156l1.011 1.01a0.188 0.188 0 0 0 0.181 0.047 9.038 9.038 0 0 1 2.354-0.314c1.907 0 3.777 0.583 5.557 1.734 1.627 1.05 3.082 2.526 4.208 4.266a0.006 0.006 0 0 1 0 0.007 14.564 14.564 0 0 1-3.006 3.41 0.094 0.094 0 0 0-0.007 0.138l0.933 0.932a0.094 0.094 0 0 0 0.126 0.006 16.102 16.102 0 0 0 3.218-3.678 1.509 1.509 0 0 0-0.005-1.631","fill":"currentColor","stroke":"none"}],["path",{"d":"M12 7.5a4.5 4.5 0 0 0-1.002 0.112 0.094 0.094 0 0 0-0.047 0.159l5.278 5.276a0.094 0.094 0 0 0 0.159-0.047A4.5 4.5 0 0 0 12 7.5M7.771 10.953a0.094 0.094 0 0 0-0.158 0.047 4.5 4.5 0 0 0 5.39 5.39 0.094 0.094 0 0 0 0.047-0.158Z","fill":"currentColor","stroke":"none"}]]);
+export const Database = createIcon('Database', [['ellipse', { cx: 12, cy: 5.5, rx: 8, ry: 3 }], ['path', { d: 'M4 5.5v13c0 1.66 3.58 3 8 3s8-1.34 8-3v-13M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3' }]]);
+export const User = createIcon('User', [["path",{"d":"M16.125 6.75c-0.184 2.478-2.063 4.5-4.125 4.5s-3.945-2.021-4.125-4.5c-0.188-2.578 1.641-4.5 4.125-4.5s4.313 1.969 4.125 4.5","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 14.25c-4.078 0-8.217 2.25-8.983 6.497C2.925 21.259 3.214 21.75 3.75 21.75h16.5c0.536 0 0.826-0.491 0.734-1.003C20.217 16.5 16.078 14.25 12 14.25Z","fill":"none","stroke":"currentColor"}]]);
+export const Users = createIcon('Users', [["path",{"d":"M18.844 7.875c-0.137 1.906-1.552 3.375-3.094 3.375s-2.959-1.468-3.094-3.375c-0.141-1.983 1.236-3.375 3.094-3.375s3.234 1.428 3.094 3.375","fill":"none","stroke":"currentColor"}],["path",{"d":"M15.75 14.25c-3.055 0-5.992 1.517-6.728 4.472-0.098 0.391 0.148 0.778 0.549 0.778h12.359c0.402 0 0.645-0.387 0.549-0.778C21.743 15.72 18.805 14.25 15.75 14.25Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M9.375 8.716c-0.11 1.522-1.252 2.722-2.484 2.721s-2.377-1.199-2.485-2.721C4.294 7.132 5.407 6 6.891 6s2.596 1.161 2.484 2.716","fill":"none","stroke":"currentColor"}],["path",{"d":"M9.656 14.344c-0.846-0.388-1.778-0.537-2.765-0.537-2.438 0-4.786 1.212-5.375 3.572-0.077 0.312 0.119 0.621 0.44 0.621H7.219","fill":"none","stroke":"currentColor"}]]);
+export const Loader2 = createIcon('Loader2', [["path",{"d":"M20.5 12A8.5 8.5 0 1 1 12 3.5"}]]);
+export const Menu = createIcon('Menu', [["path",{"d":"M3.75 7.5h16.5M3.75 12h16.5M3.75 16.5h16.5","fill":"none","stroke":"currentColor"}]]);
+export const ShieldCheck = createIcon('ShieldCheck', [["path",{"d":"M15.75 8.25L10.556 14.25 8.25 11.991","fill":"none","stroke":"currentColor"}],["path",{"d":"M21.708 5.267C17.516 4.515 15.783 3.959 12 2.25c-3.783 1.709-5.516 2.265-9.708 3.017C1.533 17.303 11.277 21.459 12 21.75c0.723-0.291 10.467-4.447 9.708-16.483","fill":"none","stroke":"currentColor"}]]);
+export const RefreshCw = createIcon('RefreshCw', [["path",{"d":"M20.375 13.387v-1.397c0-4.628-3.761-8.381-8.4-8.381a8.391 8.391 0 0 0-6.569 3.158m-1.806 3.844v1.397C3.6 16.641 7.359 20.391 12 20.391a8.459 8.459 0 0 0 6.563-3.137","fill":"none","stroke":"currentColor"}],["path",{"d":"M1.5 12l2.063-2.063 2.156 2.063M22.5 12l-2.063 2.063-2.156-2.063","fill":"none","stroke":"currentColor"}]]);
+export const LogOut = createIcon('LogOut', [["path",{"d":"M14.25 15.75v1.875a1.875 1.875 0 0 1-1.875 1.875H4.875a1.875 1.875 0 0 1-1.875-1.875V6.375a1.875 1.875 0 0 1 1.875-1.875h7.125c1.035 0 2.25 0.84 2.25 1.875v1.875M17.25 15.75l3.75-3.75-3.75-3.75M8.25 12h12","fill":"none","stroke":"currentColor"}]]);
+export const AwardIcon = createIcon('AwardIcon', [["circle",{"cx":12,"cy":7.5,"r":6,"fill":"none","stroke":"currentColor"}],["path",{"d":"M6.734 10.679L2.25 18.75l4.072-0.02a0.75 0.75 0 0 1 0.647 0.366L9 22.5l4.14-9.109","fill":"none","stroke":"currentColor"}],["path",{"d":"M17.182 10.5L21.75 18.75l-4.072-0.02a0.75 0.75 0 0 0-0.647 0.366L15 22.5l-3-6.6","fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":7.5,"r":3,"fill":"none","stroke":"currentColor"}]]);
+export const Palette = createIcon('Palette', [["path",{"d":"M20.161 16.308c-0.309-0.286-0.764-0.356-1.153-0.422-0.539-0.089-0.745-0.188-1.059-0.469-0.67-0.595-0.67-1.458 0-2.053l1.42-1.261c2.175-1.922 2.175-5.072 0-6.994-1.603-1.411-3.755-2.109-5.99-2.109-2.611 0-5.339 0.952-7.444 2.817-3.914 3.459-3.914 9.127 0 12.586 1.945 1.72 4.57 2.578 7.167 2.597h0.08c2.597 0 5.156-0.839 6.975-2.456 0.675-0.595 0.562-1.716 0.004-2.236Z","fill":"none","stroke":"currentColor"}],["circle",{"cx":6.75,"cy":9.75,"r":1.5,"fill":"currentColor","stroke":"none"}],["circle",{"cx":7.125,"cy":14.578,"r":1.5,"fill":"currentColor","stroke":"none"}],["circle",{"cx":10.5,"cy":6.75,"r":1.5,"fill":"currentColor","stroke":"none"}],["circle",{"cx":12,"cy":17.203,"r":2.25,"fill":"currentColor","stroke":"none"}],["circle",{"cx":15.375,"cy":6.75,"r":1.5,"fill":"currentColor","stroke":"none"}]]);
+export const Bold = createIcon('Bold', [["path",{"d":"M6.5 4H12.5C18.5 4 18.5 11.5 12.5 11.5H6.5V4ZM6.5 11.5H13.5C20 11.5 20 20 13.5 20H6.5V11.5Z"}]]);
+export const Braces = createIcon('Braces', [["path",{"d":"M8.5 3.5H7.5Q5.5 3.5 5.5 6V9Q5.5 12 3 12Q5.5 12 5.5 15V18Q5.5 20.5 7.5 20.5H8.5M15.5 3.5H16.5Q18.5 3.5 18.5 6V9Q18.5 12 21 12Q18.5 12 18.5 15V18Q18.5 20.5 16.5 20.5H15.5"}]]);
+export const Italic = createIcon('Italic', [["path",{"d":"M10 4H19M5 20H14M15.5 4L8.5 20"}]]);
+export const List = createIcon('List', [["path",{"d":"M7.5 6.75h13.5M7.5 12h13.5M7.5 17.25h13.5","fill":"none","stroke":"currentColor"}],["circle",{"cx":3.75,"cy":6.75,"r":0.75,"fill":"none","stroke":"currentColor"}],["circle",{"cx":3.75,"cy":12,"r":0.75,"fill":"none","stroke":"currentColor"}],["circle",{"cx":3.75,"cy":17.25,"r":0.75,"fill":"none","stroke":"currentColor"}]]);
+export const ListOrdered = createIcon('ListOrdered', [["path",{"d":"M10 5.5H21M10 12H21M10 18.5H21M3.5 3.5L5 2.5V7M3.5 7H6.5M3.2 12Q3.2 9.5 5.5 10Q7.5 10.5 5.5 12.5L3.5 14H6.5M3.5 17H5Q7.5 17 5 19Q7.5 21 5 21H3.5"}]]);
+export const Underline = createIcon('Underline', [["path",{"d":"M6 3.5V11.5A6 6 0 0 0 18 11.5V3.5M4 21H20"}]]);
+export const Highlighter = createIcon('Highlighter', [["path",{"d":"M21.205 2.795a1.898 1.898 0 0 0-2.684 0L8.625 13.816c1.082 0.22 2.162 1.279 2.309 2.309l10.271-10.646a1.898 1.898 0 0 0 0-2.684M6.469 15.75c-1.401 0-2.531 1.148-2.532 2.572 0 1.123-0.979 1.714-1.687 1.714C3.026 21.082 4.351 21.75 5.625 21.75c1.865 0 3.375-1.534 3.375-3.428 0-1.423-1.131-2.572-2.531-2.572","fill":"none","stroke":"currentColor"}]]);
+export const Sparkles = createIcon('Sparkles', [["path",{"fill":"none","stroke":"currentColor","d":"M12.184 12.324L10.144 7.02a0.422 0.422 0 0 0-0.788 0l-2.04 5.304a0.422 0.422 0 0 1-0.242 0.242L1.77 14.606a0.422 0.422 0 0 0 0 0.788l5.304 2.04a0.422 0.422 0 0 1 0.242 0.242l2.04 5.304a0.422 0.422 0 0 0 0.788 0l2.04-5.304a0.422 0.422 0 0 1 0.242-0.242l5.304-2.04a0.422 0.422 0 0 0 0-0.788l-5.304-2.04a0.422 0.422 0 0 1-0.242-0.242M5.063 3.188L4.125 0.75 3.188 3.188 0.75 4.125l2.438 0.938 0.937 2.437 0.937-2.437 2.438-0.938zM20 5.5L18.75 2.25l-1.25 3.25L14.25 6.75l3.25 1.25L18.75 11.25l1.25-3.25L23.25 6.75z"}]]);
+export const Copy = createIcon('Copy', [["rect",{"width":15.75,"height":15.75,"x":6,"y":6,"rx":2.672,"ry":2.672,"fill":"none","stroke":"currentColor"}],["path",{"d":"M17.977 6l0.023-1.125a2.632 2.632 0 0 0-2.625-2.625H5.25a3.009 3.009 0 0 0-3 3v10.125a2.632 2.632 0 0 0 2.625 2.625h1.125","fill":"none","stroke":"currentColor"}]]);
+export const Sun = createIcon('Sun', [["path",{"d":"M12 2.25v2.25M12 19.5v2.25M18.894 5.106l-1.591 1.591M6.697 17.303l-1.591 1.591M21.75 12h-2.25M4.5 12H2.25M18.894 18.894l-1.591-1.591M6.697 6.697l-1.591-1.591","fill":"none","stroke":"currentColor"}],["circle",{"cx":12,"cy":12,"r":3.75,"fill":"none","stroke":"currentColor"}]]);
+export const Moon = createIcon('Moon', [["path",{"d":"M7.5 6.375c0-1.435 0.211-2.888 0.75-4.125C4.667 3.81 2.25 7.468 2.25 11.625c0 5.592 4.533 10.125 10.125 10.125 4.157 0 7.815-2.417 9.375-6-1.237 0.539-2.69 0.75-4.125 0.75-5.592 0-10.125-4.533-10.125-10.125","fill":"none","stroke":"currentColor"}]]);
+export const Laptop = createIcon('Laptop', [["rect",{"width":19.5,"height":14.25,"x":2.25,"y":4.5,"rx":1.507,"ry":1.507,"fill":"none","stroke":"currentColor"}],["path",{"d":"M0.75 19.5h22.5","stroke":"currentColor","fill":"currentColor"}]]);
+export const Type = createIcon('Type', [["path",{"d":"M1.5 19.477l5.625-15 5.625 15M10.781 14.227H3.469M15.281 11.227c0.571-1.345 1.922-2.25 3.469-2.25h0c2.156 0 3.75 1.5 3.75 3.75v6.75","fill":"none","stroke":"currentColor"}],["path",{"d":"M15 16.805c0 1.688 1.259 2.719 2.813 2.718 2.531 0 4.688-1.266 4.687-4.968v-0.703c-0.938 0-2.719 0.047-4.313 0.234-1.536 0.181-3.188 0.891-3.187 2.719","fill":"none","stroke":"currentColor"}]]);
+export const Command = createIcon('Command', [["path",{"d":"M8.5 8.5H5.5A3 3 0 1 1 8.5 5.5V18.5A3 3 0 1 1 5.5 15.5H18.5A3 3 0 1 1 15.5 18.5V5.5A3 3 0 1 1 18.5 8.5Z"}]]);
+export const Signal = createIcon('Signal', [["rect",{"width":3,"height":15,"x":19.5,"y":4.5,"rx":0.375,"ry":0.375,"fill":"none","stroke":"currentColor"}],["rect",{"width":3,"height":11.25,"x":13.5,"y":8.25,"rx":0.375,"ry":0.375,"fill":"none","stroke":"currentColor"}],["rect",{"width":3,"height":8.25,"x":7.5,"y":11.25,"rx":0.375,"ry":0.375,"fill":"none","stroke":"currentColor"}],["rect",{"width":3,"height":5.25,"x":1.5,"y":14.25,"rx":0.375,"ry":0.375,"fill":"none","stroke":"currentColor"}]]);
+export const Wifi = createIcon('Wifi', [["path",{"stroke":"currentColor","d":"M14.934 17.039L12 19.875l-2.934-2.836S9.938 15.75 12 15.75s2.934 1.289 2.934 1.289M19.093 13.031L17.438 14.625s-1.922-2.156-5.438-2.156-5.438 2.156-5.437 2.156l-1.656-1.594S6.68 10.031 12 10.031s7.093 3 7.093 3","fill":"currentColor"}],["path",{"stroke":"currentColor","d":"M23.25 9l-1.72 1.664S18.117 6.609 12 6.609 2.47 10.664 2.47 10.664L0.75 9S4.125 4.125 12 4.125s11.25 4.875 11.25 4.875","fill":"currentColor"}]]);
+export const BatteryFull = createIcon('BatteryFull', [["rect",{"width":18.75,"height":10.5,"x":1.5,"y":6.75,"rx":2.142,"ry":2.142,"fill":"none","stroke":"currentColor"}],["rect",{"width":13.717,"height":5.35,"x":4.017,"y":9.325,"rx":0.188,"ry":0.188,"stroke":"currentColor","fill":"currentColor"}],["path",{"d":"M22.5 10.25v3.5","fill":"none","stroke":"currentColor"}]]);
+export const Calendar = createIcon('Calendar', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5M21.75 7.5H2.25"}]]);
+export const CalendarDays = createIcon('CalendarDays', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["circle",{"cx":13.875,"cy":10.875,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":17.625,"cy":10.875,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":13.875,"cy":14.625,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":17.625,"cy":14.625,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":6.375,"cy":14.625,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":10.125,"cy":14.625,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":6.375,"cy":18.375,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":10.125,"cy":18.375,"r":1.125,"fill":"currentColor","stroke":"none"}],["circle",{"cx":13.875,"cy":18.375,"r":1.125,"fill":"currentColor","stroke":"none"}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5"}],["path",{"fill":"none","stroke":"currentColor","d":"M21.75 7.5H2.25"}]]);
+export const CalendarRange = createIcon('CalendarRange', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5M21.75 7.5H2.25"}],["path",{"d":"M7.5 14.5H16.5"}],["circle",{"cx":7.5,"cy":14.5,"r":1.2,"fill":"currentColor","stroke":"none"}],["circle",{"cx":16.5,"cy":14.5,"r":1.2,"fill":"currentColor","stroke":"none"}]]);
+export const CalendarCheck = createIcon('CalendarCheck', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5M21.75 7.5H2.25"}],["path",{"d":"M8 14.5L10.8 17.3L16.5 11.6"}]]);
+export const CalendarPlus = createIcon('CalendarPlus', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5M21.75 7.5H2.25"}],["path",{"d":"M12 11.5V17.5M9 14.5H15"}]]);
+export const CalendarX = createIcon('CalendarX', [["rect",{"width":19.5,"height":18,"x":2.25,"y":3.75,"fill":"none","stroke":"currentColor","rx":2.25}],["path",{"fill":"none","stroke":"currentColor","d":"M6 2.25v1.5M18 2.25v1.5M21.75 7.5H2.25"}],["path",{"d":"M9 12L15 18M15 12L9 18"}]]);
+export const FileText = createIcon('FileText', [["path",{"d":"M19.5 10.371V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V4.5a2.25 2.25 0 0 1 2.25-2.25h4.629a1.5 1.5 0 0 1 1.06 0.439l6.622 6.622a1.5 1.5 0 0 1 0.439 1.06Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 2.625v5.625a1.5 1.5 0 0 0 1.5 1.5h5.625M8.25 13.5h7.5M8.25 17.25h7.5","fill":"none","stroke":"currentColor"}]]);
+export const FileInput = createIcon('FileInput', [["path",{"d":"M9 3H15L20 8V19Q20 21 18 21H9Q7 21 7 19M15 3V8H20M2.5 12H12M8.5 8.5L12 12L8.5 15.5"}]]);
+export const FileUp = createIcon('FileUp', [["path",{"d":"M19.5 10.371V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V4.5a2.25 2.25 0 0 1 2.25-2.25h4.629a1.5 1.5 0 0 1 1.06 0.439l6.622 6.622a1.5 1.5 0 0 1 0.439 1.06Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 2.625v5.625a1.5 1.5 0 0 0 1.5 1.5h5.625","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 18V10.5M9.2 13.3L12 10.5L14.8 13.3"}]]);
+export const FileDown = createIcon('FileDown', [["path",{"d":"M19.5 10.371V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V4.5a2.25 2.25 0 0 1 2.25-2.25h4.629a1.5 1.5 0 0 1 1.06 0.439l6.622 6.622a1.5 1.5 0 0 1 0.439 1.06Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 2.625v5.625a1.5 1.5 0 0 0 1.5 1.5h5.625","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 10.5V18M9.2 15.2L12 18L14.8 15.2"}]]);
+export const FileSignature = createIcon('FileSignature', [["path",{"d":"M12.5 21H6Q4 21 4 19V5Q4 3 6 3H13L18 8V10M13 3V8H18M11 18.5L18.8 10.7Q19.8 9.7 20.8 10.7L21.3 11.2Q22.3 12.2 21.3 13.2L13.5 21H10.5Z"}]]);
+export const CircleAlert = createIcon('CircleAlert', [["path",{"d":"M21 12c0-4.969-4.031-9-9-9S3 7.031 3 12s4.031 9 9 9 9-4.031 9-9Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M11.731 7.784L12 13.5l0.269-5.716a0.269 0.269 0 0 0-0.272-0.282h0a0.269 0.269 0 0 0-0.266 0.282","fill":"none","stroke":"currentColor"}],["path",{"d":"M12 17.246a0.938 0.938 0 1 1 0.938-0.938 0.938 0.938 0 0 1-0.938 0.938","fill":"currentColor","stroke":"none"}]]);
+export const CircleCheck = createIcon('CircleCheck', [["path",{"d":"M21 12c0-4.969-4.031-9-9-9S3 7.031 3 12s4.031 9 9 9 9-4.031 9-9Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M16.5 8.25L10.2 15.75 7.5 12.75","fill":"none","stroke":"currentColor"}]]);
+export const CircleHelp = createIcon('CircleHelp', [["path",{"d":"M12 3.75a8.25 8.25 0 1 0 8.25 8.25A8.25 8.25 0 0 0 12 3.75Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M9.375 9.482s0.039-0.82 0.917-1.526C10.813 7.536 11.438 7.415 12 7.406c0.512-0.007 0.97 0.078 1.244 0.209 0.469 0.223 1.381 0.768 1.381 1.926 0 1.219-0.797 1.772-1.705 2.381S11.766 13.192 11.766 13.875","fill":"none","stroke":"currentColor"}],["circle",{"cx":11.719,"cy":16.313,"r":0.938,"fill":"currentColor","stroke":"none"}]]);
+export const Info = createIcon('Info', [["path",{"d":"M11.625 3C6.862 3 3 6.862 3 11.625s3.862 8.625 8.625 8.625 8.625-3.862 8.625-8.625S16.388 3 11.625 3Z","fill":"none","stroke":"currentColor"}],["path",{"d":"M10.313 10.313h1.499v5.437","fill":"none","stroke":"currentColor"}],["path",{"d":"M9.75 15.938h4.125","fill":"none","stroke":"currentColor"}],["path",{"fill":"currentColor","d":"M11.625 6.094a1.219 1.219 0 1 0 1.219 1.218 1.219 1.219 0 0 0-1.219-1.218","stroke":"none"}]]);
+export const FolderArchive = createIcon('FolderArchive', [["path",{"d":"M3.75 7.125v12a1.881 1.881 0 0 0 1.875 1.875h12.75a1.881 1.881 0 0 0 1.875-1.875V7.125","fill":"none","stroke":"currentColor"}],["rect",{"width":19.5,"height":3.75,"x":2.25,"y":3,"rx":1.313,"ry":1.313,"fill":"none","stroke":"currentColor"}],["path",{"d":"M15 14.25l-3 3-3-3M12 16.214V10.5","fill":"none","stroke":"currentColor"}]]);
+export const HardDriveDownload = createIcon('HardDriveDownload', [["path",{"d":"M6 13H4.5L2.5 18V20Q2.5 21 4 21H20Q21.5 21 21.5 20V18L19.5 13H18M3 17H21"}],["path",{"d":"M12 3V12M8.5 8.5L12 12L15.5 8.5"}],["circle",{"cx":18,"cy":19,"r":0.55,"fill":"currentColor","stroke":"none"}]]);
+export const HardDriveUpload = createIcon('HardDriveUpload', [["path",{"d":"M6 13H4.5L2.5 18V20Q2.5 21 4 21H20Q21.5 21 21.5 20V18L19.5 13H18M3 17H21"}],["path",{"d":"M12 12V3M8.5 6.5L12 3L15.5 6.5"}],["circle",{"cx":18,"cy":19,"r":0.55,"fill":"currentColor","stroke":"none"}]]);
+

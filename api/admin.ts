@@ -2,13 +2,11 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
-import { reconcileFirestoreWebPush } from './_lib/firestoreWebPush.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { accountFirebaseUid } from './_lib/authAccounts.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
 import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
 import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
-import { PushEntry, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
 import { deleteNativeDevices, sendNativeToOwner } from './_lib/nativePush.js';
 import {
     ADMIN_COOKIE,
@@ -713,9 +711,8 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const redis = await getRedis();
     const pipeline = await beginAccountWrite(redis, phone);
-    const [classesBlob, pushEntry, user] = await Promise.all([
+    const [classesBlob, user] = await Promise.all([
         redis.get<ClassesBlob>(KEYS.classes(phone)),
-        redis.hget<PushEntry>(KEYS.pushSubs, phone),
         redis.get<StoredUser>(KEYS.user(phone)),
     ]);
 
@@ -725,22 +722,9 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
         pipeline.del(KEYS.lessons(phone, cls.id));
     }
     pipeline.hdel(KEYS.adminSnapshots, phone);
-    pipeline.hdel(KEYS.pushSubs, phone);
     pipeline.del(KEYS.adminMessages(phone));
     pipeline.del(KEYS.inboxClock(phone));
     pipeline.del(KEYS.adminTimetableClockForUser(phone));
-    // L'index global ne doit pas conserver de propriétaire fantôme après une
-    // suppression de compte. La vérification d'ownership évite d'effacer une
-    // nouvelle réservation concurrente appartenant déjà à un autre compte.
-    const pushSubs = Array.isArray(pushEntry?.subs) ? pushEntry.subs : [];
-    const ownedFields = await Promise.all(pushSubs
-        .filter(sub => typeof sub?.endpoint === 'string' && sub.endpoint.length > 0)
-        .map(async sub => {
-        const field = pushEndpointField(sub.endpoint);
-        const owner = await redis.hget<string>(KEYS.pushEndpointOwners, field);
-        return owner === phone ? field : null;
-    }));
-    for (const field of ownedFields) if (field) pipeline.hdel(KEYS.pushEndpointOwners, field);
     await pipeline.exec();
     await deleteNativeDevices(redis, phone);
     if (isFirestoreStore(redis)) {
@@ -765,10 +749,9 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     // sans révision partagée, une publication simultanée à un accusé pouvait
     // perdre l'un des deux messages.
     const write = await beginAccountWrite(redis, phone);
-    const [user, storedMessages, entry] = await Promise.all([
+    const [user, storedMessages] = await Promise.all([
         redis.get<StoredUser>(KEYS.user(phone)),
         redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
-        redis.hget<PushEntry>(KEYS.pushSubs, phone),
     ]);
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
 
@@ -783,48 +766,10 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     write.set(KEYS.adminMessages(phone), messages);
     await write.exec();
 
-    const entrySubs = Array.isArray(entry?.subs) ? entry.subs : [];
     const { unreadCount: badgeCount, badgeUpdatedAt: timestamp } = await readInboxSnapshot(redis, phone);
-    const nativeDelivery = sendNativeToOwner(phone, { kind: 'admin', badgeCount, timestamp }).catch(() => 0);
-    // Le message reste disponible dans l'application même sans abonnement push.
-    if (!entry || entrySubs.length === 0 || !configureVapid()) {
-        const nativeSent = await nativeDelivery;
-        return res.status(200).json({ ok: true, sent: nativeSent, nativeSent, message });
-    }
-
-    const { survivingSubs, sent } = await sendToEntry({ ...entry, subs: entrySubs }, {
-        title,
-        body: content,
-        url: '/#/notifications',
-        kind: 'admin',
-        tag: `cdt-admin-${message.id}`,
-        timestamp,
-        messageId: message.id,
-        badgeCount,
-        badgeOwner: phone,
-    });
-    if (isFirestoreStore(redis)) {
-        await reconcileFirestoreWebPush(redis, phone, entrySubs, survivingSubs);
-        const nativeSent = await nativeDelivery;
-        return res.status(200).json({ ok: true, sent: sent + nativeSent, nativeSent, message });
-    }
-    if (survivingSubs.length === 0) await redis.hdel(KEYS.pushSubs, phone);
-    else await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
-    const removedEndpoints = entrySubs
-        .filter(sub => !survivingSubs.some(next => next.endpoint === sub.endpoint))
-        .map(sub => sub.endpoint);
-    const ownedFields = await Promise.all(removedEndpoints.map(async endpoint => {
-        const field = pushEndpointField(endpoint);
-        const owner = await redis.hget<string>(KEYS.pushEndpointOwners, field);
-        return owner === phone ? field : null;
-    }));
-    if (ownedFields.some(Boolean)) {
-        const cleanup = redis.pipeline();
-        for (const field of ownedFields) if (field) cleanup.hdel(KEYS.pushEndpointOwners, field);
-        await cleanup.exec();
-    }
-    const nativeSent = await nativeDelivery;
-    res.status(200).json({ ok: true, sent: sent + nativeSent, nativeSent, message });
+    const nativeSent = await sendNativeToOwner(phone, { kind: 'admin', badgeCount, timestamp }).catch(() => 0);
+    // Le message reste disponible dans l'application même sans appareil joignable.
+    res.status(200).json({ ok: true, sent: nativeSent, nativeSent, message });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

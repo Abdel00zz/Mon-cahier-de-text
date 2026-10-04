@@ -3,29 +3,16 @@ import test from 'node:test';
 import { isForegroundOnline, millisecondsUntilNextMoroccoDay, startForegroundPolling } from '../src/platform/mobileScheduling';
 import { getBundledCalendar, todayInMorocco } from '../src/domain/calendar/calendar';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
-import { startSafePwaAction } from '../src/pwa/safeUpdate';
-import { openNotificationTarget, type NotificationWindow } from '../src/pwa/notificationNavigation';
-import { forgetPushCleanup, pendingPushCleanup, rememberPushCleanup } from '../src/infrastructure/push/pushCleanup';
+import { startSafePwaAction } from '../src/platform/safeUpdate';
+import { openNotificationTarget, type NotificationWindow } from '../src/platform/notificationNavigation';
 import { readCachedLessons } from '../src/infrastructure/storage/notebookStorage';
 import type { AppConfig, ClassInfo } from '../src/types';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PushActivationCard } from '../src/features/settings/components/NotificationsTab';
 import { translateLocaleMessage } from '../src/i18n/messages';
-import { unsubscribeFromPush } from '../src/infrastructure/push/push';
-import { onPwaControllerChange } from '../src/pwa/controllerChange';
 
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
-
-test('PWA : premier claim sans rechargement, mises à jour suivantes prises en compte sur la même page', () => {
-  let reloads = 0;
-  const firstVisit = onPwaControllerChange(false, () => { reloads++; });
-  firstVisit(); assert.equal(reloads, 0);
-  firstVisit(); assert.equal(reloads, 1);
-  firstVisit(); assert.equal(reloads, 2);
-  const installedVisit = onPwaControllerChange(true, () => { reloads++; });
-  installedVisit(); assert.equal(reloads, 3);
-});
 
 test('Android : les rappels locaux n’attendent pas un abonnement serveur et le refus ouvre les paramètres système', () => {
   const common = { supported: true, iosNeedsInstall: false, checking: false, busy: false,
@@ -51,10 +38,11 @@ test('boutons d’activation : permission, continuation, refus, test et opérati
     t: (key: string, values?: Record<string, string | number>) => translateLocaleMessage('fr', key, values),
   };
   const render = (permission: NotificationPermission, subscribed = false, registered = false, busy = false) => renderToStaticMarkup(createElement(PushActivationCard, {
-    ...common, busy, state: { permission, subscribed, serverRegistered: registered },
+    ...common, busy, state: { permission, subscribed, serverRegistered: registered, remoteAvailable: false },
   }));
   assert.match(render('default'), /Activer les rappels/);
-  assert.match(render('granted'), /Continuer l’activation/);
+  // Web : la livraison distante a été retirée, l'autorisation suffit aux rappels locaux.
+  assert.match(render('granted'), /Tester les rappels/);
   assert.doesNotMatch(render('denied'), /<button/);
   assert.match(render('granted', true, true), /Tester les rappels/);
   assert.match(render('granted', true, true, true), /disabled=""/);
@@ -216,47 +204,6 @@ test('clic natif : fenêtre fermée/échec du focus ouvre une nouvelle fenêtre 
   const dead: NotificationWindow = { url: 'https://app.test/', focused: true, visibilityState: 'visible', focus: async () => { throw Error('closed'); }, postMessage: () => {} };
   await openNotificationTarget('https://evil.test/', 'https://app.test', [dead], async url => { calls.push(url); });
   assert.deepEqual(calls, ['https://app.test/#/notifications']);
-});
-
-test('désactivation hors ligne : retry isolé par compte, borné et supprimé après confirmation', () => {
-  const values = new Map<string, string>();
-  const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value); }, removeItem: (key: string) => { values.delete(key); } };
-  rememberPushCleanup('owner-a', 'https://push.test/a', storage);
-  assert.deepEqual(pendingPushCleanup('owner-b', storage), []);
-  assert.deepEqual(pendingPushCleanup('owner-a', storage), ['https://push.test/a']);
-  forgetPushCleanup('owner-a', 'https://push.test/a', storage); assert.equal(values.size, 0);
-  for (let i = 0; i < 10; i++) rememberPushCleanup('owner-a', `https://push.test/${i}`, storage);
-  assert.equal(pendingPushCleanup('owner-a', storage).length, 5);
-  assert.deepEqual(pendingPushCleanup('owner-a', storage, Date.now() + 15 * 24 * 3600_000), []);
-});
-
-test('désactivation réelle simulée : retrait local hors ligne puis retry serveur sans abonnement local', async context => {
-  const values = new Map<string, string>([['workspaceScope_v1', JSON.stringify({ owner: '0611111111', revision: 'a' })]]);
-  const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value); }, removeItem: (key: string) => { values.delete(key); } };
-  let localSubscription: { endpoint: string; unsubscribe: () => Promise<boolean> } | null = {
-    endpoint: 'https://push.test/current', unsubscribe: async () => { localSubscription = null; return true; },
-  };
-  let online = false;
-  const headers: unknown[] = [];
-  const globals: Record<string, unknown> = {
-    localStorage: storage,
-    window: { isSecureContext: true, PushManager: {}, Notification: {}, setTimeout, clearTimeout },
-    navigator: { serviceWorker: { getRegistration: async () => ({ pushManager: { getSubscription: async () => localSubscription } }) } },
-    fetch: async (_url: string, options: RequestInit) => { headers.push(options.headers); if (!online) throw new TypeError('Offline'); return new Response(JSON.stringify({ ok: true })); },
-  };
-  for (const [key, value] of Object.entries(globals)) {
-    const descriptor = Object.getOwnPropertyDescriptor(globalThis, key);
-    Object.defineProperty(globalThis, key, { configurable: true, value });
-    context.after(() => { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); });
-  }
-  const first = await unsubscribeFromPush();
-  assert.equal(first.localUnsubscribed, true); assert.equal(first.serverUnregistered, false);
-  assert.equal(localSubscription, null); assert.equal(pendingPushCleanup('0611111111', storage).length, 1);
-  online = true;
-  const retry = await unsubscribeFromPush();
-  assert.equal(retry.ok, true); assert.equal(retry.hadSubscription, false);
-  assert.deepEqual(pendingPushCleanup('0611111111', storage), []);
-  assert.equal((headers[1] as Record<string, string>)['X-Workspace-Owner'], '0611111111');
 });
 
 test('mémoire des cahiers : cache borné, éviction sans suppression du stockage, contenu changé relu', context => {

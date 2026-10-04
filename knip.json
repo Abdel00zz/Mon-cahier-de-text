@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": ["public/sw.js"],
   "ignoreBinaries": ["whoami.exe", "icacls.exe"],
   "ignoreDependencies": [
     "@fontsource-variable/dm-sans",
@@ -16,17 +17,19 @@
     "api/messages.ts",
     "api/notify.ts",
     "api/official-events.ts",
-    "api/send-email.ts",
     "api/sync.ts",
     "tests/test-*.ts",
     "tests/firebase-emulator.integration.ts",
     "scripts/firebase/*.ts",
     "scripts/firebase/*.mjs",
     "scripts/benchmarks/benchmark-*.ts",
+    "scripts/benchmarks/baseline.mjs",
     "scripts/guide-preview/main.tsx",
     "scripts/auth-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",
-    "scripts/ux-preview/main.tsx"
+    "scripts/ux-preview/main.tsx",
+    "scripts/visual-review/*.tsx",
+    "scripts/assets/*.mjs"
   ]
 }

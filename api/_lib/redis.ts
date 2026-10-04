@@ -49,9 +49,6 @@ export const KEYS = {
   classes: (phone: string) => `classes:${phone}`,
   lessons: (phone: string, classId: string) => `lessons:${phone}:${classId}`,
   adminSnapshots: 'admin:snapshots',
-  pushSubs: 'push:subs',
-  /** endpoint Web Push -> téléphone propriétaire (unicité globale). */
-  pushEndpointOwners: 'push:endpoint-owners',
   nativePushOwners: 'push:native-owners',
   nativePushDevices: (phone: string) => `push:native:${phone}`,
   adminCalendar: 'admin:calendar',

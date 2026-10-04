@@ -3,7 +3,6 @@ import test from 'node:test';
 import { generateKeyPairSync, createVerify } from 'node:crypto';
 import { applyAppBadge, nextInboxBadge, unreadBadgeCount } from '../src/domain/notifications/appBadge';
 import { notificationPresentation, serializePushNotification } from '../src/domain/notifications/notificationPresentation';
-import { updateWorkerInboxBadge, presentInboxPush, clearWorkerInboxBadge, readInboxBadge } from '../src/pwa/inboxBadge';
 import { fcmConfigured, sendNativePush } from '../api/_lib/fcm.js';
 import { validateNativeToken } from '../api/_lib/nativePush.js';
 import { pendingNativePushCleanup, rememberNativePushCleanup, forgetNativePushCleanup } from '../src/infrastructure/push/nativePushCleanup';
@@ -61,39 +60,6 @@ test('native unsubscribe retries are bounded, account-scoped and binding-specifi
   assert.equal(pendingNativePushCleanup(owner, storage, Date.now() + 15 * 86400_000).length, 0);
   for (let i = 0; i < 10; i++) rememberNativePushCleanup(owner, `${token}${i}`, binding, storage);
   assert.equal(pendingNativePushCleanup(owner, storage).length, 5);
-});
-
-test('worker: inbox persists, stale pushes cannot restore a read or signed-out badge', async () => {
-  const original = Object.getOwnPropertyDescriptor(globalThis, 'caches');
-  const entries = new Map<string, Response>();
-  Object.defineProperty(globalThis, 'caches', { configurable: true, value: {
-    open: async () => ({ match: async (key: string) => entries.get(key)?.clone(),
-      put: async (key: string, response: Response) => { entries.set(key, response); } }),
-    delete: async () => { entries.clear(); return true; },
-  } });
-  let count = 0;
-  let notifications = 0;
-  const target = { setAppBadge: async (value?: number) => { count = value ?? 0; }, clearAppBadge: async () => { count = 0; } };
-  const state = { owner: '212600000001', count: 2, updatedAt: 10 };
-  const show = async () => { notifications++; };
-  try {
-    await updateWorkerInboxBadge(target, { ...state, count: 0, updatedAt: 1 });
-    await presentInboxPush(target, state, show);
-    await presentInboxPush(target, state, show);
-    assert.equal(count, 2); assert.equal(notifications, 1);
-    await updateWorkerInboxBadge(target, { ...state, count: 0, updatedAt: 20 });
-    await presentInboxPush(target, state, show);
-    assert.equal(count, 0); assert.equal(notifications, 1);
-    await updateWorkerInboxBadge(target, { ...state, owner: '212600000002', count: 1, updatedAt: 25 });
-    await presentInboxPush(target, { ...state, updatedAt: 30 }, show);
-    assert.equal(count, 1); assert.equal(notifications, 1);
-    // Clear serialized after an in-flight push must be final.
-    await Promise.all([presentInboxPush(target, { ...state, owner: '212600000002', updatedAt: 35 }, show), clearWorkerInboxBadge(target)]);
-    await presentInboxPush(target, { ...state, updatedAt: 40 }, show);
-    assert.equal(count, 0); assert.equal(await readInboxBadge(), null);
-  } finally {
-    if (original) Object.defineProperty(globalThis, 'caches', original); else Reflect.deleteProperty(globalThis, 'caches');
-  }
 });
 
 test('Web Push: count is independent of the monochrome status-bar icon and reminder deliveries', () => {

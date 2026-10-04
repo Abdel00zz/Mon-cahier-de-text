@@ -1,48 +1,82 @@
-/* Learning cards (lavender), organization notes (amber), completion (mint).
-   These local illustration colors never replace UI status or action tokens. */
+/* Optical surfaces are shared by all eight scenes; ink stays separate from highlights. */
 .dynamic-illustration {
-  --figure-ink: #414454;
-  --figure-line: #707486;
-  --figure-paper: #fcfbf8;
-  --figure-learning: #d9d3f5;
-  --figure-note: #f5d980;
-  --figure-mint: #bcddd0;
+  --art-paper-top: #fdfdff;
+  --art-paper-mid: #f3f6ff;
+  --art-paper-bottom: #dce4f5;
+  --art-edge-light: #ffffff;
+  --art-edge-mid: #e2e9f8;
+  --art-edge-end: #bbc9e3;
+  --art-blue-top: #b7d9ff;
+  --art-blue-mid: #719bef;
+  --art-blue-bottom: #596bcf;
+  --art-mint-top: #bdeade;
+  --art-mint-bottom: #56b5a7;
+  --art-metal-edge: #9aacc9;
+  --art-metal-light: #fafcff;
+  --art-ink: #47566d;
+  --art-writing: #8c9bb2;
+  --art-accent: #476cb7;
+  --art-success: #256b5b;
+  --art-shadow: #34466b;
+  --art-cell: #dce4f1;
+  --art-depth: #acbbd6;
   width: var(--illustration-size, 140px);
   max-width: 100%;
   aspect-ratio: 1;
   flex-shrink: 0;
   user-select: none;
   pointer-events: none;
-  animation: illustration-enter 240ms ease-out both;
 }
 .dark .dynamic-illustration {
-  --figure-ink: #e0e3ec;
-  --figure-line: #a5aabe;
-  --figure-paper: #30373b;
-  --figure-learning: #635f8e;
-  --figure-note: #897446;
-  --figure-mint: #486c61;
+  --art-paper-top: #48556d;
+  --art-paper-mid: #344259;
+  --art-paper-bottom: #253149;
+  --art-edge-light: #acbfdf;
+  --art-edge-mid: #5d7397;
+  --art-edge-end: #344260;
+  --art-blue-top: #9bbfea;
+  --art-blue-mid: #668bc9;
+  --art-blue-bottom: #4e60a8;
+  --art-mint-top: #93ccbd;
+  --art-mint-bottom: #448f88;
+  --art-metal-edge: #5b7092;
+  --art-metal-light: #d3e1f5;
+  --art-ink: #dfebff;
+  --art-writing: #a3b4cf;
+  --art-accent: #b1cbff;
+  --art-success: #173f38;
+  --art-shadow: #070e20;
+  --art-cell: #576984;
+  --art-depth: #1d2940;
 }
 .dynamic-illustration svg { display: block; width: 100%; height: 100%; overflow: visible; stroke-linecap: round; stroke-linejoin: round; }
-.illustration-paper { fill: var(--figure-paper); }
-.illustration-learning { fill: var(--figure-learning); }
-.illustration-note { fill: var(--figure-note); }
-.illustration-mint { fill: var(--figure-mint); }
-.illustration-outline { stroke: var(--figure-line); stroke-width: 1.6; }
-.illustration-ink { stroke: var(--figure-ink); }
-.illustration-ink-fill { fill: var(--figure-ink); }
-.illustration-writing { stroke: var(--figure-ink); stroke-width: 2; opacity: .7; }
-.illustration-grid { stroke: var(--figure-line); stroke-width: 1; opacity: .28; }
-.illustration-success-stroke { stroke: hsl(var(--success-strong)); }
-.illustration-shadow { fill: hsl(var(--foreground) / .08); }
-.illustration-float { animation: illustration-float 2.8s ease-in-out 1; }
-.illustration-pop { transform-box: fill-box; transform-origin: center; animation: illustration-pop 280ms cubic-bezier(.2,.8,.2,1) both; }
-.illustration-transfer { animation: illustration-transfer 280ms ease-out both; }
-.illustration-draw { animation: illustration-enter 250ms ease-out both; }
-@keyframes illustration-enter { from { opacity: 0; } to { opacity: 1; } }
-@keyframes illustration-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@keyframes illustration-pop { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
-@keyframes illustration-transfer { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-@media (prefers-reduced-motion: reduce) {
-  .dynamic-illustration, .dynamic-illustration * { animation: none !important; }
-}
+.art-paper-top { stop-color: var(--art-paper-top); }
+.art-paper-mid { stop-color: var(--art-paper-mid); }
+.art-paper-bottom { stop-color: var(--art-paper-bottom); }
+.art-edge-light { stop-color: var(--art-edge-light); }
+.art-edge-mid { stop-color: var(--art-edge-mid); }
+.art-edge-end { stop-color: var(--art-edge-end); }
+.art-blue-top { stop-color: var(--art-blue-top); }
+.art-blue-mid { stop-color: var(--art-blue-mid); }
+.art-blue-bottom { stop-color: var(--art-blue-bottom); }
+.art-mint-top { stop-color: var(--art-mint-top); }
+.art-mint-bottom { stop-color: var(--art-mint-bottom); }
+.art-metal-edge { stop-color: var(--art-metal-edge); }
+.art-metal-light { stop-color: var(--art-metal-light); }
+.art-halo { stop-color: var(--art-blue-mid); }
+.art-depth { fill: var(--art-depth); }
+.art-heading { fill: var(--art-ink); opacity: .8; }
+.art-writing { stroke: var(--art-writing); stroke-width: 3; }
+.art-ink { stroke: var(--art-ink); }
+.art-accent-line { stroke: var(--art-accent); stroke-width: 3.5; }
+.art-fold { stroke: var(--art-writing); stroke-width: 1.5; opacity: .28; }
+.art-specular { stroke: var(--art-edge-light); stroke-width: 1.5; opacity: .8; }
+.art-light-line { stroke: #f3f8ff; stroke-width: 3; }
+.art-check { stroke: var(--art-success); stroke-width: 4; }
+.art-clock-rim { stroke: var(--art-writing); stroke-width: 1; opacity: .25; }
+.art-scene { transform-origin: 120px 150px; animation: art-arrive 280ms cubic-bezier(.16,1,.3,1) both; }
+.art-detail { transform-origin: 160px 150px; animation: art-detail 280ms cubic-bezier(.16,1,.3,1) both; }
+@keyframes art-arrive { from { opacity: 0; transform: translateY(5px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes art-detail { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .art-scene, .art-detail { animation: none; } }
+@media (forced-colors: active) { .dynamic-illustration { opacity: .85; } }

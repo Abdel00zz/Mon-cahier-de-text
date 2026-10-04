@@ -1545,6 +1545,40 @@ test('robustesse : un JSON importé abîmé ne casse aucun rendu', () => {
   }
 });
 
+test('impression : un titre contenant une formule part en KaTeX, jamais en TeX brut', () => {
+  // « Document non prêt : vérifiez les formules et réessayez » : le garde-fou de
+  // preparePrintContent refuse toute formule non composée restée dans le document
+  // papier. Les titres d'item ET de chapitre/évaluation étaient rendus en texte
+  // brut (MaybeKaTeX rend ses enfants tels quels dès qu'ils sont un arbre riche),
+  // donc une seule formule dans un titre bloquait TOUTE l'impression.
+  const render = (data: Record<string, unknown>, elementType: 'item' | 'chapter' | 'section') => renderToStaticMarkup(
+    React.createElement(LocaleProvider, { locale: 'fr', children:
+      React.createElement(ContentRenderer as never, {
+        data,
+        indices: { chapterIndex: 0, itemIndex: 0 },
+        elementType,
+        isPrint: true,
+        showDescriptions: true,
+        descriptionTypes: ['cours', 'exercice', 'devoir_maison'],
+      } as never),
+    }),
+  );
+  // Équivalent du contrôle réel : hors balises, plus aucun délimiteur $…$
+  // (KaTeX consomme les délimiteurs et ne les réémet pas).
+  const plainText = (html: string) => html.replace(/<[^>]+>/g, ' ');
+  const cases: Array<[string, Record<string, unknown>, 'item' | 'chapter']> = [
+    ['item', { type: 'exercice', title: 'Limite $x^2$ au voisinage', description: 'Calculer.' }, 'item'],
+    ['item sans description', { type: 'cours', title: 'On pose $f(x)=x^2$', description: 'On a $f(x)=x^2$.' }, 'item'],
+    ['chapitre', { type: 'chapter', title: String.raw`Chapitre 3 : Étude de $f(x)=\frac{1}{x}$` }, 'chapter'],
+    ['évaluation', { type: 'devoir_maison', title: 'Devoir $n^2$' }, 'chapter'],
+  ];
+  for (const [label, data, elementType] of cases) {
+    const html = render(data, elementType);
+    assert.ok(html.includes('class="katex"'), `${label} : la formule doit être composée par KaTeX sur le papier`);
+    assert.equal(hasMathSyntax(plainText(html)), false, `${label} : aucun TeX brut ne doit rester sur le papier`);
+  }
+});
+
 test('selection : ouvrir l editeur de contenu ne vide plus la selection', () => {
   const editorSource = readFileSync('src/features/editor/Editor.tsx', 'utf8');
   const open = editorSource.slice(editorSource.indexOf('const handleOpenContentEditor'), editorSource.indexOf('const handleOpenDateModal'));
