@@ -539,7 +539,7 @@ test('ligne libre : déplaçable le long de la structure, jusque sous un titre',
   assert.equal(planContentRelocation(typed, typedTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'up'), null);
 });
 
-test('contenu typé : passe d’un paragraphe à l’autre aux bords de sa liste, et revient', () => {
+test('exercice : passe d’un paragraphe à l’autre aux bords de sa liste, et revient', () => {
   const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [
     { name: 'P1', items: [{ type: 'definition', title: 'D1' }, { type: 'exercice', title: 'Ex1' }] },
     { name: 'P2', items: [{ type: 'exercice', title: 'Ex2' }, { type: 'exercice', title: 'Ex3' }] },
@@ -582,7 +582,7 @@ test('contenu typé : passe d’un paragraphe à l’autre aux bords de sa liste
   assert.deepEqual(titles(blockMoved, 1), []);
 });
 
-test('contenu typé : paragraphe vide sans liste, éléments du chapitre, sous-paragraphes et limites', () => {
+test('exercice : paragraphe vide sans liste, éléments du chapitre, sous-paragraphes et limites', () => {
   // Paragraphe importé sans clé `items` : il accueille quand même le contenu.
   const withEmpty: LessonsData = [{ type: 'chapter', title: 'C', sections: [
     { name: 'P1', items: [{ type: 'exercice', title: 'Ex1' }] },
@@ -597,7 +597,7 @@ test('contenu typé : paragraphe vide sans liste, éléments du chapitre, sous-p
   assert.equal(filled[0].sections!.length, 2, 'aucune liste de structure ne reçoit un contenu');
 
   // Ordre de lecture : éléments du chapitre, puis P1, puis son sous-paragraphe, puis P2.
-  const nested: LessonsData = [{ type: 'chapter', title: 'C', items: [{ type: 'definition', title: 'Racine' }], sections: [
+  const nested: LessonsData = [{ type: 'chapter', title: 'C', items: [{ type: 'exercice', title: 'Racine' }], sections: [
     { name: 'P1', items: [{ type: 'exercice', title: 'A' }], subsections: [{ name: 'S1', items: [{ type: 'exercice', title: 'B' }] }] },
     { name: 'P2', items: [{ type: 'exercice', title: 'C' }] },
   ] }];
@@ -635,19 +635,31 @@ test('contenu typé : paragraphe vide sans liste, éléments du chapitre, sous-p
   assert.equal(planContentTransfer(twoSections, sectionTargets, spanning, 'down'), null);
   // Une section ou un chapitre ne se transfèrent pas : seule la permutation les déplace.
   assert.equal(planContentTransfer(twoSections, sectionTargets, new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0 })]), 'down'), null);
-  // Une évaluation garde sa place : ni devoir ni contrôle ne quittent leur bloc.
-  const pinned: LessonsData = [{ type: 'chapter', title: 'C', sections: [
-    { name: 'P1', items: [{ type: 'devoir_maison', title: 'DM' }] }, { name: 'P2' },
+  // Exclusif aux exercices : tout autre type garde la permutation stricte (et ne quitte jamais sa liste).
+  for (const type of ['definition', 'exemple', 'activité', 'devoir_maison', 'controle_continu']) {
+    const other: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+      { name: 'P1', items: [{ type, title: 'X' }] }, { name: 'P2', items: [{ type, title: 'Y' }] },
+    ] }];
+    const otherTargets = buildSessionTargets(buildLessonRows(other));
+    const atEnd = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 })]);
+    const atStart = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 })]);
+    assert.equal(planContentTransfer(other, otherTargets, atEnd, 'down'), null, type);
+    assert.equal(planContentTransfer(other, otherTargets, atStart, 'up'), null, type);
+  }
+  // Un bloc mêlant exercice et autre type ne traverse pas non plus.
+  const mixed: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'exercice', title: 'A' }, { type: 'definition', title: 'B' }] }, { name: 'P2' },
   ] }];
-  assert.equal(planContentTransfer(pinned, buildSessionTargets(buildLessonRows(pinned)), new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 })]), 'down'), null);
+  const mixedSel = new Set([0, 1].map(itemIndex => indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex })));
+  assert.equal(planContentTransfer(mixed, buildSessionTargets(buildLessonRows(mixed)), mixedSel, 'down'), null);
 });
 
-test('contenu typé : une séance fusionnée (même date) traverse la frontière d’un paragraphe en un lot', () => {
+test('exercice : une séance fusionnée (même date) traverse la frontière d’un paragraphe en un lot', () => {
   const data: LessonsData = [{ type: 'chapter', title: 'C', sections: [
     { name: 'P1', items: [
       { type: 'exercice', title: 'A' },
       { type: 'exercice', title: 'B', date: '2026-09-08' },
-      { type: 'activite', title: 'C', date: '2026-09-08' },
+      { type: 'exercice', title: 'C', date: '2026-09-08' },
     ] },
     { name: 'P2', items: [{ type: 'exercice', title: 'D' }] },
   ] }];

@@ -44,13 +44,13 @@ test('les paramètres comptent cinq onglets et gardent les anciens liens directs
   assert.match(modal, /footer=\{hasProfileChanges \? footer : undefined\}/);
 });
 
-test('le déplacement est un geste de premier rang : boutons dans la barre, Alt+flèches, recentrage', () => {
+test('déplacement : le mécanisme existant (menu de la barre) est conservé, les exercices passent de paragraphe en paragraphe', () => {
   const bar = read('src/features/editor/SelectionBar.tsx');
-  assert.match(bar, /icon=\{ArrowUp\}[\s\S]{0,160}min-\[380px\]:inline-flex/, 'bouton « monter » dans la barre dès 380 px');
-  assert.match(bar, /narrowOnly/, 'sous 380 px, les mêmes actions passent dans le menu');
+  assert.match(bar, /id: 'move-up'/, 'monter reste dans le menu de la barre');
+  assert.ok(!/icon=\{ArrowUp\}/.test(bar), 'aucun nouveau bouton dédié dans la barre');
   const editor = read('src/features/editor/Editor.tsx');
-  assert.match(editor, /event\.altKey[\s\S]{0,200}ArrowUp/, 'Alt + flèche déplace la sélection');
+  assert.ok(!/altKey[\s\S]{0,200}ArrowUp/.test(editor), 'aucun nouveau raccourci clavier');
   assert.match(editor, /moveFocusPendingRef/, 'la ligne déplacée est recentrée');
   const engine = read('src/features/editor/hooks/useSelectionEngine.ts');
-  assert.match(engine, /planContentTransfer/, 'le contenu typé peut changer de paragraphe');
+  assert.match(engine, /planContentTransfer/, 'l’exercice peut changer de paragraphe');
 });

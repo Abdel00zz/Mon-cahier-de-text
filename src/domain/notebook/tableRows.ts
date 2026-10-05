@@ -177,7 +177,21 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
   return items;
 };
 
-export function groupLessonRows(source: LessonRow[]) {
+type GroupedLessonRows = { flatData: FlatDataItem[]; renderRows: RenderRow[] };
+
+/** L'éditeur et le tableau groupent la MÊME liste de lignes (hors recherche) : un seul calcul par
+ *  liste. Le résultat est en lecture seule ; une nouvelle liste (toute édition) recalcule. */
+const groupingCache = new WeakMap<LessonRow[], GroupedLessonRows>();
+
+export function groupLessonRows(source: LessonRow[]): GroupedLessonRows {
+  const cached = groupingCache.get(source);
+  if (cached) return cached;
+  const grouped = computeGroupedLessonRows(source);
+  groupingCache.set(source, grouped);
+  return grouped;
+}
+
+function computeGroupedLessonRows(source: LessonRow[]): GroupedLessonRows {
   const flatData = applyDateMerges(source.map(row => ({ ...row })));
   const rows: RenderRow[] = [];
 

@@ -1195,23 +1195,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     }, 900);
   }, [selectedIndices]);
 
-  // Alt + flèche haut / bas : déplacer la sélection sans quitter le clavier.
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
-      if (activeModal || editingIndicesRef.current !== null) return;
-      const target = event.target;
-      if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], [role="menu"]')) return;
-      const direction = event.key === 'ArrowUp' ? 'up' : 'down';
-      if (!(direction === 'up' ? canMoveUp : canMoveDown)) return;
-      event.preventDefault();
-      moveSelection(direction);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeModal, canMoveDown, canMoveUp, moveSelection]);
-
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
   // varie (retour à la ligne sur mobile, ouverture de la recherche), un

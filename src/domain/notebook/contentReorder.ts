@@ -289,22 +289,19 @@ export function applyContentMove(draft: Draft<LessonsData>, plan: ContentMovePla
   return true;
 }
 
-/* ── Transfert entre conteneurs ───────────────────────────────────────────────
- * Un contenu typé (exercice, définition…) se permute d'abord avec ses frères. Au bord de sa liste
- * (premier ou dernier élément), il passe au conteneur voisin dans l'ordre de lecture du
- * chapitre : la fin du paragraphe précédent en montant, le début du paragraphe suivant en
- * descendant. Un paragraphe vide, même sans liste `items`, accueille le contenu.
- * Le chapitre reste la limite : changer de chapitre bouscule numérotation et progression. */
+/* ── Transfert d'exercices entre conteneurs ───────────────────────────────────
+ * Le mécanisme de base reste la permutation avec le voisin de la même liste (haut / bas).
+ * Il est renforcé pour les SEULS exercices : au bord de sa liste (premier ou dernier élément),
+ * un exercice passe au conteneur voisin dans l'ordre de lecture du chapitre : la fin du
+ * paragraphe précédent en montant, le début du suivant en descendant. Répété, le geste le
+ * fait traverser autant de paragraphes qu'on veut, dans les deux sens. Un paragraphe vide,
+ * même sans liste `items`, l'accueille. Les autres types gardent la permutation stricte.
+ * Le chapitre reste la limite : en changer bouscule numérotation et progression. */
 
-/** Types qui ne quittent jamais leur bloc : évaluations, devoirs, corrections et titres. */
-const PINNED_TYPES = new Set<string>([
-  'chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu',
-  'correction_devoir_maison', 'correction_controle_continu',
-]);
+const EXERCISE_TYPE = 'exercice';
 
-const isTransferable = (item: unknown): boolean =>
-  typeof item === 'object' && item !== null && !PINNED_TYPES.has(String((item as { type?: unknown }).type ?? ''));
-
+const isExercise = (item: unknown): boolean =>
+  typeof item === 'object' && item !== null && (item as { type?: unknown }).type === EXERCISE_TYPE;
 export interface ContentTransferPlan {
   source: { anchor: Indices; parent: unknown; start: number; count: number };
   /** Conteneur d'arrivée (chemin sans itemIndex) et position d'insertion dans sa liste `items`. */
@@ -352,7 +349,7 @@ export function planContentTransfer(
     selectedGroups.add(group);
   }
   const indices = [...selectedGroups].flat();
-  // Seuls des éléments de contenu changent de conteneur : jamais une section ni un chapitre.
+  // Seuls des éléments de contenu (exercices) changent de conteneur : jamais une section ni un chapitre.
   if (indices.some(index => index.itemIndex === undefined)) return null;
 
   const block = getContiguousSiblingBlock(data, indices);
@@ -363,7 +360,7 @@ export function planContentTransfer(
 
   const chapter = data[block.anchor.chapterIndex];
   if (!chapter || chapter.type !== 'chapter') return null;
-  if (!block.parent.slice(block.start, block.start + block.count).every(isTransferable)) return null;
+  if (!block.parent.slice(block.start, block.start + block.count).every(isExercise)) return null;
 
   const containers = collectItemContainers(chapter, block.anchor.chapterIndex);
   const sourceKey = indicesKey(withoutDeepestIndex(block.anchor));
