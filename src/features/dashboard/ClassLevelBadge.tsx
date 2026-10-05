@@ -170,6 +170,9 @@ export const ClassLevelBadge = memo(({ label, tierKey, themeTone, compact = fals
 
 ClassLevelBadge.displayName = 'ClassLevelBadge';
 
+/** Le numéro de classe s'écrit toujours en chiffres latins (1 2 3), même saisi en chiffres arabes. */
+const toLatinDigits = (value: string): string =>
+    value.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, digit => String(digit.charCodeAt(0) & 0xF));
 export interface ClassGroupWatermarkProps {
     group: string;
     label?: string;
@@ -215,7 +218,7 @@ export const ClassGroupWatermark = memo(({
             title={label}
             aria-label={label}
         >
-            <bdi dir="ltr">{group}</bdi>
+            <bdi dir="ltr">{toLatinDigits(group)}</bdi>
         </span>
     );
 });
