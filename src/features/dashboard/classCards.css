@@ -93,9 +93,10 @@
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
 .class-card__title-end { white-space: nowrap; }
 /* Numéro de classe : chiffre serif droit (Newsreader, jamais italique) posé à la fin du nom,
-   sur la même ligne de base, à près de 2 fois le corps du titre. Teinte = accent de la classe
-   (contraste AA déjà validé pour les textes). Un filet fin le sépare du nom, comme une
-   signature gravée. La hauteur de ligne réduite empêche le grand chiffre d'agrandir la ligne. */
+   sur la même ligne de base, à près de 2 fois le corps du titre. Gras, teinte d'accent de la
+   classe rendue translucide, et effet « gravé » : un liseré sombre en haut et un reflet clair
+   en bas donnent l'impression d'un creux dans le papier. La hauteur de ligne réduite empêche
+   le grand chiffre d'agrandir la ligne du titre. */
 .class-card .class-card__group {
   --group-size: 1.95em;
   display: inline-flex;
@@ -103,36 +104,30 @@
   min-width: 0;
   min-height: 0;
   padding: 0;
-  margin-inline-start: .3em;
+  margin-inline-start: .4em;
   transform: none;
   translate: none;
   filter: none;
   font-family: var(--font-latin-display);
   font-size: var(--group-size);
   font-style: normal;
-  font-weight: 500;
+  font-weight: 700;
   font-optical-sizing: auto;
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: 'lnum' 1, 'kern' 1;
   letter-spacing: 0;
   line-height: .7;
   vertical-align: baseline;
-  color: var(--class-accent);
+  color: color-mix(in srgb, var(--class-accent) 68%, transparent);
   opacity: 1;
-  text-shadow: 0 1px 0 rgb(255 255 255 / .55), 0 2px 6px color-mix(in srgb, var(--class-accent) 18%, transparent);
-}
-.class-card .class-card__group::before {
-  content: "";
-  align-self: center;
-  width: 1px;
-  height: .5em;
-  margin-inline-end: .22em;
-  background: color-mix(in srgb, var(--class-accent) 45%, transparent);
+  text-shadow: 0 -1px 0 color-mix(in srgb, var(--class-accent) 38%, transparent), 0 1px 0 rgb(255 255 255 / .7);
 }
 .class-card .class-card__group:hover { transform: none; filter: none; }
 .dark .class-card .class-card__group {
-  text-shadow: 0 1px 0 rgb(0 0 0 / .4), 0 2px 8px color-mix(in srgb, var(--class-accent) 22%, transparent);
-}.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
+  color: color-mix(in srgb, var(--class-accent) 72%, transparent);
+  text-shadow: 0 -1px 0 rgb(0 0 0 / .55), 0 1px 0 rgb(255 255 255 / .1);
+}
+.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
    en interface latine — en arabe, `--font-sans` porte la fonte locale
