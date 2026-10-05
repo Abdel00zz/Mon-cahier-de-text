@@ -1,184 +1,271 @@
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import './dynamic-illustrations.css';
 
 interface IllustrationProps { className?: string; size?: number; }
-type Materials = Record<'paper' | 'edge' | 'blue' | 'mint' | 'metal' | 'shadow', string>;
 
-/** Original painted-storybook scenes: cream paper objects over a sky-and-hills vignette.
- * IDs are instance-local, so scenes can coexist in a dashboard or a modal. */
-function Studio({ children, className, size = 140 }: IllustrationProps & { children: (m: Materials) => ReactNode }) {
-  const id = useId().replace(/:/g, '');
-  const m = Object.fromEntries(['paper', 'edge', 'blue', 'mint', 'metal', 'shadow'].map(key => [key, `url(#${id}-${key})`])) as Materials;
-  return <div aria-hidden="true" className={cn('dynamic-illustration', className)} style={{ '--illustration-size': `${size}px` } as CSSProperties}>
-    <svg viewBox="0 0 240 240" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={`${id}-paper`} x1="0" y1="0" x2=".85" y2="1"><stop className="art-paper-top" /><stop offset=".56" className="art-paper-mid" /><stop offset="1" className="art-paper-bottom" /></linearGradient>
-        <linearGradient id={`${id}-edge`} x1=".1" y1="0" x2=".8" y2="1"><stop className="art-edge-light" /><stop offset=".48" className="art-edge-mid" /><stop offset="1" className="art-edge-end" /></linearGradient>
-        <linearGradient id={`${id}-blue`} x1="0" y1="0" x2="1" y2="1"><stop className="art-blue-top" /><stop offset=".52" className="art-blue-mid" /><stop offset="1" className="art-blue-bottom" /></linearGradient>
-        <linearGradient id={`${id}-mint`} x1="0" y1="0" x2="1" y2="1"><stop className="art-mint-top" /><stop offset="1" className="art-mint-bottom" /></linearGradient>
-        <linearGradient id={`${id}-metal`} x1="0" y1="0" x2="1" y2="0"><stop className="art-metal-edge" /><stop offset=".35" className="art-metal-light" /><stop offset="1" className="art-metal-edge" /></linearGradient>
-        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1"><stop className="art-sky-top" /><stop offset=".72" className="art-sky-horizon" /></linearGradient>
-        <radialGradient id={`${id}-sun`}><stop className="art-sun-core" /><stop offset="1" className="art-sun-edge" /></radialGradient>
-        <clipPath id={`${id}-vignette`}><circle cx="120" cy="124" r="106" /></clipPath>
-        <filter id={`${id}-shadow`} x="-35%" y="-30%" width="175%" height="190%" colorInterpolationFilters="sRGB"><feDropShadow dx="0" dy="7" stdDeviation="5" floodColor="var(--art-shadow)" floodOpacity=".18" /><feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="var(--art-shadow)" floodOpacity=".08" /></filter>
-      </defs>
-      <Backdrop id={id} />
-      <g className="art-scene">{children(m)}</g>
-    </svg>
-  </div>;
+/** One transparent canvas, a shared geometric grid and theme-aware flat colors. */
+function Figure({ children, className, size = 140 }: IllustrationProps & { children: ReactNode }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('dynamic-illustration', className)}
+      style={{ '--illustration-size': `${size}px` } as CSSProperties}
+    >
+      <svg viewBox="0 0 240 240" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <g className="figure-scene">{children}</g>
+      </svg>
+    </div>
+  );
 }
-/** Soft cumulus built from overlapping circles, with a shaded underside. */
-function Cloud({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
+
+/* ── Les personnages ────────────────────────────────────────────────────────
+ * Un seul dessin de personne, décliné en situations pédagogiques : même grille (240),
+ * mêmes aplats, mêmes visages. Les variantes (peau, tenue, cheveux, foulard) donnent
+ * des enseignants et des élèves différents sans changer de style.
+ * Coordonnées locales : tête centrée en (120,100), buste jusqu'à y = 216. */
+
+type Tone = 1 | 2 | 3;
+type Face = 'joy' | 'calm' | 'curious';
+type HairStyle = 'short' | 'long' | 'scarf';
+interface Look { skin: Tone; outfit: Tone; hair?: HairStyle; hairTone?: Tone; }
+
+/** Four-point sparkle, centred on its own origin. */
+const SPARKLE = 'M0 -9Q1.5 -1.5 9 0Q1.5 1.5 0 9Q-1.5 1.5 -9 0Q-1.5 -1.5 0 -9Z';
+
+function Sparkle({ x, y, scale = 1, tone = 'gold', delay = 0 }: { x: number; y: number; scale?: number; tone?: 'gold' | 'soft'; delay?: number }) {
+  return <path transform={`translate(${x} ${y}) scale(${scale})`} d={SPARKLE}
+    className={cn('figure-sparkle', tone === 'gold' ? 'figure-gold' : 'figure-soft')} style={{ animationDelay: `${delay}s` }} />;
+}
+
+/** Sleeve + hand. `front` arms cross the jacket, so their sleeve is a shade darker to stay readable. */
+function Arm({ d, hand, look, front = false }: { d: string; hand?: [number, number]; look: Look; front?: boolean }) {
+  return <>
+    <path d={d} className={cn('figure-sleeve', front ? `figure-sleeve-shade-${look.outfit}` : `figure-sleeve-${look.outfit}`)} />
+    {hand && <Hand at={hand} look={look} />}
+  </>;
+}
+
+function Hand({ at, look }: { at: [number, number]; look: Look }) {
+  return <circle cx={at[0]} cy={at[1]} r="12" className={`figure-skin-${look.skin}`} />;
+}
+function FaceDrawing({ face }: { face: Face }) {
+  if (face === 'joy') {
+    return <>
+      <path d="M104 88Q110 83 116 86M124 86Q130 83 136 88" className="figure-face-line" />
+      <path d="M104 99Q110 92 116 99M124 99Q130 92 136 99" className="figure-face-line figure-face-eyes" />
+      <circle cx="102" cy="112" r="5" className="figure-cheek" />
+      <circle cx="138" cy="112" r="5" className="figure-cheek" />
+      <path d="M106 109Q120 134 134 109Z" className="figure-mouth" />
+      <path d="M108.5 109.5H131.5Q120 117 108.5 109.5Z" className="figure-teeth" />
+    </>;
+  }
+  if (face === 'curious') {
+    return <>
+      <path d="M104 87Q110 82 116 85M124 88Q130 86 136 88" className="figure-face-line" />
+      <circle cx="113" cy="98" r="3" className="figure-face-dot" />
+      <circle cx="133" cy="98" r="3" className="figure-face-dot" />
+      <ellipse cx="124" cy="115" rx="4.5" ry="3.6" className="figure-mouth" />
+    </>;
+  }
+  return <>
+    <path d="M104 89Q110 86 116 88M124 88Q130 86 136 89" className="figure-face-line" />
+    <circle cx="110" cy="98" r="3" className="figure-face-dot" />
+    <circle cx="130" cy="98" r="3" className="figure-face-dot" />
+    <circle cx="102" cy="111" r="4.5" className="figure-cheek" />
+    <circle cx="138" cy="111" r="4.5" className="figure-cheek" />
+    <path d="M109 111Q120 122 131 111" className="figure-face-line" />
+  </>;
+}
+
+interface PersonProps {
+  x?: number; y?: number; scale?: number;
+  look: Look; face?: Face; breathe?: boolean;
+  /** Drawn behind the body (raised arms). */
+  back?: ReactNode;
+  /** Drawn over the body (props held in front, crossing arms). */
+  front?: ReactNode;
+}
+
+function Person({ x = 0, y = 0, scale = 1, look, face = 'calm', breathe = false, back, front }: PersonProps) {
+  const { skin, outfit, hair = 'short', hairTone = 1 } = look;
+  const skinClass = `figure-skin-${skin}`;
+  const hairClass = `figure-hair-${hairTone}`;
+  const scarf = hair === 'scarf';
   return <g transform={`translate(${x} ${y}) scale(${scale})`}>
-    <ellipse cx="18" cy="9" rx="24" ry="6" className="art-cloud-shade" />
-    <circle cx="4" cy="2" r="9" className="art-cloud" /><circle cx="17" cy="-5" r="13" className="art-cloud" />
-    <circle cx="31" cy="1" r="9" className="art-cloud" /><rect x="-4" y="1" width="44" height="9" rx="4.5" className="art-cloud" />
-  </g>;
-}
-
-/** Shared painted vignette: sky, sun (moon at night), clouds, layered hills, motes. */
-function Backdrop({ id }: { id: string }) {
-  return <g>
-    <g clipPath={`url(#${id}-vignette)`}>
-      <rect x="0" y="0" width="240" height="240" fill={`url(#${id}-sky)`} />
-      <circle cx="180" cy="56" r="58" fill={`url(#${id}-sun)`} />
-      <g className="art-cloud-drift"><Cloud x={38} y={58} scale={1.05} /></g>
-      <g className="art-cloud-drift art-cloud-drift--slow"><Cloud x={150} y={92} scale={.7} /></g>
-      <path d="M0 168Q46 140 96 156T196 144T250 158V240H0Z" className="art-hill-far" />
-      <path d="M-10 192Q58 162 128 184T252 176V240H-10Z" className="art-hill-near" />
-      <path d="M-10 214Q70 198 150 210T252 204V240H-10Z" className="art-hill-front" />
+    <g className={breathe ? 'figure-breathe' : undefined}>
+      {back}
+      {hair === 'long' && <path d="M90 98C82 136 84 158 102 164H138C156 158 158 136 150 98Z" className={hairClass} />}
+      {scarf && <path d="M87 100C83 60 103 52 120 52C137 52 157 60 153 100C153 124 151 142 147 158H93C89 142 87 124 87 100Z" className="figure-soft" />}
+      <path d="M70 216V178Q70 150 98 146H142Q170 150 170 178V216Z" className={`figure-outfit-${outfit}`} />
+      {scarf
+        ? <path d="M93 143Q120 178 147 143Q120 152 93 143Z" className="figure-soft" />
+        : <>
+          <path d="M104 146L120 172L136 146Z" className="figure-paper" />
+          <rect x="109" y="122" width="22" height="28" rx="9" className={skinClass} />
+        </>}
+      {!scarf && <>
+        <circle cx="93" cy="102" r="5.5" className={skinClass} />
+        <circle cx="147" cy="102" r="5.5" className={skinClass} />
+      </>}
+      <ellipse cx="120" cy="100" rx="27" ry="30" className={skinClass} />
+      {scarf
+        ? <path d="M92 93C92 70 107 63 120 63C133 63 148 70 148 93C141 80 133 76 120 76C107 76 99 80 92 93Z" className="figure-soft" />
+        : <path d="M92 100C87 62 112 57 122 59C147 57 153 80 148 100C144 86 136 77 120 77C104 77 96 86 92 100Z" className={hairClass} />}
+      <FaceDrawing face={face} />
+      {front}
     </g>
-    <circle cx="120" cy="124" r="106" className="art-rim" />
-    <g><circle cx="34" cy="132" r="2.2" className="art-mote art-mote-float" /><circle cx="206" cy="120" r="1.8" className="art-mote art-mote-float" /><circle cx="196" cy="186" r="2.4" className="art-mote art-mote-float" /></g>
   </g>;
 }
 
-/** A small pistachio leaf, the recurring hand-painted signature of the set. */
-function Leaf({ x, y, rotate = 0, m }: { x: number; y: number; rotate?: number; m: Materials }) {
-  return <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
-    <path d="M0 0C10-11 25-12 33-7C25 4 11 7 0 0Z" fill={m.blue} />
-    <path d="M3 -1Q17 -5 30 -7" className="art-leaf-vein" />
-  </g>;
+/* ── Les situations ─────────────────────────────────────────────────────────*/
+
+const TEACHER_A: Look = { skin: 1, outfit: 1 };
+
+/** Le travail avance : l'enseignant lève les bras, l'étoile sur la veste dit sa fierté. */
+export function ProudTeacherIllustration(props: IllustrationProps) {
+  return <Figure {...props}>
+    <Sparkle x={34} y={70} delay={0} />
+    <Sparkle x={206} y={58} tone="soft" delay={.6} />
+    <Sparkle x={176} y={26} scale={.7} delay={1.2} />
+    <Sparkle x={62} y={28} scale={.6} tone="soft" delay={1.8} />
+    <circle cx="20" cy="124" r="4" className="figure-soft" />
+    <circle cx="222" cy="112" r="4" className="figure-gold" />
+    <Person look={TEACHER_A} face="joy" breathe
+      back={<>
+        <Arm d="M84 172Q50 162 46 120" hand={[46, 108]} look={TEACHER_A} />
+        <Arm d="M156 172Q190 162 194 120" hand={[194, 108]} look={TEACHER_A} />
+      </>}
+      front={<path transform="translate(146 174)" d="M0 -8L1.9 -2.6L7.6 -2.5L3 1L4.7 6.5L0 3.2L-4.7 6.5L-3 1L-7.6 -2.5L-1.9 -2.6Z" className="figure-gold" />} />
+  </Figure>;
 }
 
-function Panel({ m, x, y, width, height, radius = 18, fill, children }: { m: Materials; x: number; y: number; width: number; height: number; radius?: number; fill?: string; children?: ReactNode }) {
-  return <g>
-    <rect x={x} y={y + 3} width={width} height={height} rx={radius} className="art-depth" />
-    <rect x={x} y={y} width={width} height={height} rx={radius} fill={fill ?? m.paper} stroke={m.edge} strokeWidth="1.5" />
-    <path d={`M${x + 5} ${y + radius + 3}Q${x + 5} ${y + 5} ${x + radius + 3} ${y + 5}H${x + width - radius}`} className="art-specular" />
-    {children}
-  </g>;
-}
-function Writing({ x, y, width = 55 }: { x: number; y: number; width?: number }) {
-  return <path d={`M${x} ${y}H${x + width}M${x} ${y + 13}H${x + width * .72}`} className="art-writing" />;
-}
-function Checkmark({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
-  return <path d="M-12 0L-3 9L14-10" transform={`translate(${x} ${y}) scale(${size})`} className="art-check" />;
-}
+const ACHIEVER: Look = { skin: 2, outfit: 3, hair: 'long', hairTone: 2 };
 
-export function NotebookOpeningIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-8 116 129)" filter={m.shadow}>
-      <path d="M34 65Q77 54 117 73Q157 54 200 65V179Q157 167 117 186Q77 167 34 179Z" fill={m.blue} />
-      <path d="M39 60Q80 53 117 70Q154 53 195 60V171Q154 163 117 181Q80 163 39 171Z" fill={m.paper} stroke={m.edge} strokeWidth="1.5" />
-      <path d="M117 72V174" className="art-fold" />
-      <path d="M45 66Q79 61 110 74M124 74Q154 61 189 66" className="art-specular" />
-      <Writing x={55} y={91} width={43} /><Writing x={55} y={126} width={38} /><Writing x={133} y={91} width={43} />
-      <rect x="133" y="122" width="40" height="27" rx="8" fill={m.blue} opacity=".22" /><Leaf m={m} x={150} y={160} rotate={-18} />
-    </g>
-    <g className="art-detail"><g transform="rotate(28 182 124)" filter={m.shadow}>
-      <rect x="176" y="58" width="13" height="118" rx="6.5" fill={m.metal} stroke={m.edge} />
-      <path d="M177 170H188L182.5 185Z" fill={m.paper} /><path d="M182.5 185V181" className="art-ink" strokeWidth="2.5" />
-      <path d="M176.5 74H188.5" className="art-fold" /><path d="M179 80V157" className="art-specular" />
-    </g></g>
-  </>}</Studio>;
-}
-
+/** Tout est à jour : une enseignante sereine tient sa liste de séances cochées. */
 export function SereneStudyIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-9 114 123)" filter={m.shadow}><Panel m={m} x={56} y={39} width={120} height={158} fill={m.mint} /></g>
-    <g transform="rotate(3 118 119)" filter={m.shadow}><Panel m={m} x={57} y={33} width={120} height={158}>
-      <rect x="76" y="55" width="52" height="8" rx="4" className="art-heading" />
-      {[86, 115, 144].map((y, i) => <g key={y}><rect x="76" y={y - 7} width="15" height="15" rx="5" fill={m.mint} opacity=".35" /><Checkmark x={83} y={y} size={.34} /><path d={`M103 ${y}H${i === 2 ? 134 : 152}`} className="art-writing" /></g>)}
-    </Panel></g>
-    <g className="art-detail" filter={m.shadow}><circle cx="178" cy="169" r="31" fill={m.mint} stroke={m.edge} strokeWidth="1.5" /><path d="M153 161A26 26 0 0 1 188 146" className="art-specular" /><Checkmark x={178} y={169} size={1.1} /><Leaf m={m} x={196} y={140} rotate={-40} /></g>
-  </>}</Studio>;
+  return <Figure {...props}>
+    <circle cx="186" cy="64" r="22" className="figure-success" />
+    <path d="M175 64L183 72L197 55" className="figure-cut" />
+    <Sparkle x={40} y={62} tone="soft" delay={.3} />
+    <Sparkle x={58} y={34} scale={.6} delay={1.1} />
+    <Person look={ACHIEVER} face="calm" breathe
+      front={<>
+        <Arm d="M84 176Q86 198 120 196" look={ACHIEVER} front />
+        <Arm d="M156 176Q176 182 172 206" look={ACHIEVER} front />
+        <rect x="108" y="142" width="70" height="74" rx="9" className="figure-neutral" />
+        <rect x="114" y="152" width="58" height="64" rx="5" className="figure-paper" />
+        <rect x="131" y="146" width="22" height="10" rx="4" className="figure-ink" />
+        <path d="M122 170L126 174L133 166M122 188L126 192L133 184" className="figure-line figure-success-line" />
+        <path d="M140 170H164M140 188H164M140 206H156" className="figure-line figure-muted-line" />
+        <rect x="122" y="200" width="10" height="10" rx="2.5" className="figure-line figure-muted-line" />
+        <Hand at={[108, 198]} look={ACHIEVER} />
+        <Hand at={[177, 208]} look={ACHIEVER} />
+      </>} />
+  </Figure>;
 }
 
+const WELCOMER: Look = { skin: 1, outfit: 1 };
+const STUDENT_A: Look = { skin: 2, outfit: 2, hair: 'long', hairTone: 1 };
+const STUDENT_B: Look = { skin: 3, outfit: 3, hairTone: 1 };
+
+/** Nouvelle classe : l'enseignant accueille deux élèves qui lèvent la main. */
 export function ClassroomWelcomeIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-10 120 115)" filter={m.shadow}><Panel m={m} x={45} y={44} width={144} height={130} fill={m.blue} /></g>
-    <g transform="rotate(3 120 129)" filter={m.shadow}><Panel m={m} x={36} y={68} width={166} height={120}>
-      <rect x="53" y="83" width="41" height="5" rx="2.5" className="art-heading" />
-      <circle cx="87" cy="119" r="13" fill={m.blue} /><path d="M62 160C62 133 112 133 112 160Q112 166 106 166H68Q62 166 62 160Z" fill={m.blue} />
-      <circle cx="150" cy="119" r="13" fill={m.mint} /><path d="M125 160C125 133 175 133 175 160Q175 166 169 166H131Q125 166 125 160Z" fill={m.mint} />
-      <path d="M78 111Q84 106 91 109M141 111Q147 106 154 109" className="art-specular" />
-    </Panel></g>
-    <g className="art-detail" filter={m.shadow}><circle cx="187" cy="63" r="23" fill={m.paper} stroke={m.edge} strokeWidth="1.5" /><path d="M187 53V73M177 63H197" className="art-accent-line" /><Leaf m={m} x={198} y={44} rotate={-30} /></g>
-  </>}</Studio>;
+  return <Figure {...props}>
+    <Sparkle x={36} y={62} delay={.2} />
+    <Sparkle x={204} y={50} tone="soft" delay={.9} />
+    <Person x={18} y={32.4} scale={.85} look={WELCOMER} face="joy" breathe
+      back={<Arm d="M156 172Q190 162 194 120" hand={[194, 108]} look={WELCOMER} />} />
+    <Person x={-9.2} y={116.6} scale={.46} look={STUDENT_A} face="joy"
+      back={<Arm d="M84 172Q50 160 46 120" hand={[46, 108]} look={STUDENT_A} />} />
+    <Person x={138.8} y={116.6} scale={.46} look={STUDENT_B} face="joy"
+      back={<Arm d="M156 172Q190 160 194 120" hand={[194, 108]} look={STUDENT_B} />} />
+  </Figure>;
 }
 
+const LIBRARIAN: Look = { skin: 1, outfit: 3, hair: 'long', hairTone: 2 };
+
+/** Choisir ses matières : une enseignante porte une pile de manuels. */
 export function SubjectsLibraryIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-20 103 133)" filter={m.shadow}><Panel m={m} x={36} y={59} width={88} height={133} fill={m.mint}><path d="M53 80H91M53 91H77" className="art-light-line" /></Panel></g>
-    <g transform="rotate(17 151 127)" filter={m.shadow}><Panel m={m} x={112} y={43} width={83} height={138} fill={m.blue}><circle cx="153" cy="74" r="12" className="art-light-line" /></Panel></g>
-    <g filter={m.shadow}><Panel m={m} x={68} y={60} width={104} height={140}>
-      <path d="M83 62V195" className="art-fold" />
-      <rect x="98" y="84" width="55" height="56" rx="15" fill={m.blue} opacity=".16" />
-      <path d="M107 103H119M113 97V109M134 98L144 108M144 98L134 108M107 125H119M135 122H145M135 128H145" className="art-accent-line" strokeWidth="2.8" />
-      <Writing x={100} y={161} width={47} />
-    </Panel></g>
-  </>}</Studio>;
+  return <Figure {...props}>
+    <Sparkle x={38} y={76} tone="soft" delay={.4} />
+    <Sparkle x={204} y={64} delay={1} />
+    <Person look={LIBRARIAN} face="joy" breathe
+      front={<>
+        <rect x="70" y="192" width="100" height="24" rx="6" className="figure-book-cover" />
+        <path d="M82 204H158" className="figure-book-bands" />
+        <rect x="78" y="168" width="86" height="24" rx="6" className="figure-book-spine" />
+        <path d="M90 180H152" className="figure-book-bands" />
+        <rect x="74" y="148" width="92" height="20" rx="6" className="figure-book-pages" />
+        <path d="M86 158H150" className="figure-book-page-lines" />
+        <Arm d="M84 172Q60 178 68 202" hand={[70, 200]} look={LIBRARIAN} front />
+        <Arm d="M156 172Q180 178 172 202" hand={[170, 200]} look={LIBRARIAN} front />
+      </>} />
+  </Figure>;
 }
 
+const PLANNER: Look = { skin: 1, outfit: 2, hair: 'scarf' };
+
+/** Emploi du temps : l'enseignante montre une case sur le planning de la semaine. */
 export function SchedulePlanningIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-5 113 114)" filter={m.shadow}><Panel m={m} x={37} y={43} width={152} height={145}>
-      <path d="M38 64Q38 44 57 44H169Q188 44 188 64V81H38Z" fill={m.blue} opacity=".22" />
-      <rect x="67" y="33" width="9" height="26" rx="4.5" fill={m.metal} /><rect x="151" y="33" width="9" height="26" rx="4.5" fill={m.metal} />
-      {[0,1,2].flatMap(row => [0,1,2,3].map(col => <rect key={`${row}-${col}`} x={58 + col * 30} y={96 + row * 24} width="16" height="13" rx="5" fill={row === 1 && col === 1 ? m.blue : row === 0 && col === 2 ? m.mint : 'var(--art-cell)'} />))}
-    </Panel></g>
-    <g className="art-detail" filter={m.shadow}><circle cx="175" cy="174" r="32" fill={m.paper} stroke={m.edge} strokeWidth="1.5" /><circle cx="175" cy="174" r="25" className="art-clock-rim" /><path d="M175 156V174L187 181" className="art-accent-line" /><circle cx="175" cy="174" r="3" className="art-heading" /></g>
-  </>}</Studio>;
+  return <Figure {...props}>
+    <rect x="116" y="52" width="108" height="140" rx="12" className="figure-paper" />
+    <path d="M128 52H212Q224 52 224 64V84H116V64Q116 52 128 52Z" className="figure-soft" />
+    <path d="M144 44V62M196 44V62" className="figure-line" />
+    {[0, 1, 2].flatMap(row => [0, 1, 2].map(col => (
+      <rect key={`${row}-${col}`} x={130 + col * 30} y={98 + row * 30} width="20" height="20" rx="5"
+        className={row === 1 && col === 1 ? 'figure-accent' : 'figure-neutral'} />
+    )))}
+    <Person x={-26} y={43.2} scale={.8} look={PLANNER} face="calm" breathe
+      back={<Arm d="M156 172Q196 162 218 122" hand={[218, 120]} look={PLANNER} />} />
+    <Sparkle x={40} y={44} tone="soft" delay={.5} />
+  </Figure>;
 }
 
+const SEEKER: Look = { skin: 3, outfit: 1 };
+
+/** Aucun résultat : l'enseignant cherche, loupe en main, parmi ses fiches. */
 export function LessonSearchIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-8 100 115)" filter={m.shadow}><Panel m={m} x={44} y={37} width={115} height={152}>
-      <rect x="63" y="58" width="39" height="7" rx="3.5" className="art-heading" />
-      <Writing x={63} y={84} width={72} /><Writing x={63} y={118} width={58} />
-      <rect x="63" y="155" width="36" height="10" rx="5" fill={m.blue} opacity=".24" />
-    </Panel></g>
-    <g className="art-detail" filter={m.shadow}>
-      <path d="M158 153L187 184" stroke={m.metal} strokeWidth="15" strokeLinecap="round" />
-      <path d="M161 154L189 184" className="art-specular" />
-      <circle cx="135" cy="125" r="36" fill={m.blue} fillOpacity=".14" stroke={m.blue} strokeWidth="12" />
-      <circle cx="135" cy="125" r="41" stroke={m.edge} strokeWidth="1.5" />
-      <path d="M103 110A35 35 0 0 1 147 92" className="art-specular" strokeWidth="2" />
-      <path d="M121 119H147M121 131H140" className="art-accent-line" strokeWidth="3" />
+  return <Figure {...props}>
+    <g transform="rotate(-8 46 112)">
+      <rect x="20" y="78" width="52" height="68" rx="7" className="figure-neutral" />
+      <rect x="27" y="86" width="52" height="68" rx="7" className="figure-paper" />
+      <path d="M38 104H68M38 118H68M38 132H56" className="figure-line figure-muted-line" />
     </g>
-  </>}</Studio>;
+    <Person look={SEEKER} face="curious" breathe
+      back={<>
+        <path d="M173 121L167 138" className="figure-line figure-search-handle" />
+        <Arm d="M156 172Q182 172 169 142" hand={[168, 140]} look={SEEKER} />
+        <circle cx="190" cy="104" r="24" className="figure-lens" />
+      </>} />  </Figure>;
 }
 
+const MENTOR: Look = { skin: 2, outfit: 1, hairTone: 3 };
+
+/** Les cycles : l'enseignant montre la montée du primaire au lycée. */
 export function TeachingCyclesIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g filter={m.shadow}><Panel m={m} x={31} y={132} width={49} height={65} fill={m.paper} /><Panel m={m} x={94} y={99} width={49} height={98} fill={m.mint} /><Panel m={m} x={157} y={61} width={49} height={136} fill={m.blue} />
-      <path d="M44 149H64M44 158H57" className="art-writing" /><path d="M108 116H128M108 125H121M171 78H191M171 87H184" className="art-light-line" />
-    </g>
-    <path d="M49 111C73 64 117 65 141 36M125 37L141 36L141 52" className="art-accent-line" strokeWidth="3" />
-    <circle cx="48" cy="110" r="4" fill={m.blue} />
-  </>}</Studio>;
+  return <Figure {...props}>
+    <rect x="108" y="172" width="30" height="44" rx="6" className="figure-neutral" />
+    <rect x="142" y="140" width="30" height="76" rx="6" className="figure-soft" />
+    <rect x="176" y="104" width="30" height="112" rx="6" className="figure-accent" />
+    <path d="M116 162L156 126L196 86M182 86H196V100" className="figure-line" />
+    <Person x={-22} y={64.8} scale={.7} look={MENTOR} face="joy" breathe
+      back={<Arm d="M156 172Q190 152 200 112" hand={[200, 100]} look={MENTOR} />} />
+    <Sparkle x={214} y={62} scale={.8} delay={.8} />
+  </Figure>;
 }
 
+const IMPORTER: Look = { skin: 2, outfit: 3, hairTone: 2 };
+
+/** Programme officiel : l'enseignant tend la main vers le document qu'il va importer. */
 export function CurriculumImportIllustration(props: IllustrationProps) {
-  return <Studio {...props}>{m => <>
-    <g transform="rotate(-9 79 105)" filter={m.shadow}><Panel m={m} x={32} y={38} width={95} height={130}>
-      <rect x="49" y="58" width="28" height="7" rx="3.5" className="art-heading" /><Writing x={49} y={84} width={58} /><Writing x={49} y={117} width={48} />
-    </Panel></g>
-    <g transform="rotate(7 162 137)" filter={m.shadow}><Panel m={m} x={113} y={70} width={93} height={129} fill={m.blue}>
-      <path d="M128 74V194" className="art-light-line" strokeOpacity=".4" /><rect x="142" y="93" width="45" height="47" rx="11" fill={m.paper} /><path d="M153 109H176M153 120H168" className="art-writing" />
-    </Panel></g>
-    <g className="art-detail" filter={m.shadow}><Panel m={m} x={65} y={156} width={73} height={38} radius={19}><path d="M83 175H120M112 167L120 175L112 183" className="art-accent-line" /></Panel></g>
-  </>}</Studio>;
+  return <Figure {...props}>
+    <path d="M42 46H99L122 69V149Q122 157 114 157H42Q34 157 34 149V54Q34 46 42 46Z" className="figure-paper" />
+    <path d="M99 46V69H122Z" className="figure-neutral" />
+    <path d="M54 86H96M54 104H84M54 122H90" className="figure-line figure-muted-line" />
+    <path d="M40 196H86M74 184L86 196L74 208" className="figure-line" />
+    <Person x={64} y={43.2} scale={.8} look={IMPORTER} face="joy" breathe
+      back={<Arm d="M84 174Q52 176 44 150" hand={[44, 142]} look={IMPORTER} />} />
+    <Sparkle x={206} y={50} delay={.5} />
+  </Figure>;
 }

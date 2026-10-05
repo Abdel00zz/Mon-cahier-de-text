@@ -2,12 +2,15 @@ import React from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 import { LoadingSpinner } from './LoadingSpinner';
-import { LoadingMessage } from './LoadingMessage';
 import type { BootstrapProgress, BootstrapStep } from '@/domain/sync/bootstrapProgress';
 import './page-loading.css';
 
+/**
+ * Indicateur de navigation : le spinner seul. Aucun texte visible sous le spinner ;
+ * les lecteurs d'écran reçoivent un état « Chargement… » unique.
+ */
 export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay = false }) => {
-  const { isRtl } = useLocale();
+  const { isRtl, t } = useLocale();
   return <div
     role="status"
     aria-live="polite"
@@ -16,7 +19,7 @@ export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay 
   >
     <div className="page-transition-loader__content">
       <LoadingSpinner />
-      <LoadingMessage className="font-sans text-sm font-medium text-muted-foreground" />
+      <span className="sr-only">{t('common.loading')}</span>
     </div>
   </div>;
 };
@@ -37,15 +40,18 @@ const STEP_LABELS: Record<BootstrapStep, string> = {
   classes: 'boot.progress.classes',
 };
 
+/**
+ * Écran d'ouverture : spinner, un seul titre et, pendant le premier chargement cloud,
+ * une barre de progression sans texte. Le détail des étapes n'est plus affiché :
+ * il reste disponible pour les lecteurs d'écran (sr-only).
+ */
 export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'workspace', overlay = false, progress }) => {
   const { isRtl, t } = useLocale();
 
   const isLatexLoading = stage === 'latex';
   const showsProgress = !isLatexLoading && progress !== undefined;
-  const title = isLatexLoading
-    ? t('boot.latex.title')
-    : t('boot.workspace.title');
-  const detail = isLatexLoading ? t('boot.latex.detail') : t('boot.workspace.detail');
+  const title = isLatexLoading ? t('boot.latex.title') : t('boot.workspace.title');
+  const stepLabel = progress && !progress.complete ? t(STEP_LABELS[progress.steps[progress.index]]) : '';
 
   return (
     <div
@@ -62,27 +68,10 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
         <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
           {title}
         </p>
-        {isLatexLoading
-          ? <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">{detail}</p>
-          : <LoadingMessage className="mt-1 font-sans text-xs text-muted-foreground" />}
         {showsProgress && (
-          <div className="mt-5 text-start">
-            <ol className="space-y-1.5">
-              {progress.steps.map((step, index) => {
-                const state = progress.complete || index < progress.index ? 'done' : index === progress.index ? 'active' : 'pending';
-                return (
-                  <li key={step} className="flex items-center gap-2 font-sans text-xs text-muted-foreground">
-                    <span
-                      aria-hidden="true"
-                      className={`size-1.5 shrink-0 rounded-full transition-colors duration-200 ${state === 'pending' ? 'bg-muted-foreground/40' : 'bg-primary'}`}
-                    />
-                    <span className={state === 'pending' ? undefined : 'font-medium text-foreground'}>{t(STEP_LABELS[step])}</span>
-                  </li>
-                );
-              })}
-            </ol>
+          <>
             <div
-              className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"
+              className="mx-auto mt-5 h-1.5 w-full max-w-[14rem] overflow-hidden rounded-full bg-muted"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
@@ -90,20 +79,17 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
               aria-label={t('boot.progress.ariaLabel', { percent: progress.percent })}
             >
               <span
-                className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
                 style={{ width: `${progress.percent}%` }}
               />
             </div>
-            {progress.complete && (
-              <p className="mt-2 font-sans text-xs font-medium text-foreground">{t('boot.progress.done')}</p>
-            )}
-          </div>
+            <span className="sr-only">{progress.complete ? t('boot.progress.done') : stepLabel}</span>
+          </>
         )}
       </section>
     </div>
   );
 };
-
 export const DashboardSkeleton: React.FC = () => {
   const { t } = useLocale();
   return (

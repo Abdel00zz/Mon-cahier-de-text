@@ -4,6 +4,7 @@
   "ignoreBinaries": ["whoami.exe", "icacls.exe"],
   "ignoreDependencies": [
     "@fontsource-variable/dm-sans",
+    "@fontsource-variable/newsreader",
     "@fontsource-variable/roboto-slab",
     "@fontsource-variable/rubik",
     "@fontsource/lato",

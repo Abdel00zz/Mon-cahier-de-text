@@ -1,19 +1,22 @@
-import React, { FC } from 'react';
-import { motion, MotionConfig } from 'framer-motion';
+import React, { FC, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
-  Pencil, Trash2, MoreVertical, X,
+  Pencil, Trash2, MoreVertical,
 } from '@/components/ui/icons';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
-interface SelectionBarProps {
+export interface SelectionBarProps {
+  /** Sert à la logique et à l'annonce vocale ; jamais affiché. */
   count: number;
   hasDate: boolean;
+  /** Toutes les lignes choisies portent déjà la date du jour : « Aujourd'hui » n'a plus de sens. */
+  allToday?: boolean;
   canAdd: boolean;
   canAssignDate: boolean;
   onAdd: () => void;
@@ -22,6 +25,7 @@ interface SelectionBarProps {
   onClearDate: () => void;
   onEdit?: () => void;
   onDelete: () => void;
+  /** Désélection : Échap, balayage vers le bas, clic hors de la liste (géré par l'éditeur). */
   onClear: () => void;
   canEdit?: boolean;
   canMoveUp?: boolean;
@@ -32,151 +36,210 @@ interface SelectionBarProps {
 }
 
 type IconType = React.ComponentType<{ className?: string }>;
-interface Action {
-  id: string;
+
+interface ActionButtonProps {
   icon: IconType;
   onClick: () => void;
   title: string;
+  label?: string;
+  accent?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
-const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean; className?: string }> = ({
-  icon: Icon, onClick, title, label, accent = false, disabled = false, className,
-}) => (
-  <motion.button
+const ActionButton: FC<ActionButtonProps> = ({ icon: Icon, onClick, title, label, accent = false, disabled = false, className }) => (
+  <button
     type="button"
     onClick={onClick}
     title={title}
     aria-label={title}
     disabled={disabled}
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.90 }}
-    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
     className={cn(
-      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer touch-manipulation',
-      label ? 'h-11 px-2.5 sm:px-3 gap-1.5 sm:gap-2' : 'h-11 w-11 p-0',
+      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl cursor-pointer touch-manipulation',
+      label ? 'h-11 gap-1.5 px-3 sm:gap-2' : 'h-11 w-11 p-0',
       accent
-        ? 'bg-primary/15 text-primary hover:bg-primary/25 font-semibold'
+        ? 'bg-primary/15 font-semibold text-primary hover:bg-primary/25'
         : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
-      disabled && 'opacity-50 pointer-events-none', className
+      'disabled:pointer-events-none disabled:opacity-50',
+      className,
     )}
   >
-    <Icon aria-hidden className="size-[18px] shrink-0" />
-    {label && <span className="whitespace-nowrap font-sans text-xs sm:text-sm font-semibold">{label}</span>}
-  </motion.button>
+    <Icon aria-hidden className="size-[22px] shrink-0" />
+    {label && <span className="whitespace-nowrap font-sans text-sm font-semibold">{label}</span>}
+  </button>
 );
 
-/** Actions fréquentes visibles ; le reste dans un menu accessible, sans rail masqué. */
-export const SelectionBar: FC<SelectionBarProps> = ({
-  count, hasDate, canAdd, canAssignDate, onAdd, onAssignDate, onAssignToday,
-  onClearDate, onEdit, onDelete, onClear, canEdit, canMoveUp = false,
-  canMoveDown = false, onMoveUp, onMoveDown, isPending = false,
+const EXIT_MS = 180;
+const DISMISS_DISTANCE = 44;
+
+/**
+ * Contenu de la barre. Pendant un calcul de sélection (isPending), toute action est
+ * verrouillée : aucune mutation ne doit partir d'une sélection pas encore à jour.
+ * Les actions suivent la situation :
+ * - « Aujourd'hui » disparaît quand tout porte déjà la date du jour ;
+ * - « Modifier » n'existe que pour un contenu unique ;
+ * - le déplacement n'apparaît que s'il est possible ;
+ * - « Dissocier la date » n'est proposé que s'il y a une date.
+ */
+const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = ({
+  count, hasDate, allToday = false, canAdd, canAssignDate, onAdd, onAssignDate, onAssignToday,
+  onClearDate, onEdit, onDelete, onClear, canEdit, canMoveUp = false, canMoveDown = false,
+  onMoveUp, onMoveDown, isPending = false, state,
 }) => {
   const { t, locale } = useLocale();
-  if (count === 0) return null;
-  const displayedCount = new Intl.NumberFormat(locale).format(count);
-  const compactCount = count > 99 ? `${new Intl.NumberFormat(locale).format(99)}+` : displayedCount;
-  const secondary: Action[] = [];
-  if (onMoveUp) {
-    secondary.push({
-      id: 'move-up',
-      icon: ArrowUp,
-      onClick: onMoveUp,
-      title: t('selection.moveUp'),
-      disabled: !canMoveUp,
-    });
-  }
-  if (onMoveDown) {
-    secondary.push({
-      id: 'move-down',
-      icon: ArrowDown,
-      onClick: onMoveDown,
-      title: t('selection.moveDown'),
-      disabled: !canMoveDown,
-    });
-  }
-  if (canAdd) secondary.push({ id: 'add', icon: Plus, onClick: onAdd, title: t('selection.addAfter') });
-  if (hasDate) secondary.push({ id: 'clear-date', icon: CalendarX, onClick: onClearDate, title: t('selection.unassignDate') });
+  const { impact, selection } = useHapticFeedback();
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+  const rootRef = useRef<HTMLDivElement>(null);
+  const gesture = useRef<{ x: number; y: number; id: number; dragging: boolean } | null>(null);
+  const swallowClick = useRef(false);
 
-  const navigateActions = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.defaultPrevented || !(event.target instanceof HTMLButtonElement)
-      || !event.currentTarget.contains(event.target)) return;
+  const run = (action: () => void, strong = false) => () => {
+    if (strong) impact('medium'); else selection();
+    action();
+  };
+
+  const showToday = canAssignDate && Boolean(onAssignToday) && !allToday;
+  const showEdit = Boolean(canEdit && onEdit);
+
+  const menu = useMemo(() => {
+    const items: { id: string; icon: IconType; onSelect: () => void; title: string }[] = [];
+    if (onMoveUp && canMoveUp) items.push({ id: 'move-up', icon: ArrowUp, onSelect: onMoveUp, title: t('selection.moveUp') });
+    if (onMoveDown && canMoveDown) items.push({ id: 'move-down', icon: ArrowDown, onSelect: onMoveDown, title: t('selection.moveDown') });
+    if (canAdd) items.push({ id: 'add', icon: Plus, onSelect: onAdd, title: t('selection.addAfter') });
+    if (hasDate) items.push({ id: 'clear-date', icon: CalendarX, onSelect: onClearDate, title: t('selection.unassignDate') });
+    return items;
+  }, [onMoveUp, canMoveUp, onMoveDown, canMoveDown, canAdd, onAdd, hasDate, onClearDate, t]);
+
+  /** Flèches, Début/Fin pour parcourir les actions ; Échap désélectionne. */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || !(event.target instanceof HTMLButtonElement)) return;
     if (event.key === 'Escape') { event.preventDefault(); onClear(); return; }
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
-      .filter(button => button.getClientRects().length > 0);
+      .filter(button => button.offsetParent !== null);
     const current = buttons.indexOf(event.target);
-    const step = (event.key === 'ArrowRight' ? 1 : -1) * (locale === 'ar' ? -1 : 1);
+    if (current < 0) return;
+    const step = (event.key === 'ArrowRight' ? 1 : -1) * (dir === 'rtl' ? -1 : 1);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
       : (current + step + buttons.length) % buttons.length;
     event.preventDefault();
     buttons[next]?.focus();
   };
 
+  /* Balayage vers le bas sur écran tactile : ferme la sélection sans bouton.
+     Le déplacement écrit directement dans le style (aucun rendu React). */
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' || isPending) return;
+    gesture.current = { x: event.clientX, y: event.clientY, id: event.pointerId, dragging: false };
+  };
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    const node = rootRef.current;
+    if (!g || !node || g.id !== event.pointerId) return;
+    const dy = event.clientY - g.y;
+    const dx = event.clientX - g.x;
+    if (!g.dragging) {
+      if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
+      if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) { gesture.current = null; return; }
+      g.dragging = true;
+      node.setPointerCapture(event.pointerId);
+      node.style.transition = 'none';
+    }
+    node.style.transform = `translate3d(0, ${Math.max(0, dy)}px, 0)`;
+    node.style.opacity = String(1 - Math.min(dy / 140, 0.6));
+  };
+  const endGesture = (event: React.PointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    const node = rootRef.current;
+    gesture.current = null;
+    if (!g || !node || !g.dragging) return;
+    const dismissed = event.clientY - g.y > DISMISS_DISTANCE && event.type === 'pointerup';
+    swallowClick.current = true;
+    window.setTimeout(() => { swallowClick.current = false; }, 0);
+    node.style.transition = 'transform 180ms cubic-bezier(0.2, 0, 0, 1), opacity 180ms ease';
+    node.style.transform = '';
+    node.style.opacity = '';
+    if (dismissed) { impact('light'); onClear(); }
+  };
+
   return (
-    <MotionConfig reducedMotion="user">
     <div className="selection-bar-anchor print:hidden">
-      <motion.div
-        initial={{ y: 24, opacity: 0, scale: 0.94 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        exit={{ y: 20, opacity: 0, scale: 0.94 }}
-        transition={{ type: 'spring', stiffness: 480, damping: 30 }}
+      <div
+        ref={rootRef}
         className="selection-bar"
+        data-state={state}
         role="toolbar"
-        dir={locale === 'ar' ? 'rtl' : 'ltr'}
+        dir={dir}
         aria-label={t('selection.actionsAria')}
         aria-busy={isPending}
         onClick={event => event.stopPropagation()}
-        onKeyDown={navigateActions}
+        onClickCapture={event => { if (swallowClick.current) { event.preventDefault(); event.stopPropagation(); } }}
+        onKeyDown={handleKeyDown}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endGesture}
+        onPointerCancel={endGesture}
       >
-        {/* Ligne spéculaire de réfraction de verre liquide */}
-        <div
-          className="pointer-events-none absolute inset-x-5 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent"
-          aria-hidden="true"
-        />
+        <span className="sr-only" role="status" aria-live="polite">{t('selection.announce', { count })}</span>
 
-        <ActionButton icon={X} onClick={onClear}
-          title={t('selection.clear', { count: displayedCount })} label={compactCount} disabled={isPending} />
-
-        {canAssignDate && onAssignToday && <ActionButton icon={CalendarCheck} onClick={onAssignToday}
+        {showToday && <ActionButton icon={CalendarCheck} onClick={run(onAssignToday!, true)}
           title={t('selection.dateToday')} label={t('selection.today')} accent disabled={isPending} />}
-        {canAssignDate && <ActionButton icon={CalendarDays} onClick={onAssignDate}
+        {canAssignDate && <ActionButton icon={CalendarDays} onClick={run(onAssignDate)}
           title={t('selection.chooseDate')} disabled={isPending} />}
-        {canEdit && onEdit && <ActionButton icon={Pencil} onClick={onEdit}
+        {showEdit && <ActionButton icon={Pencil} onClick={run(onEdit!)}
           title={t('selection.edit')} disabled={isPending} className="hidden sm:inline-flex" />}
-        <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+
+        <DropdownMenu dir={dir}>
           <DropdownMenuTrigger asChild>
-            <motion.button
+            <button
               type="button"
               disabled={isPending}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.88 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              className="selection-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation disabled:opacity-50"
+              className="selection-action inline-flex h-11 w-11 shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
               title={t('selection.moreActions')}
               aria-label={t('selection.moreActions')}
             >
-              <MoreVertical aria-hidden className="size-[18px]" />
-            </motion.button>
+              <MoreVertical aria-hidden className="size-[22px]" />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" sideOffset={10} collisionPadding={12}
             className="w-max max-w-[calc(100vw-1.5rem)]">
-            {canEdit && onEdit && <DropdownMenuItem onSelect={onEdit} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
+            {showEdit && <DropdownMenuItem onSelect={onEdit} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
               <Pencil aria-hidden className="size-4" />{t('selection.edit')}
             </DropdownMenuItem>}
-            {secondary.map(({ id, icon: Icon, onClick, title, disabled }) => (
-              <DropdownMenuItem key={id} onSelect={onClick} disabled={isPending || disabled} className="min-h-11 gap-3">
+            {menu.map(({ id, icon: Icon, onSelect, title }) => (
+              <DropdownMenuItem key={id} onSelect={onSelect} disabled={isPending} className="min-h-11 gap-3">
                 <Icon aria-hidden className="size-4" />{title}
               </DropdownMenuItem>
             ))}
-            {secondary.length > 0 && <DropdownMenuSeparator />}
+            {(menu.length > 0 || showEdit) && <DropdownMenuSeparator />}
             <DropdownMenuItem onSelect={onDelete} disabled={isPending} destructive className="min-h-11 gap-3">
               <Trash2 aria-hidden className="size-4" />{t('selection.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </motion.div>
+      </div>
     </div>
-    </MotionConfig>
   );
 };
+
+/**
+ * Barre d'actions de la sélection. Elle reste montée le temps de l'animation de sortie
+ * avec les dernières valeurs connues (le contenu ne se vide pas pendant qu'elle s'efface).
+ * Mémoïsée : elle ne se redessine que si une valeur affichée ou une action change.
+ */
+export const SelectionBar = memo<SelectionBarProps>(function SelectionBar(props) {
+  const active = props.count > 0;
+  const [mounted, setMounted] = useState(active);
+  const last = useRef(props);
+  if (active) last.current = props;
+
+  useEffect(() => {
+    if (active) { setMounted(true); return; }
+    const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timer = window.setTimeout(() => setMounted(false), reduce ? 0 : EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [active]);
+
+  if (!active && !mounted) return null;
+  return <SelectionBarView {...(active ? props : last.current)} state={active ? 'open' : 'closed'} />;
+});

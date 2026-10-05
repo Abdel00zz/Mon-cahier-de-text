@@ -27,7 +27,7 @@ interface ContentFieldsProps {
 /** Formulaire identique en saisie et en modification, y compris pour les lignes libres. */
 export function ContentFields({ value, onChange, subject, contentDirection, titleOnly = false,
   titleField = 'title', titleLabel, titleRequired = false, titleRef }: ContentFieldsProps) {
-  const { t } = useLocale();
+  const { t, isRtl } = useLocale();
   const id = useId();
   const contentLocale = contentDirection === 'rtl' ? 'ar' : 'fr';
   const free = value.type === 'free';
@@ -41,9 +41,13 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   const title = String(value[titleField] ?? '');
   const description = String(value.description ?? '');
   const source = titleOnly ? title : `${title}\n${description}`;
+  // Les libellés suivent la langue de l'interface. Seul le texte saisi suit le contenu :
+  // un champ vide garde le sens de l'interface pour que le repère d'aide soit bien orienté.
+  const uiDir = isRtl ? 'rtl' : 'ltr';
+  const fieldDir = (text: string) => (text ? 'auto' : uiDir);
   const labelClass = 'mb-2 block text-sm font-medium text-foreground';
   const fieldClass = 'h-11 rounded-xl border-border';
-  return <div className="space-y-4" dir={contentDirection}>
+  return <div className="space-y-4">
     {!titleOnly && !free && <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_.45fr_.45fr]">
         <div className="col-span-2 sm:col-span-1">
@@ -52,26 +56,26 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
             <SelectTrigger id={`${id}-type`} className={fieldClass}><SelectValue placeholder={t('addContent.choose')} /></SelectTrigger>
             <SelectContent>{options.map(type => <SelectItem key={type} value={type}>
               <div className="flex items-center gap-2"><span className={contentBadgeClass(type)}>{BADGE_TEXT_MAP[type] || type}</span>
-                <span>{translateLocaleMessage(contentLocale, `contentType.${type}`)}</span></div>
+                <span dir={contentDirection}>{translateLocaleMessage(contentLocale, `contentType.${type}`)}</span></div>
             </SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div><label htmlFor={`${id}-number`} className={labelClass}>{t('addContent.number')}</label>
-          <Input id={`${id}-number`} value={value.number ?? ''} onChange={event => update('number', event.target.value)}
+          <Input id={`${id}-number`} value={value.number ?? ''} dir={fieldDir(String(value.number ?? ''))} onChange={event => update('number', event.target.value)}
             className={fieldClass} aria-describedby={`${id}-number-hint`} placeholder={t('addContent.numberPlaceholder')} /></div>
         <div><label htmlFor={`${id}-page`} className={labelClass}>{t('editor.page')}</label>
-          <Input id={`${id}-page`} value={value.page ?? ''} onChange={event => update('page', event.target.value)}
+          <Input id={`${id}-page`} value={value.page ?? ''} dir={fieldDir(String(value.page ?? ''))} onChange={event => update('page', event.target.value)}
             className={fieldClass} placeholder={t('editor.pagePlaceholder')} /></div>
       </div>
       <p id={`${id}-number-hint`} className="text-xs leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
     </>}
     <div><label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ?? t('editor.title')}</label>
-      <Input id={`${id}-title`} ref={titleRef} value={title} dir="auto" onChange={event => update(titleField, event.target.value)}
+      <Input id={`${id}-title`} ref={titleRef} value={title} dir={fieldDir(title)} onChange={event => update(titleField, event.target.value)}
         required={titleRequired} className={fieldClass} placeholder={titleRequired ? undefined : t('addContent.optionalTitlePlaceholder')} /></div>
     {!titleOnly && <div>
       <label htmlFor={`${id}-description`} className={labelClass}>{t('addContent.descriptionLabel')}</label>
       <ContextualDescriptionEditor id={`${id}-description`} value={description} onChange={text => update('description', text)}
-        dir="auto" rows={5} className="min-h-[130px]" placeholder={t(free ? 'addContent.freeHint' : 'addContent.descriptionPlaceholder')} />
+        dir={fieldDir(description)} rows={5} className="min-h-[130px]" placeholder={t(free ? 'addContent.freeHint' : 'addContent.descriptionPlaceholder')} />
       {free && <p className="mt-2 text-xs text-muted-foreground">{t('addContent.freeHelp')}</p>}
     </div>}
     {hasMathSyntax(source) && <section className="rounded-xl border border-border bg-muted/40 p-3" aria-label={t('descriptionModal.preview')}>

@@ -10,15 +10,15 @@ import type { CSSProperties } from 'react';
 const DASHBOARD_CANVAS = {
     /** Neutres teintés pistache : les notes colorées gardent la priorité. */
     colors: {
-        mint: '#f2f7ea',
-        rose: '#f7f8f1',
-        sky: '#eff5ee',
+        mint: '#f6f4ec',
+        rose: '#faf9f5',
+        sky: '#f3efe6',
     },
     /** Mode sombre : versions étagées profondes et désaturées */
     darkColors: {
-        mint: '#141a13',
-        rose: '#161a14',
-        sky: '#18201a',
+        mint: '#232322',
+        rose: '#262625',
+        sky: '#2a2927',
     },
 } as const;
 

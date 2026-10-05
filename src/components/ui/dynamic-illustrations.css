@@ -1,133 +1,105 @@
-/* Painted-storybook scenes: a warm sky vignette, soft cumulus clouds and
-   rolling pistachio hills behind cream paper objects. Original artwork:
-   inspired by hand-painted animation backdrops, no characters or marks.
-   Day by default, a firefly night in dark mode. Motion stays slow and subtle. */
+/* Minimal geometric figures, floating on the page with flat theme-aware fills. */
 .dynamic-illustration {
-  --art-sky-top: #cfe7ef;
-  --art-sky-horizon: #fbf3d9;
-  --art-sun: #fff2bf;
-  --art-sun-opacity: .95;
-  --art-cloud: #ffffff;
-  --art-cloud-shade: #e2ead9;
-  --art-hill-far: #cadfa6;
-  --art-hill-near: #a3c873;
-  --art-hill-front: #7fa951;
-  --art-rim: #e3ebcc;
-  --art-mote: #fff7cf;
-  --art-paper-top: #fffdf5;
-  --art-paper-mid: #faf4e2;
-  --art-paper-bottom: #eadfbf;
-  --art-edge-light: #ffffff;
-  --art-edge-mid: #f1e9cf;
-  --art-edge-end: #cdbf97;
-  --art-blue-top: #dcefb4;      /* « leaf » : pistache */
-  --art-blue-mid: #9cc86d;
-  --art-blue-bottom: #5f8d3b;
-  --art-mint-top: #d8eef2;      /* « sky » : bleu de ciel doux */
-  --art-mint-bottom: #82bdcb;
-  --art-metal-edge: #bba985;
-  --art-metal-light: #fffaf0;
-  --art-ink: #4a4a35;
-  --art-writing: #a89e7e;
-  --art-accent: #4f7a2e;
-  --art-success: #3f6f2a;
-  --art-shadow: #4a5228;
-  --art-cell: #ece4c8;
-  --art-depth: #d6c9a2;
+  --figure-ink: color-mix(in srgb, hsl(var(--primary)) 18%, hsl(var(--foreground)));
+  --figure-accent: color-mix(in srgb, hsl(var(--primary)) 55%, hsl(var(--foreground)));
+  --figure-paper: color-mix(in srgb, hsl(var(--foreground)) 9%, hsl(var(--card)));
+  --figure-neutral: color-mix(in srgb, hsl(var(--foreground)) 19%, hsl(var(--card)));
+  --figure-soft: color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--card)));
+  --figure-success: hsl(var(--success-strong));
+  --figure-cut: hsl(var(--card));
+  --figure-book-cover: color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--foreground)));
+  --figure-book-spine: color-mix(in srgb, hsl(var(--primary)) 30%, hsl(var(--foreground)));
+  --figure-book-pages: color-mix(in srgb, #eadcbd 65%, hsl(var(--card)));
+  --figure-book-ribbon: #b88b55;
+  --figure-book-title: #efe1bf;
+  --figure-skin-1: #dba47c;
+  --figure-skin-2: #c48660;
+  --figure-skin-3: #9b6442;
+  --figure-hair-1: #33241e;
+  --figure-hair-2: #5a3a2a;
+  --figure-hair-3: #a7a39b;
+  --figure-outfit-1: var(--figure-accent);
+  --figure-outfit-2: #6b7f4f;
+  --figure-outfit-3: #3f6f8f;
+  --figure-face-ink: #3a241c;
+  --figure-mouth: #8f3b3b;
+  --figure-teeth: #fff7ee;
+  --figure-cheek: #e58b7b;
+  --figure-gold: #e0a92f;
   width: var(--illustration-size, 140px);
   max-width: 100%;
   aspect-ratio: 1;
   flex-shrink: 0;
   user-select: none;
   pointer-events: none;
+  background: none;
+  border: 0;
+  box-shadow: none;
 }
 .dark .dynamic-illustration {
-  --art-sky-top: #182630;
-  --art-sky-horizon: #2b3a2a;
-  --art-sun: #eef4c8;           /* lune */
-  --art-sun-opacity: .45;
-  --art-cloud: #3d4b4e;
-  --art-cloud-shade: #2c383a;
-  --art-hill-far: #2e3e27;
-  --art-hill-near: #253520;
-  --art-hill-front: #1c2a18;
-  --art-rim: #34402d;
-  --art-mote: #d8f59a;          /* lucioles */
-  --art-paper-top: #4d5341;
-  --art-paper-mid: #3d4334;
-  --art-paper-bottom: #2d3227;
-  --art-edge-light: #aeb892;
-  --art-edge-mid: #626d4f;
-  --art-edge-end: #353c2c;
-  --art-blue-top: #b8d88c;
-  --art-blue-mid: #82a858;
-  --art-blue-bottom: #4f7432;
-  --art-mint-top: #9fc9d2;
-  --art-mint-bottom: #4c8592;
-  --art-metal-edge: #716b53;
-  --art-metal-light: #dcd5ba;
-  --art-ink: #eef2dc;
-  --art-writing: #b4b698;
-  --art-accent: #c4e192;
-  --art-success: #26441b;
-  --art-shadow: #050805;
-  --art-cell: #555c45;
-  --art-depth: #21271b;
+  --figure-paper: color-mix(in srgb, hsl(var(--foreground)) 14%, hsl(var(--card)));
+  --figure-neutral: color-mix(in srgb, hsl(var(--foreground)) 28%, hsl(var(--card)));
+  --figure-soft: color-mix(in srgb, hsl(var(--primary)) 35%, hsl(var(--card)));
+  --figure-accent: color-mix(in srgb, hsl(var(--primary)) 40%, hsl(var(--foreground)));
+  --figure-book-cover: color-mix(in srgb, hsl(var(--primary)) 45%, hsl(var(--card)));
+  --figure-book-spine: color-mix(in srgb, hsl(var(--primary)) 22%, hsl(var(--card)));
+  --figure-book-pages: color-mix(in srgb, #d4c6a6 75%, hsl(var(--card)));
+  --figure-book-ribbon: #c5a273;
+  --figure-book-title: #ded7b9;
+  --figure-skin-1: #d19a72;
+  --figure-skin-2: #bb7f5a;
+  --figure-skin-3: #a06c4a;
+  --figure-outfit-2: #93a877;
+  --figure-outfit-3: #6a9bbb;
+  --figure-gold: #ebbb4c;
 }
-.dynamic-illustration svg { display: block; width: 100%; height: 100%; overflow: visible; stroke-linecap: round; stroke-linejoin: round; }
-.art-paper-top { stop-color: var(--art-paper-top); }
-.art-paper-mid { stop-color: var(--art-paper-mid); }
-.art-paper-bottom { stop-color: var(--art-paper-bottom); }
-.art-edge-light { stop-color: var(--art-edge-light); }
-.art-edge-mid { stop-color: var(--art-edge-mid); }
-.art-edge-end { stop-color: var(--art-edge-end); }
-.art-blue-top { stop-color: var(--art-blue-top); }
-.art-blue-mid { stop-color: var(--art-blue-mid); }
-.art-blue-bottom { stop-color: var(--art-blue-bottom); }
-.art-mint-top { stop-color: var(--art-mint-top); }
-.art-mint-bottom { stop-color: var(--art-mint-bottom); }
-.art-metal-edge { stop-color: var(--art-metal-edge); }
-.art-metal-light { stop-color: var(--art-metal-light); }
-.art-sky-top { stop-color: var(--art-sky-top); }
-.art-sky-horizon { stop-color: var(--art-sky-horizon); }
-.art-sun-core { stop-color: var(--art-sun); stop-opacity: var(--art-sun-opacity); }
-.art-sun-edge { stop-color: var(--art-sun); stop-opacity: 0; }
-
-/* Décor peint */
-.art-cloud { fill: var(--art-cloud); }
-.art-cloud-shade { fill: var(--art-cloud-shade); }
-.art-hill-far { fill: var(--art-hill-far); }
-.art-hill-near { fill: var(--art-hill-near); }
-.art-hill-front { fill: var(--art-hill-front); }
-.art-rim { stroke: var(--art-rim); stroke-width: 2; fill: none; }
-.art-mote { fill: var(--art-mote); }
-
-/* Objets */
-.art-depth { fill: var(--art-depth); }
-.art-heading { fill: var(--art-ink); opacity: .8; }
-.art-writing { stroke: var(--art-writing); stroke-width: 3; }
-.art-ink { stroke: var(--art-ink); }
-.art-accent-line { stroke: var(--art-accent); stroke-width: 3.5; }
-.art-fold { stroke: var(--art-writing); stroke-width: 1.5; opacity: .28; }
-.art-specular { stroke: var(--art-edge-light); stroke-width: 1.5; opacity: .8; }
-.art-light-line { stroke: #fffdf2; stroke-width: 3; }
-.art-check { stroke: var(--art-success); stroke-width: 4; }
-.art-clock-rim { stroke: var(--art-writing); stroke-width: 1; opacity: .25; }
-.art-leaf-vein { stroke: var(--art-blue-top); stroke-width: 1.4; fill: none; opacity: .9; }
-
-/* Mouvement : arrivée courte, puis respiration très lente du décor. */
-.art-scene { transform-origin: 120px 150px; animation: art-arrive 280ms cubic-bezier(.16,1,.3,1) both; }
-.art-detail { transform-origin: 160px 150px; animation: art-detail 280ms cubic-bezier(.16,1,.3,1) both; }
-.art-cloud-drift { animation: art-drift 16s ease-in-out infinite alternate; }
-.art-cloud-drift--slow { animation-duration: 22s; animation-direction: alternate-reverse; }
-.art-mote-float { animation: art-float 6s ease-in-out infinite alternate; }
-.art-mote-float:nth-child(2) { animation-delay: -2s; animation-duration: 7.5s; }
-.art-mote-float:nth-child(3) { animation-delay: -4s; animation-duration: 9s; }
-@keyframes art-arrive { from { opacity: 0; transform: translateY(5px) scale(.97); } to { opacity: 1; transform: none; } }
-@keyframes art-detail { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-@keyframes art-drift { from { transform: translateX(-4px); } to { transform: translateX(6px); } }
-@keyframes art-float { from { transform: translateY(0); opacity: .45; } to { transform: translateY(-7px); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .art-scene, .art-detail, .art-cloud-drift, .art-mote-float { animation: none; }
+.dynamic-illustration {
+  --figure-outfit-1-shade: color-mix(in srgb, var(--figure-outfit-1) 80%, #000);
+  --figure-outfit-2-shade: color-mix(in srgb, var(--figure-outfit-2) 80%, #000);
+  --figure-outfit-3-shade: color-mix(in srgb, var(--figure-outfit-3) 80%, #000);
 }
-@media (forced-colors: active) { .dynamic-illustration { opacity: .85; } }
+.dynamic-illustration svg { display: block; width: 100%; height: 100%; stroke-linecap: round; stroke-linejoin: round; }
+.figure-paper { fill: var(--figure-paper); }
+.figure-neutral { fill: var(--figure-neutral); }
+.figure-soft { fill: var(--figure-soft); }
+.figure-accent { fill: var(--figure-accent); }
+.figure-ink { fill: var(--figure-ink); }
+.figure-success { fill: var(--figure-success); }
+.figure-line { stroke: var(--figure-ink); stroke-width: 3; }
+.figure-muted-line { stroke: var(--figure-ink); stroke-opacity: .4; }
+.figure-success-line { stroke: var(--figure-success); }
+.figure-cut { stroke: var(--figure-cut); stroke-width: 3; }
+.figure-lens { fill: var(--figure-soft); stroke: var(--figure-accent); stroke-width: 8; }
+.figure-search-handle { stroke: var(--figure-accent); stroke-width: 8; }
+.figure-book-cover { fill: var(--figure-book-cover); }
+.figure-book-spine { fill: var(--figure-book-spine); }
+.figure-book-pages { fill: var(--figure-book-pages); }
+.figure-book-ribbon { fill: var(--figure-book-ribbon); }
+.figure-book-title { fill: var(--figure-book-title); }
+.figure-book-bands { stroke: var(--figure-book-title); stroke-width: 3; stroke-opacity: .6; }
+.figure-book-page-lines { stroke: var(--figure-book-spine); stroke-width: 2; stroke-opacity: .3; }
+.figure-mouth { fill: var(--figure-mouth); }
+.figure-teeth { fill: var(--figure-teeth); }
+.figure-cheek { fill: var(--figure-cheek); fill-opacity: .4; }
+.figure-gold { fill: var(--figure-gold); }
+.figure-skin-1 { fill: var(--figure-skin-1); } .figure-skin-2 { fill: var(--figure-skin-2); } .figure-skin-3 { fill: var(--figure-skin-3); }
+.figure-hair-1 { fill: var(--figure-hair-1); } .figure-hair-2 { fill: var(--figure-hair-2); } .figure-hair-3 { fill: var(--figure-hair-3); }
+.figure-outfit-1 { fill: var(--figure-outfit-1); } .figure-outfit-2 { fill: var(--figure-outfit-2); } .figure-outfit-3 { fill: var(--figure-outfit-3); }
+.figure-sleeve { stroke-width: 20; fill: none; }
+.figure-sleeve-1 { stroke: var(--figure-outfit-1); } .figure-sleeve-2 { stroke: var(--figure-outfit-2); } .figure-sleeve-3 { stroke: var(--figure-outfit-3); }
+.figure-sleeve-shade-1 { stroke: var(--figure-outfit-1-shade); } .figure-sleeve-shade-2 { stroke: var(--figure-outfit-2-shade); } .figure-sleeve-shade-3 { stroke: var(--figure-outfit-3-shade); }
+.figure-face-dot { fill: var(--figure-face-ink); }.figure-face-line { stroke: var(--figure-face-ink); stroke-width: 2.6; fill: none; }
+.figure-face-eyes { stroke-width: 3.4; }
+
+.figure-scene { animation: figure-enter 220ms cubic-bezier(.2,.8,.2,1) both; transform-origin: center; }
+/* Gentle breathing and twinkling: alive without drawing attention. */
+.figure-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: figure-breathe 3.6s ease-in-out infinite; }
+.figure-sparkle { animation: figure-twinkle 2.4s ease-in-out infinite; } /* opacity only: a CSS transform would override the SVG position attribute */
+@keyframes figure-enter { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@keyframes figure-breathe { 50% { transform: translateY(-2px) scale(1.012); } }
+@keyframes figure-twinkle { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .figure-scene, .figure-breathe, .figure-sparkle { animation: none; } }
+@media (forced-colors: active) {
+  .dynamic-illustration { --figure-ink: CanvasText; --figure-accent: Highlight; --figure-success: Highlight; --figure-paper: Canvas; --figure-neutral: Canvas; --figure-soft: Canvas; --figure-cut: HighlightText; --figure-book-cover: Highlight; --figure-book-spine: CanvasText; --figure-book-pages: Canvas; --figure-book-ribbon: CanvasText; --figure-book-title: HighlightText; --figure-skin-1: Canvas; --figure-skin-2: Canvas; --figure-skin-3: Canvas; --figure-hair-1: CanvasText; --figure-hair-2: CanvasText; --figure-hair-3: CanvasText; --figure-outfit-2: Highlight; --figure-outfit-3: Highlight; --figure-face-ink: CanvasText; --figure-mouth: CanvasText; --figure-teeth: Canvas; --figure-cheek: Canvas; --figure-gold: Highlight; }
+  .figure-paper, .figure-neutral, .figure-soft, .figure-skin-1, .figure-skin-2, .figure-skin-3 { stroke: CanvasText; stroke-width: 2; }
+}

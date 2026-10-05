@@ -1,12 +1,12 @@
 /* One quiet material system for setup before and after registration. */
 .onboarding-studio, .registration-studio {
-  --setup-ink: var(--workspace-active-ink);
-  --setup-fill: var(--workspace-active-fill);
-  --setup-ease: cubic-bezier(.2,.8,.2,1);
+  --setup-ink: hsl(var(--foreground));
+  --setup-fill: hsl(var(--muted));
+  --setup-ease: cubic-bezier(.65,0,.35,1);
 }
 .onboarding-artisan-shell.onboarding-studio {
   overflow-x: clip;
-  background: radial-gradient(ellipse at 95% 8%, hsl(var(--primary) / .035), transparent 48%), hsl(var(--background));
+  background: hsl(var(--background));
 }
 .onboarding-studio .onboarding-artisan-header {
   background: hsl(var(--background) / .94); backdrop-filter: blur(18px) saturate(140%);
@@ -21,10 +21,14 @@
 .onboarding-stepper { margin-bottom: 8px; }
 .onboarding-step {
   position: relative; display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 11px 0; border-top: 3px solid hsl(var(--border));
-  color: hsl(var(--muted-foreground)); font-size: 11px; transition: color 180ms, border-color 180ms;
+  padding: 14px 0; border-top: 0;
+  color: hsl(var(--muted-foreground)); font-size: 11px; transition: color 300ms var(--setup-ease);
 }
-.onboarding-step-mark { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; font-size: 10px; font-variant-numeric: tabular-nums; }
+.onboarding-step-mark { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 24px; height: 24px; font-size: 10px; font-variant-numeric: tabular-nums; }
+.onboarding-progress-ring { display: block; width: 24px; height: 24px; overflow: visible; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.onboarding-progress-ring circle { transition: stroke-dashoffset 300ms var(--setup-ease), stroke 300ms; }
+.onboarding-progress-ring .onboarding-progress-ring-track { stroke: hsl(var(--border)); }
+.onboarding-step-number { position: absolute; inset: 0; display: grid; place-items: center; font-size: 9px; }
 .onboarding-step[aria-current] { color: var(--setup-ink); border-color: var(--setup-ink); font-weight: 700; }
 .onboarding-step[data-complete] { border-color: hsl(var(--success-strong)); }
 .onboarding-step[data-complete] .onboarding-step-mark { color: hsl(var(--success-strong)); }
@@ -42,7 +46,9 @@
   text-align: start; border: 1px solid hsl(var(--border)); border-radius: 20px;
   background: hsl(var(--card)); box-shadow: inset 0 1px 0 hsl(var(--background) / .65), 0 4px 12px -8px hsl(var(--foreground) / .12);
 }
-.onboarding-cycle-symbol { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; border: 1px solid hsl(var(--border) / .7); color: hsl(var(--muted-foreground)); background: linear-gradient(150deg, hsl(var(--card)), hsl(var(--muted))); }
+.onboarding-cycle-symbol { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; color: hsl(var(--muted-foreground)); }
+.onboarding-cycle-symbol .app-icon { width: 34px; height: 34px; }
+.onboarding-cycle-card[aria-pressed="true"] .onboarding-cycle-symbol { color: var(--setup-ink); }
 .onboarding-cycle-copy { min-width: 0; flex: 1; }
 .onboarding-cycle-check { width: 21px; height: 21px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; border: 1px solid hsl(var(--border)); color: var(--setup-ink); }
 .onboarding-cycle-card[aria-pressed="true"] .onboarding-cycle-check { border-color: var(--setup-ink); background: var(--setup-ink); color: hsl(var(--card)); }
@@ -50,8 +56,15 @@
 .onboarding-studio .keep-surface { border-radius: 16px; }
 .onboarding-studio .artistic-cta-button, .registration-studio .registration-dock button {
   background: var(--setup-ink); color: hsl(var(--card)); border: 1px solid transparent;
-  box-shadow: inset 0 1px 0 hsl(var(--card) / .12), 0 6px 16px -10px hsl(var(--foreground) / .3);
+  border-radius: 999px;
+  box-shadow: none;
 }
+.onboarding-studio .artistic-cta-button:not(:disabled):hover,
+.registration-studio .registration-dock button:not(:disabled):hover { background: color-mix(in srgb, var(--setup-ink) 90%, hsl(var(--card))); }
+.onboarding-studio .onboarding-navigation button { border-radius: 999px; }
+.onboarding-studio .onboarding-heading-illustration { opacity: 1; }
+.onboarding-step[data-complete] .onboarding-step-mark { animation: onboarding-check-in 200ms var(--setup-ease); }
+@keyframes onboarding-check-in { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
 .onboarding-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding-bottom: 24px; }
 .onboarding-class-next { min-width: 0; }
 .onboarding-class-next button:first-child:not(:last-child) { flex: 0 0 auto; }
@@ -118,6 +131,8 @@
   .registration-dock>p { font-size: 11px; margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .onboarding-progress-ring circle { transition: none; }
+  .onboarding-step[data-complete] .onboarding-step-mark { animation: none; }
   .onboarding-studio :is(button, select, input), .onboarding-step, .registration-studio :is(button, input) { transition: none; }
   .onboarding-studio button:not(:disabled):active, .registration-studio button:not(:disabled):active { transform: none; }
 }

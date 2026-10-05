@@ -1,8 +1,10 @@
 import React from 'react';
-import { Sun, Moon, Laptop, Check, Type, Undo2 } from '@/components/ui/icons';
-import { AppConfig, AppTextSize, ThemeMode } from '@/types';
+import { Sun, Moon, Laptop, Globe } from '@/components/ui/icons';
+import { AppConfig, AppLocale, AppTextSize, ThemeMode } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Button } from '@/components/ui/button';
+import { localeMetadata } from '@/i18n/messages';
+import { cn } from '@/lib/utils';
+import { SettingsPanel, SettingsRow, SettingsSection, settingsChoiceClass } from './SettingsPrimitives';
 
 interface AppearanceTabProps {
   config: AppConfig;
@@ -20,173 +22,91 @@ const TEXT_SIZE_SAMPLE: Record<AppTextSize, string> = {
   xl: '1.3rem',
 };
 
-interface ThemeOption {
-  id: ThemeMode;
-  icon: React.ComponentType<{ className?: string }>;
-  labelKey: string;
-  descKey: string;
-  /** Teinte pédagogique du pictogramme, neutre quand l'option est inactive. */
-  tint: string;
-}
-
-const THEME_OPTIONS: ThemeOption[] = [
-  {
-    id: 'light',
-    icon: Sun,
-    labelKey: 'settings.appearance.themeLight',
-    descKey: 'settings.appearance.themeLightDesc',
-    tint: 'bg-amber-500/15 border-amber-500/30 text-amber-600',
-  },
-  {
-    id: 'dark',
-    icon: Moon,
-    labelKey: 'settings.appearance.themeDark',
-    descKey: 'settings.appearance.themeDarkDesc',
-    tint: 'bg-primary/15 border-primary/30 text-primary',
-  },
-  {
-    id: 'system',
-    icon: Laptop,
-    labelKey: 'settings.appearance.themeSystem',
-    descKey: 'settings.appearance.themeSystemDesc',
-    tint: 'bg-sky-500/15 border-sky-500/30 text-sky-600 dark:text-sky-400',
-  },
+const THEME_OPTIONS: { id: ThemeMode; icon: React.ComponentType<{ className?: string }>; labelKey: string }[] = [
+  { id: 'light', icon: Sun, labelKey: 'settings.appearance.themeLight' },
+  { id: 'dark', icon: Moon, labelKey: 'settings.appearance.themeDark' },
+  { id: 'system', icon: Laptop, labelKey: 'settings.appearance.themeSystem' },
 ];
 
+const INTERFACE_LOCALES = localeMetadata.filter(option => option.value === 'fr' || option.value === 'ar');
+
 /**
- * Onglet « Apparence et typographie ».
- *
- * Volontairement réduit à deux réglages : le mode d'affichage et la taille du
- * texte. Les couleurs, rayons, styles de cartes et polices ne sont plus des
- * choix : ils appartiennent à la charte (index.css) et la langue choisie
- * détermine la paire typographique (DM Sans/Rubik en latin, Arabswell 3 et
- * Maghribi Font 3 en arabe).
+ * Onglet « Apparence » : thème, taille du texte et langue de l'interface.
+ * Les couleurs, rayons et polices appartiennent à la charte (index.css) ;
+ * la langue choisie détermine la paire typographique.
  */
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigChange }) => {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const currentTheme: ThemeMode = config.theme || 'light';
   const currentTextSize: AppTextSize = config.appTextSize || 'md';
-
+  const currentLocale = config.applicationLocale ?? locale;
   const isDefault = currentTheme === 'light' && currentTextSize === 'md';
-  const resetDefaults = () => onConfigChange({ theme: 'light', appTextSize: 'md' });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
-      {/* ── Section 1 : Mode d'affichage ─────────────────────────────────── */}
-      <section className="rounded-lg border border-border/70 p-2.5 sm:p-3" id="theme-mode-section">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-9 sm:w-9">
-              <Sun className="h-4.5 w-4.5 dark:hidden" />
-              <Moon className="hidden h-4.5 w-4.5 dark:block" />
-            </div>
-            <h3 className="text-sm font-semibold text-foreground sm:text-[14.5px]">
-              {t('settings.appearance.themeTitle')}
-            </h3>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetDefaults}
+    <SettingsPanel title={t('settings.item.appearance')}>
+      <SettingsSection
+        title={t('settings.appearance.themeTitle')}
+        action={
+          <button
+            type="button"
+            onClick={() => onConfigChange({ theme: 'light', appTextSize: 'md' })}
             disabled={isDefault}
-            className="h-11 min-w-11 cursor-pointer gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
-            aria-label={t('settings.appearance.resetDefaults')}
-            title={t('settings.appearance.resetDefaults')}
+            className="min-h-11 cursor-pointer rounded-lg px-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-40"
           >
-            <Undo2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t('settings.appearance.resetDefaults')}</span>
-          </Button>
+            {t('settings.appearance.resetDefaults')}
+          </button>
+        }
+      >
+        <div className="grid grid-cols-3 gap-2 py-3.5">
+          {THEME_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={currentTheme === id}
+              onClick={() => onConfigChange({ theme: id })}
+              className={settingsChoiceClass(currentTheme === id)}
+            >
+              <Icon className="h-[18px] w-[18px] stroke-[1.5]" />
+              {t(labelKey)}
+            </button>
+          ))}
         </div>
+      </SettingsSection>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {THEME_OPTIONS.map(option => {
-            const active = currentTheme === option.id;
-            const Icon = option.icon;
-            return (
+      <SettingsSection title={t('settings.appearance.textSizeTitle')} hint={t('settings.appearance.textSizeDesc')}>
+        <div className="grid grid-cols-2 gap-2 py-3.5 sm:grid-cols-4">
+          {TEXT_SIZES.map(size => (
+            <button
+              key={size}
+              type="button"
+              aria-pressed={currentTextSize === size}
+              onClick={() => onConfigChange({ appTextSize: size })}
+              className={cn(settingsChoiceClass(currentTextSize === size), 'flex-col gap-1 py-2')}
+            >
+              <span aria-hidden="true" dir="ltr" className="font-semibold leading-none text-foreground" style={{ fontSize: TEXT_SIZE_SAMPLE[size] }}>Aa</span>
+              <span className="text-xs">{t(`settings.appearance.textSize.${size}`)}</span>
+            </button>
+          ))}
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title={t('language.settings.title')}>
+        <SettingsRow label={<span className="flex items-center gap-2"><Globe className="h-[18px] w-[18px] stroke-[1.5] text-muted-foreground" />{t('language.settings.active')}</span>}>
+          <div className="flex gap-2">
+            {INTERFACE_LOCALES.map(option => (
               <button
-                key={option.id}
+                key={option.value}
                 type="button"
-                aria-pressed={active}
-                onClick={() => onConfigChange({ theme: option.id })}
-                className={`group flex min-h-[44px] cursor-pointer items-center gap-3.5 rounded-md border-2 p-3.5 text-start transition-all duration-200 ${
-                  active
-                    ? 'border-primary bg-primary/5 shadow-xs'
-                    : 'border-border/70 hover:border-border hover:bg-muted/40'
-                }`}
+                aria-pressed={currentLocale === option.value}
+                onClick={() => onConfigChange({ applicationLocale: option.value as AppLocale })}
+                className={settingsChoiceClass(currentLocale === option.value)}
               >
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
-                    active ? option.tint : 'border-border bg-muted text-muted-foreground'
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-foreground">
-                      {t(option.labelKey)}
-                    </span>
-                    {active && <Check className="h-4 w-4 shrink-0 text-primary" />}
-                  </div>
-                  <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
-                    {t(option.descKey)}
-                  </p>
-                </div>
+                <span lang={option.value}>{option.nativeName}</span>
               </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── Section 2 : Taille du texte ──────────────────────────────────── */}
-      <section className="rounded-lg border border-border/70 p-2.5 sm:p-3" id="text-size-section">
-        <div className="mb-4 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-9 sm:w-9">
-            <Type className="h-4.5 w-4.5" />
+            ))}
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground sm:text-[14.5px]">
-              {t('settings.appearance.textSizeTitle')}
-            </h3>
-            <p className="text-[11px] text-muted-foreground sm:text-xs">
-              {t('settings.appearance.textSizeDesc')}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {TEXT_SIZES.map(size => {
-            const active = currentTextSize === size;
-            return (
-              <button
-                key={size}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onConfigChange({ appTextSize: size })}
-                className={`flex min-h-[44px] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 p-3.5 text-center transition-all duration-200 ${
-                  active
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
-                    : 'border-border/70 hover:border-border hover:bg-muted/40'
-                }`}
-              >
-                <span
-                  aria-hidden="true"
-                  dir="ltr"
-                  className="font-semibold leading-none text-foreground"
-                  style={{ fontSize: TEXT_SIZE_SAMPLE[size] }}
-                >
-                  Aa
-                </span>
-                <span className="text-xs font-bold text-foreground">
-                  {t(`settings.appearance.textSize.${size}`)}
-                </span>
-                {active && <Check className="h-3.5 w-3.5 text-primary" />}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-    </div>
+        </SettingsRow>
+      </SettingsSection>
+    </SettingsPanel>
   );
 };

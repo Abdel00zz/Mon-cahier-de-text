@@ -42,7 +42,7 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { CurriculumProgressLabel } from '@/components/curriculum/CurriculumProgressLabel';
 import { dateTimeFormat } from '@/lib/formatters';
-import { SereneStudyIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration, NotebookOpeningIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { SereneStudyIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration, ProudTeacherIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -124,7 +124,7 @@ const EMPTY_ILLUSTRATIONS = {
   complete: SereneStudyIllustration,
   classes: ClassroomWelcomeIllustration,
   schedule: SchedulePlanningIllustration,
-  activity: NotebookOpeningIllustration,
+  activity: ProudTeacherIllustration,
   search: LessonSearchIllustration,
 };
 

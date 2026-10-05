@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
 import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
-import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
+import { ProudTeacherIllustration } from '@/components/ui/DynamicIllustration';
 import './authMotion.css';
 
 const CYCLES: Cycle[] = ["college", "lycee", "prepa"];
@@ -125,7 +125,7 @@ export function RegistrationOnboarding({
         tabIndex={-1}
         className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
       >
-        {ar ? "دفترك يبدأ هنا." : "Votre cahier prend forme."}
+        {ar ? "دفتر نصوصك يبدأ هنا" : "Votre cahier prend forme."}
       </h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
         {ar
@@ -133,7 +133,7 @@ export function RegistrationOnboarding({
           : "Votre classe, votre matière, un cahier prêt à personnaliser. Le compte vient à l’étape suivante."}
       </p>
       </div>
-      <NotebookOpeningIllustration size={168} />
+      <ProudTeacherIllustration size={168} />
       </div>
       <div
         role="progressbar"

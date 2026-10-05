@@ -41,9 +41,9 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
 
   return (
     <div
-      className={`w-full border-t border-border/70 bg-stone-50/60 dark:bg-stone-900/40 px-5 py-5 sm:px-7 sm:py-5.5 text-center flex flex-col items-center justify-center ${className}`}
+      className={`w-full px-5 py-5 sm:px-7 sm:py-5.5 text-center flex flex-col items-center justify-center ${className}`}
     >
-      <p className="max-w-[360px] text-[12.5px] sm:text-[13px] font-normal leading-relaxed text-stone-600 dark:text-stone-300">
+      <p className="max-w-[360px] text-[12.5px] sm:text-[13px] font-normal leading-relaxed text-muted-foreground">
         {hint}
       </p>
 
@@ -51,12 +51,11 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
         href={buildSupportWhatsAppUrl(locale)}
         target="_blank"
         rel="noopener noreferrer"
-        className="group mt-3.5 inline-flex items-center justify-center gap-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] px-5 py-2.5 sm:px-6 sm:py-2.5 text-[13px] sm:text-[13.5px] font-bold text-white shadow-[0_2px_10px_rgba(37,211,102,0.32)] hover:shadow-[0_4px_16px_rgba(37,211,102,0.42)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer touch-manipulation select-none"
+        className="group mt-3.5 inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full bg-[var(--ds-whatsapp)] hover:bg-[var(--ds-whatsapp-hover)] px-5 py-2.5 sm:px-6 sm:py-2.5 text-[13px] sm:text-[13.5px] font-bold text-white active:scale-[0.98] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring cursor-pointer touch-manipulation select-none motion-reduce:transform-none"
       >
         <span className="leading-tight text-white">{label}</span>
-        <WhatsAppIcon className="h-5 w-5 shrink-0 text-white fill-white transition-transform duration-200 group-hover:scale-110 drop-shadow-xs" />
+        <WhatsAppIcon className="h-5 w-5 shrink-0 text-white fill-white" />
       </a>
     </div>
   );
 };
-

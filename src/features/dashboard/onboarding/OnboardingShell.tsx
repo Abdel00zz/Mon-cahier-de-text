@@ -142,7 +142,17 @@ export function OnboardingShell({
               className="onboarding-step"
             >
               <span className="onboarding-step-mark" aria-hidden="true">
-                {index + 1 < step ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                {index + 1 < step ? <Check className="h-4 w-4" /> : (
+                  <>
+                    <svg className="onboarding-progress-ring" viewBox="0 0 24 24" fill="none">
+                      <circle className="onboarding-progress-ring-track" cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="10" pathLength="1" strokeDasharray="1 1"
+                        strokeDashoffset={index + 1 === step ? 1 - step / ONBOARDING_TOTAL_STEPS : 1}
+                        transform="rotate(-90 12 12)" />
+                    </svg>
+                    <span className="onboarding-step-number">{index + 1}</span>
+                  </>
+                )}
               </span>
               <span>{label}</span>
               {index + 1 < step && <span className="sr-only">{rtl ? 'مكتمل' : 'Terminé'}</span>}

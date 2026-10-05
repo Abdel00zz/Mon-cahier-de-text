@@ -327,9 +327,9 @@ export function ModalBottomSheet({
               disabled={closeDisabled}
               className={cn(
                 'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
-                'bg-muted/65 hover:bg-muted/95 backdrop-blur-md',
+                'bg-transparent hover:bg-muted',
                 'text-muted-foreground hover:text-foreground',
-                'border border-border/60 hover:border-border shadow-2xs hover:shadow-xs',
+                'border border-transparent',
                 'transition-[transform,background-color,border-color] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)]',
                 'active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',

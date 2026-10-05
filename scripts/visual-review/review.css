@@ -42,3 +42,12 @@
 @media(max-width:700px) { .visual-review { padding:22px 14px; }.review-header{align-items:flex-start;}.review-header h1{font-size:15px;}.review-toggle{font-size:0;padding:10px;}.review-hero{padding:24px 18px;flex-direction:column-reverse;gap:0;}.review-hero>.dynamic-illustration{width:180px;}.review-hero h2{font-size:32px;}.review-nav button{min-width:65px;}.review-figures{grid-template-columns:repeat(2,1fr);}.review-section-heading{align-items:flex-start;flex-direction:column;}.review-icons{grid-template-columns:repeat(5,1fr);}.review-actions{grid-template-columns:1fr;}.review-actions .action-tile{min-height:130px;}.review-brand{gap:10px;}.review-kicker{font-size:8px;}.review-figures article{border-radius:18px;}.review-figures .dynamic-illustration{width:150px;} }
 @media(prefers-reduced-motion:reduce) { .review-nav button{transition:none;} }
 .review-section-heading .review-toggle { font-size: 13px; min-height: 44px; }
+/* The review uses the same open page treatment as the production artwork. */
+.visual-review { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+.visual-review.dark { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+.review-hero, .dark .review-hero, .review-figures article, .dark .review-figures article {
+  background: none; border: 0; box-shadow: none; border-radius: 0;
+}
+.review-notebook { display: flex; flex-direction: column; align-items: center; max-width: 460px; margin: 40px auto; text-align: center; }
+.review-notebook h2 { font-size: 26px; font-weight: 700; }
+.review-notebook [lang='ar'], .review-notebook { font-family: var(--font-arabic-body); }

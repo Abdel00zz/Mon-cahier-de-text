@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Clock,
   GraduationCap,
-  Check,
 } from '@/components/ui/icons';
 import {
   getBundledCalendar,
@@ -179,6 +178,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   });
   const [selectedDate, setSelectedDate] = useState(today);
   const [layer, setLayer] = useState<CalendarLayer>('all');
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -199,7 +199,10 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
     const mondayOffset = (firstDay.getDay() + 6) % 7;
     const gridStart = addDays(firstDay, -mondayOffset);
-    return Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
+    // Seulement les semaines du mois : pas de ligne vide, la grille reste aérée.
+    const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const weeks = Math.ceil((mondayOffset + daysInMonth) / 7);
+    return Array.from({ length: weeks * 7 }, (_, index) => addDays(gridStart, index));
   }, [month]);
 
   const staticEvents = useMemo<CalendarEvent[]>(() => {
@@ -364,22 +367,6 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return { status: 'gap', planned: lessons.length, recorded };
   };
 
-  /** Pour les vacances, n'afficher le label que sur le premier jour de la semaine concernée */
-  const vacationLabelCells = useMemo(() => {
-    const labelCells = new Set<string>();
-    const weekAlreadyLabelled = new Set<number>();
-    monthCells.forEach((date, index) => {
-      const iso = toISO(date);
-      const events = eventsByDate.get(iso) ?? [];
-      const weekIndex = Math.floor(index / 7);
-      if (events.some(event => event.kind === 'vacation') && !weekAlreadyLabelled.has(weekIndex)) {
-        weekAlreadyLabelled.add(weekIndex);
-        labelCells.add(iso);
-      }
-    });
-    return labelCells;
-  }, [eventsByDate, monthCells]);
-
   const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const horizontal = isRtl ? -1 : 1;
     const delta =
@@ -454,51 +441,97 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     { id: 'official', label: t('calendar.layer.official') },
   ], [t]);
 
+  const selectedDay = fromISO(selectedDate);
+  const selectedWeekday = dateTimeFormat(locale, { weekday: 'long' }).format(selectedDay);
+  const selectedMonthYear = dateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(selectedDay);
+
+  /** Pastilles sous le numéro : la couleur du cours dit s'il reste à consigner, sans écrire dans la case. */
+  const dotsFor = (events: CalendarEvent[], status: ReturnType<typeof dayStatus>['status']): string[] => {
+    const kinds = new Set(events.map(event => event.kind));
+    const dots: string[] = [];
+    if (kinds.has('holiday')) dots.push(EVENT_STYLES.holiday.dot);
+    if (kinds.has('lesson')) dots.push(status === 'gap' ? 'bg-orange-500' : status === 'done' ? 'bg-emerald-500' : EVENT_STYLES.lesson.dot);
+    if (kinds.has('assessment')) dots.push(EVENT_STYLES.assessment.dot);
+    if (kinds.has('pedagogical')) dots.push(EVENT_STYLES.pedagogical.dot);
+    if (kinds.has('official')) dots.push(EVENT_STYLES.official.dot);
+    if (kinds.has('absence')) dots.push(EVENT_STYLES.absence.dot);
+    return dots.slice(0, 3);
+  };
+
+  /** Balayage horizontal : mois suivant / précédent, dans le sens de lecture de la langue. */
+  const handleTouchStart = (event: React.TouchEvent) => {
+    const touch = event.touches[0];
+    swipeStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+  };
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    const start = swipeStart.current;
+    const touch = event.changedTouches[0];
+    swipeStart.current = null;
+    if (!start || !touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    moveMonth((dx < 0) === !isRtl ? 1 : -1);
+  };
+
+  const legendItems: { key: string; label: string; swatch: string }[] = [
+    { key: 'gap', label: t('calendar.legend.gap'), swatch: 'h-2 w-2 rounded-full bg-orange-500' },
+    { key: 'done', label: t('calendar.legend.done'), swatch: 'h-2 w-2 rounded-full bg-emerald-500' },
+    { key: 'lesson', label: t('calendar.lesson'), swatch: cn('h-2 w-2 rounded-full', EVENT_STYLES.lesson.dot) },
+    { key: 'assessment', label: t('calendar.assessment'), swatch: cn('h-2 w-2 rounded-full', EVENT_STYLES.assessment.dot) },
+    { key: 'pedagogical', label: t('calendar.pedagogical'), swatch: cn('h-2 w-2 rounded-full', EVENT_STYLES.pedagogical.dot) },
+    { key: 'official', label: t('calendar.category.school'), swatch: cn('h-2 w-2 rounded-full', EVENT_STYLES.official.dot) },
+    { key: 'holiday', label: t('calendar.holiday'), swatch: cn('h-2 w-2 rounded-full', EVENT_STYLES.holiday.dot) },
+    { key: 'vacation', label: t('calendar.vacation'), swatch: 'h-2 w-5 rounded-full bg-emerald-500/25' },
+  ];
+
   return (
-    <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* ── BARRE SUPÉRIEURE : NAVIGATION & FILTRES ── */}
-      <header className="flex flex-col gap-3.5 rounded-3xl border border-border/70 bg-card p-3 sm:p-4 shadow-xs lg:flex-row lg:items-center lg:justify-between">
-        {/* Navigation Mois & Bouton Aujourd'hui */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center rounded-2xl border border-border/80 bg-muted/40 p-1 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => moveMonth(-1)}
-              aria-label={t('calendar.previousMonth')}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-card hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30"
-            >
-              <ChevronLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-            </button>
-            <button
-              type="button"
-              onClick={() => moveMonth(1)}
-              aria-label={t('calendar.nextMonth')}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-card hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30"
-            >
-              <ChevronRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={goToday}
-            className="h-10 rounded-2xl border border-primary/25 bg-primary/10 px-4 text-xs font-bold text-primary transition-all hover:bg-primary/15 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-2xs"
-          >
-            {t('calendar.today')}
-          </button>
-
-          <div className="min-w-0 ps-1">
-            <h3 className="truncate text-lg sm:text-xl font-black capitalize tracking-tight text-foreground">
+    <div className="space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* ── CALENDRIER : une seule surface, aucun texte dans les cases ── */}
+      <div className="overflow-hidden rounded-[28px] border border-border/60 bg-card">
+        <header className="px-4 pt-5 sm:px-7 sm:pt-6">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="min-w-0 truncate text-[1.65rem] font-bold capitalize leading-tight tracking-tight text-foreground sm:text-3xl">
               {monthLabel}
             </h3>
-            <p className="truncate text-xs font-medium text-muted-foreground">
+            <div className="-me-2 flex shrink-0 items-center">
+              <button
+                type="button"
+                onClick={() => moveMonth(-1)}
+                aria-label={t('calendar.previousMonth')}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-[transform,background-color,color] duration-200 hover:bg-muted hover:text-foreground active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transition-none"
+              >
+                <ChevronLeft className={cn('h-5 w-5', isRtl && 'rotate-180')} />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveMonth(1)}
+                aria-label={t('calendar.nextMonth')}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-[transform,background-color,color] duration-200 hover:bg-muted hover:text-foreground active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transition-none"
+              >
+                <ChevronRight className={cn('h-5 w-5', isRtl && 'rotate-180')} />
+              </button>
+            </div>
+          </div>
+
+          {/* Résumé + retour à aujourd'hui (zone de hauteur fixe : aucun décalage de mise en page) */}
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">
               {monthSummaryLabel(monthLessonCount, monthMilestoneCount)}
             </p>
+            {(selectedDate !== today || !inCurrentMonth(fromISO(today))) && (
+              <button
+                type="button"
+                onClick={goToday}
+                className="group flex h-11 shrink-0 items-center focus-visible:outline-none"
+              >
+                <span className="rounded-full bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary transition-[transform,background-color] duration-200 group-hover:bg-primary/15 group-active:scale-95 group-focus-visible:ring-2 group-focus-visible:ring-primary motion-reduce:transition-none">
+                  {t('calendar.today')}
+                </span>
+              </button>
+            )}
           </div>
-        </div>
 
-        {/* Filtres de couches ultra-fluides avec auto-centrage */}
-        <div className="w-full lg:w-auto">
           <FluidTabRail<CalendarLayer>
             items={layers}
             activeId={layer}
@@ -507,294 +540,172 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             size="sm"
             ariaLabel={t('calendar.layers')}
           />
-        </div>
-      </header>
+        </header>
 
-      {/* ── GRILLE DU CALENDRIER MODERNE ET AÉRÉE ── */}
-      <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-xs">
-        {/* En-tête des jours de la semaine */}
-        <div className="grid grid-cols-7 border-b border-border/60 bg-muted/30">
+        {/* Jours de la semaine */}
+        <div className="mt-4 grid grid-cols-7 px-2 sm:px-5" aria-hidden>
           {weekdayLabels.map((item, index) => (
             <div
               key={`${item.short}-${index}`}
               className={cn(
-                'py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-wider',
-                item.isWeekend ? 'text-muted-foreground/70' : 'text-foreground'
+                'py-2 text-center text-[11px] font-semibold tracking-wide sm:text-xs',
+                item.isWeekend ? 'text-muted-foreground/60' : 'text-muted-foreground'
               )}
             >
-              <span className="sm:hidden">{item.short}</span>
-              <span className="hidden sm:inline">{item.full}</span>
+              <span className="md:hidden">{item.short}</span>
+              <span className="hidden md:inline">{item.full}</span>
             </div>
           ))}
         </div>
 
-        {/* Cellules du calendrier */}
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role */}
+        {/* Grille : un numéro et au plus trois pastilles par jour, le détail s'ouvre au toucher */}
         <div
-          className="grid grid-cols-7 gap-1 sm:gap-1.5 p-1.5 sm:p-2.5 bg-muted/20"
-          role="grid"
-          tabIndex={0}
-          onKeyDown={handleGridKeyDown}
-          aria-label={monthLabel}
+          key={`${month.getFullYear()}-${month.getMonth()}`}
+          className="animate-fade-in touch-pan-y px-2 pb-4 motion-reduce:animate-none sm:px-5 sm:pb-6"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          {monthCells.map((date) => {
-            const iso = toISO(date);
-            const allDayEvents = eventsByDate.get(iso) ?? [];
-            const visibleEvents = allDayEvents.filter(event => layerMatches(event, layer));
-            const current = inCurrentMonth(date);
-            const selected = iso === selectedDate;
-            const isToday = iso === today;
-            const isWeekend = date.getDay() === 0;
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role */}
+          <div
+            className="grid grid-cols-7 gap-y-1"
+            role="grid"
+            tabIndex={0}
+            onKeyDown={handleGridKeyDown}
+            aria-label={monthLabel}
+          >
+            {monthCells.map((date, index) => {
+              if (!inCurrentMonth(date)) return <span key={toISO(date)} aria-hidden />;
 
-            const holiday = allDayEvents.find(event => event.kind === 'holiday');
-            const vacation = allDayEvents.find(event => event.kind === 'vacation');
-            const absence = allDayEvents.find(event => event.kind === 'absence');
-            const showVacationLabel = Boolean(vacation) && vacationLabelCells.has(iso);
+              const iso = toISO(date);
+              const allDayEvents = eventsByDate.get(iso) ?? [];
+              const visibleEvents = allDayEvents.filter(event => layerMatches(event, layer));
+              const selected = iso === selectedDate;
+              const isToday = iso === today;
+              const isSunday = date.getDay() === 0;
+              const holiday = visibleEvents.find(event => event.kind === 'holiday');
+              const isVacation = (events: CalendarEvent[]) => events.some(event => event.kind === 'vacation' && layerMatches(event, layer));
+              const vacation = isVacation(allDayEvents);
+              const previous = index % 7 !== 0 && inCurrentMonth(monthCells[index - 1]) && isVacation(eventsByDate.get(toISO(monthCells[index - 1])) ?? []);
+              const next = index % 7 !== 6 && inCurrentMonth(monthCells[index + 1]) && isVacation(eventsByDate.get(toISO(monthCells[index + 1])) ?? []);
+              const { status } = dayStatus(iso, allDayEvents);
+              const dots = dotsFor(visibleEvents, status);
 
-            const { status } = dayStatus(iso, allDayEvents);
-            const nonBreakEvents = visibleEvents.filter(event => event.kind !== 'holiday' && event.kind !== 'vacation');
-
-            // Style de fond aéré et harmonieux
-            const cellBg = !current
-              ? 'bg-muted/15 border-transparent opacity-40'
-              : selected
-                ? 'bg-primary/[0.06] border-primary ring-2 ring-primary/40 shadow-xs'
-                : isToday
-                  ? 'bg-primary/[0.03] border-primary/40 ring-1 ring-primary/30'
-                  : holiday
-                    ? 'bg-rose-500/[0.04] dark:bg-rose-500/[0.08] border-rose-500/20'
-                    : vacation
-                      ? 'bg-emerald-500/[0.03] dark:bg-emerald-500/[0.06] border-emerald-500/15'
-                      : absence
-                        ? 'bg-muted/40 border-border/60'
-                        : isWeekend
-                          ? 'bg-muted/30 border-border/40'
-                          : 'bg-card border-border/60 hover:border-border hover:shadow-2xs';
-
-            return (
-              <button
-                key={iso}
-                type="button"
-                role="gridcell"
-                aria-selected={selected}
-                onClick={() => setSelectedDate(iso)}
-                aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${vacation.title}` : ''}, ${eventCountLabel(visibleEvents.length)}`}
-                className={cn(
-                  'group relative flex min-h-[74px] sm:min-h-[104px] flex-col justify-between rounded-xl sm:rounded-2xl border p-1.5 sm:p-2 text-start transition-all duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                  cellBg
-                )}
-              >
-                {/* Ligne du haut : Numéro du jour & Indicateur de statut */}
-                <div className="flex items-center justify-between w-full">
+              return (
+                <button
+                  key={iso}
+                  type="button"
+                  role="gridcell"
+                  aria-selected={selected}
+                  aria-current={isToday ? 'date' : undefined}
+                  onClick={() => setSelectedDate(iso)}
+                  aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${t('calendar.vacation')}` : ''}, ${eventCountLabel(visibleEvents.length)}`}
+                  className={cn(
+                    'group flex h-14 w-full flex-col items-center justify-center gap-1 outline-none sm:h-16',
+                    vacation && 'bg-emerald-500/[0.09] dark:bg-emerald-400/[0.11]',
+                    vacation && !previous && 'rounded-s-full',
+                    vacation && !next && 'rounded-e-full'
+                  )}
+                >
                   <span
                     className={cn(
-                      'flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold tabular-nums transition-transform group-hover:scale-105',
-                      isToday
-                        ? 'bg-primary text-primary-foreground shadow-xs'
-                        : selected
-                          ? 'bg-primary/15 text-primary font-black'
-                          : current
-                            ? isWeekend ? 'text-muted-foreground' : 'text-foreground'
-                            : 'text-muted-foreground/60',
+                      'flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-semibold tabular-nums',
+                      'transition-[transform,background-color,color,box-shadow] duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]',
+                      'group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-primary motion-reduce:transition-none',
+                      selected
+                        ? 'scale-105 bg-primary text-primary-foreground shadow-sm'
+                        : isToday
+                          ? 'font-bold text-primary ring-2 ring-primary/40 group-hover:bg-primary/10'
+                          : holiday
+                            ? 'text-rose-600 group-hover:bg-muted dark:text-rose-300'
+                            : isSunday
+                              ? 'text-muted-foreground group-hover:bg-muted'
+                              : 'text-foreground group-hover:bg-muted'
                     )}
                   >
                     {date.getDate()}
                   </span>
-
-                  {/* Badge statut pédagogique (à consigner) */}
-                  {status === 'gap' && current && (
-                    <span
-                      title={t('calendar.legend.gap')}
-                      className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-amber-500 ring-2 ring-card animate-pulse"
-                      aria-hidden
-                    />
-                  )}
-                  {status === 'done' && current && nonBreakEvents.length > 0 && (
-                    <span
-                      title={t('calendar.legend.done')}
-                      className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold"
-                      aria-hidden
-                    >
-                      <Check className="h-2.5 w-2.5 stroke-[2.5]" />
-                    </span>
-                  )}
-                </div>
-
-                {/* Corps de la cellule : Badges clairs & aérés */}
-                <div className="mt-1 flex flex-1 flex-col justify-end gap-1 min-w-0 w-full">
-                  {/* Férié */}
-                  {holiday && (
-                    <div className="flex items-center gap-1 rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-rose-700 dark:text-rose-300 truncate">
-                      <span className="shrink-0">🎈</span>
-                      <span className="truncate">{holiday.title}</span>
-                    </div>
-                  )}
-
-                  {/* Vacances : affichage discret et élégant */}
-                  {vacation && !holiday && (
-                    showVacationLabel ? (
-                      <div className="flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 truncate">
-                        <span className="shrink-0">🌴</span>
-                        <span className="truncate">{vacation.title}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center py-0.5">
-                        <span className="h-1 w-6 rounded-full bg-emerald-500/25" aria-hidden />
-                      </div>
-                    )
-                  )}
-
-                  {/* Cours, examens et activités */}
-                  {!holiday && !vacation && (
-                    <>
-                      {/* Vue desktop : badges informatifs */}
-                      <div className="hidden sm:flex flex-col gap-0.5 min-w-0">
-                        {nonBreakEvents.slice(0, 2).map(event => {
-                          const style = EVENT_STYLES[event.kind];
-                          return (
-                            <div
-                              key={event.id}
-                              className={cn(
-                                'flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold truncate leading-tight shadow-2xs',
-                                style.badge
-                              )}
-                            >
-                              <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', style.dot)} />
-                              <span className="truncate">
-                                {event.kind === 'lesson' && event.detail ? `${event.detail} · ${event.title}` : event.title}
-                              </span>
-                            </div>
-                          );
-                        })}
-                        {nonBreakEvents.length > 2 && (
-                          <span className="text-[9px] font-bold text-muted-foreground px-1">
-                            +{nonBreakEvents.length - 2}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Vue mobile : pastilles compactes */}
-                      <div className="flex sm:hidden flex-wrap items-center gap-1">
-                        {nonBreakEvents.slice(0, 3).map(event => (
-                          <span
-                            key={event.id}
-                            className={cn('h-2 w-2 rounded-full', EVENT_STYLES[event.kind].dot)}
-                          />
-                        ))}
-                        {nonBreakEvents.length > 3 && (
-                          <span className="text-[8px] font-bold text-muted-foreground">
-                            +{nonBreakEvents.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                  <span className="flex h-1.5 items-center gap-1" aria-hidden>
+                    {dots.map((dot, dotIndex) => <span key={dotIndex} className={cn('h-1.5 w-1.5 rounded-full', dot)} />)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* ── LÉGENDE RAFFINÉE & AÉRÉE ── */}
+      {/* ── LÉGENDE : une ligne discrète, défilable sur téléphone ── */}
       <ul
-        className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-2xs"
+        className="-mx-1 flex items-center gap-x-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label={t('calendar.layers')}
       >
-        <li className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden />
-          <span className="text-xs font-semibold text-muted-foreground">{t('calendar.legend.gap')}</span>
-        </li>
-        <li className="flex items-center gap-2">
-          <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-bold" aria-hidden>
-            ✓
-          </span>
-          <span className="text-xs font-semibold text-muted-foreground">{t('calendar.legend.done')}</span>
-        </li>
-        {[
-          { kind: 'lesson' as const, label: t('calendar.lesson') },
-          { kind: 'assessment' as const, label: t('calendar.assessment') },
-          { kind: 'pedagogical' as const, label: t('calendar.pedagogical') },
-          { kind: 'official' as const, label: t('calendar.category.school') },
-          { kind: 'holiday' as const, label: t('calendar.holiday') },
-          { kind: 'vacation' as const, label: t('calendar.vacation') },
-        ].map(item => (
-          <li key={item.kind} className="flex items-center gap-2">
-            <span className={cn('h-2 w-2 rounded-full', EVENT_STYLES[item.kind].dot)} aria-hidden />
-            <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
+        {legendItems.map(item => (
+          <li key={item.key} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+            <span className={item.swatch} aria-hidden />
+            <span className="text-[11px] font-medium text-muted-foreground">{item.label}</span>
           </li>
         ))}
       </ul>
 
-      {/* ── PANNEAU DE DÉTAIL DU JOUR SÉLECTIONNÉ ── */}
+      {/* ── DÉTAIL DU JOUR : s'ouvre au toucher d'une case ── */}
       <section
-        className="rounded-3xl border border-border/70 bg-card p-4 sm:p-5 shadow-xs"
+        key={selectedDate}
+        className="animate-fade-in motion-reduce:animate-none"
         aria-label={selectedDateLabel}
+        aria-live="polite"
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
-          <div className="min-w-0">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              {t('calendar.layers')}
-            </span>
-            <h4 className="mt-0.5 truncate text-base sm:text-lg font-bold capitalize text-foreground">
-              {selectedDateLabel}
-            </h4>
+        <div className="flex items-center justify-between gap-3 px-1">
+          <div className="flex min-w-0 items-center gap-3.5">
+            <span className="text-[2.5rem] font-bold leading-none tabular-nums text-foreground">{selectedDay.getDate()}</span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold capitalize text-foreground">{selectedWeekday}</p>
+              <p className="truncate text-xs capitalize text-muted-foreground">{selectedMonthYear}</p>
+            </div>
           </div>
-          <span className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary shadow-2xs">
+          <span className="shrink-0 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
             {eventCountLabel(selectedEvents.length)}
           </span>
         </div>
 
         {selectedEvents.length === 0 ? (
-          <div className="flex min-h-24 flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
-              <CalendarDays className="h-5 w-5" />
+          <div className="mt-4 flex flex-col items-center justify-center gap-2 rounded-3xl bg-muted/40 px-6 py-9 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-card text-primary ring-1 ring-border/60">
+              <CalendarDays className="h-6 w-6" />
             </span>
-            <p className="text-xs sm:text-sm font-semibold text-muted-foreground">
-              {t('calendar.noEvents')}
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">{t('calendar.noEvents')}</p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <ul className="mt-4 space-y-2.5">
             {selectedEvents.map(event => {
               const Icon = iconFor(event);
               const style = EVENT_STYLES[event.kind];
               return (
-                <article
+                <li
                   key={event.id}
-                  className={cn(
-                    'flex items-start gap-3.5 rounded-2xl border p-3.5 sm:p-4 transition-all duration-150 hover:shadow-2xs',
-                    style.bgLight,
-                    style.border
-                  )}
+                  className={cn('relative flex items-start gap-3.5 rounded-3xl py-3.5 pe-4 ps-5', style.bgLight)}
                 >
-                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-2xs border', style.badge)}>
-                    <Icon className="h-5 w-5 stroke-[2.2]" />
+                  <span className={cn('absolute inset-y-4 start-2 w-1 rounded-full', style.dot)} aria-hidden />
+                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', style.badge)}>
+                    <Icon className="h-[18px] w-[18px] stroke-[2.2]" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className={cn('text-[10px] font-bold uppercase tracking-wider', style.text)}>
-                        {categoryLabel(event)}
-                      </span>
+                      <span className={cn('text-[11px] font-semibold', style.text)}>{categoryLabel(event)}</span>
                       {event.tentative && (
-                        <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-amber-700 dark:text-amber-300">
+                        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
                           {t('calendar.toConfirm')}
                         </span>
                       )}
                     </div>
-                    <h5 className="mt-1 text-sm font-bold leading-snug text-foreground">
-                      {event.title}
-                    </h5>
+                    <h5 className="mt-0.5 text-[15px] font-semibold leading-snug text-foreground">{event.title}</h5>
                     {event.detail && (
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground font-medium">
-                        {event.detail}
-                      </p>
+                      <p className="mt-0.5 text-xs font-medium leading-relaxed text-muted-foreground">{event.detail}</p>
                     )}
                   </div>
-                </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
       </section>
     </div>

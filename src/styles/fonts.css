@@ -24,3 +24,13 @@
   src: url('@fontsource/lato/files/lato-latin-700-normal.woff2') format('woff2');
   font-style: normal; font-weight: 700; font-display: swap;
 }
+@font-face {
+  font-family: 'Newsreader';
+  src: url('@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 200 800; font-display: swap;
+}
+@font-face {
+  font-family: 'Newsreader';
+  src: url('@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2') format('woff2');
+  font-style: italic; font-weight: 200 800; font-display: swap;
+}

@@ -1,36 +1,26 @@
-/* Pictograms inherit semantic ink; effects belong to their larger touch surfaces. */
+/* Carved details use semantic ink, so destructive and disabled states stay legible. */
 .app-icon { display: inline-block; flex-shrink: 0; vertical-align: middle; }
+.app-icon .icon-wash { fill: currentColor; fill-opacity: .22; }
+/* Objects sit directly on their surface; the button remains the touch target. */
 .action-tile .action-tile-icon {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   width: 46px;
   height: 46px;
   flex-basis: 46px;
-  border-radius: 15px;
-  border: 1px solid color-mix(in srgb, var(--tile-ink) 12%, transparent);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--tile-fill) 28%, hsl(var(--card))), var(--tile-fill));
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / .8), inset 0 -1px 0 hsl(var(--foreground) / .04), 0 3px 7px -4px hsl(var(--foreground) / .24);
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
 }
-.action-tile .action-tile-icon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(125deg, transparent 20%, hsl(0 0% 100% / .45) 42%, transparent 64%);
-  opacity: .5;
-  transform: translateX(-45%);
-  transition: transform 280ms ease-out, opacity 280ms;
-}
-.dark .action-tile .action-tile-icon { box-shadow: inset 0 1px 0 hsl(0 0% 100% / .14), inset 0 -1px 0 hsl(0 0% 0% / .14), 0 3px 8px -4px hsl(0 0% 0% / .35); }
-.dark .action-tile .action-tile-icon::before { opacity: .12; }
+.action-tile .action-tile-icon .app-icon { width: 30px; height: 30px; }
 @media (hover: hover) {
-  .action-tile:hover:not(:disabled) .action-tile-icon { transform: translateY(-1px); }
-  .action-tile:hover:not(:disabled) .action-tile-icon::before { transform: translateX(45%); }
+  .action-tile:hover:not(:disabled) .action-tile-icon { transform: translateY(-2px) rotate(-3deg); }
 }
 .action-tile:active:not(:disabled) .action-tile-icon { transform: scale(.94); }
 @media (prefers-reduced-motion: reduce) {
-  .action-tile .action-tile-icon, .action-tile .action-tile-icon::before { transition: none; }
+  .action-tile .action-tile-icon { transition: none; }
   .action-tile:hover:not(:disabled) .action-tile-icon, .action-tile:active:not(:disabled) .action-tile-icon { transform: none; }
+}
+@media (forced-colors: active) {
+  .app-icon .icon-wash { fill: Canvas; fill-opacity: 1; stroke: currentColor; stroke-width: 1; }
 }

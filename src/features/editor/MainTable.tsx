@@ -12,7 +12,7 @@ import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/compon
 import { useLocale } from '@/i18n/LocaleProvider';
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
 import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
-import { NotebookOpeningIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
@@ -332,11 +332,11 @@ const EmptyState: React.FC<{
     const { t, locale } = useLocale();
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
     const reduceMotion = useReducedMotion();
-    const Illustration = canLoadPredefined ? CurriculumImportIllustration : NotebookOpeningIllustration;
+    const Illustration = canLoadPredefined ? CurriculumImportIllustration : ProudTeacherIllustration;
 
     return (
         <section className="flex justify-center py-6 sm:py-10">
-            <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-border bg-card shadow-sm transition-all">
+            <div className="w-full max-w-[460px]">
                 {/* Surface principale */}
                 <div className="flex flex-col items-center px-7 pt-7 pb-8 text-center sm:px-9 sm:pt-9 sm:pb-9">
                     {/* Illustration vectorielle vivante avec micro-mouvement de respiration */}

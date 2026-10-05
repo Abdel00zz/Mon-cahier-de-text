@@ -9,5 +9,5 @@ export function rgbToHex(value: string): string | null {
 
 export function readThemeBackground(): string {
   return rgbToHex(getComputedStyle(document.body).backgroundColor)
-    ?? (document.documentElement.classList.contains('dark') ? '#161a14' : '#f7f8f1');
+    ?? (document.documentElement.classList.contains('dark') ? '#262625' : '#faf9f5');
 }

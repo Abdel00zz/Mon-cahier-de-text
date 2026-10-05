@@ -368,7 +368,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
+                                    <div className="flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
                                         <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
 
                                         <div className="max-w-md space-y-1.5 px-2">

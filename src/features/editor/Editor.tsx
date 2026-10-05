@@ -1143,8 +1143,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const selectedItemsData = useSelectionData(selectedIndices, lessonsData);
 
-  const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
-  const hasSelectedDate = selectedDates.length > 0;
+  const hasSelectedDate = selectedItemsData.some(item => Boolean(item.date));
+  // Tout porte déjà la date du jour : la barre n'a plus à proposer « Aujourd'hui ».
+  const allSelectedToday = selectedItemsData.length > 0 && selectedItemsData.every(item => item.date === today);
   const canAddAfterSelection = addAfterTarget !== null;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
   const editSelectionTargets = useMemo(
@@ -1159,6 +1160,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleAssignToday = useCallback(() => {
       assignSessionDate(selectedIndices, todayInMorocco());
   }, [assignSessionDate, selectedIndices]);
+
+  // Actions de la barre de sélection : références stables, pour que la barre
+  // (mémoïsée) ne se redessine que lorsqu'une valeur affichée change réellement.
+  const handleSelectionAdd = useCallback(() => {
+    if (addAfterTarget) handleOpenAddContentModal(addAfterTarget);
+  }, [addAfterTarget, handleOpenAddContentModal]);
+  const handleSelectionDatePicker = useCallback(() => openSession(selectedIndices), [openSession, selectedIndices]);
+  const handleSelectionEdit = useCallback(() => {
+    if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]);
+  }, [editSelectionTargets, handleOpenContentEditor]);
+  const handleSelectionMoveUp = useCallback(() => handleMoveSelected('up'), [handleMoveSelected]);
+  const handleSelectionMoveDown = useCallback(() => handleMoveSelected('down'), [handleMoveSelected]);
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
@@ -1239,20 +1252,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         <SelectionBar
           count={selectedCount}
           hasDate={hasSelectedDate}
+          allToday={allSelectedToday}
           canAdd={canAddAfterSelection}
           canAssignDate={canAssignDateSelection}
-          onAdd={() => { if (addAfterTarget) handleOpenAddContentModal(addAfterTarget); }}
-          onAssignDate={() => openSession(selectedIndices)}
+          onAdd={handleSelectionAdd}
+          onAssignDate={handleSelectionDatePicker}
           onAssignToday={handleAssignToday}
           onClearDate={handleClearSelectedDates}
-          onEdit={() => { if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]); }}
+          onEdit={handleSelectionEdit}
           onDelete={handleBulkDelete}
           onClear={handleDeselectAll}
           canEdit={canEditSelection}
           canMoveUp={canMoveUp}
           canMoveDown={canMoveDown}
-          onMoveUp={() => handleMoveSelected('up')}
-          onMoveDown={() => handleMoveSelected('down')}
+          onMoveUp={handleSelectionMoveUp}
+          onMoveDown={handleSelectionMoveDown}
           isPending={isSelectionPending}
         />
       )}

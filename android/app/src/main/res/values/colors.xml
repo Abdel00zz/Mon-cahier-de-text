@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Pistache moderne : accent des actions, aligné sur --primary (92 44% 34%). -->
-    <color name="colorPrimary">#547D31</color>
-    <color name="colorPrimaryDark">#36521E</color>
-    <color name="colorAccent">#547D31</color>
+    <!-- Terre cuite : accent des actions, aligné sur le token primary (15 55% 45%). -->
+    <color name="colorPrimary">#B35230</color>
+    <color name="colorPrimaryDark">#8A3D22</color>
+    <color name="colorAccent">#B35230</color>
 </resources>

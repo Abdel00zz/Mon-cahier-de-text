@@ -168,7 +168,8 @@ test('modales & sidebar arabe : augmentation de taille (+15%)', () => {
     'utf8',
   );
   assert.match(tabBar, /locale === 'ar' && ["']text-\[15px\]["']/);
-  assert.match(tabBar, /locale === 'ar' && ["']text-\[12px\]/);
+  // Le nom de l'enseignant reste un texte simple, un cran plus grand en arabe.
+  assert.match(tabBar, /locale === 'ar' && ["']text-\[13px\]["']/);
 });
 
 test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au survol sur PC', () => {

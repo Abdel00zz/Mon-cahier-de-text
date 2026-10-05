@@ -7,9 +7,9 @@ const config: CapacitorConfig = {
   android: { allowMixedContent: false, webContentsDebuggingEnabled: false },
   server: { androidScheme: 'https', hostname: 'localhost' },
   plugins: {
-    SplashScreen: { launchAutoHide: false, launchShowDuration: 230, backgroundColor: '#f7f8f1', showSpinner: false },
+    SplashScreen: { launchAutoHide: false, launchShowDuration: 230, backgroundColor: '#faf9f5', showSpinner: false },
     StatusBar: { overlaysWebView: true, style: 'LIGHT' },
-    LocalNotifications: { smallIcon: 'ic_stat_notebook', iconColor: '#547d31' },
+    LocalNotifications: { smallIcon: 'ic_stat_notebook', iconColor: '#b35230' },
   },
 };
 
