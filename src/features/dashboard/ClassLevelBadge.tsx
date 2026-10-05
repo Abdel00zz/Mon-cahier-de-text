@@ -182,10 +182,10 @@ export interface ClassGroupWatermarkProps {
     /**
      * Emplacement du numéro :
      * - `inline` : à côté d'un titre (liste des classes) ;
-     * - `end`    : juste après le nom, comme un filigrane majestueux et chic
-     *              (plus grand, en italique serif distingué).
+     * - `end` : après le nom ;
+     * - `background` : décor indépendant, masqué aux lecteurs d’écran.
      */
-    variant?: 'inline' | 'end';
+    variant?: 'inline' | 'end' | 'background';
 }
 
 /**
@@ -215,8 +215,9 @@ export const ClassGroupWatermark = memo(({
                 className
             )}
             data-tone={themeTone}
-            title={label}
-            aria-label={label}
+            title={variant === 'background' ? undefined : label}
+            aria-label={variant === 'background' ? undefined : label}
+            aria-hidden={variant === 'background' ? true : undefined}
         >
             <bdi dir="ltr">{toLatinDigits(group)}</bdi>
         </span>

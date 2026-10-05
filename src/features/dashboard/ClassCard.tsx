@@ -13,7 +13,6 @@ import { classOpeningLabel } from '@/infrastructure/storage/classOpening';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
 import { cn } from '@/lib/utils';
-import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
@@ -37,13 +36,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
     const title = [label.tier, label.title].filter(Boolean).join(' ');
-    // Le dernier mot et son groupe restent ensemble, même si le titre se replie.
-    const lastSpace = title.lastIndexOf(' ');
-    const titleStart = label.group && lastSpace >= 0 ? title.slice(0, lastSpace + 1) : '';
-    const titleEnd = titleStart ? title.slice(lastSpace + 1) : title;
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
-    const tone = color['data-keep-tone'];
     // Préparation du cahier : la carte garde sa géométrie, un voile discret
     // signale que le contenu de cette classe est encore en route. Un cahier déjà
     // présent n'affiche rien — l'enseignant ne voit un scintillement que
@@ -76,8 +70,16 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="class-card__open"
             />
             <span className="class-card__texture" aria-hidden="true" />
+
             {preparing && <span className="class-card__loading" aria-hidden="true" />}
             <div className="class-card__body">
+                {label.group && (
+                    <ClassGroupWatermark
+                        group={label.group}
+                        variant="background"
+                        className="class-card__group"
+                    />
+                )}
                 <div className="class-card__header">
                     {isActiveSession && (
                         <span className="class-card__live">
@@ -116,21 +118,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="class-card__identity">
                     <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
                         <span className="sr-only">{label.fullName}</span>
-                        <span aria-hidden="true">
-                            {formatWithOrdinals(titleStart)}
-                            <span className={label.group ? 'class-card__title-end' : undefined}>
-                                {formatWithOrdinals(titleEnd)}
-                                {label.group && (
-                                    <ClassGroupWatermark
-                                        group={label.group}
-                                        label={formatClassGroupLabel(label.group, locale)}
-                                        themeTone={tone}
-                                        variant="end"
-                                        className="class-card__group"
-                                    />
-                                )}
-                            </span>
-                        </span>
+                        <span aria-hidden="true">{formatWithOrdinals(title)}</span>
                     </h3>
                 </div>
             </div>

@@ -68,6 +68,7 @@
 .class-card__open:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -4px; }
 .class-card__body, .class-card__footer { position: relative; z-index: 2; pointer-events: none; }
 .class-card__body { flex: 1; padding: 12px 20px 20px; }
+.class-card__header, .class-card__identity { position: relative; z-index: 1; }
 .class-card__header { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-height: 44px; margin-bottom: 2px; }
 .class-card__menu {
   pointer-events: auto;
@@ -77,6 +78,7 @@
   height: 44px;
   flex: 0 0 44px;
   margin-inline-end: -10px;
+  translate: 0 -6px;
   border-radius: 14px;
   color: var(--class-muted);
   cursor: pointer;
@@ -91,42 +93,36 @@
    21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large. */
 .class-card__title { flex: 1; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-.class-card__title-end { white-space: nowrap; }
-/* Numéro de classe : chiffre serif droit (Newsreader, jamais italique) posé à la fin du nom,
-   sur la même ligne de base, à près de 2 fois le corps du titre. Gras, teinte d'accent de la
-   classe rendue translucide, et effet « gravé » : un liseré sombre en haut et un reflet clair
-   en bas donnent l'impression d'un creux dans le papier. La hauteur de ligne réduite empêche
-   le grand chiffre d'agrandir la ligne du titre. */
+/* Le groupe est décoratif et indépendant du titre, à l’extrémité opposée
+   au sens de lecture. DM Sans est déjà embarquée, y compris hors connexion. */
 .class-card .class-card__group {
-  --group-size: 1.95em;
-  display: inline-flex;
-  align-items: baseline;
-  min-width: 0;
-  min-height: 0;
+  position: absolute;
+  z-index: 0;
+  inset-inline-end: 12px;
+  bottom: -10px;
+  display: block;
+  max-width: 100%;
   padding: 0;
-  margin-inline-start: .4em;
+  margin: 0;
+  pointer-events: none;
+  user-select: none;
+  font-family: 'DM Sans', ui-sans-serif, sans-serif;
+  font-size: clamp(85px, 10.2vw, 119px);
+  font-style: normal;
+  font-weight: 900;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -.065em;
+  line-height: 1;
+  color: var(--class-ink);
+  opacity: .08;
+  text-shadow: none;
   transform: none;
   translate: none;
   filter: none;
-  font-family: var(--font-latin-display);
-  font-size: var(--group-size);
-  font-style: normal;
-  font-weight: 700;
-  font-optical-sizing: auto;
-  font-variant-numeric: lining-nums tabular-nums;
-  font-feature-settings: 'lnum' 1, 'kern' 1;
-  letter-spacing: 0;
-  line-height: .7;
-  vertical-align: baseline;
-  color: color-mix(in srgb, var(--class-accent) 68%, transparent);
-  opacity: 1;
-  text-shadow: 0 -1px 0 color-mix(in srgb, var(--class-accent) 38%, transparent), 0 1px 0 rgb(255 255 255 / .7);
 }
 .class-card .class-card__group:hover { transform: none; filter: none; }
-.dark .class-card .class-card__group {
-  color: color-mix(in srgb, var(--class-accent) 72%, transparent);
-  text-shadow: 0 -1px 0 rgb(0 0 0 / .55), 0 1px 0 rgb(255 255 255 / .1);
-}
+.dark .class-card .class-card__group { color: var(--class-ink); opacity: .1; text-shadow: none; }
+.class-card:has(.class-card__group) .class-card__identity { padding-inline-end: 28px; }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
@@ -158,7 +154,6 @@
   .class-card__header { margin-bottom: 4px; }
   .class-card__identity { min-height: 52px; }
   .class-card__title { font-size: 18.5px; }
-  .class-card .class-card__group { --group-size: 1.85em; }
   .class-card__footer { padding-inline: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
