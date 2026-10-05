@@ -1170,8 +1170,47 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleSelectionEdit = useCallback(() => {
     if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]);
   }, [editSelectionTargets, handleOpenContentEditor]);
-  const handleSelectionMoveUp = useCallback(() => handleMoveSelected('up'), [handleMoveSelected]);
-  const handleSelectionMoveDown = useCallback(() => handleMoveSelected('down'), [handleMoveSelected]);
+  // Déplacement : le bloc reste à l'écran. Après un déplacement réel (y compris vers un autre
+  // paragraphe), la ligne est recentrée en douceur et brièvement mise en évidence.
+  const moveFocusPendingRef = useRef(false);
+  const moveSelection = useCallback((direction: 'up' | 'down') => {
+    if (!(direction === 'up' ? canMoveUp : canMoveDown)) return;
+    moveFocusPendingRef.current = true;
+    handleMoveSelected(direction);
+  }, [canMoveDown, canMoveUp, handleMoveSelected]);
+  const handleSelectionMoveUp = useCallback(() => moveSelection('up'), [moveSelection]);
+  const handleSelectionMoveDown = useCallback(() => moveSelection('down'), [moveSelection]);
+
+  useEffect(() => {
+    if (!moveFocusPendingRef.current) return;
+    moveFocusPendingRef.current = false;
+    const first = selectedIndices[0];
+    if (!first) return;
+    const key = indicesKey(first);
+    setSessionFocusKey(key);
+    if (placementTimerRef.current !== null) window.clearTimeout(placementTimerRef.current);
+    placementTimerRef.current = window.setTimeout(() => {
+      placementTimerRef.current = null;
+      setSessionFocusKey(current => (current === key ? null : current));
+    }, 900);
+  }, [selectedIndices]);
+
+  // Alt + flèche haut / bas : déplacer la sélection sans quitter le clavier.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      if (activeModal || editingIndicesRef.current !== null) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], [role="menu"]')) return;
+      const direction = event.key === 'ArrowUp' ? 'up' : 'down';
+      if (!(direction === 'up' ? canMoveUp : canMoveDown)) return;
+      event.preventDefault();
+      moveSelection(direction);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeModal, canMoveDown, canMoveUp, moveSelection]);
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre

@@ -28,7 +28,7 @@ test('Android : les rappels locaux n’attendent pas un abonnement serveur et le
     state: { permission: 'denied', subscribed: false, serverRegistered: false, delivery: 'local' },
   }));
   assert.match(blocked, /Ouvrir les paramètres Android/);
-  assert.match(blocked, /paramètres Android de l’application/);
+  assert.match(blocked, /réglages Android/);
   assert.doesNotMatch(blocked, /réglages du navigateur/);
 });
 

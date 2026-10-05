@@ -2,7 +2,11 @@ import { useState, useMemo, useCallback, useTransition } from 'react';
 import type { Draft } from 'immer';
 import type { Indices, LessonsData } from '@/types';
 import { indicesKey } from '@/domain/notebook/lessonRows';
-import { planContentMove, applyContentMove, planContentRelocation, applyContentRelocation } from '@/domain/notebook/contentReorder';
+import {
+  planContentMove, applyContentMove,
+  planContentRelocation, applyContentRelocation,
+  planContentTransfer, applyContentTransfer,
+} from '@/domain/notebook/contentReorder';
 import type { ContentEditTargets } from '@/domain/notebook/contentEditing';
 
 export interface SelectionState {
@@ -57,9 +61,13 @@ export function useSelectionEngine({
         ? planContentRelocation(lessonsData, moveTargets, selectionState.keys, direction)
         : null;
       if (relocation) return { kind: 'relocation' as const, relocation };
-      // 2. Contenu typé ou séance fusionnée : permutation stricte entre frères.
+      // 2. Contenu typé ou séance fusionnée : permutation avec le voisin de la même liste.
       const swap = planContentMove(lessonsData, moveTargets, selectionState.keys, direction);
-      return swap ? { kind: 'swap' as const, swap } : null;
+      if (swap) return { kind: 'swap' as const, swap };
+      // 3. Au bord de la liste : le bloc passe au paragraphe voisin du même chapitre
+      //    (fin du précédent en montant, début du suivant en descendant).
+      const transfer = planContentTransfer(lessonsData, moveTargets, selectionState.keys, direction);
+      return transfer ? { kind: 'transfer' as const, transfer } : null;
     };
     return { up: build('up'), down: build('down') };
   }, [lessonsData, moveTargets, freeKeys, selectionState.keys]);
@@ -73,11 +81,14 @@ export function useSelectionEngine({
 
     setState(draft => {
       if (option.kind === 'relocation') applyContentRelocation(draft, option.relocation);
+      else if (option.kind === 'transfer') applyContentTransfer(draft, option.transfer);
       else applyContentMove(draft, option.swap);
     }, 'reorder');
 
     setSelectionState(createSelectionState(
-      option.kind === 'relocation' ? option.relocation.selection : option.swap.selection
+      option.kind === 'relocation' ? option.relocation.selection
+        : option.kind === 'transfer' ? option.transfer.selection
+          : option.swap.selection
     ));
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [moveOptions, setState, setEditorState]);

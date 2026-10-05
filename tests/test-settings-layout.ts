@@ -43,3 +43,14 @@ test('les paramètres comptent cinq onglets et gardent les anciens liens directs
   assert.ok(!/id: 'assistance'/.test(modal), 'l’aide est un lien, plus un onglet');
   assert.match(modal, /footer=\{hasProfileChanges \? footer : undefined\}/);
 });
+
+test('le déplacement est un geste de premier rang : boutons dans la barre, Alt+flèches, recentrage', () => {
+  const bar = read('src/features/editor/SelectionBar.tsx');
+  assert.match(bar, /icon=\{ArrowUp\}[\s\S]{0,160}min-\[380px\]:inline-flex/, 'bouton « monter » dans la barre dès 380 px');
+  assert.match(bar, /narrowOnly/, 'sous 380 px, les mêmes actions passent dans le menu');
+  const editor = read('src/features/editor/Editor.tsx');
+  assert.match(editor, /event\.altKey[\s\S]{0,200}ArrowUp/, 'Alt + flèche déplace la sélection');
+  assert.match(editor, /moveFocusPendingRef/, 'la ligne déplacée est recentrée');
+  const engine = read('src/features/editor/hooks/useSelectionEngine.ts');
+  assert.match(engine, /planContentTransfer/, 'le contenu typé peut changer de paragraphe');
+});

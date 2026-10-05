@@ -1,5 +1,5 @@
 import { isDraft, original, type Draft } from 'immer';
-import type { Indices, LessonsData } from '../../types';
+import type { Indices, LessonsData, TopLevelItem } from '../../types';
 import { findItem } from './dataUtils';
 import { buildLessonRows, indicesKey } from './lessonRows';
 import { isFreeContent } from './freeLineType';
@@ -121,6 +121,13 @@ const hasChildren = (value: unknown): boolean =>
   typeof value === 'object' && value !== null
   && ('items' in value || 'sections' in value || 'subsections' in value || 'subsubsections' in value);
 
+const STRUCTURE_KINDS = new Set<string>(['chapter', 'section', 'subsection', 'subsubsection']);
+
+/** Un titre de structure accueille des éléments même sans clé items (section importée vide) :
+ *  on se fie au type du nœud, jamais à la présence de ses listes. */
+const isContainerRow = (row: { data: unknown; elementType: string }): boolean =>
+  STRUCTURE_KINDS.has(row.elementType) || hasChildren(row.data);
+
 /**
  * Plan de RELOCALISATION d'une ligne libre le long du plan.
  *
@@ -178,16 +185,24 @@ export function planContentRelocation(
   if (!block) return null;
 
   const positions = selectedRows.map(row => row!.position).sort((a, b) => a - b);
-  const neighbour = rows[direction === 'up' ? positions[0] - 1 : positions[positions.length - 1] + 1];
+  const sourceParent = withoutDeepestIndex(block.anchor);
+  let neighbour = rows[direction === 'up' ? positions[0] - 1 : positions[positions.length - 1] + 1];
+  // Premier enfant qui monte : le repère de lecture est son propre titre. Se poser « dans » ce
+  // titre ne changerait rien (le plan était un faux déplacement). La ligne franchit donc le
+  // titre et rejoint la fin du bloc qui le précède.
+  let leavesParent = false;
+  if (direction === 'up' && neighbour && indicesKey(neighbour.indices) === indicesKey(sourceParent)) {
+    neighbour = rows[positions[0] - 2];
+    leavesParent = true;
+  }
   if (!neighbour) return null;
 
-  const side: ContentRelocationPlan['side'] = hasChildren(neighbour.data)
+  const side: ContentRelocationPlan['side'] = isContainerRow(neighbour)
     ? 'inside'
-    : direction === 'up' ? 'before' : 'after';
+    : direction === 'up' && !leavesParent ? 'before' : 'after';
 
   const neighbourField = getIndexField(neighbour.indices);
   const neighbourParent = withoutDeepestIndex(neighbour.indices);
-  const sourceParent = withoutDeepestIndex(block.anchor);
   const sameParent = indicesKey(sourceParent) === indicesKey(neighbourParent);
 
   // Position brute, puis correction si l'insertion visait la liste d'où l'on retire.
@@ -272,4 +287,119 @@ export function applyContentMove(draft: Draft<LessonsData>, plan: ContentMovePla
   parent.splice(plan.destination, 0, ...movedElements);
   
   return true;
+}
+
+/* ── Transfert entre conteneurs ───────────────────────────────────────────────
+ * Un contenu typé (exercice, définition…) se permute d'abord avec ses frères. Au bord de sa liste
+ * (premier ou dernier élément), il passe au conteneur voisin dans l'ordre de lecture du
+ * chapitre : la fin du paragraphe précédent en montant, le début du paragraphe suivant en
+ * descendant. Un paragraphe vide, même sans liste `items`, accueille le contenu.
+ * Le chapitre reste la limite : changer de chapitre bouscule numérotation et progression. */
+
+/** Types qui ne quittent jamais leur bloc : évaluations, devoirs, corrections et titres. */
+const PINNED_TYPES = new Set<string>([
+  'chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu',
+  'correction_devoir_maison', 'correction_controle_continu',
+]);
+
+const isTransferable = (item: unknown): boolean =>
+  typeof item === 'object' && item !== null && !PINNED_TYPES.has(String((item as { type?: unknown }).type ?? ''));
+
+export interface ContentTransferPlan {
+  source: { anchor: Indices; parent: unknown; start: number; count: number };
+  /** Conteneur d'arrivée (chemin sans itemIndex) et position d'insertion dans sa liste `items`. */
+  container: Indices;
+  index: number;
+  /** Coordonnées de la sélection après le transfert. */
+  selection: Indices[];
+}
+
+type ItemHolder = { items?: unknown[]; sections?: unknown[]; subsections?: unknown[]; subsubsections?: unknown[] };
+
+/** Chemins des nœuds qui portent une liste `items`, dans l'ordre de lecture du tableau :
+ *  les éléments d'un nœud précèdent ses sous-titres (voir `buildLessonRows`). */
+function collectItemContainers(chapter: TopLevelItem, chapterIndex: number): Indices[] {
+  const paths: Indices[] = [];
+  const visit = (node: ItemHolder, path: Indices) => {
+    paths.push(path);
+    node.sections?.forEach((child, sectionIndex) => visit(child as ItemHolder, { ...path, sectionIndex }));
+    node.subsections?.forEach((child, subsectionIndex) => visit(child as ItemHolder, { ...path, subsectionIndex }));
+    node.subsubsections?.forEach((child, subsubsectionIndex) => visit(child as ItemHolder, { ...path, subsubsectionIndex }));
+  };
+  visit(chapter as unknown as ItemHolder, { chapterIndex });
+  return paths;
+}
+
+function resolveContainer(data: LessonsData | Draft<LessonsData>, path: Indices): ItemHolder | null {
+  let node = (data as unknown as ItemHolder[])[path.chapterIndex] as ItemHolder | undefined;
+  if (node && path.sectionIndex !== undefined) node = node.sections?.[path.sectionIndex] as ItemHolder | undefined;
+  if (node && path.subsectionIndex !== undefined) node = node.subsections?.[path.subsectionIndex] as ItemHolder | undefined;
+  if (node && path.subsubsectionIndex !== undefined) node = node.subsubsections?.[path.subsubsectionIndex] as ItemHolder | undefined;
+  return node ?? null;
+}
+
+export function planContentTransfer(
+  data: LessonsData,
+  groups: ContentEditTargets,
+  selectedKeys: ReadonlySet<string>,
+  direction: 'up' | 'down'
+): ContentTransferPlan | null {
+  if (selectedKeys.size === 0) return null;
+  const selectedGroups = new Set<readonly Indices[]>();
+  for (const key of selectedKeys) {
+    const group = groups.get(key);
+    if (!group) return null;
+    selectedGroups.add(group);
+  }
+  const indices = [...selectedGroups].flat();
+  // Seuls des éléments de contenu changent de conteneur : jamais une section ni un chapitre.
+  if (indices.some(index => index.itemIndex === undefined)) return null;
+
+  const block = getContiguousSiblingBlock(data, indices);
+  if (!block) return null;
+  // Seul le bord de la liste déclenche un transfert : ailleurs, la permutation suffit.
+  const atEdge = direction === 'up' ? block.start === 0 : block.start + block.count === block.parent.length;
+  if (!atEdge) return null;
+
+  const chapter = data[block.anchor.chapterIndex];
+  if (!chapter || chapter.type !== 'chapter') return null;
+  if (!block.parent.slice(block.start, block.start + block.count).every(isTransferable)) return null;
+
+  const containers = collectItemContainers(chapter, block.anchor.chapterIndex);
+  const sourceKey = indicesKey(withoutDeepestIndex(block.anchor));
+  const at = containers.findIndex(path => indicesKey(path) === sourceKey);
+  if (at < 0) return null;
+  const target = containers[direction === 'up' ? at - 1 : at + 1];
+  if (!target) return null;
+
+  const holder = resolveContainer(data, target);
+  if (!holder) return null;
+  const index = direction === 'up' ? (holder.items?.length ?? 0) : 0;
+  return {
+    source: { anchor: block.anchor, parent: block.parent, start: block.start, count: block.count },
+    container: target,
+    index,
+    selection: Array.from({ length: block.count }, (_, offset) => ({ ...target, itemIndex: index + offset })),
+  };
+}
+
+/** Retire le bloc de sa liste et l'insère dans le conteneur d'arrivée, en une seule transaction.
+ *  La cible est résolue AVANT le retrait, et le bloc revient à sa place au moindre incident. */
+export function applyContentTransfer(draft: Draft<LessonsData>, plan: ContentTransferPlan): boolean {
+  const sourceParent = findItem(draft, plan.source.anchor).parent;
+  const resolvedSource = isDraft(sourceParent) ? original(sourceParent) : sourceParent;
+  if (!Array.isArray(sourceParent) || resolvedSource !== plan.source.parent) return false;
+  const holder = resolveContainer(draft, plan.container);
+  if (!holder) return false;
+
+  const removed = sourceParent.splice(plan.source.start, plan.source.count);
+  const restore = () => { sourceParent.splice(plan.source.start, 0, ...removed); return false; };
+  if (removed.length !== plan.source.count) return restore();
+  try {
+    const list = (holder.items ??= []);
+    list.splice(Math.min(plan.index, list.length), 0, ...removed);
+    return true;
+  } catch {
+    return restore();
+  }
 }

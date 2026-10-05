@@ -100,11 +100,15 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
 
   const showToday = canAssignDate && Boolean(onAssignToday) && !allToday;
   const showEdit = Boolean(canEdit && onEdit);
+  const showMoveUp = Boolean(onMoveUp && canMoveUp);
+  const showMoveDown = Boolean(onMoveDown && canMoveDown);
 
+  // Déplacer est le geste le plus fréquent : deux boutons dans la barre quand la largeur le permet,
+  // sinon (moins de 380 px) les mêmes actions passent dans le menu.
   const menu = useMemo(() => {
-    const items: { id: string; icon: IconType; onSelect: () => void; title: string }[] = [];
-    if (onMoveUp && canMoveUp) items.push({ id: 'move-up', icon: ArrowUp, onSelect: onMoveUp, title: t('selection.moveUp') });
-    if (onMoveDown && canMoveDown) items.push({ id: 'move-down', icon: ArrowDown, onSelect: onMoveDown, title: t('selection.moveDown') });
+    const items: { id: string; icon: IconType; onSelect: () => void; title: string; narrowOnly?: boolean }[] = [];
+    if (onMoveUp && canMoveUp) items.push({ id: 'move-up', icon: ArrowUp, onSelect: onMoveUp, title: t('selection.moveUp'), narrowOnly: true });
+    if (onMoveDown && canMoveDown) items.push({ id: 'move-down', icon: ArrowDown, onSelect: onMoveDown, title: t('selection.moveDown'), narrowOnly: true });
     if (canAdd) items.push({ id: 'add', icon: Plus, onSelect: onAdd, title: t('selection.addAfter') });
     if (hasDate) items.push({ id: 'clear-date', icon: CalendarX, onSelect: onClearDate, title: t('selection.unassignDate') });
     return items;
@@ -186,6 +190,10 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
           title={t('selection.dateToday')} label={t('selection.today')} accent disabled={isPending} />}
         {canAssignDate && <ActionButton icon={CalendarDays} onClick={run(onAssignDate)}
           title={t('selection.chooseDate')} disabled={isPending} />}
+        {showMoveUp && <ActionButton icon={ArrowUp} onClick={run(onMoveUp!)}
+          title={t('selection.moveUp')} disabled={isPending} className="hidden min-[380px]:inline-flex" />}
+        {showMoveDown && <ActionButton icon={ArrowDown} onClick={run(onMoveDown!)}
+          title={t('selection.moveDown')} disabled={isPending} className="hidden min-[380px]:inline-flex" />}
         {showEdit && <ActionButton icon={Pencil} onClick={run(onEdit!)}
           title={t('selection.edit')} disabled={isPending} className="hidden sm:inline-flex" />}
 
@@ -206,12 +214,12 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
             {showEdit && <DropdownMenuItem onSelect={onEdit} disabled={isPending} className="min-h-11 gap-3 sm:hidden">
               <Pencil aria-hidden className="size-4" />{t('selection.edit')}
             </DropdownMenuItem>}
-            {menu.map(({ id, icon: Icon, onSelect, title }) => (
-              <DropdownMenuItem key={id} onSelect={onSelect} disabled={isPending} className="min-h-11 gap-3">
+            {menu.map(({ id, icon: Icon, onSelect, title, narrowOnly }) => (
+              <DropdownMenuItem key={id} onSelect={onSelect} disabled={isPending} className={cn('min-h-11 gap-3', narrowOnly && 'min-[380px]:hidden')}>
                 <Icon aria-hidden className="size-4" />{title}
               </DropdownMenuItem>
             ))}
-            {(menu.length > 0 || showEdit) && <DropdownMenuSeparator />}
+            {(menu.length > 0 || showEdit) && <DropdownMenuSeparator className={menu.every(item => item.narrowOnly) && !showEdit ? 'min-[380px]:hidden' : undefined} />}
             <DropdownMenuItem onSelect={onDelete} disabled={isPending} destructive className="min-h-11 gap-3">
               <Trash2 aria-hidden className="size-4" />{t('selection.delete')}
             </DropdownMenuItem>

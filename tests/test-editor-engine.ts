@@ -38,7 +38,7 @@ import { SelectionBar } from '../src/features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../src/domain/classes/classColors';
 import { insertFreeContent } from '../src/domain/notebook/freeContent';
 import { applyRemarkEdit, buildSessionTargets, orderDeletionsDeepestFirst } from '../src/domain/notebook/contentEditing';
-import { applyContentMove, applyContentRelocation, planContentMove, planContentRelocation } from '../src/domain/notebook/contentReorder';
+import { applyContentMove, applyContentRelocation, applyContentTransfer, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
 import { isFreeContent } from '../src/domain/notebook/freeLineType';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
 import { filterLessonsByDates } from '../src/infrastructure/printing/printMeta';
@@ -539,6 +539,154 @@ test('ligne libre : déplaçable le long de la structure, jusque sous un titre',
   assert.equal(planContentRelocation(typed, typedTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'up'), null);
 });
 
+test('contenu typé : passe d’un paragraphe à l’autre aux bords de sa liste, et revient', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [
+    { name: 'P1', items: [{ type: 'definition', title: 'D1' }, { type: 'exercice', title: 'Ex1' }] },
+    { name: 'P2', items: [{ type: 'exercice', title: 'Ex2' }, { type: 'exercice', title: 'Ex3' }] },
+  ] }];
+  const targets = buildSessionTargets(buildLessonRows(data));
+  const titles = (value: LessonsData, section: number) => value[0].sections![section].items!.map(item => item.title);
+
+  // 1. Dernier de P1, vers le bas : plus de voisin, il entre au début de P2.
+  const last = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 1 })]);
+  assert.equal(planContentMove(data, targets, last, 'down'), null, 'aucun frère à permuter');
+  const down = planContentTransfer(data, targets, last, 'down');
+  assert.ok(down, 'Ex1 doit pouvoir passer au paragraphe 2');
+  assert.deepEqual(down.selection, [{ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 }]);
+  const moved = produce(data, draft => { assert.equal(applyContentTransfer(draft, down), true); });
+  assert.deepEqual(titles(moved, 0), ['D1']);
+  assert.deepEqual(titles(moved, 1), ['Ex1', 'Ex2', 'Ex3']);
+
+  // 2. Retour : le premier de P2, vers le haut, revient à la FIN de P1.
+  const movedTargets = buildSessionTargets(buildLessonRows(moved));
+  const first = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 })]);
+  assert.equal(planContentMove(moved, movedTargets, first, 'up'), null);
+  const up = planContentTransfer(moved, movedTargets, first, 'up');
+  assert.ok(up);
+  assert.deepEqual(up.selection, [{ chapterIndex: 0, sectionIndex: 0, itemIndex: 1 }]);
+  const back = produce(moved, draft => { applyContentTransfer(draft, up); });
+  assert.deepEqual(back, data);
+
+  // 3. Au milieu d’une liste, le transfert ne s’applique pas : la permutation suffit.
+  const middle = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 })]);
+  assert.equal(planContentTransfer(moved, movedTargets, middle, 'down'), null);
+  assert.ok(planContentMove(moved, movedTargets, middle, 'down'));
+
+  // 4. Un bloc de deux contenus voyage d’un seul lot, dans l’ordre.
+  const block = new Set([0, 1].map(itemIndex => indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex })));
+  const blockPlan = planContentTransfer(data, targets, block, 'up');
+  assert.ok(blockPlan);
+  const blockMoved = produce(data, draft => { applyContentTransfer(draft, blockPlan); });
+  assert.deepEqual(titles(blockMoved, 0), ['D1', 'Ex1', 'Ex2', 'Ex3']);
+  assert.deepEqual(blockPlan.selection.map(index => index.itemIndex), [2, 3]);
+  assert.deepEqual(titles(blockMoved, 1), []);
+});
+
+test('contenu typé : paragraphe vide sans liste, éléments du chapitre, sous-paragraphes et limites', () => {
+  // Paragraphe importé sans clé `items` : il accueille quand même le contenu.
+  const withEmpty: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'exercice', title: 'Ex1' }] },
+    { name: 'Vide' },
+  ] }];
+  const emptyTargets = buildSessionTargets(buildLessonRows(withEmpty));
+  const toEmpty = planContentTransfer(withEmpty, emptyTargets, new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 })]), 'down');
+  assert.ok(toEmpty);
+  const filled = produce(withEmpty, draft => { applyContentTransfer(draft, toEmpty); });
+  assert.deepEqual(filled[0].sections![1].items!.map(item => item.title), ['Ex1']);
+  assert.deepEqual(filled[0].sections![0].items, []);
+  assert.equal(filled[0].sections!.length, 2, 'aucune liste de structure ne reçoit un contenu');
+
+  // Ordre de lecture : éléments du chapitre, puis P1, puis son sous-paragraphe, puis P2.
+  const nested: LessonsData = [{ type: 'chapter', title: 'C', items: [{ type: 'definition', title: 'Racine' }], sections: [
+    { name: 'P1', items: [{ type: 'exercice', title: 'A' }], subsections: [{ name: 'S1', items: [{ type: 'exercice', title: 'B' }] }] },
+    { name: 'P2', items: [{ type: 'exercice', title: 'C' }] },
+  ] }];
+  const nestedTargets = buildSessionTargets(buildLessonRows(nested));
+  const step = (value: LessonsData, indices: Indices, direction: 'up' | 'down') => {
+    const plan = planContentTransfer(value, buildSessionTargets(buildLessonRows(value)), new Set([indicesKey(indices)]), direction);
+    assert.ok(plan, `${direction} depuis ${indicesKey(indices)}`);
+    return { plan, next: produce(value, draft => { applyContentTransfer(draft, plan); }) };
+  };
+  // Racine (chapitre) ↓ premier paragraphe ; A ↓ sous-paragraphe ; B ↓ P2 ; C ↑ sous-paragraphe (fin).
+  const a = step(nested, { chapterIndex: 0, itemIndex: 0 }, 'down');
+  assert.deepEqual(a.plan.selection, [{ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }]);
+  const b = step(nested, { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }, 'down');
+  assert.deepEqual(b.plan.selection, [{ chapterIndex: 0, sectionIndex: 0, subsectionIndex: 0, itemIndex: 0 }]);
+  const c = step(nested, { chapterIndex: 0, sectionIndex: 0, subsectionIndex: 0, itemIndex: 0 }, 'down');
+  assert.deepEqual(c.plan.selection, [{ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 }]);
+  const d = step(nested, { chapterIndex: 0, sectionIndex: 1, itemIndex: 0 }, 'up');
+  assert.deepEqual(d.plan.selection, [{ chapterIndex: 0, sectionIndex: 0, subsectionIndex: 0, itemIndex: 1 }]);
+  assert.deepEqual(d.next[0].sections![0].subsections![0].items!.map(item => item.title), ['B', 'C']);
+  assert.ok(nestedTargets.size > 0);
+
+  // Limites : le chapitre reste la frontière, et aucune sélection multi-conteneurs.
+  const twoChapters: LessonsData = [
+    { type: 'chapter', title: 'C1', items: [{ type: 'exercice', title: 'X' }] },
+    { type: 'chapter', title: 'C2', items: [{ type: 'exercice', title: 'Y' }] },
+  ];
+  const chapterTargets = buildSessionTargets(buildLessonRows(twoChapters));
+  assert.equal(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'down'), null);
+  assert.equal(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 1, itemIndex: 0 })]), 'up'), null);
+  const twoSections: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'exercice', title: 'A' }] }, { name: 'P2', items: [{ type: 'exercice', title: 'B' }] },
+  ] }];
+  const sectionTargets = buildSessionTargets(buildLessonRows(twoSections));
+  const spanning = new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 })]);
+  assert.equal(planContentTransfer(twoSections, sectionTargets, spanning, 'down'), null);
+  // Une section ou un chapitre ne se transfèrent pas : seule la permutation les déplace.
+  assert.equal(planContentTransfer(twoSections, sectionTargets, new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0 })]), 'down'), null);
+  // Une évaluation garde sa place : ni devoir ni contrôle ne quittent leur bloc.
+  const pinned: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'devoir_maison', title: 'DM' }] }, { name: 'P2' },
+  ] }];
+  assert.equal(planContentTransfer(pinned, buildSessionTargets(buildLessonRows(pinned)), new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 })]), 'down'), null);
+});
+
+test('contenu typé : une séance fusionnée (même date) traverse la frontière d’un paragraphe en un lot', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [
+      { type: 'exercice', title: 'A' },
+      { type: 'exercice', title: 'B', date: '2026-09-08' },
+      { type: 'activite', title: 'C', date: '2026-09-08' },
+    ] },
+    { name: 'P2', items: [{ type: 'exercice', title: 'D' }] },
+  ] }];
+  const targets = buildSessionTargets(buildLessonRows(data));
+  const selection = new Set([1, 2].map(itemIndex => indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex })));
+  const plan = planContentTransfer(data, targets, selection, 'down');
+  assert.ok(plan, 'le lot fusionné doit changer de paragraphe');
+  const moved = produce(data, draft => { applyContentTransfer(draft, plan); });
+  assert.deepEqual(moved[0].sections![0].items!.map(item => item.title), ['A']);
+  assert.deepEqual(moved[0].sections![1].items!.map(item => item.title), ['B', 'C', 'D']);
+  assert.deepEqual(plan.selection.map(index => index.itemIndex), [0, 1]);
+  // Les dates voyagent avec les contenus : rien n’est réécrit.
+  assert.equal(moved[0].sections![1].items![0].date, '2026-09-08');
+});
+
+test('ligne libre : premier enfant qui monte franchit son titre, paragraphe vide sans liste accessible', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'exercice', title: 'A' }] },
+    { name: 'P2', items: [{ type: 'free', title: '', description: 'Note' }, { type: 'exercice', title: 'B' }] },
+  ] }];
+  const targets = buildSessionTargets(buildLessonRows(data));
+  const up = planContentRelocation(data, targets, new Set([indicesKey({ chapterIndex: 0, sectionIndex: 1, itemIndex: 0 })]), 'up');
+  assert.ok(up, 'la note doit pouvoir quitter P2 par le haut');
+  const moved = produce(data, draft => { assert.equal(applyContentRelocation(draft, up), true); });
+  assert.deepEqual(moved[0].sections![0].items!.map(item => item.title), ['A', '']);
+  assert.deepEqual(moved[0].sections![1].items!.map(item => item.title), ['B']);
+  assert.notEqual(moved, data, 'ce n’est plus un faux déplacement');
+
+  const withEmpty: LessonsData = [{ type: 'chapter', title: 'C', sections: [
+    { name: 'P1', items: [{ type: 'free', title: '', description: 'Note' }] },
+    { name: 'Vide' },
+  ] }];
+  const down = planContentRelocation(withEmpty, buildSessionTargets(buildLessonRows(withEmpty)), new Set([indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 })]), 'down');
+  assert.ok(down);
+  assert.equal(down.side, 'inside');
+  const filled = produce(withEmpty, draft => { applyContentRelocation(draft, down); });
+  assert.equal(filled[0].sections!.length, 2, 'la note n’est jamais glissée dans la liste des paragraphes');
+  assert.equal(filled[0].sections![1].items!.length, 1);
+});
 test('diagnostic et séance fusionnée : une seule ligne, déplaçable dans tous les sens', () => {
   // 1. Le diagnostic initial se déplace comme n'importe quelle ligne.
   const before: LessonsData = [

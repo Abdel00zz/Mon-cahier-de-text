@@ -17,7 +17,7 @@ import { Bell, CalendarCheck, Clock, TriangleAlert, X } from '@/components/ui/ic
 import { Button } from '@/components/ui/button';
 import { StatusNotice, type NoticeTone } from '@/components/ui/status-notice';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { SettingsRow, SettingsSection, settingsFieldClass } from './SettingsPrimitives';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease } from '@/infrastructure/storage/accountWorkspace';
 
@@ -125,29 +125,34 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     disabled,
 }) => {
     const id = React.useId();
-    const { locale } = useLocale();
-    const state = disabled
-        ? (locale === 'ar' ? 'غير متاح' : locale === 'en' ? 'Unavailable' : 'Indisponible')
-        : checked
-            ? (locale === 'ar' ? 'مفعّل' : locale === 'en' ? 'On' : 'Activé')
-            : (locale === 'ar' ? 'متوقف' : locale === 'en' ? 'Off' : 'Désactivé');
     return (
-    <div className={`flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors motion-reduce:transition-none ${checked && !disabled ? 'border-primary bg-primary/[0.035]' : 'border-border bg-card'} ${disabled ? 'opacity-60' : ''}`}>
-        <div className="min-w-0 flex-1 text-start">
-            <Label htmlFor={id} className={`block py-1 text-sm font-semibold text-foreground leading-snug ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
-            {hint && <span id={`${id}-hint`} className="mt-1 block text-xs text-muted-foreground leading-relaxed">{hint}</span>}
-        </div>
-        <div className="flex shrink-0 flex-col items-center gap-0.5">
-        <Switch
-            id={id}
-            aria-describedby={hint ? `${id}-hint` : undefined}
-            checked={checked}
-            onCheckedChange={onChange}
-            disabled={disabled}
-        />
-        <span aria-hidden="true" className={`text-[10px] font-medium leading-none ${checked && !disabled ? 'text-primary' : 'text-muted-foreground'}`}>{state}</span>
-        </div>
-    </div>
+        <SettingsRow label={label} hint={hint} htmlFor={id} className={disabled ? 'opacity-60' : undefined}>
+            <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled} />
+        </SettingsRow>
+    );
+};
+
+/** Liste déroulante alignée à droite d'une ligne de réglage. */
+const SelectRow: React.FC<{
+    label: string;
+    value: number;
+    options: { value: number; label: string }[];
+    onChange: (value: number) => void;
+    disabled?: boolean;
+}> = ({ label, value, options, onChange, disabled }) => {
+    const id = React.useId();
+    return (
+        <SettingsRow label={label} htmlFor={id} className={disabled ? 'opacity-60' : undefined}>
+            <select
+                id={id}
+                value={value}
+                disabled={disabled}
+                onChange={event => onChange(Number(event.target.value))}
+                className={`${settingsFieldClass} w-auto min-w-[6.5rem] cursor-pointer`}
+            >
+                {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+        </SettingsRow>
     );
 };
 
@@ -156,9 +161,9 @@ const NotificationKind: React.FC<{
     label: string;
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-md bg-zinc-100 p-2.5 shadow-none dark:bg-zinc-800/80">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <Icon className="h-4 w-4" />
+    <div className="flex min-w-0 items-center gap-2.5 rounded-lg bg-muted/60 p-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground">
+            <Icon className="h-[18px] w-[18px] stroke-[1.5]" />
         </span>
         <span className="min-w-0">
             <span className="block truncate text-xs font-bold text-foreground">{label}</span>
@@ -327,142 +332,116 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         }
     };
 
+    const minuteOptions = (values: number[]) => values.map(value => ({ value, label: String(value) }));
+
     return (
-        <div className="space-y-4">
-            <p className="text-xs leading-relaxed text-muted-foreground">
-                {t('notifications.intro')}
-            </p>
-
-            {/* Activation explicite des rappels push */}
-            <PushActivationCard
-                state={pushState}
-                checking={checking}
-                busy={busy}
-                onActivate={handleActivate}
-                onOpenSettings={() => {
-                    const lease = captureWorkspaceLease();
-                    void import('@/platform/nativeRuntime').then(module => module.openNativeNotificationSettings()).catch(() => {
-                        if (liveRef.current && lease()) setMessage({ text: t('notifications.nativePermissionDenied'), tone: 'warning' });
-                    });
-                }}
-                onDeactivate={handleDeactivate}
-                onTest={handleTest}
-                t={t}
-            />
-            {(message || cleanupPending) && (
-                <StatusNotice tone={message?.tone ?? 'warning'} title={message?.text ?? t('notifications.pushDisabledCleanupPending')} announce={!!message}>
-                    {cleanupPending && !stateIsActive(pushState) && <Button variant="outline" disabled={busy || checking} onClick={handleDeactivate}>
-                        {l('Terminer la désactivation', 'إتمام إلغاء التفعيل', 'Complete deactivation')}
-                    </Button>}
-                </StatusNotice>
-            )}
-
-            <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
-                <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                    {t('notifications.nativeDescription')}
-                </p>
-                <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <NotificationKind icon={TriangleAlert} label={t('notifications.kindDelay')} detail={t('notifications.smartCheck')} />
-                    <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={t('notifications.localReminder')} />
-                    <NotificationKind icon={CalendarCheck} label={t('notifications.kindMissingDate')} detail={t('notifications.afterClass')} />
-                    <NotificationKind icon={Bell} label={t('notifications.kindAdmin')} detail={t('notifications.directMessage')} />
+        <div className="space-y-7">
+            {/* Activation explicite des rappels sur cet appareil */}
+            <SettingsSection title={l('Cet appareil', 'هذا الجهاز', 'This device')} hint={t('notifications.intro')}>
+                <div className="space-y-3 py-3.5">
+                    <PushActivationCard
+                        state={pushState}
+                        checking={checking}
+                        busy={busy}
+                        onActivate={handleActivate}
+                        onOpenSettings={() => {
+                            const lease = captureWorkspaceLease();
+                            void import('@/platform/nativeRuntime').then(module => module.openNativeNotificationSettings()).catch(() => {
+                                if (liveRef.current && lease()) setMessage({ text: t('notifications.nativePermissionDenied'), tone: 'warning' });
+                            });
+                        }}
+                        onDeactivate={handleDeactivate}
+                        onTest={handleTest}
+                        t={t}
+                    />
+                    {(message || cleanupPending) && (
+                        <StatusNotice tone={message?.tone ?? 'warning'} title={message?.text ?? t('notifications.pushDisabledCleanupPending')} announce={!!message}>
+                            {cleanupPending && !stateIsActive(pushState) && <Button variant="outline" disabled={busy || checking} onClick={handleDeactivate}>
+                                {l('Terminer la désactivation', 'إتمام إلغاء التفعيل', 'Complete deactivation')}
+                            </Button>}
+                        </StatusNotice>
+                    )}
                 </div>
-            </div>
+            </SettingsSection>
 
-            <Toggle
-                label={t('notifications.inApp')}
-                checked={settings.enabled}
-                onChange={v => patch({ enabled: v })}
-            />
-            <div className="flex items-start gap-3 px-1 py-2">
-                <span aria-hidden="true" className="relative mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-bold text-destructive-foreground">2</span>
-                </span>
-                <div className="min-w-0 text-start">
-                    <p className="text-sm font-semibold text-foreground">{t('notifications.iconBadgeTitle')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('notifications.iconBadgeDescription')}</p>
-                </div>
-            </div>
+            <SettingsSection title={l('Rappels', 'التذكيرات', 'Reminders')}>
+                <Toggle label={t('notifications.inApp')} checked={settings.enabled} onChange={v => patch({ enabled: v })} />
+                <Toggle
+                    label={t('notifications.vibration')}
+                    hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Rappels de cet appareil uniquement.', 'لتذكيرات هذا الجهاز فقط.', 'Reminders on this device only.')}
+                    checked={settings.sessionVibration ?? false}
+                    disabled={!vibrationSupported}
+                    onChange={v => {
+                        patch({ sessionVibration: v });
+                        if (v && vibrationSupported) {
+                            try { navigator.vibrate([160, 80, 160]); } catch { /* Device may reject vibration. */ }
+                        }
+                    }}
+                />
+                <Toggle label={l('Rappel avant la fin', 'تذكير قبل النهاية', 'Reminder before the end')}
+                    checked={settings.sessionEndReminderEnabled}
+                    onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} />
+                <SelectRow label={l('Minutes avant la fin', 'الدقائق قبل النهاية', 'Minutes before the end')}
+                    value={settings.sessionReminderMinutes ?? 1} options={minuteOptions([1, 2, 5, 10])}
+                    disabled={!settings.enabled || !settings.sessionEndReminderEnabled}
+                    onChange={value => patch({ sessionReminderMinutes: value })} />
+                <Toggle label={l('Rappel si aucune date', 'تذكير إن لم يُسجَّل تاريخ', 'Reminder if no date')}
+                    hint={l('Une date ne confirme pas chaque séance du jour.', 'التاريخ الواحد لا يؤكد كل حصص اليوم.', 'One date does not confirm every session that day.')}
+                    checked={settings.missingDateReminderEnabled}
+                    onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} />
+                <SelectRow label={l('Minutes après la séance', 'الدقائق بعد الحصة', 'Minutes after the session')}
+                    value={settings.missingDateReminderMinutes ?? 5} options={minuteOptions([1, 5, 10, 15, 30])}
+                    disabled={!settings.enabled || !settings.missingDateReminderEnabled}
+                    onChange={value => patch({ missingDateReminderMinutes: value })} />
+                <Toggle label={t('notifications.quiet')} checked={settings.quietDuringVacations} onChange={v => patch({ quietDuringVacations: v })} />
+            </SettingsSection>
 
-            <Toggle
-                label={t('notifications.vibration')}
-                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Pour les rappels sur cet appareil. Les retours tactiles des boutons sont séparés.', 'لتذكيرات هذا الجهاز. الاستجابة اللمسية للأزرار مستقلة.', 'For reminders on this device. Button haptics are separate.')}
-                checked={settings.sessionVibration ?? false}
-                disabled={!vibrationSupported}
-                onChange={v => {
-                    patch({ sessionVibration: v });
-                    if (v && vibrationSupported) {
-                        try { navigator.vibrate([160, 80, 160]); } catch { /* Device may reject vibration. */ }
-                    }
-                }}
-            />
-
-            <Toggle label={l('Rappel avant la fin de séance', 'تذكير قبل نهاية الحصة', 'Session end reminder')}
-                checked={settings.sessionEndReminderEnabled}
-                onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} />
-            <label className="settings-surface block p-4 text-xs">
-                <span>{l('Prévenir avant la fin (minutes)', 'التنبيه قبل النهاية (دقائق)', 'Minutes before the end')}</span>
-                <select className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3" value={settings.sessionReminderMinutes ?? 1} disabled={!settings.enabled} onChange={event => patch({ sessionReminderMinutes: Number(event.target.value) })}>{[1, 2, 5, 10].map(value => <option key={value} value={value}>{value}</option>)}</select>
-            </label>
-            <Toggle label={l('Rappel si aucune date saisie ce jour-là', 'تذكير إذا لم يسجل أي تاريخ لهذا اليوم', 'Reminder if no date is recorded that day')}
-                hint={l('Le cahier ne distingue pas les horaires : une date ne confirme pas chacune des séances d’une même journée.', 'الدفتر لا يميز الساعات: تاريخ واحد لا يؤكد كل حصص اليوم.', 'The notebook has no time-of-day evidence: a date does not confirm every session that day.')}
-                checked={settings.missingDateReminderEnabled}
-                onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} />
-            <label className="settings-surface block p-4 text-xs">
-                <span>{l('Délai après la séance (minutes)', 'المهلة بعد الحصة (دقائق)', 'Minutes after the session')}</span>
-                <select className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3" value={settings.missingDateReminderMinutes ?? 5} disabled={!settings.enabled} onChange={event => patch({ missingDateReminderMinutes: Number(event.target.value) })}>{[1, 5, 10, 15, 30].map(value => <option key={value} value={value}>{value}</option>)}</select>
-            </label>
-            <details className="px-1 text-xs text-muted-foreground">
-                <summary className="min-h-11 cursor-pointer py-3 font-medium focus-visible:outline-2 focus-visible:outline-primary">
-                    {l('À savoir sur les rappels', 'حول التذكيرات', 'About reminders')}
-                </summary>
-                <p className="pb-3 leading-relaxed">{l('Les rappels locaux nécessitent une page active et peuvent être retardés si l’application est suspendue. La vibration dépend du téléphone et d’une interaction préalable. Les push peuvent arriver application fermée.', 'تتطلب التذكيرات المحلية صفحة نشطة وقد تتأخر عند تعليق التطبيق. يعتمد الاهتزاز على الهاتف وتفاعل سابق. قد تصل إشعارات الدفع والتطبيق مغلق.', 'Local reminders need an active page and may be delayed while the app is suspended. Vibration depends on the device and prior interaction. Push alerts can arrive with the app closed.')}</p>
-                <dl className="space-y-3 pb-3 leading-relaxed">
-                    <div><dt className="font-medium text-foreground">iPhone / iPad</dt><dd>{l('iOS 16.4+ : ouvrez l’application depuis l’écran d’accueil. Si le test est silencieux, vérifiez Notifications et Concentration dans les réglages du téléphone.', 'iOS 16.4 أو أحدث: افتح التطبيق من الشاشة الرئيسية. إذا كان الاختبار صامتاً، تحقق من الإشعارات والتركيز في إعدادات الهاتف.', 'iOS 16.4+: open the app from the Home Screen. If the test is silent, check Notifications and Focus in phone settings.')}</dd></div>
-                    <div><dt className="font-medium text-foreground">Google Pixel / Samsung</dt><dd>{l('Autorisez les notifications du site dans Chrome ou Samsung Internet. Le système peut retarder les alertes en mode économie d’énergie.', 'اسمح بإشعارات الموقع في Chrome أو Samsung Internet. قد يؤخر النظام التنبيهات في وضع توفير الطاقة.', 'Allow site notifications in Chrome or Samsung Internet. Battery Saver may delay alerts.')}</dd></div>
-                    <div><dt className="font-medium text-foreground">{l('Icône et réception', 'الأيقونة والاستقبال', 'Icon and delivery')}</dt><dd>{l('Le logo identifie l’application ; Android utilise aussi un petit pictogramme transparent. Un test transmis par le serveur confirme l’envoi, sa réception doit être vérifiée sur ce téléphone.', 'يمثل الشعار التطبيق؛ ويستخدم Android أيضاً رمزاً صغيراً بخلفية شفافة. يؤكد اختبار الخادم الإرسال، ويجب التحقق من الاستقبال على هذا الهاتف.', 'The logo identifies the app; Android also uses a small transparent glyph. A server-submitted test confirms sending; check receipt on this phone.')}</dd></div>
-                </dl>
-            </details>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="settings-surface flex flex-col justify-between p-4">
-                    <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.delayThreshold')}</span>
-                    <select
-                        value={settings.gapThreshold}
-                        onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-md border border-border bg-background text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
-                    >
-                        {[1, 2, 3].map(count => (
-                            <option key={count} value={count}>
-                                {t(count === 1 ? 'notifications.delayedSessions.one' : count === 2 ? 'notifications.delayedSessions.two' : 'notifications.delayedSessions.many', { count })}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label className="settings-surface flex flex-col justify-between p-4">
-                    <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.inactivity')}</span>
-                    <select
-                        value={settings.inactivityThresholdDays}
-                        onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-md border border-border bg-background text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
-                    >
-                        {[3, 5, 10].map(count => <option key={count} value={count}>{t('notifications.inactiveDays', { count })}</option>)}
-                    </select>
-                </label>
-            </div>
-
-            <Toggle
-                label={t('notifications.quiet')}
-                checked={settings.quietDuringVacations}
-                onChange={v => patch({ quietDuringVacations: v })}
-            />
+            <SettingsSection title={l('Seuils d’alerte', 'عتبات التنبيه', 'Alert thresholds')}>
+                <SelectRow label={t('notifications.delayThreshold')} value={settings.gapThreshold}
+                    options={[1, 2, 3].map(count => ({
+                        value: count,
+                        label: t(count === 1 ? 'notifications.delayedSessions.one' : count === 2 ? 'notifications.delayedSessions.two' : 'notifications.delayedSessions.many', { count }),
+                    }))}
+                    onChange={value => patch({ gapThreshold: value })} />
+                <SelectRow label={t('notifications.inactivity')} value={settings.inactivityThresholdDays}
+                    options={[3, 5, 10].map(count => ({ value: count, label: t('notifications.inactiveDays', { count }) }))}
+                    onChange={value => patch({ inactivityThresholdDays: value })} />
+            </SettingsSection>
 
             <AbsencesSection
                 absences={config.absences ?? []}
                 onChange={absences => onChange({ absences })}
             />
+
+            <details className="text-sm text-muted-foreground">
+                <summary className="min-h-11 cursor-pointer rounded-lg py-3 font-medium text-foreground focus-visible:outline-2 focus-visible:outline-primary">
+                    {l('À savoir', 'للمزيد', 'Good to know')}
+                </summary>
+                <div className="space-y-4 pb-3">
+                    <div>
+                        <p className="font-medium text-foreground">{t('notifications.nativeTitle')}</p>
+                        <p className="mt-0.5 text-[13px] leading-snug">{t('notifications.nativeDescription')}</p>
+                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <NotificationKind icon={TriangleAlert} label={t('notifications.kindDelay')} detail={t('notifications.smartCheck')} />
+                            <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={t('notifications.localReminder')} />
+                            <NotificationKind icon={CalendarCheck} label={t('notifications.kindMissingDate')} detail={t('notifications.afterClass')} />
+                            <NotificationKind icon={Bell} label={t('notifications.kindAdmin')} detail={t('notifications.directMessage')} />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="font-medium text-foreground">{t('notifications.iconBadgeTitle')}</p>
+                        <p className="mt-0.5 text-[13px] leading-snug">{t('notifications.iconBadgeDescription')}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium text-foreground">iPhone / iPad</p>
+                        <p className="mt-0.5 text-[13px] leading-snug">{l('iOS 16.4+ : ouvrez l’application depuis l’écran d’accueil et vérifiez Notifications et Concentration.', 'iOS 16.4 فما فوق: افتح التطبيق من الشاشة الرئيسية وتحقق من الإشعارات والتركيز.', 'iOS 16.4+: open the app from the Home Screen and check Notifications and Focus.')}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium text-foreground">Android</p>
+                        <p className="mt-0.5 text-[13px] leading-snug">{l('Le mode économie d’énergie peut retarder les alertes. Les rappels locaux demandent une application active.', 'قد يؤخر وضع توفير الطاقة التنبيهات. تتطلب التذكيرات المحلية تطبيقاً نشطاً.', 'Battery Saver may delay alerts. Local reminders need an active app.')}</p>
+                    </div>
+                </div>
+            </details>
         </div>
     );
 };
@@ -493,15 +472,15 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
-            <h4 className="text-xs font-bold text-foreground">{t('notifications.absences')}</h4>
+        <section>
+            <h3 className="text-sm font-semibold text-foreground">{t('notifications.absences')}</h3>
 
             {absences.length > 0 && (
                 <ul className="mt-3 space-y-2">
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="settings-surface flex items-center justify-between gap-2 px-3 py-2 text-xs"
+                            className="flex items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-1 text-sm"
                         >
                             <span className="font-bold text-foreground font-sans">
                                 {formatDateDDMMYYYY(absence.debut)}
@@ -528,7 +507,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     aria-label={t('notifications.absenceStart')}
                 />
                 </label>
@@ -539,7 +518,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     aria-label={t('notifications.absenceEnd')}
                     aria-invalid={invalidRange || undefined}
                     aria-describedby={invalidRange ? 'absence-range-error' : undefined}
@@ -551,7 +530,7 @@ const AbsencesSection: React.FC<{
                     onChange={e => setMotif(e.target.value)}
                     placeholder={t('notifications.reasonOptional')}
                     aria-label={t('notifications.reasonOptional')}
-                    className="col-span-full h-11 min-w-0 rounded-xl border border-border bg-background px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="col-span-full h-11 min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
                 <Button
                     type="button"
@@ -563,6 +542,6 @@ const AbsencesSection: React.FC<{
                 </Button>
             </div>
             {invalidRange && <div id="absence-range-error"><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
-        </div>
+        </section>
     );
 };
