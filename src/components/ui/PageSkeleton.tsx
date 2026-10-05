@@ -41,9 +41,8 @@ const STEP_LABELS: Record<BootstrapStep, string> = {
 };
 
 /**
- * Écran d'ouverture : spinner, un seul titre et, pendant le premier chargement cloud,
- * une barre de progression sans texte. Le détail des étapes n'est plus affiché :
- * il reste disponible pour les lecteurs d'écran (sr-only).
+ * Écran d'ouverture : spinner et un seul titre. La progression cloud
+ * reste disponible pour les lecteurs d'écran (sr-only).
  */
 export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'workspace', overlay = false, progress }) => {
   const { isRtl, t } = useLocale();
@@ -69,22 +68,11 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
           {title}
         </p>
         {showsProgress && (
-          <>
-            <div
-              className="mx-auto mt-5 h-1.5 w-full max-w-[14rem] overflow-hidden rounded-full bg-muted"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={progress.percent}
-              aria-label={t('boot.progress.ariaLabel', { percent: progress.percent })}
-            >
-              <span
-                className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out motion-reduce:transition-none"
-                style={{ width: `${progress.percent}%` }}
-              />
-            </div>
-            <span className="sr-only">{progress.complete ? t('boot.progress.done') : stepLabel}</span>
-          </>
+          <span className="sr-only">
+            {t('boot.progress.ariaLabel', { percent: progress.percent })}
+            {' · '}
+            {progress.complete ? t('boot.progress.done') : stepLabel}
+          </span>
         )}
       </section>
     </div>

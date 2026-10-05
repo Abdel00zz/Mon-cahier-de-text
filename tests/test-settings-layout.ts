@@ -30,7 +30,8 @@ test('les écrans de chargement n’affichent plus de textes de détail sous le 
   const loaders = read('src/components/ui/PageSkeleton.tsx');
   assert.ok(!loaders.includes('LoadingMessage'));
   assert.ok(!loaders.includes('boot.workspace.detail') && !loaders.includes('boot.latex.detail'));
-  assert.match(loaders, /role="progressbar"/, 'la progression réelle reste visible, sans texte');
+  assert.ok(!loaders.includes('role="progressbar"'), 'aucune barre : seul le spinner est visible');
+  assert.match(loaders, /className="sr-only"[\s\S]{0,200}boot\.progress\.ariaLabel/, 'la progression reste annoncée aux lecteurs d’écran');
 });
 
 test('les paramètres comptent cinq onglets et gardent les anciens liens directs', () => {

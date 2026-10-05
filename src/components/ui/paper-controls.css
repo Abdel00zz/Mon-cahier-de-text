@@ -1,9 +1,9 @@
-/* Shared material language: pastel notes, pistachio ink, quiet tactile depth.
+/* Shared material language: warm paper, clear ink, quiet tactile feedback.
    Component-layer rules deliberately leave consumer utilities in control. */
 @layer components {
   .paper-button {
     border: 1px solid transparent;
-    border-radius: 12px;
+    border-radius: 10px;
     transition: transform 180ms cubic-bezier(.22,1,.36,1), background-color 180ms,
       border-color 180ms, box-shadow 180ms, opacity 180ms;
   }
@@ -12,19 +12,12 @@
     border-color: rgb(255 255 255 / .12);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / .13), 0 4px 9px -6px hsl(var(--foreground) / .4);
   }
-  /* A short solid lip makes the primary action feel pressable without layout shifts. */
-  .paper-button:is([data-variant='default'], [data-variant='accent']) {
-    --button-lip: color-mix(in srgb, hsl(var(--primary)) 76%, hsl(var(--foreground)));
-    border-color: hsl(var(--primary) / .35);
-    border-block-end: 2px solid var(--button-lip);
-    box-shadow: 0 3px 0 var(--button-lip), 0 5px 10px -7px hsl(var(--primary) / .24);
-  }
-  .paper-button:is([data-variant='default'], [data-variant='accent']):active:not(:disabled) {
-    border-block-end-color: hsl(var(--primary));
-    box-shadow: 0 1px 0 var(--button-lip);
+  .paper-button:is([data-variant='default'], [data-variant='charcoal']) {
+    border-color: transparent;
+    box-shadow: 0 1px 2px hsl(var(--foreground) / .08);
   }
   .paper-button:is([data-variant='outline'], [data-variant='secondary']) {
-    box-shadow: inset 0 1px 0 hsl(var(--card) / .9), 0 2px 3px -2px hsl(var(--foreground) / .16);
+    box-shadow: 0 1px 2px hsl(var(--foreground) / .035);
   }
   .paper-field {
     box-shadow: inset 0 1px 2px hsl(var(--foreground) / .035);
@@ -50,7 +43,7 @@
     box-shadow: 0 24px 52px -16px rgb(0 0 0 / .65), inset 0 1px 0 rgb(255 255 255 / .08);
   }
   @media (hover: hover) and (pointer: fine) {
-    .paper-button:not(:disabled):not([data-variant='link']):hover { transform: translateY(-1px); }
+    .paper-button:not(:disabled):not([data-variant='link']):hover { filter: brightness(1.05); }
     .paper-button:not(:disabled):active { transform: translateY(0) scale(.98); }
   }
   @media (pointer: coarse) {

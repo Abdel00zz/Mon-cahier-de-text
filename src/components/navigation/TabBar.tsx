@@ -256,10 +256,11 @@ export const TabBar = React.memo<TabBarProps>(({
                   />
                 )}
 
-                <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
+                <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
                   <Icon
                     className={cn(
-                      'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
+                      'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
+                      tab.id === 'dashboard' ? 'h-7 w-7' : 'h-6 w-6',
                       isActive
                         ? 'text-foreground stroke-[1.75]'
                         : 'text-muted-foreground group-hover:text-foreground stroke-[1.5]'
@@ -330,10 +331,11 @@ export const TabBar = React.memo<TabBarProps>(({
               />
             )}
 
-            <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
+            <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <Settings
                 className={cn(
-                  'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
+                  'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
+                      'h-6 w-6',
                   activeTab === 'settings'
                     ? 'text-foreground stroke-[1.75]'
                     : 'text-muted-foreground group-hover:text-foreground stroke-[1.5]'
@@ -381,7 +383,7 @@ export const TabBar = React.memo<TabBarProps>(({
               />
             )}
 
-            <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
+            <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
                 'h-5 w-5 shrink-0 transition-all',
                 activeTab === 'help'
@@ -451,7 +453,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 >
                   <Icon
                     className={cn(
-                      "h-[22px] w-[22px] transition-colors duration-200 ease-out",
+                      "transition-colors duration-200 ease-out",
+                      tab.id === 'dashboard' ? "h-7 w-7" : "h-[22px] w-[22px]",
                       isActive ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
                     )}
                   />
@@ -502,7 +505,8 @@ export const TabBar = React.memo<TabBarProps>(({
             >
               <Settings
                 className={cn(
-                  "h-[22px] w-[22px] transition-colors duration-200 ease-out",
+                  "transition-colors duration-200 ease-out",
+                      "h-[22px] w-[22px]",
                   activeTab === 'settings' ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
                 )}
               />

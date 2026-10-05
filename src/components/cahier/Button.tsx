@@ -14,7 +14,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseClasses = 'paper-button inline-flex touch-manipulation items-center justify-center font-sans font-medium transition-[transform,background-color,box-shadow] duration-200 cursor-pointer select-none rounded-xl active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+  const baseClasses = 'paper-button inline-flex touch-manipulation items-center justify-center font-sans font-medium transition-[transform,background-color,box-shadow] duration-200 cursor-pointer select-none rounded-[10px] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
 
   const sizeClasses = {
     sm: 'min-h-11 px-3 py-2 text-xs gap-1.5',
@@ -23,7 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
   }[size];
 
   const variantClasses = {
-    primary: 'bg-primary text-primary-foreground hover:brightness-110 active:brightness-90 shadow-sm',
+    primary: 'bg-foreground text-background font-semibold hover:brightness-110 active:brightness-90 shadow-xs',
     ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted active:brightness-95',
     secondary: 'bg-card border border-border text-foreground hover:bg-muted active:brightness-95 shadow-2xs',
     danger: 'bg-destructive text-destructive-foreground hover:brightness-110 active:brightness-90 shadow-sm',

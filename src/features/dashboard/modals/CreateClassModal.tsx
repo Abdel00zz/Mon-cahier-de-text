@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, GraduationCap, Settings, Trash2, Sparkles } from '@/components/ui/icons';
+import { Check, Users, Trash2 } from '@/components/ui/icons';
 import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
@@ -274,8 +274,8 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     <>
       <Modal isOpen={isOpen} onClose={() => { if (!submittingRef.current) onClose(); }} blockDismiss={submitting} hideClose={submitting} title={
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background/80 text-foreground">
-            {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : (!editingClass && hasCycleChoice) ? <Sparkles className="h-5 w-5 stroke-[2.2] text-primary" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background/80 text-foreground">
+            <Users className="h-8 w-8" />
           </span>
           <span className="min-w-0">
             <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{hasCycleChoice ? copy.guidedLabel : copy.cycleLabels[cycle]}</span>

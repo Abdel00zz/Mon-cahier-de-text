@@ -52,7 +52,7 @@
 
 /* Header avec bordure discrète */
 .modal-motion-surface .modal-pro-header {
-  border-bottom: 1px solid hsl(var(--border) / .55);
+  border-bottom: 1px solid hsl(var(--border));
   background: hsl(var(--card));
   gap: 4px;
 }
@@ -75,6 +75,15 @@
 .modal-motion-surface button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
 .modal-motion-surface summary { min-height: 44px; align-content: center; cursor: pointer; }
 
+/* Continuous separators and flexible actions, including long translated labels. */
+.modal-motion-surface :is(.modal-pro-header, .modal-pro-footer) {
+  align-self: stretch;
+  min-width: 0;
+  margin-inline: 0;
+}
+.modal-motion-surface .modal-pro-footer { flex-wrap: wrap; }
+.modal-motion-surface .modal-body { overflow-wrap: anywhere; }
+
 /* Body avec scroll optimisé */
 .modal-motion-surface .modal-body { 
   scroll-padding-block: 24px; 
@@ -85,7 +94,7 @@
 /* Footer avec ombre remontante subtile */
 .modal-motion-surface .modal-pro-footer {
   background: hsl(var(--card));
-  border-top: 1px solid hsl(var(--border) / .6); 
+  border-top: 1px solid hsl(var(--border));
   box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .18); 
 }
 

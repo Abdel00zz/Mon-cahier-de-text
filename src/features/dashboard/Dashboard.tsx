@@ -310,19 +310,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </h1>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 self-start sm:self-end">
-                                    {/* Bouton « 2 par ligne » compact, serré et moins arrondi (rounded-md) */}
+                                <div className="flex flex-wrap items-center gap-2 min-w-0 self-start sm:self-end">
+                                    {/* Choix de disposition : action secondaire discrète. */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
-                                        <button
-                                            type="button"
+                                        <Button
+                                            variant="secondary"
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="flex min-h-11 items-center gap-1.5 rounded-xl border border-border/80 bg-card hover:bg-muted/70 px-2.5 sm:px-3 text-xs font-semibold text-foreground shadow-2xs cursor-pointer transition-all active:scale-[0.98]"
+                                            className="gap-2 px-3.5 text-sm"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                        </button>
+                                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                        </Button>
                                         {isDisplayMenuOpen && (
                                             <div
                                                 role="menu"
@@ -350,17 +350,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )}
                                     </div>
 
-                                    {/* Bouton attractif « + Classe » compact, serré et moins arrondi (rounded-md) */}
-                                    <button
-                                        type="button"
+                                    {/* Création : action principale à contraste élevé. */}
+                                    <Button
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="flex min-h-11 items-center gap-1.5 rounded-xl bg-[var(--workspace-active-ink)] hover:brightness-110 active:brightness-90 px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold text-card shadow-2xs active:scale-[0.98] cursor-pointer transition-all duration-200 motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring whitespace-nowrap"
+                                        className="gap-2 px-4 text-sm"
                                     >
-                                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                        <Plus className="h-4.5 w-4.5 stroke-[2.2]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -392,7 +391,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 }}
                                                 className="h-10 px-6 text-sm font-semibold"
                                             >
-                                                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                                <Plus className="h-4.5 w-4.5 stroke-[2.2]" />
                                                 <span>{t('dashboard.addClass')}</span>
                                             </Button>
                                         </div>
