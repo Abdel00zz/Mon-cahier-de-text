@@ -137,20 +137,53 @@ export const getBundledCalendar = (): HolidayCalendar => cachedCalendar ?? bundl
 
 let cachedCalendar: HolidayCalendar | null = null;
 
-/** Client uniquement : privilégie le JSON servi (corrigeable sans rebuild), avec repli sur le bundle. */
-export const loadHolidayCalendar = async (): Promise<HolidayCalendar> => {
-    if (cachedCalendar) return cachedCalendar;
-    try {
+/** Une requête lente ne doit jamais retarder l'affichage de la séance en cours. */
+const CALENDAR_TIMEOUT_MS = 4_000;
+/** Après un échec, on reste sur le bundle puis on retente : un démarrage hors ligne ne fige rien. */
+const CALENDAR_RETRY_MS = 5 * 60_000;
+let calendarInflight: Promise<HolidayCalendar> | null = null;
+let calendarFailedAt = Number.NEGATIVE_INFINITY;
+
+/**
+ * Client uniquement : privilégie le JSON servi (corrigeable sans rebuild), avec repli sur le bundle.
+ * Ne rejette jamais. Les appels simultanés partagent une seule requête ; une réponse tardive
+ * (après le délai) est quand même retenue pour les appels suivants.
+ */
+export const loadHolidayCalendar = (): Promise<HolidayCalendar> => {
+    if (cachedCalendar) return Promise.resolve(cachedCalendar);
+    if (calendarInflight) return calendarInflight;
+    if (Date.now() - calendarFailedAt < CALENDAR_RETRY_MS) return Promise.resolve(bundled);
+
+    const request = (async () => {
         const response = await apiFetch('/api/calendar', { cache: 'no-cache' });
-        if (response.ok) {
-            cachedCalendar = validateHolidayCalendar(await response.json());
-            return cachedCalendar;
-        }
-    } catch {
-        // hors ligne : repli sur le calendrier embarqué
-    }
-    cachedCalendar = bundled;
-    return cachedCalendar;
+        if (!response.ok) throw new Error('calendar-unavailable');
+        cachedCalendar = validateHolidayCalendar(await response.json());
+        return cachedCalendar;
+    })();
+    // La requête peut échouer après l'expiration du délai : son rejet tardif est déjà traité.
+    request.catch(() => undefined);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('calendar-timeout')), CALENDAR_TIMEOUT_MS);
+    });
+    calendarInflight = Promise.race([request, timeout])
+        .catch(() => {
+            calendarFailedAt = Date.now();
+            return cachedCalendar ?? bundled;
+        })
+        .finally(() => {
+            if (timer !== undefined) clearTimeout(timer);
+            calendarInflight = null;
+        });
+    return calendarInflight;
+};
+
+/** Réservé aux tests : remet à zéro la mémoire du calendrier chargé. */
+export const resetHolidayCalendarCacheForTests = (): void => {
+    cachedCalendar = null;
+    calendarInflight = null;
+    calendarFailedAt = Number.NEGATIVE_INFINITY;
 };
 
 const toISODate = (d: Date): string => {

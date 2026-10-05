@@ -91,6 +91,9 @@ export const resolveTimetableClock = (
         };
 };
 
+/** Au plus 49 décalages possibles (-120..+120 par pas de 5) : un calcul par valeur, jamais à chaque appel. */
+const shiftedHourSlots = new Map<number, HourSlot[]>();
+
 /** Translation pure : mêmes indices, durées, continuités et pause déjeuner. */
 export const getHourSlots = (
     clock?: Pick<TimetableClockPolicy, 'offsetMinutes'> | number | null,
@@ -98,11 +101,20 @@ export const getHourSlots = (
     const requested = typeof clock === 'number' ? clock : clock?.offsetMinutes;
     const offsetMinutes = isValidTimetableClockOffset(requested) ? requested : 0;
     if (offsetMinutes === 0) return HOUR_SLOTS;
-    return HOUR_SLOTS.map(slot => ({
-        ...slot,
-        startMin: slot.startMin + offsetMinutes,
-        endMin: slot.endMin + offsetMinutes,
-    }));
+    const cached = shiftedHourSlots.get(offsetMinutes);
+    if (cached) return cached;
+    const hourLabel = (minutes: number): string => {
+        const rest = minutes % 60;
+        return `${String(Math.floor(minutes / 60)).padStart(2, '0')}h${rest === 0 ? '' : String(rest).padStart(2, '0')}`;
+    };
+    const shifted = HOUR_SLOTS.map(slot => {
+        const startMin = slot.startMin + offsetMinutes;
+        const endMin = slot.endMin + offsetMinutes;
+        // L'étiquette suit l'horaire décalé : jamais « 08h–09h » pour un créneau de 08h30.
+        return { ...slot, label: `${hourLabel(startMin)}–${hourLabel(endMin)}`, startMin, endMin };
+    });
+    shiftedHourSlots.set(offsetMinutes, shifted);
+    return shifted;
 };
 
 /** Jours ouvrés affichés (lundi → samedi), valeurs en convention getDay() 0=dimanche. */
