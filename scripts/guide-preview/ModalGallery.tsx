@@ -17,7 +17,6 @@ import { AnalysisModal } from '../../src/features/editor/modals/AnalysisModal';
 import { PrintModal } from '../../src/features/editor/modals/PrintModal';
 import { DataTransferModal } from '../../src/features/editor/modals/DataTransferModal';
 import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
-import { OfficialCurriculumModal } from '../../src/components/curriculum/OfficialCurriculumModal';
 import { AdminMessageModal } from '../../src/features/messages/AdminMessageModal';
 import { ClassJsonImportModal } from '../../src/admin/components/ClassJsonImportModal';
 import { useLocale } from '../../src/i18n/LocaleProvider';
@@ -26,10 +25,10 @@ import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 const dialogs = {
   create: 'Créer une classe', editclass: 'Configurer une classe', dates: 'Attribuer une date',
   'date-review': 'Vérifier une date', timetable: 'Compléter les horaires', add: 'Ajouter un contenu',
-  content: 'Modifier un contenu', manage: 'Organiser les leçons', analysis: 'Analyser la progression',
+  content: 'Modifier un contenu', manage: 'Organiser les leçons', analysis: 'Suivi et progression',
   print: 'Imprimer', transfer: 'Transférer un cahier', restore: 'Restaurer une sauvegarde',
   settings: 'Paramètres', guide: 'Aide', evaluations: 'Évaluations et activités',
-  curriculum: 'Programme officiel', message: 'Message de la direction',
+  message: 'Message de la direction',
   'admin-import': 'Import administrateur', confirm: 'Confirmation', 'confirm-typed': 'Confirmation de suppression',
 };
 
@@ -74,7 +73,6 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'settings' && <AuthProvider><ConfigModal {...common} config={config} onConfigChange={onChange} classes={classes} onOpenGuide={close} onExportPlatform={close} onOpenImport={close} /></AuthProvider>}
     {current === 'guide' && <GuideModal {...common} />}
     {current === 'evaluations' && <ClassEvaluationsSheet open={open} onOpenChange={setOpen} classInfo={classInfo} config={config} onConfigChange={onChange} />}
-    {current === 'curriculum' && <OfficialCurriculumModal {...common} classInfo={classInfo} config={config} lessonsData={lessons} />}
     {current === 'message' && open && <AdminMessageModal message={{ id: 'visual-review', title: l('Bienvenue pour cette rentrée', 'مرحبًا بكم في هذا الموسم الدراسي', 'Welcome to the new school year'), body: l('Votre espace est prêt. Vous pouvez commencer à préparer vos premières séances.', 'فضاؤكم جاهز. يمكنكم الآن إعداد حصصكم الأولى.', 'Your workspace is ready. You can start preparing your first lessons.'), createdAt: '2026-09-01T08:00:00Z' }} onAcknowledge={async () => close()} />}
     {current === 'admin-import' && <ClassJsonImportModal {...common} phone="0600000000" classInfo={classInfo} onImported={close} />}
     {confirm && <ConfirmDialog open={open} onOpenChange={setOpen} variant={current === 'confirm' ? 'default' : 'destructive'} title={l('Confirmer votre choix', 'تأكيد اختيارك', 'Confirm your choice')} description={l('Vérifiez les éléments sélectionnés avant de continuer.', 'راجع العناصر المختارة قبل المتابعة.', 'Review your selection before continuing.')} confirmationPhrase={current === 'confirm-typed' ? classInfo.name : undefined} confirmationHint={current === 'confirm-typed' ? l('Saisissez le nom de la classe.', 'أدخل اسم القسم.', 'Enter the class name.') : undefined} onConfirm={close} />}

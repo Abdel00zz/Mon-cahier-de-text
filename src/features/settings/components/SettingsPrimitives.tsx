@@ -9,8 +9,9 @@ import { cn } from '@/lib/utils';
  */
 
 export const SettingsPanel: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="space-y-7">
-    <h2 className="text-xl font-semibold tracking-tight text-foreground">{title}</h2>
+  <div className="space-y-5 lg:space-y-7">
+    {/* Sous 1024 px, le titre de la rubrique est dans l'en-tête de la fenêtre : il reste lu par les lecteurs d'écran. */}
+    <h2 className="text-xl font-semibold tracking-tight text-foreground max-lg:sr-only">{title}</h2>
     {children}
   </div>
 );
@@ -57,14 +58,14 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({ label, hint, htmlFor, 
   );
   if (stacked) {
     return (
-      <div className={cn('space-y-2.5 py-3.5', className)}>
+      <div className={cn('space-y-2 py-3 sm:space-y-2.5 sm:py-3.5', className)}>
         {text}
         {children}
       </div>
     );
   }
   return (
-    <div className={cn('flex min-h-[3.5rem] items-center justify-between gap-4 py-3', className)}>
+    <div className={cn('flex min-h-[3.25rem] items-center justify-between gap-4 py-2.5 sm:min-h-[3.5rem] sm:py-3', className)}>
       {text}
       {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
     </div>

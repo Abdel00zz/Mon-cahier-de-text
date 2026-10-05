@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 're
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -128,6 +129,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   // Téléphone et tablette : l'accueil est une grille de cartes, une rubrique s'ouvre en plein cadre.
   // Sur grand écran (lg), le menu latéral reste affiché et cet état n'a aucun effet visuel.
   const [sectionOpen, setSectionOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const inSection = sectionOpen && !isDesktop;
   const openSection = useCallback((id: SettingsCategory) => { setActiveCategory(id); setSectionOpen(true); }, []);
 
   useEffect(() => {
@@ -156,7 +159,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   useEffect(() => {
     if (!isOpen || !sectionOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || window.matchMedia('(min-width: 1024px)').matches) return;
+      if (event.key !== 'Escape' || isDesktop) return;
       if (document.querySelector('[role="listbox"], [role="menu"]')) return;
       if (document.querySelectorAll('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]').length > 1) return;
       event.preventDefault();
@@ -165,7 +168,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     };
     window.addEventListener('keydown', onKeyDown, true);
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen, sectionOpen]);
+  }, [isOpen, sectionOpen, isDesktop]);
 
   const applyLive = useCallback((patch: Partial<AppConfig>) => {
     onConfigChange(patch);
@@ -273,19 +276,26 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={() => requestExit()}
-      title={t('settings.title')}
+      title={inSection ? (
+        <span className="hub-titlebar">
+          <button type="button" onClick={() => setSectionOpen(false)} className="hub-back" aria-label={t('settings.back')}>
+            <ChevronLeft aria-hidden className="hub-back__chevron" />
+          </button>
+          <span className="min-w-0 truncate">{t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}</span>
+        </span>
+      ) : <span className="hub-titlebar">{t('settings.title')}</span>}
       maxWidth="xs"
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.94}
-      className="settings-modal-frame settings-modal-sheet overflow-hidden"
-      headerClassName="settings-modal-header"
-      bodyClassName="settings-modal-body"
+      className="hub-modal settings-modal-frame settings-modal-sheet overflow-hidden"
+      headerClassName="hub-modal-header"
+      bodyClassName="hub-modal-body settings-modal-body"
       footer={hasProfileChanges ? footer : undefined}
     >
       <div data-settings-ui className="settings-shell rtl-config-split">
         {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
         <div className={cn('settings-home lg:hidden', sectionOpen && 'hidden')}>
-          <ul className="settings-home__grid" aria-label={t('settings.title')}>
+          <ul className="hub-grid" aria-label={t('settings.title')}>
             {SETTING_ITEMS.map(item => {
               const Icon = item.icon;
               return (
@@ -296,20 +306,20 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                     onClick={() => openSection(item.id)}
                     onPointerEnter={() => preloadTabComponent(item.id)}
                     onFocus={() => preloadTabComponent(item.id)}
-                    className="settings-card"
+                    className="hub-card"
                   >
-                    <span className="settings-card__icon" aria-hidden="true"><Icon /></span>
-                    <span className="settings-card__title">{t(item.titleKey)}</span>
-                    <span className="settings-card__hint">{t(item.hintKey)}</span>
+                    <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
+                    <span className="hub-card__title">{t(item.titleKey)}</span>
+                    <span className="hub-card__hint">{t(item.hintKey)}</span>
                   </button>
                 </li>
               );
             })}
             <li className="contents">
-              <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="settings-card">
-                <span className="settings-card__icon" aria-hidden="true"><BookOpen /></span>
-                <span className="settings-card__title">{t('settings.item.support')}</span>
-                <span className="settings-card__hint">{t('settings.card.support')}</span>
+              <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
+                <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
+                <span className="hub-card__title">{t('settings.item.support')}</span>
+                <span className="hub-card__hint">{t('settings.card.support')}</span>
               </button>
             </li>
           </ul>
@@ -346,10 +356,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         </nav>
 
         <div className={cn('settings-scroll modern-scrollbar', !sectionOpen && 'max-lg:hidden')}>
-          <button type="button" onClick={() => setSectionOpen(false)} className="settings-backbar lg:hidden">
-            <ChevronLeft aria-hidden className="settings-backbar__chevron" />
-            <span>{t('settings.title')}</span>
-          </button>
           <section
             key={activeCategory}
             aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}

@@ -351,9 +351,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 640px) {
   .modal-motion-surface.settings-modal-frame {
-    width: min(58rem, calc(100vw - 3rem));
+    width: min(50rem, calc(100vw - 3rem));
     max-width: none;
-    height: min(44rem, calc(var(--modal-visible-height) - 3rem));
+    height: min(40rem, calc(var(--modal-visible-height) - 3rem));
     max-height: none;
     border-radius: 20px;
   }
@@ -367,5 +367,8 @@
     min-height: 3.5rem;
     padding-block: 0.5rem;
     border-bottom-color: transparent;
+  }
+  @media (min-width: 1024px) {
+    .modal-motion-surface.settings-modal-frame { width: min(58rem, calc(100vw - 3rem)); height: min(44rem, calc(var(--modal-visible-height) - 3rem)); }
   }
 }

@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import type { AppConfig, ClassInfo, LessonsData } from '@/types';
-import { computeOfficialProgression, findMatchingCurriculum } from '@/domain/curriculum/officialCurriculum';
+import { computeOfficialProgression, findMatchingCurriculum, type CurriculumCatalog } from '@/domain/curriculum/officialCurriculum';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { useMoroccoToday } from './useMoroccoToday';
-
-/** User-facing progress only uses confirmed links, never inferred title matches. */
-export function useCurriculumProgress(classInfo: ClassInfo, config: AppConfig, lessonsData: LessonsData) {
+/** User-facing progress only uses confirmed links, never inferred title matches. `catalog` lets a screen
+ *  that loaded the published catalog use the very same plan as its link form. */
+export function useCurriculumProgress(classInfo: ClassInfo, config: AppConfig, lessonsData: LessonsData, catalog?: CurriculumCatalog) {
   const today = useMoroccoToday();
-  const curriculum = findMatchingCurriculum(classInfo, undefined, schoolYearLabelFromDate(config.schoolYearStart || today));
+  const curriculum = findMatchingCurriculum(classInfo, catalog, schoolYearLabelFromDate(config.schoolYearStart || today));
   return useMemo(() => {
     if (!curriculum) return null;
     return computeOfficialProgression(classInfo, lessonsData, { curriculum, config, today });

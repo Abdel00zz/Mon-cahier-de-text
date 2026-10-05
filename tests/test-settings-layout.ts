@@ -64,15 +64,17 @@ test('paramètres : grandes cartes colorées sur téléphone et tablette, menu l
   assert.equal((modal.match(/data-tone=/g) ?? []).length, 2, 'cartes de rubriques et carte du guide portent une couleur');
   for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) assert.match(modal, new RegExp(`'${tone}'`));
   assert.match(modal, /requestExit\('guide'\)/, 'le guide reste une carte-lien, jamais une rubrique');
+  assert.match(modal, /className="hub-back"[\s\S]{0,200}ChevronLeft/, 'le retour est un bouton dans l’en-tête de la fenêtre');
+  assert.ok(!modal.includes('settings-backbar'), 'plus de ligne « Paramètres » répétée dans le contenu');
   assert.match(modal, /Object\.hasOwn\(TAB_ALIASES, requested\)/, 'les liens directs ne lisent que les identifiants connus');
   assert.match(modal, /key !== 'Escape'[\s\S]{0,400}setSectionOpen\(false\)/, 'Échap / retour Android revient à la grille avant de fermer');
   assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
   const css = read('src/styles/index.css');
   for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) {
-    assert.match(css, new RegExp(`\\.settings-card\\[data-tone='${tone}'\\]`));
-    assert.match(css, new RegExp(`\\.dark \\.settings-card\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
+    assert.match(css, new RegExp(`\\.hub-card\\[data-tone='${tone}'\\]`));
+    assert.match(css, new RegExp(`\\.dark \\.hub-card\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
   }
-  assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home, \.settings-backbar \{ display: none; \}/, 'cartes et retour masqués sur grand écran');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.settings-card/, 'mouvement réduit respecté');
-  assert.match(css, /\.settings-card \{[\s\S]{0,400}min-height: 9\.75rem/, 'cartes assez grandes pour le pouce');
+  assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home \{ display: none; \}/, 'cartes masquées sur grand écran');
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.hub-card/, 'mouvement réduit respecté');
+  assert.match(css, /\.hub-card \{[\s\S]{0,400}min-height: 8\.25rem/, 'cartes compactes mais assez grandes pour le pouce');
 });
