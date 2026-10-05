@@ -55,3 +55,24 @@ test('déplacement : le mécanisme existant (menu de la barre) est conservé, le
   const engine = read('src/features/editor/hooks/useSelectionEngine.ts');
   assert.match(engine, /planContentTransfer/, 'l’exercice peut changer de paragraphe');
 });
+
+test('paramètres : grandes cartes colorées sur téléphone et tablette, menu latéral dès 1024 px', () => {
+  const modal = read('src/features/settings/ConfigModal.tsx');
+  assert.ok(!modal.includes('FluidTabRail'), 'plus aucun onglet sur petit écran');
+  assert.match(modal, /className=\{cn\('settings-home lg:hidden', sectionOpen && 'hidden'\)\}/, 'la grille de cartes est réservée aux écrans sous 1024 px');
+  assert.match(modal, /settings-nav hidden lg:flex/, 'le menu latéral apparaît dès 1024 px');
+  assert.equal((modal.match(/data-tone=/g) ?? []).length, 2, 'cartes de rubriques et carte du guide portent une couleur');
+  for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) assert.match(modal, new RegExp(`'${tone}'`));
+  assert.match(modal, /requestExit\('guide'\)/, 'le guide reste une carte-lien, jamais une rubrique');
+  assert.match(modal, /Object\.hasOwn\(TAB_ALIASES, requested\)/, 'les liens directs ne lisent que les identifiants connus');
+  assert.match(modal, /key !== 'Escape'[\s\S]{0,400}setSectionOpen\(false\)/, 'Échap / retour Android revient à la grille avant de fermer');
+  assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
+  const css = read('src/styles/index.css');
+  for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) {
+    assert.match(css, new RegExp(`\\.settings-card\\[data-tone='${tone}'\\]`));
+    assert.match(css, new RegExp(`\\.dark \\.settings-card\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
+  }
+  assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home, \.settings-backbar \{ display: none; \}/, 'cartes et retour masqués sur grand écran');
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.settings-card/, 'mouvement réduit respecté');
+  assert.match(css, /\.settings-card \{[\s\S]{0,400}min-height: 9\.75rem/, 'cartes assez grandes pour le pouce');
+});

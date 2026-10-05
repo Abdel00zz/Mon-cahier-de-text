@@ -135,12 +135,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             const target = classes.find(c => c.id === classId);
             const name = target ? classLabel(target.name) : '';
             toast.success(
-                locale === 'ar' ? `تم تسجيل الحصة : ${name}` : `Créneau enregistré : ${name}`,
+                t('schedule.toast.slotSaved', { name }),
                 { id: 'schedule-slot-update', duration: 2200 }
             );
         } else {
             toast.info(
-                locale === 'ar' ? 'تم تفريغ الحصة' : 'Créneau libéré',
+                t('schedule.toast.slotCleared'),
                 { id: 'schedule-slot-update', duration: 2000 }
             );
         }
@@ -157,12 +157,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             const target = classes.find(c => c.id === classId);
             const name = target ? classLabel(target.name) : '';
             toast.success(
-                locale === 'ar' ? `تم تسجيل الحصة (${hours} س) : ${name}` : `Séance de ${hours}h enregistrée : ${name}`,
+                t('schedule.toast.sessionSaved', { hours, name }),
                 { id: 'schedule-slot-update', duration: 2200 }
             );
         } else {
             toast.info(
-                locale === 'ar' ? 'تم تفريغ الحصص' : 'Créneaux libérés',
+                t('schedule.toast.sessionCleared'),
                 { id: 'schedule-slot-update', duration: 2000 }
             );
         }
@@ -185,7 +185,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const setSchoolYearStart = (value: string) => {
         onChange({ schoolYearStart: value || undefined });
         toast.success(
-            locale === 'ar' ? 'تم تحديث تاريخ بداية السنة' : 'Date de rentrée mise à jour',
+            t('schedule.toast.startDateUpdated'),
             { id: 'schedule-year-start', duration: 2200 }
         );
     };
@@ -290,7 +290,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 <tr key={day.value} className="group transition-colors">
                                     <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 ${
                                         isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
-                                    } border-[#c4bcaf] bg-[#f7f4ee] px-2 sm:px-3 py-2 text-center text-[11px] sm:text-xs lg:text-sm font-bold text-[#262420] transition-colors group-hover:bg-[#eee9df] dark:border-[#38332c] dark:bg-[#1b1916] dark:text-[#f3eee7] dark:group-hover:bg-[#23201c]`}>
+                                    } border-[#c4bcaf] bg-[#f7f4ee] px-1.5 sm:px-3 py-2 text-center whitespace-nowrap text-[11px] sm:text-xs lg:text-sm font-bold text-[#262420] transition-colors group-hover:bg-[#eee9df] dark:border-[#38332c] dark:bg-[#1b1916] dark:text-[#f3eee7] dark:group-hover:bg-[#23201c]`}>
                                         {t(`schedule.day.${day.value}`)}
                                     </td>
                                     {visibleHourSlots.map((hour, idx) => {

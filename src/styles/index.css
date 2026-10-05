@@ -1056,20 +1056,13 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   border-color: hsl(var(--border)) !important;
 }
 
-/* ── Réglages : menu fixe à gauche, seul le contenu défile ────────────────
-   Téléphone (< 640 px) : la feuille défile d'un bloc, le rail reste collé en haut.
-   ≥ 640 px : cadre fixe (modal-motion.css) ; le rail passe au-dessus du contenu.
-   ≥ 768 px : menu latéral. La zone de défilement a des marges verticales pour que
-   la barre fine reste loin des coins arrondis, et des fondus doux en haut et en bas. */
+/* ── Réglages : cartes (téléphone, tablette) et menu latéral (grand écran) ───────
+   < 1024 px : l'accueil est une grille de grandes cartes colorées ; une rubrique s'ouvre
+   en plein cadre avec un bouton « ‹ Paramètres » pour revenir. Aucun onglet.
+   ≥ 1024 px : menu latéral fixe à gauche, seul le contenu défile. Le cadre fixe commence
+   à 640 px (modal-motion.css) : la zone de défilement a des marges verticales pour que la
+   barre fine reste loin des coins arrondis, et des fondus doux en haut et en bas. */
 .settings-shell { display: flex; flex-direction: column; min-width: 0; }
-.settings-rail {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  margin-inline: -0.25rem;
-  padding: 0 0.25rem 0.75rem;
-  background: hsl(var(--card));
-}
 .settings-nav {
   width: 14rem;
   flex: none;
@@ -1083,14 +1076,124 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
 }
+
+/* Accueil en cartes. Rayon intérieur = rayon extérieur − espacement : carte 22 px, pastille 16 px. */
+.settings-home { min-width: 0; padding: 0.25rem 0.125rem 0.75rem; }
+.settings-home__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.settings-card {
+  --tone: #2563eb;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+  min-height: 9.75rem;
+  padding: 1.25rem 0.75rem 1rem;
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 22px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 1px 2px rgb(40 48 58 / 0.04), 0 12px 26px -20px rgb(40 48 58 / 0.32);
+  transition: transform 240ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1)), box-shadow 200ms ease, border-color 200ms ease, filter 160ms ease;
+}
+.settings-card__icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.3rem;
+  border-radius: 16px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  transition: transform 240ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1)), background-color 200ms ease;
+}
+.settings-card__icon .app-icon { width: 2.125rem; height: 2.125rem; stroke-width: 1.8; }
+.settings-card__icon .icon-wash { fill-opacity: 0.46; }
+.settings-card__title { font-size: 0.9375rem; font-weight: 650; line-height: 1.25; text-wrap: balance; }
+.settings-card__hint { max-width: 12rem; font-size: 0.78rem; line-height: 1.35; color: hsl(var(--muted-foreground)); text-wrap: balance; }
+html[lang='ar'] .settings-card__title { font-size: 1.0625rem; line-height: 1.45; }
+html[lang='ar'] .settings-card__hint { font-size: 0.875rem; line-height: 1.5; }
+.settings-card:active { transform: scale(0.97); filter: brightness(0.96); }
+.settings-card:active .settings-card__icon { transform: scale(0.94); }
+.settings-card:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .settings-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--tone) 38%, hsl(var(--border)));
+    box-shadow: 0 1px 2px rgb(40 48 58 / 0.05), 0 18px 30px -20px color-mix(in srgb, var(--tone) 55%, transparent);
+  }
+  .settings-card:hover .settings-card__icon { background: color-mix(in srgb, var(--tone) 20%, transparent); transform: scale(1.06); }
+}
+/* Une couleur par rubrique (icône, fond de pastille, anneau de focus). Niveaux 600-700 en clair,
+   plus clairs et moins saturés en sombre pour ne pas vibrer. */
+.settings-card[data-tone='blue'] { --tone: #2563eb; }
+.settings-card[data-tone='violet'] { --tone: #7c3aed; }
+.settings-card[data-tone='pink'] { --tone: #db2777; }
+.settings-card[data-tone='amber'] { --tone: #b45309; }
+.settings-card[data-tone='green'] { --tone: #15803d; }
+.settings-card[data-tone='teal'] { --tone: #0f766e; }
+.dark .settings-card[data-tone='blue'] { --tone: #86a9f5; }
+.dark .settings-card[data-tone='violet'] { --tone: #b79bf2; }
+.dark .settings-card[data-tone='pink'] { --tone: #f08cba; }
+.dark .settings-card[data-tone='amber'] { --tone: #f0b45c; }
+.dark .settings-card[data-tone='green'] { --tone: #76d59a; }
+.dark .settings-card[data-tone='teal'] { --tone: #6fcfc5; }
+.dark .settings-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 14px 28px -20px rgb(0 0 0 / 0.6); }
+
+/* Retour à l'accueil depuis une rubrique (téléphone, tablette). */
+.settings-backbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.75rem;
+  margin: 0 0 0.5rem;
+  padding: 0 0.75rem 0 0.25rem;
+  border-radius: 12px;
+  color: hsl(var(--primary));
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, transform 160ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1));
+}
+.settings-backbar:hover { background: hsl(var(--muted) / 0.6); }
+.settings-backbar:active { transform: scale(0.97); }
+.settings-backbar:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 1px; }
+.settings-backbar__chevron { width: 1.375rem; height: 1.375rem; stroke-width: 2; }
+[dir='rtl'] .settings-backbar { padding: 0 0.25rem 0 0.75rem; }
+[dir='rtl'] .settings-backbar__chevron { transform: scaleX(-1); }
+
 @media (min-width: 640px) {
   .settings-shell { flex: 1 1 auto; min-height: 0; }
-  .settings-rail {
-    position: static;
-    margin: 0;
-    padding: 0.25rem 1.25rem 0.75rem;
-    border-bottom: 1px solid hsl(var(--border) / 0.6);
+  .settings-home {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.5rem 1.75rem 1.75rem;
   }
+  .settings-home__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .settings-card { min-height: 12.5rem; gap: 0.5rem; padding-top: 1.75rem; }
+  .settings-card__icon { width: 4.25rem; height: 4.25rem; border-radius: 20px; }
+  .settings-card__icon .app-icon { width: 2.6rem; height: 2.6rem; }
+  .settings-card__title { font-size: 1.0625rem; }
+  .settings-card__hint { max-width: 14rem; font-size: 0.875rem; }
+  html[lang='ar'] .settings-card__title { font-size: 1.1875rem; }
+  html[lang='ar'] .settings-card__hint { font-size: 0.9375rem; }
   .settings-scroll {
     min-height: 0;
     overflow-y: auto;
@@ -1103,8 +1206,14 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
     mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 1.25rem), transparent 100%);
   }
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .settings-shell { flex-direction: row; }
+  /* Le menu latéral remplace cartes et bouton de retour (ces règles non superposées battent lg:hidden). */
+  .settings-home, .settings-backbar { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-card, .settings-card__icon, .settings-backbar { transition: none; }
+  .settings-card:hover, .settings-card:active, .settings-card:hover .settings-card__icon, .settings-card:active .settings-card__icon { transform: none; }
 }
 
 .settings-page-content > div {

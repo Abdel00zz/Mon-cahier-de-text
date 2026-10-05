@@ -107,12 +107,10 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                     <div className="flex flex-col items-center gap-2 py-8 text-center">
                         <FolderArchive className="h-7 w-7 stroke-[1.5] text-muted-foreground" />
                         <p className="text-sm font-medium text-foreground">
-                            {locale === 'ar' ? 'لا توجد أرشيفات بعد' : 'Aucune archive pour l’instant'}
+                            {t('archives.empty.title')}
                         </p>
                         <p className="max-w-sm text-[13px] leading-snug text-muted-foreground">
-                            {locale === 'ar'
-                                ? 'أرشف السنة الحالية للاحتفاظ بدروسك وسجلاتك.'
-                                : 'Archivez l’année en cours pour garder vos cours et journaux.'}
+                            {t('archives.empty.body')}
                         </p>
                     </div>
                 )}

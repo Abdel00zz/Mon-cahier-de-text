@@ -5,11 +5,10 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
-import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { AccountDataTab } from './components/AccountDataTab';
 import { ProfileTab } from './components/ProfileTab';
 import { SettingsPanel } from './components/SettingsPrimitives';
-import { CalendarRange, Bell, User, Cloud, Palette, BookOpen, Save, Undo2 } from '@/components/ui/icons';
+import { CalendarRange, Bell, User, Cloud, Palette, BookOpen, Save, Undo2, ChevronLeft } from '@/components/ui/icons';
 
 const ScheduleTab = React.lazy(() => import('./components/ScheduleTab').then(m => ({ default: m.ScheduleTab })));
 const NotificationsTab = React.lazy(() => import('./components/NotificationsTab').then(m => ({ default: m.NotificationsTab })));
@@ -59,20 +58,27 @@ interface ConfigModalProps {
 
 type SettingsCategory = 'emploi' | 'profil' | 'apparence' | 'notifications' | 'compte';
 
+type SettingsTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal';
+
 interface SettingMenuItem {
   id: SettingsCategory;
   titleKey: string;
+  /** Phrase courte sous le titre de la carte (téléphone et tablette). */
+  hintKey: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Couleur propre à la rubrique : la carte, puis la rubrique, se reconnaissent d'un coup d'œil. */
+  tone: SettingsTone;
 }
 
-/** Cinq onglets : l'aide n'en est plus un, c'est un lien en bas du menu. */
+/** Cinq rubriques : l'aide n'en est pas une, c'est une carte-lien (et un lien en bas du menu sur grand écran). */
 const SETTING_ITEMS: SettingMenuItem[] = [
-  { id: 'emploi', titleKey: 'settings.item.schedule', icon: CalendarRange },
-  { id: 'profil', titleKey: 'settings.item.profile', icon: User },
-  { id: 'apparence', titleKey: 'settings.item.appearance', icon: Palette },
-  { id: 'notifications', titleKey: 'settings.item.notifications', icon: Bell },
-  { id: 'compte', titleKey: 'settings.item.account', icon: Cloud },
+  { id: 'emploi', titleKey: 'settings.item.schedule', hintKey: 'settings.card.schedule', icon: CalendarRange, tone: 'blue' },
+  { id: 'profil', titleKey: 'settings.item.profile', hintKey: 'settings.card.profile', icon: User, tone: 'violet' },
+  { id: 'apparence', titleKey: 'settings.item.appearance', hintKey: 'settings.card.appearance', icon: Palette, tone: 'pink' },
+  { id: 'notifications', titleKey: 'settings.item.notifications', hintKey: 'settings.card.notifications', icon: Bell, tone: 'amber' },
+  { id: 'compte', titleKey: 'settings.item.account', hintKey: 'settings.card.account', icon: Cloud, tone: 'green' },
 ];
+const GUIDE_TONE: SettingsTone = 'teal';
 
 /** Liens directs : les anciens identifiants d'onglets restent valides. */
 const TAB_ALIASES: Record<string, SettingsCategory> = {
@@ -119,6 +125,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
   const wasOpenRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('emploi');
+  // Téléphone et tablette : l'accueil est une grille de cartes, une rubrique s'ouvre en plein cadre.
+  // Sur grand écran (lg), le menu latéral reste affiché et cet état n'a aucun effet visuel.
+  const [sectionOpen, setSectionOpen] = useState(false);
+  const openSection = useCallback((id: SettingsCategory) => { setActiveCategory(id); setSectionOpen(true); }, []);
 
   useEffect(() => {
     if (isOpen && !wasOpenRef.current) {
@@ -134,12 +144,28 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       const requested = sessionStorage.getItem('config_initial_tab_v1');
       if (requested) {
         sessionStorage.removeItem('config_initial_tab_v1');
-        if (TAB_ALIASES[requested]) setActiveCategory(TAB_ALIASES[requested]);
+        if (Object.hasOwn(TAB_ALIASES, requested)) openSection(TAB_ALIASES[requested]);
       }
     } catch {
       // ignore
     }
-  }, []);
+  }, [openSection]);
+
+  // Téléphone et tablette : Échap / retour Android revient d'abord à la grille de cartes, puis ferme.
+  // Un menu, un sélecteur ou une fenêtre ouverte par-dessus garde la main sur sa propre touche.
+  useEffect(() => {
+    if (!isOpen || !sectionOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || window.matchMedia('(min-width: 1024px)').matches) return;
+      if (document.querySelector('[role="listbox"], [role="menu"]')) return;
+      if (document.querySelectorAll('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]').length > 1) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setSectionOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen, sectionOpen]);
 
   const applyLive = useCallback((patch: Partial<AppConfig>) => {
     onConfigChange(patch);
@@ -233,12 +259,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     </div>
   );
 
-  // Rail horizontal : téléphones et petites fenêtres (moins de 768 px).
-  const railItems: FluidTabItem<SettingsCategory>[] = useMemo(() => SETTING_ITEMS.map(item => ({
-    id: item.id,
-    label: t(item.titleKey),
-    icon: item.icon,
-  })), [t]);
 
   const navRowClass = (active: boolean) => cn(
     'flex h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-start text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
@@ -263,18 +283,39 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       footer={hasProfileChanges ? footer : undefined}
     >
       <div data-settings-ui className="settings-shell rtl-config-split">
-        <div className="settings-rail md:hidden">
-          <FluidTabRail<SettingsCategory>
-            items={railItems}
-            activeId={activeCategory}
-            onChange={setActiveCategory}
-            layoutId="settings-mobile-tab-pill"
-            size="sm"
-            ariaLabel={t('settings.title')}
-          />
+        {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
+        <div className={cn('settings-home lg:hidden', sectionOpen && 'hidden')}>
+          <ul className="settings-home__grid" aria-label={t('settings.title')}>
+            {SETTING_ITEMS.map(item => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id} className="contents">
+                  <button
+                    type="button"
+                    data-tone={item.tone}
+                    onClick={() => openSection(item.id)}
+                    onPointerEnter={() => preloadTabComponent(item.id)}
+                    onFocus={() => preloadTabComponent(item.id)}
+                    className="settings-card"
+                  >
+                    <span className="settings-card__icon" aria-hidden="true"><Icon /></span>
+                    <span className="settings-card__title">{t(item.titleKey)}</span>
+                    <span className="settings-card__hint">{t(item.hintKey)}</span>
+                  </button>
+                </li>
+              );
+            })}
+            <li className="contents">
+              <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="settings-card">
+                <span className="settings-card__icon" aria-hidden="true"><BookOpen /></span>
+                <span className="settings-card__title">{t('settings.item.support')}</span>
+                <span className="settings-card__hint">{t('settings.card.support')}</span>
+              </button>
+            </li>
+          </ul>
         </div>
 
-        <nav aria-label={t('settings.title')} className="settings-nav hidden md:flex">
+        <nav aria-label={t('settings.title')} className="settings-nav hidden lg:flex">
           <ul className="space-y-0.5">
             {SETTING_ITEMS.map(item => {
               const active = activeCategory === item.id;
@@ -304,7 +345,11 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           </div>
         </nav>
 
-        <div className="settings-scroll modern-scrollbar">
+        <div className={cn('settings-scroll modern-scrollbar', !sectionOpen && 'max-lg:hidden')}>
+          <button type="button" onClick={() => setSectionOpen(false)} className="settings-backbar lg:hidden">
+            <ChevronLeft aria-hidden className="settings-backbar__chevron" />
+            <span>{t('settings.title')}</span>
+          </button>
           <section
             key={activeCategory}
             aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}

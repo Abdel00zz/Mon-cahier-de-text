@@ -25,12 +25,12 @@ interface SettingsSectionProps {
 export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, hint, action, children }) => (
   <section className="space-y-1">
     {(title || action) && (
-      <header className="flex items-end justify-between gap-3 pb-1.5">
-        <div className="min-w-0">
+      <header className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pb-1.5">
+        <div className="min-w-0 grow basis-56">
           {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
           {hint && <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{hint}</p>}
         </div>
-        {action}
+        {action && <div className="shrink-0">{action}</div>}
       </header>
     )}
     <div className="divide-y divide-border/60 border-y border-border/60">{children}</div>

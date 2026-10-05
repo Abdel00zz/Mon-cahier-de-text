@@ -64,9 +64,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
               type="button"
               aria-pressed={currentTheme === id}
               onClick={() => onConfigChange({ theme: id })}
-              className={settingsChoiceClass(currentTheme === id)}
+              className={cn(settingsChoiceClass(currentTheme === id), 'min-w-0 gap-1.5 whitespace-nowrap px-2 sm:gap-2 sm:px-3.5')}
             >
-              <Icon className="h-[18px] w-[18px] stroke-[1.5]" />
+              <Icon className="h-[18px] w-[18px] shrink-0 stroke-[1.5]" />
               {t(labelKey)}
             </button>
           ))}
