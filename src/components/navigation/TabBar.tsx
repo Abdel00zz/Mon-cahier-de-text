@@ -260,10 +260,10 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon
                     className={cn(
                       'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      tab.id === 'dashboard' ? 'h-7 w-7' : 'h-6 w-6',
+                      'size-[26px] aspect-square',
                       isActive
-                        ? 'text-foreground stroke-[1.75]'
-                        : 'text-muted-foreground group-hover:text-foreground stroke-[1.5]'
+                        ? 'text-foreground stroke-[2]'
+                        : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
                     )}
                   />
                   {count ? (
@@ -335,10 +335,10 @@ export const TabBar = React.memo<TabBarProps>(({
               <Settings
                 className={cn(
                   'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      'h-6 w-6',
+                      'size-[26px] aspect-square',
                   activeTab === 'settings'
-                    ? 'text-foreground stroke-[1.75]'
-                    : 'text-muted-foreground group-hover:text-foreground stroke-[1.5]'
+                    ? 'text-foreground stroke-[2]'
+                    : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
                 )}
               />
             </div>
@@ -385,10 +385,10 @@ export const TabBar = React.memo<TabBarProps>(({
 
             <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
-                'h-5 w-5 shrink-0 transition-all',
+                'size-[26px] aspect-square shrink-0 transition-colors duration-200',
                 activeTab === 'help'
-                  ? 'text-foreground stroke-[1.75]'
-                  : 'stroke-[1.5] text-muted-foreground group-hover:text-foreground'
+                  ? 'text-foreground stroke-[2]'
+                  : 'stroke-[2] text-muted-foreground group-hover:text-foreground'
               )} />
             </div>
             <AnimatePresence>
@@ -449,13 +449,13 @@ export const TabBar = React.memo<TabBarProps>(({
                 <motion.div
                   animate={{ y: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
+                  className="relative z-10 flex h-7 w-7 items-center justify-center shrink-0"
                 >
                   <Icon
                     className={cn(
                       "transition-colors duration-200 ease-out",
-                      tab.id === 'dashboard' ? "h-7 w-7" : "h-[22px] w-[22px]",
-                      isActive ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
+                      "size-[26px] aspect-square",
+                      isActive ? "text-primary stroke-[2]" : "text-muted-foreground stroke-[2]"
                     )}
                   />
                   {count ? (
@@ -501,13 +501,13 @@ export const TabBar = React.memo<TabBarProps>(({
             <motion.div
               animate={{ y: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
+              className="relative z-10 flex h-7 w-7 items-center justify-center shrink-0"
             >
               <Settings
                 className={cn(
                   "transition-colors duration-200 ease-out",
-                      "h-[22px] w-[22px]",
-                  activeTab === 'settings' ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
+                      "size-[26px] aspect-square",
+                  activeTab === 'settings' ? "text-primary stroke-[2]" : "text-muted-foreground stroke-[2]"
                 )}
               />
             </motion.div>
