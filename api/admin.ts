@@ -18,6 +18,7 @@ import {
     signSession,
 } from './_lib/auth.js';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../src/types.js';
+import { adminActivities, adminAssessmentDocuments } from '../src/domain/evaluations/adminDocuments.js';
 import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -351,6 +352,19 @@ const pickPrintSettings = (settings: Partial<AppConfig> | undefined, displayName
     };
 };
 
+/**
+ * Documents rédigés et activités du professeur, tels que la direction les relit.
+ * Projection pure (`src/domain/evaluations/adminDocuments.ts`) : source bornée,
+ * documents vides écartés, noms des élèves jamais transportés.
+ */
+const pickTeacherWork = (settings: Partial<AppConfig> | undefined, classes: ClassInfo[]) => {
+    const classIds = classes.map(classInfo => classInfo.id);
+    return {
+        documents: adminAssessmentDocuments(settings, classIds),
+        activities: adminActivities(settings, classIds),
+    };
+};
+
 const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     const phone = getQueryParam(req, 'phone');
     if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
@@ -389,6 +403,9 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
         assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+        // Documents rédigés et activités : la direction relit ce que le
+        // professeur a écrit, avec le MÊME moteur de composition que sa feuille.
+        ...pickTeacherWork(classesBlob?.settings, classesBlob?.classes ?? []),
         printSettings: pickPrintSettings(classesBlob?.settings, snapshot?.displayName),
         adminMessages: recentAdminMessages(messages),
     });

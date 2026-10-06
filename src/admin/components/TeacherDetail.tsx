@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
-import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { computeLateness } from '../../domain/calendar/lateness';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../domain/evaluations/assessments';
@@ -12,12 +12,13 @@ import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
 import { MathTitle } from '../../components/ui/math-title';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../../types';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 import { PrintView } from '../../features/editor/PrintView';
 import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
 import { collectSessionDates, createPrintSelection } from '../../infrastructure/printing/printMeta';
 import { preparePrintContent, printDocument } from '../../infrastructure/printing/printUtils';
 import { ClassJsonImportModal } from './ClassJsonImportModal';
+import { AdminDocumentPreview } from './AdminDocumentPreview';
 import { ClassProgression } from './ClassProgression';
 
 const calendar = getBundledCalendar();
@@ -229,12 +230,90 @@ const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null
         absences: teacher?.absences,
     });
 
+/** Libellés des activités, côté direction : l'administration n'est pas traduite. */
+const ACTIVITY_LABELS: Record<string, string> = {
+    evaluation_diagnostic: 'Évaluation diagnostique',
+    olympiade: 'Olympiade',
+    concours: 'Concours',
+    soutien: 'Soutien',
+    remediation: 'Remédiation',
+    examen_blanc: 'Examen blanc',
+    rattrapage: 'Rattrapage',
+    controle_cahiers: 'Contrôle des cahiers',
+    autre: 'Autre activité',
+};
+
+/** Cible de la relecture : un document, son titre et son contexte. */
+interface DocumentPreviewTarget {
+    title: string;
+    subtitle: string;
+    source?: string | null;
+    updatedLabel?: string;
+}
+
+/** Ce qu'un document du professeur devient pour la direction. */
+const previewTarget = (document: ContentDocument | null | undefined, title: string, subtitle: string): DocumentPreviewTarget => ({
+    title,
+    subtitle,
+    source: document?.source,
+    updatedLabel: document?.updatedAt ? `mise à jour le ${formatDateTimeFr(document.updatedAt)}` : undefined,
+});
+
+/**
+ * Activités pédagogiques du professeur : la direction voit ce qui a été mené,
+ * combien d'élèves ont été consignés, et relit le document quand il existe.
+ */
+const AdminActivities: React.FC<{
+    classes: ClassInfo[];
+    activities: Record<string, AdminActivityDocument[]>;
+    onPreview: (target: DocumentPreviewTarget) => void;
+}> = ({ classes, activities, onPreview }) => {
+    const rows = classes.flatMap(classInfo => (activities[classInfo.id] ?? []).map(activity => ({ classInfo, activity })));
+    if (rows.length === 0) return null;
+    return (
+        <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
+            <div className="mb-3">
+                <h2 className="text-sm font-black text-foreground">Activités pédagogiques</h2>
+                <p className="text-[11px] text-muted-foreground">Olympiades, soutien, contrôle des cahiers… Cliquez sur une activité pour lire le document rédigé.</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+                {rows.map(({ classInfo, activity }) => {
+                    const label = ACTIVITY_LABELS[activity.type] ?? 'Activité';
+                    const hasDocument = Boolean(activity.document?.source);
+                    return (
+                        <article key={`${classInfo.id}-${activity.id}`} className="flex items-center gap-3 rounded-xl bg-secondary/45 p-3">
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate text-xs font-bold text-foreground">{activity.title || label}</span>
+                                <span className="block truncate text-[10px] text-muted-foreground">
+                                    {classInfo.name} · {label} · {formatDateFr(activity.date)}
+                                    {activity.students > 0 && ` · ${activity.students} élève${activity.students > 1 ? 's' : ''} consigné${activity.students > 1 ? 's' : ''}`}
+                                </span>
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`))}
+                                className={`h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-semibold ${hasDocument ? 'border-primary/30 text-primary hover:bg-primary/10' : 'border-border text-muted-foreground hover:bg-secondary'}`}
+                            >
+                                {hasDocument ? 'Aperçu' : 'Aucun document'}
+                            </button>
+                        </article>
+                    );
+                })}
+            </div>
+        </section>
+    );
+};
+
 const AssessmentDateEditor: React.FC<{
     phone: string;
     classes: ClassInfo[];
     initial: Record<string, Record<string, string>>;
     schoolYearStart?: string;
-}> = ({ phone, classes, initial, schoolYearStart }) => {
+    documents: Record<string, Record<string, ContentDocument>>;
+    activities: Record<string, AdminActivityDocument[]>;
+    teacherName: string;
+    onPreview: (target: DocumentPreviewTarget) => void;
+}> = ({ phone, classes, initial, schoolYearStart, documents, activities, teacherName, onPreview }) => {
     const [dates, setDates] = useState(initial);
     const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
     const [message, setMessage] = useState('');
@@ -286,18 +365,43 @@ const AssessmentDateEditor: React.FC<{
         );
     }
     return (
+        <>
         <section className="mb-5 rounded-2xl bg-accent/50 p-4">
-            <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquées au planning du professeur et synchronisées sur son téléphone.</p></div>
+            <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquées au planning du professeur et synchronisées sur son téléphone. Chaque carte ouvre le sujet rédigé.</p></div>
             <div className="grid gap-2 sm:grid-cols-2">
-                {rows.map(row => (
-                    <label key={`${row.classId}-${row.id}`} className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-sm">
-                        <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{row.className}</span><span className="block truncate text-[10px] text-muted-foreground">{row.label}</span></span>
-                        <input type="date" value={dates[row.classId]?.[row.id] ?? row.dateISO} onChange={event => void change(row, event.target.value)} className="h-9 w-32 rounded-lg border bg-background px-2 text-[11px]" />
-                    </label>
-                ))}
+                {rows.map(row => {
+                    const document = documents[row.classId]?.[row.id]
+                        ?? (row.legacyId ? documents[row.classId]?.[row.legacyId] : undefined);
+                    const hasDocument = Boolean(document?.source);
+                    const title = `${row.label} — ${row.className}`;
+                    return (
+                        <div key={`${row.classId}-${row.id}`} className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
+                            <button
+                                type="button"
+                                onClick={() => onPreview(previewTarget(document, title, `${row.className} · ${teacherName}`))}
+                                className="min-w-0 flex-1 rounded-lg px-1 py-1 text-start transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                aria-label={`Aperçu du sujet : ${title}`}
+                            >
+                                <span className="block truncate text-xs font-bold text-foreground">{row.className}</span>
+                                <span className="block truncate text-[10px] text-muted-foreground">
+                                    {row.label} · {hasDocument ? 'sujet rédigé' : 'sans sujet'}
+                                </span>
+                            </button>
+                            <input
+                                type="date"
+                                value={dates[row.classId]?.[row.id] ?? row.dateISO}
+                                onChange={event => void change(row, event.target.value)}
+                                aria-label={`Date du ${title}`}
+                                className="h-9 w-32 shrink-0 rounded-lg border bg-background px-2 text-[11px]"
+                            />
+                        </div>
+                    );
+                })}
             </div>
             {message && <p className="mt-2 text-[11px] font-semibold text-primary">{message}</p>}
         </section>
+        <AdminActivities classes={classes} activities={activities} onPreview={onPreview} />
+        </>
     );
 };
 
@@ -381,6 +485,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     /** Mise en page choisie par la direction pour cet aperçu (jamais réécrite chez l'enseignant). */
     const [printPrefs, setPrintPrefs] = useState<Pick<AppConfig, 'printDescriptionMode' | 'printDescriptionTypes'>>({});
     const [printingClassId, setPrintingClassId] = useState<string | null>(null);
+    /** Document du professeur en cours de relecture (lecture seule). */
+    const [preview, setPreview] = useState<DocumentPreviewTarget | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
 
     const selectTab = (tab: TeacherDetailTab, focus = false) => {
@@ -804,6 +910,10 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             classes={data.classes}
                             initial={data.assessmentDates ?? {}}
                             schoolYearStart={data.snapshot?.schoolYearStart}
+                            documents={data.documents ?? {}}
+                            activities={data.activities ?? {}}
+                            teacherName={data.snapshot?.displayName || `${data.user?.prenom ?? ''} ${data.user?.nom ?? ''}`.trim() || data.user?.phone || 'Enseignant'}
+                            onPreview={setPreview}
                         />
                     </div>
 
@@ -1034,6 +1144,17 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 classInfo={importingClass}
                 onClose={() => setImportingClass(null)}
                 onImported={handleClassImported}
+            />
+
+            {/* Relecture d'un document du professeur : même moteur de composition
+                que sa feuille, aucune modification possible. */}
+            <AdminDocumentPreview
+                isOpen={preview !== null}
+                onClose={() => setPreview(null)}
+                title={preview?.title ?? ''}
+                subtitle={preview?.subtitle}
+                source={preview?.source}
+                updatedLabel={preview?.updatedLabel}
             />
 
             <ConfirmDialog

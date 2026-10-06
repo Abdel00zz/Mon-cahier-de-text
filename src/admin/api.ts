@@ -1,4 +1,5 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
+import type { AdminActivityDocument } from '../domain/evaluations/adminDocuments';
 import type { HolidayCalendar } from '../domain/calendar/calendar';
 import type { OfficialStudentEventsFile } from '../domain/evaluations/officialStudentEvents';
 import { requestSyncJson, SyncRequestError } from '../infrastructure/sync/syncTransport';
@@ -10,10 +11,20 @@ export interface TeacherDetail {
     classMeta: Record<string, { updatedAt: string }>;
     snapshot: TeacherSnapshot | null;
     assessmentDates: Record<string, Record<string, string>>;
+    /** Documents rédigés par le professeur : classe → devoir → source. */
+    documents: Record<string, Record<string, ContentDocument>>;
+    /** Activités pédagogiques, avec leur document et le nombre d'élèves consignés. */
+    activities: Record<string, AdminActivityDocument[]>;
     /** Sous-ensemble d'AppConfig nécessaire à l'impression d'un cahier par la direction. */
     printSettings: TeacherPrintSettings | null;
     adminMessages: AdminMessage[];
 }
+
+/**
+ * Activité telle que la direction la relit : sans les noms des élèves, et avec
+ * le document quand le professeur en a rédigé un. Lecture seule.
+ */
+export type { AdminActivityDocument };
 
 export interface TeacherPrintSettings {
     establishmentName?: string;
