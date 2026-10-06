@@ -40,7 +40,20 @@ export const ArrowDown = createIcon('ArrowDown', [["path",{"d":"M5.25 12.563l6.7
 export const TriangleAlert = createIcon('TriangleAlert', [["path",{"d":"M4.011 20.918h15.978a1.5 1.5 0 0 0 1.32-2.211L13.321 3.871c-0.567-1.052-2.075-1.052-2.642 0L2.691 18.707a1.5 1.5 0 0 0 1.32 2.211","fill":"none","stroke":"currentColor"}],["path",{"d":"M11.731 9.159l0.269 5.719 0.269-5.717a0.269 0.269 0 0 0-0.272-0.281h0a0.269 0.269 0 0 0-0.266 0.279","fill":"none","stroke":"currentColor"}],["path",{"fill":"currentColor","d":"M12 18.621a0.938 0.938 0 1 1 0.938-0.937 0.938 0.938 0 0 1-0.938 0.937","stroke":"none"}]]);
 export const Undo2 = createIcon('Undo2', [['path', { d: 'M8.5 5 3.5 10l5 5M4 10h9.25a5.25 5.25 0 0 1 0 10.5' }]]);
 export const Redo2 = createIcon('Redo2', [['path', { d: 'm15.5 5 5 5-5 5M20 10h-9.25a5.25 5.25 0 0 0 0 10.5' }]]);
-export const Save = createIcon('Save', [['path', { d: 'M12 3v10m-4-4 4 4 4-4M3.5 14v4.5a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V14' }]]);
+/* Enregistrement : la disquette, redessinée selon la recette maison — une
+   silhouette pleine très douce (icon-wash) doublée de son contour, plus les
+   deux détails qui font l'objet : l'étiquette du haut et le volet du bas. Le
+   coin supérieur droit coupé est la signature de la disquette ; sans lui, le
+   pictogramme se confond avec la carte ou le fichier. Même famille que `Cloud`,
+   `Book` ou `Trash2`, donc cohérent à toutes les tailles (14 px dans la
+   direction, 21 px dans l'éditeur, 30 px dans une tuile de réglages). */
+const SAVE_BODY = 'M5 2.5h9.05q.9 0 1.5.68l5.35 5.35q.6.6.6 1.42v9.05a2.5 2.5 0 0 1-2.5 2.5h-14a2.5 2.5 0 0 1-2.5-2.5v-14a2.5 2.5 0 0 1 2.5-2.5Z';
+export const Save = createIcon('Save', [
+  ['path', { d: SAVE_BODY, className: 'icon-wash', stroke: 'none' }],
+  ['path', { d: SAVE_BODY, fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M7.75 2.5v6h8.5v-6', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M7.75 21.5v-6h8.5v6', fill: 'none', stroke: 'currentColor' }],
+]);
 export const History = createIcon('History', [["path",{"d":"M3.6 9A8.6 8.6 0 1 1 4.8 18M3.6 3.8V9H8.8M12 7.3V12L15.4 14"}]]);
 export const Search = createIcon('Search', [["circle",{"cx":10,"cy":10,"r":8,"className":"icon-wash","stroke":"none"}],["path",{"d":"M16 16L21 21M6 10Q6 6 10 6"}]]);
 export const ChevronUp = createIcon('ChevronUp', [["path",{"d":"M5.25 15.375l6.75-6.75 6.75 6.75","fill":"none","stroke":"currentColor"}]]);
