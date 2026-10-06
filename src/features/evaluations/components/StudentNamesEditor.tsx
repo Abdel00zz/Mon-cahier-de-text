@@ -1,0 +1,215 @@
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+import { Copy, Info, Plus, Trash2, X } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { numberFormat } from '@/lib/formatters';
+
+/*
+ * Une seule liste d'élèves pour deux usages : les ABSENTS d'un devoir surveillé
+ * et les ÉLÈVES CONTRÔLÉS d'une activité (contrôle des cahiers). Le mécanisme est
+ * identique — on colle une liste, on ajoute un nom, on retire une puce — seul
+ * l'habillage change, donc les deux écrans ne peuvent pas diverger.
+ */
+
+type StudentNamesVariant = 'absent' | 'checked';
+
+interface VariantCopy {
+  countOne: string;
+  countMany: string;
+  copy: string;
+  copied: string;
+  clear: string;
+  placeholder: string;
+  add: string;
+  remove: string;
+  hint: string;
+  directive: string;
+}
+
+const VARIANT_COPY: Record<StudentNamesVariant, VariantCopy> = {
+  absent: {
+    countOne: 'evaluations.absentOne',
+    countMany: 'evaluations.absentMany',
+    copy: 'evaluations.copyAbsentees',
+    copied: 'evaluations.absenteesCopied',
+    clear: 'evaluations.clearAllAbsentees',
+    placeholder: 'evaluations.studentPlaceholder',
+    add: 'evaluations.addStudentAria',
+    remove: 'evaluations.removeStudentAria',
+    hint: 'evaluations.pasteHint',
+    directive: 'evaluations.absenceNoteDirective',
+  },
+  checked: {
+    countOne: 'evaluations.students.checkedOne',
+    countMany: 'evaluations.students.checkedMany',
+    copy: 'evaluations.students.copy',
+    copied: 'evaluations.students.copied',
+    clear: 'evaluations.students.clear',
+    placeholder: 'evaluations.students.placeholder',
+    add: 'evaluations.students.add',
+    remove: 'evaluations.students.remove',
+    hint: 'evaluations.students.hint',
+    directive: 'evaluations.students.directive',
+  },
+};
+
+interface StudentNamesEditorProps {
+  initialNames: string[];
+  updatedAt?: string;
+  onCancel: () => void;
+  onSave: (names: string[]) => void;
+  /** Habillage : absents d'un devoir, ou élèves consignés sur une activité. */
+  variant?: StudentNamesVariant;
+}
+
+export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
+  initialNames,
+  onCancel,
+  onSave,
+  variant = 'absent',
+}) => {
+  const { t, locale } = useLocale();
+  const copy = VARIANT_COPY[variant];
+  const [names, setNames] = useState<string[]>(initialNames);
+  const [draft, setDraft] = useState('');
+
+  const commitDraft = (raw: string) => {
+    const parts = raw
+      .split(/[,;\n]+/)
+      .map((p) => p.trim().replace(/\s+/g, ' '))
+      .filter(Boolean);
+    if (parts.length === 0) return;
+    setNames((prev) => {
+      const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
+      const seen = new Set(prev.map((n) => n.toLocaleLowerCase(localeCode)));
+      const additions = parts.filter((p) => !seen.has(p.toLocaleLowerCase(localeCode)));
+      return [...prev, ...additions];
+    });
+    setDraft('');
+  };
+
+  const handleCopy = async () => {
+    if (names.length === 0) return;
+    try {
+      await navigator.clipboard.writeText(names.join('\n'));
+      toast.success(t(copy.copied));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3.5">
+        {names.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="text-[11px] font-bold text-muted-foreground">
+                {t(names.length === 1 ? copy.countOne : copy.countMany, {
+                  count: numberFormat(locale).format(names.length),
+                })}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                  title={t(copy.copy)}
+                >
+                  <Copy className="h-3 w-3" />
+                  <span>{t(copy.copy)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNames([])}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                  title={t(copy.clear)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>{t(copy.clear)}</span>
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
+              {names.map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-background border border-border/80 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
+                >
+                  {name}
+                  <button
+                    type="button"
+                    onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
+                    className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                    aria-label={t(copy.remove, { name })}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                commitDraft(draft);
+              }
+            }}
+            onPaste={(e) => {
+              const text = e.clipboardData.getData('text');
+              if (/[,;\n]/.test(text)) {
+                e.preventDefault();
+                commitDraft(text);
+              }
+            }}
+            onBlur={() => commitDraft(draft)}
+            placeholder={t(copy.placeholder)}
+            aria-label={t(copy.placeholder)}
+            className="h-10 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <button
+            type="button"
+            onClick={() => commitDraft(draft)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all cursor-pointer shadow-xs"
+            aria-label={t(copy.add)}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {t(copy.hint)}
+        </p>
+
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-[11px] leading-relaxed text-muted-foreground flex items-start gap-2">
+          <Info className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
+          <span>{t(copy.directive)}</span>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={() => onSave(names)}
+            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
+          >
+            {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

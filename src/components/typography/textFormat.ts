@@ -1,5 +1,6 @@
 import React from 'react';
 import { splitMathText } from '../../lib/text/math';
+import { expandHtmlTags } from '../../lib/text/htmlTags';
 import { renderKatexHtml } from '../../config/katex';
 import { toDisplayText } from '../../lib/text/textValue';
 
@@ -396,7 +397,10 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
   const protectedSource = splitMathText(text).map(part => {
     // Seul le TEXTE reçoit les commandes de mise en page : dans une formule,
     // c'est KaTeX qui les interprète (\textbf, \text, \underline…).
-    if (!part.math) return expandLatexTextCommands(part.text);
+    // Les balises HTML reconnues sont traduites AVANT les commandes LaTeX : un
+    // document collé mélange les deux notations, et une balise inconnue reste du
+    // texte visible (jamais du HTML exécuté — le rendu produit des nœuds React).
+    if (!part.math) return expandLatexTextCommands(expandHtmlTags(part.text));
     const index = formulas.push(part.text) - 1;
     return prefix + index + (isDisplayMath(part.text) ? DISPLAY_MARK : INLINE_MARK);
   }).join('').replace(/\n{3,}/g, '\n\n');

@@ -121,8 +121,10 @@ export interface AppConfig {
     schoolYearStart?: string;
     /** dates de devoirs personnalisées par le prof : { [classId]: { [assessmentId]: 'YYYY-MM-DD' } } */
     assessmentDates?: Record<string, Record<string, string>>;
-    /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: AssessmentAbsenceRecord } } */
-    assessmentAbsences?: Record<string, Record<string, AssessmentAbsenceRecord>>;
+    /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: StudentNamesRecord } } */
+    assessmentAbsences?: Record<string, Record<string, StudentNamesRecord>>;
+    /** documents rédigés par devoir (sujet, corrigé) : { [classId]: { [assessmentId]: ContentDocument } } */
+    assessmentDocuments?: Record<string, Record<string, ContentDocument>>;
     /** activités pédagogiques libres par classe (diagnostic, olympiade, soutien, examen blanc...) */
     pedagogicalEvents?: Record<string, PedagogicalEvent[]>;
     /** devoirs surveillés / maison saisis manuellement par le prof, par classe */
@@ -145,15 +147,30 @@ export interface ManualAssessment {
     semestre: 1 | 2;
     /** compte dans la note officielle */
     note?: boolean;
+    /** document pédagogique rédigé par le professeur (hors cahier) */
+    document?: ContentDocument;
 }
 
 /** Types officiels d'évaluation (nomenclature ministérielle AR/FR). */
 export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison';
 
-/** Absents d'un devoir surveillé : consignés au moment du devoir, synchronisés avec le compte. */
-interface AssessmentAbsenceRecord {
-    /** noms des élèves absents (un nom par entrée) */
+/** Élèves consignés sur un devoir ou une activité : absents, cahiers contrôlés, participants. */
+interface StudentNamesRecord {
+    /** noms des élèves (un nom par entrée) */
     names: string[];
+    updatedAt: string;
+}
+
+/**
+ * Document pédagogique rédigé par le professeur (devoir surveillé, devoir maison,
+ * olympiade, corrigé...) : une SOURCE unique, mise en page par le moteur du
+ * carnet — Markdown simplifié, formules LaTeX entre dollars et un jeu de
+ * balises HTML de mise en forme. Rendu identique à l'écran, en aperçu et à
+ * l'impression, puisque c'est le même moteur que les descriptions de séances.
+ */
+export interface ContentDocument {
+    /** source rédigée (jamais du HTML exécuté : le moteur rend des nœuds React) */
+    source: string;
     updatedAt: string;
 }
 
@@ -179,6 +196,10 @@ export interface PedagogicalEvent {
     note?: string;
     status: 'planned' | 'done';
     createdAt: string;
+    /** élèves consignés sur l'activité (cahiers contrôlés, participants…) */
+    students?: StudentNamesRecord;
+    /** document pédagogique rédigé par le professeur (sujet, corrigé, fiche) */
+    document?: ContentDocument;
 }
 
 // ── Emploi du temps & notifications ─────────────────────────────────────────

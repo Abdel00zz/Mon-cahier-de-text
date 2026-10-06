@@ -24,19 +24,19 @@ import {
   Check,
   CircleAlert,
   CircleCheck,
+  FileText,
   Plus,
   Undo2,
   Trash2,
   Users,
-  X,
-  Copy,
-  Info,
   AwardIcon,
   BookOpen,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
+import { StudentNamesEditor } from './components/StudentNamesEditor';
+import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -46,6 +46,16 @@ interface DevoirsViewProps {
   /** Mode contextuel : la classe est déjà connue, aucun sélecteur ni lien de retour. */
   embedded?: boolean;
 }
+
+/**
+ * Cible d'un document pédagogique : un devoir (officiel ou manuel) ou une
+ * activité. Le devoir range son document dans `assessmentDocuments` — comme ses
+ * absences —, l'activité le porte en propre, puisque la liste d'activités est
+ * déjà enregistrée d'un bloc.
+ */
+type DocumentTarget =
+  | { kind: 'assessment'; link: AssessmentLink }
+  | { kind: 'event'; event: PedagogicalEvent };
 
 const readLessons = (classId: string): LessonsData => {
   try {
@@ -110,6 +120,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const classVisual = selectedClass ? getClassVisual(selectedClass.name) : null;
   const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
+  /** Devoir ou activité dont on rédige le document pédagogique. */
+  const [documentFor, setDocumentFor] = useState<DocumentTarget | null>(null);
+  /** Activité dont on consigne les élèves (cahiers contrôlés, participants). */
+  const [studentsFor, setStudentsFor] = useState<PedagogicalEvent | null>(null);
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
@@ -157,6 +171,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const selectClass = (classId: string) => {
     setSelectedClassId(classId);
     setAbsencesFor(null);
+    setDocumentFor(null);
+    setStudentsFor(null);
     setEventEditorOpen(false);
   };
 
@@ -204,6 +220,46 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const deletePedagogicalEvent = (eventId: string) => {
     savePedagogicalEvents(pedagogicalEvents.filter((event) => event.id !== eventId));
+  };
+
+  /** Activité concernée par un document ou une liste d'élèves, telle qu'affichée. */
+  const activityLabelOf = (event: PedagogicalEvent) =>
+    event.title || t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey);
+
+  const saveEventDocument = (source: string) => {
+    if (!selectedClass || !documentFor || documentFor.kind !== 'event') return;
+    const target = documentFor.event.id;
+    savePedagogicalEvents(pedagogicalEvents.map(event => event.id === target
+      ? { ...event, document: source.trim() ? { source, updatedAt: new Date().toISOString() } : undefined }
+      : event));
+  };
+
+  const saveAssessmentDocument = (source: string) => {
+    if (!selectedClass || !documentFor || documentFor.kind !== 'assessment') return;
+    const classId = selectedClass.id;
+    const forClass = { ...(config.assessmentDocuments?.[classId] ?? {}) };
+    const id = documentFor.link.planned.id;
+    const legacyId = documentFor.link.planned.legacyId;
+    if (source.trim()) forClass[id] = { source, updatedAt: new Date().toISOString() };
+    else delete forClass[id];
+    if (legacyId) delete forClass[legacyId];
+    onConfigChange({ assessmentDocuments: { ...(config.assessmentDocuments ?? {}), [classId]: forClass } });
+  };
+
+  const saveEventStudents = (names: string[]) => {
+    if (!selectedClass || !studentsFor) return;
+    const target = studentsFor.id;
+    const activity = activityLabelOf(studentsFor);
+    savePedagogicalEvents(pedagogicalEvents.map(event => event.id === target
+      ? { ...event, students: names.length > 0 ? { names, updatedAt: new Date().toISOString() } : undefined }
+      : event));
+    toast.success(names.length > 0
+      ? t(names.length === 1 ? 'evaluations.students.savedOne' : 'evaluations.students.savedMany', {
+          count: number.format(names.length),
+          activity,
+        })
+      : t('evaluations.students.cleared'));
+    setStudentsFor(null);
   };
 
   const openCreateAssessment = () => {
@@ -284,6 +340,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.id]
         ?? (absencesFor.planned.legacyId ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.legacyId] : undefined)
       : undefined;
+
+  /* Document et titres de la modale : le devoir comme l'activité parlent la
+     même langue (« Devoir surveillé n°2 », « Contrôle des cahiers »). */
+  const documentOf = (() => {
+    if (!documentFor || !selectedClass) return undefined;
+    if (documentFor.kind === 'event') return documentFor.event.document;
+    const forClass = config.assessmentDocuments?.[selectedClass.id];
+    return forClass?.[documentFor.link.planned.id]
+      ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
+  })();
+  const documentTitle = documentFor === null
+    ? ''
+    : documentFor.kind === 'event'
+      ? (documentFor.event.title || t(PEDAGOGICAL_EVENT_CONFIG[documentFor.event.type].labelKey))
+      : `${t(`evaluations.type.${documentFor.link.planned.type}`)} n°${documentFor.link.planned.num}`;
+  const documentDate = documentFor === null
+    ? ''
+    : documentFor.kind === 'event' ? documentFor.event.date : documentFor.link.planned.dateISO;
 
   return (
     <div className="space-y-4 font-sans sm:space-y-5">
@@ -368,6 +442,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             events={pedagogicalEvents}
             onToggle={togglePedagogicalEvent}
             onDelete={deletePedagogicalEvent}
+            onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+            onOpenStudents={(event) => setStudentsFor(event)}
           />
         )}
 
@@ -421,6 +497,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
                             ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
                           )?.names ?? [];
+                          const assessmentDocument = (
+                            config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
+                            ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
+                          );
                           const status = STATUS_STYLE[link.status];
                           const isSupervised = a.type !== 'maison';
 
@@ -469,6 +549,23 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
                               {/* Right Actions & Date Selector */}
                               <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:pt-0">
+                                {/* Sujet, corrigé, fiche : le document du devoir suit le même
+                                    moteur que le carnet, donc le même rendu qu'à l'impression. */}
+                                <button
+                                  type="button"
+                                  onClick={() => setDocumentFor({ kind: 'assessment', link })}
+                                  className={cn(
+                                    'inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:w-auto sm:text-xs',
+                                    assessmentDocument
+                                      ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15'
+                                      : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
+                                  )}
+                                  aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
+                                >
+                                  <FileText className="h-3.5 w-3.5" />
+                                  {t('evaluations.doc.open')}
+                                </button>
+
                                 {isSupervised && (
                                   <button
                                     type="button"
@@ -630,8 +727,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         }
       >
         {absencesFor && selectedClass && (
-          <AbsencesEditor
+          <StudentNamesEditor
             key={`${selectedClass.id}-${absencesFor.planned.id}`}
+            variant="absent"
             initialNames={absencesRecord?.names ?? []}
             updatedAt={absencesRecord?.updatedAt}
             onCancel={() => setAbsencesFor(null)}
@@ -661,6 +759,61 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           />
         )}
       </Modal>
+
+      {/* Document pédagogique : sujet de devoir, corrigé, fiche d'olympiade.
+          Une seule source, un aperçu composé par le moteur du carnet (KaTeX). */}
+      <ContentDocumentModal
+        isOpen={documentFor !== null}
+        onClose={() => setDocumentFor(null)}
+        title={t('evaluations.doc.title', { activity: documentTitle })}
+        subtitle={selectedClass && documentDate
+          ? `${selectedClassDisplayName} · ${formatLongDate(documentDate, locale)}`
+          : undefined}
+        document={documentOf}
+        onSave={(source) => {
+          if (documentFor?.kind === 'event') saveEventDocument(source);
+          else saveAssessmentDocument(source);
+          setDocumentFor(null);
+        }}
+      />
+
+      {/* Élèves consignés sur une activité : les cahiers contrôlés d'un côté, la
+          même mécanique que les absents d'un devoir de l'autre. */}
+      <Modal
+        isOpen={studentsFor !== null}
+        onClose={() => setStudentsFor(null)}
+        maxWidth="md"
+        className="sm:rounded-2xl"
+        headerClassName="border-b border-border/70"
+        title={
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 ring-1 ring-teal-500/20">
+              <Users className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <span className="block truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                {studentsFor?.title || t('evaluations.students.open')}
+              </span>
+              {studentsFor && (
+                <p className="mt-0.5 text-xs font-medium text-muted-foreground">
+                  {t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)} · {formatLongDate(studentsFor.date, locale)}
+                </p>
+              )}
+            </div>
+          </div>
+        }
+      >
+        {studentsFor && (
+          <StudentNamesEditor
+            key={`students-${studentsFor.id}`}
+            variant="checked"
+            initialNames={studentsFor.students?.names ?? []}
+            updatedAt={studentsFor.students?.updatedAt}
+            onCancel={() => setStudentsFor(null)}
+            onSave={saveEventStudents}
+          />
+        )}
+      </Modal>
     </div>
   );
 };
@@ -669,12 +822,18 @@ interface PedagogicalEventsSectionProps {
   events: PedagogicalEvent[];
   onToggle: (eventId: string) => void;
   onDelete: (eventId: string) => void;
+  onOpenDocument: (event: PedagogicalEvent) => void;
+  onOpenStudents: (event: PedagogicalEvent) => void;
 }
+
+const EVENT_ACTION_CLASS = 'inline-flex h-8 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 px-2.5 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer shadow-2xs';
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
   onToggle,
   onDelete,
+  onOpenDocument,
+  onOpenStudents,
 }) => {
   const { t, locale } = useLocale();
   if (events.length === 0) return null;
@@ -744,6 +903,39 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       {event.note}
                     </p>
                   )}
+
+                  {/* Le document et la liste d'élèves vivent DANS l'activité :
+                      deux portes d'entrée discrètes, comptées quand elles sont
+                      remplies, pour ne jamais ouvrir un écran vide par erreur. */}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onOpenDocument(event)}
+                      className={cn(
+                        EVENT_ACTION_CLASS,
+                        event.document && 'border-primary/40 bg-primary/10 text-primary'
+                      )}
+                      aria-label={t('evaluations.doc.title', { activity: event.title })}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      <span>{t('evaluations.doc.open')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenStudents(event)}
+                      className={cn(
+                        EVENT_ACTION_CLASS,
+                        (event.students?.names.length ?? 0) > 0 && 'border-teal-400/50 bg-teal-500/10 text-teal-700 dark:text-teal-400'
+                      )}
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      <span>
+                        {(event.students?.names.length ?? 0) > 0
+                          ? `${t('evaluations.students.open')} · ${event.students?.names.length ?? 0}`
+                          : t('evaluations.students.open')}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1049,163 +1241,6 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             className="h-9.5 rounded-xl bg-primary px-4 text-[11px] font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 sm:h-10 sm:px-5 sm:text-xs cursor-pointer"
           >
             {initial ? t('common.save') : t('evaluations.add')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface AbsencesEditorProps {
-  initialNames: string[];
-  updatedAt?: string;
-  onCancel: () => void;
-  onSave: (names: string[]) => void;
-}
-
-const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
-  initialNames,
-  onCancel,
-  onSave,
-}) => {
-  const { t, locale } = useLocale();
-  const [names, setNames] = useState<string[]>(initialNames);
-  const [draft, setDraft] = useState('');
-
-  const commitDraft = (raw: string) => {
-    const parts = raw
-      .split(/[,;\n]+/)
-      .map((p) => p.trim().replace(/\s+/g, ' '))
-      .filter(Boolean);
-    if (parts.length === 0) return;
-    setNames((prev) => {
-      const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
-      const seen = new Set(prev.map((n) => n.toLocaleLowerCase(localeCode)));
-      const additions = parts.filter((p) => !seen.has(p.toLocaleLowerCase(localeCode)));
-      return [...prev, ...additions];
-    });
-    setDraft('');
-  };
-
-  const handleCopy = async () => {
-    if (names.length === 0) return;
-    try {
-      await navigator.clipboard.writeText(names.join('\n'));
-      toast.success(t('evaluations.absenteesCopied'));
-    } catch {
-      toast.error(t('common.error'));
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3.5">
-        {names.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2 px-1">
-              <span className="text-[11px] font-bold text-muted-foreground">
-                {t(names.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', {
-                  count: numberFormat(locale).format(names.length),
-                })}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
-                  title={t('evaluations.copyAbsentees')}
-                >
-                  <Copy className="h-3 w-3" />
-                  <span>{t('evaluations.copyAbsentees')}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNames([])}
-                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                  title={t('evaluations.clearAllAbsentees')}
-                >
-                  <Trash2 className="h-3 w-3" />
-                  <span>{t('evaluations.clearAllAbsentees')}</span>
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
-              {names.map((name) => (
-                <span
-                  key={name}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-background border border-border/80 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
-                >
-                  {name}
-                  <button
-                    type="button"
-                    onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
-                    className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                    aria-label={t('evaluations.removeStudentAria', { name })}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                commitDraft(draft);
-              }
-            }}
-            onPaste={(e) => {
-              const text = e.clipboardData.getData('text');
-              if (/[,;\n]/.test(text)) {
-                e.preventDefault();
-                commitDraft(text);
-              }
-            }}
-            onBlur={() => commitDraft(draft)}
-            placeholder={t('evaluations.studentPlaceholder')}
-            aria-label={t('evaluations.studentPlaceholder')}
-            className="h-10 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          <button
-            type="button"
-            onClick={() => commitDraft(draft)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all cursor-pointer shadow-xs"
-            aria-label={t('evaluations.addStudentAria')}
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {t('evaluations.pasteHint')}
-        </p>
-
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-[11px] leading-relaxed text-muted-foreground flex items-start gap-2">
-          <Info className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
-          <span>{t('evaluations.absenceNoteDirective')}</span>
-        </div>
-
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onSave(names)}
-            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
-          >
-            {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}
           </button>
         </div>
       </div>

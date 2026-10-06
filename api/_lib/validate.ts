@@ -1,6 +1,7 @@
 import { HttpError } from './http.js';
 import { isClassColor } from '../../src/domain/classes/classColors.js';
 import { assertNotebookStructure } from '../../src/domain/notebook/notebookValidation.js';
+import { MAX_CONTENT_DOCUMENT_CHARS } from '../../src/constants/contentDocument.js';
 import type {
   AppConfig,
   AppLocale,
@@ -371,6 +372,36 @@ export const assertValidLessonsPayload = (
   });
 };
 
+/**
+ * Élèves consignés sur un devoir ou une activité : liste bornée, horodatage
+ * obligatoire (c'est lui qui décide, à la fusion, quelle version gagne).
+ */
+const assertStudentNames = (candidate: unknown, label: string): void => {
+  if (candidate === undefined) return;
+  const value = candidate as { names?: unknown; updatedAt?: unknown };
+  if (!value || typeof value !== 'object' || !Array.isArray(value.names) || value.names.length > 200) {
+    throw new HttpError(400, `Liste d'élèves invalide (${label}).`);
+  }
+  if (value.names.some(name => typeof name !== 'string' || !name.trim() || name.length > 120)) {
+    throw new HttpError(400, `Nom d'élève invalide (${label}).`);
+  }
+  if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) {
+    throw new HttpError(400, `Horodatage d'élèves invalide (${label}).`);
+  }
+};
+
+/** Document rédigé : texte borné (voir `src/constants/contentDocument.ts`). */
+const assertContentDocument = (candidate: unknown, label: string): void => {
+  if (candidate === undefined) return;
+  const value = candidate as { source?: unknown; updatedAt?: unknown };
+  if (!value || typeof value !== 'object' || typeof value.source !== 'string' || value.source.length > MAX_CONTENT_DOCUMENT_CHARS) {
+    throw new HttpError(400, `Document invalide (${label}).`);
+  }
+  if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) {
+    throw new HttpError(400, `Horodatage de document invalide (${label}).`);
+  }
+};
+
 /** Validation ciblée des données d'évaluation transportées dans le blob de réglages. */
 export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<string>): Record<string, unknown> | undefined => {
   if (settings === undefined) return undefined;
@@ -404,10 +435,19 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     const entries = Object.entries(raw as Record<string, unknown>);
     if (entries.length > 300) throw new HttpError(400, `assessmentAbsences.${classId} est trop volumineux.`);
     for (const [assessmentId, candidate] of entries) {
-      const value = candidate as { names?: unknown; updatedAt?: unknown };
-      if (!assessmentId || assessmentId.length > 180 || !value || !Array.isArray(value.names) || value.names.length > 200) throw new HttpError(400, 'Liste d’absences invalide.');
-      if (value.names.some(name => typeof name !== 'string' || !name.trim() || name.length > 120)) throw new HttpError(400, 'Nom d’élève absent invalide.');
-      if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) throw new HttpError(400, 'Horodatage d’absences invalide.');
+      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant d’absences invalide.');
+      assertStudentNames(candidate, `absence du devoir ${assessmentId}`);
+    }
+  }
+
+  const documents = classRecord('assessmentDocuments');
+  for (const [classId, raw] of Object.entries(documents ?? {})) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, `assessmentDocuments.${classId} invalide.`);
+    const entries = Object.entries(raw as Record<string, unknown>);
+    if (entries.length > 300) throw new HttpError(400, `assessmentDocuments.${classId} est trop volumineux.`);
+    for (const [assessmentId, candidate] of entries) {
+      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant de document de devoir invalide.');
+      assertContentDocument(candidate, `le devoir ${assessmentId}`);
     }
   }
 
@@ -420,6 +460,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!VALID_ASSESSMENT_TYPES.has(value.type as string) || !Number.isInteger(value.num) || Number(value.num) < 1 || Number(value.num) > 50) throw new HttpError(400, 'Type ou numéro de devoir manuel invalide.');
       if (typeof value.dateISO !== 'string' || !ISO_DATE.test(value.dateISO) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
       if (value.schoolYear !== undefined && (typeof value.schoolYear !== 'string' || !/^\d{4}-\d{4}$/.test(value.schoolYear))) throw new HttpError(400, 'Année scolaire de devoir manuel invalide.');
+      assertContentDocument(value.document, 'le devoir manuel');
     }
   }
 
@@ -431,6 +472,8 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!value || typeof value.id !== 'string' || !value.id || !VALID_PEDAGOGICAL_TYPES.has(value.type as string)) throw new HttpError(400, 'Activité pédagogique invalide.');
       if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || !ISO_DATE.test(value.date)) throw new HttpError(400, 'Titre ou date d’activité invalide.');
       if (value.status !== 'planned' && value.status !== 'done') throw new HttpError(400, 'Statut d’activité invalide.');
+      assertStudentNames(value.students, 'les élèves consignés');
+      assertContentDocument(value.document, 'l’activité pédagogique');
     }
   }
 
