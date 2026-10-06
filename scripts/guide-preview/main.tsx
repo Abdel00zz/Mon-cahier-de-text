@@ -13,6 +13,7 @@ import { AssignDateModal } from '../../src/features/editor/modals/AssignDateModa
 import { MainTable } from '../../src/features/editor/MainTable';
 import { SelectionBar } from '../../src/features/editor/SelectionBar';
 import { Header } from '../../src/features/editor/Header';
+import { EditorBackButton } from '../../src/features/editor/EditorBackButton';
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { AddContentModal } from '../../src/features/editor/modals/EditItemModal';
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
@@ -97,10 +98,14 @@ function Preview() {
         } }} />}
       {(screen === 'editor' || screen === 'add') && <>
         <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
+        <div className="sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+          {new URLSearchParams(location.search).has('back') && <EditorBackButton onBack={noop} />}
+          <div className="min-w-0 flex-1">
         <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop} onSave={noop}
           onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
-          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-          onBack={noop} showBack={new URLSearchParams(location.search).has('back')} />
+          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          </div>
+        </div>
         <div className="pb-40 sm:pb-24">
           <MainTable lessonsData={lessons} visibleRows={filterLessonRows(buildLessonRows(lessons), searchQuery)} contentDirection="ltr"
             onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}

@@ -12,11 +12,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Undo2, Redo2, Search, X, ChevronUp, MoreVertical,
-  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp, ArrowLeft,
+  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp,
 } from '@/components/ui/icons';
 import { EditorSaveControl } from './EditorSaveControl';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface ToolbarProps {
   onUndo: () => void;
@@ -35,10 +34,6 @@ interface ToolbarProps {
   onPrint: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  /** Retour aux classes, rejoué dans le bandeau pour éviter de remonter la page. */
-  onBack?: () => void;
-  /** vrai une fois la page défilée : l'en-tête a alors disparu en haut. */
-  showBack?: boolean;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
@@ -46,39 +41,11 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   onOpenDataTransfer, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onOpenEvaluations,
   onPrint,
   searchQuery, setSearchQuery,
-  onBack,
-  showBack = false,
 }) => {
-  const { t, locale, isRtl } = useLocale();
-  const { impact } = useHapticFeedback();
+  const { t, isRtl } = useLocale();
   const { isSearchVisible, setIsSearchVisible, localSearch, setLocalSearch, setIsComposing,
     searchContainerRef, mobileInputRef, desktopInputRef, clearSearch, closeSearch,
   } = useTableSearch(searchQuery, setSearchQuery);
-
-  /*
-   * Retour rapide. L'en-tête porte déjà son bouton en haut de page : celui-ci
-   * n'apparaît qu'APRÈS un défilement, à côté du groupe annuler/refaire —
-   * jamais fusionné avec lui, un filet les sépare — et il voyage avec le
-   * bandeau collant. Sur téléphone, le groupe annuler/refaire vit dans le menu :
-   * le bouton prend alors la première place de la grappe d'actions. */
-  const backLabel = locale === 'ar'
-    ? 'الرجوع إلى الأقسام'
-    : locale === 'en'
-      ? 'Back to classes'
-      : 'Retour aux classes';
-
-  const backButton = (extraClassName = '') => (onBack && showBack ? (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => { impact('light'); onBack(); }}
-      data-tippy-content={backLabel}
-      aria-label={backLabel}
-      className={`h-11 w-11 rounded-lg border-none text-muted-foreground transition-all duration-150 hover:bg-muted/60 hover:text-foreground active:scale-95 ${extraClassName}`}
-    >
-      <ArrowLeft aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
-    </Button>
-  ) : null);
 
   return (
     <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-1.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-1.5">
@@ -86,21 +53,16 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
         <EditorSaveControl status={saveStatus} onSave={onSave} />
       </div>
 
-      <div className="hidden items-center justify-center gap-1.5 sm:flex">
-        {backButton()}
-        {onBack && showBack && <span aria-hidden className="h-6 w-px shrink-0 bg-border/70" />}
-        <div className="flex items-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner">
-          <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
-            <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
-            <Redo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
-          </Button>
-        </div>
+      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner sm:flex">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+          <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
+          <Redo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="flex items-center justify-end gap-1">
-        {backButton('sm:hidden')}
         <div ref={searchContainerRef} className="relative flex items-center" role="search">
           <Button
             variant="ghost" size="icon"

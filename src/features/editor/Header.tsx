@@ -1,9 +1,9 @@
 import React from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { School, User, ArrowLeft } from '@/components/ui/icons';
+import { School, User } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { EditorBackButton } from './EditorBackButton';
 import './header.css';
 
 interface HeaderProps {
@@ -61,28 +61,11 @@ const EditableHeader: React.FC<{
 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, teacherName, onClassInfoChange, onBack }) => {
   const { t, locale } = useLocale();
-  const { impact } = useHapticFeedback();
-
-  const handleBack = () => {
-    impact('light');
-    if (onBack) onBack();
-  };
 
   return (
     <div className="rtl-flow relative mb-0 mt-0 px-1 pb-4 pt-2 sm:px-2 sm:pb-5 sm:pt-3">
       <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="flex items-center gap-4 sm:gap-5">
-        {onBack && (
-          <button
-            type="button"
-            onClick={handleBack}
-            dir={locale === 'ar' ? 'rtl' : 'ltr'}
-            className="editor-back-button"
-            title={locale === 'ar' ? 'الرجوع إلى الأقسام' : locale === 'en' ? 'Back to classes' : 'Retour aux classes'}
-            aria-label={locale === 'ar' ? 'الرجوع إلى الأقسام' : locale === 'en' ? 'Back to classes' : 'Retour aux classes'}
-          >
-            <ArrowLeft className="editor-back-button__arrow" size={19} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-        )}
+        {onBack && <EditorBackButton onBack={onBack} />}
         <header dir={locale === 'ar' ? 'rtl' : 'ltr'} className="min-w-0 flex-1 text-start">
           <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-semibold tracking-tight text-base sm:text-lg lg:text-xl leading-[1.3] text-foreground">
             <EditableHeader

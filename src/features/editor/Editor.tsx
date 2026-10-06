@@ -7,6 +7,7 @@ import { useImmer } from 'use-immer';
 import { readInitialNotebook, notebookStorageKey } from './initialNotebook';
 import { toast } from 'sonner';
 import { Header } from './Header';
+import { EditorBackButton } from './EditorBackButton';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
@@ -1204,9 +1205,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   /*
    * Le bouton de retour vit dans l'en-tête, en haut de page. Dès que la page
-   * défile, l'en-tête disparaît : le bandeau collant reprend alors le retour,
-   * à côté du groupe annuler/refaire, pour revenir sans remonter la page.
-   * Seule la BASCULE re-rend l'éditeur, pas chaque pixel de défilement.
+   * défile, l'en-tête disparaît : il revient alors À CÔTÉ de la barre, dans le
+   * même conteneur collant — un bouton séparé, jamais fusionné avec la barre,
+   * pour rentrer sans remonter la page. Seule la BASCULE re-rend l'éditeur,
+   * pas chaque pixel de défilement.
    */
   const [isScrolled, setIsScrolled] = useState(false);
   useEffect(() => {
@@ -1237,24 +1239,33 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               en attente du choix de démarrage (importer le programme ou créer un chapitre).
               Elle s'affiche dès que du contenu est créé ou importé. */}
           {!isNotebookAwaitingContent && (
-            <Toolbar
-              onUndo={handleUndo}
-              onRedo={handleRedo}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onSave={saveData}
-              saveStatus={saveStatus}
-              onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
-              onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
-              onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
-              onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-              onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
-              onPrint={handleSmartPrint}
-              onBack={onBack}
-              showBack={isScrolled}
-              searchQuery={searchQuery}
-              setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
-            />
+            /* Conteneur collant : le retour rapide est un bouton SÉPARÉ, posé à
+               côté de la barre — jamais dedans. Le sens de lecture le place tout
+               seul (à gauche en français, à droite en arabe) et il voyage avec
+               la barre dès que la page défile. */
+            <div className="sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+              {isScrolled && onBack && (
+                <EditorBackButton onBack={onBack} className="animate-fade-in motion-reduce:animate-none" />
+              )}
+              <div className="min-w-0 flex-1">
+                <Toolbar
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  onSave={saveData}
+                  saveStatus={saveStatus}
+                  onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
+                  onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
+                  onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
+                  onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
+                  onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
+                  onPrint={handleSmartPrint}
+                  searchQuery={searchQuery}
+                  setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
+                />
+              </div>
+            </div>
           )}
           {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
