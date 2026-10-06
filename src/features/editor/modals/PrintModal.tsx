@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppConfig } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
-import { Printer, CalendarCheck, CalendarDays, FileText } from '@/components/ui/icons';
+import { Printer, CalendarCheck, CalendarDays, FileText, Info } from '@/components/ui/icons';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { DescriptionVisibilityControl } from '@/features/settings/components/DescriptionVisibilityControl';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,6 +40,13 @@ interface PrintModalProps {
   lastPrintedAt: string | null;
   /** dernières préférences de mise en page mémorisées pour cette classe */
   savedPrefs?: PrintOptions | null;
+  /**
+   * false lorsque l'historique d'impression n'est pas consultable (impression
+   * depuis la direction : l'historique reste sur l'appareil de l'enseignant).
+   * La modale masque alors l'état « déjà imprimé » au lieu d'annoncer un faux
+   * zéro, et ne propose que les modes document complet / séances choisies.
+   */
+  historyKnown?: boolean;
   isPrinting?: boolean;
   config: AppConfig;
   onConfigChange: (patch: Partial<AppConfig>) => void;
@@ -60,6 +67,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   printedDates,
   lastPrintedAt,
   savedPrefs,
+  historyKnown = true,
   isPrinting = false,
   config,
   onConfigChange,
@@ -70,7 +78,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const sessionCountLabel = (count: number) => t(count === 1 ? 'print.sessionOne' : 'print.sessionMany', { count: number.format(count) });
   const printedCount = Math.max(0, totalDates - newDates.length);
   const hasHistory = lastPrintedAt !== null;
-  const recommendNew = hasHistory && newDates.length > 0;
+  // sans historique consultable, « nouveauté » n'a aucun sens : on ne
+  // recommande jamais un mode qui prétendrait savoir ce qui a déjà été tiré.
+  const recommendNew = historyKnown && hasHistory && newDates.length > 0;
   const [mode, setMode] = useState<PrintMode>(recommendNew ? 'new' : 'all');
   const [pageNumbers, setPageNumbers] = useState(savedPrefs?.pageNumbers ?? true);
   const [headerMode, setHeaderMode] = useState<PrintHeaderMode>(savedPrefs?.headerMode ?? 'first');
@@ -132,8 +142,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     disabled?: boolean;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
-    {
-      value: 'new',
+    // Le mode « nouveautés » n'a de sens que si l'historique est consultable.
+    ...(historyKnown ? [{
+      value: 'new' as PrintMode,
       label: t('print.modeNew'),
       title: t('print.newOnly'),
       subtitle: newDates.length > 0
@@ -142,7 +153,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       badge: recommendNew ? t('print.recommended') : undefined,
       disabled: newDates.length === 0,
       icon: CalendarCheck,
-    },
+    }] : []),
     {
       value: 'all',
       label: t('print.modeAll'),
@@ -159,7 +170,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       icon: CalendarDays,
     },
   ];
-  const activeMode = printModes.find(item => item.value === mode) ?? printModes[1];
+  const activeMode = printModes.find(item => item.value === mode) ?? printModes[historyKnown ? 1 : 0];
 
   return (
     <Modal
@@ -206,7 +217,22 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <p className="text-sm font-medium">{t('print.vectorQuality')}</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('print.outputHint')}</p>
         </div>
-        {/* État de l'impression */}
+        {/* État de l'impression : sans historique consultable, on annonce le
+            volume de séances sans prétendre savoir ce qui a déjà été tiré. */}
+        {!historyKnown ? (
+          <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background px-4 py-3 shadow-xs">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Info className="h-5 w-5 stroke-[2]" />
+            </span>
+            <div className="min-w-0">
+              <p className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black tabular-nums text-foreground">{number.format(totalDates)}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('print.sessions')}</span>
+              </p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{t('print.historyUnavailable')}</p>
+            </div>
+          </div>
+        ) : (
         <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-xs">
           <div className="grid grid-cols-3 divide-x divide-border/70 text-center">
             <div className="flex flex-col items-center justify-center p-3 sm:py-4">
@@ -229,6 +255,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           )}
           <p className="border-t border-border/70 px-4 py-2 text-[11px] leading-relaxed text-muted-foreground">{t('print.historyHint')}</p>
         </div>
+        )}
 
         {/* Choix du mode */}
         <div className="rounded-2xl border border-border/70 bg-background p-3 sm:p-4 shadow-xs space-y-3">
@@ -236,7 +263,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             value={mode}
             onChange={setMode}
             ariaLabel={t('print.typeAria')}
-            className="grid w-full grid-cols-3"
+            className={`grid w-full ${historyKnown ? 'grid-cols-3' : 'grid-cols-2'}`}
             options={printModes.map(item => ({
               value: item.value,
               disabled: item.disabled || isPrinting,
@@ -305,13 +332,15 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                       />
                       <span className="text-xs font-bold text-foreground">{formatDateDDMMYYYY(date)}</span>
                     </div>
-                    <span
-                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase border ${
-                        isNew ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-muted border-border/50 text-muted-foreground'
-                      }`}
-                    >
-                      {isNew ? t('print.newSingle') : t('print.alreadyPrinted')}
-                    </span>
+                    {historyKnown && (
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase border ${
+                          isNew ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-muted border-border/50 text-muted-foreground'
+                        }`}
+                      >
+                        {isNew ? t('print.newSingle') : t('print.alreadyPrinted')}
+                      </span>
+                    )}
                   </label>
                 );
               })}

@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import './calendarDayCard.css';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 import {
+  BookOpen,
   CalendarCheck,
   CalendarDays,
   CalendarRange,
+  CalendarX,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  GraduationCap,
+  FileSignature,
+  ListChecks,
 } from '@/components/ui/icons';
 import {
   getBundledCalendar,
@@ -425,13 +428,16 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return t(`calendar.category.${event.category ?? 'school'}`);
   };
 
+  // Icônes alignées sur celles de la barre d'onglets et des cartes de
+  // réglages : le même repère visuel circule d'un écran à l'autre.
   const iconFor = (event: CalendarEvent) => {
-    if (event.kind === 'lesson') return GraduationCap;
+    if (event.kind === 'lesson') return BookOpen;
     if (event.kind === 'assessment') return CalendarCheck;
-    if (event.kind === 'pedagogical') return CalendarCheck;
+    if (event.kind === 'pedagogical') return ListChecks;
     if (event.kind === 'official') return CalendarRange;
-    if (event.kind === 'holiday' || event.kind === 'vacation') return CalendarDays;
-    return Clock;
+    if (event.kind === 'holiday') return CalendarX;
+    if (event.kind === 'vacation') return CalendarDays;
+    return FileSignature;
   };
 
   const layers: FluidTabItem<CalendarLayer>[] = useMemo(() => [
@@ -682,24 +688,23 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
               return (
                 <li
                   key={event.id}
-                  className={cn('relative flex items-start gap-3.5 rounded-3xl py-3.5 pe-4 ps-5', style.bgLight)}
+                  className="calendar-day-card flex items-start gap-3 p-3.5"
                 >
-                  <span className={cn('absolute inset-y-4 start-2 w-1 rounded-full', style.dot)} aria-hidden />
-                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', style.badge)}>
-                    <Icon className="h-[18px] w-[18px] stroke-[2.2]" />
+                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border', style.badge)}>
+                    <Icon className="h-[18px] w-[18px] stroke-[2]" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className={cn('text-[11px] font-semibold', style.text)}>{categoryLabel(event)}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={cn('calendar-day-card__eyebrow', style.text)}>{categoryLabel(event)}</span>
                       {event.tentative && (
                         <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
                           {t('calendar.toConfirm')}
                         </span>
                       )}
                     </div>
-                    <h5 className="mt-0.5 text-[15px] font-semibold leading-snug text-foreground">{event.title}</h5>
+                    <h5 className="calendar-day-card__title mt-1 font-medium text-foreground">{event.title}</h5>
                     {event.detail && (
-                      <p className="mt-0.5 text-xs font-medium leading-relaxed text-muted-foreground">{event.detail}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{event.detail}</p>
                     )}
                   </div>
                 </li>

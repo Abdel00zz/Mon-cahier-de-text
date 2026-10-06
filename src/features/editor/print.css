@@ -377,6 +377,10 @@
   @page cahier { size: A4; margin: 10mm 10mm 12mm; }
   .print-document { page: cahier; display: block !important; width: auto; position: static; }
   .print-hidden, [data-sonner-toaster], [role="dialog"], .modal-motion-overlay { display: none !important; }
+  /* La direction imprime depuis une autre page que l'éditeur : quand le gabarit
+     A4 est monté directement dans <body> (portail), tout le reste de la page -
+     l'écran d'administration compris - reste à l'écran. */
+  body:has(> .print-document.print-only) > *:not(.print-document) { display: none !important; }
   html, body, #root, [data-editor-root], [data-editor-root] > div { min-height: 0 !important; height: auto !important; overflow: visible !important; background: white !important; margin: 0 !important; padding: 0 !important; transform: none !important; filter: none !important; }
   .print-document, .print-document * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

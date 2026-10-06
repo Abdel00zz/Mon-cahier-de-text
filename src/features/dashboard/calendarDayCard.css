@@ -1,0 +1,62 @@
+/* ── Calendrier du pilotage : encarts de dates ────────────────────────────
+   Langue visuelle du produit (ivoire, terre cuite, sérif éditoriale) : chaque
+   événement d'une journée devient un carton clair cerné d'un filet fin. Aucun
+   filet vertical : c'est la pastille d'icône qui porte le repère visuel, et la
+   couleur ne sort que pour dire la nature de l'événement. */
+.calendar-day-card {
+  background: color-mix(in srgb, hsl(var(--muted)) 42%, hsl(var(--card)));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-2xl);
+  transition: background-color 180ms ease-out, border-color 180ms ease-out;
+}
+
+.calendar-day-card:hover {
+  background: hsl(var(--muted) / 0.62);
+  border-color: color-mix(in srgb, hsl(var(--border)) 72%, hsl(var(--primary)));
+}
+
+.dark .calendar-day-card {
+  background: color-mix(in srgb, hsl(var(--muted)) 58%, hsl(var(--card)));
+  border-color: color-mix(in srgb, hsl(var(--border)) 86%, hsl(var(--foreground)));
+}
+
+.dark .calendar-day-card:hover {
+  background: color-mix(in srgb, hsl(var(--muted)) 82%, hsl(var(--card)));
+}
+
+/* Le titre passe en sérif éditoriale, comme les autres titres du produit.
+   `--font-display` bascule seule sur la paire arabe dans une interface arabe. */
+.calendar-day-card__title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+}
+
+/* L'étiquette de nature reste discrète : petite capitale, très espacée. */
+.calendar-day-card__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* L'arabe n'a ni capitale ni approche négative : on relâche les deux. */
+html[lang='ar'] .calendar-day-card__title {
+  font-size: 1.125rem;
+  line-height: 1.45;
+  letter-spacing: normal;
+}
+
+html[lang='ar'] .calendar-day-card__eyebrow {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-day-card,
+  .calendar-day-card:hover {
+    transition: none;
+  }
+}

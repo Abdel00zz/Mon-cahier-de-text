@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
@@ -10,8 +11,11 @@ import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 import { PrintView } from '../../features/editor/PrintView';
+import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
+import { collectSessionDates, createPrintSelection } from '../../infrastructure/printing/printMeta';
 import { preparePrintContent, printDocument } from '../../infrastructure/printing/printUtils';
 import { ClassJsonImportModal } from './ClassJsonImportModal';
+import { ClassProgression } from './ClassProgression';
 
 const calendar = getBundledCalendar();
 
@@ -347,12 +351,30 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const [importingClass, setImportingClass] = useState<ClassInfo | null>(null);
     const [lessonRevisions, setLessonRevisions] = useState<Record<string, number>>({});
     const [confirmAction, setConfirmAction] = useState<{ kind: 'block' | 'deleteAccount' | 'deleteClass'; classInfo?: ClassInfo } | null>(null);
-    const [printRequest, setPrintRequest] = useState<{
+    /**
+     * Cahier chargé pour impression : sa présence ouvre la MÊME modale que
+     * celle de l'enseignant (modes, séances choisies, mise en page).
+     */
+    const [printTarget, setPrintTarget] = useState<{
         classInfo: ClassInfo;
         lessonsData: LessonsData;
         contentDirection: ContentDirection;
     } | null>(null);
+    /**
+     * Document figé au lancement : c'est lui, et lui seul, qui est composé en
+     * A4 puis envoyé à l'imprimante. Une synchronisation reçue pendant l'aperçu
+     * ne peut donc jamais modifier le papier.
+     */
+    const [printSnapshot, setPrintSnapshot] = useState<{
+        classInfo: ClassInfo;
+        lessonsData: LessonsData;
+        contentDirection: ContentDirection;
+        options: PrintOptions;
+    } | null>(null);
+    /** Mise en page choisie par la direction pour cet aperçu (jamais réécrite chez l'enseignant). */
+    const [printPrefs, setPrintPrefs] = useState<Pick<AppConfig, 'printDescriptionMode' | 'printDescriptionTypes'>>({});
     const [printingClassId, setPrintingClassId] = useState<string | null>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const selectTab = (tab: TeacherDetailTab, focus = false) => {
         setActiveTab(tab);
@@ -509,7 +531,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     };
 
     const handlePrintClass = async (cls: ClassInfo) => {
-        if (printingClassId) return;
+        if (printingClassId || isPrinting) return;
         setPrintingClassId(cls.id);
         setActionMessage(null);
         try {
@@ -519,7 +541,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 setActionMessage('Ce cahier ne contient aucune séance à imprimer.');
                 return;
             }
-            setPrintRequest({ classInfo: cls, lessonsData, contentDirection: blob.contentDirection ?? 'ltr' });
+            setPrintTarget({ classInfo: cls, lessonsData, contentDirection: blob.contentDirection ?? 'ltr' });
         } catch (err) {
             setActionMessage(err instanceof Error ? err.message : 'Impression impossible.');
         } finally {
@@ -527,27 +549,75 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         }
     };
 
-    // Monte la vue d'impression (PrintView) puis déclenche le dialogue, en
-    // réutilisant le circuit de l'éditeur : composition KaTeX → window.print.
-    useEffect(() => {
-        if (!printRequest) return;
-        let cancelled = false;
-        const timer = window.setTimeout(async () => {
+    /** Dates de séances du cahier chargé (l'historique d'impression reste chez l'enseignant). */
+    const printDates = useMemo(
+        () => (printTarget ? collectSessionDates(printTarget.lessonsData) : []),
+        [printTarget]
+    );
+
+    /** Réglages lus par la modale : ceux de l'enseignant, puis l'aperçu en cours. */
+    const printModalConfig: AppConfig | null = printTarget
+        ? { ...buildPrintConfig(data?.printSettings, printTarget.classInfo), ...printPrefs }
+        : null;
+
+    /**
+     * Impression de la direction : le circuit de l'enseignant, à l'identique -
+     * même modale, même composition A4, même moteur. Seule différence, assumée
+     * et affichée : l'historique « déjà imprimé » vit sur l'appareil du
+     * professeur et n'est donc pas consultable ici.
+     */
+    const handleExecutePrint = (mode: PrintMode, options: PrintOptions, selectedDates?: string[]) => {
+        const target = printTarget;
+        if (!target || isPrinting) return;
+
+        let lessonsData = target.lessonsData;
+        if (mode === 'custom') {
+            const available = new Set(printDates);
+            const chosen = Array.from(new Set((selectedDates ?? []).filter(date => available.has(date)))).sort();
+            if (chosen.length === 0) {
+                setActionMessage('Aucune séance valide sélectionnée.');
+                return;
+            }
+            // Les numéros visibles sont figés avant le filtrage : un tirage
+            // partiel garde la numérotation du cahier complet.
+            lessonsData = createPrintSelection(target.lessonsData, chosen, true);
+        }
+
+        setIsPrinting(true);
+        setActionMessage(null);
+        // Le document est figé avant la composition : une synchronisation reçue
+        // pendant l'aperçu ne peut pas modifier ce qui part sur le papier.
+        flushSync(() => {
+            setPrintSnapshot({ classInfo: target.classInfo, lessonsData, contentDirection: target.contentDirection, options });
+            setPrintTarget(null);
+        });
+
+        void (async () => {
             try {
-                // Même circuit que l'éditeur : la vue d'impression est montée, puis
-                // composée (polices, formules, images) avant d'ouvrir le dialogue.
                 const root = document.querySelector<HTMLElement>('.print-document.print-only');
                 if (!root) throw new Error('Print document missing');
                 await preparePrintContent(root);
-            } catch { /* le texte source reste imprimable */ }
-            await printDocument('cahier-de-textes');
-            if (!cancelled) setPrintRequest(null);
-        }, 120);
-        return () => {
-            cancelled = true;
-            window.clearTimeout(timer);
-        };
-    }, [printRequest]);
+                const outcome = await printDocument('cahier-de-textes');
+                if (outcome === 'failed') {
+                    setActionMessage('Impression indisponible sur cet appareil.');
+                    return;
+                }
+                // Rien à mémoriser ici : l'historique appartient à l'appareil de
+                // l'enseignant. Sur navigateur, le dialogue système ne confirme
+                // pas le tirage : on l'annonce sans mentir.
+                if (outcome === 'completed') {
+                    setActionMessage(`« ${target.classInfo.name} » envoyé à l’imprimante.`);
+                } else if (outcome === 'confirmation-required') {
+                    setActionMessage('Document prêt : validez l’impression dans la fenêtre du navigateur.');
+                }
+            } catch (err) {
+                setActionMessage(err instanceof Error ? err.message : 'Composition du document impossible.');
+            } finally {
+                setPrintSnapshot(null);
+                setIsPrinting(false);
+            }
+        })();
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -866,7 +936,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                                         {snapshot ? `${snapshot.plannedCount}/${snapshot.totalItems} éléments` : 'En attente de synchro'}
                                                     </div>
                                                 </div>
-                                                <button onClick={() => void handlePrintClass(cls)} disabled={busy || printingClassId === cls.id} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50">Imprimer</button>
+                                                <button onClick={() => void handlePrintClass(cls)} disabled={busy || isPrinting || printingClassId === cls.id} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50">{printingClassId === cls.id ? 'Chargement…' : 'Imprimer'}</button>
                                                 <button onClick={() => setImportingClass(cls)} disabled={busy} className="h-8 rounded-md border border-primary/25 bg-primary/5 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-50">Importer JSON</button>
                                                 <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
                                                 <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
@@ -899,6 +969,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                             )}
                                         </div>
                                         <ClassChapters key={`${cls.id}-${lessonRevisions[cls.id] ?? 0}`} phone={phone} classId={cls.id} />
+                                        <ClassProgression
+                                            key={`progression-${cls.id}-${lessonRevisions[cls.id] ?? 0}`}
+                                            phone={phone}
+                                            classId={cls.id}
+                                            snapshot={snapshot}
+                                        />
                                     </div>
                                 );
                             })}
@@ -909,13 +985,39 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 </>
             )}
 
-            {printRequest && (
+            {printSnapshot && createPortal(
                 <PrintView
-                    lessonsData={printRequest.lessonsData}
-                    classInfo={printRequest.classInfo}
-                    config={buildPrintConfig(data?.printSettings, printRequest.classInfo)}
-                    contentDirection={printRequest.contentDirection}
+                    lessonsData={printSnapshot.lessonsData}
+                    classInfo={printSnapshot.classInfo}
+                    config={{
+                        ...buildPrintConfig(data?.printSettings, printSnapshot.classInfo),
+                        ...printPrefs,
+                    }}
+                    contentDirection={printSnapshot.contentDirection}
                     newlyAddedIds={[]}
+                    {...printSnapshot.options}
+                />,
+                document.body
+            )}
+
+            {printTarget && printModalConfig && (
+                <PrintModal
+                    classId={printTarget.classInfo.id}
+                    isOpen
+                    onClose={() => setPrintTarget(null)}
+                    totalDates={printDates.length}
+                    // Historique d'impression non consultable depuis la direction :
+                    // toutes les séances sont proposées, aucune n'est annoncée
+                    // comme déjà tirée.
+                    newDates={printDates}
+                    allDates={printDates}
+                    printedDates={[]}
+                    lastPrintedAt={null}
+                    historyKnown={false}
+                    isPrinting={isPrinting}
+                    config={printModalConfig}
+                    onConfigChange={patch => setPrintPrefs(current => ({ ...current, ...patch }))}
+                    onPrint={handleExecutePrint}
                 />
             )}
 

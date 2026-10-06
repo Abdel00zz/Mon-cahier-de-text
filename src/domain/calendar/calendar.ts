@@ -431,3 +431,30 @@ export const countExpectedSessions = (
     }
     return total;
 };
+
+/**
+ * Dates (ISO, triées) où au moins une séance était attendue dans [from, to].
+ * Une seule entrée par date, même en cas de séances doubles : sert à repérer
+ * les journées de classe sans aucune trace de séance dans le cahier.
+ */
+export const listExpectedSessionDates = (
+    from: string,
+    to: string,
+    slots: ScheduleSlot[],
+    cal: HolidayCalendar
+): string[] => {
+    if (!slots.length || from > to) return [];
+    const weekdaysWithSessions = new Set(slots.map(slot => slot.weekday));
+    const dates: string[] = [];
+    let cursor = asISO(from);
+    const end = asISO(to);
+    let guard = 0;
+    while (cursor <= end && guard < 1000) {
+        if (!isWeeklyRestDay(cursor) && weekdaysWithSessions.has(getWeekday(cursor)) && !isHoliday(cursor, cal) && !isVacation(cursor, cal)) {
+            dates.push(cursor);
+        }
+        cursor = addDaysISO(cursor, 1);
+        guard += 1;
+    }
+    return dates;
+};
