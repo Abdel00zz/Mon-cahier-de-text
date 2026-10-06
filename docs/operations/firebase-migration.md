@@ -21,7 +21,7 @@ Le SDK Admin est fixé à 13.10.0 : la branche 14 charge une dépendance CommonJ
 5. Déployer temporairement `CLOUD_MIGRATION_FREEZE=1` et vérifier une réponse HTTP 503 sur les API. Les données locales restent disponibles. Interrompre aussi les autres clients/anciens déploiements susceptibles d'écrire dans la même source.
 6. Exporter d'abord sans `--apply` : `npm run firebase:migrate -- --credentials <JSON protégé> --source-env <env protégé> --backup <nouveau fichier hors dépôt> --source-frozen`. Le fichier contient toutes les clés source, y compris les modules exclus. Protéger le dossier par ACL Windows ; ne jamais publier cette sauvegarde.
 7. Relancer avec un nouveau chemin de sauvegarde et `--apply`. Le script refuse d'écraser une valeur cible différente, conserve les mots de passe et compare les données importées. Ne pas employer `--initialize-empty` lorsqu'une base existe.
-8. Vérifier les données importées et l'absence de nouvelles écritures côté Redis avant la bascule. Configurer `CLOUD_PROVIDER=firestore`, `FIREBASE_WEB_API_KEY` et les trois variables serveur `FCM_*` ; conserver `AUTH_SECRET`, `ADMIN_SECRET` et `CRON_SECRET`. Mettre `CLOUD_MIGRATION_FREEZE=0`, redéployer et vérifier connexion, synchronisation, administration et messages.
+8. Vérifier les données importées et l'absence de nouvelles écritures côté Redis avant la bascule. Configurer `CLOUD_PROVIDER=firestore`, `FIREBASE_WEB_API_KEY` et les trois variables serveur `FCM_*` ; conserver `AUTH_SECRET` et `ADMIN_SECRET` (`CRON_SECRET` n'est plus lu : le cron Vercel a disparu avec le Web Push). Mettre `CLOUD_MIGRATION_FREEZE=0`, redéployer et vérifier connexion, synchronisation, administration et messages.
 
 ## Exploitation et retour arrière
 

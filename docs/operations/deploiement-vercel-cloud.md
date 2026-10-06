@@ -17,7 +17,6 @@ Dans Vercel, ajoutez ces variables dans `Project Settings > Environment Variable
 ```txt
 AUTH_SECRET=une-valeur-aleatoire-d-au-moins-32-caracteres
 ADMIN_SECRET=un-code-administrateur-d-au-moins-6-caracteres
-CRON_SECRET=une-valeur-aleatoire-privee
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
 ```
