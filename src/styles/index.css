@@ -2184,6 +2184,118 @@ html[data-keyboard='open'] .mobile-tab-bar {
   transform: none;
 }
 .hub-card[data-static]:active { transform: none; filter: none; }
+/* ── Carte d'activité pédagogique ─────────────────────────────────────────── *
+ * Layout : [icône] [corps flex-1] [actions sur la même ligne]                *
+ * Mobile ≤479px : corps + actions passent en colonne sous l'icône           */
+.hub-card[data-activity-card][data-layout='row'] {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;          /* permet le wrap mobile */
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-align: start;
+}
+.hub-card[data-activity-card] .hub-card__icon {
+  flex: none;
+  align-self: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+}
+.hub-card[data-activity-card] .hub-card__icon .app-icon { width: 34px; height: 34px; }
+.hub-card[data-activity-type='controle_cahiers'] {
+  --tone: #365d8a;
+  background: color-mix(in srgb, var(--tone) 6%, hsl(var(--card)));
+  border-color: color-mix(in srgb, var(--tone) 20%, hsl(var(--border)));
+}
+.dark .hub-card[data-activity-type='controle_cahiers'] {
+  --tone: #9bbce0;
+  background: color-mix(in srgb, var(--tone) 8%, hsl(var(--card)));
+}
+.hub-card[data-activity-type='controle_cahiers'] .hub-card__icon {
+  background: color-mix(in srgb, var(--tone) 14%, hsl(var(--card)));
+}
+.hub-card[data-activity-card] .hub-card__body {
+  flex: 1 1 0%;          /* prend l'espace disponible */
+  min-width: 0;
+  align-self: center;
+  gap: 4px;
+}
+.hub-card[data-activity-card] .hub-card__title {
+  margin: 0;
+  font-size: clamp(1.125rem, 1.05rem + .3vw, 1.25rem);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.evaluations-category-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.05rem + .3vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+}
+html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
+.hub-card[data-activity-card] .hub-card__hint  { margin: 0; line-height: 1.45; }
+
+/* Zone d'actions : espacement régulier, sans séparateur décoratif. */
+.activity-card__actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+/* Bouton icône carré (toggle ✓ + delete 🗑) */
+.activity-card__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 10px;
+  border: 1px solid;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+.activity-card__icon-btn:active { transform: scale(0.92); }
+
+.hub-card[data-activity-card] .activity-card__date {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--muted-foreground));
+}
+.hub-card[data-activity-card] button:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 3px;
+}
+.hub-card[data-activity-card] .activity-card__action-filled {
+  color: var(--tone);
+  border-color: color-mix(in srgb, var(--tone) 28%, hsl(var(--border)));
+  background: color-mix(in srgb, var(--tone) 8%, hsl(var(--card)));
+}
+
+/* ── Mobile ≤ 479px : corps pleine largeur, actions wrappées en dessous ── */
+@media (max-width: 479px) {
+  .hub-card[data-activity-card][data-layout='row'] {
+    gap: 8px 12px;
+    padding: 12px;
+  }
+  .hub-card[data-activity-card] .hub-card__body {
+    flex: 1 1 calc(100% - 68px); /* largeur de l'icône et espacement */
+  }
+  .activity-card__actions {
+    flex: 0 0 100%;          /* pleine largeur en dessous */
+    padding-inline-start: 0;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
 .hub-card[data-done] { background: color-mix(in srgb, hsl(var(--card)) 55%, hsl(var(--muted))); }
 .hub-card[data-done] .hub-card__title { text-decoration: line-through; color: hsl(var(--muted-foreground)); }
 .hub-card[data-done] .hub-card__icon { opacity: 0.75; filter: saturate(0.45); }

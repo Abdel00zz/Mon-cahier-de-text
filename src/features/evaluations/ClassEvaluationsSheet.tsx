@@ -40,8 +40,8 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             bodyClassName="px-4 py-4 sm:px-7 sm:py-6 max-h-[82vh] overflow-y-auto"
             title={(
                 <div className="flex items-center gap-3.5 min-w-0">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs">
-                        <CalendarCheck className="h-5 w-5 stroke-[2.2]" aria-hidden />
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary ring-1 ring-primary/20">
+                        <CalendarCheck className="h-[34px] w-[34px]" aria-hidden />
                     </span>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">

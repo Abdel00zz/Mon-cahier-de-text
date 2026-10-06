@@ -37,6 +37,19 @@ const renderSheet = (events: PedagogicalEvent[], locale: 'fr' | 'ar' = 'fr') => 
 
 const occurrences = (html: string, needle: string) => html.split(needle).length - 1;
 
+test('les neuf types affichent leur titre sans répéter la nature ou la note', () => {
+  const types: PedagogicalEventType[] = ['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre'];
+  for (const locale of ['fr', 'ar'] as const) {
+    for (const type of types) {
+      const title = translateLocaleMessage(locale, `evaluations.event.${type}`);
+      const html = renderSheet([event('e1', type, title, '2026-10-06', { note: `  ${title}  ` })], locale);
+      assert.doesNotMatch(html, /class="tone-chip">/, `${locale}/${type} : aucun libellé de nature répété`);
+      assert.doesNotMatch(html, /line-clamp-2/, `${locale}/${type} : aucune note identique au titre`);
+      assert.match(html, /data-activity-card="true"/);
+    }
+  }
+});
+
 test('chaque activité est une grande carte, teintée selon sa nature', () => {
   const html = renderSheet([
     event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14'),

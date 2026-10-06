@@ -299,9 +299,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="gap-2 px-4 text-sm"
+                                        className="h-11 min-h-11 gap-1.5 rounded-md px-3 text-sm"
                                     >
-                                        <Plus className="h-4.5 w-4.5 stroke-[2.2]" />
+                                        <Plus className="h-5 w-5 stroke-[1.8]" aria-hidden="true" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
                                     </Button>
                                 </div>

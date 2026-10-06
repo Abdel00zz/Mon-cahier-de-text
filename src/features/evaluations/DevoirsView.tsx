@@ -448,7 +448,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             onClick={() => setEventEditorOpen(true)}
             className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-muted/60 px-2.5 text-[10.5px] font-semibold text-foreground shadow-2xs transition-all hover:bg-muted active:scale-[0.97] sm:px-3 sm:text-xs cursor-pointer"
           >
-            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.2] text-primary" />
+            <Plus className="h-5 w-5 text-primary" aria-hidden="true" />
             <span>{t('evaluations.addActivity')}</span>
           </button>
           <button
@@ -456,7 +456,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             onClick={openCreateAssessment}
             className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:px-3.5 sm:text-xs cursor-pointer"
           >
-            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.2]" />
+            <Plus className="h-5 w-5" aria-hidden="true" />
             <span>{t('evaluations.addDevoir')}</span>
           </button>
         </div>
@@ -484,7 +484,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         {activeTab !== 'events' && (
           <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
             <div className="flex items-center justify-between px-1">
-              <h3 id="evaluations-assessments-title" className="text-xs font-bold uppercase tracking-wider text-foreground">
+              <h3 id="evaluations-assessments-title" className="evaluations-category-title text-foreground">
                 {t('evaluations.assessments')}
               </h3>
               {links.length > 0 && (
@@ -518,7 +518,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     <section key={sem} className="space-y-2.5">
                       <div className="flex items-center justify-between px-1">
                         <div className="flex items-center">
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                          <h3 className="evaluations-category-title text-foreground">
                             {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
                         </div>
@@ -671,7 +671,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => setEventEditorOpen(false)}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/70"
+        headerClassName="border-b-0 bg-background"
+        bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+        footerClassName="border-t-0 bg-background"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -701,8 +703,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/70"
-        bodyClassName="px-4 py-3.5 sm:px-7 sm:py-5"
+        headerClassName="border-b-0 bg-background"
+        bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+        footerClassName="border-t-0 bg-background"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -734,7 +737,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => setAbsencesFor(null)}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/70"
+        headerClassName="border-b-0 bg-background"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">
@@ -815,7 +818,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => setStudentsFor(null)}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/70"
+        headerClassName="border-b-0 bg-background"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 ring-1 ring-teal-500/20">
@@ -884,11 +887,11 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void }> = ({ onCreate }) 
 
 /*
  * Commandes d'une carte : mêmes dimensions que dans le reste de la fenêtre,
- * cible tactile de 44 px sur téléphone, 36 px dès qu'il y a un pointeur. Elles
+ * cible tactile de 44 px sur tous les écrans. Elles
  * portent leur libellé et rien d'autre — l'icône de la carte dit déjà la nature
  * de l'activité, une seconde icône par bouton ne ferait que du bruit.
  */
-const EVENT_ACTION_CLASS = 'inline-flex min-h-11 sm:min-h-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 px-3 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer shadow-2xs';
+const EVENT_ACTION_CLASS = 'inline-flex h-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 px-3 text-[11px] font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer motion-reduce:transition-none';
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
@@ -903,7 +906,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   return (
     <section className="space-y-2.5">
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+        <h3 className="evaluations-category-title text-foreground">
           {t('evaluations.pedagogicalEvents')}
         </h3>
         <span className="text-[11px] font-semibold text-muted-foreground">
@@ -916,81 +919,81 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
           const done = event.status === 'done';
           const { labelKey, tone, Icon } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
           const names = event.students?.names.length ?? 0;
+          const typeLabel = t(labelKey);
+          const title = event.title.trim() || typeLabel;
+          const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
+          const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
+          const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
           return (
             <li
               key={event.id}
               className="hub-card"
               data-layout="row"
               data-static="true"
+              data-activity-card="true"
+              data-activity-type={event.type}
               data-tone={tone}
               {...(done ? { 'data-done': 'true' } : {})}
             >
+              {/* Icône de la nature de l'activité */}
               <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
 
+              {/* Corps : titre + méta (date, type, état) */}
               <div className="hub-card__body min-w-0 flex-1">
-                <h4 className="hub-card__title text-start">{event.title}</h4>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="tone-chip">{t(labelKey)}</span>
-                  <span className="hub-card__hint text-start">
+                <h4 className="hub-card__title text-start" dir="auto">{title}</h4>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  {showType && <span className="tone-chip">{typeLabel}</span>}
+                  <time dateTime={event.date} className="activity-card__date hub-card__hint text-start">
                     {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                  </span>
+                  </time>
                   {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
                 </div>
-                {event.note && (
+                {showNote && (
                   <p className="hub-card__hint line-clamp-2 text-start">{event.note}</p>
                 )}
-
-                {/* Le document et la liste d'élèves vivent DANS l'activité : deux
-                    portes d'entrée discrètes, comptées quand elles sont remplies,
-                    pour ne jamais ouvrir un écran vide par erreur. Un contrôle de
-                    cahiers n'a pas de sujet à joindre : sa trace pédagogique est
-                    la liste des cahiers vérifiés, reportée dans la remarque de la
-                    séance du jour. */}
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                  {event.type !== REMARK_EVENT_TYPE && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenDocument(event)}
-                      className={cn(EVENT_ACTION_CLASS, event.document && 'border-primary/40 bg-primary/10 text-primary')}
-                      aria-label={t('evaluations.doc.title', { activity: event.title })}
-                    >
-                      {t('evaluations.doc.open')}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onOpenStudents(event)}
-                    className={cn(EVENT_ACTION_CLASS, names > 0 && 'border-teal-400/50 bg-teal-500/10 text-teal-700 dark:text-teal-400')}
-                    aria-label={`${t('evaluations.students.open')} — ${event.title}`}
-                  >
-                    {names > 0 ? `${t('evaluations.students.open')} · ${names}` : t('evaluations.students.open')}
-                  </button>
-                </div>
               </div>
 
-              {/* État et suppression : deux commandes, à la fin de la carte, dans
-                  l'axe de lecture (le flex suit `dir`, aucune règle de langue). */}
-              <div className="flex shrink-0 items-center gap-1">
+              {/* Tous les boutons sur la même ligne : texte(s) d'action + icônes de contrôle */}
+              <div className="activity-card__actions">
+                {event.type !== REMARK_EVENT_TYPE && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenDocument(event)}
+                    className={cn(EVENT_ACTION_CLASS, event.document && 'activity-card__action-filled')}
+                    aria-label={t('evaluations.doc.title', { activity: event.title })}
+                  >
+                    {t('evaluations.doc.open')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onOpenStudents(event)}
+                  className={cn(EVENT_ACTION_CLASS, names > 0 && 'activity-card__action-filled')}
+                  aria-label={`${t('evaluations.students.open')} — ${event.title}`}
+                >
+                  {names > 0 ? `${t('evaluations.students.open')} · ${names}` : t('evaluations.students.open')}
+                </button>
+
                 <button
                   type="button"
                   onClick={() => onToggle(event.id)}
                   className={cn(
-                    'flex h-11 w-11 items-center justify-center rounded-[14px] border transition-all cursor-pointer touch-manipulation sm:h-9 sm:w-9 active:scale-95 motion-reduce:active:scale-100',
+                    'activity-card__icon-btn',
                     done
                       ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/20'
-                      : 'border-border/70 bg-background/80 text-muted-foreground hover:border-primary/50 hover:bg-primary/8 hover:text-primary'
+                      : 'border-border/60 bg-background/60 text-muted-foreground hover:border-primary/40 hover:bg-primary/8 hover:text-primary'
                   )}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
-                  {done ? <CircleCheck className="h-5 w-5 stroke-[2.2]" /> : <CalendarCheck className="h-5 w-5 stroke-[2]" />}
+                  {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(event.id)}
-                  className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-transparent text-muted-foreground transition-all hover:border-destructive/30 hover:bg-destructive/12 hover:text-destructive active:bg-destructive/20 cursor-pointer touch-manipulation sm:h-9 sm:w-9 active:scale-95 motion-reduce:active:scale-100"
+                  className="activity-card__icon-btn border-transparent text-destructive hover:border-destructive/25 hover:bg-destructive/10 active:bg-destructive/20"
                   aria-label={t('evaluations.deleteEventAria', { title: event.title })}
                 >
-                  <Trash2 className="h-5 w-5 stroke-[2]" />
+                  <Trash2 className="h-5 w-5" />
                 </button>
               </div>
             </li>

@@ -9,10 +9,11 @@
 .class-display-toggle__glyph {
   position: relative;
   display: block;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
+.class-display-toggle__glyph svg { width: 24px; height: 24px; }
 
 /* Les trois pictogrammes sont TOUS montés, empilés : changer de disposition
    n'ajoute ni ne retire rien du DOM, donc aucun saut de mise en page et une

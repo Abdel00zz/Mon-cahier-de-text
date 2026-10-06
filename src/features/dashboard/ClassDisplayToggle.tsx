@@ -27,20 +27,28 @@ interface ClassDisplayToggleProps {
     className?: string;
 }
 
-/** Pictogrammes : trois silhouettes qui partagent le même cadre de 18 px. */
+/** Miniatures des trois dispositions, avec le même cadre et la même encre. */
 const GLYPHS: Record<ClassDisplayMode, React.ReactNode> = {
     list: (
         <>
-            <rect x="3" y="4.6" width="12" height="1.7" rx="0.85" />
-            <rect x="3" y="8.15" width="12" height="1.7" rx="0.85" />
-            <rect x="3" y="11.7" width="12" height="1.7" rx="0.85" />
+            <rect x="3" y="3.5" width="18" height="4" rx="1.5" fill="currentColor" fillOpacity=".12" />
+            <rect x="3" y="10" width="18" height="4" rx="1.5" fill="currentColor" fillOpacity=".12" />
+            <rect x="3" y="16.5" width="18" height="4" rx="1.5" fill="currentColor" fillOpacity=".12" />
+            <path d="M7 5.5h.01M7 12h.01M7 18.5h.01" strokeWidth="2.5" />
         </>
     ),
-    single: <rect x="3" y="4.4" width="12" height="9.2" rx="2.4" />,
+    single: <>
+        <rect x="4" y="3" width="16" height="18" rx="2.5" fill="currentColor" fillOpacity=".12" />
+        <rect x="7.5" y="6.5" width="9" height="5" rx="1.25" fill="currentColor" fillOpacity=".2" stroke="none" />
+        <path d="M8 15h8M8 18h5" />
+    </>,
     double: (
         <>
-            <rect x="2.6" y="4.4" width="5.6" height="9.2" rx="2" />
-            <rect x="9.8" y="4.4" width="5.6" height="9.2" rx="2" />
+            <rect x="2" y="4" width="8.5" height="16" rx="2.25" fill="currentColor" fillOpacity=".12" />
+            <rect x="13.5" y="4" width="8.5" height="16" rx="2.25" fill="currentColor" fillOpacity=".12" />
+            <rect x="4.5" y="7" width="3.5" height="4" rx="1" fill="currentColor" fillOpacity=".24" stroke="none" />
+            <rect x="16" y="7" width="3.5" height="4" rx="1" fill="currentColor" fillOpacity=".24" stroke="none" />
+            <path d="M4.5 15.5H8M16 15.5h3.5" />
         </>
     ),
 };
@@ -72,7 +80,7 @@ export const ClassDisplayToggle = memo(({ mode, onChange, className }: ClassDisp
                 aria-label={t('dashboard.display.switchTo', { current: labelOf(mode), next: labelOf(next) })}
                 whileTap={reduceMotion ? undefined : { scale: 0.95 }}
                 transition={MORPH}
-                className={cn('shrink-0 gap-2 px-3.5 text-xs sm:text-sm', className)}
+                className={cn('h-11 min-h-11 shrink-0 gap-2 rounded-md px-3 text-xs sm:text-sm', className)}
             >
                 <span className="class-display-toggle__glyph" aria-hidden="true">
                     {CLASS_DISPLAY_MODES.map(value => {
@@ -86,7 +94,7 @@ export const ClassDisplayToggle = memo(({ mode, onChange, className }: ClassDisp
                                 initial={false}
                                 transition={MORPH}
                             >
-                                <svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                     {GLYPHS[value]}
                                 </svg>
                             </motion.span>
