@@ -34,8 +34,9 @@ interface ContentDocumentModalProps {
 }
 
 /** Rappel de syntaxe : les jetons sont universels, seul l'entourage est traduit. */
-const SYNTAX_SAMPLES: ReadonlyArray<readonly [string, string]> = [
-  ['**gras**', 'editContent.formatBold'],
+const SYNTAX_SAMPLES: ReadonlyArray<readonly [string, string]> = [  ['# Devoir surveillé 3', 'evaluations.doc.syntaxTitle'],
+  ['## Exercice 1', 'evaluations.doc.syntaxExercise'],
+  ['[[2pts]]', 'evaluations.doc.syntaxBareme'],  ['**gras**', 'editContent.formatBold'],
   ['*italique*', 'editContent.formatItalic'],
   ['++souligné++', 'editContent.formatUnderline'],
   ['==surligné==', 'evaluations.doc.syntaxHighlight'],
@@ -179,9 +180,11 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         ) : (
-          <div className="max-h-[18rem] overflow-y-auto rounded-xl border border-border/80 bg-card p-3.5 sm:p-4">
+          <div className="max-h-[22rem] overflow-y-auto rounded-xl border border-border/80 bg-card p-3.5 sm:max-h-[28rem] sm:p-5">
             {preview ? (
-              <div className="devoir-document" dir="auto">{preview}</div>
+              /* La feuille est une PAGE : colonne de lecture bornée, jamais
+                 étirée sur toute la largeur d'un grand écran. */
+              <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{preview}</div>
             ) : (
               <p className="py-8 text-center text-xs text-muted-foreground">{t('evaluations.doc.empty')}</p>
             )}

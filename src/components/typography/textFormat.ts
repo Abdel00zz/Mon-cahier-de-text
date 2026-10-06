@@ -312,6 +312,9 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): R
  * avalées par lui.
  */
 const LATEX_TEXT_COMMANDS: ReadonlyArray<readonly [RegExp, string]> = [
+  // Barème : `\bareme{2pts}` écrit comme en LaTeX, traduit vers le marqueur
+  // natif `[[2pts]]` — une seule forme à analyser ensuite.
+  [/\\bareme\{([^{}]*)\}/g, '[[$1]]'],
   [/\\textbf\{([^{}]*)\}/g, '**$1**'],
   [/\\textit\{([^{}]*)\}/g, '*$1*'],
   [/\\textsl\{([^{}]*)\}/g, '*$1*'],
@@ -438,6 +441,86 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
   return renderBlocks(parseBlocks(state), '0').map(restore);
 }
 
+/** Titre de document : `#` centré, `##` en barre d'exercice, `###` sous-titre. */
+const HEADING_LINE = /^(#{1,3})[ \t]+(\S.*)$/;
+
+/** Barème posé par l'auteur : `[[2pts]]` (alias LaTeX `\bareme{2pts}`). */
+const BAREME_MARK = /\[\[([^\]\n]{1,24})\]\]/g;
+
+/** Nombre de teintes qui se relaient sur les barres d'exercice. */
+const HEADING_TONES = 4;
+
+const ARABIC_INDIC = /[\u0660-\u0669]/g;
+const EXTENDED_ARABIC_INDIC = /[\u06F0-\u06F9]/g;
+
+/**
+ * Teinte d'une barre : c'est le NUMÉRO de l'exercice qui la décide, jamais son
+ * rang de passage. Deux conséquences voulues : « Exercice 3 » garde la même
+ * couleur dans un énoncé et dans son corrigé, et un document recomposé couleur
+ * par couleur reste stable — sans état à mémoriser entre deux rendus.
+ * Les numéros écrits en chiffres arabo-indiens comptent comme les autres.
+ */
+function headingTone(text: string): number {
+  const found = text.match(/[0-9\u0660-\u0669\u06F0-\u06F9]+/);
+  if (!found) return 1;
+  const number = Number(found[0]
+    .replace(ARABIC_INDIC, digit => String(digit.charCodeAt(0) - 0x0660))
+    .replace(EXTENDED_ARABIC_INDIC, digit => String(digit.charCodeAt(0) - 0x06F0)));
+  if (!Number.isFinite(number) || number < 1) return 1;
+  return ((number - 1) % HEADING_TONES) + 1;
+}
+
+/**
+ * Sépare le texte d'une ligne de ses barèmes : « Question 2 : … [[3pts]] »
+ * donne le texte à composer et la valeur à poser en bout de ligne.
+ * Les barèmes sont rendus APRÈS le texte, alignés sur le bord de lecture —
+ * c'est la convention d'un énoncé, et elle survit à la traduction (le bord
+ * suit `dir`, aucune règle de langue).
+ */
+function splitBareme(line: string): { text: string; baremes: string[] } {
+  const baremes: string[] = [];
+  const text = line.replace(BAREME_MARK, (_match, value: string) => {
+    baremes.push(value.trim());
+    return '';
+  });
+  return { text: baremes.length ? text.trimEnd() : line, baremes };
+}
+
+function baremeNode(value: string, key: string): React.ReactNode {
+  return React.createElement('span', { key, className: 'doc-bareme' }, value);
+}
+
+/**
+ * Une ligne de la feuille : son texte, et le barème poussé au bord de lecture.
+ * La ligne devient une RANGÉE (texte souple + points fixes) : les points se
+ * lisent à la hauteur de la question qu'ils notent, comme sur un énoncé
+ * imprimé, et le texte se replie seul quand il est long.
+ */
+function renderLine(text: string, baremes: string[], key: string): React.ReactNode[] {
+  const body = applyInlineFormatting(text, `${key}-text`);
+  if (baremes.length === 0) return body;
+  return [React.createElement(
+    'span',
+    { key, className: 'doc-line' },
+    React.createElement('span', { key: `${key}-body`, className: 'doc-line__text' }, ...body),
+    ...baremes.map((value, position) => baremeNode(value, `${key}-b${position}`))
+  )];
+}
+
+/** Un titre : la classe porte le rôle, le niveau de `#` la nature. */
+function renderHeading(level: number, text: string, key: string): React.ReactNode[] {
+  const className = level === 1 ? 'doc-title' : level === 2 ? 'doc-heading' : 'doc-subheading';
+  return [React.createElement(
+    'span',
+    {
+      key,
+      className,
+      ...(level === 2 ? { 'data-tone': String(headingTone(text)) } : {}),
+    },
+    ...applyInlineFormatting(text, `${key}-text`)
+  )];
+}
+
 /**
  * Lignes de texte : paragraphes, puces (- ou +, jamais `*` qui reste l'italique) et listes
  * numérotées (1. / 1)).
@@ -469,33 +552,52 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
     const match = line.match(HAND_TYPED_ITEM);
     return match ? { number: match[1], content: match[2] } : null;
   });
+  // Titres et barèmes sont reconnus dans la MÊME passe : les lignes de texte
+  // sont ensuite composées sans revérifier, et le barème est retiré du texte
+  // avant que la mise en forme en ligne ne le voie.
+  const headings = lines.map((line, index) => (markers[index] ? null : line.match(HEADING_LINE)));
+  const bodies = lines.map((line, index) => (headings[index] ? { text: '', baremes: [] as string[] } : splitBareme(line)));
 
   for (let index = 0; index < lines.length; index += 1) {
     const marker = markers[index];
 
-    if (!marker) {
+    // Un titre occupe sa propre ligne, en barre ou en sous-titre : aucun saut
+    // de ligne n'est émis autour (le bloc se place seul sur la ligne suivante).
+    const heading = headings[index];
+    if (heading) {
       flushItems();
-      out.push(...applyInlineFormatting(lines[index], `text-${keyBase}-${index}`));
-      // '\n' uniquement entre deux lignes de TEXTE : jamais avant/après un
-      // item de liste (bloc flex) ni une formule display (elle occupe déjà sa
-      // propre ligne — le saut créerait une ligne vide et décalerait le
-      // marqueur de l'item).
-      if (markers[index + 1] === null && !hasDisplayMath(lines[index]) && !hasDisplayMath(lines[index + 1])) out.push('\n');
+      out.push(...renderHeading(heading[1].length, heading[2], `head-${keyBase}-${index}`));
       continue;
     }
 
-    // L'item absorbe les lignes suivantes tant qu'elles ne sont ni vides ni une
-    // nouvelle puce : elles restent DANS sa colonne de contenu.
-    const contentLines = [marker.content];
+    if (!marker) {
+      flushItems();
+      out.push(...renderLine(bodies[index].text, bodies[index].baremes, `line-${keyBase}-${index}`));
+      // '\n' uniquement entre deux lignes de TEXTE : jamais avant/après un
+      // item de liste (bloc flex), une formule display (elle occupe déjà sa
+      // propre ligne) ou une rangée de barème (bloc à part entière).
+      if (markers[index + 1] === null && !headings[index + 1] && bodies[index].baremes.length === 0
+        && !hasDisplayMath(lines[index]) && !hasDisplayMath(lines[index + 1])) out.push('\n');
+      continue;
+    }
+
+    // L'item absorbe les lignes suivantes tant qu'elles ne sont ni vides, ni
+    // une nouvelle puce, ni un titre : elles restent DANS sa colonne de contenu.
+    const contentIndexes = [index];
     let cursor = index + 1;
-    while (cursor < lines.length && lines[cursor].trim() !== '' && !markers[cursor]) {
-      contentLines.push(lines[cursor]);
+    while (cursor < lines.length && lines[cursor].trim() !== '' && !markers[cursor] && !headings[cursor]) {
+      contentIndexes.push(cursor);
       cursor += 1;
     }
+    // Le préfixe de la puce (« 1. ») est retiré du texte NETTOYÉ : le barème a
+    // pu se trouver dans la suite de la ligne.
+    const rawLine = lines[index];
+    const prefixLength = rawLine.length - marker.content.length;
     const children: React.ReactNode[] = [];
-    contentLines.forEach((contentLine, contentIndex) => {
-      if (contentIndex > 0 && !hasDisplayMath(contentLines[contentIndex - 1]) && !hasDisplayMath(contentLine)) children.push('\n');
-      children.push(...applyInlineFormatting(contentLine, `li-${keyBase}-${index}-${contentIndex}`));
+    contentIndexes.forEach((lineIndex, contentIndex) => {
+      if (contentIndex > 0 && !hasDisplayMath(lines[lineIndex - 1]) && !hasDisplayMath(lines[lineIndex])) children.push('\n');
+      const text = contentIndex === 0 ? bodies[lineIndex].text.slice(prefixLength) : bodies[lineIndex].text;
+      children.push(...renderLine(text, bodies[lineIndex].baremes, `lib-${keyBase}-${lineIndex}`));
     });
     itemCells.push(...renderItemCells(
       marker.number ? `${marker.number}.` : '•',

@@ -2137,3 +2137,67 @@ html[data-keyboard='open'] .mobile-tab-bar {
 /* « Réalisé » garde le vert sémantique, comme toute réussite dans l'application. */
 .tone-chip[data-state='done'] { --tone: #15803d; }
 .dark .tone-chip[data-state='done'] { --tone: #76d59a; }
+
+/* ---------------------------------------------------------------------------
+   Feuille de DEVOIR (énoncé, corrigé, fiche) — mise en page du document
+   lui-même : titre centré, barres d'exercice teintées, barème aligné au bord
+   de lecture. Ces règles ne s'appliquent QUE dans une feuille de devoir
+   (`.devoir-document`) : le carnet et l'éditeur gardent leur sobriété.
+   --------------------------------------------------------------------------- */
+.devoir-document {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: hsl(var(--foreground));
+}
+.devoir-document .doc-title {
+  display: block;
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+/* Barre d'exercice : aplat plein, texte blanc. La couleur dit le NUMÉRO de
+   l'exercice, donc « Exercice 3 » garde la même couleur dans l'énoncé et dans
+   son corrigé. Contraste vérifié : 4,8 à 6,0 sur les quatre teintes. */
+.devoir-document .doc-heading {
+  display: block;
+  width: fit-content;
+  min-width: 9rem;
+  margin: 1rem 0 0.5rem;
+  padding: 0.15rem 0.75rem;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+  background: var(--doc-tone, #2563eb);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.devoir-document .doc-heading[data-tone='1'] { --doc-tone: #2563eb; }
+.devoir-document .doc-heading[data-tone='2'] { --doc-tone: #15803d; }
+.devoir-document .doc-heading[data-tone='3'] { --doc-tone: #b45309; }
+.devoir-document .doc-heading[data-tone='4'] { --doc-tone: #6d28d9; }
+.devoir-document .doc-subheading {
+  display: block;
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+/* Rangée d'énoncé : le texte se replie, le barème reste au bord de lecture —
+   les points se lisent à la hauteur de la question qu'ils notent. */
+.devoir-document .doc-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+}
+.devoir-document .doc-line__text { min-width: 0; flex: 1 1 auto; }
+.devoir-document .doc-bareme {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
