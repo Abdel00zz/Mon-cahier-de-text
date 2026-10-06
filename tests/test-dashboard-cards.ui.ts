@@ -78,10 +78,10 @@ test('le numéro de groupe accompagne le nom du titre, dans la carte', () => {
   );
   assert.ok(identity.length > 0, 'la ligne d’identité est montée');
   assert.match(identity, /class-card__title[\s\S]*class-card__group/, 'le numéro SUIT le nom, il ne le précède pas');
-  assert.match(identity, /data-variant="seal"/, 'variante sceau de la carte');
+  assert.match(identity, /data-variant="engraved"/, 'variante gravée de la carte');
   assert.match(identity, /class-card__group[\s\S]*aria-hidden="true"/, 'décoratif : le nom accessible porte déjà le groupe');
   assert.match(identity, /sr-only/, 'le groupe reste annoncé une seule fois');
-  // Le sceau a quitté le corps de la carte : plus de chiffre géant entre l'en-tête et le titre.
+  // Le chiffre a quitté le corps de la carte : plus de chiffre géant entre l'en-tête et le titre.
   const body = first.html.slice(first.html.indexOf('class-card__body'), first.html.indexOf('class-card__identity'));
   assert.doesNotMatch(body, /class-card__group/, 'plus aucun filigrane détaché du titre');
 });
@@ -95,7 +95,7 @@ test('la carte est un verre teinté avec halo, et se soulève doucement', () => 
   assert.match(cards, /\.class-card:hover \{[\s\S]*transform: translateY\(-6px\)/, 'soulèvement au survol');
   assert.match(cards, /\.class-card:hover::before \{ opacity: 1; \}/, 'le halo s’allume sans changer la couleur du texte');
   const mobile = cards.slice(cards.indexOf('@media (max-width: 639px)'));
-  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 13\.5px; \}/, 'sceau resserré sur téléphone');
+  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 26px; \}/, 'chiffre gravé resserré sur téléphone');
 });
 
 test('la disposition avance d’un seul geste, sans menu', () => {

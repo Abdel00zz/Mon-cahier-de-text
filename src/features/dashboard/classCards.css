@@ -122,16 +122,23 @@
    téléphone. */
 .class-card__identity { display: flex; align-items: baseline; min-height: 56px; }
 /* Titre : Roboto Slab, posée en ligne par `constants/classTitleTypography.ts`.
-   21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large. */
-.class-card__title { flex: 1; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
+   21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large.
+   `flex: 0 1 auto` (et non `1`) : le titre ne s'étire pas jusqu'au bord, donc le
+   numéro de groupe se pose JUSTE APRÈS le nom au lieu de partir à l'autre bout
+   de la carte. Il rétrécit toujours quand le nom est long, et se replie sur
+   deux lignes en laissant la place au chiffre. */
+.class-card__title { flex: 0 1 auto; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-/* Numéro de groupe : un SCEAU collé au nom, dans la ligne du titre — plus de
-   chiffre géant relégué dans un coin, où il fallait deviner à quoi il
-   correspondait. Pastille de verre teintée par le ton, anneau d'accent, et le
-   chiffre à L'ENCRE du thème : mesuré 10,2:1 à 12,6:1 en clair, 8,5:1 à 11,4:1
-   en sombre sur les huit tons (l'encre d'accent, elle, tombait à 4,44:1 sur
-   les tons ambre et orange). Le nom accessible porte déjà le groupe : le sceau
-   reste décoratif et ne se lit pas deux fois. */
+/* Numéro de groupe : GRAVÉ dans la carte, collé au nom et plus grand que lui.
+   Plus de pastille ni d'anneau : c'est un filigrane. Une encre adoucie — 68 %
+   de l'encre du thème, mesurée de 5,3:1 à 6,7:1 sur les huit tons —, le corps
+   d'une GRANDE italique serif (Newsreader, dont le vrai italique est embarqué),
+   et la gravure faite de deux ombres : une sombre AU-DESSUS du chiffre (le
+   sillon) et une claire EN DESSOUS (la lumière qui entre dans le creux).
+   `line-height: .8` réduit la boîte du chiffre sans toucher au glyphe, donc la
+   ligne du titre ne bouge pas ; `align-self: baseline` le pose sur la ligne de
+   base du nom, à 21 px comme à 18,5 px. Le nom accessible porte déjà le
+   groupe : le chiffre reste décoratif et ne se lit pas deux fois. */
 .class-card .class-card__group {
   position: relative;
   inset: auto;
@@ -139,44 +146,48 @@
   z-index: 1;
   flex: 0 0 auto;
   align-self: baseline;
-  display: grid;
-  place-items: center;
-  min-width: 2.1em;
-  min-height: 2.1em;
-  height: 2.1em;
+  display: inline-block;
+  min-width: 0;
+  min-height: 0;
   margin: 0;
-  margin-inline-start: .55em;
-  padding: 0 .38em;
+  margin-inline-start: .3em;
+  padding: 0;
   /* Décor : la carte entière reste cliquable, aucun angle mort sous le pouce. */
   pointer-events: none;
   user-select: none;
-  font-family: var(--font-lato);
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 700;
-  font-variant-numeric: lining-nums tabular-nums;
-  letter-spacing: 0;
-  line-height: 1;
-  color: hsl(var(--foreground));
+  font-family: var(--font-latin-display);
+  font-size: 30px;
+  font-style: italic;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+  letter-spacing: -.03em;
+  line-height: .8;
+  color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
   opacity: 1;
-  background: color-mix(in srgb, var(--class-accent) 12%, var(--class-surface));
-  border: 1px solid color-mix(in srgb, var(--class-accent) 42%, transparent);
-  border-radius: 10px;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   -webkit-text-stroke: 0;
   paint-order: normal;
-  text-shadow: none;
+  text-shadow:
+    0 -1px 0 color-mix(in srgb, var(--class-surface) 62%, black 38%),
+    0 1px 0 color-mix(in srgb, var(--class-surface) 72%, white 28%);
   transform: none;
   translate: none;
   filter: none;
-  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
+/* La gravure en mode sombre : un sillon franc et un filet de lumière discret,
+   sans quoi le chiffre se pose à plat sur le gris profond. */
 .dark .class-card .class-card__group {
-  color: hsl(var(--foreground));
+  color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
   opacity: 1;
-  background: color-mix(in srgb, var(--class-accent) 12%, var(--class-surface));
-  border-color: color-mix(in srgb, var(--class-accent) 42%, transparent);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .08);
+  background: none;
+  border: 0;
+  box-shadow: none;
+  text-shadow:
+    0 -1px 0 rgb(0 0 0 / .55),
+    0 1px 0 rgb(255 255 255 / .08);
 }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
@@ -209,7 +220,6 @@
   }
   .class-card:hover::before { opacity: 1; }
   .class-card:hover .class-card__texture { opacity: .07; }
-  .class-card:hover .class-card__group { background: color-mix(in srgb, var(--class-accent) 18%, var(--class-surface)); border-color: color-mix(in srgb, var(--class-accent) 58%, transparent); }
 }
 /* Clavier : le même soulèvement, sans dépendre du survol. */
 .class-card:has(.class-card__open:focus-visible) { transform: translateY(-4px); }
@@ -221,7 +231,7 @@
   .class-card__header { margin-bottom: 4px; }
   .class-card__identity { min-height: 52px; }
   .class-card__title { font-size: 18.5px; }
-  .class-card .class-card__group { font-size: 13.5px; }
+  .class-card .class-card__group { font-size: 26px; }
   .class-card__footer { padding-inline: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {

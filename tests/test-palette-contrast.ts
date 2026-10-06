@@ -150,22 +150,26 @@ test('les aplats d’avertissement portent l’encre de leur thème', () => {
 
 test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   // Le numéro de la LISTE garde son contrat : encre pleine et filet couleur
-  // carte sur les quatre côtés. Le numéro de la CARTE, lui, est un sceau collé
-  // au nom (voir le test suivant) : même encre, mais plus de détourage.
+  // carte sur les quatre côtés. Le numéro de la CARTE, lui, est un chiffre
+  // gravé collé au nom (voir le test suivant) : encre adoucie, sans détourage.
   const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
   const start = cards.indexOf('.class-card .class-card__group {');
   assert.ok(start > 0, 'le style du numéro doit exister');
   const group = cards.slice(start, cards.indexOf('.dark .class-card .class-card__group {'));
-  assert.match(group, /color: hsl\(var\(--foreground\)\)/, 'encre de la palette');
-  assert.match(group, /opacity: 1;/, 'pleinement opaque');
-  assert.doesNotMatch(group, /-webkit-text-stroke: [1-9]/, 'plus de détourage au filet');
-  assert.match(group, /background: color-mix\(in srgb, var\(--class-accent\) 12%, var\(--class-surface\)\)/, 'teinte du ton, légère');
-  assert.match(group, /border: 1px solid color-mix\(in srgb, var\(--class-accent\) 42%, transparent\)/, 'anneau d’accent');
+  assert.match(group, /color: color-mix\(in srgb, hsl\(var\(--foreground\)\) 68%, var\(--class-surface\)\)/, 'encre adoucie à 68 %');
+  assert.match(group, /font-family: var\(--font-latin-display\)/, 'la grande italique serif');
+  assert.match(group, /font-style: italic;/, 'italique');
+  assert.match(group, /font-size: 30px;/, 'plus grand que le titre (21 px)');
+  assert.match(group, /align-self: baseline;/, 'posé sur la ligne de base du nom');
+  assert.match(group, /line-height: \.8;/, 'la boîte du chiffre ne pousse pas la ligne du titre');
+  assert.match(group, /text-shadow:[\s\S]*black 38%[\s\S]*white 28%/, 'gravure : sillon sombre au-dessus, lumière en dessous');
+  assert.doesNotMatch(group, /background: color-mix|border: 1px solid|border-radius: 10px/, 'plus de pastille ni d’anneau');
   assert.match(group, /pointer-events: none;/, 'décor : aucun angle mort sur la carte');
-  // Le numéro est TOUJOURS monté dans la ligne du titre, jamais derrière elle.
+  assert.match(cards, /@media \(max-width: 639px\)[\s\S]*\.class-card \.class-card__group \{ font-size: 26px; \}/, '26 px sur téléphone');
+  // Le chiffre est TOUJOURS monté dans la ligne du titre, jamais derrière elle.
   const classCard = readFileSync(new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url), 'utf8');
-  const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity">'), classCard.indexOf('</div>', classCard.indexOf('variant="seal"')));
-  assert.match(identity, /class-card__title[\s\S]*variant="seal"/, 'le sceau suit immédiatement le titre');
+  const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity">'), classCard.indexOf('</div>', classCard.indexOf('variant="engraved"')));
+  assert.match(identity, /class-card__title[\s\S]*variant="engraved"/, 'le chiffre suit immédiatement le titre');
   assert.match(identity, /sr-only[\s\S]*aria-hidden/, 'le nom accessible porte déjà le groupe');
 
   // Le numéro de la liste : encre pleine et même contour net.
@@ -176,10 +180,11 @@ test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   assert.match(watermark, /-webkit-text-stroke: 1\.5px hsl\(var\(--card\)\)/);
 });
 
-test('le sceau du numéro reste lisible sur les huit tons', () => {
-  // Le sceau teinte la surface de 12 % vers l'accent : l'encre d'accent y
-  // tombait à 4,44:1 (ambre, orange) — d'où l'encre du THÈME. On mesure les
-  // huit tons, dans les deux thèmes, avec les valeurs réellement déclarées.
+test('le numéro de groupe est gravé, à l’italique, et reste lisible sur les huit tons', () => {
+  // Le chiffre n'est plus une pastille : c'est une ENCRE adoucie, la grande
+  // italique serif et deux ombres de gravure. L'encre ne descend pas sous 68 %
+  // de l'encre du thème — mesuré 5,3:1 à 6,7:1 sur les huit tons — sinon le
+  // filigrane devient illisible sur les surfaces claires.
   const hexToRgb = (hex: string): Rgb => ({
     r: parseInt(hex.slice(1, 3), 16),
     g: parseInt(hex.slice(3, 5), 16),
@@ -206,26 +211,26 @@ test('le sceau du numéro reste lisible sur les huit tons', () => {
   const inkOf = (theme: 'clair' | 'sombre') => hslToRgb(hslTriplet(theme === 'clair' ? lightCss : darkCss, 'foreground'));
 
   const failures: string[] = [];
+  let floor = Number.POSITIVE_INFINITY;
   for (const tone of KEEP_TONES) {
     const rules = toneRules(tone);
     const light = rules.find(rule => !rule.dark);
     const dark = rules.find(rule => rule.dark);
     assert.ok(light && dark, `le ton ${tone} doit être déclaré dans les deux thèmes`);
     const cases = [
-      ['clair', hexToken(light!.body, 'keep-light'), hexToken(light!.body, 'keep-accent')],
-      ['sombre', hexToken(light!.body, 'keep-dark'), hexToken(dark!.body, 'keep-accent')],
+      ['clair', hexToken(light!.body, 'keep-light')],
+      ['sombre', hexToken(light!.body, 'keep-dark')],
     ] as const;
-    for (const [theme, surfaceHex, accentHex] of cases) {
-      const seal = mix(hexToRgb(surfaceHex), hexToRgb(accentHex), 0.12);
-      const measured = ratioRgb(inkOf(theme), seal);
+    for (const [theme, surfaceHex] of cases) {
+      const surface = hexToRgb(surfaceHex);
+      const ink = mix(surface, inkOf(theme), 0.68);
+      const measured = ratioRgb(ink, surface);
+      floor = Math.min(floor, measured);
       if (measured < 4.5) failures.push(`${tone} en ${theme} : ${measured.toFixed(2)}:1`);
-      // L'anneau et la teinte ne portent aucun texte : ils doivent seulement
-      // se distinguer du repos (repère non textuel, seuil 3:1).
-      const ring = ratioRgb(hexToRgb(accentHex), hexToRgb(surfaceHex));
-      if (ring < 3) failures.push(`${tone} en ${theme} : anneau ${ring.toFixed(2)}:1`);
     }
   }
-  assert.deepEqual(failures, [], `sceaux insuffisamment lisibles :\n${failures.join('\n')}`);
+  assert.deepEqual(failures, [], `numéros gravés insuffisamment lisibles :\n${failures.join('\n')}`);
+  assert.ok(floor >= 4.5, `planche de lisibilité du numéro gravé : ${floor.toFixed(2)}:1`);
 });
 
 test('l’écran de lancement et l’icône suivent la palette, sans saut de couleur', () => {

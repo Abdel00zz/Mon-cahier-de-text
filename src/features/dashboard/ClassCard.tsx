@@ -113,14 +113,15 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true">{formatWithOrdinals(title)}</span>
                     </h3>
-                    {/* Le numéro de groupe suit immédiatement le nom : collé à lui, il
-                        se lit comme un repère du même titre — « 2ème Bac PC · 3 » — au
-                        lieu d'un chiffre isolé dans un coin. Il est décoratif (le nom
-                        accessible ET son infobulle portent déjà le groupe). */}
+                    {/* Le numéro de groupe suit immédiatement le nom et le dépasse en
+                        taille : gravé dans la carte, il se lit comme un filigrane du
+                        titre — « 2ème Bac PC · 3 » — au lieu d'un chiffre isolé dans
+                        un coin. Il est décoratif (le nom accessible ET son infobulle
+                        portent déjà le groupe). */}
                     {label.group && (
                         <ClassGroupWatermark
                             group={label.group}
-                            variant="seal"
+                            variant="engraved"
                             className="class-card__group"
                         />
                     )}

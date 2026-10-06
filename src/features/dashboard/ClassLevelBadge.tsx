@@ -121,11 +121,11 @@ export interface ClassGroupWatermarkProps {
      * Emplacement du numéro :
      * - `inline` : à côté d'un titre (liste des classes) ;
      * - `end` : après le nom ;
-     * - `seal` : sceau compact posé juste après le nom, dans la carte (géométrie
-     *   et encre portées par `classCards.css`) ;
+     * - `engraved` : grand chiffre gravé, en filigrane, juste après le nom dans
+     *   la carte (géométrie, encre et gravure portées par `classCards.css`) ;
      * - `background` : décor indépendant, masqué aux lecteurs d’écran.
      */
-    variant?: 'inline' | 'end' | 'background' | 'seal';
+    variant?: 'inline' | 'end' | 'background' | 'engraved';
 }
 
 /**
@@ -144,7 +144,7 @@ export const ClassGroupWatermark = memo(({
 }: ClassGroupWatermarkProps) => {
     // Le nom d'usage lu par les lecteurs d'écran contient DÉJÀ le groupe : un
     // décor (filigrane de fond, sceau de la carte) ne doit pas le répéter.
-    const isDecorative = variant === 'background' || variant === 'seal';
+    const isDecorative = variant === 'background' || variant === 'engraved';
     return (
         <span
             data-variant={variant}
