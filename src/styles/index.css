@@ -2078,3 +2078,21 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
 /* Une commande non reconnue s'affiche en rouge, sans casser la formule. */
 .math-text .katex-error { color: #b91c1c; }
+
+/* ---------------------------------------------------------------------------
+   Pastilles de type (DÉF, THM, EXO, ACT…) — géométrie PARTAGÉE.
+   Une seule boîte pour l'éditeur, la modale de séance et les réglages : 10 px
+   de corps, 6 px de rembourrage en ligne, 34 px de largeur au minimum pour que
+   les sigles s'alignent d'une surface à l'autre. La règle est volontairement
+   NON layerisée : les utilitaires Tailwind des modales ne peuvent pas
+   l'emporter par accident. Dans le tableau, les jetons `--editor-badge-*`
+   (déclarés `!important`) restent maîtres, car la colonne de pastilles y garde
+   une largeur calculée à partir de l'échelle de lecture.
+   --------------------------------------------------------------------------- */
+.content-badge {
+  min-width: 34px;
+  padding: 3px 6px;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+}

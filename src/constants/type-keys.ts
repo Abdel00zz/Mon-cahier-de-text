@@ -132,15 +132,16 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
 /**
  * Forme commune des pastilles de type (Déf., Th., Ex.…).
  *
- * Le rembourrage vertical, l'arrondi et le filet intérieur sont posés
- * ici, une fois : les trois surfaces (éditeur, papier, réglages)
- * affichent ainsi exactement la même pastille, quel que soit le type.
- * Le rembourrage horizontal et la largeur minimale restent pilotés par
- * les tokens de l'éditeur (`--editor-badge-*`), pour que le tableau
- * garde une colonne de badges parfaitement alignée.
+ * La géométrie (corps 10 px, rembourrage 6 px en ligne, 34 px de largeur au
+ * minimum) vit dans la classe `.content-badge` d'`index.css`, partagée par
+ * l'éditeur, la modale de séance et les réglages : les trois surfaces affichent
+ * donc exactement la même pastille, quel que soit le type, et aucune n'hérite
+ * par accident de la taille de texte de son voisin. Dans le tableau, les jetons
+ * `--editor-badge-*` reprennent la main (`!important`) pour que la colonne de
+ * pastilles garde une largeur proportionnelle à l'échelle de lecture.
  */
 export const contentBadgeClass = (type?: string): string =>
-  `inline-flex items-center justify-center gap-1 rounded-md border-0 py-[3px] font-bold uppercase tracking-normal shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
+  `content-badge inline-flex items-center justify-center rounded-md border-0 font-bold uppercase shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
   'activité': 'Activité (recherche / découverte)',

@@ -1459,6 +1459,18 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   const shape = contentBadgeClass('théorème');
   assert.match(shape, /ring-1 ring-inset ring-current\/15/);
   assert.match(shape, /rounded-md/);
+  // La géométrie vit dans `.content-badge` (index.css), partagée par l'éditeur,
+  // la modale de séance et les réglages : 10 px de corps, 6 px de rembourrage en
+  // ligne, 34 px de largeur au minimum. Non layerisée, donc elle tient même
+  // lorsqu'un bouton voisin porte ses propres utilitaires de rembourrage.
+  assert.match(shape, /content-badge/);
+  const css = readFileSync('src/styles/index.css', 'utf8');
+  const rule = css.slice(css.indexOf('.content-badge {'), css.indexOf('}', css.indexOf('.content-badge {')));
+  assert.match(rule, /min-width: 34px/);
+  assert.match(rule, /padding: 3px 6px/);
+  assert.match(rule, /font-size: 10px/);
+  assert.match(rule, /line-height: 1/);
+  assert.ok(!css.slice(css.indexOf('.content-badge {')).includes('@layer'), 'la règle partagée reste hors @layer');
   // Théorème : famille rouge rosé ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
   assert.equal(contentBadgeClass('théorème').includes('#fce8e6'), true);

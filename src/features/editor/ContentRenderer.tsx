@@ -320,7 +320,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
-            className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline lg:tracking-wide ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
             data-content-number={displayNumber ?? ''}
             data-tippy-content={fullTooltip}
             title={fullTooltip}

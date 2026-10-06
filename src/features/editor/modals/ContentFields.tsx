@@ -55,7 +55,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
           <Select value={value.type ?? ''} onValueChange={type => update('type', type)} required>
             <SelectTrigger id={`${id}-type`} className={fieldClass}><SelectValue placeholder={t('addContent.choose')} /></SelectTrigger>
             <SelectContent>{options.map(type => <SelectItem key={type} value={type}>
-              <div className="flex items-center gap-2"><span className={contentBadgeClass(type)}>{BADGE_TEXT_MAP[type] || type}</span>
+              <div className="flex items-center gap-1.5"><span className={contentBadgeClass(type)}>{BADGE_TEXT_MAP[type] || type}</span>
                 <span dir={contentDirection}>{translateLocaleMessage(contentLocale, `contentType.${type}`)}</span></div>
             </SelectItem>)}</SelectContent>
           </Select>

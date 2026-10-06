@@ -102,7 +102,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
                       type="button"
                       onClick={() => handleTypeToggle(type)}
                       title={t(`contentType.${type}`)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide transition-all ${
+                      className={`min-w-[34px] rounded-lg px-1.5 py-[3px] text-[10px] font-bold leading-none tracking-[0.03em] transition-all ${
                         isSelected
                           ? `${contentBadgeClass(type)} ring-1 ring-border`
                           : 'border border-border/60 bg-secondary/40 text-muted-foreground hover:bg-secondary'

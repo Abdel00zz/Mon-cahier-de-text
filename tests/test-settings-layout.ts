@@ -96,3 +96,21 @@ test('absences justifiées : rubrique dédiée, injection automatique dans les c
   assert.match(tab, /t\('notifications\.absenceCertificate'\)/, 'intitulé traduit, jamais en dur');
   assert.ok(!tab.includes('markClassDirty('), 'la synchronisation passe par saveNotebook, pas par un marquage direct');
 });
+
+test('pastilles de type : une seule boîte, de la modale de séance aux réglages', () => {
+  const keys = read('src/constants/type-keys.ts');
+  assert.match(keys, /`content-badge inline-flex/, 'la forme partagée est nommée, jamais recopiée');
+  const css = read('src/styles/index.css');
+  assert.match(
+    css,
+    /\.content-badge\s*\{[^}]*min-width: 34px;[^}]*padding: 3px 6px;[^}]*font-size: 10px;[^}]*line-height: 1;/,
+    'la géométrie est écrite une fois : corps 10 px, rembourrage 6 px, largeur minimale 34 px',
+  );
+  // Le contrôle des réglages aligne ses deux états sur la même boîte : sans cela,
+  // la pastille rétrécirait au moment d'être sélectionnée.
+  const control = read('src/features/settings/components/DescriptionVisibilityControl.tsx');
+  assert.match(control, /min-w-\[34px\] rounded-lg px-1\.5 py-\[3px\] text-\[10px\] font-bold leading-none tracking-\[0\.03em\]/);
+  assert.ok(!control.includes('px-2.5 py-1 text-[10px]'), 'plus de rembourrage concurrent');
+  const fields = read('src/features/editor/modals/ContentFields.tsx');
+  assert.match(fields, /contentBadgeClass\(type\)/, 'la modale de séance consomme la forme partagée');
+});
