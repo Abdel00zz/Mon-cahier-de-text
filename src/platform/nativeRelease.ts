@@ -1,4 +1,3 @@
-import { CapacitorHttp } from '@capacitor/core';
 import type { UpdateResult } from './nativeUpdates';
 
 declare const __NATIVE_API_ORIGIN__: string | undefined;
@@ -28,13 +27,4 @@ export function validateNativeRelease(raw: unknown, installed: UpdateResult, clo
   if ((value.versionCode as number) < installed.versionCode) return null; // A stale/rolled-back feed is not proof of being current.
   return { ...installed, state: value.versionCode === installed.versionCode ? 'current' : 'available',
     availableVersionCode: value.versionCode as number, availableVersion: value.version, downloadUrl };
-}
-
-export async function checkDirectApkRelease(installed: UpdateResult): Promise<UpdateResult> {
-  if (installed.source !== 'apk') return installed;
-  const response = await CapacitorHttp.get({ url: `${origin}/native-release.json`,
-    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, connectTimeout: 8_000, readTimeout: 8_000 });
-  if (response.status === 404) return { ...installed, state: 'manual' };
-  if (response.status !== 200) throw new Error('Release check unavailable');
-  return validateNativeRelease(response.data, installed) ?? { ...installed, state: 'manual' };
 }

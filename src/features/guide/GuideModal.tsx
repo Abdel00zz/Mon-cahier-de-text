@@ -6,7 +6,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
 import { APP_VERSION } from '@/platform/appVersion';
-import { AppUpdateControl } from './AppUpdateControl';
 import './guide.css';
 
 interface GuideModalProps { isOpen: boolean; onClose: () => void }
@@ -59,8 +58,8 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
             >
               <Menu size={16} aria-hidden="true" />
             </button>
-            <CircleHelp size={16} className="text-primary shrink-0 opacity-80" aria-hidden="true" />
             <span className="guide-title">{isAr ? 'دليل الاستخدام' : 'Guide d’utilisation'}</span>
+            <CircleHelp size={16} className="text-primary shrink-0 opacity-80" aria-hidden="true" />
           </div>
         </div>
       }>
@@ -158,7 +157,6 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
           <span>{isAr ? <>الفكرة والتصميم: <bdi>بدوح عبد المالك</bdi></> : <>Idée et conception : <bdi>BOUDOUH ABDELMALEK</bdi></>}</span>
           <span className="guide-version" aria-label={isAr ? `الإصدار ${APP_VERSION}` : `Version ${APP_VERSION}`}><bdi dir="ltr">v{APP_VERSION}</bdi></span>
         </div>
-        {isOpen && <AppUpdateControl lang={lang} />}
       </footer>
     </Modal>
   );

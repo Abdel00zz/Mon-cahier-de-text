@@ -37,7 +37,7 @@ const browserEnvironment = (): WebUpdateEnvironment => ({
     schedule: action => startSafePwaAction(action),
 });
 
-/** Un seul contrôleur pour les vérifications automatiques et le panneau d'aide. */
+/** Un seul contrôleur pour les vérifications automatiques de version. */
 export function createWebUpdateControl(environment: WebUpdateEnvironment = browserEnvironment()) {
     let state: WebUpdateState = 'idle';
     let cancelApply: (() => void) | undefined;
@@ -81,7 +81,7 @@ export function createWebUpdateControl(environment: WebUpdateEnvironment = brows
     };
 }
 
-export const webUpdates = createWebUpdateControl();
+const webUpdates = createWebUpdateControl();
 
 /**
  * Vérifie au retour dans la page, au plus une fois par heure : aucun minuteur

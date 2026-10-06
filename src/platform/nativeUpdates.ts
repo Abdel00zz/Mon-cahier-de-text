@@ -1,5 +1,3 @@
-import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-
 type NativeUpdateState = 'idle' | 'available' | 'current' | 'downloading' | 'downloaded' | 'store' | 'manual' | 'error';
 export interface UpdateResult {
   state: NativeUpdateState;
@@ -10,18 +8,6 @@ export interface UpdateResult {
   progress?: number;
   downloadUrl?: string;
   availableVersion?: string;
-}
-export const NativeUpdates = registerPlugin<{
-  check(): Promise<UpdateResult>;
-  start(): Promise<UpdateResult>;
-  complete(): Promise<UpdateResult>;
-  openStore(): Promise<void>;
-  openDownload(options: { url: string }): Promise<void>;
-  addListener(event: 'stateChanged', listener: (value: UpdateResult) => void): Promise<PluginListenerHandle>;
-}>('NativeUpdates');
-
-export function supportsNativeUpdates(): boolean {
-  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 }
 
 /** A restart must never interrupt a form, save or another open modal. */
