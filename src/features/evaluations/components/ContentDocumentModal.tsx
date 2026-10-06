@@ -180,7 +180,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         ) : (
-          <div className="max-h-[22rem] overflow-y-auto rounded-xl border border-border/80 bg-card p-3.5 sm:max-h-[28rem] sm:p-5">
+          <div className="max-h-[24rem] overflow-y-auto rounded-xl border border-border/80 bg-card p-4 sm:max-h-[30rem] sm:p-7">
             {preview ? (
               /* La feuille est une PAGE : colonne de lecture bornée, jamais
                  étirée sur toute la largeur d'un grand écran. */

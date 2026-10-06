@@ -80,15 +80,49 @@ test('la feuille de style porte la mise en page, hors @layer', () => {
   const start = css.indexOf('.devoir-document {');
   assert.ok(start > 0, 'la feuille de devoir a ses règles');
   const rule = css.slice(start, css.indexOf('}', start));
-  assert.match(rule, /font-size: 13\.5px/);
-  for (const selector of ['.doc-title', '.doc-heading', '.doc-subheading', '.doc-bareme']) {
+  // L'échelle du document vit en jetons : une seule règle à toucher.
+  assert.match(rule, /--doc-fs: 14px/);
+  assert.match(rule, /--doc-lh: 1\.72/);
+  assert.match(rule, /font-size: var\(--doc-fs\)/);
+  assert.match(rule, /font-family: var\(--font-document\)/);
+  for (const selector of ['.doc-title', '.doc-heading', '.doc-subheading', '.doc-bareme', '.doc-line']) {
     assert.ok(css.includes(`.devoir-document ${selector}`), `${selector} est composé`);
   }
   // Les quatre teintes de barre existent, et l'impression garde ses couleurs.
   for (const tone of [1, 2, 3, 4]) assert.ok(css.includes(`.doc-heading[data-tone='${tone}']`), `teinte ${tone}`);
   assert.match(css, /print-color-adjust: exact/);
+  // Le barème aligne ses chiffres d'une question à l'autre.
+  assert.match(css, /font-variant-numeric: tabular-nums/);
   // La mise en page d'un devoir ne fuit pas dans le carnet : tout est préfixé.
   assert.equal(/^\.doc-heading\s*\{/m.test(css), false);
+});
+
+test('le texte de la feuille est composé par une fonte de document', () => {
+  const css = readFileSync('src/styles/index.css', 'utf8');
+  // La fonte demandée d'abord, son relais ensuite, la fonte arabe en dernier
+  // recours — c'est la plage de caractères qui départage les écritures.
+  assert.match(css, /--font-document: 'Latin Modern Sans', 'Source Sans 3', var\(--font-latin-body\), var\(--font-arabic-body\), sans-serif/);
+  const fonts = readFileSync('src/styles/fonts.css', 'utf8');
+  // Latin Modern Sans : embarquée (aucune requête réseau), trois graisses.
+  for (const file of ['lmsans10-regular.otf', 'lmsans10-bold.otf', 'lmsans10-oblique.otf']) {
+    assert.ok(fonts.includes(`/fonts/${file}`), `${file} est déclarée`);
+  }
+  assert.equal((fonts.match(/font-family: 'Latin Modern Sans'/g) ?? []).length, 3);
+  // Source Sans 3 : un fichier VARIABLE, pas cinq graisses statiques.
+  assert.match(fonts, /source-sans-3-latin-wght-normal\.woff2/);
+  assert.match(fonts, /font-family: 'Source Sans 3'[^}]*font-weight: 200 900/);
+  // Les deux sont limitées au latin : l'arabe du document ne peut pas tomber
+  // dessus (leçon des fontes arabes composant du latin illisible).
+  for (const family of ['Latin Modern Sans', 'Source Sans 3']) {
+    const blocks = fonts.split(`font-family: '${family}'`).slice(1);
+    blocks.forEach((_, index) => {
+      const block = fonts.split(`font-family: '${family}'`)[index + 1].split('}')[0];
+      assert.match(block, /unicode-range: U\+0000-00FF/, `${family} est limitée au latin`);
+    });
+  }
+  // Les fichiers sont bien présents et sont de vraies fontes OpenType.
+  const fonds = ['lmsans10-regular.otf', 'lmsans10-bold.otf', 'lmsans10-oblique.otf'].map(file => readFileSync(`public/fonts/${file}`));
+  for (const buffer of fonds) assert.equal(buffer.subarray(0, 4).toString('latin1'), 'OTTO');
 });
 
 test('l’aide de la feuille cite les trois marqueurs', () => {

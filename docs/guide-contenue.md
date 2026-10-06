@@ -315,9 +315,12 @@ exercices en barres colorées, un barème au bord de la ligne.
   dans la fenêtre de document (*Évaluations → Contenu*). Écrits ailleurs — dans
   une description de séance — ils restent du texte ordinaire, et le carnet garde
   sa sobriété.
-* **Typographie** : le titre prend la police d'affichage de l'application (à
-  empattements en français, Maghribi en arabe), le corps la police de lecture, et
-  la colonne de lecture est bornée à ~44 rem — la feuille se lit comme une page.
+* **Typographie** : le texte de la feuille est composé en **Latin Modern Sans**
+  (la fonte LaTeX de référence, embarquée), avec **Source Sans 3** en relais ; le
+  titre garde la voix de l'application (à empattements en français, Maghribi en
+  arabe). Les deux fontes de texte ne portent que le latin : un énoncé en arabe
+  est composé par la fonte arabe du carnet, sans réglage à faire. La colonne de
+  lecture est bornée à ~44 rem — la feuille se lit comme une page.
 * Les couleurs des barres s'impriment telles quelles (couleurs exactes) ; le
   contraste blanc sur fond est vérifié AA sur les quatre teintes.
 

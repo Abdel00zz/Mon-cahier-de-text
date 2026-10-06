@@ -67,7 +67,7 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
                         ? `Document du professeur${updatedLabel ? ` · ${updatedLabel}` : ''}`
                         : 'Aucun document'}
                 </p>
-                <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border/80 bg-card p-4 sm:p-6">
+                <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border/80 bg-card p-5 sm:p-7">
                     {hasDocument ? (
                         <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">
                             {renderDescriptionWithBold(source)}

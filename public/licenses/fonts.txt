@@ -1,3 +1,18 @@
+Polices embarquées dans l'application
+====================================
+
+- Latin Modern Sans (lmsans10-regular.otf, lmsans10-bold.otf,
+  lmsans10-oblique.otf, dossier public/fonts/) : GUST e-foundry, licence
+  GUST Font License (GFL) — texte intégral dans GUST-FONT-LICENSE.txt,
+  source : https://www.gust.org.pl/projects/e-foundry/latin-modern
+  Utilisée pour le texte des feuilles de devoir (aperçu et impression).
+
+- Source Sans 3 (@fontsource-variable/source-sans-3, fichier variable woff2) :
+  Adobe, SIL Open Font License 1.1. Relais du texte des feuilles de devoir.
+
+- DM Sans, Rubik, Roboto Slab, Lato, Newsreader (@fontsource*) : SIL Open Font
+  License 1.1 — textes ci-dessous.
+
 @fontsource-variable/dm-sans
 Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts) DMSans-Italic[opsz,wght].ttf: Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)
 Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts) DMSans-Italic[opsz,wght].ttf: Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)

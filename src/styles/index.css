@@ -78,6 +78,11 @@
      titres. Les deux polices arabes sont embarquées dans public/ : une
      seule paire par langue, aucun choix exposé au professeur. */
   --font-latin-body: 'DM Sans', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  /* Feuille de devoir : la fonte de composition LaTeX d'abord (Latin Modern
+     Sans), sa remplaçante libre ensuite. Les deux ne portent que le latin (voir
+     `fonts.css`) : l'arabe du document retombe donc seul sur la fonte arabe du
+     carnet, sans règle de langue. */
+  --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
   --font-latin-display: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
   --font-arabic-body: 'Arabswell 3', 'DM Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --font-arabic-display: 'Maghribi Font 3', 'Rubik', 'DM Sans', serif;
@@ -2144,20 +2149,35 @@ html[data-keyboard='open'] .mobile-tab-bar {
    de lecture. Ces règles ne s'appliquent QUE dans une feuille de devoir
    (`.devoir-document`) : le carnet et l'éditeur gardent leur sobriété.
    --------------------------------------------------------------------------- */
+/* L'échelle du document en un seul endroit : la page se règle ici, pas dans
+   dix règles dispersées. 14 px de corps, 1,72 d'interligne — la densité d'une
+   feuille d'énoncé, lisible à l'écran comme sur le papier. */
 .devoir-document {
-  font-size: 13.5px;
-  line-height: 1.7;
+  --doc-fs: 14px;
+  --doc-lh: 1.72;
+  --doc-fs-title: 1.45rem;
+  --doc-fs-heading: 1rem;
+  --doc-fs-bareme: 0.875rem;
+  font-family: var(--font-document);
+  font-size: var(--doc-fs);
+  line-height: var(--doc-lh);
+  letter-spacing: 0.002em;
   color: hsl(var(--foreground));
+  text-wrap: pretty;
 }
 .devoir-document .doc-title {
   display: block;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.55rem;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: var(--doc-fs-title);
   font-weight: 800;
   line-height: 1.25;
+  letter-spacing: -0.004em;
 }
+/* Le corps suit le document, le titre garde la voix de l'application : les
+   deux écritures cohabitent sans se confondre. */
+.devoir-document :is(strong, b) { font-weight: 700; }
 /* Barre d'exercice : aplat plein, texte blanc. La couleur dit le NUMÉRO de
    l'exercice, donc « Exercice 3 » garde la même couleur dans l'énoncé et dans
    son corrigé. Contraste vérifié : 4,8 à 6,0 sur les quatre teintes. */
@@ -2165,13 +2185,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
   display: block;
   width: fit-content;
   min-width: 9rem;
-  margin: 1rem 0 0.5rem;
-  padding: 0.15rem 0.75rem;
+  margin: 1.15rem 0 0.55rem;
+  padding: 0.2rem 0.8rem;
   border-radius: 6px;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: var(--doc-fs-heading);
   font-weight: 700;
   line-height: 1.5;
+  letter-spacing: 0.005em;
   background: var(--doc-tone, #2563eb);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -2182,9 +2203,10 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .devoir-document .doc-heading[data-tone='4'] { --doc-tone: #6d28d9; }
 .devoir-document .doc-subheading {
   display: block;
-  margin: 0.75rem 0 0.25rem;
-  font-size: 0.95rem;
+  margin: 0.9rem 0 0.3rem;
+  font-size: var(--doc-fs-heading);
   font-weight: 700;
+  letter-spacing: 0.005em;
 }
 /* Rangée d'énoncé : le texte se replie, le barème reste au bord de lecture —
    les points se lisent à la hauteur de la question qu'ils notent. */
@@ -2197,7 +2219,10 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .devoir-document .doc-line__text { min-width: 0; flex: 1 1 auto; }
 .devoir-document .doc-bareme {
   flex: none;
-  font-size: 0.85rem;
+  font-size: var(--doc-fs-bareme);
   font-weight: 700;
   white-space: nowrap;
+  /* Les points s'alignent d'une question à l'autre : chiffres à chasse fixe,
+     comme sur un barème imprimé. */
+  font-variant-numeric: tabular-nums;
 }

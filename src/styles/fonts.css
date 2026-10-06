@@ -4,6 +4,46 @@
   src: url('@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2') format('woff2');
   font-style: normal; font-weight: 100 1000; font-display: swap;
 }
+
+/*
+ * Feuille de DEVOIR : la fonte de composition LaTeX d'abord, sa remplaçante
+ * libre ensuite. Les deux ne portent QUE le latin (plage ci-dessous) : un
+ * document arabe retombe donc de lui-même sur la fonte arabe du carnet, sans
+ * qu'aucune règle de langue n'intervienne. Latin Modern Sans est embarquée
+ * (GUST Font License, `public/licenses/`) ; Source Sans 3 est un fichier
+ * variable de 29 Ko — inutile de charger plus lourd pour du texte.
+ */
+@font-face {
+  font-family: 'Latin Modern Sans';
+  src: url('/fonts/lmsans10-regular.otf') format('opentype');
+  font-style: normal; font-weight: 400; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Latin Modern Sans';
+  src: url('/fonts/lmsans10-bold.otf') format('opentype');
+  font-style: normal; font-weight: 700; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Latin Modern Sans';
+  src: url('/fonts/lmsans10-oblique.otf') format('opentype');
+  font-style: italic; font-weight: 400; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 200 900; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-italic.woff2') format('woff2');
+  font-style: italic; font-weight: 200 900; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @font-face {
   font-family: 'Rubik';
   src: url('@fontsource-variable/rubik/files/rubik-latin-wght-normal.woff2') format('woff2');
