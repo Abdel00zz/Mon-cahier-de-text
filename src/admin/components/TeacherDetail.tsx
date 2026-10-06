@@ -9,6 +9,9 @@ import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
+import { MathText } from '../../components/ui/math-text';
+import { MathTitle } from '../../components/ui/math-title';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 import { PrintView } from '../../features/editor/PrintView';
 import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
@@ -167,7 +170,7 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
                                 aria-expanded={expanded === index}
                                 className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/40"
                             >
-                                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{ch.title}</span>
+                                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground"><MathTitle text={ch.title} /></span>
                                 <span className="shrink-0 text-[11px] text-muted-foreground">
                                     {ch.datedCount}/{ch.totalItems} datés
                                     {ch.lastDate && <> · dernière séance {ch.lastDate}</>}
@@ -188,9 +191,13 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
                                                             {item.type || 'contenu'}
                                                         </span>
                                                         <span className="min-w-0">
-                                                            <span className="font-medium text-foreground">{item.title || 'Sans titre'}</span>
+                                                            <span className="font-medium text-foreground" dir={textDirectionAttribute(item.title)}>
+                                                                <MathText source={item.title}>{item.title || 'Sans titre'}</MathText>
+                                                            </span>
                                                             {item.description && (
-                                                                <span className="block truncate text-[11px] text-muted-foreground/80">{item.description}</span>
+                                                                <span className="block truncate text-[11px] text-muted-foreground/80" dir={textDirectionAttribute(item.description)}>
+                                                                    <MathText source={item.description}>{item.description}</MathText>
+                                                                </span>
                                                             )}
                                                         </span>
                                                     </li>

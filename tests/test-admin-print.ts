@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MathText } from '../src/components/ui/math-text';
+import { MathTitle } from '../src/components/ui/math-title';
 import {
   countExpectedSessions,
   listExpectedSessionDates,
@@ -248,4 +252,50 @@ test('l’encart de date assume le langage visuel du thème', () => {
   assert.match(css, /font-family: var\(--font-display\)/, 'sérif éditoriale');
   assert.match(css, /html\[lang='ar'\] \.calendar-day-card__title/, 'arabe traité à part');
   assert.match(css, /prefers-reduced-motion/, 'animations respectueuses');
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   6. Textes et formules : la direction lit le cahier comme l'enseignant
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const progressionPanel = sourceOf('src/admin/components/ClassProgression.tsx');
+
+const katexCount = (html: string) => (html.match(/class="katex/g) ?? []).length;
+
+test('MathText et MathTitle composent réellement les formules, sans LaTeX résiduel', () => {
+  const titles = 'Continuité $\\lim_{x\\to a} f(x)=f(a)$ · Dérivée $f(x)=\\frac{x^2+1}{x+1}$';
+  const session = renderToStaticMarkup(
+    React.createElement(MathText, { source: titles }, titles)
+  );
+  const chapter = renderToStaticMarkup(React.createElement(MathTitle, { text: 'Suites $u_{n+1}=f(u_n)$' }));
+  const description = renderToStaticMarkup(
+    React.createElement(MathText, { source: 'Calculer $\\int_0^1 f(x)\\,\\mathrm{d}x$' }, 'Calculer $\\int_0^1 f(x)\\,\\mathrm{d}x$')
+  );
+  const plain = renderToStaticMarkup(React.createElement(MathText, { source: 'Aucune formule ici' }, 'Aucune formule ici'));
+
+  assert.ok(katexCount(session) >= 2, 'les deux formules de la ligne de séance sont composées');
+  assert.ok(!session.includes('$'), 'aucun délimiteur LaTeX ne reste visible');
+  assert.ok(katexCount(chapter) >= 1, 'titre de chapitre composé');
+  assert.ok(katexCount(description) >= 1, 'description composée');
+  assert.equal(katexCount(plain), 0, 'un texte sans formule reste du texte');
+  assert.equal(plain, 'Aucune formule ici');
+});
+
+test('la fiche direction compose les titres, descriptions et séances en KaTeX', () => {
+  assert.match(teacherDetail, /import \{ MathText \} from '\.\.\/\.\.\/components\/ui\/math-text';/);
+  assert.match(teacherDetail, /import \{ MathTitle \} from '\.\.\/\.\.\/components\/ui\/math-title';/);
+  // chapitre, élément et dernière séance inspectés dans la fiche
+  assert.match(teacherDetail, /<MathTitle text=\{ch\.title\} \/>/, 'titre de chapitre');
+  assert.match(teacherDetail, /<MathText source=\{item\.title\}>/, 'titre d’élément');
+  assert.match(teacherDetail, /<MathText source=\{item\.description\}>/, 'description d’élément');
+  // et la progression, dont les intitulés portent aussi des formules
+  assert.match(progressionPanel, /<MathText source=\{titles\}>\{titles\}<\/MathText>/, 'intitulés de séance');
+});
+
+test('la direction décide de la direction d’écriture par le contenu, pas par la langue de l’interface', () => {
+  // L'admin est en français, mais les cahiers peuvent être arabes : chaque
+  // texte porte son propre `dir`, décidé par son premier caractère fort.
+  assert.match(progressionPanel, /dir=\{textDirectionAttribute\(titles\)\}/);
+  assert.match(teacherDetail, /dir=\{textDirectionAttribute\(item\.title\)\}/);
+  assert.match(teacherDetail, /dir=\{textDirectionAttribute\(item\.description\)\}/);
 });

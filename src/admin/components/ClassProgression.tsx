@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { fetchClassLessons } from '../api';
+import { MathText } from '../../components/ui/math-text';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 import { getBundledCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { analyseSessionProgression, snapshotSlots } from '../../domain/notebook/sessionProgression';
 import type { ClassSnapshot, LessonsData, ScheduleSlot } from '../../types';
@@ -149,20 +151,25 @@ export const ClassProgression: React.FC<{ phone: string; classId: string; snapsh
                                     <div>
                                         <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Dernières séances</p>
                                         <ul className="mt-1.5 space-y-1">
-                                            {recent.map(session => (
+                                            {recent.map(session => {
+                                                // Les intitulés peuvent porter des formules ($…$) :
+                                                // on les compose en KaTeX comme dans l'application.
+                                                const titles = session.titles.join(' · ');
+                                                return (
                                                 <li key={session.date} className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-border bg-background/60 px-3 py-1.5">
                                                     <span className="w-32 shrink-0 text-xs font-bold capitalize text-foreground">{shortDate(session.date)}</span>
                                                     <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
                                                         {session.items} contenu{session.items > 1 ? 's' : ''}
                                                     </span>
                                                     {session.titles.length > 0 && (
-                                                        <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-                                                            {session.titles.join(' · ')}
+                                                        <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground" dir={textDirectionAttribute(titles)}>
+                                                            <MathText source={titles}>{titles}</MathText>
                                                             {session.items > session.titles.length && ' …'}
                                                         </span>
                                                     )}
                                                 </li>
-                                            ))}
+                                                );
+                                            })}
                                         </ul>
                                     </div>
 
