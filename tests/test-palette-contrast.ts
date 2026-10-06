@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
+import { KEEP_TONES } from '../src/platform/keepTheme';
 
 /*
  * Garde-fou chromatique.
@@ -148,17 +149,24 @@ test('les aplats d’avertissement portent l’encre de leur thème', () => {
 });
 
 test('les numéros de classe sont à l’encre, opaques et détourés', () => {
-  // Le grand chiffre de la carte : encre franche (plus un lavis à 8 %), filet
-  // couleur carte derrière le chiffre, donc contour net sur la texture.
+  // Le numéro de la LISTE garde son contrat : encre pleine et filet couleur
+  // carte sur les quatre côtés. Le numéro de la CARTE, lui, est un sceau collé
+  // au nom (voir le test suivant) : même encre, mais plus de détourage.
   const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
   const start = cards.indexOf('.class-card .class-card__group {');
-  const group = cards.slice(start, cards.indexOf('.class-card .class-card__group:hover'));
   assert.ok(start > 0, 'le style du numéro doit exister');
+  const group = cards.slice(start, cards.indexOf('.dark .class-card .class-card__group {'));
   assert.match(group, /color: hsl\(var\(--foreground\)\)/, 'encre de la palette');
-  assert.match(group, /opacity: \.5\b/, 'chiffres francs, plus un lavis');
-  assert.match(group, /-webkit-text-stroke: 2px var\(--class-surface\)/, 'contour visible, couleur de la carte');
-  assert.match(group, /paint-order: stroke fill/, 'le filet passe derrière le chiffre');
-  assert.match(cards, /\.dark \.class-card \.class-card__group \{[\s\S]*?opacity: \.38/, 'la nuit reste lisible');
+  assert.match(group, /opacity: 1;/, 'pleinement opaque');
+  assert.doesNotMatch(group, /-webkit-text-stroke: [1-9]/, 'plus de détourage au filet');
+  assert.match(group, /background: color-mix\(in srgb, var\(--class-accent\) 12%, var\(--class-surface\)\)/, 'teinte du ton, légère');
+  assert.match(group, /border: 1px solid color-mix\(in srgb, var\(--class-accent\) 42%, transparent\)/, 'anneau d’accent');
+  assert.match(group, /pointer-events: none;/, 'décor : aucun angle mort sur la carte');
+  // Le numéro est TOUJOURS monté dans la ligne du titre, jamais derrière elle.
+  const classCard = readFileSync(new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url), 'utf8');
+  const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity">'), classCard.indexOf('</div>', classCard.indexOf('variant="seal"')));
+  assert.match(identity, /class-card__title[\s\S]*variant="seal"/, 'le sceau suit immédiatement le titre');
+  assert.match(identity, /sr-only[\s\S]*aria-hidden/, 'le nom accessible porte déjà le groupe');
 
   // Le numéro de la liste : encre pleine et même contour net.
   const styles = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
@@ -166,6 +174,58 @@ test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   assert.match(watermark, /color: hsl\(var\(--foreground\)\)/);
   assert.match(watermark, /opacity: 1/);
   assert.match(watermark, /-webkit-text-stroke: 1\.5px hsl\(var\(--card\)\)/);
+});
+
+test('le sceau du numéro reste lisible sur les huit tons', () => {
+  // Le sceau teinte la surface de 12 % vers l'accent : l'encre d'accent y
+  // tombait à 4,44:1 (ambre, orange) — d'où l'encre du THÈME. On mesure les
+  // huit tons, dans les deux thèmes, avec les valeurs réellement déclarées.
+  const hexToRgb = (hex: string): Rgb => ({
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16),
+  });
+  const mix = (base: Rgb, coat: Rgb, weight: number): Rgb => ({
+    r: base.r * (1 - weight) + coat.r * weight,
+    g: base.g * (1 - weight) + coat.g * weight,
+    b: base.b * (1 - weight) + coat.b * weight,
+  });
+  const ratioRgb = (foreground: Rgb, background: Rgb): number => {
+    const a = luminance(foreground);
+    const b = luminance(background);
+    const [high, low] = a > b ? [a, b] : [b, a];
+    return (high + 0.05) / (low + 0.05);
+  };
+  const toneRules = (tone: string) => [...css.matchAll(new RegExp(`(?:^|\\n)([^\\n{}]*)\\[data-keep-tone="${tone}"\\]\\s*\\{([^}]*)\\}`, 'g'))]
+    .map(([, prefix, body]) => ({ dark: prefix.includes('.dark'), body }));
+  const hexToken = (body: string, name: string): string => {
+    const found = body.match(new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`));
+    assert.ok(found, `--${name} introuvable dans le ton`);
+    return found![1];
+  };
+  const inkOf = (theme: 'clair' | 'sombre') => hslToRgb(hslTriplet(theme === 'clair' ? lightCss : darkCss, 'foreground'));
+
+  const failures: string[] = [];
+  for (const tone of KEEP_TONES) {
+    const rules = toneRules(tone);
+    const light = rules.find(rule => !rule.dark);
+    const dark = rules.find(rule => rule.dark);
+    assert.ok(light && dark, `le ton ${tone} doit être déclaré dans les deux thèmes`);
+    const cases = [
+      ['clair', hexToken(light!.body, 'keep-light'), hexToken(light!.body, 'keep-accent')],
+      ['sombre', hexToken(light!.body, 'keep-dark'), hexToken(dark!.body, 'keep-accent')],
+    ] as const;
+    for (const [theme, surfaceHex, accentHex] of cases) {
+      const seal = mix(hexToRgb(surfaceHex), hexToRgb(accentHex), 0.12);
+      const measured = ratioRgb(inkOf(theme), seal);
+      if (measured < 4.5) failures.push(`${tone} en ${theme} : ${measured.toFixed(2)}:1`);
+      // L'anneau et la teinte ne portent aucun texte : ils doivent seulement
+      // se distinguer du repos (repère non textuel, seuil 3:1).
+      const ring = ratioRgb(hexToRgb(accentHex), hexToRgb(surfaceHex));
+      if (ring < 3) failures.push(`${tone} en ${theme} : anneau ${ring.toFixed(2)}:1`);
+    }
+  }
+  assert.deepEqual(failures, [], `sceaux insuffisamment lisibles :\n${failures.join('\n')}`);
 });
 
 test('l’écran de lancement et l’icône suivent la palette, sans saut de couleur', () => {

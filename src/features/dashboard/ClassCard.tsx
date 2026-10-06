@@ -73,13 +73,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
             {preparing && <span className="class-card__loading" aria-hidden="true" />}
             <div className="class-card__body">
-                {label.group && (
-                    <ClassGroupWatermark
-                        group={label.group}
-                        variant="background"
-                        className="class-card__group"
-                    />
-                )}
                 <div className="class-card__header">
                     {isActiveSession && (
                         <span className="class-card__live">
@@ -120,6 +113,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true">{formatWithOrdinals(title)}</span>
                     </h3>
+                    {/* Le numéro de groupe suit immédiatement le nom : collé à lui, il
+                        se lit comme un repère du même titre — « 2ème Bac PC · 3 » — au
+                        lieu d'un chiffre isolé dans un coin. Il est décoratif (le nom
+                        accessible ET son infobulle portent déjà le groupe). */}
+                    {label.group && (
+                        <ClassGroupWatermark
+                            group={label.group}
+                            variant="seal"
+                            className="class-card__group"
+                        />
+                    )}
                 </div>
             </div>
             <div className="class-card__footer">

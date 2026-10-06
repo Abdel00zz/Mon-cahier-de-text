@@ -13,6 +13,10 @@
      portent plus une gamme de gris froids à part. */
   --class-ink: hsl(var(--foreground));
   --class-muted: hsl(var(--muted-foreground));
+  /* Verre teinté : la surface du ton reste la référence, mais à 94 % — le
+     canevas du tableau de bord affleure derrière (charte §12 : 88-95 %), sans
+     coûter un point de contraste au texte. */
+  --class-glass: color-mix(in srgb, var(--class-surface) 94%, transparent);
   position: relative;
   isolation: isolate;
   display: flex;
@@ -25,16 +29,35 @@
   border: 1px solid var(--class-border);
   border-radius: 22px;
   color: var(--class-ink);
-  background: var(--class-surface);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38), 0 2px 4px rgb(32 30 26 / .03), 0 8px 24px -20px rgb(32 30 26 / .16);
-  transition: transform 250ms var(--ease-spring), box-shadow 250ms ease, border-color 200ms ease;
+  background: var(--class-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.28);
+  backdrop-filter: blur(14px) saturate(1.28);
+  /* Liseré supérieur spéculaire + ombre basse : la carte est POSÉE sur le
+     canevas, pas collée à lui. */
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .42), 0 2px 4px rgb(32 30 26 / .03), 0 10px 26px -22px rgb(32 30 26 / .18);
+  transition: transform 260ms var(--ease-spring), box-shadow 260ms ease, border-color 200ms ease;
 }
-/* Filet de couleur en tête de carte : supprimé sur demande — la teinte se lit
-   désormais dans la texture tissée et les taches (aucun dégradé). */
+/* Halo radial : la couleur du ton sans aucun aplat. Deux sources très douces —
+   une en haut, une à l'angle opposé — sous la texture et sous le contenu. */
+.class-card::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(118% 92% at 10% -14%, color-mix(in srgb, var(--class-vivid) 22%, transparent), transparent 60%),
+    radial-gradient(96% 84% at 106% 116%, color-mix(in srgb, var(--class-accent) 12%, transparent), transparent 64%);
+  opacity: .8;
+  transition: opacity 260ms ease;
+}
+/* Mode sombre : la surface du ton est un gris profond (jamais du noir), le
+   verre reste teinté, et le halo se pose sur une élévation plus marquée. */
 .dark .class-card {
   --class-surface: var(--keep-dark, #252729);
   --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface));
-  box-shadow: inset 0 1px 0 rgb(240 244 248 / .06), 0 8px 24px -20px rgb(0 0 0 / .5);
+  box-shadow: inset 0 1px 0 rgb(240 244 248 / .07), 0 12px 28px -24px rgb(0 0 0 / .6);
 }
 /* Texture « toile + taches » : un masque SVG (trame tissée de 3 px et taches
    d'ellipses superposées, **sans aucun dégradé**) rempli de la teinte de la
@@ -92,49 +115,69 @@
 .dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
-.class-card__identity { display: flex; align-items: center; min-height: 56px; }
+/* La ligne du titre porte le nom PUIS le sceau : c'est la proximité qui dit
+   « même classe, groupe 3 ». L'alignement se fait sur la LIGNE DE BASE (et non
+   un décalage en pixels) : le chiffre reste posé sur la première ligne du nom
+   quelle que soit la taille du titre — 21 px sur bureau, 18,5 px sur
+   téléphone. */
+.class-card__identity { display: flex; align-items: baseline; min-height: 56px; }
 /* Titre : Roboto Slab, posée en ligne par `constants/classTitleTypography.ts`.
    21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large. */
 .class-card__title { flex: 1; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-/* Le numéro de classe est lu, pas seulement deviné : encre noire chaude
-   franchement opaque, détourée d'un filet couleur carte qui détache les
-   chiffres de la texture. `paint-order` garde le filet DERRIÈRE le chiffre. */
+/* Numéro de groupe : un SCEAU collé au nom, dans la ligne du titre — plus de
+   chiffre géant relégué dans un coin, où il fallait deviner à quoi il
+   correspondait. Pastille de verre teintée par le ton, anneau d'accent, et le
+   chiffre à L'ENCRE du thème : mesuré 10,2:1 à 12,6:1 en clair, 8,5:1 à 11,4:1
+   en sombre sur les huit tons (l'encre d'accent, elle, tombait à 4,44:1 sur
+   les tons ambre et orange). Le nom accessible porte déjà le groupe : le sceau
+   reste décoratif et ne se lit pas deux fois. */
 .class-card .class-card__group {
-  position: absolute;
-  z-index: 0;
-  inset-inline-end: 12px;
-  bottom: -10px;
-  display: block;
-  max-width: 100%;
-  padding: 0;
+  position: relative;
+  inset: auto;
+  bottom: auto;
+  z-index: 1;
+  flex: 0 0 auto;
+  align-self: baseline;
+  display: grid;
+  place-items: center;
+  min-width: 2.1em;
+  min-height: 2.1em;
+  height: 2.1em;
   margin: 0;
+  margin-inline-start: .55em;
+  padding: 0 .38em;
+  /* Décor : la carte entière reste cliquable, aucun angle mort sous le pouce. */
   pointer-events: none;
   user-select: none;
-  font-family: 'DM Sans', ui-sans-serif, sans-serif;
-  font-size: clamp(85px, 10.2vw, 119px);
+  font-family: var(--font-lato);
+  font-size: 15px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   font-variant-numeric: lining-nums tabular-nums;
-  letter-spacing: -.065em;
+  letter-spacing: 0;
   line-height: 1;
   color: hsl(var(--foreground));
-  opacity: .5;
-  -webkit-text-stroke: 2px var(--class-surface);
-  paint-order: stroke fill;
+  opacity: 1;
+  background: color-mix(in srgb, var(--class-accent) 12%, var(--class-surface));
+  border: 1px solid color-mix(in srgb, var(--class-accent) 42%, transparent);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45);
+  -webkit-text-stroke: 0;
+  paint-order: normal;
   text-shadow: none;
   transform: none;
   translate: none;
   filter: none;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
-.class-card .class-card__group:hover { transform: none; filter: none; }
 .dark .class-card .class-card__group {
   color: hsl(var(--foreground));
-  opacity: .38;
-  -webkit-text-stroke: 2px var(--class-surface);
-  text-shadow: none;
+  opacity: 1;
+  background: color-mix(in srgb, var(--class-accent) 12%, var(--class-surface));
+  border-color: color-mix(in srgb, var(--class-accent) 42%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .08);
 }
-.class-card:has(.class-card__group) .class-card__identity { padding-inline-end: 28px; }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
@@ -156,9 +199,21 @@
 }
 .class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
 @media (hover: hover) and (pointer: fine) {
-  .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(32 30 26 / .18); }
-  .class-card:hover .class-card__texture { opacity: .075; }
+  /* La carte se SOULÈVE : elle monte de 6 px, son ombre s'allonge et son halo
+     s'allume d'un cran. Aucune autre propriété n'est animée, donc le geste
+     reste à 60 fps même avec vingt-cinq cartes à l'écran. */
+  .class-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--class-accent) 46%, var(--class-surface));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 24px 42px -28px color-mix(in srgb, var(--class-vivid) 62%, transparent), 0 8px 18px -12px rgb(32 30 26 / .22);
+  }
+  .class-card:hover::before { opacity: 1; }
+  .class-card:hover .class-card__texture { opacity: .07; }
+  .class-card:hover .class-card__group { background: color-mix(in srgb, var(--class-accent) 18%, var(--class-surface)); border-color: color-mix(in srgb, var(--class-accent) 58%, transparent); }
 }
+/* Clavier : le même soulèvement, sans dépendre du survol. */
+.class-card:has(.class-card__open:focus-visible) { transform: translateY(-4px); }
+.class-card:has(.class-card__open:focus-visible)::before { opacity: 1; }
 .class-card:has(.class-card__open:active) { transform: scale(.988); }
 @media (max-width: 639px) {
   .class-card { min-height: 173px; border-radius: 18px; }
@@ -166,6 +221,7 @@
   .class-card__header { margin-bottom: 4px; }
   .class-card__identity { min-height: 52px; }
   .class-card__title { font-size: 18.5px; }
+  .class-card .class-card__group { font-size: 13.5px; }
   .class-card__footer { padding-inline: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {

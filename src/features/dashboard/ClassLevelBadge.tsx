@@ -121,9 +121,11 @@ export interface ClassGroupWatermarkProps {
      * Emplacement du numéro :
      * - `inline` : à côté d'un titre (liste des classes) ;
      * - `end` : après le nom ;
+     * - `seal` : sceau compact posé juste après le nom, dans la carte (géométrie
+     *   et encre portées par `classCards.css`) ;
      * - `background` : décor indépendant, masqué aux lecteurs d’écran.
      */
-    variant?: 'inline' | 'end' | 'background';
+    variant?: 'inline' | 'end' | 'background' | 'seal';
 }
 
 /**
@@ -140,6 +142,9 @@ export const ClassGroupWatermark = memo(({
     className,
     variant = 'inline',
 }: ClassGroupWatermarkProps) => {
+    // Le nom d'usage lu par les lecteurs d'écran contient DÉJÀ le groupe : un
+    // décor (filigrane de fond, sceau de la carte) ne doit pas le répéter.
+    const isDecorative = variant === 'background' || variant === 'seal';
     return (
         <span
             data-variant={variant}
@@ -151,9 +156,9 @@ export const ClassGroupWatermark = memo(({
             )}
             data-tone={themeTone}
             data-tier={tierKey ?? undefined}
-            title={variant === 'background' ? undefined : label}
-            aria-label={variant === 'background' ? undefined : label}
-            aria-hidden={variant === 'background' ? true : undefined}
+            title={label}
+            aria-label={isDecorative ? undefined : label}
+            aria-hidden={isDecorative ? true : undefined}
         >
             <bdi dir="ltr">{toLatinDigits(group)}</bdi>
         </span>

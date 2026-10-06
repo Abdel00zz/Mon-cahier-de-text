@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassCard } from '../src/features/dashboard/ClassCard';
+import { ClassDisplayToggle } from '../src/features/dashboard/ClassDisplayToggle';
+import { isClassDisplayMode, nextClassDisplayMode, type ClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { translateLocaleMessage } from '../src/i18n/messages';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
@@ -65,5 +68,69 @@ test('séance en cours : la carte de la classe active, et elle seule, porte le r
     // La classe active passe en tête sans modifier l'ordre enregistré des autres.
     if (expected.length === 1) assert.equal(cards[0].id, expected[0]);
   }
+});
+
+test('le numéro de groupe accompagne le nom du titre, dans la carte', () => {
+  const [first] = renderCards(new Set());
+  const identity = first.html.slice(
+    first.html.indexOf('class-card__identity'),
+    first.html.indexOf('class-card__footer'),
+  );
+  assert.ok(identity.length > 0, 'la ligne d’identité est montée');
+  assert.match(identity, /class-card__title[\s\S]*class-card__group/, 'le numéro SUIT le nom, il ne le précède pas');
+  assert.match(identity, /data-variant="seal"/, 'variante sceau de la carte');
+  assert.match(identity, /class-card__group[\s\S]*aria-hidden="true"/, 'décoratif : le nom accessible porte déjà le groupe');
+  assert.match(identity, /sr-only/, 'le groupe reste annoncé une seule fois');
+  // Le sceau a quitté le corps de la carte : plus de chiffre géant entre l'en-tête et le titre.
+  const body = first.html.slice(first.html.indexOf('class-card__body'), first.html.indexOf('class-card__identity'));
+  assert.doesNotMatch(body, /class-card__group/, 'plus aucun filigrane détaché du titre');
+});
+
+test('la carte est un verre teinté avec halo, et se soulève doucement', () => {
+  const cards = readFileSync('src/features/dashboard/classCards.css', 'utf8');
+  assert.match(cards, /--class-glass: color-mix\(in srgb, var\(--class-surface\) 94%, transparent\)/, 'surface de verre (94 %)');
+  assert.match(cards, /backdrop-filter: blur\(14px\) saturate\(1\.28\)/, 'flou d’arrière-plan');
+  assert.match(cards, /\.class-card::before \{[\s\S]*radial-gradient/, 'halo radial du ton');
+  assert.match(cards, /\.class-card::before \{[\s\S]*z-index: 0/, 'le halo passe sous le contenu');
+  assert.match(cards, /\.class-card:hover \{[\s\S]*transform: translateY\(-6px\)/, 'soulèvement au survol');
+  assert.match(cards, /\.class-card:hover::before \{ opacity: 1; \}/, 'le halo s’allume sans changer la couleur du texte');
+  const mobile = cards.slice(cards.indexOf('@media (max-width: 639px)'));
+  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 13\.5px; \}/, 'sceau resserré sur téléphone');
+});
+
+test('la disposition avance d’un seul geste, sans menu', () => {
+  // Un appui = un cran. Le cycle est fermé : on revient au point de départ.
+  const cycle: ClassDisplayMode[] = ['double', 'single', 'list'];
+  assert.deepEqual(cycle.map(nextClassDisplayMode), ['single', 'list', 'double']);
+  assert.equal(nextClassDisplayMode(nextClassDisplayMode(nextClassDisplayMode('double'))), 'double', 'cycle fermé');
+  assert.ok(isClassDisplayMode('single'), 'une valeur connue est acceptée');
+  for (const rejected of ['triple', '', undefined, null, 3, {}]) {
+    assert.equal(isClassDisplayMode(rejected), false, `valeur rejetée : ${String(rejected)}`);
+  }
+});
+
+test('un seul bouton, un seul mécanisme, trois états montés d’avance', () => {
+  const html = renderToStaticMarkup(React.createElement(LocaleProvider, {
+    locale: 'fr',
+    children: React.createElement(ClassDisplayToggle, { mode: 'double', onChange: () => {} }),
+  }));
+  assert.ok(html.includes('data-slot="class-display-toggle"'), 'le bouton existe');
+  assert.ok(html.includes('data-mode="double"'), 'son état courant est exposé');
+  assert.equal((html.match(/<button/g) ?? []).length, 1, 'un seul bouton, aucun déclencheur secondaire');
+  assert.doesNotMatch(html, /role="menu"|menuitemradio|aria-haspopup/, 'plus aucun menu de disposition');
+  assert.equal((html.match(/<svg/g) ?? []).length, 3, 'les trois pictogrammes sont montés (métamorphose, pas remontage)');
+  assert.equal((html.match(/class-display-toggle__labels/g) ?? []).length, 1, 'une seule boîte de libellés');
+  assert.match(html, /aria-label="Disposition : 2 par ligne — passer à 1 par ligne"/, 'le geste est annoncé avant d’être fait');
+  assert.match(html, /aria-live="polite"/, 'le nouvel état est annoncé après le clic');
+});
+
+test('le tableau de bord ne propose plus deux chemins pour changer d’affichage', () => {
+  const source = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
+  assert.match(source, /<ClassDisplayToggle/, 'le bouton unique est branché');
+  assert.doesNotMatch(source, /menuitemradio|aria-haspopup="menu"|isDisplayMenuOpen|displayMenuRef/, 'plus de menu ni d’état de menu');
+  assert.doesNotMatch(source, /ChevronDown/, 'plus de chevron de menu');
+  // La disposition reste persistée : un seul écrivain, la valeur validée.
+  assert.match(source, /dashboard_class_display_v1/, 'la disposition survit au rechargement');
+  assert.match(source, /isClassDisplayMode\(classDisplayMode\)/, 'une valeur inconnue retombe sur deux colonnes');
 });
 

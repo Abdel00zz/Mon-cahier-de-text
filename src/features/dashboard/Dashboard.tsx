@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useClassManager } from '@/hooks/useClassManager';
 import { useConfigManager } from '@/hooks/useConfigManager';
@@ -7,6 +7,8 @@ import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/cahier/Button';
 import { ClassCard } from './ClassCard';
+import { ClassDisplayToggle } from './ClassDisplayToggle';
+import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
 import { ClassListItem } from './ClassListItem';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
@@ -16,7 +18,7 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/domain/calendar/timetable';
 import { collectTeacherSubjects, subjectKey } from '@/domain/classes/subjectScope';
-import { ChevronDown, Plus } from '@/components/ui/icons';
+import { Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/classes/classOrder';
@@ -31,9 +33,6 @@ interface DashboardProps {
     onOnboardingVisibilityChange?: (visible: boolean) => void;
 }
 
-type ClassDisplayMode = 'list' | 'single' | 'double';
-
-const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -58,13 +57,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
-    const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
-    const displayMenuRef = useRef<HTMLDivElement>(null);
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true || classes.length > 0;
 
     useEffect(() => {
-        if (!CLASS_DISPLAY_OPTIONS.includes(classDisplayMode)) {
+        if (!isClassDisplayMode(classDisplayMode)) {
             setClassDisplayMode('double');
         }
     }, [classDisplayMode, setClassDisplayMode]);
@@ -72,21 +69,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // Les cartes ne sont révélées qu'avec leur cycle et leur disposition réels,
     // ce qui évite un flash dans le mauvais filtre ou le mauvais nombre de colonnes.
     const isLoading = isClassesLoading || isConfigLoading || isCycleLoading || isDisplayModeLoading;
-    useEffect(() => {
-        if (!isDisplayMenuOpen) return;
-        const closeMenu = (event: PointerEvent) => {
-            if (!displayMenuRef.current?.contains(event.target as Node)) setDisplayMenuOpen(false);
-        };
-        const closeOnEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') setDisplayMenuOpen(false);
-        };
-        window.addEventListener('pointerdown', closeMenu);
-        window.addEventListener('keydown', closeOnEscape);
-        return () => {
-            window.removeEventListener('pointerdown', closeMenu);
-            window.removeEventListener('keydown', closeOnEscape);
-        };
-    }, [isDisplayMenuOpen]);
 
     useEffect(() => {
         if (isConfigLoading) return;
@@ -247,20 +229,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return <DashboardSkeleton />;
     }
 
-    const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
+    const currentDisplay = isClassDisplayMode(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-[500px] mx-auto auto-rows-fr items-stretch'
         : 'grid-cols-1 sm:grid-cols-2 auto-rows-fr items-stretch justify-start';
-
-    const displayCopy = (value: ClassDisplayMode) => {
-        const keys: Record<ClassDisplayMode, [string, string]> = {
-            list: ['dashboard.display.list', 'dashboard.display.listDescription'],
-            single: ['dashboard.display.single', 'dashboard.display.singleDescription'],
-            double: ['dashboard.display.double', 'dashboard.display.doubleDescription'],
-        };
-        const [labelKey, descriptionKey] = keys[value];
-        return { label: t(labelKey), description: t(descriptionKey) };
-    };
 
     /*
      * Suppression d'une classe : même garde-fou que depuis la fenêtre de
@@ -311,44 +283,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2 min-w-0 self-start sm:self-end">
-                                    {/* Choix de disposition : action secondaire discrète. */}
-                                    <div ref={displayMenuRef} className="relative shrink-0">
-                                        <Button
-                                            variant="secondary"
-                                            onClick={() => setDisplayMenuOpen(open => !open)}
-                                            aria-haspopup="menu"
-                                            aria-expanded={isDisplayMenuOpen}
-                                            className="gap-2 px-3.5 text-sm"
-                                        >
-                                            <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                        </Button>
-                                        {isDisplayMenuOpen && (
-                                            <div
-                                                role="menu"
-                                                className="paper-menu absolute top-[calc(100%+0.35rem)] end-0 z-30 w-44 overflow-hidden rounded-2xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-popover/90 p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
-                                            >
-                                                {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                    const isActive = option === currentDisplay;
-                                                    return (
-                                                        <button
-                                                            key={option}
-                                                            type="button"
-                                                            role="menuitemradio"
-                                                            aria-checked={isActive}
-                                                            onClick={() => {
-                                                                setClassDisplayMode(option);
-                                                                setDisplayMenuOpen(false);
-                                                            }}
-                                                            className={`flex min-h-11 w-full items-center justify-between rounded-xl px-2.5 py-2 text-start text-xs font-sans cursor-pointer transition-all duration-150 active:scale-[0.98] ${isActive ? 'bg-primary/10 text-primary font-bold' : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground font-medium'}`}
-                                                        >
-                                                            <span>{displayCopy(option).label}</span>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* Disposition : UN SEUL bouton, qui avance d'un cran à chaque
+                                        appui (deux colonnes → une colonne → liste → deux colonnes).
+                                        Plus de menu, donc plus d'aller-retour : l'icône se
+                                        métamorphose et le libellé se fond, à hauteur des autres
+                                        commandes de la rangée. */}
+                                    <ClassDisplayToggle
+                                        mode={currentDisplay}
+                                        onChange={setClassDisplayMode}
+                                        className="relative z-10"
+                                    />
 
                                     {/* Création : action principale à contraste élevé. */}
                                     <Button

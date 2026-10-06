@@ -1,0 +1,40 @@
+/* Bouton unique de disposition.
+   Il reprend EXACTEMENT la grammaire des autres commandes de la rangée
+   d'actions (44 px de haut, rayon 10 px, filet et fond de carte — voir
+   `components/cahier/Button`) : c'est ce qui le rend cohérent sans avoir à
+   redéfinir une apparence. Ce qui suit ne concerne que la mécanique interne :
+   une icône qui se métamorphose et un libellé qui se fond, sans jamais
+   déplacer la mise en page. */
+
+.class-display-toggle__glyph {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+/* Les trois pictogrammes sont TOUS montés, empilés : changer de disposition
+   n'ajoute ni ne retire rien du DOM, donc aucun saut de mise en page et une
+   transition parfaitement fluide (opacité, échelle et rotation seulement). */
+.class-display-toggle__glyph > * {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* Libellés empilés dans la MÊME cellule de grille : la boîte prend la largeur
+   du plus long (« 2 par ligne »), donc le bouton ne bouge jamais quand le
+   texte change. */
+.class-display-toggle__labels {
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+  text-align: start;
+}
+
+.class-display-toggle__labels > * {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
