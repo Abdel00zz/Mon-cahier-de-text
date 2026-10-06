@@ -1460,16 +1460,19 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   assert.match(shape, /ring-1 ring-inset ring-current\/15/);
   assert.match(shape, /rounded-md/);
   // La géométrie vit dans `.content-badge` (index.css), partagée par l'éditeur,
-  // la modale de séance et les réglages : 10 px de corps, 6 px de rembourrage en
-  // ligne, 34 px de largeur au minimum. Non layerisée, donc elle tient même
-  // lorsqu'un bouton voisin porte ses propres utilitaires de rembourrage.
+  // la modale de séance et les réglages : sigle académique (fonte de document),
+  // 10 px de corps, 5 px de rembourrage en ligne, 30 px de largeur au minimum,
+  // chiffres à chasse fixe. Non layerisée, donc elle tient même lorsqu'un bouton
+  // voisin porte ses propres utilitaires de rembourrage.
   assert.match(shape, /content-badge/);
   const css = readFileSync('src/styles/index.css', 'utf8');
   const rule = css.slice(css.indexOf('.content-badge {'), css.indexOf('}', css.indexOf('.content-badge {')));
-  assert.match(rule, /min-width: 34px/);
-  assert.match(rule, /padding: 3px 6px/);
+  assert.match(rule, /min-width: 30px/);
+  assert.match(rule, /padding: 2px 5px/);
+  assert.match(rule, /font-family: var\(--font-document\)/);
   assert.match(rule, /font-size: 10px/);
   assert.match(rule, /line-height: 1/);
+  assert.match(rule, /font-variant-numeric: tabular-nums/);
   assert.ok(!css.slice(css.indexOf('.content-badge {')).includes('@layer'), 'la règle partagée reste hors @layer');
   // Théorème : famille rouge rosé ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
@@ -1479,6 +1482,21 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
   assert.equal(contentBadgeClass(undefined).includes('bg-muted'), true);
+});
+
+test('titre d’un devoir : rouge profond et voix éditoriale, écran comme papier', () => {
+  const content = readFileSync('src/features/editor/ContentRenderer.tsx', 'utf8');
+  // Le repère de l'année, pas une action : une seule paire de types le porte.
+  assert.match(content, /const isAssessment = item\.type === 'devoir_maison' \|\| item\.type === 'controle_continu'/, 'seuls les devoirs portent la voix du document');
+  assert.match(content, /titleColorClass = isAssessment \? 'editor-type-evaluation' : config\.color/, 'les corrections gardent leur couleur de famille');
+  assert.match(content, /flex items-center \$\{titleColorClass\} \$\{indentClass\}/, 'écran');
+  assert.match(content, /'text-red-700' : titleColorClass/, 'papier : le chapitre garde son rouge, le devoir prend la teinte éditoriale');
+  const css = readFileSync('src/styles/index.css', 'utf8');
+  const start = css.indexOf('.editor-type-evaluation {');
+  const rule = css.slice(start, css.indexOf('}', start));
+  assert.match(rule, /font-family: var\(--font-display\)/, 'fonte des titres, pas la fonte du corps');
+  assert.match(rule, /color: #9f1239/, 'rouge profond, contrasté sur fond clair');
+  assert.match(css, /\.dark \.editor-type-evaluation \{ color: #f0a3b4; \}/, 'teinte adoucie en mode sombre');
 });
 
 test('numerotation : la pastille porte le numero calcule, la saisie reste maitresse', () => {

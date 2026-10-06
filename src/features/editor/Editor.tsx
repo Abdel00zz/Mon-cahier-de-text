@@ -28,6 +28,10 @@ import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection,
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '@/domain/evaluations/notebookCheckRemarks';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
+import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
+import { DocumentPreview } from '@/components/documents/DocumentPreview';
+import { dateTimeFormat } from '@/lib/formatters';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures } from '@/infrastructure/printing/printMeta';
 import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
@@ -70,6 +74,19 @@ type NotificationType = 'success' | 'error' | 'info' | 'warning';
  * l'enseignant, sans que le cahier ne reprenne la main.
  */
 const placedNotebooks = new Set<string>();
+
+/**
+ * Horodatage de rédaction d'un sujet : options stables (objet de module) pour
+ * que le formateur `Intl` mémoïsé soit partagé au lieu d'être reconstruit à
+ * chaque ouverture d'aperçu.
+ */
+const DOCUMENT_UPDATED_FORMAT: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+};
 
 export interface EditorProps {
     classInfo: ClassInfo;
@@ -213,6 +230,33 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     (date?: string) => (date ? sessionAnnotationTexts.get(date) : undefined),
     [sessionAnnotationTexts],
   );
+
+  /*
+   * Sujets de devoirs : le cahier affiche « Devoir maison 2 », les évaluations
+   * rangent le sujet sous l'identifiant du devoir planifié. La pastille
+   * « Document » n'apparaît QUE sur une ligne qui a vraiment un sujet, et
+   * l'aperçu se contente de relire ce qui est déjà en mémoire — aucune requête
+   * au clic, donc une ouverture instantanée.
+   */
+  const documentPreviews = useNotebookDocumentPreviews(classInfo, config, lessonsData);
+  const [openDocument, setOpenDocument] = useState<NotebookDocumentPreview | null>(null);
+  const getDocumentPreview = useCallback(
+    (rowKey: string) => documentPreviews.get(rowKey),
+    [documentPreviews],
+  );
+  const handleOpenDocumentPreview = useCallback(
+    (preview: NotebookDocumentPreview) => setOpenDocument(preview),
+    [],
+  );
+  const closeDocumentPreview = useCallback(() => setOpenDocument(null), []);
+  /** « Mise à jour le … » : la date de rédaction du sujet, dans la langue de l'interface. */
+  const documentUpdatedLabel = useMemo(() => {
+    const updatedAt = openDocument?.document.updatedAt;
+    if (!updatedAt) return undefined;
+    const date = new Date(updatedAt);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return t('documentPreview.updated', { date: dateTimeFormat(locale, DOCUMENT_UPDATED_FORMAT).format(date) });
+  }, [openDocument, locale, t]);
 
   useEffect(() => {
     if (initialMathTypesetComplete || isClassLoading || isConfigLoading) return;
@@ -1308,6 +1352,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               getDateOrder={getDateOrder}
               getContentNumber={getContentNumber}
               getSessionAnnotation={getSessionAnnotation}
+              getDocumentPreview={getDocumentPreview}
+              onOpenDocumentPreview={handleOpenDocumentPreview}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
@@ -1409,6 +1455,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         onSkip={dismissTimetableNudge}
         onFill={fillTimetableFromNudge}
         className={classInfo.name}
+      />
+
+      {/* Aperçu du sujet : lecture seule, depuis la table comme depuis le cahier.
+          Le document est déjà en mémoire, la fenêtre n'a donc que la page à
+          composer (et seulement quand elle est ouverte). */}
+      <DocumentPreview
+        isOpen={openDocument !== null}
+        onClose={closeDocumentPreview}
+        title={openDocument?.title ?? ''}
+        subtitle={classInfo.name}
+        source={openDocument?.document.source}
+        updatedLabel={documentUpdatedLabel}
       />
 
       <ConfirmDialog

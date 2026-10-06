@@ -103,13 +103,13 @@ test('pastilles de type : une seule boîte, de la modale de séance aux réglage
   const css = read('src/styles/index.css');
   assert.match(
     css,
-    /\.content-badge\s*\{[^}]*min-width: 34px;[^}]*padding: 3px 6px;[^}]*font-size: 10px;[^}]*line-height: 1;/,
-    'la géométrie est écrite une fois : corps 10 px, rembourrage 6 px, largeur minimale 34 px',
+    /\.content-badge\s*\{[^}]*min-width: 30px;[^}]*padding: 2px 5px;[^}]*font-family: var\(--font-document\);[^}]*font-size: 10px;[^}]*line-height: 1;[^}]*font-variant-numeric: tabular-nums;/,
+    'la géométrie est écrite une fois : sigle académique, corps 10 px, rembourrage 5 px, largeur minimale 30 px, chiffres alignés',
   );
   // Le contrôle des réglages aligne ses deux états sur la même boîte : sans cela,
   // la pastille rétrécirait au moment d'être sélectionnée.
   const control = read('src/features/settings/components/DescriptionVisibilityControl.tsx');
-  assert.match(control, /min-w-\[34px\] rounded-lg px-1\.5 py-\[3px\] text-\[10px\] font-bold leading-none tracking-\[0\.03em\]/);
+  assert.match(control, /min-w-\[30px\] font-document rounded-lg px-1\.5 py-\[2px\] text-\[10px\] font-bold leading-none tracking-\[0\.02em\] tabular-nums/);
   assert.ok(!control.includes('px-2.5 py-1 text-[10px]'), 'plus de rembourrage concurrent');
   const fields = read('src/features/editor/modals/ContentFields.tsx');
   assert.match(fields, /contentBadgeClass\(type\)/, 'la modale de séance consomme la forme partagée');

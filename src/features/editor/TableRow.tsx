@@ -8,6 +8,7 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import './editorRowStates.css';
 
 interface TableRowProps {
@@ -36,6 +37,13 @@ interface TableRowProps {
   getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
   /** numéro de série du contenu, calculé par chapitre */
   getContentNumber?: (indices: Indices) => string | undefined;
+  /**
+   * Sujet écrit par le professeur, lu PAR LIGNE du cahier : la pastille
+   * « Document » n'apparaît que si un sujet existe pour cette ligne
+   * (voir `notebookDocumentPreviews`).
+   */
+  getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
 
@@ -199,6 +207,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   getDateWarnings,
   getDateOrder,
   getContentNumber,
+  getDocumentPreview,
+  onOpenDocumentPreview,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
@@ -333,7 +343,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
-            <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} />
+            <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
           </div>
         </div>
       </div>
@@ -410,6 +420,8 @@ const TableRowComponent: FC<TableRowProps> = ({
         descriptionTypes={descriptionTypes}
         highlight={searchQuery}
         contentNumber={getContentNumber?.(indices)}
+        getDocumentPreview={getDocumentPreview}
+        onOpenDocumentPreview={onOpenDocumentPreview}
       />
     </div>
   );
@@ -468,7 +480,9 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
-  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.onOpenRemark !== next.onOpenRemark || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber) return false;
+  // La fonction d'aperçu fait partie du contrat : l'oublier ici figerait les
+  // pastilles « Document » sur l'état du premier rendu.
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.onOpenRemark !== next.onOpenRemark || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber || prev.getDocumentPreview !== next.getDocumentPreview || prev.onOpenDocumentPreview !== next.onOpenDocumentPreview) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;

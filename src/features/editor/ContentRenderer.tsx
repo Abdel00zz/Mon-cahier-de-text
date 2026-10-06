@@ -9,8 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
-import { TriangleAlert } from '@/components/ui/icons';
+import { TriangleAlert, FileText } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { indicesKey } from '@/domain/notebook/lessonRows';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 
 interface ContentRendererProps {
   data: any;
@@ -23,6 +25,15 @@ interface ContentRendererProps {
   highlight?: string;
   /** numéro affiché : saisi à la main, sinon calculé par chapitre */
   contentNumber?: string;
+  /**
+   * Sujet écrit par le professeur rangé par la ligne du cahier qui le porte
+   * (voir `notebookDocumentPreviews`). Une LECTURE, pas une donnée : la rangée
+   * ne reçoit jamais le document, seulement de quoi le retrouver en O(1) — un
+   * devoir sans sujet ne compose donc rien du tout.
+   */
+  getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+  /** ouvrir l'aperçu du sujet (lecture seule, aucune écriture) */
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
 /** Champs qu'un JSON importé peut remplir n'importe comment. */
@@ -138,7 +149,7 @@ const renderChapterTitleStyled = (text: string) => {
   );
 };
 
-export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight, contentNumber }) => {
+export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight, contentNumber, getDocumentPreview, onOpenDocumentPreview }) => {
   const { t } = useLocale();
   
   if (elementType in TOP_LEVEL_TYPE_CONFIG) {
@@ -156,6 +167,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     }
     
     const isCorrection = toDisplayText(item.type).startsWith('correction_');
+    /*
+     * Un DEVOIR (maison / contrôle continu) est un repère de l'année : son titre
+     * porte sa propre voix (rouge profond, fonte éditoriale) sur l'écran comme
+     * sur le papier. Les corrections gardent leur couleur de famille — elles
+     * répondent au devoir, elles ne le rejouent pas.
+     */
+    const isAssessment = item.type === 'devoir_maison' || item.type === 'controle_continu';
+    const titleColorClass = isAssessment ? 'editor-type-evaluation' : config.color;
 
     if (isPrint) {
       const prefix = toDisplayText(item.type).toUpperCase();
@@ -164,7 +183,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         // Pas de MaybeKaTeX ici : ses enfants sont un arbre riche, il rendrait
         // le titre tel quel. `HighlightedText` est la seule composition qui
         // traduise les formules en KaTeX, sur papier comme à l'écran.
-        <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
+        <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : titleColorClass}`}>
           <HighlightedText text={title} />
         </div>
       );
@@ -172,6 +191,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
     const isEvaluation = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu'].includes(item.type);
     const isCenteredInApp = isEvaluation;
+
+    /*
+     * Pastille « Document » : elle n'apparaît QUE là où un sujet existe, une
+     * seule fois par ligne (le devoir est un bloc, pas une liste de contenus).
+     * Bouton et non div : la rangée exclut déjà `button` de ses clics, donc
+     * ouvrir un aperçu ne sélectionne ni ne date le devoir, et le double-clic
+     * d'édition reste intact.
+     */
+    const documentPreview = getDocumentPreview && onOpenDocumentPreview
+      ? getDocumentPreview(indicesKey(indices))
+      : undefined;
     
     let indentClass = '';
     // Ne pas appliquer d'indentation pour les chapitres et évaluations de premier niveau
@@ -210,9 +240,27 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
-            <span dir={textDirectionAttribute(item.title)}>
-              <HighlightedText text={item.title} query={highlight} />
+        <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+            <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+              <span dir={textDirectionAttribute(item.title)}>
+                <HighlightedText text={item.title} query={highlight} />
+              </span>
+              {documentPreview && (
+                <button
+                  type="button"
+                  data-document-chip="true"
+                  className="editor-doc-chip"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpenDocumentPreview?.(documentPreview);
+                  }}
+                  title={t('documentPreview.openAria', { title: documentPreview.title })}
+                  aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
+                >
+                  <FileText className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span>{t('documentPreview.chip')}</span>
+                </button>
+              )}
             </span>
         </div>
       </MaybeKaTeX>

@@ -287,6 +287,21 @@ La feuille s'ouvre sur deux onglets :
 * L'aide **Aide · syntaxe**, dans la feuille, rappelle les marqueurs essentiels et
   la liste exacte des balises acceptées.
 
+### Relire un sujet depuis le cahier
+
+*Cahier de textes* → un **devoir maison** ou un **contrôle continu** dont le
+sujet est rédigé porte une pastille **Document** sur sa propre ligne.
+
+* Un clic (ou un tap) ouvre l'**aperçu du sujet** : la page composée, en lecture
+  seule, sans quitter le cahier. Aucune écriture, aucun enregistrement, donc rien
+  à valider.
+* L'aperçu est **instantané** : le document est déjà dans le cahier, il n'y a
+  aucune lecture réseau au clic.
+* **Pas de pastille = pas de sujet** : la table ne propose rien pour un devoir
+  encore vide. Rien ne change dans le cahier — ni date, ni séance, ni remarque.
+* La pastille **ne s'imprime jamais** : la feuille imprimée reste la trace
+  pédagogique, sans référence à vos fichiers.
+
 ### Mise en page d'une feuille : titre, exercices, barème
 
 Un document de devoir se compose comme une **feuille de sujet** : un titre, des

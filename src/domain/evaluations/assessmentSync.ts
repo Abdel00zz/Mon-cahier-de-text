@@ -1,5 +1,6 @@
-import { LessonsData, Section, SubSection, SubSubSection, LessonItem, EmbeddableTopLevelItem } from '../../types.js';
+import { ContentDocument, Indices, LessonsData, Section, SubSection, SubSubSection, LessonItem, EmbeddableTopLevelItem } from '../../types.js';
 import { PlannedAssessment } from './assessments.js';
+import { indicesKey } from '../notebook/lessonRows.js';
 
 /**
  * Moteur de CORRESPONDANCE devoirs ↔ cahier de textes.
@@ -21,6 +22,8 @@ export interface NotebookAssessmentEntry {
     num: number;
     title: string;
     date?: string;
+    /** clé de la LIGNE du cahier qui porte ce devoir (voir `indicesKey`) */
+    key: string;
 }
 
 /** type de bloc du cahier → type de devoir du planning */
@@ -39,33 +42,36 @@ const parseTrailingNumber = (title: string | undefined): number | null => {
  * (les blocs de premier niveau ET les devoirs imbriqués dans les sections).
  */
 export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmentEntry[] => {
-    const raw: { type: NotebookAssessmentEntry['type']; title: string; date?: string; declaredNum: number | null }[] = [];
+    const raw: { type: NotebookAssessmentEntry['type']; title: string; date?: string; declaredNum: number | null; key: string }[] = [];
 
-    const visitItem = (item: LessonItem | EmbeddableTopLevelItem): void => {
+    const visitItem = (item: LessonItem | EmbeddableTopLevelItem, indices: Indices): void => {
         const mapped = NOTEBOOK_TYPE_MAP[item.type];
         if (mapped) {
             const title = 'title' in item ? (item.title ?? '') : '';
-            raw.push({ type: mapped, title, date: item.date, declaredNum: parseTrailingNumber(title) });
+            raw.push({ type: mapped, title, date: item.date, declaredNum: parseTrailingNumber(title), key: indicesKey(indices) });
         }
     };
 
-    const visitSubSub = (sss: SubSubSection): void => { (sss.items ?? []).forEach(visitItem); };
-    const visitSub = (ss: SubSection): void => {
-        (ss.items ?? []).forEach(visitItem);
-        (ss.subsubsections ?? []).forEach(visitSubSub);
+    const visitSubSub = (sss: SubSubSection, base: Indices): void => {
+        (sss.items ?? []).forEach((item, itemIndex) => visitItem(item, { ...base, itemIndex }));
     };
-    const visitSection = (s: Section): void => {
-        (s.items ?? []).forEach(visitItem);
-        (s.subsections ?? []).forEach(visitSub);
+    const visitSub = (ss: SubSection, base: Indices): void => {
+        (ss.items ?? []).forEach((item, itemIndex) => visitItem(item, { ...base, itemIndex }));
+        (ss.subsubsections ?? []).forEach((sss, subsubsectionIndex) => visitSubSub(sss, { ...base, subsubsectionIndex }));
+    };
+    const visitSection = (section: Section, base: Indices): void => {
+        (section.items ?? []).forEach((item, itemIndex) => visitItem(item, { ...base, itemIndex }));
+        (section.subsections ?? []).forEach((ss, subsectionIndex) => visitSub(ss, { ...base, subsectionIndex }));
     };
 
-    for (const top of lessons) {
+    lessons.forEach((top, chapterIndex) => {
+        const base: Indices = { chapterIndex };
         const mapped = NOTEBOOK_TYPE_MAP[top.type];
         if (mapped) {
-            raw.push({ type: mapped, title: top.title, date: top.date, declaredNum: parseTrailingNumber(top.title) });
+            raw.push({ type: mapped, title: top.title, date: top.date, declaredNum: parseTrailingNumber(top.title), key: indicesKey(base) });
         }
-        (top.sections ?? []).forEach(visitSection);
-    }
+        (top.sections ?? []).forEach((section, sectionIndex) => visitSection(section, { ...base, sectionIndex }));
+    });
 
     /* numérotation finale PAR TYPE : le numéro déclaré dans le titre prime,
        les titres sans numéro prennent le premier ordinal libre (ordre du doc) */
@@ -81,10 +87,52 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
                 num = cursor;
                 taken.add(num);
             }
-            result.push({ type, num, title: entry.title, date: entry.date });
+            result.push({ type, num, title: entry.title, date: entry.date, key: entry.key });
         }
     }
     return result;
+};
+
+/** Ce qu'une ligne du cahier porte comme document rédigé. */
+export interface NotebookDocumentPreview {
+    /** Sujet, corrigé ou fiche écrit par le professeur. */
+    document: ContentDocument;
+    /** Titre à afficher : celui du cahier, sinon le libellé du planning. */
+    title: string;
+    /** Devoir planifié correspondant (identifiant annuel stable). */
+    assessmentId: string;
+}
+
+/**
+ * Documents des devoirs indexés par la LIGNE du cahier qui les porte.
+ *
+ * Le cahier écrit « Contrôle continu 2 », les évaluations rangent le sujet sous
+ * l'identifiant du devoir planifié : la correspondance se fait avec le MÊME
+ * moteur que les écarts de date (`linkAssessments`), donc la ligne qui affiche
+ * « Écart de date avec le cahier » est exactement celle qui porte le sujet.
+ *
+ * Aucun document vide : une ligne sans sujet n'apparaît pas dans la table
+ * (`source` blanche = pas de document).
+ */
+export const notebookDocumentPreviews = (
+    links: readonly AssessmentLink[],
+    documents: Record<string, ContentDocument> | undefined,
+): Map<string, NotebookDocumentPreview> => {
+    const previews = new Map<string, NotebookDocumentPreview>();
+    if (!documents) return previews;
+    for (const link of links) {
+        const entry = link.entry;
+        if (!entry) continue;
+        const document = documents[link.planned.id]
+            ?? (link.planned.legacyId ? documents[link.planned.legacyId] : undefined);
+        if (!document?.source?.trim()) continue;
+        previews.set(entry.key, {
+            document,
+            title: entry.title.trim() || link.planned.label,
+            assessmentId: link.planned.id,
+        });
+    }
+    return previews;
 };
 
 type AssessmentLinkStatus =

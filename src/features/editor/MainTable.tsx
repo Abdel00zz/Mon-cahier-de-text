@@ -6,6 +6,7 @@ import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/domain/notebook/tableRows';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { logger } from '@/lib/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
@@ -49,6 +50,14 @@ interface MainTableProps {
   getContentNumber?: (indices: Indices) => string | undefined;
   /** tracé automatique d'une séance (contrôle des cahiers), indexé par date */
   getSessionAnnotation?: (date?: string) => string | undefined;
+  /**
+   * Sujet écrit par le professeur, lu par la LIGNE du cahier : la pastille
+   * « Document » ne s'affiche que sur un devoir qui a réellement un sujet
+   * (voir `notebookDocumentPreviews`). Lecture pure, aucun parcours par rangée.
+   */
+  getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+  /** ouvre l'aperçu du sujet en lecture seule */
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   /** terme de recherche actif (surlignage dans les lignes) */
   searchQuery?: string;
   /** rangée à rejoindre automatiquement après une suggestion de séance */
@@ -115,6 +124,9 @@ interface SessionGroupRowProps {
      * décide de la séance annotée, pas un identifiant de devoir.
      */
     getSessionAnnotation?: (date?: string) => string | undefined;
+    /** sujet écrit par le professeur, par ligne du cahier */
+    getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+    onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
@@ -134,6 +146,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     getDateOrder,
     getContentNumber,
     getSessionAnnotation,
+    getDocumentPreview,
+    onOpenDocumentPreview,
 }) => {
     const { t } = useLocale();
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
@@ -232,6 +246,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 getDateWarnings={getDateWarnings}
                 getDateOrder={getDateOrder}
                 getContentNumber={getContentNumber}
+                getDocumentPreview={getDocumentPreview}
+                onOpenDocumentPreview={onOpenDocumentPreview}
             />
         );
     };
@@ -370,7 +386,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
         || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
         || previous.getDateWarnings !== next.getDateWarnings || previous.getDateOrder !== next.getDateOrder
         || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds
-        || previous.getSessionAnnotation !== next.getSessionAnnotation) return false;
+        || previous.getSessionAnnotation !== next.getSessionAnnotation
+        || previous.getDocumentPreview !== next.getDocumentPreview
+        || previous.onOpenDocumentPreview !== next.onOpenDocumentPreview) return false;
     return previous.items.every(item => previous.selectedKeys.has(item.key) === next.selectedKeys.has(item.key));
 });
 
@@ -469,6 +487,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   getDateOrder,
   getContentNumber,
   getSessionAnnotation,
+  getDocumentPreview,
+  onOpenDocumentPreview,
   searchQuery,
   focusKey,
   predefinedProgramTitle,
@@ -604,6 +624,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   getDateOrder={getDateOrder}
                                   getContentNumber={getContentNumber}
                                   getSessionAnnotation={getSessionAnnotation}
+                                  getDocumentPreview={getDocumentPreview}
+                                  onOpenDocumentPreview={onOpenDocumentPreview}
                               />
                           </VirtualListRow>
                       );
@@ -634,6 +656,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               getDateWarnings={getDateWarnings}
                               getDateOrder={getDateOrder}
                               getContentNumber={getContentNumber}
+                              getDocumentPreview={getDocumentPreview}
+                              onOpenDocumentPreview={onOpenDocumentPreview}
                           />
                       </VirtualListRow>
                   );

@@ -802,7 +802,7 @@ html[lang="ar"] .modal-header h2,
     --editor-fs-table-side: 11px;
     --editor-fs-table-main: 12px;
     --editor-fs-remark: 12px;
-    --editor-badge-min-width: 34px;
+    --editor-badge-min-width: 30px;
     --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: 6px;
     --editor-lesson-indent: 0px;
@@ -814,6 +814,20 @@ html[lang="ar"] .modal-header h2,
   .dark .editor-type-chapter { color: #91cec8; }
   
   .editor-type-top { font-size: var(--editor-fs-top); line-height: 1.3; }
+  /*
+   * Titre d'un DEVOIR (maison / contrôle continu) : rouge profond, dans la voix
+   * éditoriale des titres de l'application (Newsreader en latin, Maghribi en
+   * arabe). C'est un repère de l'année, pas une action : la couleur situe le
+   * devoir dans le cahier, elle ne remplace aucune sémantique (le rouge d'alerte
+   * et de destruction vit ailleurs). Interligne plus ample que les autres blocs,
+   * car le titre d'un devoir se lit comme un titre de document.
+   */
+  .editor-type-evaluation {
+    font-family: var(--font-display);
+    line-height: 1.45;
+    color: #9f1239;
+  }
+  .dark .editor-type-evaluation { color: #f0a3b4; }
   .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
   .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
   .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); line-height: 1.35; }
@@ -827,6 +841,52 @@ html[lang="ar"] .modal-header h2,
   .editor-type-table-side { font-size: var(--editor-fs-table-side); line-height: 1.2; }
   .editor-type-table-main { font-size: var(--editor-fs-table-main); line-height: 1.2; }
   .editor-type-remark { font-size: var(--editor-fs-remark); line-height: 1.35; }
+
+  /*
+   * Pastille « Document » : un devoir maison / contrôle continu qui a un sujet
+   * rédigé le dit sur sa propre ligne et l'ouvre en un geste. Teinte d'accent
+   * discrète (l'accent reste réservé aux actions), icône héritée du texte, donc
+   * aucun nouveau rôle couleur dans le cahier. Cible compacte mais franche
+   * (≈ 24 px de haut dans une rangée de 52 px) et `touch-action: manipulation`
+   * pour supprimer le délai de double-tap sur téléphone.
+   */
+  .editor-doc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid color-mix(in srgb, hsl(var(--primary)) 22%, transparent);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, hsl(var(--primary)) 8%, transparent);
+    color: hsl(var(--primary));
+    font-size: var(--editor-fs-badge);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 150ms ease, filter 150ms ease, transform 150ms ease;
+  }
+  .editor-doc-chip:hover {
+    background: color-mix(in srgb, hsl(var(--primary)) 14%, transparent);
+    filter: brightness(1.06);
+  }
+  .editor-doc-chip:active {
+    filter: brightness(0.92);
+    transform: scale(0.97);
+  }
+  .editor-doc-chip:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  html[lang='ar'] .editor-doc-chip { font-size: 0.75rem; }
+  @media (prefers-reduced-motion: reduce) {
+    .editor-doc-chip { transition: none; }
+    .editor-doc-chip:active { transform: none; }
+  }
 
   .editor-kind-badge {
     min-width: var(--editor-badge-min-width) !important;
@@ -860,12 +920,12 @@ html[lang="ar"] .modal-header h2,
     --editor-fs-item-title: var(--editor-scale);
     --editor-fs-description: max(0.875rem, calc(var(--editor-scale) * 0.94));
     --editor-fs-page: calc(var(--editor-scale) * 0.75);
-    --editor-fs-badge: calc(var(--editor-scale) * 0.75);
+    --editor-fs-badge: calc(var(--editor-scale) * 0.72);
     --editor-fs-table-side: max(0.6875rem, calc(var(--editor-scale) * 0.75));
     --editor-fs-table-main: max(0.75rem, calc(var(--editor-scale) * 0.81));
     --editor-fs-remark: max(0.75rem, calc(var(--editor-scale) * 0.88));
-    --editor-badge-min-width: calc(var(--editor-scale) * 2.1);
-    --editor-badge-padding-inline: 6px;
+    --editor-badge-min-width: calc(var(--editor-scale) * 1.95);
+    --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
     --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
     /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
@@ -2095,11 +2155,16 @@ html[data-keyboard='open'] .mobile-tab-bar {
    une largeur calculée à partir de l'échelle de lecture.
    --------------------------------------------------------------------------- */
 .content-badge {
-  min-width: 34px;
-  padding: 3px 6px;
+  min-width: 30px;
+  padding: 2px 5px;
+  /* Sigle académique : la fonte de composition (Latin Modern Sans) donne au
+     jeton la voix d'un ouvrage, pas celle d'un bouton. Chiffres à chasse fixe
+     pour que « EXO 1 » et « EXO 11 » s'alignent d'une ligne à l'autre. */
+  font-family: var(--font-document);
   font-size: 10px;
   line-height: 1;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------------------------
@@ -2153,10 +2218,12 @@ html[data-keyboard='open'] .mobile-tab-bar {
    dix règles dispersées. 14 px de corps, 1,72 d'interligne — la densité d'une
    feuille d'énoncé, lisible à l'écran comme sur le papier. */
 .devoir-document {
+  --doc-title-ink: #831f35;
+  --doc-title-font: 'Newsreader', var(--font-arabic-display), Georgia, serif;
   --doc-fs: 14px;
   --doc-lh: 1.72;
-  --doc-fs-title: 1.45rem;
-  --doc-fs-heading: 1rem;
+  --doc-fs-title: clamp(1.5rem, 1.3rem + 0.6vw, 1.8rem);
+  --doc-fs-heading: 0.875rem;
   --doc-fs-bareme: 0.875rem;
   font-family: var(--font-document);
   font-size: var(--doc-fs);
@@ -2167,11 +2234,15 @@ html[data-keyboard='open'] .mobile-tab-bar {
 }
 .devoir-document .doc-title {
   display: block;
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.85rem;
+  padding-block: 0.15rem 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--doc-title-ink) 22%, transparent);
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--doc-title-font);
   font-size: var(--doc-fs-title);
-  font-weight: 800;
+  font-weight: 600;
+  color: var(--doc-title-ink);
+  overflow-wrap: anywhere;
   line-height: 1.25;
   letter-spacing: -0.004em;
 }
@@ -2184,14 +2255,16 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .devoir-document .doc-heading {
   display: block;
   width: fit-content;
-  min-width: 9rem;
-  margin: 1.15rem 0 0.55rem;
-  padding: 0.2rem 0.8rem;
-  border-radius: 6px;
-  color: #fff;
+  max-width: 100%;
+  margin: 0.9rem 0 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  color: #faf8f5;
+  font-family: var(--font-document);
   font-size: var(--doc-fs-heading);
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
   letter-spacing: 0.005em;
   background: var(--doc-tone, #2563eb);
   print-color-adjust: exact;
@@ -2225,4 +2298,27 @@ html[data-keyboard='open'] .mobile-tab-bar {
   /* Les points s'alignent d'une question à l'autre : chiffres à chasse fixe,
      comme sur un barème imprimé. */
   font-variant-numeric: tabular-nums;
+}
+
+/* Academic document headings remain legible independently of the app accent. */
+.document-preview-title {
+  font-family: 'Newsreader', var(--font-arabic-display), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #831f35;
+}
+.dark .devoir-document { --doc-title-ink: #e5a5b2; }
+.dark .document-preview-title { color: #e5a5b2; }
+.devoir-document .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.15rem;
+}
+.devoir-document .doc-line__text { overflow-wrap: anywhere; }
+@media print {
+  .devoir-document { --doc-title-ink: #831f35; }
+  .document-preview-title { color: #831f35; }
+  .devoir-document .katex-display { overflow: visible; }
 }
