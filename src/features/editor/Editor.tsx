@@ -1202,6 +1202,23 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const isLoading = isClassLoading || isConfigLoading;
   const isInitialMathPreparing = notebookHasMath && !initialMathTypesetComplete;
 
+  /*
+   * Le bouton de retour vit dans l'en-tête, en haut de page. Dès que la page
+   * défile, l'en-tête disparaît : le bandeau collant reprend alors le retour,
+   * à côté du groupe annuler/refaire, pour revenir sans remonter la page.
+   * Seule la BASCULE re-rend l'éditeur, pas chaque pixel de défilement.
+   */
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const next = window.scrollY > 96;
+      setIsScrolled(current => (current === next ? current : next));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   if (isLoading) {
     return <EditorSkeleton />;
   }
@@ -1233,6 +1250,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
               onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
               onPrint={handleSmartPrint}
+              onBack={onBack}
+              showBack={isScrolled}
               searchQuery={searchQuery}
               setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
             />

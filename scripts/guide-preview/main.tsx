@@ -99,7 +99,8 @@ function Preview() {
         <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
         <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop} onSave={noop}
           onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
-          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+          onBack={noop} showBack={new URLSearchParams(location.search).has('back')} />
         <div className="pb-40 sm:pb-24">
           <MainTable lessonsData={lessons} visibleRows={filterLessonRows(buildLessonRows(lessons), searchQuery)} contentDirection="ltr"
             onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
