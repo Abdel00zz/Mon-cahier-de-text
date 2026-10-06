@@ -2096,3 +2096,44 @@ html[data-keyboard='open'] .mobile-tab-bar {
   line-height: 1;
   letter-spacing: 0.03em;
 }
+
+/* ---------------------------------------------------------------------------
+   Carte d'UN ACTIVITÉ pédagogique (évaluations d'une classe).
+   Même boîte que les cartes des réglages, mais simple CONTENEUR : l'action n'est
+   pas le clic sur la carte, les commandes vivent à l'intérieur. Une icône et une
+   teinte disent la nature de l'activité, sans multiplier les pastilles.
+   --------------------------------------------------------------------------- */
+.hub-card[data-static] { cursor: default; }
+.hub-card[data-static]:hover {
+  transform: none;
+  border-color: hsl(var(--border) / 0.7);
+  box-shadow: 0 1px 2px rgb(40 48 58 / 0.04), 0 10px 22px -18px rgb(40 48 58 / 0.32);
+}
+.hub-card[data-static]:hover .hub-card__icon {
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  transform: none;
+}
+.hub-card[data-static]:active { transform: none; filter: none; }
+.hub-card[data-done] { background: color-mix(in srgb, hsl(var(--card)) 55%, hsl(var(--muted))); }
+.hub-card[data-done] .hub-card__title { text-decoration: line-through; color: hsl(var(--muted-foreground)); }
+.hub-card[data-done] .hub-card__icon { opacity: 0.75; filter: saturate(0.45); }
+.hub-card[data-tone='slate'] { --tone: #475569; }
+.dark .hub-card[data-tone='slate'] { --tone: #9aa7b4; }
+
+/* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
+   Elle remplace une seconde couleur inventée — une carte, une teinte. */
+.tone-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.dark .tone-chip { background: color-mix(in srgb, var(--tone) 22%, transparent); }
+/* « Réalisé » garde le vert sémantique, comme toute réussite dans l'application. */
+.tone-chip[data-state='done'] { --tone: #15803d; }
+.dark .tone-chip[data-state='done'] { --tone: #76d59a; }

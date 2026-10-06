@@ -56,7 +56,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                             )}
                         </div>
                         <p className="text-xs leading-relaxed text-muted-foreground mt-1">
-                            {t('evaluations.assessments')} · {t('evaluations.activities')}
+                            {t('evaluationsSheet.subtitle')}
                         </p>
                     </div>
                 </div>

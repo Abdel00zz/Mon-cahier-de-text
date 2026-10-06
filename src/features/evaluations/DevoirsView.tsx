@@ -21,21 +21,26 @@ import {
 } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import {
-  CalendarCheck,
-  Check,
-  CircleAlert,
-  CircleCheck,
-  FileText,
-  Plus,
-  Undo2,
-  Trash2,
-  Users,
-  AwardIcon,
   BookOpen,
+  AwardIcon,
+  CalendarCheck,
+  CheckSquare,
+  CircleCheck,
+  FileSignature,
+  GraduationCap,
+  History,
+  ListChecks,
+  PenLine,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Undo2,
+  Users,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
+import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { numberFormat } from '@/lib/formatters';
@@ -88,16 +93,37 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
   missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
 };
 
-const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; badgeColor: string }> = {
-  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
-  olympiade: { labelKey: 'evaluations.event.olympiade', badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' },
-  concours: { labelKey: 'evaluations.event.concours', badgeColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20' },
-  soutien: { labelKey: 'evaluations.event.soutien', badgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' },
-  remediation: { labelKey: 'evaluations.event.remediation', badgeColor: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20' },
-  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20' },
-  rattrapage: { labelKey: 'evaluations.event.rattrapage', badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
-  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', badgeColor: 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20' },
-  autre: { labelKey: 'evaluations.event.autre', badgeColor: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20' },
+/**
+ * Une seule pastille d'état par devoir, et pas d'icône dedans : « Consigné »
+ * ou « Écart de date » se lisent au mot, la couleur porte le reste. Seuls les
+ * deux états qui demandent une action sont affichés.
+ */
+const STATUS_CHIP: Partial<Record<AssessmentLink['status'], string>> = {
+  done: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
+  mismatch: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
+};
+
+/** Teintes disponibles pour une carte d'activité (voir `.hub-card[data-tone]`). */
+type ActivityTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal' | 'rose' | 'slate';
+
+/*
+ * Une icône ET une teinte par nature d'activité : la carte se reconnaît d'un
+ * coup d'œil, sans empiler les pastilles. Les icônes disent la chose et rien
+ * d'autre — trophée pour l'olympiade, cahier coché pour le contrôle des
+ * cahiers, flèche circulaire pour la remédiation —, et deux natures qui
+ * partagent une teinte (diagnostic et contrôle des cahiers : la même famille
+ * d'évaluation) se distinguent par leur dessin.
+ */
+const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; tone: ActivityTone; Icon: typeof BookOpen }> = {
+  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', tone: 'blue', Icon: ListChecks },
+  olympiade: { labelKey: 'evaluations.event.olympiade', tone: 'amber', Icon: AwardIcon },
+  concours: { labelKey: 'evaluations.event.concours', tone: 'violet', Icon: GraduationCap },
+  soutien: { labelKey: 'evaluations.event.soutien', tone: 'green', Icon: BookOpen },
+  remediation: { labelKey: 'evaluations.event.remediation', tone: 'teal', Icon: RefreshCw },
+  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', tone: 'rose', Icon: FileSignature },
+  rattrapage: { labelKey: 'evaluations.event.rattrapage', tone: 'pink', Icon: History },
+  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'blue', Icon: CheckSquare },
+  autre: { labelKey: 'evaluations.event.autre', tone: 'slate', Icon: PenLine },
 };
 
 const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
@@ -414,7 +440,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           />
         </div>
 
-        {/* Floating Action Buttons */}
+        {/* Les deux créations restent côte à côte : ajouter un devoir est l'action
+            principale, ajouter une activité l'action secondaire. */}
         <div className="grid grid-cols-2 gap-1.5 sm:flex sm:items-center">
           <button
             type="button"
@@ -437,33 +464,46 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Main Content Area */}
       <div className="space-y-5">
-        {/* Pedagogical Events Section (shown when on 'all' or 'events' tab) */}
-        {(activeTab === 'all' || activeTab === 'events') && pedagogicalEvents.length > 0 && (
-          <PedagogicalEventsSection
-            events={pedagogicalEvents}
-            onToggle={togglePedagogicalEvent}
-            onDelete={deletePedagogicalEvent}
-            onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-            onOpenStudents={(event) => setStudentsFor(event)}
-          />
+        {/* Activités pédagogiques : de grandes cartes, une par activité. Sans
+            activité, on invite à en créer une plutôt que de laisser un vide. */}
+        {(activeTab === 'all' || activeTab === 'events') && (
+          pedagogicalEvents.length > 0
+            ? (
+              <PedagogicalEventsSection
+                events={pedagogicalEvents}
+                onToggle={togglePedagogicalEvent}
+                onDelete={deletePedagogicalEvent}
+                onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+                onOpenStudents={(event) => setStudentsFor(event)}
+              />
+            )
+            : activeTab === 'events' && <ActivitiesEmptyState onCreate={() => setEventEditorOpen(true)} />
         )}
 
-        {/* Assessment Lists by Semester */}
+        {/* Devoirs et évaluations, par semestre */}
         {activeTab !== 'events' && (
-          <section className="space-y-4">
+          <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
+            <div className="flex items-center justify-between px-1">
+              <h3 id="evaluations-assessments-title" className="text-xs font-bold uppercase tracking-wider text-foreground">
+                {t('evaluations.assessments')}
+              </h3>
+              {links.length > 0 && (
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  {links.length} {links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
+                </span>
+              )}
+            </div>
             {!hasPlan ? (
-              <div className="rounded-3xl border border-dashed border-border bg-card/40 p-8 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
-                  <BookOpen className="h-6 w-6 stroke-[2.2]" />
-                </div>
+              <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
+                <CurriculumImportIllustration size={120} className="mb-2" />
                 <h4 className="text-sm font-bold text-foreground">{t('evaluations.noOfficialPlan')}</h4>
-                <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground text-pretty">
                   {t('evaluations.noOfficialPlanHint')}
                 </p>
                 <button
                   type="button"
                   onClick={openCreateAssessment}
-                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-xs hover:brightness-110 cursor-pointer"
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] cursor-pointer"
                 >
                   <Plus className="h-4 w-4 stroke-[2.2]" />
                   {t('evaluations.addDevoir')}
@@ -529,18 +569,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   </button>
                                 </div>
 
-                                {/* Status Badges */}
+                                {/* Status badges */}
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  {link.status === 'done' && (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/20">
-                                      <Check className="h-3 w-3 stroke-[2.5]" />
-                                      {t(status.labelKey)}
-                                    </span>
-                                  )}
-
-                                  {link.status === 'mismatch' && (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-400">
-                                      <CircleAlert className="h-3 w-3 stroke-[2.2]" />
+                                  {STATUS_CHIP[link.status] && (
+                                    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
                                       {t(status.labelKey)}
                                     </span>
                                   )}
@@ -556,14 +588,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   type="button"
                                   onClick={() => setDocumentFor({ kind: 'assessment', link })}
                                   className={cn(
-                                    'inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:w-auto sm:text-xs',
+                                    'inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:min-h-9 sm:w-auto sm:text-xs',
                                     assessmentDocument
                                       ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15'
                                       : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
                                   )}
                                   aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
                                 >
-                                  <FileText className="h-3.5 w-3.5" />
                                   {t('evaluations.doc.open')}
                                 </button>
 
@@ -572,13 +603,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                     type="button"
                                     onClick={() => setAbsencesFor(link)}
                                     className={cn(
-                                      'inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:w-auto sm:text-xs',
+                                      'inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:min-h-9 sm:w-auto sm:text-xs',
                                       absents.length > 0
                                         ? 'border-rose-300 bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
                                         : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
                                     )}
                                   >
-                                    <Users className="h-3.5 w-3.5" />
                                     {absents.length > 0
                                       ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                                       : t('evaluations.absentees')}
@@ -827,7 +857,38 @@ interface PedagogicalEventsSectionProps {
   onOpenStudents: (event: PedagogicalEvent) => void;
 }
 
-const EVENT_ACTION_CLASS = 'inline-flex h-8 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 px-2.5 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer shadow-2xs';
+/**
+ * Aucune activité : un état vide qui propose l'action suivante plutôt qu'une
+ * surface muette — c'est le moment où l'enseignant découvre la rubrique.
+ */
+const ActivitiesEmptyState: React.FC<{ onCreate: () => void }> = ({ onCreate }) => {
+  const { t } = useLocale();
+  return (
+    <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
+      <SchedulePlanningIllustration size={120} className="mb-2" />
+      <h4 className="text-sm font-bold text-foreground">{t('evaluations.activitiesEmptyTitle')}</h4>
+      <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground text-pretty">
+        {t('evaluations.activitiesEmptyHint')}
+      </p>
+      <button
+        type="button"
+        onClick={onCreate}
+        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] cursor-pointer"
+      >
+        <Plus className="h-4 w-4 stroke-[2.2]" />
+        {t('evaluations.addActivity')}
+      </button>
+    </div>
+  );
+};
+
+/*
+ * Commandes d'une carte : mêmes dimensions que dans le reste de la fenêtre,
+ * cible tactile de 44 px sur téléphone, 36 px dès qu'il y a un pointeur. Elles
+ * portent leur libellé et rien d'autre — l'icône de la carte dit déjà la nature
+ * de l'activité, une seconde icône par bouton ne ferait que du bruit.
+ */
+const EVENT_ACTION_CLASS = 'inline-flex min-h-11 sm:min-h-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 px-3 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer shadow-2xs';
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
@@ -842,123 +903,100 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   return (
     <section className="space-y-2.5">
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 text-xs">
-            <AwardIcon className="h-3.5 w-3.5" />
-          </span>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-            {t('evaluations.activities')} & {t('evaluations.pedagogicalEvents')}
-          </h3>
-        </div>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+          {t('evaluations.pedagogicalEvents')}
+        </h3>
         <span className="text-[11px] font-semibold text-muted-foreground">
           {events.length} {events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
         </span>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2">
+      <ul className="hub-grid" data-rows>
         {events.map((event) => {
           const done = event.status === 'done';
-          const eventConfig = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
+          const { labelKey, tone, Icon } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
+          const names = event.students?.names.length ?? 0;
           return (
-            <div
+            <li
               key={event.id}
-              className={cn(
-                'group flex items-start justify-between gap-3 rounded-2xl border p-3.5 shadow-xs transition-all duration-200 backdrop-blur-xs',
-                done
-                  ? 'border-border/60 bg-card/50 opacity-70'
-                  : 'border-border/85 bg-card/85 hover:shadow-md'
-              )}
+              className="hub-card"
+              data-layout="row"
+              data-static="true"
+              data-tone={tone}
+              {...(done ? { 'data-done': 'true' } : {})}
             >
-              <div className="flex items-start gap-3 min-w-0">
+              <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
+
+              <div className="hub-card__body min-w-0 flex-1">
+                <h4 className="hub-card__title text-start">{event.title}</h4>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="tone-chip">{t(labelKey)}</span>
+                  <span className="hub-card__hint text-start">
+                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
+                  </span>
+                  {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
+                </div>
+                {event.note && (
+                  <p className="hub-card__hint line-clamp-2 text-start">{event.note}</p>
+                )}
+
+                {/* Le document et la liste d'élèves vivent DANS l'activité : deux
+                    portes d'entrée discrètes, comptées quand elles sont remplies,
+                    pour ne jamais ouvrir un écran vide par erreur. Un contrôle de
+                    cahiers n'a pas de sujet à joindre : sa trace pédagogique est
+                    la liste des cahiers vérifiés, reportée dans la remarque de la
+                    séance du jour. */}
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {event.type !== REMARK_EVENT_TYPE && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenDocument(event)}
+                      className={cn(EVENT_ACTION_CLASS, event.document && 'border-primary/40 bg-primary/10 text-primary')}
+                      aria-label={t('evaluations.doc.title', { activity: event.title })}
+                    >
+                      {t('evaluations.doc.open')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onOpenStudents(event)}
+                    className={cn(EVENT_ACTION_CLASS, names > 0 && 'border-teal-400/50 bg-teal-500/10 text-teal-700 dark:text-teal-400')}
+                    aria-label={`${t('evaluations.students.open')} — ${event.title}`}
+                  >
+                    {names > 0 ? `${t('evaluations.students.open')} · ${names}` : t('evaluations.students.open')}
+                  </button>
+                </div>
+              </div>
+
+              {/* État et suppression : deux commandes, à la fin de la carte, dans
+                  l'axe de lecture (le flex suit `dir`, aucune règle de langue). */}
+              <div className="flex shrink-0 items-center gap-1">
                 <button
                   type="button"
                   onClick={() => onToggle(event.id)}
                   className={cn(
-                    'mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border transition-all cursor-pointer touch-manipulation',
-                    'active:scale-95 motion-reduce:active:scale-100',
+                    'flex h-11 w-11 items-center justify-center rounded-[14px] border transition-all cursor-pointer touch-manipulation sm:h-9 sm:w-9 active:scale-95 motion-reduce:active:scale-100',
                     done
-                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 shadow-[inset_0_1px_3px_rgba(0,0,0,0.08)] dark:border-emerald-500/30 dark:bg-emerald-500/20'
-                      : 'border-border/70 bg-background/80 hover:border-primary/50 hover:bg-primary/8 hover:shadow-sm text-muted-foreground hover:text-primary backdrop-blur-sm'
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/20'
+                      : 'border-border/70 bg-background/80 text-muted-foreground hover:border-primary/50 hover:bg-primary/8 hover:text-primary'
                   )}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
                   {done ? <CircleCheck className="h-5 w-5 stroke-[2.2]" /> : <CalendarCheck className="h-5 w-5 stroke-[2]" />}
                 </button>
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold', eventConfig.badgeColor)}>
-                      {t(eventConfig.labelKey)}
-                    </span>
-                    <span className="text-[11px] font-semibold text-muted-foreground">
-                      {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                    </span>
-                  </div>
-
-                  <h4 className={cn('text-sm font-bold mt-1 text-foreground', done && 'line-through text-muted-foreground')}>
-                    {event.title}
-                  </h4>
-
-                  {event.note && (
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">
-                      {event.note}
-                    </p>
-                  )}
-
-                  {/* Le document et la liste d'élèves vivent DANS l'activité :
-                      deux portes d'entrée discrètes, comptées quand elles sont
-                      remplies, pour ne jamais ouvrir un écran vide par erreur. */}
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {/* Un contrôle de cahiers n'a pas de sujet à joindre : sa
-                        trace pédagogique est la liste des cahiers vérifiés, que
-                        l'éditeur reporte dans la remarque de la séance du jour.
-                        Proposer « Contenu » y ouvrirait un écran vide — donc pas
-                        de bouton, plutôt qu'un bouton désactivé à expliquer. */}
-                    {event.type !== REMARK_EVENT_TYPE && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenDocument(event)}
-                        className={cn(
-                          EVENT_ACTION_CLASS,
-                          event.document && 'border-primary/40 bg-primary/10 text-primary'
-                        )}
-                        aria-label={t('evaluations.doc.title', { activity: event.title })}
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                        <span>{t('evaluations.doc.open')}</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onOpenStudents(event)}
-                      className={cn(
-                        EVENT_ACTION_CLASS,
-                        (event.students?.names.length ?? 0) > 0 && 'border-teal-400/50 bg-teal-500/10 text-teal-700 dark:text-teal-400'
-                      )}
-                    >
-                      <Users className="h-3.5 w-3.5" />
-                      <span>
-                        {(event.students?.names.length ?? 0) > 0
-                          ? `${t('evaluations.students.open')} · ${event.students?.names.length ?? 0}`
-                          : t('evaluations.students.open')}
-                      </span>
-                    </button>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => onDelete(event.id)}
+                  className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-transparent text-muted-foreground transition-all hover:border-destructive/30 hover:bg-destructive/12 hover:text-destructive active:bg-destructive/20 cursor-pointer touch-manipulation sm:h-9 sm:w-9 active:scale-95 motion-reduce:active:scale-100"
+                  aria-label={t('evaluations.deleteEventAria', { title: event.title })}
+                >
+                  <Trash2 className="h-5 w-5 stroke-[2]" />
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => onDelete(event.id)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-muted-foreground hover:text-destructive hover:bg-destructive/12 active:bg-destructive/20 transition-all cursor-pointer touch-manipulation border border-transparent hover:border-destructive/30 active:scale-95 motion-reduce:active:scale-100"
-                aria-label={t('evaluations.deleteEventAria', { title: event.title })}
-              >
-                <Trash2 className="h-4 w-4 stroke-[2]" />
-              </button>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 };
