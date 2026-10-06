@@ -47,6 +47,8 @@ interface MainTableProps {
   getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
   /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
   getContentNumber?: (indices: Indices) => string | undefined;
+  /** tracé automatique d'une séance (contrôle des cahiers), indexé par date */
+  getSessionAnnotation?: (date?: string) => string | undefined;
   /** terme de recherche actif (surlignage dans les lignes) */
   searchQuery?: string;
   /** rangée à rejoindre automatiquement après une suggestion de séance */
@@ -107,6 +109,12 @@ interface SessionGroupRowProps {
     getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
     /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
     getContentNumber?: (indices: Indices) => string | undefined;
+    /**
+     * Annotation de la séance (contrôle des cahiers), par date : elle se lit
+     * SOUS la remarque écrite, dans la même cellule — la date de l'activité
+     * décide de la séance annotée, pas un identifiant de devoir.
+     */
+    getSessionAnnotation?: (date?: string) => string | undefined;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
@@ -125,6 +133,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     getDateWarnings,
     getDateOrder,
     getContentNumber,
+    getSessionAnnotation,
 }) => {
     const { t } = useLocale();
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
@@ -148,6 +157,22 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     // était annoté.
     const sameRemark = !!items[0].dateMerge?.shouldMergeRemark;
     const sharedRemark = items[0].dateMerge?.sharedRemark ?? '';
+    // Contrôle des cahiers : la trace de l'activité vit dans la cellule
+    // « remarque » de la séance du même jour, sans ajouter la moindre ligne au
+    // cahier. Elle n'est écrite qu'UNE fois par date — la première ligne datée
+    // la porte — pour ne pas la répéter quand la séance garde une cellule de
+    // remarque par contenu.
+    const annotationsByDate = new Map<string, string>();
+    const annotationOwners = new Map<string, string>();
+    for (const item of items) {
+      const date = getMergeableDate(item);
+      if (!date || annotationOwners.has(date)) continue;
+      const text = getSessionAnnotation?.(date);
+      if (!text) continue;
+      annotationsByDate.set(date, text);
+      annotationOwners.set(date, item.key);
+    }
+    const sessionAnnotations = [...annotationsByDate.values()];
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     // Une grille commune garde les traits de contenu et de remarque sur le
     // même axe, même si une remarque ou une description occupe plusieurs lignes.
@@ -284,6 +309,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark || '—'}</span>
+                        {sessionAnnotations.map(annotation => (
+                          <span
+                            key={annotation}
+                            data-session-annotation="true"
+                            dir={textDirectionAttribute(annotation)}
+                            title={annotation}
+                            className="mt-0.5 inline-flex max-w-full items-center justify-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                          >
+                            {annotation}
+                          </span>
+                        ))}
                     </button>
                 </div>
             ) : items.map((item, index) => (
@@ -304,6 +340,22 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         className="min-h-11 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                        {(() => {
+                          const date = getMergeableDate(item);
+                          const annotation = date && annotationOwners.get(date) === item.key
+                            ? annotationsByDate.get(date)
+                            : undefined;
+                          return annotation ? (
+                            <span
+                              data-session-annotation="true"
+                              dir={textDirectionAttribute(annotation)}
+                              title={annotation}
+                              className="mt-0.5 inline-flex max-w-full items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                            >
+                              {annotation}
+                            </span>
+                          ) : null;
+                        })()}
                     </button>
                 </div>
             ))}
@@ -317,7 +369,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
         || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
         || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
         || previous.getDateWarnings !== next.getDateWarnings || previous.getDateOrder !== next.getDateOrder
-        || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds) return false;
+        || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds
+        || previous.getSessionAnnotation !== next.getSessionAnnotation) return false;
     return previous.items.every(item => previous.selectedKeys.has(item.key) === next.selectedKeys.has(item.key));
 });
 
@@ -415,6 +468,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   getDateWarnings,
   getDateOrder,
   getContentNumber,
+  getSessionAnnotation,
   searchQuery,
   focusKey,
   predefinedProgramTitle,
@@ -549,6 +603,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   getDateWarnings={getDateWarnings}
                                   getDateOrder={getDateOrder}
                                   getContentNumber={getContentNumber}
+                                  getSessionAnnotation={getSessionAnnotation}
                               />
                           </VirtualListRow>
                       );

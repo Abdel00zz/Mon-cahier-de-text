@@ -7,6 +7,7 @@ import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
+import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { getClassSchoolSegment } from '@/domain/evaluations/officialStudentEvents';
 import { getClassVisual } from '@/components/classes/classVisuals';
 import {
@@ -908,18 +909,25 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       deux portes d'entrée discrètes, comptées quand elles sont
                       remplies, pour ne jamais ouvrir un écran vide par erreur. */}
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => onOpenDocument(event)}
-                      className={cn(
-                        EVENT_ACTION_CLASS,
-                        event.document && 'border-primary/40 bg-primary/10 text-primary'
-                      )}
-                      aria-label={t('evaluations.doc.title', { activity: event.title })}
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      <span>{t('evaluations.doc.open')}</span>
-                    </button>
+                    {/* Un contrôle de cahiers n'a pas de sujet à joindre : sa
+                        trace pédagogique est la liste des cahiers vérifiés, que
+                        l'éditeur reporte dans la remarque de la séance du jour.
+                        Proposer « Contenu » y ouvrirait un écran vide — donc pas
+                        de bouton, plutôt qu'un bouton désactivé à expliquer. */}
+                    {event.type !== REMARK_EVENT_TYPE && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenDocument(event)}
+                        className={cn(
+                          EVENT_ACTION_CLASS,
+                          event.document && 'border-primary/40 bg-primary/10 text-primary'
+                        )}
+                        aria-label={t('evaluations.doc.title', { activity: event.title })}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>{t('evaluations.doc.open')}</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => onOpenStudents(event)}

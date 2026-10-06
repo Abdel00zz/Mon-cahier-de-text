@@ -9,7 +9,7 @@ Il couvre les deux endroits où l'on écrit :
 | Où | Quoi | Comment y accéder |
 | --- | --- | --- |
 | **Le cahier de textes** | descriptions de séances, titres de chapitres, blocs, remarques | *Éditeur → Ajouter du contenu* / *Modifier* |
-| **Les documents de devoirs** | sujet de devoir surveillé, devoir maison, olympiade, corrigé, fiche | *Évaluations → Contenu* (sur un devoir) ou *Contenu* (sur une activité) |
+| **Les documents de devoirs** | sujet de devoir surveillé, devoir maison, olympiade, corrigé, fiche | *Évaluations → Contenu* (sur un devoir) ou *Contenu* (sur une activité — sauf le contrôle des cahiers) |
 
 > **Règle d'or : un seul moteur.**
 > Le cahier, l'aperçu du document et la feuille imprimée sont mis en page par le
@@ -262,7 +262,9 @@ mise en page du carnet). `\itshape` devient `\mathit`, `\sout` devient `\cancel`
 ### Où et comment
 
 *Évaluations* → sur un devoir : bouton **Contenu** · sur une activité
-(olympiade, contrôle des cahiers…) : bouton **Contenu** également.
+(olympiade, devoir à surveiller, devoir maison…) : bouton **Contenu** également.
+Seul le **contrôle des cahiers** n'a pas de bouton *Contenu* : voir § 5, *Feuille
+de contrôle des cahiers*.
 
 La feuille s'ouvre sur deux onglets :
 
@@ -349,8 +351,25 @@ Sur une activité de type **Contrôle des cahiers des élèves**, le bouton
 **Élèves** permet de consigner les noms des élèves dont le cahier a été vérifié :
 saisissez un nom puis *Entrée*, ou collez toute une liste (« Amine R., Salma B. »).
 La liste reste dans votre cahier, suit votre compte, et ne compte dans **aucune**
-note. Le bouton **Contenu** sert à joindre la fiche de contrôle ou la grille
-d'évaluation utilisée.
+note.
+
+Ce type d'activité **n'accepte aucun document** : il n'y a pas de sujet à
+joindre, et le bouton *Contenu* n'est donc pas proposé. Sa trace pédagogique est
+la **date** du contrôle, reportée automatiquement dans la **cellule « remarque »
+de la séance du même jour** — sur l'écran comme à l'impression, sous la forme
+« Contrôle des cahiers : Amine R., Salma B. » (jusqu'à trois noms, puis « +N »).
+
+À retenir :
+
+* vous n'avez rien à recopier : saisir le contrôle suffit, la séance du jour
+  porte la trace ;
+* l'annotation **n'ajoute aucune ligne** au cahier et n'entre dans aucun calcul
+  de moyenne ;
+* un contrôle étalé sur plusieurs jours annote **chacune** des séances couvertes
+  (la date de fin se saisit dans la même fiche) ;
+* votre propre remarque reste intacte : l'annotation s'affiche **sous** elle, et
+  non à sa place. Modifier la remarque de la séance ne l'efface donc pas, et
+  supprimer ou redater le contrôle la retire.
 
 ---
 

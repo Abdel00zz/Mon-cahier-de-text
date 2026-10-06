@@ -27,6 +27,7 @@ import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
+import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '@/domain/evaluations/notebookCheckRemarks';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures } from '@/infrastructure/printing/printMeta';
 import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
@@ -194,6 +195,24 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   saveStatusRef.current = saveStatus;
   const isNotebookAwaitingContent = lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData);
   const notebookHasMath = useMemo(() => hasMathContent(lessonsData), [lessonsData]);
+  /*
+   * Contrôle des cahiers : l'activité n'ajoute AUCUN contenu au cahier — sa
+   * trace est une annotation dans la cellule « remarque » de la séance du même
+   * jour. Indexée par date (un contrôle de deux jours annote les deux séances)
+   * et mémoïsée, car elle traverse une table mémoïsée. Seul le type
+   * `controle_cahiers` produit une annotation (voir le module de domaine).
+   */
+  const sessionAnnotationTexts = useMemo(() => {
+    const marks = buildNotebookCheckRemarks(config.pedagogicalEvents?.[classInfo.id]);
+    const separator = locale === 'ar' ? '، ' : ', ';
+    return new Map(
+      [...marks].map(([date, mark]) => [date, notebookCheckRemarkText(mark, t, separator)]),
+    );
+  }, [config.pedagogicalEvents, classInfo.id, locale, t]);
+  const getSessionAnnotation = useCallback(
+    (date?: string) => (date ? sessionAnnotationTexts.get(date) : undefined),
+    [sessionAnnotationTexts],
+  );
 
   useEffect(() => {
     if (initialMathTypesetComplete || isClassLoading || isConfigLoading) return;
@@ -1288,6 +1307,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               getDateWarnings={getDisplayDateWarnings}
               getDateOrder={getDateOrder}
               getContentNumber={getContentNumber}
+              getSessionAnnotation={getSessionAnnotation}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
