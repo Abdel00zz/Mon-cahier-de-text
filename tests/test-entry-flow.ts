@@ -15,7 +15,7 @@ import {
 } from "../src/features/auth/registrationSetup";
 import { CLASS_LEVELS_BY_CYCLE, classLevelGroupsForCycle } from "../src/constants";
 import { switchAccountWorkspace } from "../src/infrastructure/storage/accountWorkspace";
-import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from "../src/infrastructure/notifications/currentSessionNavigation";
+import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedByClass } from "../src/infrastructure/notifications/currentSessionNavigation";
 
 test("dernière ouverture : une ancienne synchronisation ne fait pas reculer la date", () => {
   assert.equal(
@@ -71,7 +71,21 @@ test("séance en cours : ouvrir la classe à la main ne bloque plus le retour na
   assert.equal(claimCurrentSessionAutoOpen("teacher-manual", "2026-09-21:c7-540-600", storage), true);
 });
 
-test("retour au tableau de bord : bouton de l'éditeur câblé et séance marquée quelle que soit l'entrée", () => {
+test("séance en cours : seule la classe DE LA SÉANCE consomme la réclamation", () => {
+  const session = { key: "2026-09-14:B-600-660", classIds: ["B"] };
+  // Le cahier de la séance consomme la réclamation (pas de réouverture forcée
+  // après un retour au tableau de bord)…
+  assert.equal(sessionClaimedByClass("B", session), true);
+  // …mais travailler dans le cahier d'une AUTRE classe pendant que la séance
+  // démarre ne la consomme pas : sinon les 2ᵉ et 3ᵉ séances de la journée ne
+  // s'ouvrent plus jamais.
+  assert.equal(sessionClaimedByClass("A", session), false);
+  assert.equal(sessionClaimedByClass(undefined, session), false);
+  assert.equal(sessionClaimedByClass("B", { key: "", classIds: ["B"] }), false);
+  assert.equal(sessionClaimedByClass("B", { key: "", classIds: [] }), false);
+});
+
+test("retour au tableau de bord : bouton de l'éditeur câblé et séance marquée par la bonne classe", () => {
   const app = readFileSync("src/app/App.tsx", "utf8");
   // L'en-tête de l'éditeur porte « Retour aux classes » : sans `onBack`, la barre
   // d'onglets étant masquée dans l'éditeur, l'accueil devient inatteignable.
@@ -84,8 +98,20 @@ test("retour au tableau de bord : bouton de l'éditeur câblé et séance marqu�
   // vaut pour la séance : revenir à l'accueil ne doit pas rouvrir la classe.
   assert.match(
     app,
-    /if \(view !== 'editor'\) return;\s*\n\s*markCurrentSessionHandled\(/,
-    "Tout cahier ouvert marque la séance comme traitée",
+    /if \(view !== 'editor'\) return;\s*\n\s*markSessionHandledFor\(activeClass\?\.id\)/,
+    "Le cahier de la séance la marque comme traitée",
+  );
+  // La garde de classe est obligatoire : sans elle, rester dans le cahier de
+  // 08 h pendant que la séance de 09 h démarre consommait la séance de 09 h.
+  assert.match(
+    app,
+    /const markSessionHandledFor = useCallback\(\(classId: string \| undefined\)[\s\S]{0,200}sessionClaimedByClass\(classId, session\)/,
+    "Le marquage exige que la classe ouverte soit celle de la séance",
+  );
+  assert.doesNotMatch(
+    app,
+    /markCurrentSessionHandled\(sessionClaimRef\.current\.scope/,
+    "Plus aucun marquage inconditionnel de la séance en cours",
   );
 });
 

@@ -165,6 +165,8 @@ export type PedagogicalEventType =
     | 'remediation'
     | 'examen_blanc'
     | 'rattrapage'
+    /** مراقبة دفاتر التلاميذ — contrôle des cahiers des élèves. */
+    | 'controle_cahiers'
     | 'autre';
 
 /** Activité créée par le professeur et reliée à une classe, sans la confondre avec une date ministérielle. */

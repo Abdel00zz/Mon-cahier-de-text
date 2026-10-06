@@ -8,8 +8,9 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { AccountDataTab } from './components/AccountDataTab';
 import { ProfileTab } from './components/ProfileTab';
+import { AbsencesTab } from './components/AbsencesTab';
 import { SettingsPanel } from './components/SettingsPrimitives';
-import { CalendarRange, Bell, User, Cloud, Palette, BookOpen, Save, Undo2, ChevronLeft } from '@/components/ui/icons';
+import { CalendarRange, Bell, User, Cloud, Palette, BookOpen, Save, Undo2, ChevronLeft, FileSignature } from '@/components/ui/icons';
 
 const ScheduleTab = React.lazy(() => import('./components/ScheduleTab').then(m => ({ default: m.ScheduleTab })));
 const NotificationsTab = React.lazy(() => import('./components/NotificationsTab').then(m => ({ default: m.NotificationsTab })));
@@ -28,6 +29,9 @@ const preloadTabComponent = (tab: SettingsCategory) => {
       break;
     case 'compte':
       import('./components/ArchivesSection');
+      break;
+    case 'absences':
+      import('./components/AbsencesTab');
       break;
     default:
       break;
@@ -57,9 +61,9 @@ interface ConfigModalProps {
   onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
 }
 
-type SettingsCategory = 'emploi' | 'profil' | 'apparence' | 'notifications' | 'compte';
+type SettingsCategory = 'emploi' | 'absences' | 'profil' | 'apparence' | 'notifications' | 'compte';
 
-type SettingsTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal';
+type SettingsTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal' | 'rose';
 
 interface SettingMenuItem {
   id: SettingsCategory;
@@ -71,9 +75,10 @@ interface SettingMenuItem {
   tone: SettingsTone;
 }
 
-/** Cinq rubriques : l'aide n'en est pas une, c'est une carte-lien (et un lien en bas du menu sur grand écran). */
+/** Six rubriques : l'aide n'en est pas une, c'est une carte-lien (et un lien en bas du menu sur grand écran). */
 const SETTING_ITEMS: SettingMenuItem[] = [
   { id: 'emploi', titleKey: 'settings.item.schedule', hintKey: 'settings.card.schedule', icon: CalendarRange, tone: 'blue' },
+  { id: 'absences', titleKey: 'settings.item.absences', hintKey: 'settings.card.absences', icon: FileSignature, tone: 'rose' },
   { id: 'profil', titleKey: 'settings.item.profile', hintKey: 'settings.card.profile', icon: User, tone: 'violet' },
   { id: 'apparence', titleKey: 'settings.item.appearance', hintKey: 'settings.card.appearance', icon: Palette, tone: 'pink' },
   { id: 'notifications', titleKey: 'settings.item.notifications', hintKey: 'settings.card.notifications', icon: Bell, tone: 'amber' },
@@ -84,6 +89,7 @@ const GUIDE_TONE: SettingsTone = 'teal';
 /** Liens directs : les anciens identifiants d'onglets restent valides. */
 const TAB_ALIASES: Record<string, SettingsCategory> = {
   emploi: 'emploi',
+  absences: 'absences',
   profil: 'profil',
   apparence: 'apparence',
   notifications: 'notifications',
@@ -238,6 +244,11 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               <NotificationsTab config={localConfig} onChange={applyLive} />
             </React.Suspense>
           </SettingsPanel>
+        );
+
+      case 'absences':
+        return (
+          <AbsencesTab config={localConfig} classes={classes} onConfigChange={applyLive} visible={isDesktop || sectionOpen} />
         );
 
       case 'compte':

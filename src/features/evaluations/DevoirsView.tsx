@@ -85,6 +85,7 @@ const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string;
   remediation: { labelKey: 'evaluations.event.remediation', badgeColor: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20' },
   examen_blanc: { labelKey: 'evaluations.event.examen_blanc', badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20' },
   rattrapage: { labelKey: 'evaluations.event.rattrapage', badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
+  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', badgeColor: 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20' },
   autre: { labelKey: 'evaluations.event.autre', badgeColor: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20' },
 };
 

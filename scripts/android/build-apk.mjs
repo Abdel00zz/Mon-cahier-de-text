@@ -48,8 +48,12 @@ if (release) {
     if (listing.error || listing.status !== 0) throw new Error(`Unable to verify assets in ${archive}`);
     const entries = new Set(listing.stdout.split(/\r?\n/));
     for (const name of requiredAssets) if (!entries.has(prefix + name)) throw new Error(`Required Android asset missing: ${name}`);
+    // L'administration est une interface WEB exclusivement : une copie embarquée
+    // ouvrirait le tableau de bord de la direction depuis l'application.
+    const leaked = [...entries].filter(entry => entry.startsWith(prefix) && /(^|\/)admin[-.]/i.test(entry.slice(prefix.length)));
+    if (leaked.length > 0) throw new Error(`The admin dashboard must never ship inside the app: ${leaked.join(', ')}`);
   }
-  console.log(`Offline assets verified in APK and AAB: ${requiredAssets.length} calendars, data files, fonts and icons.`);
+  console.log(`Offline assets verified in APK and AAB: ${requiredAssets.length} calendars, data files, fonts and icons; no admin dashboard.`);
   fs.copyFileSync(path.join(root, 'android/app/build/outputs/mapping/release/mapping.txt'), path.join(outputs, `mapping-${metadata.version}.txt`));
   run(path.join(java, 'bin', process.platform === 'win32' ? 'keytool.exe' : 'keytool'), ['-exportcert', '-rfc', '-keystore', environment.ANDROID_UPLOAD_STORE_FILE, '-alias', environment.ANDROID_UPLOAD_KEY_ALIAS, '-storepass:env', 'ANDROID_UPLOAD_STORE_PASSWORD', '-file', path.join(outputs, 'upload-certificate.pem')], environment);
   const git = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', windowsHide: true });

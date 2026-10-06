@@ -13,6 +13,7 @@ import { startIdlePrefetch } from './prefetch';
 import { useNativeReminders } from '../hooks/useNativeReminders';
 import { accountOwner } from '../domain/auth/accountIdentity';
 import { useAuth } from '../contexts/AuthContext';
+import { useSync } from '../contexts/SyncContext';
 import { AUTH_REQUIRED } from '../config/features';
 import { normalizeOfficialClassName } from '../constants';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
@@ -26,7 +27,7 @@ import { TabBar, TabType } from '../components/navigation/TabBar';
 import { Modal } from '../components/ui/modal';
 import { DeferredMount } from '../components/ui/DeferredMount';
 import { latestClassOpening } from '../infrastructure/storage/classOpening';
-import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from '../infrastructure/notifications/currentSessionNavigation';
+import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
@@ -134,27 +135,35 @@ const App: React.FC = () => {
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
   /*
-   * Réclamation de la séance courante : elle est consommée dès qu'une classe
-   * est ouverte (clic de l'enseignant **ou** ouverture automatique) et dès
-   * qu'on quitte l'éditeur. Le bouton « retour » natif du navigateur ramène
-   * donc toujours au tableau de bord, sans rouvrir la classe de force.
+   * Réclamation de la séance courante : elle n'est consommée que par le cahier
+   * de la séance ELLE-MÊME (`markSessionHandledFor`). Consommer la séance d'une
+   * AUTRE classe coupait l'ouverture automatique des 2ᵉ et 3ᵉ séances de la
+   * journée : rester dans le cahier de 08 h pendant que celui de 09 h démarre
+   * brûlait la réclamation de 09 h, et le retour au tableau de bord n'ouvrait
+   * plus rien.
    */
-  const sessionClaimRef = useRef<{ scope: string; key: string }>({ scope: 'local', key: '' });
+  const sessionClaimRef = useRef<{ scope: string; key: string; classIds: string[] }>({ scope: 'local', key: '', classIds: [] });
   useEffect(() => {
-    sessionClaimRef.current = { scope: authOwner ?? 'local', key: currentSession.key };
-  }, [authOwner, currentSession.key]);
+    sessionClaimRef.current = { scope: authOwner ?? 'local', key: currentSession.key, classIds: currentSession.classIds };
+  }, [authOwner, currentSession.classIds, currentSession.key]);
+  /** Marque la séance traitée seulement si la classe ouverte est celle de la séance. */
+  const markSessionHandledFor = useCallback((classId: string | undefined) => {
+    const session = sessionClaimRef.current;
+    if (!sessionClaimedByClass(classId, session)) return;
+    markCurrentSessionHandled(session.scope, session.key);
+  }, []);
   /*
    * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
    * clic sur la carte, ouverture automatique, lien profond d'une notification
-   * ou rechargement direct sur `#/classe/…`. Sans cette règle, quitter un
-   * cahier ouvert par lien profond ramenait au tableau de bord… pour être
-   * aussitôt renvoyé dans la classe par l'ouverture automatique : l'enseignant
-   * ne pouvait plus rester sur l'accueil.
+   * ou rechargement direct sur `#/classe/…`. Sans cette règle, quitter le
+   * cahier de la séance ramenait au tableau de bord… pour être aussitôt renvoyé
+   * dedans par l'ouverture automatique : l'enseignant ne pouvait plus rester
+   * sur l'accueil.
    */
   useEffect(() => {
     if (view !== 'editor') return;
-    markCurrentSessionHandled(authOwner ?? 'local', currentSession.key);
-  }, [authOwner, currentSession.key, view]);
+    markSessionHandledFor(activeClass?.id);
+  }, [activeClass, markSessionHandledFor, view]);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   /*
    * Une seule matière ne se distingue de rien : ses libellés et badges sont
@@ -173,6 +182,8 @@ const App: React.FC = () => {
   );
   const bootProgress = useBootstrapProgress();
   const syncProgress = useSyncProgress();
+  /** Envoi immédiat des réglages en attente, déclenché en quittant les Réglages. */
+  const { flushPush } = useSync();
   /*
    * L'écran d'attente suit le VRAI chargement (voir domain/sync/bootScreen) :
    * configuration locale, session, puis premier rapatriement cloud —  celui qui
@@ -269,20 +280,21 @@ const App: React.FC = () => {
     const openedAt = latestClassOpening(classInfo.lastOpenedAt, new Date().toISOString());
     if (openedAt && openedAt !== classInfo.lastOpenedAt) updateClass(classInfo.id, { lastOpenedAt: openedAt });
     setActiveClass(openedAt ? { ...classInfo, lastOpenedAt: openedAt } : classInfo);
-    markCurrentSessionHandled(sessionClaimRef.current.scope, sessionClaimRef.current.key);
+    markSessionHandledFor(classInfo.id);
     setView('editor');
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
-  }, [saveCurrentScroll, updateClass]);
+  }, [markSessionHandledFor, saveCurrentScroll, updateClass]);
 
   const handleBackToDashboard = useCallback(() => {
-    // Quitter l'éditeur vaut pour la séance entière : un retour natif
-    // supplémentaire ne doit pas renvoyer dans la classe.
-    markCurrentSessionHandled(sessionClaimRef.current.scope, sessionClaimRef.current.key);
+    // Quitter le cahier DE LA SÉANCE vaut pour la séance entière : un retour
+    // natif supplémentaire ne doit pas renvoyer dans la classe. Sortir d'un
+    // autre cahier ne consomme rien (voir `markSessionHandledFor`).
+    markSessionHandledFor(activeClass?.id);
     saveCurrentScroll();
     setActiveClass(null);
     setView('dashboard');
     window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-  }, [saveCurrentScroll]);
+  }, [activeClass, markSessionHandledFor, saveCurrentScroll]);
 
   const handleOpenSettings = useCallback(() => {
     if (view === 'settings') return;
@@ -331,6 +343,20 @@ const App: React.FC = () => {
       handleBackToDashboard();
     }
   }, [handleBackToDashboard]);
+
+  /*
+   * Quitter les Réglages envoie tout de suite les réglages modifiés : l'emploi
+   * du temps part sans attendre le debounce, donc la direction et les autres
+   * appareils le voient immédiatement. L'effet couvre TOUTES les sorties
+   * (bouton retour, barre d'onglets, lien direct, retour natif).
+   */
+  const wasInSettingsRef = useRef(false);
+  useEffect(() => {
+    if (view === 'settings') { wasInSettingsRef.current = true; return; }
+    if (!wasInSettingsRef.current) return;
+    wasInSettingsRef.current = false;
+    flushPush();
+  }, [flushPush, view]);
 
   useEffect(() => {
     const back = (event: Event) => {

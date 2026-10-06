@@ -40,7 +40,7 @@ export const subscribeSyncProgress = (listener: (value: SyncProgress) => void): 
     return () => { progressListeners.delete(listener); };
 };
 
-type SyncListener = (source?: symbol) => void;
+type SyncListener = (source?: symbol, keys?: readonly string[]) => void;
 
 const listeners = new Map<SyncEvent, Set<SyncListener>>();
 const SYNC_PENDING_KEY = 'syncPending_v1';
@@ -188,8 +188,8 @@ const removeClassSyncMeta = (classId: string): void => {
     }
 };
 
-const emit = (event: SyncEvent, source?: symbol): void => {
-    listeners.get(event)?.forEach(listener => listener(source));
+const emit = (event: SyncEvent, source?: symbol, keys?: readonly string[]): void => {
+    listeners.get(event)?.forEach(listener => listener(source, keys));
 };
 
 export const subscribe = (event: SyncEvent, listener: SyncListener): (() => void) => {
@@ -230,9 +230,11 @@ export const notifyClassesChanged = (): void => {
     emit('classes-changed');
 };
 
-/** Synchronise les instances locales de configuration entre les vues. */
-export const notifyConfigChanged = (source?: symbol): void => {
-    emit('config-changed', source);
+/** Synchronise les instances locales de configuration entre les vues.
+ *  `keys` liste les réglages réellement modifiés : l'emploi du temps, qui porte
+ *  les séances, part tout de suite (voir `settingsPush`). */
+export const notifyConfigChanged = (source?: symbol, keys?: readonly string[]): void => {
+    emit('config-changed', source, keys);
 };
 
 /** Rafraîchit les projections de notifications après une mutation locale

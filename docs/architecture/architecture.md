@@ -97,7 +97,7 @@ Les accès au stockage et les échanges réseau sont identifiables dans `src/inf
 
 ### `api`, `src/admin`, `server` et `build`
 
-`api` contient les fonctions Vercel et `api/_lib` leurs helpers privés. `src/admin` possède sa propre entrée HTML et ne doit pas alourdir l’application enseignant. `server/index.ts` démarre le serveur local ; ses simulations sont dans `server/dev/mockApi.ts`. Le manifeste PWA et le plugin de budget sont dans `build/vite`, pour garder `vite.config.ts` court.
+`api` contient les fonctions Vercel et `api/_lib` leurs helpers privés. `src/admin` possède sa propre entrée HTML (`admin.html`, publiée sur le web à `/admin.html` et `/admin`) et ne doit pas alourdir l’application enseignant. **L’administration est une interface web exclusivement** : l’entrée n’est déclarée que hors compilation native (`vite.config.ts`, `if (!nativeBuild)`), `admin.html` n’est jamais un actif de `public/`, et `scripts/android/build-apk.mjs` refuse un binaire qui en contiendrait une copie. `server/index.ts` démarre le serveur local ; ses simulations sont dans `server/dev/mockApi.ts`. Le manifeste PWA et le plugin de budget sont dans `build/vite`, pour garder `vite.config.ts` court.
 
 ## Placement d’un nouveau fichier
 

@@ -350,11 +350,14 @@
    Le corps ne défile plus : c'est `.settings-scroll` (index.css) qui défile.
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 640px) {
+  /* Tablette : la fenêtre suit son contenu (hauteur auto) et ne le dépasse jamais :
+     plus de vide sous les cartes, et plus de boîte figée à compenser à la poignée. */
   .modal-motion-surface.settings-modal-frame {
     width: min(50rem, calc(100vw - 3rem));
     max-width: none;
-    height: min(40rem, calc(var(--modal-visible-height) - 3rem));
-    max-height: none;
+    height: fit-content;
+    min-height: 19rem;
+    max-height: min(38rem, calc(var(--modal-visible-height) - 3rem));
     border-radius: 20px;
   }
   .settings-modal-frame .modal-body.settings-modal-body {
@@ -369,6 +372,12 @@
     border-bottom-color: transparent;
   }
   @media (min-width: 1024px) {
-    .modal-motion-surface.settings-modal-frame { width: min(58rem, calc(100vw - 3rem)); height: min(44rem, calc(var(--modal-visible-height) - 3rem)); }
+    /* Grand écran : même souplesse, avec un plancher pour que le menu latéral respire. */
+    .modal-motion-surface.settings-modal-frame {
+      width: min(58rem, calc(100vw - 3rem));
+      height: fit-content;
+      min-height: 26rem;
+      max-height: min(44rem, calc(var(--modal-visible-height) - 3rem));
+    }
   }
 }

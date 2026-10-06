@@ -34,9 +34,9 @@ test('les écrans de chargement n’affichent plus de textes de détail sous le 
   assert.match(loaders, /className="sr-only"[\s\S]{0,200}boot\.progress\.ariaLabel/, 'la progression reste annoncée aux lecteurs d’écran');
 });
 
-test('les paramètres comptent cinq onglets et gardent les anciens liens directs', () => {
+test('les paramètres comptent six rubriques et gardent les anciens liens directs', () => {
   const modal = read('src/features/settings/ConfigModal.tsx');
-  for (const id of ['emploi', 'profil', 'apparence', 'notifications', 'compte']) {
+  for (const id of ['emploi', 'absences', 'profil', 'apparence', 'notifications', 'compte']) {
     assert.match(modal, new RegExp(`id: '${id}'`));
   }
   assert.match(modal, /donnees: 'compte'/);
@@ -70,11 +70,29 @@ test('paramètres : grandes cartes colorées sur téléphone et tablette, menu l
   assert.match(modal, /key !== 'Escape'[\s\S]{0,400}setSectionOpen\(false\)/, 'Échap / retour Android revient à la grille avant de fermer');
   assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
   const css = read('src/styles/index.css');
-  for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal']) {
+  for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal', 'rose']) {
     assert.match(css, new RegExp(`\\.hub-card\\[data-tone='${tone}'\\]`));
     assert.match(css, new RegExp(`\\.dark \\.hub-card\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
   }
   assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home \{ display: none; \}/, 'cartes masquées sur grand écran');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.hub-card/, 'mouvement réduit respecté');
-  assert.match(css, /\.hub-card \{[\s\S]{0,400}min-height: 8\.25rem/, 'cartes compactes mais assez grandes pour le pouce');
+  assert.match(css, /\.hub-card \{[\s\S]{0,400}min-height: 7\.5rem/, 'cartes compactes mais assez grandes pour le pouce');
+});
+
+test('absences justifiées : rubrique dédiée, injection automatique dans les cahiers concernés', () => {
+  const modal = read('src/features/settings/ConfigModal.tsx');
+  assert.match(
+    modal,
+    /id: 'absences', titleKey: 'settings\.item\.absences', hintKey: 'settings\.card\.absences', icon: FileSignature, tone: 'rose'/,
+    'la rubrique vit dans le menu principal, avec son icône',
+  );
+  const notifications = read('src/features/settings/components/NotificationsTab.tsx');
+  assert.ok(!notifications.includes('AbsencesSection'), 'la section a quitté l’onglet Notifications');
+
+  const tab = read('src/features/settings/components/AbsencesTab.tsx');
+  assert.match(tab, /classesWithSessionDuring\(config\.timetable, config\.timetableClock, period/, 'seules les classes qui ont une séance sur ces dates');
+  assert.match(tab, /injectAbsenceLine\(stored\.lessonsData/, 'ligne libre datée « certificat de maladie »');
+  assert.match(tab, /saveNotebook\(classId, next/, 'écriture du cahier (file de synchronisation)');
+  assert.match(tab, /t\('notifications\.absenceCertificate'\)/, 'intitulé traduit, jamais en dur');
+  assert.ok(!tab.includes('markClassDirty('), 'la synchronisation passe par saveNotebook, pas par un marquage direct');
 });

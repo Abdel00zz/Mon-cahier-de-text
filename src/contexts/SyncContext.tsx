@@ -35,6 +35,7 @@ import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
 import { requestSyncJson, requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
 import { readLocalSyncSnapshot } from '../infrastructure/sync/localSnapshot';
+import { settingsPushDelay, touchesImmediateSettings } from '../infrastructure/sync/settingsPush';
 import { LocalSyncDataError } from '../infrastructure/storage/localJson';
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
 import { readStoredNotebook } from '../infrastructure/storage/notebookStorage';
@@ -45,9 +46,11 @@ interface SyncContextValue {
     syncStatus: SyncStatus;
     lastSyncAt: string | null;
     syncNow: () => Promise<void>;
+    /** Envoie tout de suite les réglages en attente (fermeture des Réglages). */
+    flushPush: () => void;
 }
 
-const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {} });
+const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {}, flushPush: () => {} });
 
 const PUSH_DEBOUNCE_MS = 3_000;
 /** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
@@ -154,6 +157,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
     const debounceRef = useRef<number | null>(null);
     const scheduledPushAtRef = useRef<number | null>(null);
+    /** Échéance du dernier envoi de réglages : cadence les modifications d'emploi du temps. */
+    const lastSettingsPushRef = useRef(0);
     const pushingRef = useRef(false);
     const retryAttemptRef = useRef(0);
     const immediatePushRequestedRef = useRef(false);
@@ -465,6 +470,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         return hasPendingWork() ? push() : Promise.resolve(refreshRef.current?.()).then(() => {});
     }, [push]);
+
+    /**
+     * Envoi immédiat des réglages en attente : appelé quand l'enseignant quitte
+     * les Réglages, pour que la grille qu'il vient de modifier parte sans attendre.
+     */
+    const flushPush = useCallback(() => {
+        if (!hasPendingWork()) return;
+        schedulePush(0);
+    }, [schedulePush]);
 
     // Pull initial + diffusion continue. Aucun chevauchement ; une saisie ou
     // un push invalide la réponse en vol avant qu'elle touche le stockage local.
@@ -825,6 +839,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             schedulePush(getPendingWork().deletedClassIds.length > 0 ? 50 : PUSH_DEBOUNCE_MS);
         });
 
+        /*
+         * Emploi du temps : une case modifiée change les séances de la journée
+         * (ouverture automatique, rappels, repère « en cours »). L'envoi part donc
+         * tout de suite, avec un plafond qui absorbe une rafale d'édition.
+         */
+        const unsubscribeConfig = subscribe('config-changed', (_source, keys) => {
+            if (!touchesImmediateSettings(keys)) return;
+            const now = Date.now();
+            const delay = settingsPushDelay(now, lastSettingsPushRef.current);
+            lastSettingsPushRef.current = now + delay;
+            schedulePush(delay);
+        });
+
         const handleOnline = () => {
             if (isForegroundOnline() && hasPendingWork()) schedulePush(1_000);
         };
@@ -843,6 +870,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.addEventListener('pagehide', flush);
         return () => {
             unsubscribeDirty();
+            unsubscribeConfig();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('native-resume', handleOnline);
             document.removeEventListener('visibilitychange', handleOnline);
@@ -854,8 +882,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [authStatus, schedulePush, push]);
 
     const value = useMemo(
-        () => ({ syncStatus, lastSyncAt, syncNow }),
-        [syncStatus, lastSyncAt, syncNow]
+        () => ({ syncStatus, lastSyncAt, syncNow, flushPush }),
+        [flushPush, lastSyncAt, syncNow, syncStatus]
     );
 
     return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;

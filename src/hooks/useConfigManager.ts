@@ -229,7 +229,7 @@ export const useConfigManager = () => {
             touchSettingsSyncMeta();
             markClassesListDirty();
         }
-        notifyConfigChanged(configSourceRef.current);
+        notifyConfigChanged(configSourceRef.current, Object.keys(newConfig));
     }, [setConfig, workspaceIsActive]);
 
     return { config, updateConfig, isLoading };

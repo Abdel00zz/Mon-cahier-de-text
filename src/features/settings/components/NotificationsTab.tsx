@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AbsencePeriod, AppConfig, NotificationSettings } from '@/types';
+import { AppConfig, NotificationSettings } from '@/types';
 import { defaultNotificationSettings } from '@/hooks/useConfigManager';
 import {
     activateNativeNotifications,
@@ -12,8 +12,7 @@ import {
     unsubscribeFromPush,
     type PushNotificationState,
 } from '@/infrastructure/push/push';
-import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
-import { Bell, CalendarCheck, Clock, TriangleAlert, X } from '@/components/ui/icons';
+import { Bell, CalendarCheck, Clock, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { StatusNotice, type NoticeTone } from '@/components/ui/status-notice';
 import { Switch } from '@/components/ui/switch';
@@ -408,11 +407,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     onChange={value => patch({ inactivityThresholdDays: value })} />
             </SettingsSection>
 
-            <AbsencesSection
-                absences={config.absences ?? []}
-                onChange={absences => onChange({ absences })}
-            />
-
             <details className="text-sm text-muted-foreground">
                 <summary className="min-h-11 cursor-pointer rounded-lg py-3 font-medium text-foreground focus-visible:outline-2 focus-visible:outline-primary">
                     {l('À savoir', 'للمزيد', 'Good to know')}
@@ -443,105 +437,5 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 </div>
             </details>
         </div>
-    );
-};
-
-/* ── Absences justifiées (certificats de maladie, congés) ─────────────────── */
-
-const AbsencesSection: React.FC<{
-    absences: AbsencePeriod[];
-    onChange: (absences: AbsencePeriod[]) => void;
-}> = ({ absences, onChange }) => {
-    const { t } = useLocale();
-    const [debut, setDebut] = useState('');
-    const [fin, setFin] = useState('');
-    const [motif, setMotif] = useState('');
-    const invalidRange = Boolean(debut && fin && fin < debut);
-
-    const addAbsence = () => {
-        if (!debut || invalidRange) return;
-        const effectiveFin = fin && fin >= debut ? fin : debut;
-        onChange([...absences, { debut, fin: effectiveFin, motif: motif.trim() || undefined }]);
-        setDebut('');
-        setFin('');
-        setMotif('');
-    };
-
-    const removeAbsence = (index: number) => {
-        onChange(absences.filter((_, i) => i !== index));
-    };
-
-    return (
-        <section>
-            <h3 className="text-sm font-semibold text-foreground">{t('notifications.absences')}</h3>
-
-            {absences.length > 0 && (
-                <ul className="mt-3 space-y-2">
-                    {absences.map((absence, index) => (
-                        <li
-                            key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-1 text-sm"
-                        >
-                            <span className="font-bold text-foreground font-sans">
-                                {formatDateDDMMYYYY(absence.debut)}
-                                {absence.fin !== absence.debut && ` → ${formatDateDDMMYYYY(absence.fin)}`}
-                                {absence.motif && <span className="ml-1.5 font-medium text-muted-foreground">· {absence.motif}</span>}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => removeAbsence(index)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                                aria-label={t('notifications.deleteAbsence')}
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            <div className="mt-3.5 grid grid-cols-1 items-end gap-3 min-[400px]:grid-cols-2 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
-                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
-                  <span>{t('notifications.absenceStart')}</span>
-                  <input
-                    type="date"
-                    value={debut}
-                    onChange={e => setDebut(e.target.value)}
-                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    aria-label={t('notifications.absenceStart')}
-                />
-                </label>
-                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
-                  <span>{t('notifications.absenceEnd')}</span>
-                  <input
-                    type="date"
-                    value={fin}
-                    min={debut || undefined}
-                    onChange={e => setFin(e.target.value)}
-                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    aria-label={t('notifications.absenceEnd')}
-                    aria-invalid={invalidRange || undefined}
-                    aria-describedby={invalidRange ? 'absence-range-error' : undefined}
-                />
-                </label>
-                <input
-                    type="text"
-                    value={motif}
-                    onChange={e => setMotif(e.target.value)}
-                    placeholder={t('notifications.reasonOptional')}
-                    aria-label={t('notifications.reasonOptional')}
-                    className="col-span-full h-11 min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <Button
-                    type="button"
-                    onClick={addAbsence}
-                    disabled={!debut || invalidRange}
-                    className="col-span-full text-sm sm:col-span-1"
-                >
-                    {t('notifications.add')}
-                </Button>
-            </div>
-            {invalidRange && <div id="absence-range-error"><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
-        </section>
     );
 };
