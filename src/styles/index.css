@@ -304,68 +304,53 @@ html[lang="ar"] .keep-class-title {
   /* ── Modern Sophisticated Light Theme ──────────────────────────────── */
   :root {
     /* Design Tokens · Cahier de textes */
-    --paper: #F6F1E4;
-    --paper-deep: #EDE5D0;
-    --ink: #2B2620;
-    --ink-soft: #6B6255;
-    --rule: #D9CFB6;
-    --binder: #211D18;
-
-    --bleu: #3D6FB4;
-    --bleu-tint: #E7EEF8;
-    --vert: #2F7A5C;
-    --vert-tint: #E5F1EA;
-    --cerise: #B23A50;
-    --cerise-tint: #F7E7EA;
-    --violet: #6D4FA0;
-    --violet-tint: #EFE9F6;
-    --ambre: #C1791F;
-    --ambre-tint: #F7EBDA;
 
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Palette « papier et argile » : ivoire chaud, encre quasi noire teintée
-       de brun, accent terre cuite (AA 4.7:1 avec texte clair). Les gris portent
-       une teinte chaude de 2 à 5 % ; le vert reste réservé au succès et le
-       rouge, plus froid que l'accent, aux actions destructives. */
-    --background: 48 33% 97%;      /* #FAF9F5 ivoire */
-    --foreground: 60 4% 10%;       /* encre chaude, jamais noir pur */
-    --card: 46 36% 99%;
-    --card-foreground: 60 4% 10%;
-    --popover: 46 36% 99%;
-    --popover-foreground: 60 4% 10%;
+    /* Palette « papier d’argile » : un ivoire franchement plus profond que le
+       blanc (#F3EFE7) porte la page, les cartes se détachent d’un cran
+       (#FCFAF4), les filets deviennent lisibles (#D6D0C1, 1,3:1) et le texte
+       secondaire passe AA haut la main (34 % → 8:1 sur carte). L’accent terre
+       cuite reste la seule couleur d’action ; le vert ne sert qu’au succès,
+       le rouge qu’aux ruptures. Les gris gardent une teinte chaude de 2 à 5 %. */
+    --background: 45 27% 93%;      /* #F3EFE7 papier profond */
+    --foreground: 45 12% 11%;      /* encre chaude, jamais noir pur */
+    --card: 42 36% 98%;            /* #FCFAF4 carte un cran au-dessus */
+    --card-foreground: 45 12% 11%;
+    --popover: 42 36% 98%;
+    --popover-foreground: 45 12% 11%;
     --primary: 15 55% 45%;         /* terre cuite #B35230 */
-    --primary-foreground: 48 40% 98%;
-    --secondary: 47 26% 91%;
-    --secondary-foreground: 60 4% 18%;
-    --muted: 48 27% 92%;           /* #F0EEE6 */
-    --muted-foreground: 55 4% 40%;
-    --accent: 20 55% 92%;
-    --accent-foreground: 15 55% 28%;
-    --border: 49 21% 87%;
-    --input: 46 30% 98%;
-    --ring: 15 55% 50%;
-    --destructive: 352 62% 40%; /* Cramoisi : distinct de l'accent terre cuite. */
-    --destructive-foreground: 48 40% 98%;
-    --success: 128 32% 28%;
-    --warning: 38 92% 50%;
-    --success-strong: 128 34% 24%;
-    --warning-strong: 38 92% 30%;
-    --destructive-strong: 352 62% 38%;
-    --alert: 352 68% 50%;
-    --alert-strong: 352 66% 40%;
-    --scheduled: 20 55% 93%;       /* argile très claire */
-    --scheduled-foreground: 15 55% 28%;
-    --badge-bg: 20 50% 93%;
-    --badge-border: 20 40% 82%;
-    --badge-text: 15 55% 28%;
-    --dock-shadow: 0 10px 30px rgba(20, 20, 19, 0.07);
-    --chart-1: 38 92% 50%;
-    --chart-2: 15 55% 50%;
-    --chart-3: 100 24% 45%;
-    --chart-4: 208 45% 56%;
-    --chart-5: 338 38% 54%;
+    --primary-foreground: 45 40% 98%;
+    --secondary: 45 20% 89%;
+    --secondary-foreground: 45 12% 16%;
+    --muted: 45 22% 90%;           /* #EBE7DE aplat muet */
+    --muted-foreground: 45 9% 34%; /* #5E594E : AA sur papier ET sur carte */
+    --accent: 18 42% 89%;          /* argile de survol */
+    --accent-foreground: 15 55% 25%;
+    --border: 45 18% 80%;          /* filet réellement visible */
+    --input: 42 32% 97%;
+    --ring: 15 60% 44%;
+    --destructive: 352 58% 38%; /* Cramoisi : distinct de l'accent terre cuite. */
+    --destructive-foreground: 45 40% 98%;
+    --success: 130 28% 26%;
+    --warning: 38 92% 45%;
+    --success-strong: 130 30% 21%;
+    --warning-strong: 36 88% 27%;
+    --destructive-strong: 352 58% 34%;
+    --alert: 352 66% 46%;
+    --alert-strong: 352 64% 36%;
+    --scheduled: 18 42% 90%;       /* argile très claire */
+    --scheduled-foreground: 15 55% 25%;
+    --badge-bg: 18 38% 90%;
+    --badge-border: 18 32% 76%;
+    --badge-text: 15 55% 25%;
+    --dock-shadow: 0 10px 30px rgba(28, 26, 22, 0.10);
+    --chart-1: 38 84% 44%;
+    --chart-2: 15 55% 47%;
+    --chart-3: 110 26% 36%;
+    --chart-4: 208 42% 46%;
+    --chart-5: 338 42% 48%;
 
     --radius-sm: 8px;
     --radius-md: 10px;
@@ -379,44 +364,48 @@ html[lang="ar"] .keep-class-title {
 
   .dark {
     color-scheme: only dark;
-    /* Nuit « charbon chaud » : fonds gris-brun étagés (cartes plus claires que
-       le fond), texte ivoire adouci, terre cuite éclaircie. Jamais une inversion. */
-    --background: 60 3% 15%;       /* #262625 */
-    --foreground: 48 20% 90%;
-    --card: 60 3% 19%;
-    --card-foreground: 48 20% 90%;
-    --popover: 60 3% 21%;
-    --popover-foreground: 48 20% 90%;
-    --primary: 15 63% 60%;         /* #D97757 */
-    --primary-foreground: 60 3% 10%;
-    --secondary: 60 3% 23%;
-    --secondary-foreground: 48 20% 90%;
-    --muted: 60 3% 21%;
-    --muted-foreground: 50 8% 68%;
-    --accent: 15 25% 24%;
-    --accent-foreground: 18 70% 80%;
-    --border: 60 3% 27%;
-    --input: 60 3% 20%;
-    --ring: 15 63% 60%;
-    --destructive: 352 62% 70%; /* Rouge doux, encre sombre sur les actions. */
-    --destructive-foreground: 352 48% 12%;
-    --success: 125 30% 62%;
-    --warning: 38 92% 50%;
-    --success-strong: 125 32% 68%;
-    --warning-strong: 38 92% 55%;
-    --destructive-strong: 352 62% 72%;
-    --alert: 352 65% 64%;
-    --alert-strong: 352 75% 76%;
-    --scheduled: 15 25% 21%;
-    --scheduled-foreground: 18 60% 82%;
-    --badge-bg: 15 25% 21%;
-    --badge-border: 15 20% 31%;
-    --badge-text: 18 60% 80%;
-    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
-    --chart-1: 38 92% 50%;
-    --chart-2: 15 63% 62%;
-    --chart-3: 100 24% 60%;
-    --chart-4: 208 50% 66%;
+    /* Nuit « argile brûlée » : le fond descend à 12 % — la profondeur de
+       Material (#121212) en gardant la chaleur du sable — et chaque niveau
+       au-dessus remonte d’un cran (carte 17 %, menu 19 %, muet 20 %), comme
+       un empilement de surfaces éclairées. Les accents s’éclaircissent et se
+       désaturent pour ne plus vibrer sur le sombre, et l’encre ivoire reste
+       au-dessus de 11:1 sur la carte la plus claire. Jamais une inversion. */
+    --background: 40 6% 12%;       /* #1F1D1A nuit d’argile */
+    --foreground: 42 18% 92%;
+    --card: 38 6% 17%;             /* surface élevée : plus claire que le fond */
+    --card-foreground: 42 18% 92%;
+    --popover: 38 6% 19%;
+    --popover-foreground: 42 18% 92%;
+    --primary: 15 58% 62%;         /* terre cuite éclaircie, légèrement désaturée */
+    --primary-foreground: 30 12% 10%;
+    --secondary: 38 6% 21%;
+    --secondary-foreground: 42 18% 92%;
+    --muted: 38 5% 20%;
+    --muted-foreground: 42 8% 67%;
+    --accent: 18 20% 22%;
+    --accent-foreground: 18 58% 84%;
+    --border: 38 7% 26%;
+    --input: 38 6% 18%;
+    --ring: 15 58% 62%;
+    --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
+    --destructive-foreground: 352 45% 12%;
+    --success: 128 26% 64%;
+    --warning: 38 88% 58%;
+    --success-strong: 128 28% 70%;
+    --warning-strong: 38 90% 62%;
+    --destructive-strong: 352 55% 72%;
+    --alert: 352 62% 68%;
+    --alert-strong: 352 70% 78%;
+    --scheduled: 18 20% 20%;
+    --scheduled-foreground: 18 55% 84%;
+    --badge-bg: 18 20% 20%;
+    --badge-border: 18 16% 30%;
+    --badge-text: 18 55% 83%;
+    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.66);
+    --chart-1: 38 88% 62%;
+    --chart-2: 15 58% 64%;
+    --chart-3: 110 26% 62%;
+    --chart-4: 208 44% 66%;
     --chart-5: 338 45% 68%;
   }
 
@@ -699,11 +688,7 @@ html[lang="ar"] .modal-header h2,
   }
 
   .editor-table-content {
-    color: #202124;
-  }
-
-  .dark .editor-table-content {
-    color: #e8eaed;
+    color: hsl(var(--foreground));
   }
 
   /* Métriques propres au moteur (KaTeX) : aucune police imposée, aucun italique global. */
@@ -756,8 +741,8 @@ html[lang="ar"] .modal-header h2,
 
 
   .dark .glass-card {
-    background: rgba(15, 23, 42, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: hsl(var(--card) / 0.72);
+    border: 1px solid hsl(var(--border) / 0.85);
   }
 
   
@@ -1272,14 +1257,6 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
   box-shadow: none !important;
 }
 
-/* ── Sketch.com Aurora Canvas & Visual Identity ────────────────────────── */
-.dark .sketch-aurora-canvas {
-  background-image: 
-    radial-gradient(at 18% 12%, rgba(180, 70, 120, 0.10) 0px, transparent 55%),
-    radial-gradient(at 82% 16%, rgba(120, 90, 210, 0.12) 0px, transparent 60%),
-    radial-gradient(at 50% 6%, rgba(60, 120, 220, 0.08) 0px, transparent 50%);
-}
-
 [data-dashboard-surface] [data-dashboard-root] {
   background: transparent;
 }
@@ -1320,24 +1297,18 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
   box-shadow: 0 8px 24px -10px rgb(0 0 0 / .45), inset 0 1px 0 rgb(236 235 224 / .05);
 }
 
-/* ── Neo-Editorial Artistic Canvas & Banner ────────────────────────────── */
-.dark .artistic-editorial-banner {
-  background-color: #11121d;
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px),
-    linear-gradient(135deg, rgba(26, 40, 48, 0.7) 0%, rgba(42, 24, 46, 0.6) 50%, rgba(28, 34, 58, 0.7) 100%);
-  background-size: 11px 11px, 100% 100%;
-  border: 1px solid rgba(139, 92, 246, 0.22);
-}
+/* ── Fin de la feuille : aucune couleur hors palette ─────────────────── */
 
 .dark .artistic-dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(hsl(var(--foreground) / 0.09) 1.5px, transparent 1.5px);
   background-size: 11px 11px;
 }
 
 .artistic-cta-button {
   background-color: hsl(var(--primary));
-  color: #ffffff !important;
+  /* Encre du bouton décidée par le thème : claire sur la terre cuite foncée,
+     sombre sur la terre cuite éclaircie du mode sombre. */
+  color: hsl(var(--primary-foreground)) !important;
   border-radius: 8px;
   font-weight: 600;
   box-shadow: 0 4px 14px 0 rgba(112, 51, 227, 0.32);
@@ -1477,27 +1448,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   @media (hover: hover) {
   }
 
-  /*
-   * Numéro de classe moderne et élégant à côté du titre.
-   * Typographie contemporaine géométrique, proportionnée, chic et sans boîte.
-   * Couleur cohérente avec le badge/thème de la carte.
-   */
-  .keep-group-watermark {
-    display: inline-flex;
-    align-items: baseline;
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    vertical-align: baseline;
-    margin-inline-start: 0.4rem;
-    user-select: none;
-    white-space: nowrap;
-    opacity: 0.92;
-    transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
-  }
+  /* Le numéro de classe n'a qu'une seule définition, plus bas dans cette
+     feuille (« Numéro de classe ») : plus de règle concurrente. */
 
 
   /*
@@ -1718,6 +1670,13 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   /* Les noms longs restent entièrement lisibles, notamment en arabe. */
   .keep-class-title { overflow-wrap: anywhere; hyphens: auto; }
+  /* Numéro de classe : de l'ENCRE, sans pastille ni cadre.
+     Le numéro de classe n'a qu'une seule définition : encre du thème et contour
+     couleur carte, jamais une teinte par ton. Le ton de la classe reste porté
+     par la carte ; le numéro se lit comme un chiffre écrit à l'encre — noir
+     chaud en clair, ivoire en sombre —, pleinement opaque, et sa silhouette est
+     détourée d'un filet couleur carte sur les quatre côtés : le contour reste
+     net sur tous les fonds teintés. */
   .keep-group-watermark {
   position: relative;
   display: inline-flex;
@@ -1729,46 +1688,44 @@ html[data-keyboard='open'] .mobile-tab-bar {
   padding: 0.15rem 0.1rem;
   font-family: var(--font-lato);
   font-size: clamp(1.45rem, 3.2vw, 1.9rem);
-  font-weight: 700;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.015em;
   line-height: 0.95;
-  text-shadow: 0 2px 0 rgb(255 255 255 / 0.58), 0 4px 8px hsl(30 25% 20% / 0.14);
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  color: hsl(var(--foreground));
+  opacity: 1;
+  /* Contour net : un filet plein couleur carte, doublé du détourage en quatre
+     directions qui garde la silhouette lisible sur les fonds teintés. */
+  -webkit-text-stroke: 1.5px hsl(var(--card));
+  paint-order: stroke fill;
+  text-shadow:
+    -1px -1px 0 hsl(var(--card)),
+    1px -1px 0 hsl(var(--card)),
+    -1px 1px 0 hsl(var(--card)),
+    1px 1px 0 hsl(var(--card)),
+    0 3px 6px hsl(var(--foreground) / 0.18);
   transform: rotate(-3deg);
-  transition: transform 220ms ease, filter 220ms ease;
+  transition: transform 220ms ease, filter 220ms ease, color 150ms ease;
   }
-  .keep-group-watermark:hover { transform: rotate(0deg) translateY(-1px); filter: drop-shadow(0 4px 6px hsl(30 25% 20% / 0.18)); }
-  .keep-group-watermark[data-tone="sand"] { color: #8A5A00; }
-  .dark .keep-group-watermark[data-tone="sand"] { color: #FFD86B; }
-  .keep-group-watermark[data-tone="coral"] { color: #A43E10; }
-  .dark .keep-group-watermark[data-tone="coral"] { color: #FFAB7E; }
-  .keep-group-watermark[data-tone="lime"] { color: #4A6A00; }
-  .dark .keep-group-watermark[data-tone="lime"] { color: #CDF55E; }
-  .keep-group-watermark[data-tone="mint"] { color: #0B6B4F; }
-  .dark .keep-group-watermark[data-tone="mint"] { color: #6EDCAB; }
-  .keep-group-watermark[data-tone="sky"] { color: #0A5E9E; }
-  .dark .keep-group-watermark[data-tone="sky"] { color: #7DC7F7; }
-  .keep-group-watermark[data-tone="indigo"] { color: #3431D2; }
-  .dark .keep-group-watermark[data-tone="indigo"] { color: #A5A3FF; }
-  .keep-group-watermark[data-tone="lavender"] { color: #8C2BA8; }
-  .dark .keep-group-watermark[data-tone="lavender"] { color: #E4A9F8; }
-  .keep-group-watermark[data-tone="rose"] { color: #B01B3C; }
-  .dark .keep-group-watermark[data-tone="rose"] { color: #F79FB0; }
+  .keep-group-watermark:hover { transform: rotate(0deg) translateY(-1px); filter: drop-shadow(0 4px 6px hsl(var(--foreground) / 0.2)); }
+  .dark .keep-group-watermark {
+  text-shadow:
+    -1px -1px 0 hsl(var(--card)),
+    1px -1px 0 hsl(var(--card)),
+    -1px 1px 0 hsl(var(--card)),
+    1px 1px 0 hsl(var(--card)),
+    0 3px 6px rgb(0 0 0 / 0.55);
+  }
 
-  /* Numéro de groupe : filigrane à la fin du nom. Plus grand que le titre,
-     teinté par la palette de la carte (les classes de couleur du thème portent
-     la teinte), avec une ombre très douce qui le détache du fond — ni pastille
-     ni cadre, pour un rendu « gravé » plutôt qu'« étiquette ». */
+  /* Variante « fin de nom » : un cran plus grand, jamais détachée du titre,
+     et le même contour ivoire pour rester lisible sur les fonds teintés. */
   .keep-group-watermark[data-variant='end'] {
     font-size: 1.4em;
     letter-spacing: 0.01em;
-    opacity: 0.92;
-    text-shadow: 0 1px 0 rgb(255 255 255 / 0.5), 0 1px 1px rgb(0 0 0 / 0.04);
   }
-
-  .dark .keep-group-watermark[data-variant='end'] {
-    text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
-  }
-  .dark .keep-group-watermark { text-shadow: 0 2px 0 rgb(0 0 0 / 0.38), 0 4px 8px rgb(0 0 0 / 0.24); }
 
   /* Accent artisanal sur les actions : relief léger et ligne intérieure. */
   /* Direction arabe : palette fès/vert zellige et géométrie andalouse plus calme. */
@@ -2019,61 +1976,24 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
 }
 
-/* ── 4. Design System "Beige Chaud & Épuré" ─────────────────────────────── */
+/* ── 4. Design System WhatsApp (seul jeu de couleurs de marque conservé) ───
+   Le reste de cette ancienne couche a été retiré : il dupliquait les surfaces
+   dans une gamme froide. Seules les teintes de la marque WhatsApp restent,
+   accordées au vert de la palette et lisibles avec du texte blanc en clair
+   comme en sombre. */
 :root {
-  --ds-bg-page: #f7f5f2;
-  --ds-surface: #ffffff;
-  --ds-surface-secondary: #f1eee9;
-  --ds-border: #e6e1d9;
-  --ds-text-primary: #2c2a26;
-  --ds-text-secondary: #6b6560;
-  --ds-accent: #8b7355;
-  --ds-accent-soft: #e8e0d5;
-  --ds-accent-hover: #6d5a42;
-  --ds-whatsapp: #2e7d4f;
-  --ds-whatsapp-hover: #256841;
+  --ds-whatsapp: #1f7a4d;
+  --ds-whatsapp-hover: #186340;
   --ds-whatsapp-soft: #e8f5ee;
-  --ds-shadow-card: 0 4px 24px rgba(44, 42, 38, 0.08);
-  --ds-radius-card: 16px;
-  --ds-radius-btn: 10px;
-  --ds-radius-pill: 50px;
-  --ds-radius-icon: 14px;
 }
 
 .dark {
-  --ds-bg-page: #171513;
-  --ds-surface: #1f1d1a;
-  --ds-surface-secondary: #181614;
-  --ds-border: #38332c;
-  --ds-text-primary: #f3efe8;
-  --ds-text-secondary: #a8a199;
-  --ds-accent: #a08766;
-  --ds-accent-soft: #342e26;
-  --ds-accent-hover: #b59b77;
-  --ds-whatsapp: #2e7d4f;
-  --ds-whatsapp-hover: #256841;
+  --ds-whatsapp: #1f7a4d;
+  --ds-whatsapp-hover: #186340;
   --ds-whatsapp-soft: #1c2b21;
-  --ds-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
 
-/* ── Fly.io Design System Tokens & Effects ───────────────────────────── */
-@keyframes flash-new {
-  0% {
-    background-color: rgba(99, 102, 241, 0.3);
-  }
-  100% {
-    background-color: transparent;
-  }
-}
-
-.dark .fly-card-surface {
-  background-color: #17171a;
-  border-color: #27272a;
-  color: #f8fafc;
-}
-
-
-
+/* ── Toute couleur de l'interface vient des jetons ci-dessus ─────────── */
 /* ═════════════════════════════════════════════════════════════════════
    POLICE MAGHRIBI - FALLBACK LOCAL
    ══════════════════════════════════════════════════════════════════════

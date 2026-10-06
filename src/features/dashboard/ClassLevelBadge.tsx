@@ -79,68 +79,6 @@ function getTierBadgeClasses(tierKey?: string | null, label?: string): string {
 }
 
 /**
- * Couleurs harmonisées pour le numéro de classe (accordées à la teinte du badge).
- */
-function getToneGroupNumberClasses(tone?: string): string {
-    switch (tone) {
-        case 'sand':
-            return 'text-amber-800/95 dark:text-amber-200';
-        case 'coral':
-            return 'text-orange-800/95 dark:text-orange-200';
-        case 'lime':
-            return 'text-lime-800/95 dark:text-lime-200';
-        case 'mint':
-            return 'text-emerald-800/95 dark:text-emerald-200';
-        case 'sky':
-            return 'text-sky-800/95 dark:text-sky-200';
-        case 'indigo':
-            return 'text-indigo-800/95 dark:text-indigo-200';
-        case 'lavender':
-            return 'text-fuchsia-800/95 dark:text-fuchsia-200';
-        case 'rose':
-            return 'text-rose-800/95 dark:text-rose-200';
-        default:
-            return 'text-stone-800/90 dark:text-stone-100';
-    }
-}
-
-function getTierGroupNumberClasses(tierKey?: string | null, label?: string): string {
-    const key = tierKey || (
-        label?.includes('2') || label?.includes('الثانية')
-            ? 'secondBac'
-            : label?.includes('1') || label?.includes('الأولى')
-                ? 'firstBac'
-                : label?.includes('Tronc') || label?.includes('الجذع')
-                    ? 'common'
-                    : label?.includes('Collège') || label?.includes('إعدادي') || label?.includes('AC')
-                        ? 'college'
-                        : label?.includes('Prépa') || label?.includes('CPGE')
-                            ? 'prepa'
-                            : 'default'
-    );
-
-    switch (key) {
-        case 'common':
-            return 'text-emerald-800/95 dark:text-emerald-200';
-        case 'firstBac':
-            return 'text-sky-800/95 dark:text-sky-200';
-        case 'secondBac':
-            return 'text-purple-800/95 dark:text-purple-200';
-        case 'college':
-        case 'college1':
-        case 'college2':
-        case 'college3':
-            return 'text-amber-800/95 dark:text-amber-200';
-        case 'prepa':
-        case 'prepaFirst':
-        case 'prepaSecond':
-            return 'text-rose-800/95 dark:text-rose-200';
-        default:
-            return 'text-stone-800/90 dark:text-stone-100';
-    }
-}
-
-/**
  * Badge de palier au format standardisé, sans coupure de texte en bas (préservant les jambages arabes).
  * Coins sobres et moins arrondis (rounded-[3px]).
  */
@@ -189,8 +127,10 @@ export interface ClassGroupWatermarkProps {
 }
 
 /**
- * Numéro de classe chic, italique et majestueux (façon belle édition scolaire).
- * Typographie serif italique fluide, teinté harmonieusement avec le thème de la carte.
+ * Numéro de classe : un chiffre écrit à l'encre, sans pastille ni cadre.
+ * L'encre et le contour viennent de la palette (`index.css`), donc du thème :
+ * noir chaud en clair, ivoire en sombre, pleinement opaque, détouré d'un filet
+ * couleur carte. Le ton de la classe reste porté par la carte elle-même.
  */
 export const ClassGroupWatermark = memo(({
     group,
@@ -200,10 +140,6 @@ export const ClassGroupWatermark = memo(({
     className,
     variant = 'inline',
 }: ClassGroupWatermarkProps) => {
-    const numberColorClasses = themeTone
-        ? getToneGroupNumberClasses(themeTone)
-        : getTierGroupNumberClasses(tierKey, label);
-
     return (
         <span
             data-variant={variant}
@@ -211,10 +147,10 @@ export const ClassGroupWatermark = memo(({
                 'keep-group-watermark inline-flex items-baseline align-baseline select-none font-serif italic font-normal tracking-tight tabular-nums leading-none',
                 variant === 'end' && 'ms-1.5 sm:ms-2 text-[1.8em] sm:text-[2.2em] -translate-y-[2px] sm:-translate-y-[3px]',
                 variant === 'inline' && 'ms-1.5 text-[1.25em] sm:text-[1.35em]',
-                numberColorClasses,
                 className
             )}
             data-tone={themeTone}
+            data-tier={tierKey ?? undefined}
             title={variant === 'background' ? undefined : label}
             aria-label={variant === 'background' ? undefined : label}
             aria-hidden={variant === 'background' ? true : undefined}

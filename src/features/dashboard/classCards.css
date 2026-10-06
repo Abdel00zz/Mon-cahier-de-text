@@ -9,8 +9,10 @@
   --class-accent: var(--keep-accent, #8a5a00);
   --class-surface: var(--keep-light, #fcfaf6);
   --class-border: color-mix(in srgb, var(--class-accent) 17%, var(--class-surface));
-  --class-ink: #343a40;
-  --class-muted: #5f666d;
+  /* Encre et texte secondaire : ceux de la palette, donc chauds. Les cartes ne
+     portent plus une gamme de gris froids à part. */
+  --class-ink: hsl(var(--foreground));
+  --class-muted: hsl(var(--muted-foreground));
   position: relative;
   isolation: isolate;
   display: flex;
@@ -24,17 +26,15 @@
   border-radius: 22px;
   color: var(--class-ink);
   background: var(--class-surface);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38), 0 2px 4px rgb(40 48 58 / .025), 0 8px 24px -20px rgb(40 48 58 / .14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38), 0 2px 4px rgb(32 30 26 / .03), 0 8px 24px -20px rgb(32 30 26 / .16);
   transition: transform 250ms var(--ease-spring), box-shadow 250ms ease, border-color 200ms ease;
 }
 /* Filet de couleur en tête de carte : supprimé sur demande — la teinte se lit
    désormais dans la texture tissée et les taches (aucun dégradé). */
 .dark .class-card {
   --class-surface: var(--keep-dark, #252729);
-  --class-ink: #e3e6e8;
-  --class-muted: #acb4bd;
   --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface));
-  box-shadow: inset 0 1px 0 rgb(240 244 248 / .06), 0 8px 24px -20px rgb(5 10 18 / .5);
+  box-shadow: inset 0 1px 0 rgb(240 244 248 / .06), 0 8px 24px -20px rgb(0 0 0 / .5);
 }
 /* Texture « toile + taches » : un masque SVG (trame tissée de 3 px et taches
    d'ellipses superposées, **sans aucun dégradé**) rempli de la teinte de la
@@ -79,13 +79,17 @@
   flex: 0 0 44px;
   margin-inline-end: -10px;
   translate: 0 -6px;
-  border-radius: 14px;
+  /* Bouton flottant circulaire, en verre teinté : discret au repos, franc au
+     survol — le geste attendu sur une carte tactile. */
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--class-surface) 55%, transparent);
   color: var(--class-muted);
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 200ms ease, transform 200ms var(--ease-spring);
+  transition: background-color 200ms ease, transform 200ms var(--ease-spring), box-shadow 200ms ease;
 }
-.class-card__menu:hover, .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-accent) 10%, transparent); }
+.class-card__menu:hover, .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 92%, white 8%); box-shadow: 0 2px 8px -4px color-mix(in srgb, var(--class-accent) 45%, transparent); }
+.dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
 .class-card__identity { display: flex; align-items: center; min-height: 56px; }
@@ -93,8 +97,9 @@
    21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large. */
 .class-card__title { flex: 1; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-/* Le groupe est décoratif et indépendant du titre, à l’extrémité opposée
-   au sens de lecture. DM Sans est déjà embarquée, y compris hors connexion. */
+/* Le numéro de classe est lu, pas seulement deviné : encre noire chaude
+   franchement opaque, détourée d'un filet couleur carte qui détache les
+   chiffres de la texture. `paint-order` garde le filet DERRIÈRE le chiffre. */
 .class-card .class-card__group {
   position: absolute;
   z-index: 0;
@@ -113,15 +118,22 @@
   font-variant-numeric: lining-nums tabular-nums;
   letter-spacing: -.065em;
   line-height: 1;
-  color: var(--class-ink);
-  opacity: .08;
+  color: hsl(var(--foreground));
+  opacity: .5;
+  -webkit-text-stroke: 2px var(--class-surface);
+  paint-order: stroke fill;
   text-shadow: none;
   transform: none;
   translate: none;
   filter: none;
 }
 .class-card .class-card__group:hover { transform: none; filter: none; }
-.dark .class-card .class-card__group { color: var(--class-ink); opacity: .1; text-shadow: none; }
+.dark .class-card .class-card__group {
+  color: hsl(var(--foreground));
+  opacity: .38;
+  -webkit-text-stroke: 2px var(--class-surface);
+  text-shadow: none;
+}
 .class-card:has(.class-card__group) .class-card__identity { padding-inline-end: 28px; }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
@@ -144,7 +156,7 @@
 }
 .class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
 @media (hover: hover) and (pointer: fine) {
-  .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(245 248 252 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(40 48 58 / .15); }
+  .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(32 30 26 / .18); }
   .class-card:hover .class-card__texture { opacity: .075; }
 }
 .class-card:has(.class-card__open:active) { transform: scale(.988); }

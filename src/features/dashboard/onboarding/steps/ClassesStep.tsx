@@ -216,7 +216,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setSelectedCycle(cycle)}
                       className={`min-h-11 touch-manipulation rounded-lg px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:text-sm ${
                         selectedCycle === cycle
-                          ? 'bg-[var(--workspace-active-ink)] text-white shadow-xs font-bold'
+                          ? 'bg-[var(--workspace-active-ink)] text-card shadow-xs font-bold'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -350,7 +350,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setGroupInput(num)}
                       className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 cursor-pointer ${
                         isSelected
-                          ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-ink)] text-white shadow-xs'
+                          ? 'border-2 border-[var(--workspace-active-ink)] bg-[var(--workspace-active-ink)] text-card shadow-xs'
                           : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted'
                       }`}
                     >
@@ -386,7 +386,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setSelectedSubject(subject)}
                         className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer sm:px-4 sm:text-sm ${
                           isSelected
-                            ? 'bg-[var(--workspace-active-ink)] text-white font-bold shadow-xs border border-[var(--workspace-active-ink)]'
+                            ? 'bg-[var(--workspace-active-ink)] text-card font-bold shadow-xs border border-[var(--workspace-active-ink)]'
                             : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400'
                         }`}
                       >

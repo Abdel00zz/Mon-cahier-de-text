@@ -8,17 +8,17 @@ import type { CSSProperties } from 'react';
  * ────────────────────────────────────────────────────────────────────────── */
 
 const DASHBOARD_CANVAS = {
-    /** Neutres teintés pistache : les notes colorées gardent la priorité. */
+    /** Neutres teintés : la page s'accorde au papier profond de la palette. */
     colors: {
-        mint: '#f6f4ec',
-        rose: '#faf9f5',
-        sky: '#f3efe6',
+        mint: '#f3f1e8',
+        rose: '#f2f0e8',
+        sky: '#efede3',
     },
-    /** Mode sombre : versions étagées profondes et désaturées */
+    /** Mode sombre : versions étagées autour du fond nuit d'argile */
     darkColors: {
-        mint: '#232322',
-        rose: '#262625',
-        sky: '#2a2927',
+        mint: '#1e1d1b',
+        rose: '#201f1d',
+        sky: '#232120',
     },
 } as const;
 

@@ -28,7 +28,9 @@ export const timeAgo = (iso: string | null): string => {
 };
 
 export const completionColor = (rate: number): string => {
-    if (rate >= 75) return 'bg-emerald-500';
-    if (rate >= 40) return 'bg-amber-500';
-    return 'bg-red-500';
+    /* Jetons sémantiques : la jauge suit le thème (clair et sombre) au lieu
+       d'une palette Tailwind figée. */
+    if (rate >= 75) return 'bg-success';
+    if (rate >= 40) return 'bg-warning';
+    return 'bg-destructive';
 };

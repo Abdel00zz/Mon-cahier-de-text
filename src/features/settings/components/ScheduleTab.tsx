@@ -254,46 +254,34 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
             )}
 
-            {/* Grille jours × créneaux : tracé direct du tableau, sans boîte englobante */}
+            {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
             <div className="overflow-x-auto overscroll-x-contain">
-                <table className={`rtl-table w-full border-separate border-spacing-0 border border-[#c4bcaf] bg-white text-xs sm:text-sm dark:border-[#38332c] dark:bg-[#181614] ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
+                <table className={`rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
-                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 border-b border-[#c4bcaf] bg-[#eeeae3] px-2 sm:px-3 py-2.5 sm:py-3 text-center text-[11px] sm:text-xs lg:text-sm font-bold tracking-wide text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc]`}>
+                            <th className={`sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl bg-muted/70 px-2 sm:px-3 py-2.5 sm:py-3 text-center text-[11px] sm:text-xs lg:text-sm font-bold tracking-wide text-muted-foreground backdrop-blur-sm`}>
                                 {t('schedule.day')}
                             </th>
-                            {visibleHourSlots.map((hour, idx) => {
-                                const isLast = idx === visibleHourSlots.length - 1;
-                                return (
-                                    <th
-                                        key={hour.index}
-                                        className={`border-b border-[#c4bcaf] bg-[#eeeae3] px-1 sm:px-2 py-2 sm:py-3 text-center text-[11px] sm:text-xs lg:text-[13px] font-bold text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc] ${
-                                            locale === 'ar'
-                                                ? (isLast ? '' : 'border-l border-[#c4bcaf] dark:border-[#38332c]')
-                                                : (isLast ? '' : 'border-r border-[#c4bcaf] dark:border-[#38332c]')
-                                        } ${
-                                            hour.lunchBefore
-                                                ? (locale === 'ar' ? '!border-r-2 !border-r-[#8b7355]/60' : '!border-l-2 !border-l-[#8b7355]/60')
-                                                : ''
-                                        }`}
-                                    >
+                            {visibleHourSlots.map(hour => (
+                                <th
+                                    key={hour.index}
+                                    className={`rounded-xl bg-muted/70 px-1 sm:px-2 py-2 sm:py-3 text-center text-[11px] sm:text-xs lg:text-[13px] font-bold text-muted-foreground backdrop-blur-sm ${
+                                        hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
+                                    }`}
+                                >
                                         <span dir="ltr" className="inline-block leading-tight font-semibold tracking-tight">{hourLabel(hour.startMin, hour.endMin)}</span>
-                                    </th>
-                                );
-                            })}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {TIMETABLE_DAYS.map((day, dayIndex) => {
-                            const isLastRow = dayIndex === TIMETABLE_DAYS.length - 1;
+                        {TIMETABLE_DAYS.map(day => {
                             return (
                                 <tr key={day.value} className="group transition-colors">
-                                    <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 ${
-                                        isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
-                                    } border-[#c4bcaf] bg-[#f7f4ee] px-1.5 sm:px-3 py-2 text-center whitespace-nowrap text-[11px] sm:text-xs lg:text-sm font-bold text-[#262420] transition-colors group-hover:bg-[#eee9df] dark:border-[#38332c] dark:bg-[#1b1916] dark:text-[#f3eee7] dark:group-hover:bg-[#23201c]`}>
+                                    <td className={`sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-10 rounded-xl border border-border/70 bg-card px-1.5 sm:px-3 py-2 text-center whitespace-nowrap text-[11px] sm:text-xs lg:text-sm font-bold text-foreground shadow-xs transition-colors group-hover:bg-muted/60`}>
                                         {t(`schedule.day.${day.value}`)}
                                     </td>
-                                    {visibleHourSlots.map((hour, idx) => {
+                                    {visibleHourSlots.map(hour => {
                                         const run = runsByDay.get(day.value)?.get(hour.index);
                                         if (run && !run.isStart) return null;
                                         const merged = !!run && run.hours > 1;
@@ -302,23 +290,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         const classInfo = entry ? classById.get(entry.classId) : undefined;
                                         const color = entry ? colorFor(entry.classId) : null;
                                         const appearance = classInfo ? classColorAttributes(classInfo) : {};
-                                        const isLastCol = idx + span - 1 >= visibleHourSlots.length - 1;
 
                                         return (
                                             <td
                                                 key={hour.index}
                                                 colSpan={span}
                                                 {...appearance}
-                                                className={`relative p-0 align-middle ${
-                                                    isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
+                                                className={`relative overflow-hidden rounded-xl border p-0 align-middle transition-shadow ${
+                                                    classInfo
+                                                        ? 'border-black/5 shadow-xs dark:border-white/5'
+                                                        : 'border-dashed border-border/80 bg-muted/25'
                                                 } ${
-                                                    locale === 'ar'
-                                                        ? (isLastCol ? '' : 'border-l border-[#c4bcaf] dark:border-[#38332c]')
-                                                        : (isLastCol ? '' : 'border-r border-[#c4bcaf] dark:border-[#38332c]')
-                                                } ${
-                                                    hour.lunchBefore
-                                                        ? (locale === 'ar' ? '!border-r-2 !border-r-[#8b7355]/60' : '!border-l-2 !border-l-[#8b7355]/60')
-                                                        : ''
+                                                    hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
                                                 }`}
                                             >
                                                 <div className="relative h-12 sm:h-14 lg:h-16 xl:h-[4.25rem] w-full">
@@ -334,30 +317,30 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             else assign(day.value, hour.index, e.target.value || null);
                                                         }}
                                                         title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                        className={`h-full w-full cursor-pointer appearance-none rounded-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#8b7355]/40 ${
+                                                        className={`h-full w-full cursor-pointer appearance-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 ${
                                                             classInfo && color
                                                                 ? `${color.bg} text-transparent hover:brightness-95 active:brightness-90`
-                                                                : 'bg-white text-transparent hover:bg-[#faf7f2] dark:bg-[#181614] dark:hover:bg-[#201e1a]'
+                                                                : 'bg-transparent text-transparent'
                                                         }`}
                                                         aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                                     >
-                                                        <option value="" className="text-[#8c827a] dark:text-[#a8a199] dark:bg-[#1f1d1a]">{t('schedule.noClass')}</option>
+                                                        <option value="" className="text-muted-foreground bg-card">{t('schedule.noClass')}</option>
                                                         {classes.map(c => (
-                                                            <option key={c.id} value={c.id} className="text-[#2c2a26] dark:text-[#f3efe8] dark:bg-[#1f1d1a]">
+                                                            <option key={c.id} value={c.id} className="text-foreground bg-card">
                                                                 {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                             </option>
                                                         ))}
                                                         {canCreateFromSchedule && (
-                                                            <option value="__create__" className="text-[#8b7355] font-bold dark:bg-[#1f1d1a]">
+                                                            <option value="__create__" className="text-primary font-bold bg-card">
                                                                 ＋ {t('schedule.createClass')}
                                                             </option>
                                                         )}
                                                     </select>
 
-                                                    {/* État vide : centré, sobre, sans chevron encombrant ni bruit textuel */}
+                                                    {/* État vide : une pastille discrète, sans bruit textuel */}
                                                     {!classInfo && (
-                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-light text-stone-300 dark:text-stone-600 select-none group-hover:text-stone-400">
-                                                            —
+                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-muted-foreground/50" />
                                                         </div>
                                                     )}
 

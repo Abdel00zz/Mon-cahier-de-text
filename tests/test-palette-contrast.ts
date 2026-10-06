@@ -1,0 +1,215 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { readFileSync } from 'node:fs';
+
+/*
+ * Garde-fou chromatique.
+ *
+ * La palette est entièrement portée par les jetons CSS de `src/styles/index.css` :
+ * aucune couleur n'échappe au thème (le réglage d'apparence se limite à
+ * clair / sombre / système). Ce test lit donc les VRAIES valeurs, les convertit
+ * en luminance relative et vérifie les paires réellement utilisées dans
+ * l'interface — texte sur fond, encre sur aplat d'accent, séparateurs.
+ *
+ * C'est ce qui permet d'assombrir la palette (confort de nuit, sensation
+ * native Android) sans casser la lisibilité au passage.
+ */
+
+const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+
+/** Les jetons sont définis une fois en clair (`:root`) puis redéclarés en sombre. */
+const darkStart = css.indexOf('\n  .dark {');
+assert.ok(darkStart > 0, 'le bloc sombre doit exister');
+const lightCss = css.slice(0, darkStart);
+const darkCss = css.slice(darkStart);
+
+type Rgb = { r: number; g: number; b: number };
+
+const hslTriplet = (source: string, token: string): [number, number, number] => {
+  const matches = [...source.matchAll(new RegExp(`--${token}:\\s*([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%`, 'g'))];
+  assert.ok(matches.length > 0, `jeton --${token} introuvable`);
+  const last = matches[matches.length - 1];
+  return [Number(last[1]), Number(last[2]), Number(last[3])];
+};
+
+const hslToRgb = ([h, s, l]: [number, number, number]): Rgb => {
+  const saturation = s / 100;
+  const lightness = l / 100;
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const secondary = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
+  const match = lightness - chroma / 2;
+  const sector = Math.floor(h / 60) % 6;
+  const [r, g, b] = [
+    [chroma, secondary, 0],
+    [secondary, chroma, 0],
+    [0, chroma, secondary],
+    [0, secondary, chroma],
+    [secondary, 0, chroma],
+    [chroma, 0, secondary],
+  ][sector];
+  return { r: (r + match) * 255, g: (g + match) * 255, b: (b + match) * 255 };
+};
+
+const luminance = ({ r, g, b }: Rgb): number => {
+  const linear = (channel: number) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+};
+
+const ratio = (foreground: [number, number, number], background: [number, number, number]): number => {
+  const a = luminance(hslToRgb(foreground));
+  const b = luminance(hslToRgb(background));
+  const [high, low] = a > b ? [a, b] : [b, a];
+  return (high + 0.05) / (low + 0.05);
+};
+
+/**
+ * Paires réellement peintes par l'interface, avec le seuil qui les concerne :
+ * 4.5:1 pour du texte courant (WCAG AA), 3:1 pour un repère non textuel
+ * (indicateur, bordure signifiante).
+ */
+const PAIRS: { fg: string; bg: string; min: number; label: string }[] = [
+  { fg: 'foreground', bg: 'background', min: 4.5, label: 'texte principal sur le fond' },
+  { fg: 'foreground', bg: 'card', min: 4.5, label: 'texte principal sur une carte' },
+  { fg: 'card-foreground', bg: 'card', min: 4.5, label: 'texte de carte sur une carte' },
+  { fg: 'muted-foreground', bg: 'background', min: 4.5, label: 'texte secondaire sur le fond' },
+  { fg: 'muted-foreground', bg: 'card', min: 4.5, label: 'texte secondaire sur une carte' },
+  { fg: 'muted-foreground', bg: 'muted', min: 4.5, label: 'texte secondaire sur un aplat muet' },
+  { fg: 'primary-foreground', bg: 'primary', min: 4.5, label: 'texte sur le bouton principal' },
+  { fg: 'secondary-foreground', bg: 'secondary', min: 4.5, label: 'texte sur un bouton secondaire' },
+  { fg: 'accent-foreground', bg: 'accent', min: 4.5, label: 'texte sur un survol d’accent' },
+  { fg: 'destructive-foreground', bg: 'destructive', min: 4.5, label: 'texte sur une action destructive' },
+  { fg: 'badge-text', bg: 'badge-bg', min: 4.5, label: 'texte de pastille sur son aplat' },
+  { fg: 'scheduled-foreground', bg: 'scheduled', min: 4.5, label: 'texte de séance planifiée sur son aplat' },
+  { fg: 'primary', bg: 'background', min: 3, label: 'accent repère sur le fond' },
+  { fg: 'primary', bg: 'card', min: 3, label: 'accent repère sur une carte' },
+  { fg: 'success', bg: 'card', min: 3, label: 'repère de réussite sur une carte' },
+  { fg: 'destructive', bg: 'card', min: 3, label: 'repère d’alerte sur une carte' },
+  { fg: 'alert', bg: 'card', min: 3, label: 'repère d’erreur sur une carte' },
+  { fg: 'border', bg: 'background', min: 1.25, label: 'séparation des cartes sur le fond' },
+];
+
+const surfacePairs: { fg: string; bg: string; min: number; label: string }[] = [
+  { fg: 'warning-strong', bg: 'background', min: 1.6, label: 'aplat d’avertissement fort sur le fond' },
+];
+
+for (const theme of ['clair', 'sombre'] as const) {
+  const source = theme === 'clair' ? lightCss : darkCss;
+  const token = (name: string) => hslTriplet(source, name);
+
+  test(`contrastes WCAG · thème ${theme}`, () => {
+    const failures: string[] = [];
+    for (const pair of PAIRS) {
+      const measured = ratio(token(pair.fg), token(pair.bg));
+      if (measured + 0.005 < pair.min) {
+        failures.push(`${pair.label} : ${measured.toFixed(2)}:1 (minimum ${pair.min})`);
+      }
+    }
+    assert.deepEqual(failures, [], `contrastes insuffisants en ${theme} :\n${failures.join('\n')}`);
+  });
+
+  test(`repères non textuels · thème ${theme}`, () => {
+    for (const pair of surfacePairs) {
+      const measured = ratio(token(pair.fg), token(pair.bg));
+      assert.ok(measured >= pair.min, `${pair.label} : ${measured.toFixed(2)}:1`);
+    }
+  });
+
+  test(`la profondeur reste perceptible · thème ${theme}`, () => {
+    // Material : les surfaces élevées sont plus CLAIRES que le fond ; en clair,
+    // la carte se détache du papier. Sans écart mesurable, l'étagement disparaît.
+    const card = token('card');
+    const background = token('background');
+    const ratioBg = ratio(card, background);
+    const cardL = hslTriplet(source, 'card')[2];
+    const bgL = hslTriplet(source, 'background')[2];
+    if (theme === 'sombre') {
+      assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
+      assert.ok(ratioBg >= 1.12, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
+    } else {
+      assert.ok(cardL > bgL, `la carte (${cardL}%) doit se détacher du fond (${bgL}%)`);
+      assert.ok(ratioBg >= 1.05, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
+    }
+  });
+}
+
+test('les aplats d’avertissement portent l’encre de leur thème', () => {
+  // En clair, l'ambre est foncé : on écrit en blanc. En sombre, les accents
+  // s'éclaircissent (Material) et l'encre passe au noir chaud — exactement ce
+  // que fait déjà le couple --primary-foreground / --primary.
+  const lightRatio = ratio([0, 0, 100], hslTriplet(lightCss, 'warning-strong'));
+  assert.ok(lightRatio >= 4.5, `blanc sur --warning-strong (clair) : ${lightRatio.toFixed(2)}:1`);
+  const darkRatio = ratio(hslTriplet(darkCss, 'primary-foreground'), hslTriplet(darkCss, 'warning-strong'));
+  assert.ok(darkRatio >= 4.5, `encre sombre sur --warning-strong (sombre) : ${darkRatio.toFixed(2)}:1`);
+  const darkDestructive = ratio(hslTriplet(darkCss, 'destructive-foreground'), hslTriplet(darkCss, 'destructive-strong'));
+  assert.ok(darkDestructive >= 4.5, `encre sur --destructive-strong (sombre) : ${darkDestructive.toFixed(2)}:1`);
+});
+
+test('les numéros de classe sont à l’encre, opaques et détourés', () => {
+  // Le grand chiffre de la carte : encre franche (plus un lavis à 8 %), filet
+  // couleur carte derrière le chiffre, donc contour net sur la texture.
+  const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
+  const start = cards.indexOf('.class-card .class-card__group {');
+  const group = cards.slice(start, cards.indexOf('.class-card .class-card__group:hover'));
+  assert.ok(start > 0, 'le style du numéro doit exister');
+  assert.match(group, /color: hsl\(var\(--foreground\)\)/, 'encre de la palette');
+  assert.match(group, /opacity: \.5\b/, 'chiffres francs, plus un lavis');
+  assert.match(group, /-webkit-text-stroke: 2px var\(--class-surface\)/, 'contour visible, couleur de la carte');
+  assert.match(group, /paint-order: stroke fill/, 'le filet passe derrière le chiffre');
+  assert.match(cards, /\.dark \.class-card \.class-card__group \{[\s\S]*?opacity: \.38/, 'la nuit reste lisible');
+
+  // Le numéro de la liste : encre pleine et même contour net.
+  const styles = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+  const watermark = styles.slice(styles.indexOf('.keep-group-watermark {'), styles.indexOf(".keep-group-watermark[data-variant='end']"));
+  assert.match(watermark, /color: hsl\(var\(--foreground\)\)/);
+  assert.match(watermark, /opacity: 1/);
+  assert.match(watermark, /-webkit-text-stroke: 1\.5px hsl\(var\(--card\)\)/);
+});
+
+test('l’écran de lancement et l’icône suivent la palette, sans saut de couleur', () => {
+  const hexOf = (source: string, token: string) => {
+    const rgb = hslToRgb(hslTriplet(source, token));
+    return `#${[rgb.r, rgb.g, rgb.b].map(value => Math.round(value).toString(16).padStart(2, '0')).join('')}`;
+  };
+  const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+  const light = hexOf(lightCss, 'background');
+  const dark = hexOf(darkCss, 'background');
+
+  const capacitor = read('capacitor.config.ts');
+  assert.ok(capacitor.includes(`backgroundColor: '${light}'`), `splash clair = ${light}`);
+
+  const styles = read('android/app/src/main/res/values/styles.xml');
+  assert.ok(styles.includes(`windowSplashScreenBackground">${light}<`), `styles.xml clair = ${light}`);
+
+  const night = read('android/app/src/main/res/values-night/styles.xml');
+  assert.ok(night.includes(`windowSplashScreenBackground">${dark}<`), `styles.xml nuit = ${dark}`);
+
+  const launcher = read('android/app/src/main/res/values/ic_launcher_background.xml');
+  assert.ok(launcher.toUpperCase().includes(light.toUpperCase()), `icône adaptative = ${light}`);
+
+  const themeColor = read('src/platform/themeColor.ts');
+  assert.ok(themeColor.includes(`'${dark}'`) && themeColor.includes(`'${light}'`), 'repli des barres système à jour');
+});
+
+test('aucune couleur de marque codée en dur dans les composants ne contredit la charte', () => {
+  const notifications = readFileSync(new URL('../android/app/src/main/java/ma/cahier/textes/NotificationCenter.java', import.meta.url), 'utf8');
+  const capacitor = readFileSync(new URL('../capacitor.config.ts', import.meta.url), 'utf8');
+  const javaColor = notifications.match(/COLOR = Color\.rgb\((\d+), (\d+), (\d+)\)/);
+  const configColor = capacitor.match(/iconColor:\s*'#([0-9a-fA-F]{6})'/);
+  assert.ok(javaColor, 'la couleur d’accent native doit être déclarée explicitement');
+  assert.ok(configColor, 'la couleur d’icône de notification doit être déclarée');
+  const native = [Number(javaColor![1]), Number(javaColor![2]), Number(javaColor![3])];
+  const declared = [
+    parseInt(configColor![1].slice(0, 2), 16),
+    parseInt(configColor![1].slice(2, 4), 16),
+    parseInt(configColor![1].slice(4, 6), 16),
+  ];
+  const hex = (rgb: number[]) => rgb.map(value => value.toString(16).padStart(2, '0')).join('');
+  assert.equal(
+    hex(native),
+    hex(declared),
+    `l’accent natif Android (${hex(native)}) doit être celui de la charte (${hex(declared)})`,
+  );
+});

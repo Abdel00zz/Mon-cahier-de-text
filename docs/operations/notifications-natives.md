@@ -14,7 +14,7 @@ chaque point ci-dessous porte donc un protocole de vérification.
 | Aucune permission d'alarme exacte déclarée | manifeste de l'app = `INTERNET`, `ACCESS_NETWORK_STATE` ; manifeste du plugin = `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`, `POST_NOTIFICATIONS` |
 | Canaux créés deux fois, noms français en dur | `nativeNotifications.ts:56` (« Mon cahier de textes », importance 3) et `:95` (`cahier-reminders-quiet`, même nom) ; `InboxNotifications.java:35` (« Rappels de séances ») ; `:27` (« Messages · Mon cahier de textes ») |
 | Canal « Messages de la direction » silencieux | `InboxNotifications.java:27-31` : `IMPORTANCE_DEFAULT` + `setSound(null, null)` + `enableVibration(false)` |
-| Couleur de notification hors charte | `InboxNotifications.java:92` : `Color.rgb(66, 85, 255)` = `#4255ff`, dupliqué dans `capacitor.config.ts:12` (`iconColor`) |
+| Couleur de notification hors charte | `InboxNotifications.java:92` : `Color.rgb(66, 85, 255)` = `#4255ff`, dupliqué dans `capacitor.config.ts:12` (`iconColor`) — **corrigé le 06/10/2026** : l'accent natif est unique, `NotificationCenter.COLOR = #B35230`, identique à l'`iconColor` du plugin (voir `docs/audits/harmonisation-couleurs-2026-10-06.md`) |
 | Aucune action rapide | aucun `addAction` dans `InboxNotifications.java` |
 | Confidentialité déjà partielle | `VISIBILITY_PRIVATE` présent (`InboxNotifications.java:96` et `:113`) |
 

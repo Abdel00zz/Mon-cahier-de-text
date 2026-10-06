@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Variante nuit : sur un appareil en thème sombre, l'écran de lancement prend
+     la nuit d'argile de la palette. Sans ce fichier, Android afficherait le
+     papier clair puis basculerait — un éclair blanc à chaque ouverture. -->
+<resources>
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#201f1d</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_notebook_foreground</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>
+</resources>

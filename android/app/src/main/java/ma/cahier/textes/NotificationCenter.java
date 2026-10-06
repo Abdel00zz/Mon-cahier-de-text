@@ -29,7 +29,7 @@ final class NotificationCenter {
     /** Replaced by {@link #REMINDERS}; removed so the system settings stay readable. */
     private static final String[] LEGACY = { "cahier-reminders-quiet", "cahier-reminders-vibrate" };
     /** Accent applied to every notification; mirrors `LocalNotifications.iconColor`. */
-    static final int COLOR = Color.rgb(84, 125, 49);
+    static final int COLOR = Color.rgb(179, 82, 48);
     private static final int VERSION = 2;
 
     private NotificationCenter() { }

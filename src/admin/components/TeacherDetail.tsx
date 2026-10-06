@@ -961,12 +961,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                             </span>
                                             {lateness && lateness.severity !== 'ok' && (
                                                 <span
-                                                    className={`rounded-full px-2 py-0.5 font-semibold text-white ${
+                                                    className={`rounded-full border px-2 py-0.5 font-semibold ${
                                                         lateness.severity === 'critical'
-                                                            ? 'bg-destructive'
+                                                            ? 'border-destructive/25 bg-destructive/15 text-destructive'
                                                             : lateness.severity === 'warning'
-                                                              ? 'bg-warning'
-                                                              : 'bg-warning/70'
+                                                              ? 'border-warning/30 bg-warning/20 text-warning-strong'
+                                                              : 'border-warning/20 bg-warning/10 text-warning-strong'
                                                     }`}
                                                 >
                                                     {lateness.gapSessions > 0

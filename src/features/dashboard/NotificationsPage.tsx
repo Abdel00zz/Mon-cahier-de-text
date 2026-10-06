@@ -527,10 +527,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   {isEffectiveCollapsed && item.count > 0 && (
                     <span
                       className={cn(
-                        'absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold border border-white dark:border-zinc-900',
+                        'absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold border border-card',
                         item.emphasize
-                          ? 'bg-red-500 text-white'
-                          : 'bg-amber-500 text-zinc-950'
+                          ? 'bg-destructive/20 text-destructive'
+                          : 'bg-warning/25 text-warning-strong'
                       )}
                     >
                       {item.count}
@@ -549,10 +549,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             className={cn(
                               'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
                               item.emphasize
-                                ? 'bg-red-500 text-white'
+                                ? 'bg-destructive/20 text-destructive'
                                 : isActive
-                                  ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200'
-                                  : 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'
+                                  ? 'bg-warning/25 text-warning-strong'
+                                  : 'bg-primary/12 text-primary'
                             )}
                           >
                             {item.count}
@@ -724,7 +724,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       badge: item.count > 0 ? (
         <span className={cn(
           'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
-          item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
+          item.emphasize ? 'bg-destructive/20 text-destructive' : 'bg-muted text-muted-foreground',
         )}>
           {item.count}
         </span>
