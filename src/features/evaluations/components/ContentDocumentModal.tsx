@@ -7,7 +7,7 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
 import { SUPPORTED_HTML_TAGS } from '@/lib/text/htmlTags';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Eye, FileText, Pencil } from '@/components/ui/icons';
+import { Eye, Pencil } from '@/components/ui/icons';
 import type { ContentDocument } from '@/types';
 
 /*
@@ -50,8 +50,6 @@ const SYNTAX_SAMPLES: ReadonlyArray<readonly [string, string]> = [  ['# Devoir s
 export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   isOpen,
   onClose,
-  title,
-  subtitle,
   document: saved,
   onSave,
 }) => {
@@ -93,24 +91,14 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       maxWidth="2xl"
-      className="sm:rounded-2xl"
+      className="document-modal-frame"
       headerClassName="border-b border-border/70"
-      title={
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-            <FileText className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <span className="block truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">{title}</span>
-            {subtitle && <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">{subtitle}</p>}
-          </div>
-        </div>
-      }
+      title={t('documentPreview.heading')}
     >
       <div className="space-y-3.5">
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on écrit OU on relit, jamais les deux à moitié. */}
-        <div className="flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 p-1">
+        <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-muted/40 p-1">
           {(['source', 'preview'] as const).map((value) => {
             const isActive = tab === value;
             return (
@@ -120,7 +108,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
                 onClick={() => { setTab(value); if (value === 'source') textareaRef.current?.focus(); }}
                 aria-pressed={isActive}
                 className={cn(
-                  'inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  'inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
                   isActive
                     ? 'bg-card text-foreground shadow-xs ring-1 ring-border/70'
                     : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
@@ -150,7 +138,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowHelp(open => !open)}
-                className="rounded-lg px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                className="min-h-11 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                 aria-expanded={showHelp}
               >
                 {t('evaluations.doc.helpToggle')}
@@ -180,7 +168,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         ) : (
-          <div className="max-h-[24rem] overflow-y-auto rounded-xl border border-border/80 bg-card p-4 sm:max-h-[30rem] sm:p-7">
+          <div className="document-preview-paper max-h-[24rem] overflow-y-auto border border-border/80 bg-card p-4 sm:max-h-[30rem] sm:p-7">
             {preview ? (
               /* La feuille est une PAGE : colonne de lecture bornée, jamais
                  étirée sur toute la largeur d'un grand écran. */
@@ -195,7 +183,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-xl bg-muted px-4 text-xs font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer"
+            className="h-11 rounded-md bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
           >
             {t('common.cancel')}
           </button>
@@ -203,7 +191,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             type="button"
             onClick={handleSave}
             disabled={isTooLong}
-            className="h-10 rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="h-11 rounded-md bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {t('common.save')}
           </button>

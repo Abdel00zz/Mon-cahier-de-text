@@ -2308,6 +2308,51 @@ html[data-keyboard='open'] .mobile-tab-bar {
   line-height: 1.3;
   color: #831f35;
 }
+/* A shared document surface: restrained corners, quiet chrome and one reading
+   column. Keep the standard modal gestures and accessible entry/exit motion. */
+.document-modal-frame.modal-motion-surface {
+  border-radius: 12px;
+  border-color: hsl(var(--border) / .9);
+}
+.document-modal-frame.modal-motion-surface[data-state='open'] {
+  animation-duration: 240ms;
+}
+.document-modal-frame.modal-motion-surface[data-state='closed'] {
+  animation-duration: 180ms;
+}
+.document-modal-frame .modal-pro-header {
+  background: hsl(var(--card) / .95);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / .035);
+}
+.document-modal-frame .dialog-close { border-radius: 6px; }
+.document-modal-frame .modal-body {
+  background: color-mix(in srgb, hsl(var(--muted)) 28%, hsl(var(--card)));
+  scrollbar-gutter: stable;
+}
+.document-modal-frame .document-preview-body {
+  max-height: 68dvh;
+}
+.document-modal-frame .document-preview-meta {
+  padding-block: 0.15rem 0.6rem;
+}
+.document-modal-frame .document-preview-paper {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
+}
+.document-modal-frame .modal-pro-footer {
+  border-top: 1px solid hsl(var(--border) / .7);
+  background: hsl(var(--card));
+}
+@media (max-width: 639px) and (orientation: portrait) {
+  .document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'] {
+    border-radius: 14px 14px 0 0;
+  }
+  .document-modal-frame .document-preview-body { max-height: none; }
+  .document-modal-frame .document-preview-paper { padding: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .document-modal-frame.modal-motion-surface[data-state] { animation: none; }
+}
 .dark .devoir-document { --doc-title-ink: #e5a5b2; }
 .dark .document-preview-title { color: #e5a5b2; }
 .devoir-document .katex-display {

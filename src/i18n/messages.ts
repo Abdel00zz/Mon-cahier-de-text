@@ -96,7 +96,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'editor.remarkShort': 'Notes',
     'documentPreview.chip': 'Document',
     'documentPreview.openAria': 'Ouvrir le document — {title}',
-    'documentPreview.heading': 'Ton document pédagogique',
+    'documentPreview.heading': 'Votre document pédagogique',
     'documentPreview.updated': 'Mise à jour le {date}',
     'documentPreview.empty': 'Aucun document rédigé pour ce devoir.',
     'remark.title': 'Remarque de la séance',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from '../../components/ui/modal';
 import { Button } from '../../components/ui/button';
-import { FileText } from '../../components/ui/icons';
+import { useLocale } from '../../i18n/LocaleProvider';
 import { renderDescriptionWithBold } from '../../components/typography/textFormat';
 
 /*
@@ -35,39 +35,22 @@ interface AdminDocumentPreviewProps {
 export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
     isOpen,
     onClose,
-    title,
-    subtitle,
     source,
-    updatedLabel,
     emptyLabel = 'Le professeur n’a pas encore rédigé ce document.',
 }) => {
+    const { t } = useLocale();
     const hasDocument = Boolean(source && source.trim());
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
             maxWidth="3xl"
-            className="sm:rounded-2xl"
+            className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            title={(
-                <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-                        <FileText className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                        <span className="block truncate text-base font-bold tracking-tight text-foreground sm:text-lg">{title}</span>
-                        {subtitle && <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">{subtitle}</p>}
-                    </div>
-                </div>
-            )}
+            title={t('documentPreview.heading')}
         >
             <div className="space-y-3">
-                <p className="text-[11px] font-semibold text-muted-foreground">
-                    {hasDocument
-                        ? `Document du professeur${updatedLabel ? ` · ${updatedLabel}` : ''}`
-                        : 'Aucun document'}
-                </p>
-                <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border/80 bg-card p-5 sm:p-7">
+                <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">
                     {hasDocument ? (
                         <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">
                             {renderDescriptionWithBold(source)}

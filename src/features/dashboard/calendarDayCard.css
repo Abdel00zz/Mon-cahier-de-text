@@ -15,12 +15,29 @@
   border-color: color-mix(in srgb, hsl(var(--border)) 72%, hsl(var(--primary)));
 }
 
-.dark .calendar-day-card {
+/* Class identity follows the very same tokens as the dashboard and timetable. */
+.calendar-day-card[data-keep-tone] {
+  background: var(--keep-cell);
+  border-color: var(--keep-border);
+}
+.calendar-day-card[data-keep-tone]:hover {
+  background: color-mix(in srgb, var(--keep-cell) 94%, var(--keep-accent));
+  border-color: var(--keep-accent);
+}
+.calendar-day-card__icon {
+  border-radius: 8px;
+  background: hsl(var(--card) / .6);
+}
+.calendar-day-card[data-keep-tone] .calendar-day-card__icon {
+  background: color-mix(in srgb, var(--keep-accent) 10%, hsl(var(--card)));
+}
+
+.dark .calendar-day-card:not([data-keep-tone]) {
   background: color-mix(in srgb, hsl(var(--muted)) 58%, hsl(var(--card)));
   border-color: color-mix(in srgb, hsl(var(--border)) 86%, hsl(var(--foreground)));
 }
 
-.dark .calendar-day-card:hover {
+.dark .calendar-day-card:not([data-keep-tone]):hover {
   background: color-mix(in srgb, hsl(var(--muted)) 82%, hsl(var(--card)));
 }
 

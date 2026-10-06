@@ -38,10 +38,7 @@ export interface DocumentPreviewProps {
 export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     isOpen,
     onClose,
-    title,
-    subtitle,
     source,
-    updatedLabel,
 }) => {
     const { t } = useLocale();
     const page = React.useMemo(
@@ -53,27 +50,18 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            maxWidth="3xl"
-            className="sm:rounded-2xl"
+            maxWidth="2xl"
+            className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            /* La barre du haut ne porte QUE la phrase de cadrage : le nom du
-               devoir et la classe appartiennent au document, pas à la fenêtre —
-               ils sont donc dans l'en-tête de la feuille, juste sous la barre. */
+            bodyClassName="document-preview-body overflow-y-auto"
+            footer={
+                <Button type="button" variant="outline" onClick={onClose} className="rounded-md">{t('common.close')}</Button>
+            }
+            /* Le document commence directement : aucun contexte ajouté. */
             title={t('documentPreview.heading')}
         >
             <div className="space-y-3">
-                {/* En-tête du document : nom du devoir, contexte (classe), date de
-                    rédaction. Une ligne, trois informations, aucune redondance
-                    avec la barre de la fenêtre. */}
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                    <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
-                        <FileText className="h-3.5 w-3.5 shrink-0 translate-y-0.5 text-primary" aria-hidden="true" />
-                        <span className="document-preview-title min-w-0 break-words">{title}</span>
-                        {subtitle && <span className="min-w-0 break-words text-xs font-medium text-muted-foreground">{subtitle}</span>}
-                    </div>
-                    {updatedLabel && <span className="text-[11px] font-medium text-muted-foreground">{updatedLabel}</span>}
-                </div>
-                <div className="max-h-[60vh] overflow-y-auto rounded-xl border border-border/80 bg-card p-5 sm:p-7">
+                <div className="document-preview-paper border border-border/80 bg-card p-5 sm:p-7">
                     {page ? (
                         <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{page}</div>
                     ) : (
@@ -82,9 +70,6 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                             <p className="text-sm text-muted-foreground">{t('documentPreview.empty')}</p>
                         </div>
                     )}
-                </div>
-                <div className="flex items-center justify-end border-t border-border/60 pt-3">
-                    <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">{t('common.close')}</Button>
                 </div>
             </div>
         </Modal>

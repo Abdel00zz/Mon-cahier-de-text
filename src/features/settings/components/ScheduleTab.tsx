@@ -6,7 +6,7 @@ import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/do
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { scheduleClassLabel } from '@/domain/classes/classAbbreviation';
 import { classIdentityFor } from '@/domain/classes/classIdentity';
-import { assignClassColors, classColorAttributes } from '@/domain/classes/classColors';
+import { classColorAttributes } from '@/domain/classes/classColors';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import {
     TIMETABLE_DAYS,
@@ -111,7 +111,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     const classById = React.useMemo(() => {
         const map = new Map<string, ClassInfo>();
-        assignClassColors(classes).forEach(c => map.set(c.id, c));
+        classes.forEach(c => map.set(c.id, c));
         return map;
     }, [classes]);
 
@@ -391,4 +391,3 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         </div>
     );
 };
-

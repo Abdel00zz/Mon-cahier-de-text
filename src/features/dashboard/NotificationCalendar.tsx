@@ -3,6 +3,7 @@ import './calendarDayCard.css';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
+import { classColorAttributes } from '@/domain/classes/classColors';
 import { useLocale } from '@/i18n/LocaleProvider';
 import {
   BookOpen,
@@ -452,15 +453,24 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   const selectedMonthYear = dateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(selectedDay);
 
   /** Pastilles sous le numéro : la couleur du cours dit s'il reste à consigner, sans écrire dans la case. */
-  const dotsFor = (events: CalendarEvent[], status: ReturnType<typeof dayStatus>['status']): string[] => {
+  const dotsFor = (events: CalendarEvent[], status: ReturnType<typeof dayStatus>['status']): { className: string; classId?: string }[] => {
     const kinds = new Set(events.map(event => event.kind));
-    const dots: string[] = [];
-    if (kinds.has('holiday')) dots.push(EVENT_STYLES.holiday.dot);
-    if (kinds.has('lesson')) dots.push(status === 'gap' ? 'bg-orange-500' : status === 'done' ? 'bg-emerald-500' : EVENT_STYLES.lesson.dot);
-    if (kinds.has('assessment')) dots.push(EVENT_STYLES.assessment.dot);
-    if (kinds.has('pedagogical')) dots.push(EVENT_STYLES.pedagogical.dot);
-    if (kinds.has('official')) dots.push(EVENT_STYLES.official.dot);
-    if (kinds.has('absence')) dots.push(EVENT_STYLES.absence.dot);
+    const dots: { className: string; classId?: string }[] = [];
+    if (kinds.has('holiday')) dots.push({ className: EVENT_STYLES.holiday.dot });
+    if (kinds.has('lesson') && (status === 'gap' || status === 'done')) {
+      dots.push({ className: status === 'gap' ? 'bg-orange-500' : 'bg-emerald-500' });
+    }
+    const seenClasses = new Set<string>();
+    for (const event of events) {
+      if (!event.classId || !classById.has(event.classId) || seenClasses.has(event.classId)) continue;
+      seenClasses.add(event.classId);
+      dots.push({ className: 'bg-[var(--keep-accent)]', classId: event.classId });
+    }
+    for (const kind of ['lesson', 'assessment', 'pedagogical', 'official', 'absence'] as const) {
+      if (events.some(event => event.kind === kind && (!event.classId || !classById.has(event.classId)))) {
+        dots.push({ className: EVENT_STYLES[kind].dot });
+      }
+    }
     return dots.slice(0, 3);
   };
 
@@ -631,7 +641,11 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                     {date.getDate()}
                   </span>
                   <span className="flex h-1.5 items-center gap-1" aria-hidden>
-                    {dots.map((dot, dotIndex) => <span key={dotIndex} className={cn('h-1.5 w-1.5 rounded-full', dot)} />)}
+                    {dots.map((dot, dotIndex) => (
+                      <span key={dot.classId ?? dotIndex}
+                        {...(dot.classId ? classColorAttributes(classById.get(dot.classId)!) : {})}
+                        className={cn('h-1.5 w-1.5 rounded-full', dot.className)} />
+                    ))}
                   </span>
                 </button>
               );
@@ -685,17 +699,19 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             {selectedEvents.map(event => {
               const Icon = iconFor(event);
               const style = EVENT_STYLES[event.kind];
+              const eventClass = event.classId ? classById.get(event.classId) : undefined;
               return (
                 <li
                   key={event.id}
+                  {...(eventClass ? classColorAttributes(eventClass) : {})}
                   className="calendar-day-card flex items-start gap-3 p-3.5"
                 >
-                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border', style.badge)}>
-                    <Icon className="h-[18px] w-[18px] stroke-[2]" />
+                  <span className={cn('calendar-day-card__icon flex h-10 w-10 shrink-0 items-center justify-center', eventClass ? 'text-[var(--keep-accent)]' : 'text-muted-foreground')}>
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={cn('calendar-day-card__eyebrow', style.text)}>{categoryLabel(event)}</span>
+                      <span className={cn('calendar-day-card__eyebrow', eventClass ? 'text-[var(--keep-accent)]' : style.text)}>{categoryLabel(event)}</span>
                       {event.tentative && (
                         <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
                           {t('calendar.toConfirm')}
