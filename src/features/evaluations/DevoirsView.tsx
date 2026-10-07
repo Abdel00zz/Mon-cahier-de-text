@@ -7,18 +7,9 @@ import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
+import { resolveClassAssessments } from '@/domain/evaluations/assessments';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { getClassSchoolSegment } from '@/domain/evaluations/officialStudentEvents';
-import { getClassVisual } from '@/components/classes/classVisuals';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import {
   CalendarCheck,
@@ -29,8 +20,6 @@ import {
   Users,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
-import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
@@ -123,13 +112,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
-  /* Le nom de la matière n'est utile que si l'enseignant en a plusieurs. */
-  const showsSubjectLabels = useShowsSubjectLabels();
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
-  const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
+  /**
+   * Navigation à deux vues : l'écran s'ouvre sur les CLASSES, puis la classe
+   * ouverte montre ses devoirs et ses activités. En mode contexte (fenêtre d'une
+   * classe du tableau de bord), la classe est déjà connue : on va droit à elle.
+   */
+  const [openedClassId, setOpenedClassId] = useState<string | null>(embedded ? (classes[0]?.id ?? null) : null);
+  const openClass = embedded ? true : openedClassId !== null;
+  const selectedClass = classes.find((c) => c.id === (openedClassId ?? selectedClassId)) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
-  const classVisual = selectedClass ? getClassVisual(selectedClass.name) : null;
-  const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
+  const { assessments, hasPlan, planning, calendar } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   /** Devoir ou activité dont on rédige le document pédagogique. */
   const [documentFor, setDocumentFor] = useState<DocumentTarget | null>(null);
@@ -147,15 +140,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   /** Étape de la fenêtre de création : 1 la classe, 2 la nature, 3 ses zones. */
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
   /* Une classe supprimée ne doit jamais laisser les évaluations sur un contexte obsolète. */
   useEffect(() => {
-    if (selectedClassId && classes.some((classInfo) => classInfo.id === selectedClassId)) return;
-    setSelectedClassId(classes[0]?.id ?? '');
-  }, [classes, selectedClassId]);
+    if (openedClassId && classes.some((classInfo) => classInfo.id === openedClassId)) return;
+    if (embedded) return;
+    setOpenedClassId(null);
+  }, [classes, openedClassId, embedded]);
 
   const links = useMemo(() => {
     if (!selectedClass) return [];
@@ -170,25 +163,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [config.pedagogicalEvents, selectedClass]
   );
 
-  const devoirTabItems: FluidTabItem<'all' | 's1' | 's2' | 'events'>[] = useMemo(() => [
-    { id: 'all', label: `${t('evaluations.tabAll')} (${number.format(links.length)})` },
-    { id: 's1', label: t('evaluations.semester', { number: 1 }) },
-    { id: 's2', label: t('evaluations.semester', { number: 2 }) },
-    { id: 'events', label: `${t('evaluations.activities')} (${number.format(pedagogicalEvents.length)})` },
-  ], [t, number, links.length, pedagogicalEvents.length]);
-
-  const classGroups = useMemo(() => {
-    const definitions = [
-      { id: 'college', label: t('evaluations.group.college') },
-      { id: 'lycee', label: t('evaluations.group.lycee') },
-      { id: 'unknown', label: t('evaluations.group.other') },
-    ] as const;
-    return definitions
-      .map((group) => ({ ...group, classes: classes.filter((item) => getClassSchoolSegment(item) === group.id) }))
-      .filter((group) => group.classes.length > 0);
-  }, [classes, t]);
-
-  const selectClass = (classId: string) => {
+  /** Ouvre une classe depuis la vue des classes : elle devient le contexte. */
+  const openClassView = (classId: string) => {
+    setOpenedClassId(classId);
     setSelectedClassId(classId);
     setAbsencesFor(null);
     setDocumentFor(null);
@@ -196,6 +173,29 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setKindChooserOpen(false);
     setChosenKind(null);
   };
+
+  /**
+   * Les classes proposées à la première vue, dans le vocabulaire des cartes du
+   * tableau de bord : palier reconnu, libellé localisé, numéro de groupe. Elles
+   * portent AUSSI ce qu'elles contiennent déjà — un professeur choisit sa classe
+   * en sachant où en est son contrôle continu.
+   */
+  const classPicks = useMemo(() => classes.map((item) => {
+    const identity = classIdentityFor(item.name, locale);
+    const label = classCardLabelFor(identity, locale);
+    const devoirs = planning && calendar
+      ? resolveClassAssessments(item, planning, config, calendar, today).length
+      : 0;
+    return {
+      id: item.id,
+      tier: label.tier,
+      title: label.title,
+      group: label.group,
+      fullName: label.fullName,
+      devoirs,
+      activities: config.pedagogicalEvents?.[item.id]?.length ?? 0,
+    };
+  }), [classes, locale, planning, calendar, config, today]);
 
   /**
    * Les classes proposées à la première étape, dans le vocabulaire des cartes du
@@ -237,6 +237,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   /** Étape 1 : choisir la classe ferme aussi tout ce qui en dépendait. */
   const chooseClass = (classId: string) => {
     setSelectedClassId(classId);
+    setOpenedClassId(classId);
     setAbsencesFor(null);
     setDocumentFor(null);
     setStudentsFor(null);
@@ -431,7 +432,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     );
   }
 
-  const semesters: (1 | 2)[] = activeTab === 's1' ? [1] : activeTab === 's2' ? [2] : [1, 2];
+  /* Les deux semestres sont toujours lus : la classe ouverte se lit en entier. */
+  const semesters: (1 | 2)[] = [1, 2];
   const absencesRecord =
     absencesFor && selectedClass
       ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.id]
@@ -458,107 +460,66 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   return (
     <div className="space-y-4 font-sans sm:space-y-5">
-      {/* Class Selector (when not embedded) */}
-      {!embedded && (
-        <section
-          aria-labelledby="evaluations-class-context"
-          className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-1.5 sm:p-2 shadow-xs backdrop-blur-xs"
-        >
-          <span className={cn('flex h-7.5 w-7.5 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
-            <Users className={cn('h-4 w-4 stroke-[2.2]', classVisual?.iconClass)} aria-hidden />
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <h2 id="evaluations-class-context" className="sr-only">{t('evaluations.activeClass')}</h2>
-            <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
-              <SelectTrigger id="evaluations-class-selector" className="h-7.5 sm:h-8 rounded-lg border border-border/80 bg-background/80 px-2.5 text-[11px] sm:text-xs font-semibold text-foreground shadow-none transition-colors hover:bg-accent focus:ring-primary/20">
-                <SelectValue placeholder={t('evaluations.chooseClass')} />
-              </SelectTrigger>
-              <SelectContent>
-                {classGroups.map((group) => (
-                  <SelectGroup key={group.id}>
-                    <SelectLabel className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      {group.label}
-                    </SelectLabel>
-                    {group.classes.map((classInfo) => {
-                      const displayName = formatClassDisplayName(classInfo.name);
-                      return (
-                        <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs font-semibold">
-                          {showsSubjectLabels && classInfo.subject ? `${displayName} · ${classInfo.subject}` : displayName}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectGroup>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </section>
+      {/* VUE 1 — LES CLASSES. L'écran commence par « quelle classe ? », en
+          grandes cartes : le palier, le libellé, le groupe, et ce que la classe
+          porte déjà (devoirs et activités). Rien d'autre : ni onglets, ni
+          filtres, ni sélecteur — le contenu n'apparaît qu'après le choix. */}
+      {!openClass && (
+        <ClassPicker classes={classPicks} onOpen={openClassView} />
       )}
 
-      {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        {/* Organic Pill Segmented Filter avec auto-centrage fluide */}
-        <div className="w-full sm:w-auto">
-          <FluidTabRail<'all' | 's1' | 's2' | 'events'>
-            items={devoirTabItems}
-            activeId={activeTab}
-            onChange={setActiveTab}
-            layoutId="devoirs-filter-subpill"
-            size="sm"
-            ariaLabel={t('evaluations.tabAll')}
-          />
-        </div>
-
-        {/*
-         * UNE seule action de création : ajouter un devoir ET une activité sont
-         * le même geste (créer une évaluation) ; la nature se choisit dans la
-         * fenêtre, en cartes colorées. Deux boutons juxtaposés obligeaient à
-         * savoir d'avance dans quelle famille on se trouve.
-         */}
-        <button
-          type="button"
-          onClick={openKindChooser}
-          className="inline-flex h-8 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto sm:px-3.5 sm:text-xs cursor-pointer"
-        >
-          <Plus className="h-5 w-5" aria-hidden="true" />
-          <span>{t('evaluations.add')}</span>
-        </button>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="space-y-5">
-        {/*
-         * Activités pédagogiques : TOUJOURS là, y compris vides. La page montre
-         * ainsi tout ce qu'une classe peut porter — devoirs et activités — au
-         * lieu de faire disparaître une famille entière tant qu'elle est vide.
-         */}
-        {(activeTab === 'all' || activeTab === 'events') && (
-          pedagogicalEvents.length > 0
-            ? (
-              <PedagogicalEventsSection
-                events={pedagogicalEvents}
-                onToggle={togglePedagogicalEvent}
-                onDelete={deletePedagogicalEvent}
-                onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-                onOpenStudents={(event) => setStudentsFor(event)}
-              />
-            )
-            : <ActivitiesEmptyState onCreate={openKindChooser} compact={activeTab === 'all'} />
-        )}
-
-        {/* Devoirs et évaluations, par semestre */}
-        {activeTab !== 'events' && (
-          <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
-            <div className="px-1">
-              <KindGroupHeader
-                title={t('evaluations.assessments')}
-                tone={KIND_GROUPS[0].tone}
-                Icon={KIND_GROUPS[0].Icon}
-                titleId="evaluations-assessments-title"
-                countLabel={links.length > 0 ? `${links.length} ${links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}` : undefined}
-              />
+      {/* VUE 2 — LA CLASSE OUVERTE : ses devoirs, puis ses activités. */}
+      {openClass && (
+        <>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              {!embedded && (
+                <button
+                  type="button"
+                  onClick={() => setOpenedClassId(null)}
+                  className="inline-flex min-h-9 shrink-0 items-center rounded-xl border border-border/80 bg-card px-3 text-[11px] font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer sm:text-xs"
+                >
+                  {t('evaluations.allClasses')}
+                </button>
+              )}
+              <div className="min-w-0">
+                <h2 id="evaluations-class-context" className="truncate text-sm font-bold text-foreground sm:text-base">
+                  {selectedClassDisplayName}
+                </h2>
+                <p className="truncate text-[11px] font-medium text-muted-foreground">
+                  {number.format(links.length)} {links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
+                  {' · '}
+                  {number.format(pedagogicalEvents.length)} {pedagogicalEvents.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
+                </p>
+              </div>
             </div>
+
+            {/*
+             * UNE seule action de création : le devoir et l'activité sont le même
+             * geste ; la nature se choisit dans la fenêtre, pas à l'avance.
+             */}
+            <button
+              type="button"
+              onClick={openKindChooser}
+              className="inline-flex h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+            >
+              <Plus className="h-5 w-5" aria-hidden="true" />
+              <span>{t('evaluations.add')}</span>
+            </button>
+          </div>
+
+          <div className="space-y-5">
+            {/* Devoirs et évaluations, par semestre */}
+            <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
+              <div className="px-1">
+                <KindGroupHeader
+                  title={t('evaluations.assessments')}
+                  tone={KIND_GROUPS[0].tone}
+                  Icon={KIND_GROUPS[0].Icon}
+                  titleId="evaluations-assessments-title"
+                  countLabel={links.length > 0 ? `${links.length} ${links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}` : undefined}
+                />
+              </div>
             {!hasPlan ? (
               <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
                 <CurriculumImportIllustration size={120} className="mb-2" />
@@ -728,8 +689,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               </div>
             )}
           </section>
-        )}
-      </div>
+
+          {/* Les ACTIVITÉS de la classe, après ses devoirs, dans le même tableau —
+              et toujours là, même vides : la page montre tout ce qu'une classe
+              peut porter au lieu de faire disparaître une famille entière. */}
+          {pedagogicalEvents.length > 0 ? (
+            <PedagogicalEventsSection
+              events={pedagogicalEvents}
+              onToggle={togglePedagogicalEvent}
+              onDelete={deletePedagogicalEvent}
+              onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+              onOpenStudents={(event) => setStudentsFor(event)}
+            />
+          ) : (
+            <ActivitiesEmptyState onCreate={openKindChooser} />
+          )}
+          </div>
+        </>
+      )}
 
       {/* Ajouter une évaluation : la nature d'abord (cartes), puis ses champs */}
       <Modal
@@ -970,8 +947,65 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   );
 };
 
-interface PedagogicalEventsSectionProps {
-  events: PedagogicalEvent[];
+/** Une classe telle que la vue des classes la présente : son identité et ses comptes. */
+interface ClassPick {
+  id: string;
+  tier?: string | null;
+  title: string;
+  group?: string | null;
+  fullName: string;
+  devoirs: number;
+  activities: number;
+}
+
+/**
+ * VUE 1 — LES CLASSES.
+ *
+ * L'écran du contrôle continu commence par la seule question qui commande tout
+ * le reste : quelle classe ? De grandes cartes, une par classe — palier, libellé
+ * localisé, numéro de groupe —, et ce que la classe porte DÉJÀ (devoirs,
+ * activités) pour savoir où l'on en est avant d'entrer. Aucune icône, aucun
+ * onglet, aucun filtre : la liste est la première décision, le contenu vient
+ * après elle et rien ne se mêle à elle.
+ */
+const ClassPicker: React.FC<{ classes: ClassPick[]; onOpen: (id: string) => void }> = ({ classes, onOpen }) => {
+  const { t, locale } = useLocale();
+  const number = numberFormat(locale);
+  return (
+    <section className="space-y-3">
+      <p className="px-1 text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.pickClassHint')}</p>
+      <ul className="hub-grid" data-rows>
+        {classes.map(item => (
+          <li key={item.id} className="min-w-0">
+            <button
+              type="button"
+              data-class-id={item.id}
+              onClick={() => onOpen(item.id)}
+              className="hub-card class-choice h-full w-full"
+              data-layout="row"
+              aria-label={item.fullName}
+            >
+              <span className="hub-card__body min-w-0 flex-1">
+                {item.tier && <span className="class-choice__tier">{item.tier}</span>}
+                <span className="hub-card__title block text-start">{item.title}</span>
+                <span className="class-choice__counts">
+                  {number.format(item.devoirs)} {item.devoirs === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
+                  {' · '}
+                  {number.format(item.activities)} {item.activities === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
+                </span>
+              </span>
+              {item.group && (
+                <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+};
+
+interface PedagogicalEventsSectionProps {  events: PedagogicalEvent[];
   onToggle: (eventId: string) => void;
   onDelete: (eventId: string) => void;
   onOpenDocument: (event: PedagogicalEvent) => void;

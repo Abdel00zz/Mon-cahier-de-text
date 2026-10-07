@@ -8,7 +8,6 @@ const Select = ({ dir, ...props }: React.ComponentPropsWithoutRef<typeof SelectP
   const isRtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
   return <SelectPrimitive.Root dir={dir ?? (isRtl ? 'rtl' : 'ltr')} {...props} />;
 };
-const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
 interface SelectTriggerProps
@@ -102,18 +101,6 @@ const SelectContent = React.forwardRef<
 });
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
-const SelectLabel = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.Label
-    ref={ref}
-    className={cn("py-1.5 ps-8 pe-2 text-[11px] font-bold text-muted-foreground/80 uppercase tracking-wider", className)}
-    {...props}
-  />
-));
-SelectLabel.displayName = SelectPrimitive.Label.displayName;
-
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
@@ -141,10 +128,8 @@ SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 export {
   Select,
-  SelectGroup,
   SelectValue,
   SelectTrigger,
   SelectContent,
-  SelectLabel,
   SelectItem,
 };

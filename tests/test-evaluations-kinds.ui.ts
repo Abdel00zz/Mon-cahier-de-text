@@ -199,14 +199,27 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     assert.match(view, /initial \? \([\s\S]{0,900}<option value="controle">/, 'type modifiable seulement en édition');
 });
 
-test('la page principale montre les deux familles, même vides', () => {
+test('l’écran commence par les classes, puis montre la classe ouverte', () => {
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-    // Une seule entrée de création : « Ajouter » ouvre le choix de la nature.
-    assert.match(view, /onClick=\{openKindChooser\}/, 'le bouton Ajouter ouvre le choix');
+    // Une seule entrée de création : « Ajouter » ouvre le parcours de nature.
+    assert.match(view, /onClick=\{openKindChooser\}/, 'le bouton Ajouter ouvre le parcours');
     assert.doesNotMatch(view, /evaluations\.addActivity\}<\/span>/, 'plus de bouton « activité » séparé dans la barre');
-    // Les activités restent affichées sur l'onglet « tout », avec ou sans contenu.
-    assert.match(view, /: <ActivitiesEmptyState onCreate=\{openKindChooser\} compact=\{activeTab === 'all'\} \/>/, 'invitation compacte sur l’onglet tout');
-    assert.match(view, /const ActivitiesEmptyState: React.FC<\{ onCreate: \(\) => void; compact\?: boolean \}>/, 'variante compacte de l’état vide');
+    // VUE 1 : les classes. VUE 2 : la classe ouverte, ses devoirs puis ses activités.
+    assert.match(view, /\{!openClass && \([\s\S]{0,120}<ClassPicker classes=\{classPicks\} onOpen=\{openClassView\} \/>/, 'la vue des classes ouvre l’écran');
+    assert.match(view, /const \[openedClassId, setOpenedClassId\] = useState<string \| null>\(embedded \? \(classes\[0\]\?\.id \?\? null\) : null\)/, 'la classe ouverte est un état de navigation');
+    assert.match(view, /const openClass = embedded \? true : openedClassId !== null/, 'en mode contexte, on va droit à la classe');
+    assert.match(view, /onClick=\{\(\) => setOpenedClassId\(null\)\}/, 'le retour aux classes');
+    // Le nettoyage : ni onglets, ni sélecteur de classe, ni filtre de cycle.
+    assert.doesNotMatch(view, /FluidTabRail|devoirTabItems|activeTab/, 'plus d’onglets de filtrage');
+    assert.doesNotMatch(view, /evaluations-class-selector|SelectTrigger/, 'plus de sélecteur de classe dans la page');
+    // Les deux zones, dans l'ordre : devoirs (par semestre), puis activités.
+    const assessments = view.indexOf('aria-labelledby="evaluations-assessments-title"');
+    const activities = view.indexOf('<PedagogicalEventsSection');
+    assert.ok(assessments > 0 && activities > assessments, 'les devoirs viennent avant les activités');
+    // Les comptes de la vue des classes : ce que la classe porte déjà.
+    assert.match(view, /resolveClassAssessments\(item, planning, config, calendar, today\)\.length/, 'les devoirs programmés sont comptés par classe');
+    assert.match(view, /activities: config\.pedagogicalEvents\?\.\[item\.id\]\?\.length \?\? 0/, 'les activités aussi');
+    assert.match(view, /const ActivitiesEmptyState: React\.FC<\{ onCreate: \(\) => void; compact\?: boolean \}>/, 'variante compacte de l’état vide conservée');
 });
 
 test('les deux familles se lisent de la même façon dans la page et dans la fenêtre', () => {

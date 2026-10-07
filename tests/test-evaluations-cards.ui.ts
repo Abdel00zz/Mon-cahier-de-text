@@ -115,9 +115,11 @@ test('les titres disent ce que la fenêtre contient, sans répétition', () => {
   }
 });
 
-test('sans activité, l’onglet invite à en créer une', () => {
+test('sans activité, la zone invite à en créer une', () => {
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  assert.match(view, /<ActivitiesEmptyState onCreate=\{openKindChooser\} compact=\{activeTab === 'all'\} \/>/);
+  // Plus d'onglet : la zone des activités est toujours là, pour la classe ouverte.
+  assert.match(view, /<ActivitiesEmptyState onCreate=\{openKindChooser\} \/>/);
+  assert.doesNotMatch(view, /activeTab/, 'plus aucun onglet de filtrage');
   assert.match(view, /SchedulePlanningIllustration size=\{120\}/);
   assert.match(view, /evaluations\.activitiesEmptyTitle/);
   assert.match(view, /evaluations\.activitiesEmptyHint/);

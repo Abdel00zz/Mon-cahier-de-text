@@ -67,15 +67,15 @@ export const useRecentPastAssessments = (
 export const useClassAssessments = (
     classInfo: ClassInfo | null,
     config: AppConfig
-): { assessments: PlannedAssessment[]; hasPlan: boolean; planDetails: ClassAssessmentPlanDetails | null; planning: PlanningFile | null } => {
+): { assessments: PlannedAssessment[]; hasPlan: boolean; planDetails: ClassAssessmentPlanDetails | null; planning: PlanningFile | null; calendar: HolidayCalendar | null } => {
     const { calendar, planning } = useCalendarAndPlanning();
     const today = useMoroccoToday();
 
     return useMemo(() => {
-        if (!calendar || !planning || !classInfo) return { assessments: [], hasPlan: false, planDetails: null, planning: null };
+        if (!calendar || !planning || !classInfo) return { assessments: [], hasPlan: false, planDetails: null, planning: null, calendar };
 
         const assessments = resolveClassAssessments(classInfo, planning, config, calendar, today);
         const planDetails = getAssessmentPlanDetailsForClass(classInfo, planning);
-        return { assessments, hasPlan: assessments.length > 0, planDetails, planning };
+        return { assessments, hasPlan: assessments.length > 0, planDetails, planning, calendar };
     }, [today, calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder]);
 };
