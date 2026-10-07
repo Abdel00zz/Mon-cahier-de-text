@@ -1,4 +1,5 @@
 import React from 'react';
+import { Capacitor } from '@capacitor/core';
 import { ArrowLeft } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -19,6 +20,9 @@ export const EditorBackButton: React.FC<{ onBack: () => void; className?: string
         : locale === 'en'
             ? 'Back to classes'
             : 'Retour aux classes';
+
+    // Native navigation is available before the async runtime sets HTML flags.
+    if (Capacitor.getPlatform() === 'android') return null;
 
     return (
         <button

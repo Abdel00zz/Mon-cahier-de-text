@@ -110,6 +110,7 @@ interface SessionGroupRowProps {
     selectedKeys: ReadonlySet<string>;
     newlyAddedIds: string[];
     editingKey?: string;
+    focusKey?: string | null;
     onToggleSelect: (indices: Indices) => void;
     onToggleSelectGroup?: (indices: Indices[]) => void;
     onDoubleClickEdit?: (indices: Indices) => void;
@@ -138,6 +139,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     selectedKeys,
     newlyAddedIds,
     editingKey,
+    focusKey,
     onToggleSelect,
     onToggleSelectGroup,
     onDoubleClickEdit,
@@ -296,7 +298,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             {mergeContent ? (
                 <div
                     data-session-cell="content"
-                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full ${hasAssignedDate ? '[&_.editor-type-item-title]:text-center' : ''}`}
+                    data-focus-key={items.some(item => item.key === focusKey) ? focusKey : undefined}
+                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full`}
                     style={{ gridColumn: 2, gridRow: `1 / span ${visualRowCount}` }}
                 >
                     {renderContent(items[0], true)}
@@ -305,6 +308,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 <div
                     key={`content-${item.key}`}
                     data-session-cell="content"
+                    data-focus-key={item.key === focusKey ? focusKey : undefined}
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
                     className={`min-w-0 self-stretch ${dividerClass} ${index < items.length - 1 ? innerLineClass : ''}`}
                     style={{ gridColumn: 2, gridRow: index + 1 }}
@@ -326,7 +330,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         title={t('remark.editTitle')}
                         aria-label={t('remark.editTitle')}
                         data-remark-cell="true"
-                        className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark || '—'}</span>
                         {sessionAnnotations.map(annotation => (
@@ -385,6 +389,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     if (previous.items !== next.items || previous.onToggleSelect !== next.onToggleSelect
         || previous.onToggleSelectGroup !== next.onToggleSelectGroup
         || previous.editingKey !== next.editingKey
+        || previous.focusKey !== next.focusKey
         || previous.onDoubleClickEdit !== next.onDoubleClickEdit || previous.onOpenDateModal !== next.onOpenDateModal
         || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
         || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
@@ -525,6 +530,10 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     }).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypes.join(',');
   }), [renderRows, contentDirection, showDescriptions, descriptionTypes]);
   const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
+  const focusIndex = useMemo(() => focusKey ? renderRows.findIndex(row => row.kind !== 'absence' && (
+    row.kind === 'single' ? row.item.key === focusKey : row.items.some(item => item.key === focusKey)
+  )) : -1, [focusKey, renderRows]);
+  const keepIndices = useMemo(() => focusIndex < 0 ? [] : [focusIndex], [focusIndex]);
   const estimateSizes = useMemo(() => renderRows.map(row =>
     (row.kind === 'session' && !(row.items[0].dateMerge?.mergeType === 'content'
       && row.items[0].dateMerge?.shouldMergeRemark) ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
@@ -536,33 +545,43 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     estimateSize: ESTIMATED_ROW_HEIGHT,
     estimateSizes,
     overscan: VIRTUAL_OVERSCAN,
+    keepIndices,
   });
 
   useEffect(() => {
     if (!focusKey) return;
 
-    const targetIndex = renderRows.findIndex(row => row.kind !== 'absence' && (
-        row.kind === 'single'
-            ? row.item.key === focusKey
-            : row.items.some(item => item.key === focusKey)
-    ));
-    if (targetIndex < 0) return;
+    if (focusIndex < 0) return;
 
-    const scrollNearTarget = () => scrollToIndex(targetIndex);
+    const scrollNearTarget = () => { if (shouldVirtualize) scrollToIndex(focusIndex); };
 
     const refineToRenderedRow = () => {
-        const row = Array.from(document.querySelectorAll<HTMLElement>('[data-focus-key]'))
+        const row = Array.from(scrollRef.current?.querySelectorAll<HTMLElement>('[data-focus-key]') ?? [])
             .find(element => element.dataset.focusKey === focusKey);
-        row?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        row?.scrollIntoView({ block: 'center', behavior: 'instant', inline: 'nearest' });
     };
 
     const frame = window.requestAnimationFrame(scrollNearTarget);
-    const refineTimer = window.setTimeout(refineToRenderedRow, shouldVirtualize ? 260 : 80);
-    return () => {
-        window.cancelAnimationFrame(frame);
-        window.clearTimeout(refineTimer);
+    let refineTimer = window.setTimeout(refineToRenderedRow, shouldVirtualize ? 100 : 0);
+    // Measured virtual rows and fonts can change the offsets after the first
+    // jump. Refine once geometry settles, until the temporary focus expires.
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+      window.clearTimeout(refineTimer);
+      refineTimer = window.setTimeout(refineToRenderedRow, 50);
+    });
+    if (scrollRef.current) observer?.observe(scrollRef.current);
+    const stopPlacement = () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(refineTimer);
+      observer?.disconnect();
     };
-  }, [focusKey, renderRows, scrollToIndex, shouldVirtualize]);
+    const gestures = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+    gestures.forEach(event => window.addEventListener(event, stopPlacement, { passive: true, once: true }));
+    return () => {
+        stopPlacement();
+        gestures.forEach(event => window.removeEventListener(event, stopPlacement));
+    };
+  }, [focusKey, focusIndex, scrollRef, scrollToIndex, shouldVirtualize]);
 
   useEffect(() => {
     logger.debug('MainTable profile', {
@@ -629,12 +648,13 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
-                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={rowFocusKey ?? undefined} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
                               <SessionGroupRow
                                   items={row.items}
                                   selectedKeys={selectedKeys}
                                   newlyAddedIds={newlyAddedIds}
                                   editingKey={editingKey}
+                                  focusKey={rowFocusKey}
                                   onToggleSelect={onToggleSelect}
                                   onToggleSelectGroup={onToggleSelectGroup}
                                   onDoubleClickEdit={onOpenContentEditor}

@@ -8,6 +8,7 @@ import { Header } from '../src/features/editor/Header';
 import { EditorBackButton } from '../src/features/editor/EditorBackButton';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import type { ClassInfo } from '../src/types';
+import { Capacitor } from '@capacitor/core';
 
 /*
  * Retour rapide dans le cahier.
@@ -96,5 +97,15 @@ test('le sens de lecture place le bouton sans règle dédiée', () => {
   const editor = source('src/features/editor/Editor.tsx');
   assert.ok(editor.match(/sticky top-0 z-\[50\] flex items-center gap-2/), 'rangée flex logique');
   assert.doesNotMatch(editor, /order-(first|last)|float-(left|right)/, 'aucune règle de direction dupliquée');
+});
+
+test('Android ne monte aucun bouton de retour dans l’en-tête ni dans la barre', () => {
+  const original = Capacitor.getPlatform;
+  Capacitor.getPlatform = () => 'android';
+  try {
+    assert.equal(withLocale('ar', React.createElement(EditorBackButton, { onBack: noop })), '');
+    const header = withLocale('ar', React.createElement(Header, { classInfo, onClassInfoChange: noop, onBack: noop }));
+    assert.ok(!header.includes('editor-back-button'));
+  } finally { Capacitor.getPlatform = original; }
 });
 

@@ -19,6 +19,7 @@ import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/features/editor/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
+import { useNotebookOpeningFocus } from './hooks/useNotebookOpeningFocus';
 import { buildContentDateOrder } from '@/domain/calendar/dateOrder';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';
 import { useLessonSearch } from '@/features/editor/hooks/useLessonSearch';
@@ -69,14 +70,6 @@ import { useSync } from '@/contexts/SyncContext';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
-
-/*
- * Cahiers déjà « placés » pendant cette session : un cahier s'ouvre sur son
- * dernier contenu daté la PREMIÈRE fois seulement (voir l'effet de placement).
- * Revenir depuis le tableau de bord restaure ensuite la position laissée par
- * l'enseignant, sans que le cahier ne reprenne la main.
- */
-const placedNotebooks = new Set<string>();
 
 /**
  * Horodatage de rédaction d'un sujet : options stables (objet de module) pour
@@ -732,25 +725,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * défiler jusqu'à une ligne, virtualisée ou non. Il est relâché juste après,
    * sinon la moindre édition ramènerait l'enseignant de force sur cette ligne.
    */
-  useEffect(() => {
-    if (isClassLoading || placedNotebooks.has(classInfo.id)) return;
-    placedNotebooks.add(classInfo.id);
-    // Un lien profond (notification) a déjà désigné sa ligne : il prime.
-    if (consumedSessionFocusRef.current !== null) return;
-
-    for (let index = allRows.length - 1; index >= 0; index -= 1) {
-      const row = allRows[index];
-      const declaredDate = (row.data as { date?: unknown }).date;
-      if (typeof declaredDate !== 'string' || declaredDate.length === 0) continue;
-      setSessionFocusKey(row.key);
-      placementTimerRef.current = window.setTimeout(() => {
-        placementTimerRef.current = null;
-        setSessionFocusKey(current => (current === row.key ? null : current));
-      }, 1200);
-      return;
-    }
-    // Cahier sans aucune date : rien à viser, rien à faire.
-  }, [allRows, classInfo.id, isClassLoading]);
+  useNotebookOpeningFocus(classInfo.id, allRows,
+    !isClassLoading && !isConfigLoading && initialMathTypesetComplete,
+    consumedSessionFocusRef, setSessionFocusKey);
 
   useEffect(() => () => {
     if (placementTimerRef.current !== null) window.clearTimeout(placementTimerRef.current);
@@ -1321,7 +1298,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }
 
   return (
-    <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root data-pwa-update-blocked={editorState.saveStatus !== 'saved'}>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root data-pwa-update-blocked={editorState.saveStatus !== 'saved'}>
       <div className="max-w-screen-2xl mx-auto flex min-h-dvh w-full flex-col px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header

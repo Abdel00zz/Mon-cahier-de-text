@@ -24,6 +24,9 @@ import { firebaseIdentityRequest } from '../api/_lib/firebaseSignIn.js';
 import { firebaseAccountId } from '../api/_lib/authAccounts.js';
 import { encodeSyncPayload } from '../src/infrastructure/sync/syncTransport.js';
 import { SYNC_ENCODING } from '../src/infrastructure/sync/syncProtocol.js';
+import { buildLessonRows } from '../src/domain/notebook/lessonRows.js';
+import { lastDatedContentKey } from '../src/domain/notebook/notebookOpening.js';
+import type { LessonsData } from '../src/types.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
 const store = new FirestoreStore();
@@ -251,7 +254,7 @@ test('large imported notebook crosses the HTTP contract and is restored intact f
   const capabilities = await call(syncHandler, { method: 'GET', headers, query: { scope: 'capabilities' } });
   assert.equal((capabilities.body as { encoding: string }).encoding, SYNC_ENCODING);
   const classInfo = { id: 'large-import', name: '1AC1', cycle: 'college', subject: 'Mathématiques', teacherName: 'QA', establishment: 'Test', color: 'sky' };
-  const lessonsData = [{ type: 'chapter', title: 'الأعداد', items: Array.from({ length: 500 }, (_, i) => ({ type: 'cours', title: `درس ${i}`, description: 'الجبر 🧮 $x^2$ définition. '.repeat(100) })) }];
+  const lessonsData = [{ type: 'chapter', title: 'الأعداد', items: Array.from({ length: 500 }, (_, i) => ({ type: 'cours', title: `درس ${i}`, description: 'الجبر 🧮 $x^2$ définition. '.repeat(100), ...(i < 490 ? { date: '2026-10-03' } : {}) })) }];
   const updatedAt = new Date().toISOString();
   const body = { classes: [classInfo], schedules: [], timetable: [], lessons: [{ classId: classInfo.id, lessonsData, contentDirection: 'rtl', updatedAt }] };
   assert.ok(Buffer.byteLength(JSON.stringify(body)) > 950_000);
@@ -262,6 +265,8 @@ test('large imported notebook crosses the HTTP contract and is restored intact f
   const pulled = await call(syncHandler, { method: 'GET', headers, query: { classId: classInfo.id } });
   assert.equal(pulled.status, 200);
   assert.deepEqual(pulled.body, { lessonsData, contentDirection: 'rtl', updatedAt });
+  const restoredLessons = (pulled.body as { lessonsData: LessonsData }).lessonsData;
+  assert.equal(lastDatedContentKey(buildLessonRows(restoredLessons)), '0||||489', 'Firestore preserves the dated progress before the undated tail');
   const oldDevice = await call(syncHandler, { method: 'POST', headers, body: {
     ...body, lessons: [{ ...body.lessons[0], lessonsData: [{ type: 'chapter', title: 'Older offline draft' }], updatedAt: '2020-01-01T00:00:00Z' }],
   } });

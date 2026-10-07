@@ -47,7 +47,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   } = useTableSearch(searchQuery, setSearchQuery);
 
   return (
-    <div data-editor-toolbar role="toolbar" aria-label={t('toolbar.actions')} className="editor-toolbar rtl-flow rtl-toolbar print:hidden">
+    <div data-editor-toolbar dir={isRtl ? 'rtl' : 'ltr'} role="toolbar" aria-label={t('toolbar.actions')} className="editor-toolbar rtl-flow rtl-toolbar print:hidden">
       <div className="editor-toolbar__status">
         <EditorSaveControl status={saveStatus} />
       </div>
@@ -84,6 +84,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <Input
                 ref={desktopInputRef}
                 type="search"
+                dir={isRtl ? 'rtl' : 'ltr'}
                 placeholder={t('toolbar.searchPlaceholder')}
                 aria-label={t('toolbar.searchPlaceholder')}
                 tabIndex={isSearchVisible ? 0 : -1}
@@ -97,7 +98,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </div>
         </div>
 
-        <DropdownMenu>
+        <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -158,6 +159,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Input
               ref={mobileInputRef}
               type="search"
+              dir={isRtl ? 'rtl' : 'ltr'}
               placeholder={t('toolbar.searchPlaceholder')}
               aria-label={t('toolbar.searchPlaceholder')}
               value={localSearch}

@@ -24,3 +24,4 @@ Ces exports historiques sont conservés hors de `public/` : l'accueil utilise
 aujourd'hui un aperçu HTML/SVG et ne télécharge aucun GIF.
 
 Pour vérifier les justificatifs indépendants, utiliser `&absences` avec `screen=editor` ou `screen=print`.
+Pour vérifier la reprise à la dernière ligne datée et sa réouverture, utiliser `&resume` avec `screen=editor`, et `&stress` pour activer la virtualisation.

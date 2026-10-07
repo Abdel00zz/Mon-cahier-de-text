@@ -257,10 +257,8 @@ const App: React.FC = () => {
     const top = remembered ?? 0;
     const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
     /*
-     * Un cahier ouvert pour la PREMIÈRE fois se place lui-même sur son dernier
-     * contenu daté (voir Editor). On descend une fois à zéro pour ne pas hériter
-     * du défilement du tableau de bord, mais on ne réimpose surtout pas cette
-     * position 220 ms plus tard : cela annulerait son placement.
+     * Une ouverture depuis une carte laisse Editor rejoindre le dernier
+     * contenu daté. Les retours depuis les paramètres conservent leur position.
      */
     if (visibleRoute.view === 'editor' && remembered === undefined) {
       return () => window.cancelAnimationFrame(animationFrame);
@@ -275,6 +273,7 @@ const App: React.FC = () => {
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
     saveCurrentScroll();
+    delete scrollPositionsRef.current[getScrollKey('editor', classInfo)];
     /*
      * « Dernière ouverture » : la carte affiche « prêt pour votre première
      * séance » tant que la classe n'a jamais été ouverte. La date ne recule
@@ -426,9 +425,7 @@ const App: React.FC = () => {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
     if (backgroundView === 'editor' && backgroundClass) {
-      /* `onBack` alimente le bouton « Retour aux classes » de l'en-tête : sans
-         lui, l'éditeur n'offre AUCUN retour à l'accueil (la barre d'onglets y
-         est masquée et un lien profond n'a pas d'entrée d'historique). */
+      // Le Web propose un retour visible ; Android utilise son bouton système.
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
     }
     return (

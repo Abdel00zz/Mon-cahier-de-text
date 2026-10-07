@@ -240,7 +240,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
               <span dir={textDirectionAttribute(item.title)}>
                 <HighlightedText text={item.title} query={highlight} />
@@ -272,7 +272,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div dir={textDirectionAttribute(data.name)} className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 {/* `shrink-0 whitespace-nowrap` : la cellule hérite de
                     `overflow-wrap: anywhere` ([data-row-content]), donc sans
                     cela le repli d'un titre long comprime « A. » jusqu'à ce
@@ -287,7 +287,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 <span className="shrink-0 whitespace-nowrap">{indices.subsectionIndex! + 1}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -299,7 +299,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 <span className="shrink-0 whitespace-nowrap">{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -324,7 +324,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         const empty = !source.trim();
         return (
           <MaybeKaTeX mathSource={source} cacheKey={`free-${source}`}>
-            <div className={`editor-free-content min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
+            <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-free-content text-start min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
               {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
               {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
               {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
@@ -344,7 +344,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
         return (
           <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
-            <div className={`print-lesson-item ${lessonIndentClass}`}>
+            <div dir={textDirectionAttribute(item.title || item.description)} className={`print-lesson-item ${lessonIndentClass} text-start`}>
               <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
               {/* Même composition que l'écran : un titre « Limite $x^2$ » ne
                   doit jamais partir en TeX brut sur le papier. */}
@@ -365,7 +365,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${displayNumber ? ` ${displayNumber}` : ''}`;
 
       const content = (
-        <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
+        <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content text-start font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
             className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
@@ -380,14 +380,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           <div
             title={item.title || t('editor.titlePlaceholder')}
             dir={textDirectionAttribute(item.title)}
-            className="editor-type-item-title min-w-0 break-words p-0 font-semibold text-foreground"
+            className="editor-type-item-title text-start min-w-0 break-words p-0 font-semibold text-foreground"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
           {/* Description : encadré sobre sous le titre façon Google Keep */}
           {allowDescription && (
-            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
+            <div className="col-start-2 editor-item-description editor-type-description text-start mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

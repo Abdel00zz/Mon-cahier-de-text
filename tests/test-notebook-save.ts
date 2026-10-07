@@ -4,6 +4,9 @@ import { saveNotebook } from '../src/infrastructure/storage/saveNotebook';
 import { QUARANTINE_PREFIX, isQuotaError, quarantineRaw, releaseComfortSpace, writeDurably } from '../src/infrastructure/storage/safeStorage';
 import { clearPendingWork, getPendingWork, readSyncMeta, reloadSyncState, subscribe } from '../src/infrastructure/sync/syncBus';
 import type { LessonsData } from '../src/types';
+import { buildLessonRows } from '../src/domain/notebook/lessonRows';
+import { lastDatedContentKey } from '../src/domain/notebook/notebookOpening';
+import { readInitialNotebook } from '../src/features/editor/initialNotebook';
 
 /** In-memory Storage with an optional character budget that throws like a browser. */
 const memoryStorage = (budget = Infinity) => {
@@ -36,7 +39,7 @@ const installGlobal = (context: test.TestContext, storage: ReturnType<typeof mem
 test('import/save queues only durable content and preserves edits made during a cloud upload', context => {
   const storage = memoryStorage();
   installGlobal(context, storage);
-  const lessons: LessonsData = [{ type: 'chapter', title: 'الأعداد 🧮', items: [{ type: 'cours', description: '$x^2$' }] }];
+  const lessons: LessonsData = [{ type: 'chapter', title: 'الأعداد 🧮', items: [{ type: 'cours', description: '$x^2$', date: '2026-10-01' }] }];
   let observed = 0;
   const off = subscribe('dirty', () => {
     observed++;
@@ -46,6 +49,7 @@ test('import/save queues only durable content and preserves edits made during a 
   saveNotebook('a', lessons, 'rtl');
   assert.deepEqual(JSON.parse(storage.getItem('classData_v1_a')!), { lessonsData: lessons, contentDirection: 'rtl' });
   assert.ok(readSyncMeta().a.localUpdatedAt);
+  assert.equal(lastDatedContentKey(buildLessonRows(readInitialNotebook({ classId: 'a', locale: 'ar', storage })!.lessons)), '0||||0');
   const sent = getPendingWork();
   saveNotebook('a', [...lessons, { type: 'chapter', title: 'Suite' }], 'rtl');
   clearPendingWork(sent);

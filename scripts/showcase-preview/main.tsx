@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useNotebookOpeningFocus } from '../../src/features/editor/hooks/useNotebookOpeningFocus';
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { EditorBackButton } from '../../src/features/editor/EditorBackButton';
 import { PrintView } from '../../src/features/editor/PrintView';
@@ -39,15 +40,28 @@ if (params.has('stress')) {
   const sample = lessons[0];
   lessons.push(...Array.from({ length: 60 }, (_, index) => ({ ...structuredClone(sample), title: `${sample.title} ${index + 2}` })));
 }
+// The last dated row sits before an undated tail, inside a merged session.
+if (params.has('resume')) {
+  lessons.push({ type: 'chapter', title: ar ? 'محتوى لم يُنجز بعد' : 'Contenu à venir', items:
+    Array.from({ length: 20 }, (_, i) => ({ type: 'cours', title: `${ar ? 'لاحقاً' : 'À venir'} ${i + 1}` })) });
+}
+function PreviewTable() {
+ const rows = useMemo(() => buildLessonRows(lessons), []);
+ const [focusKey, setFocusKey] = useState<string | null>(null);
+ const priorityFocus = useRef<string | null>(null);
+ useNotebookOpeningFocus('showcase', rows, params.has('resume'), priorityFocus, setFocusKey);
+ return <MainTable lessonsData={lessons} visibleRows={rows} absenceSessions={buildAbsenceSessions(config, classes[0].id, lessons)} contentDirection={ar?'rtl':'ltr'} onClearSearch={noop} onOpenAddContentModal={noop} showDescriptions={false} selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} focusKey={focusKey}/>;
+}
 const tabs = [{ id: 'classes', label: ar ? 'أقسامي' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }];
 function Capture() {
  const [search, setSearch] = useState('');
+ const [opening, setOpening] = useState(0);
  return <LocaleProvider locale={locale}><div dir={ar?'rtl':'ltr'} className="showcase-capture" style={{minHeight:'100vh',padding:mobile?20:32}}>
   <style>{`* { animation:none !important; transition:none !important; } html, body, #root { margin:0; background:#fbfaf7 !important; } html { overflow-y:auto; } body { overflow:visible; } .showcase-capture { background:#fbfaf7; color:#282d2b; } .capture-page { max-width:1040px; margin:auto; }`}</style>
   <div className="capture-page"><header className="flex items-center justify-between gap-4 pb-5 border-b border-stone-400/15"><div className="flex items-center gap-3"><img src="/icons/icon-192.png" width="40" height="40" alt="" className="rounded-xl"/><div><p className="font-semibold text-lg">{ar?'دفتر نصوصي':'Mon cahier de textes'}</p><p className="text-xs text-muted-foreground mt-1">{ar?'مساحة واضحة ليوم دراسي منظم':'Un espace clair pour votre journée'}</p></div></div><span className="text-xs text-muted-foreground">2026 · 2027</span></header>
   <nav className="flex gap-2 mt-5 mb-6">{tabs.map(({id,label,icon:Icon})=><a key={id} href={`?lang=${locale}&screen=${id}${mobile?'&portrait':''}`} className={`min-h-11 flex flex-1 items-center justify-center gap-2 rounded-xl border text-sm font-medium ${screen===id?'border-stone-700 bg-stone-800 text-stone-50 shadow-sm':'border-stone-200 text-stone-700 bg-white'}`}><Icon className="h-4 w-4"/>{label}</a>)}</nav>
   {screen==='classes'&&<><div className="flex items-center justify-between mb-4"><h1 className="text-xl font-medium">{ar?'أقسامي :':'Mes classes :'}</h1><span className="text-xs text-muted-foreground">{ar?'كل شيء في مكانه':'Tout à portée de main'}</span></div><div className={mobile?'grid gap-4':'grid grid-cols-2 gap-5'}>{classes.slice(0,mobile?3:4).map((c,i)=><ClassCard key={c.id} classInfo={c} index={i} onSelect={noop} onConfigure={noop} onDelete={noop}/>)}</div></>}
-  {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><EditorBackButton onBack={noop}/><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} absenceSessions={buildAbsenceSessions(config, classes[0].id, lessons)} contentDirection={ar?'rtl':'ltr'} onClearSearch={noop} onOpenAddContentModal={noop} showDescriptions={false} selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]}/></div>}
+  {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('resume')&&<button type="button" onClick={()=>setOpening(value=>value+1)} className="min-h-11 mb-3">{ar?'فتح القسم مجدداً':'Rouvrir la classe'}</button>}{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><EditorBackButton onBack={noop}/><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<PreviewTable key={opening}/></div>}
   {screen==='print'&&<PrintView lessonsData={lessons} classInfo={classes[0]} config={config} contentDirection={ar?'rtl':'ltr'} newlyAddedIds={[]} preview/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
   </div>
