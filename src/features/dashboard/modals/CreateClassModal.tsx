@@ -33,6 +33,7 @@ const COPY: Record<AppLocale, {
   createTitle: string; editTitle: string; editDescription: string;
   cancel: string; back: string; next: string; create: string; save: string; saving: string;
   cycle: string; cyclePlaceholder: string; level: string; branch: string; group: string;
+  otherCycle: string;
   groupHint: string; invalidGroup: string; duplicateGroup: string;
   subject: string; subjectPlaceholder: string; customLevelPlaceholder: string; customSubjectPlaceholder: string;
   createCustom: string; switchToOfficial: string; selectedClass: string; guidedLabel: string;
@@ -46,6 +47,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'De 1 à 99. Le premier numéro libre est proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
     createCustom: 'Classe non listée', switchToOfficial: 'Liste officielle', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
+    otherCycle: 'Autre cycle',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
   ar: {
@@ -56,6 +58,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'من 1 إلى 99. يُقترح أول رقم فوج متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
     createCustom: 'هل قسمك غير مدرج', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    otherCycle: 'سلك آخر',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
   en: {
@@ -66,6 +69,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'From 1 to 99. The first available number is proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
     createCustom: 'Class not listed', switchToOfficial: 'Official list', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
+    otherCycle: 'Another cycle',
     cycleLabels: { college: 'Middle school', lycee: 'High school', prepa: 'Preparatory class' },
   },
 };
@@ -132,7 +136,14 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   }, [configuredSubjects, editingClass]);
   const cyclePolicy = useMemo(() => classCyclePolicy(teacherCycles, existingClassCycle(editingClass)), [editingClass, teacherCycles]);
   const cycleOptions = cyclePolicy.options;
-  const hasCycleChoice = cyclePolicy.showChoice;
+  /*
+   * Le profil n'a qu'un cycle : l'étape « cycle » serait un clic inutile, mais
+   * elle doit rester ATTEIGNABLE — sinon un professeur qui enseigne aussi en
+   * prépa ne peut jamais créer cette classe. « Autre cycle » l'ouvre à la
+   * demande (les trois cycles, ceux du profil en tête).
+   */
+  const [showAllCycles, setShowAllCycles] = useState(false);
+  const hasCycleChoice = cyclePolicy.showChoice || showAllCycles;
   const step = !hasCycleChoice && currentStep === 'cycle' ? 'level' : currentStep;
   const showSubjectChoice = configuredSubjects.length !== 1 || Boolean(editingClass && editingClass.subject !== configuredSubjects[0]);
   const levelGroups = useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
@@ -158,7 +169,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
   useEffect(() => {
     if (submitting) return;
-    const next = reconcileClassCycle(teacherCycles, cycle, currentStep, Boolean(editingClass));
+    const next = reconcileClassCycle(teacherCycles, cycle, currentStep, Boolean(editingClass), hasCycleChoice);
     if (next.resetLevel) {
       setCycle(next.cycle);
       setLevel('');
@@ -166,7 +177,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       setGroup('');
     }
     if (next.step !== currentStep) setStep(next.step);
-  }, [teacherCycles, cycle, currentStep, editingClass, submitting]);
+  }, [teacherCycles, cycle, currentStep, editingClass, submitting, hasCycleChoice]);
 
   const chooseCycle = (nextCycle: Cycle) => { setCycle(nextCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); setStep('level'); };
   const chooseLevel = (nextLevel: string) => {
@@ -363,6 +374,9 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
           {step === 'level' && <section className="space-y-3">
             <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setLevelGroupKey(''); setGroup(''); }} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
+            {/* Le cycle n'est pas un filtre du profil : si le profil n'en liste
+                qu'un, l'étape est masquée mais reste à un clic (collège → prépa). */}
+            {!customMode && !hasCycleChoice && <button type="button" onClick={() => { setShowAllCycles(true); setStep('cycle'); }} className="min-h-11 rounded-xl border border-dashed border-border/90 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground cursor-pointer">{copy.otherCycle} · {cycleOptions.map(item => copy.cycleLabels[item]).join(' / ')}</button>}
             {customMode ? <Input value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-2xl border border-border bg-background text-foreground px-4" autoFocus /> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
           </section>}
 

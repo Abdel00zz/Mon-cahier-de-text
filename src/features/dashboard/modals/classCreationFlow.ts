@@ -6,19 +6,31 @@ import { normalizeTeacherCycles, TEACHING_CYCLES } from '@/domain/classes/teache
 
 export type WizardStep = 'cycle' | 'level' | 'branch' | 'details';
 
+/**
+ * Tous les cycles enseignables, ceux du profil EN TÊTE.
+ *
+ * Le profil ORDONNE et pré-sélectionne, il ne FILTRE plus : un professeur dont
+ * le profil ne liste que collège et lycée doit pouvoir créer une classe prépa
+ * sans repasser par les réglages. C'était le défaut constaté — le cycle prépa
+ * (1re et 2e année CPGE : MPSI, PCSI, TSI, ECS, ECT…) était introuvable dans
+ * l'assistant de création comme dans l'onboarding.
+ */
 export const availableCycles = (selected: readonly Cycle[] = [], editingCycle?: Cycle): Cycle[] => {
-  const cycles = normalizeTeacherCycles(selected);
-  if (!cycles.length) cycles.push(...TEACHING_CYCLES);
-  if (editingCycle && TEACHING_CYCLES.includes(editingCycle) && !cycles.includes(editingCycle)) cycles.push(editingCycle);
-  return cycles;
+  const preferred = normalizeTeacherCycles(selected);
+  const ordered = [...preferred, ...TEACHING_CYCLES.filter(cycle => !preferred.includes(cycle))];
+  if (editingCycle && TEACHING_CYCLES.includes(editingCycle) && !ordered.includes(editingCycle)) ordered.push(editingCycle);
+  return [...new Set(ordered)];
 };
 
-/** La visibilité dépend du profil, jamais du cycle d'une ancienne classe. */
+/**
+ * Le profil décide s'il faut DEMANDER le cycle (un seul cycle → on va droit au
+ * choix de la classe), jamais ce qui est proposé quand on le demande.
+ */
 export const classCyclePolicy = (selected: readonly Cycle[] = [], editingCycle?: Cycle) => {
-  const configured = availableCycles(selected);
+  const configured = normalizeTeacherCycles(selected);
   return {
     options: availableCycles(selected, editingCycle),
-    showChoice: configured.length > 1,
+    showChoice: configured.length > 1 || configured.length === 0,
     singleCycle: configured.length === 1 ? configured[0] : null,
   };
 };
@@ -36,8 +48,20 @@ export const existingClassCycle = (classInfo?: ClassInfo | null): Cycle | undefi
   return TEACHING_CYCLES.find(cycle => officialLevelInName(name, cycle));
 };
 
-/** Réconcilier la navigation si le profil change, sans réinitialiser un brouillon compatible. */
-export const reconcileClassCycle = (selected: readonly Cycle[], current: Cycle, step: WizardStep, editing: boolean) => {
+/**
+ * Réconcilier la navigation si le profil change, sans réinitialiser un brouillon compatible.
+ *
+ * `showChoice` est l'état RÉEL de l'étape « cycle » : celle du profil, ou celle
+ * qu'un « Autre cycle » vient d'ouvrir à la demande. Sans lui, la réconciliation
+ * refermerait aussitôt l'étape que le professeur vient d'ouvrir.
+ */
+export const reconcileClassCycle = (
+  selected: readonly Cycle[],
+  current: Cycle,
+  step: WizardStep,
+  editing: boolean,
+  showChoice: boolean = classCyclePolicy(selected).showChoice,
+) => {
   const policy = classCyclePolicy(selected);
   const nextCycle = editing || policy.options.includes(current) ? current : policy.options[0];
   const resetLevel = nextCycle !== current;
@@ -45,8 +69,8 @@ export const reconcileClassCycle = (selected: readonly Cycle[], current: Cycle, 
     cycle: nextCycle,
     resetLevel,
     step: editing ? 'details' as const : resetLevel
-      ? (policy.showChoice ? 'cycle' : 'level') as WizardStep
-      : step === 'cycle' && !policy.showChoice ? 'level' as const : step,
+      ? (showChoice ? 'cycle' : 'level') as WizardStep
+      : step === 'cycle' && !showChoice ? 'level' as const : step,
   };
 };
 
@@ -54,8 +78,17 @@ export const reconcileClassCycle = (selected: readonly Cycle[], current: Cycle, 
 export const initialClassDraft = (
   cycles: readonly Cycle[], subjects: readonly string[], defaultCycle: Cycle, editing?: ClassInfo | null,
 ) => {
-  const options = availableCycles(cycles);
-  const cycle = existingClassCycle(editing) ?? (options.includes(defaultCycle) ? defaultCycle : options[0]);
+  const editingCycle = existingClassCycle(editing);
+  const policy = classCyclePolicy(cycles, editingCycle);
+  const options = policy.options;
+  /*
+   * Le cycle d'ouverture suit le PROFIL, pas `defaultCycle` : un professeur dont
+   * le profil ne liste que le collège ouvre sur le collège, même si l'écran
+   * parent suggère le lycée. Le défaut ne sert qu'en dernier recours.
+   */
+  const configured = normalizeTeacherCycles(cycles);
+  const cycle = editingCycle
+    ?? (configured.includes(defaultCycle) ? defaultCycle : configured[0] ?? (options.includes(defaultCycle) ? defaultCycle : options[0]));
   const name = normalizeOfficialClassName(editing?.name ?? '');
   const level = officialLevelInName(name, cycle);
   const customMatch = name.match(/^(.*?)\s+([0-9٠-٩۰-۹]{1,2})$/);
@@ -68,7 +101,9 @@ export const initialClassDraft = (
     customMode: Boolean(editing && !level),
     customLevel: editing && !level ? customMatch?.[1] ?? name : '',
     customSubject: editing?.subject ?? '',
-    step: (editing ? 'details' : options.length > 1 ? 'cycle' : 'level') as WizardStep,
+    // L'étape « cycle » n'apparaît que si le PROFIL en liste plusieurs ; sinon
+    // on ouvre le choix de classe (le cycle reste changeable par « Autre cycle »).
+    step: (editing ? 'details' : policy.showChoice ? 'cycle' : 'level') as WizardStep,
   };
 };
 
