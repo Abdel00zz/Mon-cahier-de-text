@@ -75,6 +75,8 @@
 @media (prefers-reduced-motion: reduce) { .evaluation-header-back { transition: none; } }
 
 /* Compact chooser on a continuous warm paper surface. */
-.evaluation-reference.modal-motion-surface:has(.class-picker-grid) { max-width: 680px; }
-.evaluation-reference:has(.class-picker-grid) .modal-body { background: var(--eval-paper); padding-block: 20px 24px; }
-.evaluation-reference:has(.class-picker-grid) .evaluation-workspace > section > p { max-width: 480px; margin-inline: auto; }
+.evaluation-reference.modal-motion-surface:has(.class-picker-grid) { max-width: 520px; }
+.evaluation-reference:has(.class-picker-grid) .modal-header { padding: 14px 20px; }
+.evaluation-reference:has(.class-picker-grid) .evaluation-header-title { font-size: 18px; line-height: 1.6; }
+.evaluation-reference:has(.class-picker-grid) .modal-body { background: var(--eval-paper); padding: 16px 20px 20px; }
+.evaluation-reference:has(.class-picker-grid) .evaluation-workspace > section > p { max-width: 400px; margin-inline: auto; padding-inline: 0; font-size: 12px; }
