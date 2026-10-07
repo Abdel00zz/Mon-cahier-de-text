@@ -999,16 +999,16 @@ const ClassPicker: React.FC<{ classes: ClassPick[]; onOpen: (id: string) => void
             >
               <span className="hub-card__body min-w-0 flex-1">
                 {item.tier && <span className="class-choice__tier">{item.tier}</span>}
-                <span className="hub-card__title block text-start">{item.title}</span>
+                <span className="class-choice__identity">
+                  <span className="hub-card__title block text-start">{item.title}</span>
+                  {item.group && <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>}
+                </span>
                 <span className="class-choice__counts">
                   {number.format(item.devoirs)} {item.devoirs === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
                   {' · '}
                   {number.format(item.activities)} {item.activities === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
                 </span>
               </span>
-              {item.group && (
-                <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>
-              )}
             </button>
           </li>
         ))}

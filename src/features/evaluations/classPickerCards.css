@@ -29,7 +29,9 @@
 html[lang='ar'] .evaluation-workspace .class-choice .hub-card__title { font-size: 22px; font-weight: 400; letter-spacing: 0; line-height: 1.65; }
 .evaluation-workspace .class-choice__tier { font-size: 10px; font-weight: 600; letter-spacing: .04em; color: hsl(var(--muted-foreground)); }
 .evaluation-workspace .class-choice__counts { font-family: var(--font-sans); font-size: 12px; font-weight: 400; line-height: 1.6; color: hsl(var(--muted-foreground)); }
-.evaluation-workspace .class-choice__group { font-family: var(--font-latin-display); font-size: 48px; font-weight: 500; color: var(--choice-accent); line-height: 1; min-width: 36px; text-align: center; }
+.evaluation-workspace .class-choice__identity { display: flex; align-items: baseline; gap: 8px; width: fit-content; max-width: 100%; }
+.evaluation-workspace .class-choice__identity .hub-card__title { min-width: 0; }
+.evaluation-workspace .class-choice__group { flex: none; font-family: var(--font-latin-display); font-size: 28px; font-weight: 500; color: var(--choice-accent); line-height: 1; min-width: 0; text-align: center; }
 .dark .evaluation-workspace .class-choice[data-layout='row'] { --choice-accent: var(--keep-accent-dark, var(--keep-accent)); background: color-mix(in srgb, var(--choice-wash) 7%, hsl(var(--card))); box-shadow: none; }
 .evaluation-workspace .class-choice:focus-visible { outline: 2px solid var(--choice-accent); outline-offset: 3px; }
 @media (hover: hover) {
@@ -39,7 +41,7 @@ html[lang='ar'] .evaluation-workspace .class-choice .hub-card__title { font-size
 @media (max-width: 639px) {
   .evaluation-workspace .class-choice[data-layout='row'] { min-height: 116px; padding: 16px; gap: 14px; }
   .evaluation-workspace .class-choice .hub-card__title { font-size: 20px; }
-  .evaluation-workspace .class-choice__group { font-size: 42px; }
+  .evaluation-workspace .class-choice__group { font-size: 26px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .evaluation-workspace .class-choice[data-layout='row'] { transition: none; }
