@@ -36,6 +36,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
     const title = [label.tier, label.title].filter(Boolean).join(' ');
+    const titleBreak = title.lastIndexOf(' ');
+    const titleLead = titleBreak < 0 ? '' : title.slice(0, titleBreak + 1);
+    const titleTail = titleBreak < 0 ? title : title.slice(titleBreak + 1);
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
     // Préparation du cahier : la carte garde sa géométrie, un voile discret
@@ -111,20 +114,18 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="class-card__identity">
                     <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
                         <span className="sr-only">{label.fullName}</span>
-                        <span aria-hidden="true">{formatWithOrdinals(title)}</span>
+                        <span aria-hidden="true">{formatWithOrdinals(titleLead)}</span>
+                        <span className="class-card__tail">
+                            <span aria-hidden="true">{formatWithOrdinals(titleTail)}</span>
+                            {label.group && (
+                                <ClassGroupWatermark
+                                    group={label.group}
+                                    variant="engraved"
+                                    className="class-card__group"
+                                />
+                            )}
+                        </span>
                     </h3>
-                    {/* Le numéro de groupe suit immédiatement le nom et le dépasse en
-                        taille : gravé dans la carte, il se lit comme un filigrane du
-                        titre — « 2ème Bac PC · 3 » — au lieu d'un chiffre isolé dans
-                        un coin. Il est décoratif (le nom accessible ET son infobulle
-                        portent déjà le groupe). */}
-                    {label.group && (
-                        <ClassGroupWatermark
-                            group={label.group}
-                            variant="engraved"
-                            className="class-card__group"
-                        />
-                    )}
                 </div>
             </div>
             <div className="class-card__footer">

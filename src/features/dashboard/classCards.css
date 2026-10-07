@@ -124,6 +124,7 @@
    de la carte. Il rétrécit toujours quand le nom est long, et se replie sur
    deux lignes en laissant la place au chiffre. */
 .class-card__title { display: inline; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
+.class-card__tail { white-space: nowrap; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
 /* Le numéro suit le titre dans le flux de texte, même après un retour à la ligne. */
 .class-card .class-card__group {
