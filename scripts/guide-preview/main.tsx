@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import '../../src/styles/index.css';
 import { LocaleProvider } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
+import { AbsencesTab } from '../../src/features/settings/components/AbsencesTab';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { TabBar } from '../../src/components/navigation/TabBar';
 import { ClassDisplayToggle } from '../../src/features/dashboard/ClassDisplayToggle';
@@ -89,6 +90,7 @@ function Preview() {
     {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
     {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
+      {screen === 'absences' && <AbsencesTab config={config} classes={classes} onConfigChange={onChange} visible />}
       {screen === 'evaluations' && <DevoirsView classes={classes} config={config} onConfigChange={onChange} />}
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>

@@ -1,0 +1,5 @@
+.absence-form input { transition: border-color 180ms ease, box-shadow 180ms ease; }
+.absence-period { animation: absence-appear 180ms ease-out; }
+@keyframes absence-appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 639px) { .absence-form input { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { .absence-period { animation: none; } .absence-form input { transition: none; } }

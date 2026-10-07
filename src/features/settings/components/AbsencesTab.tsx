@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AbsencePeriod, AppConfig, ClassInfo, ContentDirection, LessonsData } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { classSessionsDuring, absenceDates, injectAbsenceLine } from '@/domain/notebook/absenceInjection';
 import { defaultContentDirection, detectContentDirection } from '@/domain/notebook/contentDirection';
 import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
+import './absencesTab.css';
 import { X } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { StatusNotice } from '@/components/ui/status-notice';
@@ -36,6 +37,7 @@ interface AbsencesTabProps {
 export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onConfigChange, visible }) => {
     const { locale, t } = useLocale();
     const absences = useMemo(() => config.absences ?? [], [config.absences]);
+    const startInput = useRef<HTMLInputElement>(null);
     const [debut, setDebut] = useState('');
     const [fin, setFin] = useState('');
     const [motif, setMotif] = useState('');
@@ -115,6 +117,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
         setDebut('');
         setFin('');
         setMotif('');
+        startInput.current?.focus();
     };
 
     const removeAbsence = (index: number) => {
@@ -125,18 +128,19 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
         <SettingsSection
             title={t('notifications.absences')}
             hint={t('notifications.absenceHint')}
+            separators={false}
         >
             {absences.length > 0 && (
                 <ul className="space-y-2">
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-1 text-sm"
+                            className="flex items-center justify-between gap-2 absence-period flex-wrap rounded-lg bg-muted/50 px-3 py-2 text-sm"
                         >
-                            <span className="font-bold text-foreground font-sans">
-                                {formatDateDDMMYYYY(absence.debut)}
-                                {absence.fin !== absence.debut && ` → ${formatDateDDMMYYYY(absence.fin)}`}
-                                {absence.motif && <span className="ml-1.5 font-medium text-muted-foreground">· {absence.motif}</span>}
+                            <span className="min-w-0 flex-1 font-medium text-foreground font-sans">
+                                <bdi dir="ltr">{formatDateDDMMYYYY(absence.debut)}</bdi>
+                                {absence.fin !== absence.debut && <> – <bdi dir="ltr">{formatDateDDMMYYYY(absence.fin)}</bdi></>}
+                                {absence.motif && <span className="mt-1 block text-xs font-normal text-muted-foreground">{absence.motif}</span>}
                             </span>
                             <button
                                 type="button"
@@ -151,11 +155,13 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
                 </ul>
             )}
 
-            <div className="mt-3.5 grid grid-cols-1 items-end gap-3 min-[400px]:grid-cols-2 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
+            <form onSubmit={event => { event.preventDefault(); addAbsence(); }} className="absence-form grid grid-cols-2 items-end gap-3">
                 <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
                     <span>{t('notifications.absenceStart')}</span>
                     <input
                         type="date"
+                        ref={startInput}
+                        required
                         value={debut}
                         onChange={e => setDebut(e.target.value)}
                         className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -175,23 +181,25 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
                         aria-describedby={invalidRange ? 'absence-range-error' : undefined}
                     />
                 </label>
-                <input
+                <label className="col-span-full space-y-1.5 text-sm text-muted-foreground">
+                  <span>{t('notifications.reasonOptional')}</span>
+                  <input
                     type="text"
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder={t('notifications.reasonOptional')}
                     aria-label={t('notifications.reasonOptional')}
-                    className="col-span-full h-11 min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
+                </label>
                 <Button
-                    type="button"
-                    onClick={addAbsence}
+                    type="submit"
                     disabled={!debut || invalidRange}
-                    className="col-span-full text-sm sm:col-span-1"
+                    className="col-span-full min-h-11 text-sm"
                 >
                     {t('notifications.add')}
                 </Button>
-            </div>
+            </form>
             {invalidRange && <div id="absence-range-error"><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
 
             {absences.length > 0 && (
