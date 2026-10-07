@@ -5,6 +5,8 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { DevoirsView } from '../src/features/evaluations/DevoirsView';
+import { EvaluationChoices } from '../src/features/evaluations/components/EvaluationChoices';
+import { Home, Users } from '../src/components/ui/icons';
 import { translateLocaleMessage } from '../src/i18n/messages';
 import type { AppConfig, ClassInfo, PedagogicalEvent, PedagogicalEventType } from '../src/types';
 
@@ -36,6 +38,23 @@ const renderSheet = (events: PedagogicalEvent[], locale: 'fr' | 'ar' = 'fr') => 
 );
 
 const occurrences = (html: string, needle: string) => html.split(needle).length - 1;
+
+test('les cartes de choix exposent un groupe radio natif et une sélection unique', () => {
+  const html = renderToStaticMarkup(React.createElement(EvaluationChoices, {
+    label: 'Type de devoir', value: 'oral', onChange: () => {},
+    options: [
+      { value: 'oral', label: 'Évaluation orale', Icon: Users },
+      { value: 'maison', label: 'Devoir maison', Icon: Home },
+    ],
+  }));
+  assert.match(html, /<fieldset/);
+  assert.match(html, /<legend[^>]*>Type de devoir<\/legend>/);
+  assert.equal(occurrences(html, 'type="radio"'), 2);
+  assert.equal(occurrences(html, 'checked=""'), 1);
+  assert.equal(new Set([...html.matchAll(/name="([^"]+)"/g)].map(match => match[1])).size, 1);
+  assert.match(html, /peer-focus-visible:ring-2/);
+  assert.doesNotMatch(html, /<select/);
+});
 
 test('les neuf types affichent leur titre sans répéter la nature ou la note', () => {
   const types: PedagogicalEventType[] = ['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre'];

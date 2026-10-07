@@ -9,6 +9,7 @@
 @import "../features/dashboard/dashboardCanvas.css";
 @import "./mobile-performance.css";
 @import "./onboarding.css";
+@import "../features/evaluations/components/evaluation-choices.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
@@ -149,7 +150,7 @@
 }
 
 /* ── Taille du texte : un seul curseur, quatre crans ─────────────────────
-   `--app-text-density` est posé par le contrôleur de thème (1 = normal) et
+   `--app-text-density` est posé par le contr��leur de thème (1 = normal) et
    multiplie la base contextuelle. Espacements, rayons et cibles tactiles
    restent en pixels : agrandir le texte ne casse jamais la mise en page. */
 html {

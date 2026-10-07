@@ -1,0 +1,35 @@
+.evaluation-choice {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+@media (hover: hover) {
+  .evaluation-choice:hover { background-color: hsl(var(--muted)); }
+}
+.evaluation-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.evaluation-editor input:not([type="radio"]),
+.evaluation-editor textarea {
+  min-width: 0;
+  min-height: 2.75rem;
+  font-size: 1rem;
+  transition-property: border-color, background-color;
+}
+.evaluation-editor label { min-width: 0; }
+.evaluation-editor button { min-height: 2.75rem; }
+.evaluation-editor__actions {
+  position: sticky;
+  bottom: -1rem;
+  background: hsl(var(--card));
+  padding-block: .75rem;
+  margin-top: .5rem;
+}
+@media (min-width: 640px) {
+  .evaluation-editor input:not([type="radio"]),
+  .evaluation-editor textarea { font-size: .875rem; }
+  .evaluation-editor__actions { bottom: -1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evaluation-choice { transition: none; }
+}

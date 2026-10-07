@@ -26,6 +26,8 @@ import {
   CalendarCheck,
   CheckSquare,
   CircleCheck,
+  Clock,
+  Home,
   FileSignature,
   GraduationCap,
   History,
@@ -44,6 +46,15 @@ import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/co
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { numberFormat } from '@/lib/formatters';
+import { EvaluationChoices } from './components/EvaluationChoices';
+
+const ASSESSMENT_TYPE_CHOICES: { value: DevoirType; Icon: typeof BookOpen }[] = [
+  { value: 'controle', Icon: FileSignature },
+  { value: 'controle_court', Icon: Clock },
+  { value: 'controle_global', Icon: ListChecks },
+  { value: 'oral', Icon: Users },
+  { value: 'maison', Icon: Home },
+];
 
 interface DevoirsViewProps {
   classes: ClassInfo[];
@@ -427,7 +438,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       )}
 
       {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <div className="flex flex-col gap-3 border-b border-border/60 pb-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
         {/* Organic Pill Segmented Filter avec auto-centrage fluide */}
         <div className="w-full sm:w-auto">
           <FluidTabRail<'all' | 's1' | 's2' | 'events'>
@@ -446,7 +457,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           <button
             type="button"
             onClick={() => setEventEditorOpen(true)}
-            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-muted/60 px-2.5 text-[10.5px] font-semibold text-foreground shadow-2xs transition-all hover:bg-muted active:scale-[0.97] sm:px-3 sm:text-xs cursor-pointer"
+            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors duration-200 hover:bg-muted cursor-pointer"
           >
             <Plus className="h-5 w-5 text-primary" aria-hidden="true" />
             <span>{t('evaluations.addActivity')}</span>
@@ -454,7 +465,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           <button
             type="button"
             onClick={openCreateAssessment}
-            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:px-3.5 sm:text-xs cursor-pointer"
+            className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-xs transition-colors duration-200 hover:brightness-110 cursor-pointer"
           >
             <Plus className="h-5 w-5" aria-hidden="true" />
             <span>{t('evaluations.addDevoir')}</span>
@@ -550,7 +561,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             <div
                               key={a.id}
                               className={cn(
-                                'group flex flex-col gap-3 rounded-2xl border bg-card/85 p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:shadow-md sm:flex-row sm:items-center sm:justify-between backdrop-blur-xs',
+                                'group flex flex-col gap-3 rounded-2xl border bg-card p-3.5 sm:p-4 shadow-xs transition-colors duration-200 lg:flex-row lg:items-center lg:justify-between',
                                 link.status === 'done' ? 'border-border/70' : link.status === 'mismatch' ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/90'
                               )}
                             >
@@ -1051,22 +1062,18 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3.5">
-        <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-foreground">{t('evaluations.activityType')}</span>
-          <select
-            value={type}
-            onChange={(event) => changeType(event.target.value as PedagogicalEventType)}
-            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, conf]) => (
-              <option key={value} value={value}>
-                {t(conf.labelKey)}
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className="evaluation-editor">
+      <div className="flex flex-col gap-5">
+        <EvaluationChoices
+          label={t('evaluations.activityType')}
+          value={type}
+          onChange={changeType}
+          options={(Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[]).map(value => ({
+            value,
+            label: t(PEDAGOGICAL_EVENT_CONFIG[value].labelKey),
+            Icon: PEDAGOGICAL_EVENT_CONFIG[value].Icon,
+          }))}
+        />
 
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-foreground">{t('evaluations.titleLabel')}</span>
@@ -1078,7 +1085,6 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
             }}
             className="h-10 w-full rounded-xl border border-border/80 bg-background px-3.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder={t('evaluations.titlePlaceholder')}
-            autoFocus
           />
         </label>
 
@@ -1131,7 +1137,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+        <div className="evaluation-editor__actions grid grid-cols-2 gap-2 border-t border-border/60 sm:flex sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
@@ -1199,35 +1205,21 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-3.5 sm:space-y-4">
-      <div className="space-y-3 sm:space-y-3.5">
-        <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2">
-          <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
-            <select
-              value={type}
-              onChange={(event) => changeType(event.target.value as DevoirType)}
-              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
-            >
-              <option value="controle">{t('evaluations.type.controle')}</option>
-              <option value="controle_court">{t('evaluations.type.controle_court')}</option>
-              <option value="controle_global">{t('evaluations.type.controle_global')}</option>
-              <option value="oral">{t('evaluations.type.oral')}</option>
-              <option value="maison">{t('evaluations.type.maison')}</option>
-            </select>
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-foreground">{t('evaluations.manualSemester')}</span>
-            <select
-              value={semestre}
-              onChange={(event) => setSemestre(Number(event.target.value) as 1 | 2)}
-              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
-            >
-              <option value={1}>{t('evaluations.semester', { number: 1 })}</option>
-              <option value={2}>{t('evaluations.semester', { number: 2 })}</option>
-            </select>
-          </label>
-        </div>
+    <div className="evaluation-editor">
+      <div className="flex flex-col gap-5">
+        <EvaluationChoices
+          label={t('evaluations.manualType')}
+          value={type}
+          onChange={changeType}
+          options={ASSESSMENT_TYPE_CHOICES.map(option => ({ ...option, label: t(`evaluations.type.${option.value}`) }))}
+        />
+        <EvaluationChoices
+          compact
+          label={t('evaluations.manualSemester')}
+          value={String(semestre)}
+          onChange={value => setSemestre(Number(value) as 1 | 2)}
+          options={[1, 2].map(value => ({ value: String(value), label: t('evaluations.semester', { number: value }), Icon: CalendarCheck }))}
+        />
 
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           <label className="block space-y-1.5">
@@ -1276,7 +1268,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
+        <div className="evaluation-editor__actions grid grid-cols-2 gap-2 border-t border-border/60 sm:flex sm:items-center sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
