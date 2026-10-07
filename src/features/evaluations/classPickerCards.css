@@ -1,10 +1,11 @@
 /* Reference class list, using the dashboard's assigned class palette. */
-.evaluation-workspace .class-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.evaluation-workspace .class-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 720px; margin-inline: auto; }
 .evaluation-workspace .class-choice[data-layout='row'] {
   --choice-accent: var(--keep-accent, hsl(var(--primary)));
   --choice-surface: var(--keep-light, hsl(var(--card)));
   position: relative;
   min-height: 95px;
+  aspect-ratio: 1;
   padding: 16px 24px;
   border: 1px solid color-mix(in srgb, var(--choice-accent) 17%, var(--choice-surface));
   border-inline-start: 5px solid var(--choice-accent);
@@ -16,7 +17,8 @@
   touch-action: manipulation;
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
-.evaluation-workspace .class-choice .hub-card__body { gap: 4px; }
+.evaluation-workspace .class-choice .hub-card__body { gap: 10px; align-items: center; text-align: center; }
+.evaluation-workspace .class-choice .hub-card__title { text-align: center; }
 .evaluation-workspace .class-choice .hub-card__title,
 .evaluation-workspace .class-choice__group {
   font-family: 'Evaluation Cairo', var(--font-sans);
@@ -41,9 +43,14 @@
 }
 .evaluation-workspace .class-choice[data-layout='row']:active { transform: scale(.985); filter: none; }
 @media (max-width: 680px) {
-  .evaluation-workspace .class-picker-grid { grid-template-columns: minmax(0, 1fr); }
-  .evaluation-workspace .class-choice[data-layout='row'] { padding: 16px 20px; }
+  .evaluation-workspace .class-picker-grid { gap: 12px; }
+  .evaluation-workspace .class-choice[data-layout='row'] { padding: 14px 10px; }
+  .evaluation-workspace .class-choice .hub-card__title,
+  .evaluation-workspace .class-choice__group { font-size: clamp(16px, 4.3vw, 21px); }
+  .evaluation-workspace .class-choice__tier,
+  .evaluation-workspace .class-choice__counts { font-size: 12px; }
 }
+@media (max-width: 359px) { .evaluation-workspace .class-picker-grid { grid-template-columns: minmax(0, 1fr); max-width: 260px; } }
 @media (prefers-reduced-motion: reduce) {
   .evaluation-workspace .class-choice[data-layout='row'] { transition: none; }
   .evaluation-workspace .class-choice[data-layout='row']:is(:hover, :active) { transform: none; }
