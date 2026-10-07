@@ -73,3 +73,8 @@
 .evaluation-header-back:hover { background: var(--eval-badge); color: var(--eval-ink); }
 .evaluation-header-back:focus-visible { outline: 2px solid var(--eval-accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .evaluation-header-back { transition: none; } }
+
+/* Compact chooser on a continuous warm paper surface. */
+.evaluation-reference.modal-motion-surface:has(.class-picker-grid) { max-width: 680px; }
+.evaluation-reference:has(.class-picker-grid) .modal-body { background: var(--eval-paper); padding-block: 20px 24px; }
+.evaluation-reference:has(.class-picker-grid) .evaluation-workspace > section > p { max-width: 480px; margin-inline: auto; }

@@ -1,28 +1,27 @@
 /* Reference class list, using the dashboard's assigned class palette. */
-.evaluation-workspace .class-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 720px; margin-inline: auto; }
+.evaluation-workspace .class-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 480px; margin-inline: auto; }
 .evaluation-workspace .class-choice[data-layout='row'] {
   --choice-accent: var(--keep-accent, hsl(var(--primary)));
   --choice-surface: var(--keep-light, hsl(var(--card)));
   position: relative;
   min-height: 95px;
   aspect-ratio: 1;
-  padding: 16px 24px;
-  border: 1px solid color-mix(in srgb, var(--choice-accent) 17%, var(--choice-surface));
-  border-inline-start: 5px solid var(--choice-accent);
-  border-radius: 14px;
+  padding: 14px 16px;
+  border: 2px solid color-mix(in srgb, var(--choice-accent) 52%, var(--choice-surface));
+  border-radius: 16px;
   background: var(--choice-surface);
   color: var(--choice-accent);
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), 0 3px 10px rgb(40 35 30 / .04);
   text-align: start;
   touch-action: manipulation;
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
-.evaluation-workspace .class-choice .hub-card__body { gap: 10px; align-items: center; text-align: center; }
+.evaluation-workspace .class-choice .hub-card__body { gap: 6px; align-items: center; text-align: center; }
 .evaluation-workspace .class-choice .hub-card__title { text-align: center; }
 .evaluation-workspace .class-choice .hub-card__title,
 .evaluation-workspace .class-choice__group {
   font-family: 'Evaluation Cairo', var(--font-sans);
-  font-size: clamp(20px, 2.2vw, 23px);
+  font-size: clamp(18px, 2vw, 21px);
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: 0;
@@ -43,7 +42,7 @@
 }
 .evaluation-workspace .class-choice[data-layout='row']:active { transform: scale(.985); filter: none; }
 @media (max-width: 680px) {
-  .evaluation-workspace .class-picker-grid { gap: 12px; }
+  .evaluation-workspace .class-picker-grid { gap: 10px; }
   .evaluation-workspace .class-choice[data-layout='row'] { padding: 14px 10px; }
   .evaluation-workspace .class-choice .hub-card__title,
   .evaluation-workspace .class-choice__group { font-size: clamp(16px, 4.3vw, 21px); }
