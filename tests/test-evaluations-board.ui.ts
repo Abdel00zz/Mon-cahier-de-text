@@ -84,7 +84,7 @@ test('les colonnes sont des jetons partagés : l’en-tête et les lignes ne peu
 });
 
 test('une surface, des filets : plus de pile de cartes', () => {
-  assert.match(css, /\.ev-board \{[\s\S]{0,320}border: 1px solid[\s\S]{0,240}border-radius: 18px/, 'une seule bordure pour toute la zone');
+  assert.match(css, /\.ev-board \{[\s\S]{0,320}border: 1px solid[\s\S]{0,240}border-radius: 6px/, 'une seule bordure pour toute la zone');
   assert.match(css, /\.ev-board \{[\s\S]{0,320}overflow: hidden/, 'les fonds de survol épousent le rayon');
   assert.match(css, /\.ev-row \+ \.ev-row \{\s*\n\s*border-top: 1px solid/, 'un filet entre deux lignes, rien de plus');
   // Aucune ligne ne redevient une carte : ni rayon, ni ombre, ni bordure propre.

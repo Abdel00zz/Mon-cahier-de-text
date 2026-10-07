@@ -3,17 +3,17 @@
 .evaluation-modal .modal-header [data-ui-title] p { font-size: 12px; font-weight: 400; }
 .evaluation-modal .modal-header svg { stroke-width: 1.8; }
 .evaluation-modal .modal-body { scrollbar-gutter: stable; }
-.evaluation-modal.document-modal-frame.modal-motion-surface { border-radius: 24px; }
+.evaluation-modal.document-modal-frame.modal-motion-surface { border-radius: 16px; }
 .evaluation-modal .wizard-step { padding: 0; border: 0; background: none; box-shadow: none; }
 .evaluation-modal .hub-card[data-layout='tile'] {
   min-height: 112px;
   padding: 12px 10px;
-  border-radius: 14px;
+  border-radius: 8px;
   box-shadow: none;
   background: hsl(var(--card));
 }
 .evaluation-modal .hub-card[data-layout='tile'] .hub-card__icon {
-  width: 36px; height: 36px; border-radius: 10px;
+  width: 36px; height: 36px; border-radius: 6px;
   background: hsl(var(--muted)); color: hsl(var(--muted-foreground));
 }
 .evaluation-modal .hub-card__icon svg { width: 22px; height: 22px; stroke-width: 1.8; }
@@ -48,9 +48,14 @@
   .ev-board__rows > .ev-row { grid-template-areas: 'id state' 'date actions'; }
 }
 @media (max-width: 639px) {
-  .evaluation-modal.document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'] { border-radius: 28px 28px 0 0; }
+  .evaluation-modal.document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'] { border-radius: 20px 20px 0 0; }
   .evaluation-modal .modal-header [data-ui-title] { font-size: 15px; }
   .evaluation-modal .modal-body { padding-inline: 16px; }
   .evaluation-modal :is(input:not([type='checkbox']), textarea, [role='combobox']) { font-size: 16px; }
   .evaluation-modal .modal-header [data-ui-title] > div { gap: 10px; }
 }
+
+.evaluation-workspace .tone-chip:not([data-state]), .evaluation-modal .kind-group__count { color: hsl(var(--muted-foreground)); background: hsl(var(--muted) / .6); border-color: hsl(var(--border)); }
+
+.evaluation-modal :is(input:not([type='checkbox']), textarea, [role='combobox']) { border-radius: 6px; }
+.ev-accordion__body .ev-board { border: 0; border-radius: 0; box-shadow: none; background: transparent; }

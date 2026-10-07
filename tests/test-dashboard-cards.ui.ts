@@ -95,7 +95,7 @@ test('la carte garde son aplat pastel et se soulève doucement', () => {
   assert.match(cards, /\.class-card:hover \{[\s\S]*transform: translateY\(-6px\)/, 'soulèvement au survol');
   assert.match(cards, /\.class-card:hover::before \{ opacity: 0; \}/, 'le survol préserve l’aplat pastel');
   const mobile = cards.slice(cards.indexOf('@media (max-width: 639px)'));
-  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 26px; \}/, 'chiffre gravé resserré sur téléphone');
+  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 4rem; \}/, 'chiffre gravé resserré sur téléphone');
 });
 
 test('la disposition avance d’un seul geste, sans menu', () => {

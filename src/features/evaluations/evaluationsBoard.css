@@ -27,7 +27,7 @@
 
 .ev-board {
     border: 1px solid color-mix(in srgb, hsl(var(--border)) 84%, transparent);
-    border-radius: 18px;
+    border-radius: 6px;
     background: color-mix(in srgb, hsl(var(--card)) 74%, transparent);
     box-shadow: 0 1px 2px rgb(40 48 58 / .03);
     /* Les fonds de survol et les filets épousent le rayon : aucun coin carré. */
@@ -126,7 +126,7 @@
     min-height: 2.25rem;
     padding-inline: .625rem;
     border: 1px solid color-mix(in srgb, hsl(var(--border)) 88%, transparent);
-    border-radius: 10px;
+    border-radius: 6px;
     background: hsl(var(--background) / .7);
     color: hsl(var(--muted-foreground));
     font-size: 11px;
@@ -140,9 +140,9 @@
 .ev-action:active { transform: scale(.97); }
 .ev-action:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
 .ev-action[data-filled='tone'] {
-    color: var(--tone);
-    border-color: color-mix(in srgb, var(--tone) 30%, hsl(var(--border)));
-    background: color-mix(in srgb, var(--tone) 8%, hsl(var(--card)));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+    background: hsl(var(--muted) / .6);
 }
 /* Un état critique garde SA couleur, même si la ligne porte un ton : c'est la
    charte — le rouge sémantique ne se mélange pas à la marque. */
@@ -162,7 +162,7 @@
     height: 2.25rem;
     flex: none;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: 6px;
     color: hsl(var(--muted-foreground));
     cursor: pointer;
     touch-action: manipulation;
@@ -215,7 +215,7 @@
     width: 100%;
     padding-inline: .5rem;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: 6px;
     background: transparent;
     color: hsl(var(--foreground));
     font-size: 11.5px;
@@ -357,3 +357,7 @@
     .ev-accordion__toggle-word { justify-self: start; }
     .ev-accordion__body .ev-row { padding-inline: .6rem; }
 }
+
+.ev-accordion__body { animation: evaluation-reveal 180ms ease-out; }
+@keyframes evaluation-reveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle { transition: none; } }

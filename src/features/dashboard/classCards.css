@@ -115,64 +115,39 @@
 .dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
-/* Le titre et le numéro partagent une ligne naturelle en LTR comme en RTL. */
+/* Reference: large translucent group numeral, with a reserved title lane. */
 .class-card__identity { display: block; min-height: 56px; text-align: start; }
-/* Titre : Roboto Slab, posée en ligne par `constants/classTitleTypography.ts`.
-   21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large.
-   `flex: 0 1 auto` (et non `1`) : le titre ne s'étire pas jusqu'au bord, donc le
-   numéro de groupe se pose JUSTE APRÈS le nom au lieu de partir à l'autre bout
-   de la carte. Il rétrécit toujours quand le nom est long, et se replie sur
-   deux lignes en laissant la place au chiffre. */
-.class-card__title { display: inline; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
-.class-card__tail { white-space: nowrap; }
+.class-card__identity[data-has-group='true'] { padding-inline-end: 76px; }
+.class-card__title { display: block; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-/* Le numéro suit le titre dans le flux de texte, même après un retour à la ligne. */
 .class-card .class-card__group {
-  position: relative;
+  position: absolute;
   inset: auto;
-  bottom: auto;
-  z-index: 1;
-  flex: 0 0 auto;
-  align-self: baseline;
-  display: inline-block;
+  inset-inline-end: 0;
+  top: 50%;
   min-width: 0;
   min-height: 0;
   margin: 0;
-  margin-inline-start: .18em;
   padding: 0;
-  /* Décor : la carte entière reste cliquable, aucun angle mort sous le pouce. */
   pointer-events: none;
   user-select: none;
-  font-family: var(--font-latin-display);
-  font-size: 30px;
+  font-family: system-ui, sans-serif;
+  font-size: 5.2rem;
   font-style: normal;
-  font-weight: 800;
-  font-variant-numeric: lining-nums;
-  letter-spacing: -.045em;
-  line-height: .8;
-  color: var(--class-accent);
-  opacity: 1;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: var(--class-vivid);
+  opacity: .35;
   background: none;
   border: 0;
   border-radius: 0;
   box-shadow: none;
   -webkit-text-stroke: 0;
-  paint-order: stroke fill;
   text-shadow: none;
-  transform: none;
-  translate: none;
-  filter: none;
+  transform: translateY(-50%);
 }
-/* Encre lisible sur les surfaces sombres. */
-.dark .class-card .class-card__group {
-  color: var(--class-accent);
-  opacity: 1;
-  background: none;
-  border: 0;
-  box-shadow: none;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-}
+.dark .class-card .class-card__group { color: var(--class-accent); opacity: .4; }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 12px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
@@ -215,7 +190,7 @@
   .class-card__header { margin-bottom: 4px; }
   .class-card__identity { min-height: 52px; }
   .class-card__title { font-size: 18.5px; }
-  .class-card .class-card__group { font-size: 26px; }
+  .class-card .class-card__group { font-size: 4rem; }
   .class-card__footer { padding-inline: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -233,6 +208,6 @@
 @media (min-width: 640px) and (max-width: 1023px) {
   .class-card__body { padding-inline: 18px; }
   .class-card__title { font-size: 20px; }
-  .class-card .class-card__group { font-size: 28px; }
+  .class-card .class-card__group { font-size: 4.5rem; }
   .class-card__footer { padding-inline: 18px; }
 }

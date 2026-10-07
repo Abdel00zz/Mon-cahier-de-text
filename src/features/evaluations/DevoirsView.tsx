@@ -13,6 +13,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import './evaluationsResponsive.css';
 import { Modal } from '@/components/ui/modal';
 import {
+  ArrowLeft,
   CalendarCheck,
   CircleCheck,
   Plus,
@@ -111,7 +112,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   onConfigChange,
   embedded = false,
 }) => {
-  const { t, locale } = useLocale();
+  const { t, locale, isRtl } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   /**
@@ -615,8 +616,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 <button
                   type="button"
                   onClick={backToClasses}
-                  className="inline-flex min-h-9 shrink-0 items-center rounded-xl border border-border/80 bg-card px-3 text-[11px] font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer sm:text-xs"
+                  className="evaluation-back inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
                 >
+                  <ArrowLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} aria-hidden="true" />
                   {t('evaluations.allClasses')}
                 </button>
               )}
@@ -639,7 +641,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <button
               type="button"
               onClick={openKindChooser}
-              className="inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+              className="inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
             >
               <Plus className="h-5 w-5" aria-hidden="true" />
               <span>{t('evaluations.add')}</span>
@@ -647,9 +649,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           </div>
 
           <div className="space-y-4">
-            <p className="px-1 text-xs leading-relaxed text-muted-foreground text-pretty">
-              {t('evaluations.classActivitiesHint')}
-            </p>
             {classActivities.length === 0 ? (
               <ActivitiesEmptyState onCreate={openKindChooser} />
             ) : classActivities.map(({ group, entries }) => {

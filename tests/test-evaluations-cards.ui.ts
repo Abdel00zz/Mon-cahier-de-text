@@ -116,7 +116,7 @@ test('les titres disent ce que la fenêtre contient, sans répétition', () => {
   // La classe ouverte coiffe l'écran ; les devoirs n'apparaissent que si la
   // classe en porte (ici, aucune) — la vue montre donc une seule famille.
   assert.match(html, /2ème Bac Sciences Physiques 1/);
-  assert.match(html, /evaluations.classActivitiesHint|Les activités de cette classe|أنشطة هذا القسم/);
+  assert.doesNotMatch(html, /evaluations.classActivitiesHint|Les activités de cette classe|أنشطة هذا القسم/);
   // L'ancien titre juxtaposait deux libellés équivalents (« Activités &
   // Activités intégrées et étapes didactiques ») : il n'a plus lieu d'être.
   assert.equal(html.includes('Activités & '), false);
@@ -163,7 +163,7 @@ test('une icône et une teinte par nature, aucune couleur inventée', () => {
 test('la fenêtre annonce un contenu précis, pas une redite du titre', () => {
   const sheet = readFileSync('src/features/evaluations/ClassEvaluationsSheet.tsx', 'utf8');
   assert.match(sheet, /formatLocalizedClassDisplayName\(classInfo.name, locale\)/);
-  assert.match(sheet, /\{className\}/, 'la classe est le seul contexte sous le titre');
+  assert.match(sheet, /description=\{[\s\S]*className/, 'la classe est le seul contexte sous le titre');
   assert.equal(sheet.includes("t('evaluations.assessments')} · {t('evaluations.activities')"), false);
   for (const locale of ['fr', 'en', 'ar'] as const) {
     const subtitle = translateLocaleMessage(locale, 'evaluationsSheet.subtitle');

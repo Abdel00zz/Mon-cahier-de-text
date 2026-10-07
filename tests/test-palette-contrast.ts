@@ -148,38 +148,23 @@ test('les aplats d’avertissement portent l’encre de leur thème', () => {
   assert.ok(darkDestructive >= 4.5, `encre sur --destructive-strong (sombre) : ${darkDestructive.toFixed(2)}:1`);
 });
 
-test('les numéros de classe sont à l’encre, opaques et détourés', () => {
-  // Le numéro de la LISTE garde son contrat : encre pleine et filet couleur
-  // carte sur les quatre côtés. Le numéro de la CARTE, lui, est un chiffre
-  // gravé collé au nom (voir le test suivant) : encre adoucie, sans détourage.
+test('les cartes reprennent le numéro décoratif de la référence sans masquer le nom', () => {
   const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
   const start = cards.indexOf('.class-card .class-card__group {');
-  assert.ok(start > 0, 'le style du numéro doit exister');
+  assert.ok(start > 0);
   const group = cards.slice(start, cards.indexOf('.dark .class-card .class-card__group {'));
-  assert.match(group, /color: var\(--class-accent\)/, 'encre pastel lisible');
-  assert.match(group, /font-family: var\(--font-latin-display\)/, 'la grande serif d’affichage');
-  // DROIT et GRAS : l'inclinaison italique rendait le chiffre menu ; la
-  // majesté vient de la graisse 800 (vraie graisse, Newsreader étant variable
-  // 200-800) et de la taille, pas d'un penché.
-  assert.match(group, /font-style: normal;/, 'droit, plus d’italique');
-  assert.match(group, /font-weight: 800;/, 'plus gras');
-  assert.doesNotMatch(group, /italic/, 'plus aucune italique, ni variante ni dégradé');
-  assert.match(group, /font-size: 30px;/, 'plus grand que le titre (21 px)');
-  assert.match(group, /align-self: baseline;/, 'posé sur la ligne de base du nom');
-  assert.match(group, /line-height: \.8;/, 'la boîte du chiffre ne pousse pas la ligne du titre');
-  assert.match(group, /text-shadow: none;/, 'chiffre net sans halo');
-  // Le numéro reste dans le même flux que le titre, sans halo.
-  assert.match(cards, /\.class-card__identity \{ display: block;/, 'titre et numéro dans le même flux de texte');
-  assert.match(group, /-webkit-text-stroke: 0;/, 'chiffre sans contour artificiel');
-  assert.match(group, /paint-order: stroke fill;/, 'le filet passe derrière le dessin');
-  assert.doesNotMatch(group, /transform: (rotate|skew)/, 'aucun penché sur le chiffre gravé');
-  assert.doesNotMatch(group, /background: color-mix|border: 1px solid|border-radius: 10px/, 'plus de pastille ni d’anneau');
-  assert.match(group, /pointer-events: none;/, 'décor : aucun angle mort sur la carte');
-  assert.match(cards, /@media \(max-width: 639px\)[\s\S]*\.class-card \.class-card__group \{ font-size: 26px; \}/, '26 px sur téléphone');
-  // Le chiffre est TOUJOURS monté dans la ligne du titre, jamais derrière elle.
+  assert.match(group, /font-family: system-ui, sans-serif/);
+  assert.match(group, /font-weight: 900;/);
+  assert.match(group, /font-size: 5.2rem;/);
+  assert.match(group, /opacity: .35;/);
+  assert.match(group, /position: absolute;/);
+  assert.match(group, /inset-inline-end: 0;/);
+  assert.match(group, /pointer-events: none;/);
+  assert.match(cards, /padding-inline-end: 76px;/, 'espace réservé au chiffre');
+  assert.match(cards, /@media \(max-width: 639px\)[\s\S]*font-size: 4rem;/);
   const classCard = readFileSync(new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url), 'utf8');
-  const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity">'), classCard.indexOf('</div>', classCard.indexOf('variant="engraved"')));
-  assert.match(identity, /class-card__title[\s\S]*variant="engraved"/, 'le chiffre suit immédiatement le titre');
+  const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity"'), classCard.indexOf('</div>', classCard.indexOf('variant="engraved"')));
+  assert.match(identity, /class-card__title[\s\S]*variant="engraved"/);
   assert.match(identity, /sr-only[\s\S]*aria-hidden/, 'le nom accessible porte déjà le groupe');
 
   // Le numéro de la liste : encre pleine et même contour net.
