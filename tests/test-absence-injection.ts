@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { absenceDates, classesWithSessionDuring, injectAbsenceLine } from '../src/domain/notebook/absenceInjection';
+import { absenceDates, classSessionsDuring, injectAbsenceLine } from '../src/domain/notebook/absenceInjection';
 import { FREE_TYPE } from '../src/domain/notebook/freeLineType';
 
-type Node = { type?: string; title?: string; date?: string; items?: Node[]; sections?: Node[] };
+type Node = { type?: string; title?: string; description?: string; date?: string; items?: Node[]; sections?: Node[] };
 
 /* 2026-09-14 est un lundi. Trois contenus datés : 09-07, 09-21 (dans le
    chapitre) et 09-28 (à la racine). */
@@ -23,13 +23,24 @@ test('absence : les dates couvertes suivent début/fin, jamais au-delà de la bo
   assert.deepEqual(absenceDates({ debut: 'demain' }), []);
 });
 
-test('seules les classes qui ont une séance pendant l’absence sont visées', () => {
-  const timetable = [{ day: 1, slot: 0, classId: 'A' }, { day: 1, slot: 2, classId: 'B' }];
-  assert.deepEqual(classesWithSessionDuring(timetable, undefined, { debut: '2026-09-14' }, ['A', 'B']), ['A', 'B']);
-  assert.deepEqual(classesWithSessionDuring(timetable, undefined, { debut: '2026-09-15' }, ['A', 'B']), []);
-  assert.deepEqual(classesWithSessionDuring(timetable, undefined, { debut: '2026-09-14', fin: '2026-09-15' }, ['B', 'A']), ['A', 'B']);
-  assert.deepEqual(classesWithSessionDuring(timetable, undefined, { debut: '2026-09-14' }, ['A']), ['A']);
-  assert.deepEqual(classesWithSessionDuring([], undefined, { debut: '2026-09-14' }, ['A']), []);
+test('seules les classes qui ont une séance pendant l’absence sont visées, avec LEURS dates', () => {
+  const timetable = [{ day: 1, slot: 0, classId: 'A' }, { day: 1, slot: 2, classId: 'B' }, { day: 2, slot: 1, classId: 'A' }];
+  // 2026-09-14 et 2026-09-15 sont lundi et mardi : chaque classe ne reçoit que
+  // ses JOURS DE SÉANCE — c'est la cellule « date » du tableau qui les affiche.
+  assert.deepEqual(classSessionsDuring(timetable, undefined, { debut: '2026-09-14' }, ['A', 'B']), [
+    { classId: 'A', dates: ['2026-09-14'] },
+    { classId: 'B', dates: ['2026-09-14'] },
+  ]);
+  assert.deepEqual(classSessionsDuring(timetable, undefined, { debut: '2026-09-14', fin: '2026-09-16' }, ['A']), [
+    { classId: 'A', dates: ['2026-09-14', '2026-09-15'] },
+  ]);
+  // Deux créneaux le même jour : une seule date, donc une seule ligne.
+  assert.deepEqual(
+    classSessionsDuring([{ day: 1, slot: 0, classId: 'A' }, { day: 1, slot: 3, classId: 'A' }], undefined, { debut: '2026-09-14' }, ['A']),
+    [{ classId: 'A', dates: ['2026-09-14'] }],
+  );
+  assert.deepEqual(classSessionsDuring(timetable, undefined, { debut: '2026-09-16' }, ['A', 'B']), [], 'aucune séance ce jour-là');
+  assert.deepEqual(classSessionsDuring([], undefined, { debut: '2026-09-14' }, ['A']), []);
 });
 
 test('la ligne libre se pose à sa place chronologique, dans son parent', () => {
@@ -70,4 +81,25 @@ test('cahier illisible ou date invalide : aucune écriture', () => {
   assert.equal(injectAbsenceLine(null, line), null);
   assert.equal(injectAbsenceLine({}, line), null);
   assert.equal(injectAbsenceLine(lessons, { ...line, date: '14/09/2026' }), null);
+});
+
+test('une ligne par JOUR DE SÉANCE, le motif seul : la date vit dans la cellule date', () => {
+  // Lundi 14 et mardi 15 septembre : la classe a cours les deux jours.
+  const timetable = [{ day: 1, slot: 0, classId: 'A' }, { day: 2, slot: 0, classId: 'A' }];
+  const sessions = classSessionsDuring(timetable, undefined, { debut: '2026-09-14', fin: '2026-09-16' }, ['A']);
+  assert.deepEqual(sessions, [{ classId: 'A', dates: ['2026-09-14', '2026-09-15'] }]);
+
+  // Le certificat se pose sur CHAQUE date de séance, avec le motif pour texte.
+  let notebook: unknown = [{ type: 'chapter', title: 'C1', date: '2026-09-07', items: [] }];
+  for (const date of sessions[0].dates) {
+    notebook = injectAbsenceLine(notebook, { date, title: 'Certificat de maladie', description: 'Congé maladie', id: `free-${date}` })!;
+    assert.ok(notebook, `ligne posée le ${date}`);
+  }
+  const dates = (notebook as Node[]).map(node => node.date);
+  assert.deepEqual(dates, ['2026-09-07', '2026-09-14', '2026-09-15'], 'la date est un vrai jour de séance, dans l’ordre du cahier');
+  for (const node of (notebook as Node[]).slice(1)) {
+    assert.equal(node.type, FREE_TYPE);
+    assert.equal(node.title, 'Certificat de maladie');
+    assert.equal(node.description, 'Congé maladie', 'aucune plage de dates dans le contenu');
+  }
 });

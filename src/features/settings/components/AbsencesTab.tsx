@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AbsencePeriod, AppConfig, ClassInfo, ContentDirection, LessonsData } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
-import { classesWithSessionDuring, injectAbsenceLine } from '@/domain/notebook/absenceInjection';
+import { classSessionsDuring, absenceDates, injectAbsenceLine } from '@/domain/notebook/absenceInjection';
 import { defaultContentDirection, detectContentDirection } from '@/domain/notebook/contentDirection';
 import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
@@ -23,9 +23,14 @@ interface AbsencesTabProps {
  * Absences justifiées (certificats de maladie, congés).
  *
  * Deux effets, indissociables : les dates saisies excluent le retard et taisent
- * les rappels (moteurs partagés), **et** chaque absence pose automatiquement une
- * ligne libre « certificat de maladie » datée dans le cahier des classes qui ont
- * une séance pendant l'absence. L'injection est idempotente : réouvrir la
+ * les rappels (moteurs partagés), **et** chaque absence pose automatiquement le
+ * certificat dans le cahier des classes qui ont une séance pendant l'absence.
+ *
+ * La ligne est posée À CHAQUE DATE DE SÉANCE, avec le motif pour seul texte :
+ * la date appartient à la cellule « date » du tableau, comme pour toute séance,
+ * et la fusion par date fait apparaître le certificat dans la MÊME ligne que les
+ * contenus de ce jour — un cahier se lit par dates, un certificat n'est pas une
+ * plage écrite dans le contenu. L'injection est idempotente : réouvrir la
  * rubrique n'écrit rien de plus, et le message le dit honnêtement.
  */
 export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onConfigChange, visible }) => {
@@ -39,52 +44,68 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
     const invalidRange = Boolean(debut && fin && fin < debut);
     const lineTitle = t('notifications.absenceCertificate');
 
-    /* Écrit la ligne manquante dans chaque cahier concerné. */
-    const inject = useCallback((period: AbsencePeriod) => {
-        const targets = classesWithSessionDuring(config.timetable, config.timetableClock, period, classes.map(item => item.id));
-        const range = period.fin && period.fin !== period.debut
-            ? `${formatDateDDMMYYYY(period.debut) ?? period.debut} → ${formatDateDDMMYYYY(period.fin) ?? period.fin}`
-            : (formatDateDDMMYYYY(period.debut) ?? period.debut);
-        const description = period.motif ? `${range} · ${period.motif}` : range;
+    /*
+     * Écrit les lignes manquantes dans chaque cahier concerné : UNE lecture et
+     * UNE écriture par classe, même quand plusieurs absences la visent — dix
+     * dates corrigées d'un coup font un seul envoi, pas dix.
+     */
+    const inject = useCallback((periods: AbsencePeriod[]) => {
+        const classIds = classes.map(item => item.id);
+        const datesByClass = new Map<string, string[]>();
+        const motifByDate = new Map<string, string>();
+        for (const period of periods) {
+            for (const { classId, dates } of classSessionsDuring(config.timetable, config.timetableClock, period, classIds)) {
+                datesByClass.set(classId, [...new Set([...(datesByClass.get(classId) ?? []), ...dates])]);
+            }
+            for (const date of absenceDates(period)) {
+                // Deux absences qui se chevauchent : le premier motif saisi gagne.
+                if (!motifByDate.has(date)) motifByDate.set(date, period.motif?.trim() ?? '');
+            }
+        }
         let notebooks = 0;
-        for (const classId of targets) {
+        let lines = 0;
+        for (const [classId, dates] of datesByClass) {
             let stored: { lessonsData: unknown; contentDirection?: ContentDirection };
             try {
                 stored = readStoredNotebook(classId);
             } catch {
                 continue; // Cahier illisible : jamais remplacé à l'aveugle.
             }
-            const next = injectAbsenceLine(stored.lessonsData, {
-                date: period.debut,
-                title: lineTitle,
-                description,
-                id: `free-absence-${classId}-${period.debut}`,
-            });
-            if (!next) continue; // Ligne déjà posée pour cette date.
+            let lessons = stored.lessonsData;
+            let changed = false;
+            for (const date of dates) {
+                const next = injectAbsenceLine(lessons, {
+                    date,
+                    title: lineTitle,
+                    // Le texte raconte l'absence, la date la situe : rien à répéter.
+                    description: motifByDate.get(date) || '',
+                    id: `free-absence-${classId}-${date}`,
+                });
+                if (!next) continue; // ligne déjà posée pour cette date
+                lessons = next;
+                changed = true;
+                lines += 1;
+            }
+            if (!changed) continue;
             const direction = stored.contentDirection
-                ?? detectContentDirection(stored.lessonsData, defaultContentDirection(locale)).direction;
-            saveNotebook(classId, next as unknown as LessonsData, direction);
+                ?? detectContentDirection(lessons, defaultContentDirection(locale)).direction;
+            saveNotebook(classId, lessons as unknown as LessonsData, direction);
             notebooks += 1;
         }
-        return { targets: targets.length, notebooks };
+        return { targets: datesByClass.size, notebooks, lines };
     }, [classes, config.timetable, config.timetableClock, lineTitle, locale]);
 
     /*
      * Injection automatique : à l'ouverture de la rubrique et à chaque
-     * changement d'absence, les cahiers concernés reçoivent la ligne manquante.
-     * Aucune écriture quand tout est déjà en place (jamais de bruit réseau).
+     * changement d'absence, les cahiers concernés reçoivent les lignes
+     * manquantes. Aucune écriture quand tout est déjà en place (jamais de bruit
+     * réseau).
      */
     useEffect(() => {
         if (!visible) return;
-        let notebooks = 0;
-        let planned = 0;
-        for (const period of absences) {
-            const result = inject(period);
-            notebooks += result.notebooks;
-            planned += result.targets;
-        }
-        setInjected(current => current === notebooks ? current : notebooks);
-        setSessions(current => current === planned ? current : planned);
+        const result = inject(absences);
+        setInjected(current => current === result.lines ? current : result.lines);
+        setSessions(current => current === result.targets ? current : result.targets);
     }, [absences, inject, visible]);
 
     const addAbsence = () => {

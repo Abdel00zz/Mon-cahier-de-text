@@ -5,6 +5,7 @@ import { useBulkOperations } from './hooks/useBulkOperations';
 import { useSessionAssignment } from './hooks/useSessionAssignment';
 import { useImmer } from 'use-immer';
 import { readInitialNotebook, notebookStorageKey } from './initialNotebook';
+import { storedNotebookChanged } from './notebookRefresh';
 import { toast } from 'sonner';
 import { Header } from './Header';
 import { EditorBackButton } from './EditorBackButton';
@@ -635,26 +636,41 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     loadData();
   }, [loadData]);
 
-  // A newer cloud notebook must also refresh derived chapter boundaries on screen.
-  // Do not reset undo history for metadata-only pulls or overwrite an in-flight local edit.
-  useEffect(() => subscribe('pull-applied', () => {
+  /*
+   * Le cahier du disque peut changer sans nous, et pas seulement par un pull
+   * cloud : l'onglet « Absences et certificats » écrit LOCALEMENT la ligne
+   * « Certificat de maladie » des classes qui ont une séance pendant l'absence,
+   * pendant que l'éditeur reste monté derrière les Réglages (`key={routeKey}`
+   * ne le démonte pas — on revient par l'historique). Sans cette relecture, la
+   * ligne n'apparaîtrait pas au retour et le premier enregistrement automatique
+   * la recouvrirait, puisque l'éditeur écrit son cahier EN ENTIER.
+   * On ne relit jamais par-dessus une saisie en cours : un texte non enregistré
+   * vaut plus qu'une ligne réinjectable. Une relecture inutile (notre propre
+   * enregistrement, une autre classe) est un simple constat, sans effet.
+   */
+  const reloadStoredNotebook = useCallback(() => {
     if (!workspaceIsActive() || saveStatusRef.current !== 'saved') return;
     try {
       const raw = localStorage.getItem(getStorageKey());
-      if (!raw) return;
-      const stored = JSON.parse(raw);
-      const incoming = migrateLessonsData(Array.isArray(stored) ? stored : (stored.lessonsData ?? []));
-      const incomingDirection = readStoredContentDirection(stored);
-      if (JSON.stringify(incoming) === JSON.stringify(lessonsDataRef.current)
-        && (!incomingDirection || incomingDirection === contentDirectionRef.current)) return;
+      if (!storedNotebookChanged(raw, { lessons: lessonsDataRef.current, direction: contentDirectionRef.current })) return;
       loadData();
       setSelectionState(createSelectionState());
       setEditorState(draft => {
         draft.editingIndices = null;
         if (draft.activeModal === 'editContent') draft.activeModal = null;
       });
-    } catch (error) { logger.error('Failed to refresh the cloud notebook', error); }
-  }), [getStorageKey, loadData, setEditorState, workspaceIsActive]);
+    } catch (error) { logger.error('Failed to refresh the notebook from storage', error); }
+  }, [getStorageKey, loadData, setEditorState, workspaceIsActive]);
+
+  // `dirty` est émis APRÈS l'écriture (voir `saveNotebook`), donc la lecture voit
+  // toujours la version neuve.
+  useEffect(() => {
+    const unsubscribers = [
+      subscribe('pull-applied', reloadStoredNotebook),
+      subscribe('dirty', reloadStoredNotebook),
+    ];
+    return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+  }, [reloadStoredNotebook]);
 
   useEffect(() => {
     if (isClassLoading) return;

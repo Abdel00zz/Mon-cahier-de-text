@@ -93,10 +93,13 @@ test('absences justifiées : rubrique dédiée, injection automatique dans les c
   assert.ok(!notifications.includes('AbsencesSection'), 'la section a quitté l’onglet Notifications');
 
   const tab = read('src/features/settings/components/AbsencesTab.tsx');
-  assert.match(tab, /classesWithSessionDuring\(config\.timetable, config\.timetableClock, period/, 'seules les classes qui ont une séance sur ces dates');
-  assert.match(tab, /injectAbsenceLine\(stored\.lessonsData/, 'ligne libre datée « certificat de maladie »');
-  assert.match(tab, /saveNotebook\(classId, next/, 'écriture du cahier (file de synchronisation)');
+  assert.match(tab, /classSessionsDuring\(config\.timetable, config\.timetableClock, period, classIds\)/, 'seules les classes qui ont une séance, avec LEURS dates de séance');
+  assert.match(tab, /injectAbsenceLine\(lessons, \{/, 'ligne libre datée « certificat de maladie », à chaque date de séance');
+  assert.match(tab, /saveNotebook\(classId, lessons/, 'une seule écriture par classe (file de synchronisation)');
   assert.match(tab, /t\('notifications\.absenceCertificate'\)/, 'intitulé traduit, jamais en dur');
+  // La date vit dans la cellule « date » : le texte du contenu ne la répète pas.
+  assert.match(tab, /description: motifByDate\.get\(date\) \|\| ''/, 'le motif pour seul texte, la date pour seul repère');
+  assert.ok(!/formatDateDDMMYYYY\(period\.debut\)/.test(tab), 'plus de plage de dates écrite dans le contenu');
   assert.ok(!tab.includes('markClassDirty('), 'la synchronisation passe par saveNotebook, pas par un marquage direct');
 });
 

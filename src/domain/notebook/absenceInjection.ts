@@ -3,11 +3,16 @@ import { getDaySessionBlocks } from '../calendar/timetable';
 import { FREE_TYPE } from './freeLineType';
 
 /*
- * Absence justifiée → cahier : la ligne « certificat de maladie » naît dans le
+ * Absence justifiée → cahier : une ligne « certificat de maladie » naît dans le
  * cahier de chaque classe dont l'emploi du temps prévoit une séance pendant
- * l'absence, à sa place CHRONOLOGIQUE (juste après le dernier contenu daté au
- * plus tard à la date de l'absence). Un cahier sans aucune date reçoit la ligne
- * à sa fin.
+ * l'absence, **à chaque date de séance**, à sa place CHRONOLOGIQUE (juste après
+ * le dernier contenu daté au plus tard à cette date). Un cahier sans aucune date
+ * reçoit la ligne à sa fin.
+ *
+ * La date vit dans le champ `date` du contenu — donc dans la CELLULE DATE du
+ * tableau, comme toute séance — jamais dans le texte : le certificat partage
+ * ainsi la date de la séance manquée et la fusion par date le fait apparaître
+ * dans la MÊME ligne que les contenus de ce jour.
  *
  * La réinjection est idempotente : une ligne de même nature, même date et même
  * intitulé n'est jamais ajoutée deux fois.
@@ -47,22 +52,35 @@ export const absenceDates = (period: AbsenceRange): string[] => {
   return dates;
 };
 
-/** Classes dont l'emploi du temps prévoit au moins une séance pendant l'absence. */
-export const classesWithSessionDuring = (
+/**
+ * Les séances réellement prévues pendant l'absence : une entrée par classe,
+ * avec SES dates de séance.
+ *
+ * On ne renvoie pas des jours de calendrier mais des JOURS DE SÉANCE : la ligne
+ * posée dans le cahier doit porter une vraie date, celle du créneau — c'est la
+ * cellule « date » du tableau qui l'affiche, jamais le texte du contenu. Une
+ * absence de deux jours dont un seul tombe un jour de cours ne pose donc
+ * qu'une ligne.
+ */
+export const classSessionsDuring = (
   timetable: TimetableEntry[] | undefined,
   clock: TimetableClockPolicy | undefined,
   period: AbsenceRange,
   classIds: string[],
-): string[] => {
+): Array<{ classId: string; dates: string[] }> => {
   const known = new Set(classIds);
-  const found = new Set<string>();
+  const byClass = new Map<string, string[]>();
   for (const date of absenceDates(period)) {
     const weekday = new Date(`${date}T12:00:00Z`).getUTCDay();
     for (const block of getDaySessionBlocks(timetable, weekday, clock)) {
-      if (known.has(block.classId)) found.add(block.classId);
+      if (!known.has(block.classId)) continue;
+      const dates = byClass.get(block.classId) ?? [];
+      // Deux créneaux le même jour : une seule ligne pour cette date.
+      if (!dates.includes(date)) dates.push(date);
+      byClass.set(block.classId, dates);
     }
   }
-  return [...found];
+  return [...byClass].map(([classId, dates]) => ({ classId, dates }));
 };
 
 /**
@@ -100,6 +118,7 @@ const alreadyPresent = (rows: NotebookNode[], date: string, title: string): bool
 export interface AbsenceLine {
   date: string;
   title: string;
+  /** Ce qui s'est passé, jamais QUAND : la date est portée par le champ `date`. */
   description?: string;
   /** Identité locale de la ligne, comme toute ligne libre créée à la main. */
   id: string;
