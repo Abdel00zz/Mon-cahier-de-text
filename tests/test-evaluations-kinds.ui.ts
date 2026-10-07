@@ -88,22 +88,35 @@ test('le rappel de nature nomme le choix et permet d’y revenir — sans icône
     assert.ok(html.includes(kindLabelKey(kind) === 'evaluations.type.controle' ? 'Devoir surveillé' : ''), 'la nature est nommée en toutes lettres');
 });
 
-test('l’étape 1 propose les classes en grandes cartes, sans aucune icône', () => {
+test('l’étape 1 montre la classe active SEULE, le reste sur demande', () => {
     const classes = [
-        { id: 'c1', tier: '2ème Bac Sc. Physiques', title: 'Sciences Physiques', group: '3', fullName: '2ème Bac Sc. Physiques Sciences Physiques 3' },
-        { id: 'c2', tier: '1ère Année Collégiale', title: 'Première Année Collégiale', group: null, fullName: '1ère Année Collégiale' },
+        { id: 'c1', tier: '2ème Bac Sc. Physiques', title: 'Sciences Physiques', group: '3', fullName: '2ème Bac Sc. Physiques Sciences Physiques 3', segment: 'lycee' as const },
+        { id: 'c2', tier: '1ère Année Collégiale', title: 'Première Année Collégiale', group: null, fullName: '1ère Année Collégiale', segment: 'college' as const },
+        { id: 'c3', tier: '2ème Bac Sc. de la Vie', title: 'Sciences de la Vie et de la Terre', group: '1', fullName: '2ème Bac Sciences de la Vie et de la Terre 1', segment: 'lycee' as const },
     ];
-    const html = render(React.createElement(ClassChooser, { classes, currentId: 'c2', onSelect: () => undefined }));
+
+    // Par défaut : LA SEULE classe active, et une demande explicite pour le reste.
+    // « Il faut isoler : ne pas afficher » — on n'ouvre pas une liste de quinze
+    // cartes pour travailler dans la classe qu'on a déjà ouverte.
+    const focused = render(React.createElement(ClassChooser, { classes, currentId: 'c1', onSelect: () => undefined }));
+    assert.equal((focused.match(/data-class-id=/g) ?? []).length, 1, 'une seule carte de classe');
+    assert.match(focused, /data-class-id="c1"[^>]*data-current="true"/, 'la classe ouverte est marquée');
+    assert.match(focused, /Classe active/, 'et elle le dit en toutes lettres');
+    assert.match(focused, /Changer de classe/, 'le reste se demande');
+    assert.match(focused, /aria-expanded="false"/, 'état de repli annoncé');
+    assert.doesNotMatch(focused, /data-class-id="c2"/, 'les autres ne sont pas affichées');
+    assert.equal((focused.match(/<svg/g) ?? []).length, 0, 'aucune icône');
+
+    // Déployé : les autres classes, rangées par cycle, comme la page les range.
+    const opened = render(React.createElement(ClassChooser, { classes, currentId: 'c1', onSelect: () => undefined, initialExpanded: true }));
     for (const item of classes) {
-        assert.match(html, new RegExp(`data-class-id="${item.id}"`), `${item.id} est proposée`);
+        assert.match(opened, new RegExp(`data-class-id="${item.id}"`), `${item.id} est proposée`);
     }
-    assert.equal((html.match(/data-current="true"/g) ?? []).length, 1, 'une seule classe active');
-    assert.match(html, /data-class-id="c2"[^>]*data-current="true"/, 'la classe ouverte est marquée');
-    assert.match(html, /Classe active/, 'et elle le dit en toutes lettres');
-    assert.match(html, /class-choice__group/, 'le numéro de groupe s’écrit à côté');
-    // « Minimiser l'utilisation des icônes dans les zones » : cette étape est
-    // entièrement textuelle — palier, libellé, groupe.
-    assert.equal((html.match(/<svg/g) ?? []).length, 0, 'aucune icône');
+    assert.match(opened, /Lycée qualifiant/, 'groupe du lycée');
+    assert.match(opened, /Collège/, 'groupe du collège');
+    assert.equal((opened.match(/data-current="true"/g) ?? []).length, 1, 'toujours une seule active');
+    assert.match(opened, /class-choice__group/, 'le numéro de groupe s’écrit à côté');
+    assert.equal((opened.match(/<svg/g) ?? []).length, 0, 'aucune icône non plus');
 });
 
 test('les zones ne portent plus d’icônes de navigation', () => {

@@ -205,7 +205,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const classChoices = useMemo(() => classes.map((item) => {
     const identity = classIdentityFor(item.name, locale);
     const label = classCardLabelFor(identity, locale);
-    return { id: item.id, tier: label.tier, title: label.title, group: label.group, fullName: label.fullName };
+    return {
+      id: item.id,
+      tier: label.tier,
+      title: label.title,
+      group: label.group,
+      fullName: label.fullName,
+      segment: getClassSchoolSegment(item),
+    };
   }), [classes, locale]);
 
   /*
@@ -758,19 +765,23 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               }}
             />
 
-            {/* 1 · LA CLASSE — tout ce qui suit lui appartient. */}
+            {/* 1 · LA CLASSE — elle seule, puis les autres sur demande. */}
             {wizardStep === 1 && (
-              <ClassChooser classes={classChoices} currentId={selectedClass.id} onSelect={chooseClass} />
+              <div className="wizard-step">
+                <ClassChooser classes={classChoices} currentId={selectedClass.id} onSelect={chooseClass} />
+              </div>
             )}
 
             {/* 2 · LA NATURE — la décision de l'écran, en grandes cartes. */}
             {wizardStep === 2 && (
-              <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(3); }} />
+              <div className="wizard-step">
+                <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(3); }} />
+              </div>
             )}
 
             {/* 3 · LES ZONES DE CETTE NATURE — devoirs programmés, ou champs. */}
             {wizardStep === 3 && chosenKind && (
-              <>
+              <div className="wizard-step">
                 <KindHeader
                   kind={chosenKind}
                   onBack={() => { setChosenKind(null); setManualFormOpen(false); setWizardStep(2); }}
@@ -798,7 +809,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     onCreate={() => setManualFormOpen(true)}
                   />
                 )}
-              </>
+              </div>
             )}
           </>
         )}

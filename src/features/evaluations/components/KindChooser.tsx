@@ -85,7 +85,7 @@ export const StepTrail: React.FC<{ step: 1 | 2 | 3; label?: string; onStep?: (st
   );
 };
 
-/** Une classe proposée à l'étape 1 : son libellé localisé et son groupe. */
+/** Une classe proposée à l'étape 1 : son libellé localisé, son groupe, son cycle. */
 export interface ClassChoice {
   id: string;
   /** Palier reconnu (« 2ème Bac Sc. Physiques »), si le nom en porte un. */
@@ -93,51 +93,105 @@ export interface ClassChoice {
   title: string;
   group?: string | null;
   fullName: string;
+  /** Cycle de la classe : il range la liste sans la trier au hasard. */
+  segment: 'college' | 'lycee' | 'unknown';
 }
 
+/** Une carte de classe : le palier, le libellé, le numéro de groupe. Aucune icône. */
+const ClassChoiceCard: React.FC<{ item: ClassChoice; isCurrent: boolean; onSelect: (id: string) => void }> = ({ item, isCurrent, onSelect }) => {
+  const { t } = useLocale();
+  return (
+    <li className="min-w-0">
+      <button
+        type="button"
+        data-class-id={item.id}
+        data-current={isCurrent ? 'true' : undefined}
+        onClick={() => onSelect(item.id)}
+        className="hub-card class-choice h-full w-full"
+        data-layout="row"
+        aria-label={item.fullName}
+      >
+        <span className="hub-card__body min-w-0 flex-1">
+          {item.tier && <span className="class-choice__tier">{item.tier}</span>}
+          <span className="hub-card__title block text-start">{item.title}</span>
+          {isCurrent && <span className="tone-chip">{t('evaluations.activeClass')}</span>}
+        </span>
+        {item.group && (
+          <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>
+        )}
+      </button>
+    </li>
+  );
+};
+
 /**
- * ÉTAPE 1 — LA CLASSE.
+ * ÉTAPE 1 — LA CLASSE, D'ABORD, ET SEULE.
  *
  * Tout ce qui suit lui appartient : la nature, les devoirs déjà programmés, le
- * sujet. On la choisit donc d'abord, et en grandes cartes lisibles. Aucune
- * icône : un libellé, le palier, le numéro de groupe, et la mention « classe
- * active » pour celle qui est déjà ouverte — l'information suffit, et un
- * pictogramme de plus ne dirait rien de la classe.
+ * sujet. Mais un professeur travaille presque toujours dans la classe qu'il a
+ * déjà ouverte : la montrer SEULE, avec la mention « classe active », évite de
+ * dérouler quinze cartes avant de pouvoir continuer. Les autres classes
+ * s'ouvrent d'un geste (« Changer de classe »), rangées par cycle — collège,
+ * lycée qualifiant, autres — donc dans l'ordre où un professeur les cherche.
+ *
+ * Aucune icône : un palier, un libellé, un numéro de groupe. Un pictogramme de
+ * plus ne dirait rien de la classe, et l'écran doit rester une décision, pas un
+ * catalogue.
  */
-export const ClassChooser: React.FC<{ classes: ClassChoice[]; currentId: string; onSelect: (id: string) => void }> = ({ classes, currentId, onSelect }) => {
+export const ClassChooser: React.FC<{
+  classes: ClassChoice[];
+  currentId: string;
+  onSelect: (id: string) => void;
+  /** Ouvre d'emblée la liste complète (utile hors assistant). */
+  initialExpanded?: boolean;
+}> = ({ classes, currentId, onSelect, initialExpanded = false }) => {
   const { t } = useLocale();
+  const [expanded, setExpanded] = React.useState(initialExpanded);
+  const current = classes.find(item => item.id === currentId) ?? null;
+  const others = classes.filter(item => item.id !== currentId);
+  const groups = ([
+    { id: 'college', titleKey: 'evaluations.group.college' },
+    { id: 'lycee', titleKey: 'evaluations.group.lycee' },
+    { id: 'unknown', titleKey: 'evaluations.group.other' },
+  ] as const)
+    .map(group => ({ ...group, items: others.filter(item => item.segment === group.id) }))
+    .filter(group => group.items.length > 0);
+
   return (
     <div className="space-y-3">
       <p className="text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.chooseClass')}</p>
-      <ul className="hub-grid" data-rows>
-        {classes.map(item => {
-          const isCurrent = item.id === currentId;
-          return (
-            <li key={item.id} className="min-w-0">
-              <button
-                type="button"
-                data-class-id={item.id}
-                data-current={isCurrent ? 'true' : undefined}
-                onClick={() => onSelect(item.id)}
-                className="hub-card class-choice h-full w-full"
-                data-layout="row"
-                aria-label={item.fullName}
-              >
-                <span className="hub-card__body min-w-0 flex-1">
-                  {item.tier && (
-                    <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{item.tier}</span>
-                  )}
-                  <span className="hub-card__title block text-start">{item.title}</span>
-                  {isCurrent && <span className="tone-chip">{t('evaluations.activeClass')}</span>}
-                </span>
-                {item.group && (
-                  <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+
+      {current && (
+        <section className="space-y-1.5" aria-label={t('evaluations.activeClass')}>
+          <h4 className="class-group__title">{t('evaluations.activeClass')}</h4>
+          <ul className="hub-grid" data-rows>
+            <ClassChoiceCard item={current} isCurrent onSelect={onSelect} />
+          </ul>
+        </section>
+      )}
+
+      {/* Le reste n'est pas affiché : il est DERRIÈRE une demande explicite. */}
+      {!expanded && others.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="class-disclosure"
+          aria-expanded={false}
+        >
+          {t('evaluations.changeClass')}
+        </button>
+      )}
+
+      {expanded && groups.map(group => (
+        <section key={group.id} className="space-y-1.5" aria-label={t(group.titleKey)}>
+          <h4 className="class-group__title">{t(group.titleKey)}</h4>
+          <ul className="hub-grid" data-rows>
+            {group.items.map(item => (
+              <ClassChoiceCard key={item.id} item={item} isCurrent={false} onSelect={onSelect} />
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 };

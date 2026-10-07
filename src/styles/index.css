@@ -2282,7 +2282,34 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
    800, chiffres alignés — pour que « 2Bac PC 3 » se repère d'un coup d'œil,
    et la classe déjà ouverte se marque d'un filet d'accent, pas d'un
    pictogramme. */
+/* Chaque étape de l'assistant vit dans SON panneau : une seule chose à la fois,
+   et la séparation se voit sans qu'on ait à la chercher. */
+.wizard-step {
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 78%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, hsl(var(--card)) 55%, transparent);
+  padding: .75rem;
+}
+/* Intitulé de section de l'étape « Classe » (classe active, puis les cycles). */
+.class-group__title {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
 .class-choice { align-items: center; }
+.class-choice__tier {
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+/* La pastille « classe active » ne s'étire pas : dans une colonne flex, une
+   pastille pleine largeur ressemble à une barre de progression vide. */
+.class-choice .tone-chip { align-self: flex-start; }
 .class-choice__group {
   flex: none;
   color: hsl(var(--muted-foreground));
@@ -2298,6 +2325,25 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   background: color-mix(in srgb, hsl(var(--primary)) 5%, hsl(var(--card)));
 }
 .class-choice[data-current='true'] .class-choice__group { color: hsl(var(--primary)); }
+/* « Changer de classe » : le reste de la liste n'est pas affiché, il se demande. */
+.class-disclosure {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  width: 100%;
+  padding-inline: .75rem;
+  border: 1px dashed color-mix(in srgb, hsl(var(--border)) 92%, transparent);
+  border-radius: 12px;
+  background: none;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.class-disclosure:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.class-disclosure:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
 
 /* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
    Elle remplace une seconde couleur inventée — une carte, une teinte. */
