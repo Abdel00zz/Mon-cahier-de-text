@@ -211,3 +211,17 @@
   .class-card .class-card__group { font-size: 4.5rem; }
   .class-card__footer { padding-inline: 18px; }
 }
+
+/* Compact portrait cards keep the title, numeral and menu in separate lanes. */
+@media (max-width: 639px) {
+  .class-card { min-height: 156px; }
+  .class-card__body { display: flex; align-items: center; padding: 36px 14px 16px; }
+  .class-card__header { position: absolute; top: 2px; inset-inline-end: 14px; margin: 0; }
+  .class-card__menu { margin: 0; translate: none; }
+  .class-card__identity { width: 100%; min-height: 52px; display: flex; align-items: center; }
+  .class-card__identity[data-has-group='true'] { padding-inline-end: 64px; }
+  .class-card__title { font-size: clamp(17px, 4.7vw, 19px); }
+  .class-card__footer { align-items: flex-start; padding: 10px 14px; gap: 7px; }
+  .class-card__clock { margin-top: 2px; width: 14px; height: 14px; }
+  .class-card__status { font-size: 11.5px; line-height: 1.6; overflow-wrap: anywhere; }
+}

@@ -262,7 +262,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             /* Fond du tableau de bord : les valeurs vivent dans
                `dashboardCanvas.ts`, la structure dans `dashboardCanvas.css`. */
             style={DASHBOARD_CANVAS_STYLE}
-            className="keep-dashboard-canvas min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4 sm:pt-6"
+            className="keep-dashboard-canvas min-h-dvh bg-background text-foreground font-sans antialiased pb-6 sm:pb-8 pt-3 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
@@ -270,7 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {classes.length > 0 && (
                         <div className="mb-4 sm:mb-6">
-                            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+                            <div className="dashboard-heading flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
                                 <div className="max-w-xl">
                                     {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1
@@ -282,7 +282,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </h1>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2 min-w-0 self-start sm:self-end">
+                                <div className="dashboard-actions flex flex-wrap items-center gap-2 min-w-0 self-start sm:self-end">
                                     {/* Disposition : UN SEUL bouton, qui avance d'un cran à chaque
                                         appui (deux colonnes → une colonne → liste → deux colonnes).
                                         Plus de menu, donc plus d'aller-retour : l'icône se

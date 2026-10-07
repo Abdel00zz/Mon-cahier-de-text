@@ -43,3 +43,20 @@
   border-color: #475569;
   color: #e2e8f0;
 }
+
+/* Portrait phone: one aligned toolbar, followed immediately by the classes. */
+@media (max-width: 639px) {
+  [data-dashboard-root] .dashboard-heading { gap: 12px; }
+  [data-dashboard-root] .dashboard-heading h1 { font-size: 22px; line-height: 1.4; }
+  [data-dashboard-root] .dashboard-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    width: 100%;
+    align-self: stretch;
+    gap: 8px;
+  }
+  [data-dashboard-root] .dashboard-actions > button { width: 100%; min-width: 0; justify-content: center; border-radius: 10px; }
+  [data-dashboard-root] .class-display-toggle__glyph,
+  [data-dashboard-root] .class-display-toggle__glyph svg { width: 20px; height: 20px; }
+  [data-dashboard-root] .class-display-toggle__glyph { flex-basis: 20px; }
+}

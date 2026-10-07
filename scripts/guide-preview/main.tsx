@@ -4,6 +4,10 @@ import { createRoot } from 'react-dom/client';
 import '../../src/styles/index.css';
 import { LocaleProvider } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
+import { TabBar } from '../../src/components/navigation/TabBar';
+import { ClassDisplayToggle } from '../../src/features/dashboard/ClassDisplayToggle';
+import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplayMode';
+import '../../src/features/dashboard/dashboardCanvas.css';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
@@ -61,6 +65,8 @@ const noop = () => {};
 
 function Preview() {
   const [config, setConfig] = useState(initialConfig);
+  const [display, setDisplay] = useState<ClassDisplayMode>('single');
+  const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(true);
   const [add, setAdd] = useState(screen === 'add');
   const [selectedKeys, setSelectedKeys] = useState(() => new Set([
@@ -83,6 +89,21 @@ function Preview() {
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
     {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
+      {screen === 'dashboard' && <AuthProvider>
+        <div data-dashboard-root className="pb-24 sm:ps-[84px]" >
+          <div className="dashboard-heading mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <h1 className="text-2xl font-bold">{isAr ? 'أقسامك' : 'Classes'}</h1>
+            <div className="dashboard-actions flex min-w-0 flex-wrap items-center gap-2 self-start sm:self-end">
+              <ClassDisplayToggle mode={display} onChange={setDisplay} />
+              <button className="dashboard-add-class inline-flex h-11 min-h-11 items-center gap-1.5 px-3 text-sm" onClick={noop}><span aria-hidden="true">＋</span>{isAr ? 'قسم' : 'Classe'}</button>
+            </div>
+          </div>
+          <div className={`grid gap-3 ${display === 'double' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+            {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={{ ...classInfo, color: '', lastOpenedAt: '2026-10-07T09:30:00Z' }} index={i} onSelect={noop} onConfigure={noop} />)}
+          </div>
+          <TabBar activeTab="dashboard" onTabChange={noop} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
+        </div>
+      </AuthProvider>}
       {screen === 'classes' && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div>
