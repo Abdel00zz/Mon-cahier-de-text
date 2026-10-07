@@ -23,6 +23,7 @@ import {
   AwardIcon,
   BookOpen,
   CalendarCheck,
+  CalendarDays,
   CheckSquare,
   Clock,
   FileSignature,
@@ -33,6 +34,7 @@ import {
   ListChecks,
   PenLine,
   RefreshCw,
+  Sparkles,
   Users,
 } from '@/components/ui/icons';
 import type { DevoirType, PedagogicalEventType } from '@/types';
@@ -81,17 +83,31 @@ export type EvaluationKind =
 /**
  * Les familles, dans l'ordre où elles se lisent. Le titre de chaque groupe est
  * celui des sections de la page principale : le professeur retrouve au moment
- * du choix le vocabulaire qu'il vient de lire.
+ * du choix le vocabulaire qu'il vient de lire. Chaque famille porte AUSSI son
+ * icône et son ton : l'en-tête du choix est une ligne signifiante (icône, titre,
+ * compte des natures) et non un titre nu posé au-dessus d'une grille.
+ *   • `CalendarDays` — le planning : des devoirs inscrits à des dates ;
+ *   • `Sparkles` — la vie pédagogique, qui déborde le bulletin.
  */
-export const KIND_GROUPS: Array<{ id: 'devoir' | 'event'; titleKey: string; kinds: EvaluationKind[] }> = [
+export const KIND_GROUPS: Array<{
+  id: 'devoir' | 'event';
+  titleKey: string;
+  tone: ActivityTone;
+  Icon: typeof BookOpen;
+  kinds: EvaluationKind[];
+}> = [
   {
     id: 'devoir',
     titleKey: 'evaluations.assessments',
+    tone: 'blue',
+    Icon: CalendarDays,
     kinds: (Object.keys(DEVOIR_KIND_CONFIG) as DevoirType[]).map(type => ({ family: 'devoir', type, style: DEVOIR_KIND_CONFIG[type] })),
   },
   {
     id: 'event',
     titleKey: 'evaluations.pedagogicalEvents',
+    tone: 'violet',
+    Icon: Sparkles,
     kinds: (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[]).map(type => ({ family: 'event', type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
   },
 ];

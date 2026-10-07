@@ -35,7 +35,8 @@ import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/co
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
-import { PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
+import { KindGroupHeader } from './components/KindGroupHeader';
+import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -507,15 +508,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         {/* Devoirs et évaluations, par semestre */}
         {activeTab !== 'events' && (
           <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
-            <div className="flex items-center justify-between px-1">
-              <h3 id="evaluations-assessments-title" className="evaluations-category-title text-foreground">
-                {t('evaluations.assessments')}
-              </h3>
-              {links.length > 0 && (
-                <span className="text-[11px] font-semibold text-muted-foreground">
-                  {links.length} {links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
-                </span>
-              )}
+            <div className="px-1">
+              <KindGroupHeader
+                title={t('evaluations.assessments')}
+                tone={KIND_GROUPS[0].tone}
+                Icon={KIND_GROUPS[0].Icon}
+                titleId="evaluations-assessments-title"
+                countLabel={links.length > 0 ? `${links.length} ${links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}` : undefined}
+              />
             </div>
             {!hasPlan ? (
               <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
@@ -960,13 +960,13 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 
   return (
     <section className="space-y-2.5">
-      <div className="flex items-center justify-between px-1">
-        <h3 className="evaluations-category-title text-foreground">
-          {t('evaluations.pedagogicalEvents')}
-        </h3>
-        <span className="text-[11px] font-semibold text-muted-foreground">
-          {events.length} {events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
-        </span>
+      <div className="px-1">
+        <KindGroupHeader
+          title={t('evaluations.pedagogicalEvents')}
+          tone={KIND_GROUPS[1].tone}
+          Icon={KIND_GROUPS[1].Icon}
+          countLabel={`${events.length} ${events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}`}
+        />
       </div>
 
       <ul className="hub-grid" data-rows>

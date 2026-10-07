@@ -132,9 +132,15 @@
 /* Numéro de groupe : GRAVÉ dans la carte, collé au nom et plus grand que lui.
    Plus de pastille ni d'anneau : c'est un filigrane. Une encre adoucie — 68 %
    de l'encre du thème, mesurée de 5,3:1 à 6,7:1 sur les huit tons —, le corps
-   d'une GRANDE italique serif (Newsreader, dont le vrai italique est embarqué),
-   et la gravure faite de deux ombres : une sombre AU-DESSUS du chiffre (le
-   sillon) et une claire EN DESSOUS (la lumière qui entre dans le creux).
+   d'une GRANDE serif d'affichage (Newsreader, fontes variable 200-800 donc la
+   graisse 800 est un vrai dessin, jamais un gras synthétique) posée DROITE :
+   l'ancienne italique penchait le chiffre, ce qui le rendait plus menu que
+   majestueux. La gravure garde le sillon sombre AU-DESSUS du chiffre et la
+   lumière EN DESSOUS, et gagne deux ombres qui font le filigrane : une AURA
+   claire tout autour — le chiffre se détache du fond comme une marque sèche —
+   et une ASSISE diffuse en dessous, qui le fait tenir debout sur la carte.
+   Un filet d'encre à .5 px, peint DERRIÈRE le dessin (`paint-order: stroke
+   fill`), affine la silhouette sans l'alourdir.
    `line-height: .8` réduit la boîte du chiffre sans toucher au glyphe, donc la
    ligne du titre ne bouge pas ; `align-self: baseline` le pose sur la ligne de
    base du nom, à 21 px comme à 18,5 px. Le nom accessible porte déjà le
@@ -157,10 +163,10 @@
   user-select: none;
   font-family: var(--font-latin-display);
   font-size: 30px;
-  font-style: italic;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 800;
   font-variant-numeric: lining-nums;
-  letter-spacing: -.03em;
+  letter-spacing: -.045em;
   line-height: .8;
   color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
   opacity: 1;
@@ -168,26 +174,32 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  -webkit-text-stroke: 0;
-  paint-order: normal;
+  -webkit-text-stroke: .5px color-mix(in srgb, hsl(var(--foreground)) 26%, var(--class-surface));
+  paint-order: stroke fill;
   text-shadow:
     0 -1px 0 color-mix(in srgb, var(--class-surface) 62%, black 38%),
-    0 1px 0 color-mix(in srgb, var(--class-surface) 72%, white 28%);
+    0 1px 0 color-mix(in srgb, var(--class-surface) 72%, white 28%),
+    0 0 10px color-mix(in srgb, var(--class-surface) 55%, white 45%),
+    0 3px 6px color-mix(in srgb, var(--class-surface) 55%, black 45%);
   transform: none;
   translate: none;
   filter: none;
 }
-/* La gravure en mode sombre : un sillon franc et un filet de lumière discret,
-   sans quoi le chiffre se pose à plat sur le gris profond. */
+/* La gravure en mode sombre : l'aura devient une ombre portée (une lumière
+   blanche vibrerait sur le gris profond) et le filet s'éclaircit juste assez
+   pour que la silhouette reste nette. */
 .dark .class-card .class-card__group {
   color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
   opacity: 1;
   background: none;
   border: 0;
   box-shadow: none;
+  -webkit-text-stroke: .5px rgb(255 255 255 / .16);
   text-shadow:
     0 -1px 0 rgb(0 0 0 / .55),
-    0 1px 0 rgb(255 255 255 / .08);
+    0 1px 0 rgb(255 255 255 / .08),
+    0 0 10px rgb(0 0 0 / .5),
+    0 3px 6px rgb(0 0 0 / .55);
 }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }

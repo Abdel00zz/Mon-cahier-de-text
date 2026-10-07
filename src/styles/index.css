@@ -1197,21 +1197,29 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
   .hub-card:hover .hub-card__icon { background: color-mix(in srgb, var(--tone) 20%, transparent); transform: scale(1.06); }
 }
 /* Une couleur par rubrique (icône, fond de pastille, anneau de focus). Niveaux 600-700 en clair,
-   plus clairs et moins saturés en sombre pour ne pas vibrer. */
-.hub-card[data-tone='blue'] { --tone: #2563eb; }
-.hub-card[data-tone='violet'] { --tone: #7c3aed; }
-.hub-card[data-tone='pink'] { --tone: #db2777; }
-.hub-card[data-tone='amber'] { --tone: #b45309; }
-.hub-card[data-tone='green'] { --tone: #15803d; }
-.hub-card[data-tone='teal'] { --tone: #0f766e; }
-.hub-card[data-tone='rose'] { --tone: #be123c; }
-.dark .hub-card[data-tone='blue'] { --tone: #86a9f5; }
-.dark .hub-card[data-tone='violet'] { --tone: #b79bf2; }
-.dark .hub-card[data-tone='pink'] { --tone: #f08cba; }
-.dark .hub-card[data-tone='amber'] { --tone: #f0b45c; }
-.dark .hub-card[data-tone='green'] { --tone: #76d59a; }
-.dark .hub-card[data-tone='teal'] { --tone: #6fcfc5; }
-.dark .hub-card[data-tone='rose'] { --tone: #f2a3b6; }
+   plus clairs et moins saturés en sombre pour ne pas vibrer.
+   UNE seule palette, plusieurs porteurs : la liste avait été écrite pour un
+   seul sélecteur, donc `evaluation-tone` (le rappel de nature de l'étape 2)
+   portait un `data-tone` qu'aucune règle ne reconnaissait — icône sans teinte —
+   et `slate` avait fini par une seconde déclaration ailleurs dans le fichier.
+   Toute teinte du catalogue vit ici, et le test de parité refuse à la fois une
+   famille sans couleur et une déclaration hors de cette palette partagée. */
+:is(.hub-card, .evaluation-tone)[data-tone='blue'] { --tone: #2563eb; }
+:is(.hub-card, .evaluation-tone)[data-tone='violet'] { --tone: #7c3aed; }
+:is(.hub-card, .evaluation-tone)[data-tone='pink'] { --tone: #db2777; }
+:is(.hub-card, .evaluation-tone)[data-tone='amber'] { --tone: #b45309; }
+:is(.hub-card, .evaluation-tone)[data-tone='green'] { --tone: #15803d; }
+:is(.hub-card, .evaluation-tone)[data-tone='teal'] { --tone: #0f766e; }
+:is(.hub-card, .evaluation-tone)[data-tone='rose'] { --tone: #be123c; }
+:is(.hub-card, .evaluation-tone)[data-tone='slate'] { --tone: #475569; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='blue'] { --tone: #86a9f5; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='violet'] { --tone: #b79bf2; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='pink'] { --tone: #f08cba; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='amber'] { --tone: #f0b45c; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='green'] { --tone: #76d59a; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='teal'] { --tone: #6fcfc5; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='rose'] { --tone: #f2a3b6; }
+.dark :is(.hub-card, .evaluation-tone)[data-tone='slate'] { --tone: #9aa7b4; }
 .dark .hub-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 24px -18px rgb(0 0 0 / 0.6); }
 /* Liste de cartes-lignes : une colonne sur téléphone, deux dès 640 px. */
 .hub-grid[data-rows] { grid-template-columns: minmax(0, 1fr); }
@@ -1772,10 +1780,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
     -1px 1px 0 hsl(var(--card)),
     1px 1px 0 hsl(var(--card)),
     0 3px 6px hsl(var(--foreground) / 0.18);
-  transform: rotate(-3deg);
+  /* DROIT : l'ancienne inclinaison de −3° donnait au chiffre une allure
+     d'italique manuscrite, plus menue que majestueuse. La graisse (800) et la
+     taille portent seules le relief ; le seul mouvement restant est celui du
+     survol. */
+  transform: none;
   transition: transform 220ms ease, filter 220ms ease, color 150ms ease;
   }
-  .keep-group-watermark:hover { transform: rotate(0deg) translateY(-1px); filter: drop-shadow(0 4px 6px hsl(var(--foreground) / 0.2)); }
+  .keep-group-watermark:hover { transform: translateY(-1px); filter: drop-shadow(0 4px 6px hsl(var(--foreground) / 0.2)); }
   .dark .keep-group-watermark {
   text-shadow:
     -1px -1px 0 hsl(var(--card)),
@@ -2237,6 +2249,89 @@ html[data-keyboard='open'] .mobile-tab-bar {
   letter-spacing: -.01em;
 }
 html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
+
+/* ── En-tête de famille : l'icône, puis le titre, puis le compte ────────────
+   Les deux familles du choix de la nature (« Devoirs et évaluations »,
+   « Activités pédagogiques ») se lisent désormais sur UNE ligne : une pastille
+   d'icône, le titre, et le nombre de natures qu'elle contient. Le compte est un
+   repère, pas une décoration : il dit à l'avance combien de cartes attendent,
+   donc si la liste descend plus bas que l'écran.
+   La pastille est un verre teinté du ton de SA famille : dégradé à deux temps
+   (le ton éclairci en haut à gauche, le ton assombri en bas à droite — la
+   lumière vient du même coin que le reste de l'interface), liseré spéculaire
+   d'un demi-pixel en haut, grain interne du ton, et halo court porté par le
+   ton. Le reflet qui la balaie ne se produit QU'À l'apparition, une fois, en
+   520 ms : sur téléphone, aucun survol n'existe — une animation d'entrée est
+   donc la seule façon de montrer cet effet avancé à tout le monde. */
+.kind-group { display: flex; align-items: center; gap: .6rem; min-height: 36px; }
+.kind-group__badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 12px;      /* rayon imbriqué : 16 px de carte − 4 px d'écart */
+  /* Le ton 600-700 porte le blanc : ≥ 4,5:1 à plat sur les huit familles, et le
+     dégradé ne descend jamais sous les 3:1 exigés d'un objet graphique. */
+  color: #fff;
+  background-image: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--tone) 88%, white 12%),
+    color-mix(in srgb, var(--tone) 74%, black 26%)
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .45),
+    inset 0 0 0 1px color-mix(in srgb, var(--tone) 42%, transparent),
+    0 8px 16px -10px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.kind-group__badge .app-icon { width: 19px; height: 19px; stroke-width: 2; }
+.kind-group__badge::after {
+  content: '';
+  position: absolute;
+  inset: -40% -70%;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .52) 50%, transparent 62%);
+  transform: translateX(-130%);
+  animation: kind-glint 520ms cubic-bezier(.2, .7, .3, 1) 140ms 1 both;
+}
+@keyframes kind-glint {
+  to { transform: translateX(130%); }
+}
+/* Le compte des natures : discret, aligné en fin de ligne, chiffres alignés. */
+.kind-group__count {
+  flex: none;
+  min-width: 1.6rem;
+  padding: .1rem .4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: color-mix(in srgb, var(--tone) 78%, hsl(var(--foreground)));
+  font-size: .6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+/* En sombre, l'accent s'éclaircit : un blanc sur un ton pastel tomberait sous
+   3:1. La pastille repasse donc en verre sombre — le ton porte l'ICÔNE et le
+   liseré, plus le fond. */
+.dark .kind-group__badge {
+  color: var(--tone);
+  background-image: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--tone) 24%, hsl(var(--card))),
+    color-mix(in srgb, var(--tone) 12%, hsl(var(--card)))
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .12),
+    inset 0 0 0 1px color-mix(in srgb, var(--tone) 38%, transparent),
+    0 8px 16px -12px rgb(0 0 0 / .7);
+}
+.dark .kind-group__badge::after { background: none; }
+@media (prefers-reduced-motion: reduce) {
+  .kind-group__badge::after { animation: none; }
+}
+
 .hub-card[data-activity-card] .hub-card__hint  { margin: 0; line-height: 1.45; }
 
 /* Zone d'actions : espacement régulier, sans séparateur décoratif. */
@@ -2299,8 +2394,6 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 .hub-card[data-done] { background: color-mix(in srgb, hsl(var(--card)) 55%, hsl(var(--muted))); }
 .hub-card[data-done] .hub-card__title { text-decoration: line-through; color: hsl(var(--muted-foreground)); }
 .hub-card[data-done] .hub-card__icon { opacity: 0.75; filter: saturate(0.45); }
-.hub-card[data-tone='slate'] { --tone: #475569; }
-.dark .hub-card[data-tone='slate'] { --tone: #9aa7b4; }
 
 /* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
    Elle remplace une seconde couleur inventée — une carte, une teinte. */

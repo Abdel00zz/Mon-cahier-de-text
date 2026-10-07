@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { dateTimeFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { KIND_GROUPS, kindLabelKey, type EvaluationKind } from '../kindCatalog';
+import { KindGroupHeader } from './KindGroupHeader';
 
 /*
  * CHOISIR LA NATURE, PUIS SAISIR LES CHAMPS.
@@ -50,7 +51,16 @@ export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }>
       <p className="text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.chooseKindHint')}</p>
       {KIND_GROUPS.map(group => (
         <section key={group.id} className="space-y-2" aria-label={t(group.titleKey)}>
-          <h4 className="evaluations-category-title text-foreground">{t(group.titleKey)}</h4>
+          {/* Une ligne par famille : l'icône, le titre, le nombre de natures —
+              exactement l'en-tête de la page principale, donc l'endroit où l'on
+              se trouve se reconnaît avant même de lire. */}
+          <KindGroupHeader
+            title={t(group.titleKey)}
+            tone={group.tone}
+            Icon={group.Icon}
+            count={group.kinds.length}
+            headingLevel={4}
+          />
           {/*
            * Une colonne sur téléphone, deux dès 640 px : en deux colonnes, un
            * libellé officiel (« Contrôle des cahiers des élèves ») se repliait

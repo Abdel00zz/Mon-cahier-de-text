@@ -53,6 +53,30 @@ test('chaque nature a une icône distincte dans sa famille, et une clé traduite
     }
 });
 
+test('chaque famille ouvre sa grille par une icône, un titre et son compte', () => {
+    const html = render(React.createElement(KindChooser, { onSelect: () => undefined }));
+    // Deux en-têtes, donc deux pastilles : une par famille, jamais un titre nu.
+    assert.equal((html.match(/kind-group__badge/g) ?? []).length, KIND_GROUPS.length);
+    assert.equal((html.match(/kind-group__count/g) ?? []).length, KIND_GROUPS.length);
+    // Le compte annonce le nombre de natures de la section (5 devoirs, 9 activités).
+    for (const group of KIND_GROUPS) {
+        assert.match(html, new RegExp(`kind-group__count[^>]*>${group.kinds.length}<`), `compte de ${group.id}`);
+    }
+    // La pastille porte le ton de SA famille, et l'icône de famille est distincte
+    // des icônes de cartes : elle dit la famille, pas la nature.
+    for (const group of KIND_GROUPS) {
+        assert.match(html, new RegExp(`class="kind-group evaluation-tone" data-tone="${group.tone}"`), `ton de famille ${group.id}`);
+        assert.notEqual(group.Icon, undefined, `icône de famille ${group.id}`);
+    }
+    assert.notEqual(KIND_GROUPS[0].Icon, KIND_GROUPS[1].Icon, 'deux icônes de famille distinctes');
+    const kindIcons = KIND_GROUPS.flatMap(group => group.kinds.map(kind => kind.style.Icon));
+    for (const group of KIND_GROUPS) {
+        assert.ok(!kindIcons.includes(group.Icon), 'l’icône de famille ne double aucune carte');
+    }
+    // La pastille est décorative : le titre porte le sens pour un lecteur d'écran.
+    assert.match(html, /kind-group__badge[^>]*aria-hidden="true"/);
+});
+
 test('l’étape 2 rappelle la nature choisie et permet d’y revenir', () => {
     const kind = KIND_GROUPS[0].kinds[0];
     const html = render(React.createElement(KindHeader, { kind, onBack: () => undefined }));
@@ -108,7 +132,7 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
     // Une seule déclaration des natures : la vue l'importe.
     assert.equal((catalog.match(/export const PEDAGOGICAL_EVENT_CONFIG/g) ?? []).length, 1);
-    assert.match(view, /import \{ PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
+    assert.match(view, /import \{ KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
     assert.match(view, /kindLabelKey\(chosenKind\)/, 'le fil d’étapes nomme la nature via sa clé traduite');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
     // Le parcours en deux étapes : choix puis champs, avec retour.
@@ -129,4 +153,23 @@ test('la page principale montre les deux familles, même vides', () => {
     // Les activités restent affichées sur l'onglet « tout », avec ou sans contenu.
     assert.match(view, /: <ActivitiesEmptyState onCreate=\{openKindChooser\} compact=\{activeTab === 'all'\} \/>/, 'invitation compacte sur l’onglet tout');
     assert.match(view, /const ActivitiesEmptyState: React.FC<\{ onCreate: \(\) => void; compact\?: boolean \}>/, 'variante compacte de l’état vide');
+});
+
+test('les deux familles se lisent de la même façon dans la page et dans la fenêtre', () => {
+    // Un seul en-tête de famille pour les deux endroits : pastille d'icône teintée,
+    // titre, et compte. Deux copies divergeraient — c'est exactement ce qui a
+    // laissé `evaluation-tone` sans couleur du côté de la fenêtre.
+    const header = readFileSync('src/features/evaluations/components/KindGroupHeader.tsx', 'utf8');
+    const chooser = readFileSync('src/features/evaluations/components/KindChooser.tsx', 'utf8');
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+    assert.equal((chooser.match(/kind-group__badge/g) ?? []).length, 0, 'la fenêtre ne redéfinit plus l’en-tête');
+    assert.match(chooser, /import \{ KindGroupHeader \} from '\.\/KindGroupHeader'/);
+    assert.match(header, /className=\{cn\('kind-group evaluation-tone', className\)\} data-tone=\{tone\}/, 'le ton est posé sur la ligne entière');
+    assert.match(header, /kind-group__badge[^>]*aria-hidden="true"/, 'la pastille est décorative');
+    // La page : un en-tête par famille, avec le compte qui la décrit.
+    assert.equal((view.match(/<KindGroupHeader/g) ?? []).length, 2, 'les deux familles de la page');
+    assert.match(view, /tone=\{KIND_GROUPS\[0\]\.tone\}[\s\S]{0,80}Icon=\{KIND_GROUPS\[0\]\.Icon\}/, 'devoirs : ton et icône du catalogue');
+    assert.match(view, /tone=\{KIND_GROUPS\[1\]\.tone\}[\s\S]{0,80}Icon=\{KIND_GROUPS\[1\]\.Icon\}/, 'activités : ton et icône du catalogue');
+    assert.match(view, /titleId="evaluations-assessments-title"/, 'le titre reste référencé par sa section');
+    assert.match(view, /countLabel=\{`\$\{events\.length\} \$\{events\.length === 1 \? t\('evaluations\.eventSingle'\) : t\('evaluations\.eventPlural'\)\}`\}/, 'le compte reste lu par les lecteurs d’écran');
 });

@@ -157,12 +157,23 @@ test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   assert.ok(start > 0, 'le style du numéro doit exister');
   const group = cards.slice(start, cards.indexOf('.dark .class-card .class-card__group {'));
   assert.match(group, /color: color-mix\(in srgb, hsl\(var\(--foreground\)\) 68%, var\(--class-surface\)\)/, 'encre adoucie à 68 %');
-  assert.match(group, /font-family: var\(--font-latin-display\)/, 'la grande italique serif');
-  assert.match(group, /font-style: italic;/, 'italique');
+  assert.match(group, /font-family: var\(--font-latin-display\)/, 'la grande serif d’affichage');
+  // DROIT et GRAS : l'inclinaison italique rendait le chiffre menu ; la
+  // majesté vient de la graisse 800 (vraie graisse, Newsreader étant variable
+  // 200-800) et de la taille, pas d'un penché.
+  assert.match(group, /font-style: normal;/, 'droit, plus d’italique');
+  assert.match(group, /font-weight: 800;/, 'plus gras');
+  assert.doesNotMatch(group, /italic/, 'plus aucune italique, ni variante ni dégradé');
   assert.match(group, /font-size: 30px;/, 'plus grand que le titre (21 px)');
   assert.match(group, /align-self: baseline;/, 'posé sur la ligne de base du nom');
   assert.match(group, /line-height: \.8;/, 'la boîte du chiffre ne pousse pas la ligne du titre');
   assert.match(group, /text-shadow:[\s\S]*black 38%[\s\S]*white 28%/, 'gravure : sillon sombre au-dessus, lumière en dessous');
+  // Le filigrane créatif : DEUX ombres de plus — l'aura claire qui détache le
+  // chiffre du fond, et l'assise diffuse qui le fait tenir debout sur la carte.
+  assert.match(group, /text-shadow:[\s\S]*0 0 10px[\s\S]*0 3px 6px/, 'aura + assise du filigrane');
+  assert.match(group, /-webkit-text-stroke: \.5px color-mix/, 'filet d’encre qui affine la silhouette');
+  assert.match(group, /paint-order: stroke fill;/, 'le filet passe derrière le dessin');
+  assert.doesNotMatch(group, /transform: (rotate|skew)/, 'aucun penché sur le chiffre gravé');
   assert.doesNotMatch(group, /background: color-mix|border: 1px solid|border-radius: 10px/, 'plus de pastille ni d’anneau');
   assert.match(group, /pointer-events: none;/, 'décor : aucun angle mort sur la carte');
   assert.match(cards, /@media \(max-width: 639px\)[\s\S]*\.class-card \.class-card__group \{ font-size: 26px; \}/, '26 px sur téléphone');
@@ -277,4 +288,33 @@ test('aucune couleur de marque codée en dur dans les composants ne contredit la
     hex(declared),
     `l’accent natif Android (${hex(native)}) doit être celui de la charte (${hex(declared)})`,
   );
+});
+
+test('chaque teinte du catalogue de natures a sa couleur, en clair comme en sombre', () => {
+  // Régression réelle : le catalogue déclarait huit teintes quand la palette
+  // n'en définissait que sept — « Autre » (slate) retombait silencieusement sur
+  // le bleu par défaut de `.hub-card`, donc deux natures identiques à l'écran.
+  // Même famille de bug pour la classe `evaluation-tone` (le rappel de nature de
+  // l'étape 2) : elle portait `data-tone` sans qu'aucune règle ne la reconnaisse,
+  // donc aucune teinte du tout. Une palette, plusieurs porteurs — et ce test.
+  const catalog = readFileSync(new URL('../src/features/evaluations/kindCatalog.ts', import.meta.url), 'utf8');
+  const tones = [...new Set([...catalog.matchAll(/tone: '([a-z]+)'/g)].map(match => match[1]))];
+  assert.ok(tones.length >= 8, `le catalogue doit couvrir ses familles de teintes (${tones.length})`);
+
+  // Toutes les déclarations de teinte passent par la MÊME forme de sélecteur :
+  // la palette est partagée entre les cartes de rubrique et les pastilles
+  // d'étape, il n'existe pas de liste jumelle à tenir à jour.
+  const declarations = [...css.matchAll(/(\.dark\s+)?:is\(\.hub-card, \.evaluation-tone\)\[data-tone='([a-z]+)'\] \{ --tone: ([^;]+);/g)];
+  const declared = new Set(declarations.map(match => match[2]));
+  assert.equal(
+    (css.match(/\[data-tone='[a-z]+'\] \{ --tone:/g) ?? []).length,
+    declarations.length,
+    'une teinte déclarée hors de la palette partagée échapperait au thème',
+  );
+  for (const tone of tones) {
+    assert.ok(declared.has(tone), `teinte « ${tone} » absente de la palette`);
+    const forTone = declarations.filter(match => match[2] === tone);
+    assert.ok(forTone.some(match => !match[1]), `teinte « ${tone} » sans valeur claire`);
+    assert.ok(forTone.some(match => match[1]), `teinte « ${tone} » sans valeur sombre`);
+  }
 });

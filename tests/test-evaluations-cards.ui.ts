@@ -61,9 +61,13 @@ test('chaque activité est une grande carte, teintée selon sa nature', () => {
   assert.match(html, /class="hub-grid" data-rows/);
   assert.equal(occurrences(html, 'class="hub-card"'), 2);
   assert.equal(occurrences(html, 'data-static="true"'), 2);
-  // Une teinte par nature : ambre pour l'olympiade, bleu pour le contrôle des cahiers.
-  assert.equal(occurrences(html, 'data-tone="amber"'), 1);
-  assert.equal(occurrences(html, 'data-tone="blue"'), 1);
+  // Une teinte par nature : ambre pour l'olympiade, bleu pour le contrôle des
+  // cahiers. On vise la carte (`data-activity-type`), pas le document : la
+  // teinte de l'en-tête de famille — bleu lui aussi — ne compte pas deux fois.
+  assert.equal(occurrences(html, 'data-activity-type="olympiade" data-tone="amber"'), 1);
+  assert.equal(occurrences(html, 'data-activity-type="controle_cahiers" data-tone="blue"'), 1);
+  // L'en-tête de famille : une pastille d'icône teintée, puis le titre.
+  assert.match(html, /class="kind-group evaluation-tone" data-tone="violet"[\s\S]{0,120}kind-group__badge/, 'la famille des activités ouvre sa section');
   // Le sigle de la famille est écrit, la carte dit ce qu'elle est.
   assert.match(html, /class="tone-chip">Olympiade</);
   assert.match(html, /class="tone-chip">Contrôle des cahiers des élèves</);
