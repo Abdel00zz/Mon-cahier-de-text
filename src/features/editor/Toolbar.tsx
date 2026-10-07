@@ -48,12 +48,12 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   } = useTableSearch(searchQuery, setSearchQuery);
 
   return (
-    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-1.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-1.5">
+    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-0.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-0.5">
       <div className="flex min-w-0 items-center justify-start gap-1.5">
         <EditorSaveControl status={saveStatus} onSave={onSave} />
       </div>
 
-      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/40 bg-muted/20 p-0.5 shadow-inner sm:flex">
+      <div className="hidden items-center justify-center gap-0.5 rounded-lg bg-muted/20 sm:flex">
         <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
         </Button>
