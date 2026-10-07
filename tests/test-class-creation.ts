@@ -3,6 +3,9 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import type { ClassInfo, Cycle } from '../src/types';
 import { CLASS_LEVELS_BY_CYCLE, classLevelGroupsForCycle } from '../src/constants';
+import { classCardLabelFor, classIdentityFor } from '../src/domain/classes/classIdentity';
+import { classNameForLevelAndGroup } from '../src/domain/classes/classGroup';
+import { formatClassStreamFullName } from '../src/constants/class-levels';
 import { availableCycles, classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel } from '../src/features/dashboard/modals/classCreationFlow';
 import { normalizeTeacherCycles } from '../src/domain/classes/teacherCycles';
 
@@ -36,6 +39,40 @@ test('la prépa propose plusieurs filières pour chaque année', () => {
   const groups = classLevelGroupsForCycle('prepa');
   assert.equal(groups.length, 2);
   assert.ok(groups.every(group => group.levels.length > 1));
+});
+
+test('la nomenclature CPGE suit les filières officielles (cpge.ac.ma, arrêtés 2004)', () => {
+  // Première année (Sup) : 5 filières d'entrée — 3 scientifiques, 2 économiques.
+  const first = CLASS_LEVELS_BY_CYCLE.prepa.filter(level => level.startsWith('1re année'));
+  assert.deepEqual(first, ['1re année MPSI', '1re année PCSI', '1re année TSI', '1re année ECS', '1re année ECT']);
+  // Deuxième année (Spé) : les filières de concours — MP (Mathématiques et
+  // Physique), PSI (Physique et Sciences de l'Ingénieur), TSI, ECS, ECT.
+  const second = CLASS_LEVELS_BY_CYCLE.prepa.filter(level => level.startsWith('2e année'));
+  assert.deepEqual(second, ['2e année MP', '2e année PSI', '2e année TSI', '2e année ECS', '2e année ECT']);
+  // Chaque niveau traverse toute la chaîne d'affichage : le nom de classe
+  // construit, le palier CPGE, le sigle de filière, le libellé de carte.
+  for (const level of CLASS_LEVELS_BY_CYCLE.prepa) {
+    const name = classNameForLevelAndGroup(level, '2');
+    const identity = classIdentityFor(name, 'fr');
+    assert.ok(identity.tierKey === 'prepa1' || identity.tierKey === 'prepa2', `${level} : palier CPGE reconnu`);
+    assert.match(identity.stream || '', /^(MPSI|PCSI|TSI|ECS|ECT|MP|PSI)$/, `${level} : sigle de filière reconnu`);
+    const label = classCardLabelFor(identity, 'fr');
+    assert.equal(label.group, '2', `${level} : numéro de groupe lu`);
+    // Hors lycée, la carte s'énonce par son NIVEAU (« 1re année · MPSI ») : le
+    // badge de palier reste volontairement vide dans ce cycle.
+    assert.match(label.title, /^(1re|2e) année · (MPSI|PCSI|TSI|ECS|ECT|MP|PSI)$/, `${level} : libellé de carte`);
+  }
+  // Les intitulés officiels complets existent dans les trois langues (bulles, a11y).
+  for (const sigla of ['MPSI', 'PCSI', 'TSI', 'ECS', 'ECT', 'MP', 'PSI'] as const) {
+    for (const locale of ['fr', 'ar', 'en'] as const) {
+      const label = formatClassStreamFullName(sigla, locale);
+      assert.ok(label && label.length > 3, `${sigla} a un intitulé complet en ${locale}`);
+    }
+  }
+  assert.equal(formatClassStreamFullName('MPSI', 'fr'), 'Mathématiques, Physique et Sciences de l’Ingénieur');
+  assert.equal(formatClassStreamFullName('TSI', 'fr'), 'Technologie et Sciences Industrielles');
+  // Aucune filière fantôme : pas de PC ni de BCPST dans l'organisation marocaine.
+  assert.ok(!CLASS_LEVELS_BY_CYCLE.prepa.some(level => / (PC|BCPST)$/.test(level)), 'les filières marocaines sont MP · PSI · TSI et ECS · ECT');
 });
 
 test('la prépa est TOUJOURS proposée, quel que soit le profil (défaut signalé)', () => {
