@@ -1,11 +1,15 @@
 /* ── LE TABLEAU DES ÉVALUATIONS ───────────────────────────────────────────
-   Deux zones — les DEVOIRS et les ACTIVITÉS — écrites comme un tableau de
-   bord d'application de gestion : une seule surface, des filets d'un
-   demi-pixel entre les lignes, et surtout DES COLONNES QUI NE BOUGENT PAS
-   d'une ligne à l'autre (nature, identité, état, date, actions). C'est la
-   structure qui porte l'information, pas les cadres : chaque carte bordée de
-   la version précédente ajoutait quatre bordures, deux ombres et un titre
-   répété — quatre fois plus de traits pour moins de lisibilité.
+   Les DEVOIRS et les ACTIVITÉS d'une classe, écrits comme un tableau de bord
+   d'application de gestion : une seule surface, des filets d'un demi-pixel
+   entre les lignes, et surtout DES COLONNES QUI NE BOUGENT PAS d'une ligne à
+   l'autre (identité, état, date, actions). C'est la structure qui porte
+   l'information, pas les cadres.
+
+   AUCUNE ICÔNE DANS LES ZONES : la nature est ÉCRITE — « Devoir surveillé 3 »,
+   « Olympiade de mathématiques » —, elle n'est pas dessinée. Une pastille
+   répétée à chaque ligne n'apprend rien de plus que le libellé et coûte 40 px
+   de large sur chacune ; les seules icônes qui restent sont des
+   COMMANDES (supprimer, restaurer une date, marquer réalisé), jamais un décor.
 
    LES COLONNES SONT DES JETONS (`--ev-*`) relus par l'en-tête ET par chaque
    ligne. C'est ce qui garantit l'alignement sans `subgrid` (support inégal
@@ -36,18 +40,16 @@
        ligne dont les libellés sont plus longs (« Absents au contrôle »)
        élargissait sa propre colonne et décalait son état et sa date — quatre
        abscisses différentes pour la même colonne avant ce correctif. */
-    --ev-kind: 3rem;
     --ev-id: minmax(0, 1fr);
     --ev-state: 10rem;
     --ev-date: 9.5rem;
     --ev-actions: 21rem;
 }
-
 /* Ligne d'en-tête : le vocabulaire des colonnes, en capitales discrètes. */
 .ev-board__head {
     display: grid;
-    grid-template-columns: var(--ev-kind) var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
-    grid-template-areas: 'kind id state date actions';
+    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'id state date actions';
     align-items: center;
     gap: .75rem;
     padding: .5rem 1rem;
@@ -62,8 +64,8 @@
 
 .ev-board__rows > .ev-row {
     display: grid;
-    grid-template-columns: var(--ev-kind) var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
-    grid-template-areas: 'kind id state date actions';
+    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'id state date actions';
     align-items: center;
     gap: .25rem .75rem;
     min-height: 56px;
@@ -84,7 +86,6 @@
     background: color-mix(in srgb, hsl(var(--muted)) 58%, transparent);
 }
 
-.ev-row__kind { grid-area: kind; justify-self: start; }
 .ev-row__id { grid-area: id; }
 /* L'identité d'une activité empile un titre, sa nature écrite et sa note :
    l'espacement appartient au tableau, pas au balisage. */
@@ -93,21 +94,10 @@
 .ev-row__state { grid-area: state; justify-self: start; }
 .ev-row__date { grid-area: date; }
 .ev-row__actions { grid-area: actions; justify-self: end; }
-.ev-board__head > :nth-child(1) { grid-area: kind; }
-.ev-board__head > :nth-child(2) { grid-area: id; }
-.ev-board__head > :nth-child(3) { grid-area: state; }
-.ev-board__head > :nth-child(4) { grid-area: date; }
-.ev-board__head > :nth-child(5) { grid-area: actions; justify-self: end; }
-
-/* La pastille de nature : même lavis que les cartes, un cran plus petite
-   pour que la ligne reste légère. */
-.ev-row > .ev-row__kind .hub-card__icon {
-    width: 2.25rem;
-    height: 2.25rem;
-    margin-bottom: 0;
-    border-radius: 11px;   /* rayon imbriqué : 14 px de ligne − 3 px */
-}
-.ev-row > .ev-row__kind .hub-card__icon .app-icon { width: 1.15rem; height: 1.15rem; }
+.ev-board__head > :nth-child(1) { grid-area: id; }
+.ev-board__head > :nth-child(2) { grid-area: state; }
+.ev-board__head > :nth-child(3) { grid-area: date; }
+.ev-board__head > :nth-child(4) { grid-area: actions; justify-self: end; }
 
 /* L'état peut s'écrire sur deux lignes (« Écart de date avec le cahier ») :
    la colonne est étroite, le sens passe avant l'alignement optique. */
@@ -243,21 +233,19 @@
     text-decoration: line-through;
     color: hsl(var(--muted-foreground));
 }
-.ev-board__rows > .ev-row[data-done='true'] .ev-row__kind .hub-card__icon { opacity: .7; filter: saturate(.5); }
 
 @media (max-width: 1023px) {
     /* Repli en deux lignes : l'en-tête de colonnes n'a plus de colonnes. */
     .ev-board__head { display: none; }
     .ev-board__rows > .ev-row {
-        grid-template-columns: var(--ev-kind) var(--ev-id) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         grid-template-areas:
-            'kind id state'
-            'kind date actions';
+            'id state'
+            'date actions';
         gap: .4rem .5rem;
         padding: .65rem .75rem;
         align-items: start;
     }
-    .ev-row__kind { align-self: start; }
     .ev-row__id { align-self: center; min-height: 2rem; }
     .ev-row__date { align-self: center; }
     .ev-row__actions { align-self: center; }
@@ -275,11 +263,11 @@
    besoin au lieu d'affamer le titre. */
 @media (max-width: 639px) {
     .ev-board__rows > .ev-row {
-        grid-template-columns: var(--ev-kind) minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         grid-template-areas:
-            'kind id state'
-            'date date date'
-            'actions actions actions';
+            'id state'
+            'date date'
+            'actions actions';
         gap: .35rem .5rem;
         padding: .6rem .7rem;
     }
@@ -291,4 +279,80 @@
 
 @media (prefers-reduced-motion: reduce) {
     .ev-board__rows > .ev-row, .ev-row__date input[type='date'] { transition: none; }
+}
+
+/* ── TIROIRS D'UNE ACTIVITÉ ─────────────────────────────────────────────────
+   Le deuxième cran de la classe : chaque ACTIVITÉ (devoir surveillé, olympiade,
+   contrôle des cahiers…) ouvre sur SES occurrences — les devoirs d'un type, ou
+   ses séances — au lieu d'envoyer sur un autre écran. Le tiroir reste dans la
+   même surface, dans la même grille : les occurrences se lisent SOUS leur type,
+   alignées avec lui, et l'on compare sans quitter la page.
+   Le libellé du tiroir est écrit (« Ouvrir » / « Fermer ») : aucune icône. */
+.ev-accordion + .ev-accordion {
+    border-top: 1px solid color-mix(in srgb, hsl(var(--border)) 62%, transparent);
+}
+.ev-accordion__toggle {
+    display: grid;
+    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-actions);
+    grid-template-areas: 'id state actions';
+    align-items: center;
+    gap: .25rem .75rem;
+    width: 100%;
+    min-height: 56px;
+    padding: .5rem 1rem;
+    border: 0;
+    background: none;
+    text-align: start;
+    cursor: pointer;
+    transition: background-color 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .ev-accordion__toggle:hover { background: color-mix(in srgb, hsl(var(--muted)) 58%, transparent); }
+}
+.ev-accordion__toggle:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: -2px; }
+.ev-accordion__label {
+    grid-area: id;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: hsl(var(--foreground));
+    font-size: .875rem;
+    font-weight: 700;
+}
+.ev-accordion__count { grid-area: state; justify-self: start; }
+.ev-accordion__toggle-word {
+    grid-area: actions;
+    justify-self: end;
+    color: hsl(var(--primary));
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+/* Corps du tiroir : les occurrences, dans la grille du tableau. Le liseré de
+   gauche rappelle qu'elles appartiennent au type au-dessus. */
+.ev-accordion__body {
+    border-top: 1px solid color-mix(in srgb, hsl(var(--border)) 62%, transparent);
+    background: color-mix(in srgb, hsl(var(--muted)) 26%, transparent);
+}
+.ev-accordion__body .ev-row { padding-inline: 1rem; }
+.ev-accordion__empty {
+    margin: 0;
+    padding: .85rem 1rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    font-weight: 600;
+}
+@media (max-width: 1023px) {
+    .ev-accordion__toggle {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            'label count'
+            'word word';
+        gap: .3rem .5rem;
+        padding: .75rem .85rem;
+    }
+    .ev-accordion__count { justify-self: end; }
+    .ev-accordion__toggle-word { justify-self: start; }
+    .ev-accordion__body .ev-row { padding-inline: .6rem; }
 }

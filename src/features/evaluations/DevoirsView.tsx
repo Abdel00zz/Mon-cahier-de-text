@@ -9,7 +9,6 @@ import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/d
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
 import { resolveClassAssessments } from '@/domain/evaluations/assessments';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
-import { getClassSchoolSegment } from '@/domain/evaluations/officialStudentEvents';
 import { Modal } from '@/components/ui/modal';
 import {
   CalendarCheck,
@@ -20,10 +19,10 @@ import {
   Users,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
+import { SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
-import { KindChooser, ClassChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
+import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
 import { KindGroupHeader } from './components/KindGroupHeader';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
@@ -122,7 +121,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const openClass = embedded ? true : openedClassId !== null;
   const selectedClass = classes.find((c) => c.id === (openedClassId ?? selectedClassId)) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
-  const { assessments, hasPlan, planning, calendar } = useClassAssessments(selectedClass, config);
+  const { assessments, planning, calendar } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   /** Devoir ou activité dont on rédige le document pédagogique. */
   const [documentFor, setDocumentFor] = useState<DocumentTarget | null>(null);
@@ -137,9 +136,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [chosenKind, setChosenKind] = useState<EvaluationKind | null>(null);
   /** 3ᵉ temps d'un devoir : la création hors programmation, à la demande. */
   const [manualFormOpen, setManualFormOpen] = useState(false);
-  /** Étape de la fenêtre de création : 1 la classe, 2 la nature, 3 ses zones. */
-  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
+  /** Étape de la fenêtre de création : 1 la nature, 2 le contenu de cette nature. */
+  const [wizardStep, setWizardStep] = useState<1 | 2>(1);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
+  /**
+   * Le parcours de création, en trois crans : la classe, la nature, le contenu.
+   */
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -163,15 +165,67 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [config.pedagogicalEvents, selectedClass]
   );
 
+  /**
+   * LES ACTIVITÉS DE LA CLASSE — le deuxième cran du parcours.
+   *
+   * Chaque nature que la classe porte DÉJÀ, avec son nombre d'occurrences :
+   * « Devoir surveillé · 6 », « Contrôle des cahiers · 1 ». Une nature sans
+   * occurrence ne figure pas ici : elle se crée par « Ajouter », qui fait
+   * traverser le choix complet. Un professeur n'a donc jamais à décider entre
+   * douze natures vides — il voit ce qui existe, et l'ouvre.
+   */
+  const classActivities = useMemo(() => {
+    const countFor = (kind: EvaluationKind): number => kind.family === 'devoir'
+      ? links.filter((link) => link.planned.type === kind.type).length
+      : pedagogicalEvents.filter((event) => event.type === kind.type).length;
+    return KIND_GROUPS
+      .map((group) => ({
+        group,
+        entries: group.kinds
+          .map((kind) => ({ kind, count: countFor(kind) }))
+          .filter((entry) => entry.count > 0),
+      }))
+      .filter((group) => group.entries.length > 0);
+  }, [links, pedagogicalEvents]);
+
+  /**
+   * LES TIROIRS OUVERTS — un ensemble, pas un seul : deux activités peuvent
+   * rester ouvertes côte à côte, donc on COMPARE deux types sans refermer le
+   * premier. État dérivé : tant que le professeur n'a rien touché (`undefined`),
+   * le premier tiroir de la classe est ouvert — la page montre du contenu au
+   * lieu d'une liste fermée. Choix remis à zéro au changement de classe.
+   */
+  const [openActivityKeys, setOpenActivityKeys] = useState<string[] | undefined>(undefined);
+  const activityKey = (kind: EvaluationKind) => `${kind.family}:${kind.type}`;
+  const firstActivity = classActivities[0]?.entries[0]?.kind;
+  const openKeys = openActivityKeys ?? (firstActivity ? [activityKey(firstActivity)] : []);
+  const toggleActivity = (kind: EvaluationKind) => {
+    const key = activityKey(kind);
+    setOpenActivityKeys(openKeys.includes(key) ? openKeys.filter((open) => open !== key) : [...openKeys, key]);
+  };
+
+  /** Les occurrences d'UNE activité : ses devoirs, ou ses séances. */
+  const linksOfKind = (kind: EvaluationKind): AssessmentLink[] =>
+    (kind.family === 'devoir' ? links.filter((link) => link.planned.type === kind.type) : []);
+  const eventsOfKind = (kind: EvaluationKind): PedagogicalEvent[] =>
+    (kind.family === 'event' ? pedagogicalEvents.filter((event) => event.type === kind.type) : []);
+
   /** Ouvre une classe depuis la vue des classes : elle devient le contexte. */
   const openClassView = (classId: string) => {
     setOpenedClassId(classId);
     setSelectedClassId(classId);
+    setOpenActivityKeys(undefined);
     setAbsencesFor(null);
     setDocumentFor(null);
     setStudentsFor(null);
     setKindChooserOpen(false);
     setChosenKind(null);
+  };
+
+  /** Retour aux classes : on referme aussi les tiroirs. */
+  const backToClasses = () => {
+    setOpenedClassId(null);
+    setOpenActivityKeys(undefined);
   };
 
   /**
@@ -197,28 +251,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     };
   }), [classes, locale, planning, calendar, config, today]);
 
-  /**
-   * Les classes proposées à la première étape, dans le vocabulaire des cartes du
-   * tableau de bord : palier reconnu (« 2ème Bac Sc. Physiques »), libellé
-   * localisé, numéro de groupe. Le parcours commence donc par « à qui ? ».
-   */
-  const classChoices = useMemo(() => classes.map((item) => {
-    const identity = classIdentityFor(item.name, locale);
-    const label = classCardLabelFor(identity, locale);
-    return {
-      id: item.id,
-      tier: label.tier,
-      title: label.title,
-      group: label.group,
-      fullName: label.fullName,
-      segment: getClassSchoolSegment(item),
-    };
-  }), [classes, locale]);
-
   /*
-   * Une seule porte d'entrée pour tout créer, et elle se franchit PAS À PAS :
-   * 1 la classe, 2 la nature, 3 les zones de cette nature. Le cran déjà franchi
-   * reste cliquable dans le fil d'étapes, donc on revient sans rien perdre.
+   * Une seule porte d'entrée pour tout créer : la NATURE d'abord, puis ses
+   * zones. La classe n'est PAS redemandée — elle est déjà ouverte sur l'écran,
+   * et reposer la question serait une seconde décision pour la même réponse.
+   * Le cran déjà franchi reste cliquable dans le fil d'étapes.
    */
   const openKindChooser = () => {
     setChosenKind(null);
@@ -232,18 +269,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setChosenKind(null);
     setManualFormOpen(false);
     setWizardStep(1);
-  };
-
-  /** Étape 1 : choisir la classe ferme aussi tout ce qui en dépendait. */
-  const chooseClass = (classId: string) => {
-    setSelectedClassId(classId);
-    setOpenedClassId(classId);
-    setAbsencesFor(null);
-    setDocumentFor(null);
-    setStudentsFor(null);
-    setChosenKind(null);
-    setManualFormOpen(false);
-    setWizardStep(2);
   };
 
   /**
@@ -359,11 +384,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setStudentsFor(null);
   };
 
-  const openCreateAssessment = () => {
-    // Le devoir se crée par le MÊME chemin que les activités : la nature d'abord.
-    openKindChooser();
-  };
-
   const openEditAssessment = (assessment: { id: string; type: DevoirType; num: number; dateISO: string; duree?: string; semestre: 1 | 2 }) => {
     setEditingAssessment({
       id: assessment.id,
@@ -433,7 +453,120 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   }
 
   /* Les deux semestres sont toujours lus : la classe ouverte se lit en entier. */
-  const semesters: (1 | 2)[] = [1, 2];
+  /**
+   * LES LIGNES DU TABLEAU DES DEVOIRS — une par occurrence de l'activité ouverte.
+   * Quatre colonnes : l'identité cliquable (« Devoir surveillé 3 »), l'état, la
+   * date réglable, puis les actions — toujours dans cet ordre, donc on sait où
+   * cliquer sans relire. Aucune icône : la nature est écrite dans le libellé.
+   */
+  const renderAssessmentRows = (group: AssessmentLink[]) => group.map((link) => {
+    const a = link.planned;
+    const custom = !!(
+      config.assessmentDates?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
+    );
+    const absents = (
+      config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
+    )?.names ?? [];
+    const assessmentDocument = (
+      config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
+      ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
+    );
+    const status = STATUS_STYLE[link.status];
+    const isSupervised = a.type !== 'maison';
+    const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
+
+    // UNE LIGNE DU TABLEAU : l'identité cliquable, l'état, la date réglable,
+    // puis les actions — toujours dans cet ordre, donc on sait où cliquer sans
+    // relire. La nature est déjà dans le libellé : aucune icône à répéter.
+    return (
+      <div
+        key={a.id}
+        className="ev-row evaluation-tone"
+        data-assessment-id={a.id}
+        data-tone={kindStyle.tone}
+      >
+        <div className="ev-row__id min-w-0">
+          <button
+            type="button"
+            onClick={() => openEditAssessment(a)}
+            className="-ms-1.5 inline-flex min-h-9 max-w-full cursor-pointer items-center truncate rounded-lg px-1.5 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            title={t('evaluations.editDevoir')}
+          >
+            {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
+          </button>
+        </div>
+
+        <div className="ev-row__state">
+          <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
+            {t(status.labelKey)}
+          </span>
+        </div>
+
+        <div className="ev-row__date">
+          <input
+            type="date"
+            value={a.dateISO}
+            onChange={(e) => setAssessmentDate(a.id, e.target.value)}
+            data-custom={custom}
+            title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
+            aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+          />
+          {custom && (
+            <button
+              type="button"
+              onClick={() => setAssessmentDate(a.id, '')}
+              className="ev-icon-btn"
+              title={t('evaluations.restoreDate')}
+              aria-label={t('evaluations.restoreDate')}
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="ev-row__actions">
+          {/* Sujet, corrigé, fiche : le document du devoir suit le même
+              moteur que le carnet, donc le même rendu qu'à l'impression. */}
+          <button
+            type="button"
+            onClick={() => setDocumentFor({ kind: 'assessment', link })}
+            className="ev-action"
+            data-filled={assessmentDocument ? 'tone' : undefined}
+            aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
+          >
+            {t('evaluations.doc.open')}
+          </button>
+
+          {isSupervised && (
+            <button
+              type="button"
+              onClick={() => setAbsencesFor(link)}
+              className="ev-action"
+              data-filled={absents.length > 0 ? 'danger' : undefined}
+            >
+              {absents.length > 0
+                ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
+                : t('evaluations.absentees')}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => deleteAssessment(a.id)}
+            className="ev-icon-btn"
+            data-danger="true"
+            title={t('evaluations.manualDelete')}
+            aria-label={t('evaluations.manualDelete')}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  });
+
   const absencesRecord =
     absencesFor && selectedClass
       ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.id]
@@ -468,7 +601,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <ClassPicker classes={classPicks} onOpen={openClassView} />
       )}
 
-      {/* VUE 2 — LA CLASSE OUVERTE : ses devoirs, puis ses activités. */}
+      {/* VUE 2 — LA CLASSE OUVERTE : ses ACTIVITÉS, chacune dépliable.
+          Le parcours se lit toujours de gauche à droite du même fil : la classe,
+          l'activité, puis ses occurrences — les devoirs d'un type, ses séances —
+          qui s'ouvrent DANS la page au lieu d'envoyer ailleurs. */}
       {openClass && (
         <>
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
@@ -476,7 +612,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               {!embedded && (
                 <button
                   type="button"
-                  onClick={() => setOpenedClassId(null)}
+                  onClick={backToClasses}
                   className="inline-flex min-h-9 shrink-0 items-center rounded-xl border border-border/80 bg-card px-3 text-[11px] font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer sm:text-xs"
                 >
                   {t('evaluations.allClasses')}
@@ -508,205 +644,86 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </button>
           </div>
 
-          <div className="space-y-5">
-            {/* Devoirs et évaluations, par semestre */}
-            <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
-              <div className="px-1">
-                <KindGroupHeader
-                  title={t('evaluations.assessments')}
-                  tone={KIND_GROUPS[0].tone}
-                  Icon={KIND_GROUPS[0].Icon}
-                  titleId="evaluations-assessments-title"
-                  countLabel={links.length > 0 ? `${links.length} ${links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}` : undefined}
-                />
-              </div>
-            {!hasPlan ? (
-              <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
-                <CurriculumImportIllustration size={120} className="mb-2" />
-                <h4 className="text-sm font-bold text-foreground">{t('evaluations.noOfficialPlan')}</h4>
-                <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground text-pretty">
-                  {t('evaluations.noOfficialPlanHint')}
-                </p>
-                <button
-                  type="button"
-                  onClick={openCreateAssessment}
-                  className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] cursor-pointer"
-                >
-                  <Plus className="h-4 w-4 stroke-[2.2]" />
-                  {t('evaluations.addDevoir')}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-5">
-                {semesters.map((sem) => {
-                  const ofSemester = links.filter((l) => l.planned.semestre === sem);
-                  if (ofSemester.length === 0) return null;
-                  return (
-                    <section key={sem} className="space-y-2" aria-label={t('evaluations.semester', { number: number.format(sem) })}>
-                      {/* Repère de groupe — petit, en capitales, comme les sections d'un
-                          logiciel de gestion : il range les devoirs sans concurrencer
-                          le titre de la zone (l'ancien titre de semestre avait la même
-                          taille que « Devoirs et évaluations », donc aucune hiérarchie). */}
-                      <div className="flex items-baseline justify-between px-1">
-                        <h4 className="ev-group__title">
-                          {t('evaluations.semester', { number: number.format(sem) })}
-                        </h4>
-                        <span className="text-[11px] font-semibold text-muted-foreground">
-                          {ofSemester.length} {ofSemester.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
-                        </span>
-                      </div>
+          <div className="space-y-4">
+            <p className="px-1 text-xs leading-relaxed text-muted-foreground text-pretty">
+              {t('evaluations.classActivitiesHint')}
+            </p>
+            {classActivities.length === 0 ? (
+              <ActivitiesEmptyState onCreate={openKindChooser} />
+            ) : classActivities.map(({ group, entries }) => {
+              const total = entries.reduce((sum, entry) => sum + entry.count, 0);
+              return (
+                <section key={group.id} className="space-y-2" aria-label={t(group.titleKey)}>
+                  <KindGroupHeader
+                    title={t(group.titleKey)}
+                    tone={group.tone}
+                    headingLevel={4}
+                    countLabel={`${number.format(total)} ${group.id === 'devoir'
+                      ? (total === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
+                      : (total === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`}
+                  />
+                  <div className="ev-board">
+                    {entries.map(({ kind, count }) => {
+                      const isOpen = openKeys.includes(activityKey(kind));
+                      const label = t(kindLabelKey(kind));
+                      const countLabel = `${number.format(count)} ${kind.family === 'devoir'
+                        ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
+                        : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
+                      return (
+                        <div key={kind.type} className="ev-accordion" data-activity-kind={kind.type} data-open={isOpen ? 'true' : undefined}>
+                          {/* Le tiroir : le type, son compte, et le mot qui dit ce
+                              qu'il fait. Aucune icône, aucun chevron — « Ouvrir » se lit. */}
+                          <button
+                            type="button"
+                            onClick={() => toggleActivity(kind)}
+                            aria-expanded={isOpen}
+                            aria-label={`${label} — ${countLabel}`}
+                            className="ev-accordion__toggle"
+                          >
+                            <span className="ev-accordion__label">{label}</span>
+                            <span className="ev-accordion__count">
+                              <span className="tone-chip">{countLabel}</span>
+                            </span>
+                            <span className="ev-accordion__toggle-word" aria-hidden="true">
+                              {isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
+                            </span>
+                          </button>
 
-                      {/* UN TABLEAU, pas une pile de cartes : une seule surface, des filets
-                          d'un demi-pixel, et des colonnes tenues par des jetons partagés
-                          avec la zone des activités — nature, identité, état, date, actions. */}
-                      <div className="ev-board">
-                        <div className="ev-board__head" aria-hidden="true">
-                          <span>{t('evaluations.stepKind')}</span>
-                          <span>{t('evaluations.assessmentSingle')}</span>
-                          <span>{t('evaluations.colState')}</span>
-                          <span>{t('evaluations.manualDate')}</span>
-                          <span>{t('evaluations.colActions')}</span>
-                        </div>
-                        <div className="ev-board__rows">
-                        {ofSemester.map((link) => {
-                          const a = link.planned;
-                          const custom = !!(
-                            config.assessmentDates?.[selectedClass!.id]?.[a.id]
-                            ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
-                          );
-                          const absents = (
-                            config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
-                            ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
-                          )?.names ?? [];
-                          const assessmentDocument = (
-                            config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
-                            ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
-                          );
-                          const status = STATUS_STYLE[link.status];
-                          const isSupervised = a.type !== 'maison';
-                          const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
-                          const KindIcon = kindStyle.Icon;
-
-                          // UNE LIGNE DU TABLEAU. Cinq colonnes, la même grille que les
-                          // activités : la nature (icône teintée), l'identité cliquable,
-                          // l'état, la date réglable, puis les actions — toujours dans cet
-                          // ordre, donc on sait où cliquer sans relire.
-                          return (
-                            <div
-                              key={a.id}
-                              className="ev-row evaluation-tone"
-                              data-assessment-id={a.id}
-                              data-tone={kindStyle.tone}
-                            >
-                              <span className="ev-row__kind">
-                                <span className="hub-card__icon" aria-hidden="true"><KindIcon /></span>
-                              </span>
-
-                              <div className="ev-row__id min-w-0">
-                                <button
-                                  type="button"
-                                  onClick={() => openEditAssessment(a)}
-                                  className="-ms-1.5 inline-flex min-h-9 max-w-full cursor-pointer items-center truncate rounded-lg px-1.5 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                                  title={t('evaluations.editDevoir')}
-                                >
-                                  {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
-                                </button>
-                              </div>
-
-                              <div className="ev-row__state">
-                                <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
-                                  {t(status.labelKey)}
-                                </span>
-                              </div>
-
-                              <div className="ev-row__date">
-                                <input
-                                  type="date"
-                                  value={a.dateISO}
-                                  onChange={(e) => setAssessmentDate(a.id, e.target.value)}
-                                  data-custom={custom}
-                                  title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
-                                  aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+                          {isOpen && (
+                            <div className="ev-accordion__body">
+                              {kind.family === 'event' ? (
+                                <PedagogicalEventsSection
+                                  events={eventsOfKind(kind)}
+                                  showHeader={false}
+                                  onToggle={togglePedagogicalEvent}
+                                  onDelete={deletePedagogicalEvent}
+                                  onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+                                  onOpenStudents={(event) => setStudentsFor(event)}
                                 />
-                                {custom && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setAssessmentDate(a.id, '')}
-                                    className="ev-icon-btn"
-                                    title={t('evaluations.restoreDate')}
-                                    aria-label={t('evaluations.restoreDate')}
-                                  >
-                                    <Undo2 className="h-3.5 w-3.5" />
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="ev-row__actions">
-                                {/* Sujet, corrigé, fiche : le document du devoir suit le même
-                                    moteur que le carnet, donc le même rendu qu'à l'impression. */}
-                                <button
-                                  type="button"
-                                  onClick={() => setDocumentFor({ kind: 'assessment', link })}
-                                  className="ev-action"
-                                  data-filled={assessmentDocument ? 'tone' : undefined}
-                                  aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
-                                >
-                                  {t('evaluations.doc.open')}
-                                </button>
-
-                                {isSupervised && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setAbsencesFor(link)}
-                                    className="ev-action"
-                                    data-filled={absents.length > 0 ? 'danger' : undefined}
-                                  >
-                                    {absents.length > 0
-                                      ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
-                                      : t('evaluations.absentees')}
-                                  </button>
-                                )}
-
-                                <button
-                                  type="button"
-                                  onClick={() => deleteAssessment(a.id)}
-                                  className="ev-icon-btn"
-                                  data-danger="true"
-                                  title={t('evaluations.manualDelete')}
-                                  aria-label={t('evaluations.manualDelete')}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
+                              ) : (
+                                <div className="ev-board__rows">
+                                  <div className="ev-board__head" aria-hidden="true">
+                                    <span>{t('evaluations.assessmentSingle')}</span>
+                                    <span>{t('evaluations.colState')}</span>
+                                    <span>{t('evaluations.manualDate')}</span>
+                                    <span>{t('evaluations.colActions')}</span>
+                                  </div>
+                                  {renderAssessmentRows(linksOfKind(kind))}
+                                </div>
+                              )}
                             </div>
-                          );
-                        })}
+                          )}
                         </div>
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          {/* Les ACTIVITÉS de la classe, après ses devoirs, dans le même tableau —
-              et toujours là, même vides : la page montre tout ce qu'une classe
-              peut porter au lieu de faire disparaître une famille entière. */}
-          {pedagogicalEvents.length > 0 ? (
-            <PedagogicalEventsSection
-              events={pedagogicalEvents}
-              onToggle={togglePedagogicalEvent}
-              onDelete={deletePedagogicalEvent}
-              onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-              onOpenStudents={(event) => setStudentsFor(event)}
-            />
-          ) : (
-            <ActivitiesEmptyState onCreate={openKindChooser} />
-          )}
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         </>
       )}
+
 
       {/* Ajouter une évaluation : la nature d'abord (cartes), puis ses champs */}
       <Modal
@@ -737,31 +754,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               label={chosenKind ? t(kindLabelKey(chosenKind)) : undefined}
               onStep={(next) => {
                 setWizardStep(next);
-                if (next < 3) setManualFormOpen(false);
-                if (next < 3) setChosenKind(null);
+                setChosenKind(null);
+                setManualFormOpen(false);
               }}
             />
 
-            {/* 1 · LA CLASSE — elle seule, puis les autres sur demande. */}
+            {/* 1 · LA NATURE — la décision de l'écran, en grandes cartes. */}
             {wizardStep === 1 && (
               <div className="wizard-step">
-                <ClassChooser classes={classChoices} currentId={selectedClass.id} onSelect={chooseClass} />
+                <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(2); }} />
               </div>
             )}
 
-            {/* 2 · LA NATURE — la décision de l'écran, en grandes cartes. */}
-            {wizardStep === 2 && (
-              <div className="wizard-step">
-                <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(3); }} />
-              </div>
-            )}
-
-            {/* 3 · LES ZONES DE CETTE NATURE — devoirs programmés, ou champs. */}
-            {wizardStep === 3 && chosenKind && (
+            {/* 2 · LES ZONES DE CETTE NATURE — devoirs programmés, ou champs. */}
+            {wizardStep === 2 && chosenKind && (
               <div className="wizard-step">
                 <KindHeader
                   kind={chosenKind}
-                  onBack={() => { setChosenKind(null); setManualFormOpen(false); setWizardStep(2); }}
+                  onBack={() => { setChosenKind(null); setManualFormOpen(false); setWizardStep(1); }}
                 />
                 {chosenKind.family === 'event' ? (
                   <PedagogicalEventEditor
@@ -1044,30 +1054,33 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
  * la même cible tactile de 44 px au doigt et les mêmes états au survol.
  */
 
-const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
+const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps & { showHeader?: boolean }> = ({
   events,
   onToggle,
   onDelete,
   onOpenDocument,
   onOpenStudents,
+  showHeader = true,
 }) => {
   const { t, locale } = useLocale();
   if (events.length === 0) return null;
 
   return (
     <section className="space-y-2.5">
-      <div className="px-1">
-        <KindGroupHeader
-          title={t('evaluations.pedagogicalEvents')}
-          tone={KIND_GROUPS[1].tone}
-          Icon={KIND_GROUPS[1].Icon}
-          countLabel={`${events.length} ${events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}`}
-        />
-      </div>
+      {/* Dans une activité ouverte, c'est la nature qui nomme l'écran :
+          l'en-tête de famille serait une redite. */}
+      {showHeader && (
+        <div className="px-1">
+          <KindGroupHeader
+            title={t('evaluations.pedagogicalEvents')}
+            tone={KIND_GROUPS[1].tone}
+            countLabel={`${events.length} ${events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}`}
+          />
+        </div>
+      )}
 
       <div className="ev-board">
         <div className="ev-board__head" aria-hidden="true">
-          <span>{t('evaluations.stepKind')}</span>
           <span>{t('evaluations.titleLabel')}</span>
           <span>{t('evaluations.colState')}</span>
           <span>{t('evaluations.manualDate')}</span>
@@ -1078,7 +1091,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
         <ul className="ev-board__rows">
         {events.map((event) => {
           const done = event.status === 'done';
-          const { labelKey, tone, Icon } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
+          const { labelKey, tone } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
           const names = event.students?.names.length ?? 0;
           const typeLabel = t(labelKey);
           const title = event.title.trim() || typeLabel;
@@ -1092,15 +1105,9 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
               data-activity-card="true"
               data-activity-type={event.type}
               data-tone={tone}
-              {...(done ? { 'data-done': 'true' } : {})}
+              data-done={done ? 'true' : undefined}
             >
-              {/* 1 · La nature, réduite à son icône teintée : la colonne reste
-                  alignée avec celle des devoirs. */}
-              <span className="ev-row__kind">
-                <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
-              </span>
-
-              {/* 2 · L'identité : le titre, sa nature écrite SEULEMENT si le titre ne
+              {/* 1 · L'identité : le titre, sa nature écrite SEULEMENT si le titre ne
                   la dit pas déjà, et la note qui reste utile. */}
               <div className="ev-row__id min-w-0">
                 <h4 className="text-[13.5px] font-bold leading-snug text-foreground" dir="auto">{title}</h4>

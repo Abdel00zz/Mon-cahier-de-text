@@ -1230,6 +1230,20 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
 .hub-card[data-layout='row'] .hub-card__icon { margin: 0; flex: none; }
 .hub-card[data-layout='row'] .hub-card__hint { max-width: none; }
 .hub-card[data-layout='row'] .hub-card__body { display: flex; min-width: 0; flex-direction: column; gap: 0.125rem; }
+/* ── Tuiles de nature (étape 1 du parcours de création) ───────────────────────
+   DEUX PAR LIGNE À TOUTE LARGEUR, y compris sur un téléphone, et plus grandes
+   que les cartes ordinaires : c'est la décision de l'écran, elle se prend d'un
+   seul regard. Deux colonnes sur une carte-ligne n'auraient laissé qu'un filet
+   de libellé (« Contrôle des cahiers des élèves ») : la carte passe donc au
+   format tuile — grande icône AU-DESSUS du libellé, carte plus haute, texte
+   centré — pour tenir à deux sans rapetisser.
+   Rayon imbriqué : 20 px de carte − 4 px d'écart = 16 px de pastille. */
+.hub-grid[data-tiles] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.hub-card[data-layout='tile'] { justify-content: center; gap: 0.55rem; min-height: 9.5rem; padding: 1.15rem 0.7rem 1.05rem; }
+.hub-card[data-layout='tile'] .hub-card__icon { width: 3.5rem; height: 3.5rem; border-radius: 16px; margin-bottom: 0.2rem; }
+.hub-card[data-layout='tile'] .hub-card__icon .app-icon { width: 2.25rem; height: 2.25rem; stroke-width: 1.75; }
+.hub-card[data-layout='tile'] .hub-card__title { font-size: 0.9rem; }
+html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.0625rem; }
 
 /* Barre de titre de la fenêtre : bouton de retour (44 px) puis titre, sur une seule ligne. */
 .hub-titlebar { display: flex; align-items: center; gap: 0.25rem; min-width: 0; min-height: 2.75rem; }
@@ -2194,55 +2208,17 @@ html[data-keyboard='open'] .mobile-tab-bar {
 }
 html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 
-/* ── En-tête de famille : l'icône, puis le titre, puis le compte ────────────
-   Les deux familles du choix de la nature (« Devoirs et évaluations »,
-   « Activités pédagogiques ») se lisent désormais sur UNE ligne : une pastille
-   d'icône, le titre, et le nombre de natures qu'elle contient. Le compte est un
-   repère, pas une décoration : il dit à l'avance combien de cartes attendent,
-   donc si la liste descend plus bas que l'écran.
-   La pastille est un verre teinté du ton de SA famille : dégradé à deux temps
-   (le ton éclairci en haut à gauche, le ton assombri en bas à droite — la
-   lumière vient du même coin que le reste de l'interface), liseré spéculaire
-   d'un demi-pixel en haut, grain interne du ton, et halo court porté par le
-   ton. Le reflet qui la balaie ne se produit QU'À l'apparition, une fois, en
-   520 ms : sur téléphone, aucun survol n'existe — une animation d'entrée est
-   donc la seule façon de montrer cet effet avancé à tout le monde. */
-.kind-group { display: flex; align-items: center; gap: .6rem; min-height: 36px; }
-.kind-group__badge {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  flex: none;
-  overflow: hidden;
-  border-radius: 12px;      /* rayon imbriqué : 16 px de carte − 4 px d'écart */
-  /* Le ton 600-700 porte le blanc : ≥ 4,5:1 à plat sur les huit familles, et le
-     dégradé ne descend jamais sous les 3:1 exigés d'un objet graphique. */
-  color: #fff;
-  background-image: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--tone) 88%, white 12%),
-    color-mix(in srgb, var(--tone) 74%, black 26%)
-  );
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / .45),
-    inset 0 0 0 1px color-mix(in srgb, var(--tone) 42%, transparent),
-    0 8px 16px -10px color-mix(in srgb, var(--tone) 70%, transparent);
-}
-.kind-group__badge .app-icon { width: 19px; height: 19px; stroke-width: 2; }
-.kind-group__badge::after {
-  content: '';
-  position: absolute;
-  inset: -40% -70%;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .52) 50%, transparent 62%);
-  transform: translateX(-130%);
-  animation: kind-glint 520ms cubic-bezier(.2, .7, .3, 1) 140ms 1 both;
-}
-@keyframes kind-glint {
-  to { transform: translateX(130%); }
-}
+/* ── En-tête de famille : le titre, puis le compte ─────────────────────────
+   Les deux familles (« Devoirs et évaluations », « Activités pédagogiques ») se
+   lisent sur UNE ligne : le titre, et le nombre de natures ou d'occurrences
+   qu'elles contiennent. Le compte est un repère, pas une décoration : il dit à
+   l'avance combien de lignes attendent, donc si la liste descend plus bas que
+   l'écran.
+   AUCUNE ICÔNE À CÔTÉ DU TITRE : le titre d'une catégorie se lit, il ne se
+   dessine pas — une pastille répétait en image ce que le titre dit en toutes
+   lettres, à chaque écran et à chaque zone. Le ton de la famille ne subsiste que
+   sur la pastille de compte, où il aide à distinguer les deux sections. */
+.kind-group { display: flex; align-items: center; gap: .6rem; min-height: 32px; }
 /* Le compte des natures : discret, aligné en fin de ligne, chiffres alignés. */
 .kind-group__count {
   flex: none;
@@ -2256,49 +2232,24 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
-/* En sombre, l'accent s'éclaircit : un blanc sur un ton pastel tomberait sous
-   3:1. La pastille repasse donc en verre sombre — le ton porte l'ICÔNE et le
-   liseré, plus le fond. */
-.dark .kind-group__badge {
-  color: var(--tone);
-  background-image: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--tone) 24%, hsl(var(--card))),
-    color-mix(in srgb, var(--tone) 12%, hsl(var(--card)))
-  );
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / .12),
-    inset 0 0 0 1px color-mix(in srgb, var(--tone) 38%, transparent),
-    0 8px 16px -12px rgb(0 0 0 / .7);
-}
-.dark .kind-group__badge::after { background: none; }
-@media (prefers-reduced-motion: reduce) {
-  .kind-group__badge::after { animation: none; }
-}
 
-/* ── Étape « Classe » du parcours de création ───────────────────────────────
-   De grandes cartes SANS icône : le palier, le libellé localisé, le numéro de
-   groupe. Le groupe s'écrit comme sur les cartes du tableau de bord — graisse
-   800, chiffres alignés — pour que « 2Bac PC 3 » se repère d'un coup d'œil,
-   et la classe déjà ouverte se marque d'un filet d'accent, pas d'un
-   pictogramme. */
-/* Chaque étape de l'assistant vit dans SON panneau : une seule chose à la fois,
-   et la séparation se voit sans qu'on ait à la chercher. */
+/* ── Étapes de l'assistant de création ──────────────────────────────────────
+   Chaque étape vit dans SON panneau : une seule chose à la fois, et la
+   séparation se voit sans qu'on ait à la chercher. La vue des classes, elle, est
+   une simple liste de cartes SANS icône (voir .class-choice) : le palier, le
+   libellé localisé et le numéro de groupe suffisent, écrits avec la graisse des
+   cartes du tableau de bord pour que « 2Bac PC 3 » se repère d'un coup d'œil. */
 .wizard-step {
   border: 1px solid color-mix(in srgb, hsl(var(--border)) 78%, transparent);
   border-radius: 16px;
   background: color-mix(in srgb, hsl(var(--card)) 55%, transparent);
   padding: .75rem;
 }
-/* Intitulé de section de l'étape « Classe » (classe active, puis les cycles). */
-.class-group__title {
-  margin: 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
+/* ── VUE DES CLASSES (entrée de l'écran du contrôle continu) ──────────────
+   De grandes cartes SANS icône : le palier, le libellé localisé, le numéro de
+   groupe et ce que la classe porte déjà. Le groupe s'écrit comme sur les cartes
+   du tableau de bord — graisse 800, chiffres alignés — pour que « 2Bac PC 3 »
+   se repère d'un coup d'œil. */
 .class-choice { align-items: center; }
 .class-choice__tier {
   color: hsl(var(--muted-foreground));
@@ -2332,25 +2283,6 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   background: color-mix(in srgb, hsl(var(--primary)) 5%, hsl(var(--card)));
 }
 .class-choice[data-current='true'] .class-choice__group { color: hsl(var(--primary)); }
-/* « Changer de classe » : le reste de la liste n'est pas affiché, il se demande. */
-.class-disclosure {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.75rem;
-  width: 100%;
-  padding-inline: .75rem;
-  border: 1px dashed color-mix(in srgb, hsl(var(--border)) 92%, transparent);
-  border-radius: 12px;
-  background: none;
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease;
-}
-.class-disclosure:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
-.class-disclosure:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
 
 /* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
    Elle remplace une seconde couleur inventée — une carte, une teinte. */

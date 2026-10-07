@@ -43,7 +43,9 @@ test('les neuf types affichent leur titre sans répéter la nature ou la note', 
     for (const type of types) {
       const title = translateLocaleMessage(locale, `evaluations.event.${type}`);
       const html = renderSheet([event('e1', type, title, '2026-10-06', { note: `  ${title}  ` })], locale);
-      assert.doesNotMatch(html, /class="tone-chip">/, `${locale}/${type} : aucun libellé de nature répété`);
+      // La pastille de compte du tiroir dit « 1 activité » : on vérifie qu'aucune
+      // pastille ne répète le libellé de la nature, qui est déjà le titre.
+      assert.doesNotMatch(html, new RegExp(`class="tone-chip">${title}<`), `${locale}/${type} : aucun libellé de nature répété`);
       assert.doesNotMatch(html, /line-clamp-2/, `${locale}/${type} : aucune note identique au titre`);
       assert.match(html, /data-activity-card="true"/);
     }
@@ -51,60 +53,70 @@ test('les neuf types affichent leur titre sans répéter la nature ou la note', 
 });
 
 test('chaque activité est une ligne de tableau, teintée selon sa nature', () => {
-  const html = renderSheet([
+  // Une activité à la fois : le tiroir de la première est ouvert d'emblée, donc
+  // ses occurrences sont visibles en rendu statique.
+  const olympiade = renderSheet([
     event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14'),
+  ]);
+  const cahiers = renderSheet([
     event('e2', 'controle_cahiers', 'مراقبة دفاتر التلاميذ', '2026-09-15', { students: { names: ['Amin', 'Salma'], updatedAt: '2026-09-15T00:00:00.000Z' } }),
   ]);
-  // UN tableau : une surface, un en-tête de colonnes, et une ligne par activité.
+
+  // UN tableau : une surface, un en-tête de colonnes, et une ligne par occurrence.
   // La fenêtre est montée par `ClassEvaluationsSheet`, dont la modale ne se
   // sérialise pas hors navigateur — on éprouve donc son corps, ici.
-  assert.match(html, /class="ev-board"/);
-  assert.match(html, /class="ev-board__head" aria-hidden="true"/, 'les colonnes sont nommées');
-  assert.match(html, /class="ev-board__rows"/);
-  assert.equal(occurrences(html, 'class="ev-row evaluation-tone"'), 2);
-  assert.equal(occurrences(html, 'data-activity-card="true"'), 2);
-  // Les cinq colonnes de chaque ligne : nature, identité, état, période, actions.
-  for (const cell of ['ev-row__kind', 'ev-row__id', 'ev-row__state', 'ev-row__date', 'ev-row__actions']) {
-    assert.equal(occurrences(html, cell), 2, `colonne ${cell} sur chaque ligne`);
+  assert.match(olympiade, /class="ev-board"/);
+  assert.match(olympiade, /class="ev-board__head" aria-hidden="true"/, 'les colonnes sont nommées');
+  assert.match(olympiade, /class="ev-board__rows"/);
+  assert.match(olympiade, /class="ev-accordion__toggle"/, 'l’activité s’ouvre en tiroir');
+  assert.equal(occurrences(olympiade, 'class="ev-row evaluation-tone"'), 1);
+  assert.equal(occurrences(olympiade, 'data-activity-card="true"'), 1);
+  // Les QUATRE colonnes d'une ligne : identité, état, période, actions. Aucune
+  // colonne d'icône : « ne pas utiliser des icônes dans les zones ».
+  for (const cell of ['ev-row__id', 'ev-row__state', 'ev-row__date', 'ev-row__actions']) {
+    assert.equal(occurrences(olympiade, cell), 1, `colonne ${cell} sur la ligne`);
   }
+  assert.doesNotMatch(olympiade, /ev-row__kind|hub-card__icon/, 'aucune pastille d’icône de nature dans la zone');
   // Une teinte par nature : ambre pour l'olympiade, ardoise pour le contrôle des
   // cahiers (une vérification administrative, pas une épreuve). On vise la ligne
   // (`data-activity-type`), pas le document : la teinte de l'en-tête de famille
   // — violette — ne compte pas comme une nature.
-  assert.equal(occurrences(html, 'data-activity-type="olympiade" data-tone="amber"'), 1);
-  assert.equal(occurrences(html, 'data-activity-type="controle_cahiers" data-tone="slate"'), 1);
-  // L'en-tête de famille : une pastille d'icône teintée, puis le titre.
-  assert.match(html, /class="kind-group evaluation-tone" data-tone="violet"[\s\S]{0,120}kind-group__badge/, 'la famille des activités ouvre sa section');
+  assert.equal(occurrences(olympiade, 'data-activity-type="olympiade" data-tone="amber"'), 1);
+  assert.equal(occurrences(cahiers, 'data-activity-type="controle_cahiers" data-tone="slate"'), 1);
+  // L'en-tête de famille : le titre, puis le compte — aucune icône à côté.
+  assert.match(olympiade, /class="kind-group evaluation-tone" data-tone="violet"[\s\S]{0,200}kind-group__count/, 'la famille des activités ouvre sa section');
+  assert.doesNotMatch(olympiade, /kind-group__badge/, 'le titre d’une catégorie ne porte pas d’icône');
   // Le sigle de la famille est écrit, la ligne dit ce qu'elle est.
-  assert.match(html, /class="tone-chip">Olympiade</);
-  assert.match(html, /class="tone-chip">Contrôle des cahiers des élèves</);
-  assert.match(html, /Olympiade de mathématiques/);
+  assert.match(olympiade, /class="tone-chip">Olympiade</);
+  assert.match(cahiers, /class="tone-chip">Contrôle des cahiers des élèves</);
+  assert.match(olympiade, /Olympiade de mathématiques/);
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
-  assert.match(html, /Élèves consignés · 2/);
+  assert.match(cahiers, /Élèves consignés · 2/);
   // État et suppression restent des commandes, jamais un clic sur la ligne.
-  assert.match(html, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/);
-  assert.match(html, /aria-label="Supprimer Olympiade de mathématiques"/);
+  assert.match(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/);
+  assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 
 test('les commandes portent un libellé, pas une icône', () => {
-  const html = renderSheet([
-    event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14'),
-    event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15'),
-  ]);
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
+  const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
+  const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
   // Un bouton dont le contenu est exactement le libellé : aucune icône injectée.
-  assert.match(html, new RegExp(`<button[^>]*>${documentLabel}</button>`));
-  assert.match(html, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
+  assert.match(olympiade, new RegExp(`<button[^>]*>${documentLabel}</button>`));
+  assert.match(olympiade, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
+  assert.match(cahiers, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
   // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton.
-  assert.equal(occurrences(html, `>${documentLabel}</button>`), 1);
-  assert.equal(occurrences(html, `>${studentsLabel}</button>`), 2);
+  assert.equal(occurrences(cahiers, `>${documentLabel}</button>`), 0);
 });
 
 test('les titres disent ce que la fenêtre contient, sans répétition', () => {
   const html = renderSheet([event('e1', 'soutien', 'Soutien', '2026-09-14')]);
   assert.match(html, /Activités pédagogiques/);
-  assert.match(html, /Devoirs et évaluations/);
+  // La classe ouverte coiffe l'écran ; les devoirs n'apparaissent que si la
+  // classe en porte (ici, aucune) — la vue montre donc une seule famille.
+  assert.match(html, /2ème Bac Sciences Physiques 1/);
+  assert.match(html, /evaluations.classActivitiesHint|Les activités de cette classe|أنشطة هذا القسم/);
   // L'ancien titre juxtaposait deux libellés équivalents (« Activités &
   // Activités intégrées et étapes didactiques ») : il n'a plus lieu d'être.
   assert.equal(html.includes('Activités & '), false);

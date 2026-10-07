@@ -11,8 +11,9 @@ import { KindGroupHeader } from './KindGroupHeader';
  * Trois crans, dans l'ordre où un professeur se pose la question :
  *   1. CLASSE — à qui appartient ce travail ? Les grandes cartes des classes,
  *      sans aucune icône : le libellé et le numéro de groupe suffisent ;
- *   2. NATURE — quoi ? Les grandes cartes colorées (devoir surveillé, contrôle
- *      des cahiers, olympiade, devoir maison…), qui sont LA décision de l'écran ;
+ *   2. NATURE — quoi ? Les grandes tuiles colorées (devoir surveillé, contrôle
+ *      des cahiers, olympiade, devoir maison…), DEUX PAR LIGNE, qui sont LA
+ *      décision de l'écran ;
  *   3. CONTENU — les zones de cette nature : les devoirs déjà programmés (qu'on
  *      ouvre) ou les champs de saisie, groupés et nommés.
  *
@@ -26,12 +27,11 @@ import { KindGroupHeader } from './KindGroupHeader';
  */
 
 /** Fil d'étapes — et retour en arrière : c'est la navigation de l'assistant. */
-export const StepTrail: React.FC<{ step: 1 | 2 | 3; label?: string; onStep?: (step: 1 | 2 | 3) => void }> = ({ step, label, onStep }) => {
+export const StepTrail: React.FC<{ step: 1 | 2; label?: string; onStep?: (step: 1 | 2) => void }> = ({ step, label, onStep }) => {
   const { t } = useLocale();
-  const steps: Array<{ id: 1 | 2 | 3; label: string }> = [
-    { id: 1, label: t('evaluations.stepClass') },
-    { id: 2, label: t('evaluations.stepKind') },
-    { id: 3, label: label ?? t('evaluations.stepContent') },
+  const steps: Array<{ id: 1 | 2; label: string }> = [
+    { id: 1, label: t('evaluations.stepKind') },
+    { id: 2, label: label ?? t('evaluations.stepContent') },
   ];
   return (
     <ol className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold" aria-label={t('evaluations.add')}>
@@ -85,117 +85,6 @@ export const StepTrail: React.FC<{ step: 1 | 2 | 3; label?: string; onStep?: (st
   );
 };
 
-/** Une classe proposée à l'étape 1 : son libellé localisé, son groupe, son cycle. */
-export interface ClassChoice {
-  id: string;
-  /** Palier reconnu (« 2ème Bac Sc. Physiques »), si le nom en porte un. */
-  tier?: string | null;
-  title: string;
-  group?: string | null;
-  fullName: string;
-  /** Cycle de la classe : il range la liste sans la trier au hasard. */
-  segment: 'college' | 'lycee' | 'unknown';
-}
-
-/** Une carte de classe : le palier, le libellé, le numéro de groupe. Aucune icône. */
-const ClassChoiceCard: React.FC<{ item: ClassChoice; isCurrent: boolean; onSelect: (id: string) => void }> = ({ item, isCurrent, onSelect }) => {
-  const { t } = useLocale();
-  return (
-    <li className="min-w-0">
-      <button
-        type="button"
-        data-class-id={item.id}
-        data-current={isCurrent ? 'true' : undefined}
-        onClick={() => onSelect(item.id)}
-        className="hub-card class-choice h-full w-full"
-        data-layout="row"
-        aria-label={item.fullName}
-      >
-        <span className="hub-card__body min-w-0 flex-1">
-          {item.tier && <span className="class-choice__tier">{item.tier}</span>}
-          <span className="hub-card__title block text-start">{item.title}</span>
-          {isCurrent && <span className="tone-chip">{t('evaluations.activeClass')}</span>}
-        </span>
-        {item.group && (
-          <bdi dir="ltr" className="class-choice__group" aria-hidden="true">{item.group}</bdi>
-        )}
-      </button>
-    </li>
-  );
-};
-
-/**
- * ÉTAPE 1 — LA CLASSE, D'ABORD, ET SEULE.
- *
- * Tout ce qui suit lui appartient : la nature, les devoirs déjà programmés, le
- * sujet. Mais un professeur travaille presque toujours dans la classe qu'il a
- * déjà ouverte : la montrer SEULE, avec la mention « classe active », évite de
- * dérouler quinze cartes avant de pouvoir continuer. Les autres classes
- * s'ouvrent d'un geste (« Changer de classe »), rangées par cycle — collège,
- * lycée qualifiant, autres — donc dans l'ordre où un professeur les cherche.
- *
- * Aucune icône : un palier, un libellé, un numéro de groupe. Un pictogramme de
- * plus ne dirait rien de la classe, et l'écran doit rester une décision, pas un
- * catalogue.
- */
-export const ClassChooser: React.FC<{
-  classes: ClassChoice[];
-  currentId: string;
-  onSelect: (id: string) => void;
-  /** Ouvre d'emblée la liste complète (utile hors assistant). */
-  initialExpanded?: boolean;
-}> = ({ classes, currentId, onSelect, initialExpanded = false }) => {
-  const { t } = useLocale();
-  const [expanded, setExpanded] = React.useState(initialExpanded);
-  const current = classes.find(item => item.id === currentId) ?? null;
-  const others = classes.filter(item => item.id !== currentId);
-  const groups = ([
-    { id: 'college', titleKey: 'evaluations.group.college' },
-    { id: 'lycee', titleKey: 'evaluations.group.lycee' },
-    { id: 'unknown', titleKey: 'evaluations.group.other' },
-  ] as const)
-    .map(group => ({ ...group, items: others.filter(item => item.segment === group.id) }))
-    .filter(group => group.items.length > 0);
-
-  return (
-    <div className="space-y-3">
-      <p className="text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.chooseClass')}</p>
-
-      {current && (
-        <section className="space-y-1.5" aria-label={t('evaluations.activeClass')}>
-          <h4 className="class-group__title">{t('evaluations.activeClass')}</h4>
-          <ul className="hub-grid" data-rows>
-            <ClassChoiceCard item={current} isCurrent onSelect={onSelect} />
-          </ul>
-        </section>
-      )}
-
-      {/* Le reste n'est pas affiché : il est DERRIÈRE une demande explicite. */}
-      {!expanded && others.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="class-disclosure"
-          aria-expanded={false}
-        >
-          {t('evaluations.changeClass')}
-        </button>
-      )}
-
-      {expanded && groups.map(group => (
-        <section key={group.id} className="space-y-1.5" aria-label={t(group.titleKey)}>
-          <h4 className="class-group__title">{t(group.titleKey)}</h4>
-          <ul className="hub-grid" data-rows>
-            {group.items.map(item => (
-              <ClassChoiceCard key={item.id} item={item} isCurrent={false} onSelect={onSelect} />
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  );
-};
-
 export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }> = ({ onSelect }) => {
   const { t } = useLocale();
   return (
@@ -209,17 +98,21 @@ export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }>
           <KindGroupHeader
             title={t(group.titleKey)}
             tone={group.tone}
-            Icon={group.Icon}
             count={group.kinds.length}
             headingLevel={4}
           />
           {/*
-           * Une colonne sur téléphone, deux dès 640 px : en deux colonnes, un
-           * libellé officiel (« Contrôle des cahiers des élèves ») se repliait
-           * sur quatre lignes. La grille `data-rows` garde chaque nature lisible
-           * d'un seul regard, ce qui est le seul geste demandé ici.
+           * DEUX TUILES PAR LIGNE, À TOUTE LARGEUR — même sur un téléphone.
+           * Quinze natures sur une colonne, c'était quinze lignes à faire
+           * défiler ; à deux par ligne, la famille entière tient presque dans
+           * l'écran. Pour que deux colonnes ne rendent pas les cartes plus
+           * petites, elles passent au format tuile : la grande icône AU-DESSUS du
+           * libellé, la carte plus haute, le texte centré. « Contrôle des cahiers
+           * des élèves » se replie sur deux ou trois lignes — mais il reste lu
+           * d'un regard, alors qu'une carte-ligne à deux colonnes n'en laisserait
+           * qu'un filet.
            */}
-          <ul className="hub-grid" data-rows>
+          <ul className="hub-grid" data-tiles>
             {group.kinds.map(kind => {
               const label = t(kindLabelKey(kind));
               return (
@@ -232,10 +125,10 @@ export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }>
                     onClick={() => onSelect(kind)}
                     aria-label={label}
                     className="hub-card h-full w-full"
-                    data-layout="row"
+                    data-layout="tile"
                   >
                     <span className="hub-card__icon" aria-hidden="true"><kind.style.Icon /></span>
-                    <span className="hub-card__title min-w-0 flex-1 text-start">{label}</span>
+                    <span className="hub-card__title min-w-0">{label}</span>
                   </button>
                 </li>
               );
@@ -254,7 +147,7 @@ export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }>
  * est déjà écrite, une pastille d'icône ne ferait que répéter le dessin de la
  * carte qu'on vient de quitter.
  */
-export const KindHeader: React.FC<{ kind: EvaluationKind; onBack: () => void }> = ({ kind, onBack }) => {
+export const KindHeader: React.FC<{ kind: EvaluationKind; onBack: () => void; backLabel?: string }> = ({ kind, onBack, backLabel }) => {
   const { t } = useLocale();
   const label = t(kindLabelKey(kind));
   return (
@@ -265,7 +158,7 @@ export const KindHeader: React.FC<{ kind: EvaluationKind; onBack: () => void }> 
         onClick={onBack}
         className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 text-xs font-semibold text-primary transition-colors hover:bg-accent cursor-pointer"
       >
-        {t('evaluations.changeKind')}
+        {backLabel ?? t('evaluations.changeKind')}
       </button>
     </div>
   );

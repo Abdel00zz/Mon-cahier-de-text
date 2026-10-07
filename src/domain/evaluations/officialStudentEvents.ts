@@ -170,15 +170,6 @@ const getClassStudentTags = (classInfo: Pick<ClassInfo, 'name' | 'cycle'>): Set<
     return tags;
 };
 
-export const getClassSchoolSegment = (classInfo: Pick<ClassInfo, 'name' | 'cycle'>): 'college' | 'lycee' | 'unknown' => {
-    const tags = getClassStudentTags(classInfo);
-    if (tags.has('1ac') || tags.has('2ac') || tags.has('3ac')) return 'college';
-    if (tags.has('tc') || tags.has('1bac') || tags.has('2bac')) return 'lycee';
-    if (tags.has('college')) return 'college';
-    if (tags.has('lycee')) return 'lycee';
-    return 'unknown';
-};
-
 export const getOfficialStudentEventsFile = (): OfficialStudentEventsFile => cached;
 
 /** Charge la version publiée par l'administration, avec repli immédiat sur le bulletin embarqué hors ligne. */
