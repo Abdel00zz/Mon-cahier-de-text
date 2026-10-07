@@ -613,7 +613,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           qui s'ouvrent DANS la page au lieu d'envoyer ailleurs. */}
       {openClass && (
         <>
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
               {!embedded && (
                 <button
@@ -644,7 +644,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <button
               type="button"
               onClick={openKindChooser}
-              className="inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+              className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
             >
               <Plus className="h-5 w-5" aria-hidden="true" />
               <span>{t('evaluations.add')}</span>
