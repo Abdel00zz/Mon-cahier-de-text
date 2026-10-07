@@ -993,12 +993,13 @@ const ClassPicker: React.FC<{ classes: ClassPick[]; onOpen: (id: string) => void
   return (
     <section className="space-y-3">
       <p className="px-1 text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.pickClassHint')}</p>
-      <ul className="hub-grid" data-rows>
+      <ul className="hub-grid class-picker-grid" data-rows>
         {classes.map(item => (
           <li key={item.id} className="min-w-0">
             <button
               type="button"
               data-class-id={item.id}
+              data-has-tier={item.tier ? 'true' : undefined}
               {...classColorAttributes(item)}
               onClick={() => onOpen(item.id)}
               className="hub-card class-choice h-full w-full"

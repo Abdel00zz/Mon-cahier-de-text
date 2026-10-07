@@ -27,6 +27,8 @@ import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
+import { listExportableChapters, selectExportableChapters } from '@/domain/notebook/chapterExport';
+import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '@/domain/evaluations/notebookCheckRemarks';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
@@ -579,16 +581,39 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     };
   }, [persistCurrentData]);
 
-  const handleExportData = useCallback(() => {
+  /*
+   * EXPORT : tout le cahier, ou seulement les blocs cochés. La liste n'est
+   * calculée QUE quand la fenêtre est ouverte : elle pèse chaque bloc, et la
+   * refaire à chaque frappe ralentirait l'édition sans jamais servir.
+   */
+  const exportChapters = useMemo(
+    () => (activeModal === 'dataTransfer' ? listExportableChapters(lessonsData) : []),
+    [activeModal, lessonsData],
+  );
+
+  const handleExportData = useCallback((chapters: number[] | null) => {
     if (!workspaceIsActive()) return;
     try {
-        const dataToExport = { classInfo, lessonsData, contentDirection };
+        // `null` = tout le cahier ; sinon les blocs d'origine, tels quels.
+        const selected = chapters === null ? lessonsData : selectExportableChapters(lessonsData, chapters);
+        if (Array.isArray(selected) && selected.length === 0) {
+          showNotification(t('editorNotice.exportEmpty'), 'error');
+          return;
+        }
+        const dataToExport = { classInfo, lessonsData: selected, contentDirection };
         const jsonString = JSON.stringify(dataToExport, null, 2);
+        // La garde est EXACTE et vit ici : un fichier au-delà du plafond ne
+        // serait pas réimportable, donc on ne le produit pas.
+        if (new TextEncoder().encode(jsonString).byteLength > MAX_JSON_FILE_BYTES) {
+          showNotification(t('editorNotice.exportTooLarge'), 'error');
+          return;
+        }
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `cahier-de-textes-${classInfo.name}-${new Date().toISOString().slice(0, 10)}.json`;
+        const scopeSuffix = chapters === null ? '' : `-${chapters.length}blocs`;
+        a.download = `cahier-de-textes-${classInfo.name}${scopeSuffix}-${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1425,6 +1450,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         handleModalClose={handleModalClose}
         handleImport={handleImport}
         handleExportData={handleExportData}
+        exportChapters={exportChapters}
         lessonsData={lessonsData}
         handleUpdateLessons={handleUpdateLessons}
         config={config}

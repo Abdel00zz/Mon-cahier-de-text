@@ -5,6 +5,7 @@ import type { ContentDraft } from '@/domain/notebook/contentDraft';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from './hooks/useSessionAssignment';
+import type { ExportableChapterOption } from './modals/DataTransferModal';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
@@ -18,7 +19,10 @@ interface EditorModalsProps {
   activeModal: string | null;
   handleModalClose: () => void;
   handleImport: (data: unknown, mode: 'replace' | 'append') => Promise<boolean> | boolean;
-  handleExportData: () => void;
+  /** `null` = tout le cahier ; sinon, les positions des blocs cochés. */
+  handleExportData: (chapters: number[] | null) => void;
+  /** Blocs de premier niveau du cahier ouvert, pour la liste d'export. */
+  exportChapters: ExportableChapterOption[];
   lessonsData: LessonsData;
   handleUpdateLessons: (newLessons: LessonsData) => void;
   config: AppConfig;
@@ -75,6 +79,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   handleModalClose,
   handleImport,
   handleExportData,
+  exportChapters,
   lessonsData,
   handleUpdateLessons,
   config,
@@ -113,7 +118,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   const buildModal = (type: string, isOpen: boolean): React.ReactNode => {
     switch (type) {
       case 'dataTransfer':
-        return <DataTransferModal isOpen={isOpen} onClose={handleModalClose} onImport={handleImport} onExport={handleExportData} />;
+        return <DataTransferModal isOpen={isOpen} onClose={handleModalClose} onImport={handleImport} onExport={handleExportData} chapters={exportChapters} />;
       case 'manageLessons':
         return <ManageLessonsModal isOpen={isOpen} onClose={handleModalClose} lessons={lessonsData} onUpdate={handleUpdateLessons} config={config} onConfigChange={onConfigChange} />;
       case 'guide':
