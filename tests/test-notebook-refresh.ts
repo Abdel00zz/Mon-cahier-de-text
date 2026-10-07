@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { injectAbsenceLine } from '../src/domain/notebook/absenceInjection';
-import { FREE_TYPE, isFreeContent } from '../src/domain/notebook/freeLineType';
 import { readInitialNotebook } from '../src/features/editor/initialNotebook';
 import { storedNotebookChanged } from '../src/features/editor/notebookRefresh';
 import { saveNotebook } from '../src/infrastructure/storage/saveNotebook';
@@ -34,15 +33,7 @@ const installGlobal = (context: test.TestContext, storage: ReturnType<typeof mem
   reloadSyncState();
 };
 
-/*
- * « ABSENCES ET CERTIFICATS » → TABLEAU DE L'ÉDITEUR → SYNCHRONISATION.
- *
- * Le réglage écrit une ligne libre datée dans le cahier des classes qui ont une
- * séance pendant l'absence (voir `absenceInjection`). Ces tests vérifient le
- * BRANCHEMENT, pas la règle : que la ligne atteigne bien le tableau de
- * l'éditeur et la file d'envoi, et que l'éditeur RELISE le cahier quand un autre
- * écran l'a réécrit — sans quoi il l'écraserait à son prochain enregistrement.
- */
+// Legacy certificate copies must not enter the editor tree after reload.
 
 /** Un cahier réel, avec son chapitre daté. */
 const notebook: LessonsData = [
@@ -64,7 +55,7 @@ const absenceLine = {
 const injectedOf = (classId: string): LessonsData =>
   injectAbsenceLine(notebook, { ...absenceLine, id: `free-absence-${classId}-2026-09-14` })! as unknown as LessonsData;
 
-test('la ligne du certificat arrive dans le cahier, à sa date, et dans la file d’envoi', context => {
+test('un ancien certificat synchronisé reste exclu du tableau', context => {
   const storage = memoryStorage();
   installGlobal(context, storage);
   saveNotebook('c1', notebook, 'rtl');
@@ -76,10 +67,8 @@ test('la ligne du certificat arrive dans le cahier, à sa date, et dans la file 
   // 1 · Le tableau : l'éditeur lit ce cahier au premier rendu, sans squelette.
   const stored = readInitialNotebook({ classId: 'c1', locale: 'ar' })!;
   const chapter = stored.lessons[0] as unknown as { items: Array<{ type?: string; title?: string; date?: string }> };
-  assert.deepEqual(chapter.items.map(item => item.title), ['D1', 'Certificat de maladie']);
-  assert.equal(chapter.items[1].type, FREE_TYPE, 'une ligne libre, comme celle créée à la main');
-  assert.equal(isFreeContent(chapter.items[1]), true, 'le tableau reconnaît la ligne libre');
-  assert.equal(chapter.items[1].date, '2026-09-14');
+  assert.deepEqual(chapter.items.map(item => item.title), ['D1']);
+  assert.deepEqual(stored.lessons, notebook, 'le certificat reste hors du plan pédagogique');
 
   // 2 · La synchronisation : `saveNotebook` marque la classe sale APRÈS l'écriture.
   assert.deepEqual(getPendingWork().dirtyClassIds, ['c1'], 'le cahier part au prochain push');
@@ -88,7 +77,7 @@ test('la ligne du certificat arrive dans le cahier, à sa date, et dans la file 
   assert.equal(injectAbsenceLine(next, absenceLine), null);
 });
 
-test('l’éditeur resté monté derrière les Réglages relit le cahier réécrit', context => {
+test('une ancienne copie de certificat ne déclenche pas de relecture pédagogique', context => {
   const storage = memoryStorage();
   installGlobal(context, storage);
   saveNotebook('c1', notebook, 'rtl');
@@ -102,11 +91,11 @@ test('l’éditeur resté monté derrière les Réglages relit le cahier réécr
 
   assert.equal(
     storedNotebookChanged(storage.getItem('classData_v1_c1'), memory),
-    true,
-    'sans relecture, la ligne n’apparaîtrait pas au retour et le prochain enregistrement la recouvrirait',
+    false,
+    'une copie administrative ne change pas le contenu pédagogique',
   );
   // Une fois relu, l'éditeur et le disque coïncident : plus aucune relecture.
-  assert.equal(storedNotebookChanged(storage.getItem('classData_v1_c1'), { lessons: injected, direction: 'rtl' }), false);
+  assert.equal(storedNotebookChanged(storage.getItem('classData_v1_c1'), { lessons: notebook, direction: 'rtl' }), false);
 });
 
 test('aucune relecture inutile : notre propre enregistrement, une autre classe, un cahier illisible', context => {

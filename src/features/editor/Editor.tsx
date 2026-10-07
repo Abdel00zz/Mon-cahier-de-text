@@ -661,18 +661,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     loadData();
   }, [loadData]);
 
-  /*
-   * Le cahier du disque peut changer sans nous, et pas seulement par un pull
-   * cloud : l'onglet « Absences et certificats » écrit LOCALEMENT la ligne
-   * « Certificat de maladie » des classes qui ont une séance pendant l'absence,
-   * pendant que l'éditeur reste monté derrière les Réglages (`key={routeKey}`
-   * ne le démonte pas — on revient par l'historique). Sans cette relecture, la
-   * ligne n'apparaîtrait pas au retour et le premier enregistrement automatique
-   * la recouvrirait, puisque l'éditeur écrit son cahier EN ENTIER.
-   * On ne relit jamais par-dessus une saisie en cours : un texte non enregistré
-   * vaut plus qu'une ligne réinjectable. Une relecture inutile (notre propre
-   * enregistrement, une autre classe) est un simple constat, sans effet.
-   */
+  // Relecture après synchronisation, sans recouvrir une saisie encore non enregistrée.
   const reloadStoredNotebook = useCallback(() => {
     if (!workspaceIsActive() || saveStatusRef.current !== 'saved') return;
     try {

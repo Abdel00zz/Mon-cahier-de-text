@@ -1,3 +1,4 @@
+import { separateAbsenceContent } from './separateAbsenceContent.js';
 import { produce, Draft } from 'immer';
 import { buildLessonRows } from './lessonRows';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, EmbeddableTopLevelItem } from '../../types.js';
@@ -343,7 +344,7 @@ export const migrateLessonsData = (data: any): LessonsData => {
         return [];
     }
 
-    return produce(data, draft => {
+    return produce(separateAbsenceContent(data), draft => {
         draft.forEach((item: any, index: number) => {
             if (typeof item !== 'object' || item === null) {
                 logger.error(`Invalid data at index ${index}, skipping.`, item);

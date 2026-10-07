@@ -2,25 +2,9 @@ import type { ContentDirection, LessonsData } from '@/types';
 import { readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
 
-/**
- * Le cahier du DISQUE a-t-il changé sous les pieds de l'éditeur ?
- *
- * Le cahier peut être réécrit ailleurs pendant que l'éditeur reste monté :
- *  - un **pull cloud** (`pull-applied`), déjà géré ;
- *  - une **écriture locale venue d'un autre écran** — l'onglet « Absences et
- *    certificats » pose la ligne « Certificat de maladie » dans le cahier des
- *    classes qui ont une séance pendant l'absence, alors que l'éditeur est
- *    toujours monté derrière les Réglages (`key={routeKey}` ne le démonte pas :
- *    on revient dans la classe par l'historique, pas par un remontage).
- *
- * Sans cette relecture, la ligne n'apparaîtrait pas au retour ET le premier
- * enregistrement automatique la recouvrirait, puisque l'éditeur écrit son
- * cahier EN ENTIER depuis sa mémoire.
- *
- * La décision est isolée ici, hors de React, pour être mesurable : c'est un
- * simple constat sur deux instantanés, pas un effet de bord. Rendre `false`
- * signifie « rien à faire » — un événement `dirty` peut venir d'une autre
- * classe, de la liste des classes ou de notre propre enregistrement.
+/** Compare le contenu pédagogique du disque à la saisie en mémoire,
+ * après migration. Une copie administrative historique ne déclenche pas
+ * une relecture ; une modification du cours ou de sa direction le fait.
  */
 export interface NotebookInMemory {
     lessons: LessonsData;
