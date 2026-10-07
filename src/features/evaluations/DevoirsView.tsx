@@ -11,6 +11,8 @@ import { resolveClassAssessments } from '@/domain/evaluations/assessments';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import './evaluationsResponsive.css';
+import './classPickerCards.css';
+import { classColorAttributes } from '@/domain/classes/classColors';
 import { Modal } from '@/components/ui/modal';
 import {
   ArrowLeft,
@@ -245,6 +247,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : 0;
     return {
       id: item.id,
+      color: item.color,
       tier: label.tier,
       title: label.title,
       group: label.group,
@@ -957,6 +960,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 /** Une classe telle que la vue des classes la présente : son identité et ses comptes. */
 interface ClassPick {
   id: string;
+  color: string;
   tier?: string | null;
   title: string;
   group?: string | null;
@@ -987,6 +991,7 @@ const ClassPicker: React.FC<{ classes: ClassPick[]; onOpen: (id: string) => void
             <button
               type="button"
               data-class-id={item.id}
+              {...classColorAttributes(item)}
               onClick={() => onOpen(item.id)}
               className="hub-card class-choice h-full w-full"
               data-layout="row"
