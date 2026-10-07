@@ -22,7 +22,6 @@ interface ToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  onSave: () => void;
   saveStatus: 'saved' | 'saving' | 'unsaved';
   onOpenDataTransfer: () => void;
   onOpenManageLessons: () => void;
@@ -37,7 +36,7 @@ interface ToolbarProps {
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
-  onUndo, onRedo, canUndo, canRedo, onSave, saveStatus,
+  onUndo, onRedo, canUndo, canRedo, saveStatus,
   onOpenDataTransfer, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onOpenEvaluations,
   onPrint,
   searchQuery, setSearchQuery,
@@ -50,10 +49,10 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   return (
     <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl border border-border/60 bg-background/95 backdrop-blur-sm px-2 py-0.5 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3 sm:py-0.5">
       <div className="flex min-w-0 items-center justify-start gap-1.5">
-        <EditorSaveControl status={saveStatus} onSave={onSave} />
+        <EditorSaveControl status={saveStatus} />
       </div>
 
-      <div className="hidden items-center justify-center gap-0.5 rounded-lg bg-muted/20 sm:flex">
+      <div className="flex items-center justify-center gap-0.5 rounded-lg bg-muted/20">
         <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-11 w-11 rounded-md border border-transparent text-muted-foreground transition-all hover:border-border/50 hover:bg-background/80 hover:text-foreground hover:shadow-sm active:scale-[0.96] disabled:opacity-30">
           <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />
         </Button>
@@ -154,7 +153,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             {/* Les notifications vivent UNIQUEMENT dans le centre global de
                 l'accueil (cloche), aucune entrée ici, à la demande du prof. */}
 
-            {/* Save remains directly accessible; history actions live in the mobile menu. */}
+            {/* History actions remain available in the compact mobile menu. */}
             <div className="sm:hidden">
               <DropdownMenuItem onClick={onUndo} disabled={!canUndo}>
                 <Undo2 aria-hidden="true" style={isRtl ? { transform: 'scaleX(-1)' } : undefined} className="h-5 w-5" />

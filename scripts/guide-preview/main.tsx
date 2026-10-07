@@ -126,7 +126,7 @@ function Preview() {
         <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
           {new URLSearchParams(location.search).has('back') && <EditorBackButton onBack={noop} />}
           <div className="min-w-0 flex-1">
-        <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop} onSave={noop}
+        <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop}
           onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
           onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
@@ -150,3 +150,4 @@ if (import.meta.env.DEV) {
   root.render(<LocaleProvider locale={locale}><Preview /></LocaleProvider>);
   import.meta.hot?.dispose(() => root.unmount());
 }
+

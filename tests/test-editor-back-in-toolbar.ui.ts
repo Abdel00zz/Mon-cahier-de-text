@@ -32,7 +32,7 @@ const withLocale = (locale: 'fr' | 'ar', children: React.ReactElement) =>
   renderToStaticMarkup(React.createElement(LocaleProvider, { locale, children }));
 
 const toolbar = withLocale('fr', React.createElement(Toolbar, {
-  onUndo: noop, onRedo: noop, canUndo: true, canRedo: true, onSave: noop, saveStatus: 'saved' as const,
+  onUndo: noop, onRedo: noop, canUndo: true, canRedo: true, saveStatus: 'saved' as const,
   onOpenDataTransfer: noop, onOpenManageLessons: noop, onOpenGuide: noop, onOpenAnalyse: noop,
   onOpenEvaluations: noop, onPrint: noop, searchQuery: '', setSearchQuery: noop,
 }));
@@ -97,3 +97,4 @@ test('le sens de lecture place le bouton sans règle dédiée', () => {
   assert.ok(editor.match(/sticky top-0 z-\[50\] flex items-center gap-2/), 'rangée flex logique');
   assert.doesNotMatch(editor, /order-(first|last)|float-(left|right)/, 'aucune règle de direction dupliquée');
 });
+

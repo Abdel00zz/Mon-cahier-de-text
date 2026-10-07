@@ -1357,7 +1357,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   onRedo={handleRedo}
                   canUndo={canUndo}
                   canRedo={canRedo}
-                  onSave={saveData}
                   saveStatus={saveStatus}
                   onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
                   onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}

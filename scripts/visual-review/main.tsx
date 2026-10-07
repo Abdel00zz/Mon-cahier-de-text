@@ -45,7 +45,7 @@ function Review() {
             onClear={()=>setSelection(false)} onAdd={()=>setToast('Ajouter')} onAssignDate={()=>setToast('Choisir la date')}
             onAssignToday={()=>setToast('Aujourd’hui')} onClearDate={()=>setToast('Retirer la date')} onEdit={()=>setToast('Modifier')}
             onDelete={()=>{setSelection(false);setToast('Supprimer');}} onMoveUp={()=>setToast('Monter')} onMoveDown={()=>setToast('Descendre')} />
-          <Toolbar onSave={()=>setSaveState('saved')} saveStatus={saveState} onUndo={()=>setSaveState('unsaved')} onRedo={()=>setSaveState('saved')} canUndo={saveState==='saved'} canRedo={saveState==='unsaved'}
+          <Toolbar saveStatus={saveState} onUndo={()=>setSaveState('unsaved')} onRedo={()=>setSaveState('saved')} canUndo={saveState==='saved'} canRedo={saveState==='unsaved'}
             searchQuery={search} setSearchQuery={setSearch} onOpenDataTransfer={()=>setToast('Importer / exporter')} onOpenManageLessons={()=>setToast('Contenus')} onOpenAnalyse={()=>setToast('Suivi')} onOpenEvaluations={()=>setToast('Évaluations')} onOpenGuide={()=>setToast('Aide')} onPrint={()=>setToast('Imprimer')}/>
         </div></LocaleProvider>
       </section>
@@ -55,3 +55,4 @@ function Review() {
   </main>;
 }
 if (import.meta.env.DEV) createRoot(document.getElementById('root')!).render(<Review/>);
+
