@@ -7,7 +7,7 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
 import { SUPPORTED_HTML_TAGS } from '@/lib/text/htmlTags';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Eye, Pencil } from '@/components/ui/icons';
+import { Eye, Pencil } from 'lucide-react';
 import type { ContentDocument } from '@/types';
 
 /*
@@ -91,7 +91,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       maxWidth="2xl"
-      className="document-modal-frame"
+      className="document-modal-frame evaluation-modal"
       headerClassName="border-b border-border/70"
       title={t('documentPreview.heading')}
     >

@@ -1,0 +1,56 @@
+/* Shared treatment for the workspace and its nested sheets. */
+.evaluation-modal .modal-header [data-ui-title] { font-size: 16px; line-height: 1.5; }
+.evaluation-modal .modal-header [data-ui-title] p { font-size: 12px; font-weight: 400; }
+.evaluation-modal .modal-header svg { stroke-width: 1.8; }
+.evaluation-modal .modal-body { scrollbar-gutter: stable; }
+.evaluation-modal.document-modal-frame.modal-motion-surface { border-radius: 24px; }
+.evaluation-modal .wizard-step { padding: 0; border: 0; background: none; box-shadow: none; }
+.evaluation-modal .hub-card[data-layout='tile'] {
+  min-height: 112px;
+  padding: 12px 10px;
+  border-radius: 14px;
+  box-shadow: none;
+  background: hsl(var(--card));
+}
+.evaluation-modal .hub-card[data-layout='tile'] .hub-card__icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: hsl(var(--muted)); color: hsl(var(--muted-foreground));
+}
+.evaluation-modal .hub-card__icon svg { width: 22px; height: 22px; stroke-width: 1.8; }
+.evaluation-modal .hub-card[data-layout='tile'] .hub-card__title { font-size: 13px; line-height: 1.65; }
+.evaluation-modal :is(input:not([type='checkbox']), textarea, [role='combobox']) { min-width: 0; min-height: 44px; }
+.evaluation-modal .modal-body button:not([role='tab']) { min-height: 44px; }
+.evaluation-workspace .ev-row__state > span { border-radius: 8px; padding: 5px 8px; line-height: 1.5; }
+.evaluation-workspace .ev-row__id button { white-space: normal; overflow: visible; }
+
+/* A tablet dialog can be narrower than the viewport: measure the board itself. */
+@container (max-width: 56rem) {
+  .ev-board__head { display: none; }
+  .ev-board__rows > .ev-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'id state' 'date date' 'actions actions';
+    gap: 8px 12px;
+    padding: 14px;
+  }
+  .ev-row__state { max-width: 100%; justify-self: end; align-self: center; }
+  .ev-row__date { justify-self: stretch; }
+  .ev-row__actions { justify-self: stretch; flex-wrap: wrap; }
+  .ev-row__date input[type='date'] { min-height: 44px; }
+  .ev-action { min-height: 44px; min-width: 0; flex: 1 1 0; white-space: normal; text-align: center; }
+  .ev-icon-btn { width: 44px; height: 44px; flex: 0 0 44px; }
+  .ev-accordion__toggle {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'id state' 'actions actions';
+    gap: 6px 12px;
+  }
+}
+@container (min-width: 40rem) and (max-width: 56rem) {
+  .ev-board__rows > .ev-row { grid-template-areas: 'id state' 'date actions'; }
+}
+@media (max-width: 639px) {
+  .evaluation-modal.document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'] { border-radius: 28px 28px 0 0; }
+  .evaluation-modal .modal-header [data-ui-title] { font-size: 15px; }
+  .evaluation-modal .modal-body { padding-inline: 16px; }
+  .evaluation-modal :is(input:not([type='checkbox']), textarea, [role='combobox']) { font-size: 16px; }
+  .evaluation-modal .modal-header [data-ui-title] > div { gap: 10px; }
+}

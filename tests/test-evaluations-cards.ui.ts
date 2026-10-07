@@ -162,7 +162,8 @@ test('une icône et une teinte par nature, aucune couleur inventée', () => {
 
 test('la fenêtre annonce un contenu précis, pas une redite du titre', () => {
   const sheet = readFileSync('src/features/evaluations/ClassEvaluationsSheet.tsx', 'utf8');
-  assert.match(sheet, /t\('evaluationsSheet\.subtitle'\)/);
+  assert.match(sheet, /formatLocalizedClassDisplayName\(classInfo.name, locale\)/);
+  assert.match(sheet, /\{className\}/, 'la classe est le seul contexte sous le titre');
   assert.equal(sheet.includes("t('evaluations.assessments')} · {t('evaluations.activities')"), false);
   for (const locale of ['fr', 'en', 'ar'] as const) {
     const subtitle = translateLocaleMessage(locale, 'evaluationsSheet.subtitle');

@@ -2,13 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent, PedagogicalEventType } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
 import { resolveClassAssessments } from '@/domain/evaluations/assessments';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import './evaluationsResponsive.css';
 import { Modal } from '@/components/ui/modal';
 import {
   CalendarCheck,
@@ -17,7 +19,7 @@ import {
   Trash2,
   Undo2,
   Users,
-} from '@/components/ui/icons';
+} from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
@@ -120,7 +122,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [openedClassId, setOpenedClassId] = useState<string | null>(embedded ? (classes[0]?.id ?? null) : null);
   const openClass = embedded ? true : openedClassId !== null;
   const selectedClass = classes.find((c) => c.id === (openedClassId ?? selectedClassId)) ?? classes[0] ?? null;
-  const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
+  const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
   const { assessments, planning, calendar } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   /** Devoir ou activité dont on rédige le document pédagogique. */
@@ -441,7 +443,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   if (classes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl bg-card border border-border/80 shadow-xs">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
           <CalendarCheck className="h-7 w-7 stroke-[2.2]" />
         </div>
         <h3 className="text-base font-bold text-foreground">{t('evaluations.createClass')}</h3>
@@ -592,7 +594,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     : documentFor.kind === 'event' ? documentFor.event.date : documentFor.link.planned.dateISO;
 
   return (
-    <div className="space-y-4 font-sans sm:space-y-5">
+    <div className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
       {/* VUE 1 — LES CLASSES. L'écran commence par « quelle classe ? », en
           grandes cartes : le palier, le libellé, le groupe, et ce que la classe
           porte déjà (devoirs et activités). Rien d'autre : ni onglets, ni
@@ -619,7 +621,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 </button>
               )}
               <div className="min-w-0">
-                <h2 id="evaluations-class-context" className="truncate text-sm font-bold text-foreground sm:text-base">
+                <h2 id="evaluations-class-context" className={cn("truncate text-sm font-bold text-foreground sm:text-base", embedded && "sr-only")}>
                   {selectedClassDisplayName}
                 </h2>
                 <p className="truncate text-[11px] font-medium text-muted-foreground">
@@ -637,7 +639,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <button
               type="button"
               onClick={openKindChooser}
-              className="inline-flex h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+              className="inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
             >
               <Plus className="h-5 w-5" aria-hidden="true" />
               <span>{t('evaluations.add')}</span>
@@ -730,7 +732,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={kindChooserOpen}
         onClose={closeKindChooser}
         maxWidth="md"
-        className="sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
@@ -807,13 +809,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
-        className="sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
               <CalendarCheck className="h-5 w-5" />
             </span>
             <div className="min-w-0">
@@ -841,24 +843,20 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={absencesFor !== null}
         onClose={() => setAbsencesFor(null)}
         maxWidth="md"
-        className="sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">
+            <span className="flex h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-muted text-muted-foreground">
               <Users className="h-5 w-5" />
             </span>
             <div>
-              <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                {absencesFor && selectedClass
-                  ? t('evaluations.absencesTitle', {
-                      assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
-                    })
-                  : t('evaluations.absentees')}
+              <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
+                {t('evaluations.absentees')}
               </span>
               {absencesFor && selectedClass && (
                 <p className="text-xs font-medium text-muted-foreground mt-0.5">
-                  {selectedClassDisplayName} · {formatLongDate(absencesFor.planned.dateISO, locale)}
+                  {t(`evaluations.type.${absencesFor.planned.type}`)} {number.format(absencesFor.planned.num)} · {formatLongDate(absencesFor.planned.dateISO, locale)}
                 </p>
               )}
             </div>
@@ -922,16 +920,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={studentsFor !== null}
         onClose={() => setStudentsFor(null)}
         maxWidth="md"
-        className="sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 ring-1 ring-teal-500/20">
+            <span className="flex h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-muted text-muted-foreground">
               <Users className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <span className="block truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                {studentsFor?.title || t('evaluations.students.open')}
+              <span className="block break-words text-base font-semibold text-foreground sm:text-lg">
+                {t('evaluations.students.open')}
               </span>
               {studentsFor && (
                 <p className="mt-0.5 text-xs font-medium text-muted-foreground">
@@ -1373,17 +1371,14 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           {initial ? (
             <label className="block space-y-1.5">
               <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
-              <select
-                value={type}
-                onChange={(event) => changeType(event.target.value as DevoirType)}
-                className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
-              >
-                <option value="controle">{t('evaluations.type.controle')}</option>
-                <option value="controle_court">{t('evaluations.type.controle_court')}</option>
-                <option value="controle_global">{t('evaluations.type.controle_global')}</option>
-                <option value="oral">{t('evaluations.type.oral')}</option>
-                <option value="maison">{t('evaluations.type.maison')}</option>
-              </select>
+              <Select value={type} onValueChange={(value) => changeType(value as DevoirType)}>
+                <SelectTrigger aria-label={t('evaluations.manualType')} className="min-h-11 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(['controle', 'controle_court', 'controle_global', 'oral', 'maison'] as const).map(value => (
+                    <SelectItem key={value} value={value}>{t(`evaluations.type.${value}`)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </label>
           ) : (
             <div className="flex flex-col justify-end gap-1 rounded-xl bg-muted/40 px-3 py-2">
@@ -1393,14 +1388,13 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           )}
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualSemester')}</span>
-            <select
-              value={semestre}
-              onChange={(event) => setSemestre(Number(event.target.value) as 1 | 2)}
-              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
-            >
-              <option value={1}>{t('evaluations.semester', { number: 1 })}</option>
-              <option value={2}>{t('evaluations.semester', { number: 2 })}</option>
-            </select>
+            <Select value={String(semestre)} onValueChange={(value) => setSemestre(Number(value) as 1 | 2)}>
+              <SelectTrigger aria-label={t('evaluations.manualSemester')} className="min-h-11 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">{t('evaluations.semester', { number: 1 })}</SelectItem>
+                <SelectItem value="2">{t('evaluations.semester', { number: 2 })}</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
 

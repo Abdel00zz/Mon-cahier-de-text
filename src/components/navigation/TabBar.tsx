@@ -39,7 +39,7 @@ const NAV_COPY: Record<AppLocale, {
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'أقسامك', evaluations: 'المراقبة المستمرة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
+    dashboard: 'أقسامك', evaluations: 'المراقبة المستمرة و الأنشطة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
     dashboardMobile: 'أقسامك', evaluationsMobile: 'المراقبة', notificationsMobile: 'لوحة القيادة', settingsMobile: 'الإعدادات',
     collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },

@@ -20,7 +20,7 @@
  * l'année, du diagnostic aux épreuves de fin d'année, puis l'accompagnement.
  */
 import {
-  AwardIcon,
+  Award as AwardIcon,
   BookOpen,
   CalendarCheck,
   CheckSquare,
@@ -34,7 +34,7 @@ import {
   PenLine,
   RefreshCw,
   Users,
-} from '@/components/ui/icons';
+} from 'lucide-react';
 import type { DevoirType, PedagogicalEventType } from '@/types';
 
 /** Teintes disponibles pour une carte (voir `.hub-card[data-tone]`). */

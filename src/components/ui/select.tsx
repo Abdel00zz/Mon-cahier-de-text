@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check, ChevronDown, ChevronUp } from "./icons";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { formFieldVariants, type FormFieldVariantProps } from "./form-field";
 
 const Select = ({ dir, ...props }: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => {
-  const isRtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+  const { isRtl } = useLocale();
   return <SelectPrimitive.Root dir={dir ?? (isRtl ? 'rtl' : 'ltr')} {...props} />;
 };
 const SelectValue = SelectPrimitive.Value;
@@ -67,14 +68,14 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", dir, ...props }, ref) => {
-  const isRtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
+  const { isRtl } = useLocale();
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         ref={ref}
         dir={dir ?? (isRtl ? 'rtl' : 'ltr')}
         className={cn(
-          "paper-menu modern-scrollbar relative z-[200] max-h-[--radix-select-content-available-height)] min-w-[8.5rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-popover/90 p-1.5 text-popover-foreground shadow-[0_16px_36px_-12px_rgba(0,0,0,0.18),0_4px_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_50px_-16px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 text-start",
+          "paper-menu modern-scrollbar relative z-[200] max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-1rem)] min-w-[8.5rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-popover/90 p-1.5 text-popover-foreground shadow-[0_16px_36px_-12px_rgba(0,0,0,0.18),0_4px_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_50px_-16px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 text-start motion-reduce:animate-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-150 ease-out",
           "origin-[--radix-select-content-transform-origin]",
           position === "popper" &&
@@ -82,6 +83,8 @@ const SelectContent = React.forwardRef<
           className
         )}
         position={position}
+        collisionPadding={8}
+        sideOffset={6}
         {...props}
       >
       <SelectScrollUpButton />
@@ -89,7 +92,7 @@ const SelectContent = React.forwardRef<
         className={cn(
           "p-1",
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+            "w-full min-w-[min(var(--radix-select-trigger-width),calc(100vw-2rem))]"
         )}
       >
         {children}
@@ -108,10 +111,10 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-xl py-2 ps-8 pe-3 text-[13px] font-medium outline-none",
+      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-xl py-2 ps-8 pe-3 text-[13px] font-medium outline-none",
       "text-popover-foreground hover:bg-muted/70 hover:text-foreground focus:bg-muted/80 focus:text-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
-      "transition-all duration-150 active:scale-[0.98]",
+      "transition-colors duration-150 motion-reduce:transition-none",
       className
     )}
     {...props}

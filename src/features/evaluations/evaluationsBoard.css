@@ -32,6 +32,7 @@
     box-shadow: 0 1px 2px rgb(40 48 58 / .03);
     /* Les fonds de survol et les filets épousent le rayon : aucun coin carré. */
     overflow: hidden;
+    container-type: inline-size;
     /* Jetons de colonnes : posés sur la SURFACE, donc hérités à la fois par
        l'en-tête et par les lignes — l'en-tête est leur frère, pas leur parent :
        portés par `.ev-board__rows`, il retombait sur des colonnes automatiques
@@ -238,7 +239,7 @@
     /* Repli en deux lignes : l'en-tête de colonnes n'a plus de colonnes. */
     .ev-board__head { display: none; }
     .ev-board__rows > .ev-row {
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
             'id state'
             'date actions';
@@ -263,7 +264,7 @@
    besoin au lieu d'affamer le titre. */
 @media (max-width: 639px) {
     .ev-board__rows > .ev-row {
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
             'id state'
             'date date'
@@ -271,7 +272,7 @@
         gap: .35rem .5rem;
         padding: .6rem .7rem;
     }
-    .ev-row__state { justify-self: end; max-width: 45%; align-self: center; }
+    .ev-row__state { justify-self: end; max-width: 100%; align-self: center; }
     .ev-row__state > * { text-align: end; }
     .ev-row__date { justify-self: stretch; }
     .ev-row__actions { justify-self: stretch; }
@@ -347,8 +348,8 @@
     .ev-accordion__toggle {
         grid-template-columns: minmax(0, 1fr) auto;
         grid-template-areas:
-            'label count'
-            'word word';
+            'id state'
+            'actions actions';
         gap: .3rem .5rem;
         padding: .75rem .85rem;
     }

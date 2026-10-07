@@ -207,7 +207,7 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     assert.match(view, /const \[type\] = useState<PedagogicalEventType>\(initialType\)/, 'type fixé par l’étape 1');
     assert.doesNotMatch(view, /evaluations\.activityType/, 'plus de sélecteur de type dans la fiche');
     // Le devoir : sélecteur conservé UNIQUEMENT en modification.
-    assert.match(view, /initial \? \([\s\S]{0,900}<option value="controle">/, 'type modifiable seulement en édition');
+    assert.match(view, /initial \? \([\s\S]{0,900}<Select value=\{type\}/, 'type modifiable seulement en édition');
 });
 
 test('l’écran commence par les classes, puis montre la classe ouverte', () => {
@@ -222,7 +222,7 @@ test('l’écran commence par les classes, puis montre la classe ouverte', () =>
     assert.match(view, /onClick=\{backToClasses\}/, 'le retour aux classes');
     // Le nettoyage : ni onglets, ni sélecteur de classe, ni filtre de cycle.
     assert.doesNotMatch(view, /FluidTabRail|devoirTabItems|activeTab/, 'plus d’onglets de filtrage');
-    assert.doesNotMatch(view, /evaluations-class-selector|SelectTrigger/, 'plus de sélecteur de classe dans la page');
+    assert.doesNotMatch(view, /evaluations-class-selector|<Select value=\{selectedClassId\}/, 'plus de sélecteur de classe dans la page');
     // Le tiroir ouvert rend les occurrences DANS la page : devoirs ou séances,
     // juste sous leur type.
     assert.match(view, /renderAssessmentRows\(linksOfKind\(kind\)\)/, 'les devoirs du tiroir');

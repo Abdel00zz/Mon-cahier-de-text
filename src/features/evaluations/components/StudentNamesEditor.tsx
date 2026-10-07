@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { Copy, Info, Plus, Trash2, X } from '@/components/ui/icons';
+import { Copy, Info, Plus, Trash2, X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 
@@ -172,39 +172,40 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             onBlur={() => commitDraft(draft)}
             placeholder={t(copy.placeholder)}
             aria-label={t(copy.placeholder)}
-            className="h-10 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-11 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
             type="button"
             onClick={() => commitDraft(draft)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all cursor-pointer shadow-xs"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all cursor-pointer shadow-xs"
             aria-label={t(copy.add)}
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {t(copy.hint)}
-        </p>
-
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-[11px] leading-relaxed text-muted-foreground flex items-start gap-2">
-          <Info className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
-          <span>{t(copy.directive)}</span>
-        </div>
+        <details className="text-xs leading-relaxed text-muted-foreground">
+          <summary className="min-h-11 cursor-pointer rounded-lg py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            {t(copy.hint)}
+          </summary>
+          <p className="flex items-start gap-2 pb-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t(copy.directive)}</span>
+          </p>
+        </details>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
+            className="h-11 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(names)}
-            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
+            className="h-11 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
             {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}
           </button>
