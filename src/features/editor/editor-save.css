@@ -12,4 +12,7 @@
 .editor-toolbar-row [data-editor-toolbar] { position: relative; top: auto; margin: 0; padding-inline: 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
 .editor-toolbar-row .editor-back-button { flex-basis: 44px; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 9px; background: transparent; box-shadow: none; }
 [data-editor-toolbar] button .app-icon { width: 24px; height: 24px; stroke-width: 2; }
-@media (max-width: 639px) { [data-editor-toolbar] { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; } }
+@media (max-width: 639px) {
+  .editor-toolbar-row, [data-editor-toolbar] { position: relative; top: auto; }
+  [data-editor-toolbar] { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; }
+}
