@@ -1,11 +1,13 @@
 import express from "express";
 import path from "path";
+import { createServer } from "node:http";
 import { createServer as createViteServer } from "vite";
 import { setupMockApi } from "./dev/mockApi";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
+const httpServer = createServer(app);
 
   setupMockApi(app);
 
