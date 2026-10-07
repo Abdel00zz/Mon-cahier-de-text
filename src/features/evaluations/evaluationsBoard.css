@@ -1,0 +1,294 @@
+/* ── LE TABLEAU DES ÉVALUATIONS ───────────────────────────────────────────
+   Deux zones — les DEVOIRS et les ACTIVITÉS — écrites comme un tableau de
+   bord d'application de gestion : une seule surface, des filets d'un
+   demi-pixel entre les lignes, et surtout DES COLONNES QUI NE BOUGENT PAS
+   d'une ligne à l'autre (nature, identité, état, date, actions). C'est la
+   structure qui porte l'information, pas les cadres : chaque carte bordée de
+   la version précédente ajoutait quatre bordures, deux ombres et un titre
+   répété — quatre fois plus de traits pour moins de lisibilité.
+
+   LES COLONNES SONT DES JETONS (`--ev-*`) relus par l'en-tête ET par chaque
+   ligne. C'est ce qui garantit l'alignement sans `subgrid` (support inégal
+   selon les WebView) ni largeurs écrites deux fois : une valeur change, tout
+   le tableau suit.
+
+   SOUS 1024 px, le tableau se replie en DEUX LIGNES par entrée — identité et
+   état en haut, date et actions en dessous — au lieu de comprimer des
+   colonnes illisibles. L'en-tête de colonnes disparaît alors (les libellés
+   de champs restent, eux, sur chaque contrôle).
+
+   Les cibles tactiles ne descendent jamais sous 44 px sur téléphone : la
+   date et les commandes grandissent au lieu de rétrécir, même si la ligne,
+   elle, se resserre. */
+
+.ev-board {
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 84%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, hsl(var(--card)) 74%, transparent);
+    box-shadow: 0 1px 2px rgb(40 48 58 / .03);
+    /* Les fonds de survol et les filets épousent le rayon : aucun coin carré. */
+    overflow: hidden;
+    /* Jetons de colonnes : posés sur la SURFACE, donc hérités à la fois par
+       l'en-tête et par les lignes — l'en-tête est leur frère, pas leur parent :
+       portés par `.ev-board__rows`, il retombait sur des colonnes automatiques
+       et ses libellés ne tombaient plus au-dessus des bonnes colonnes (mesuré).
+       Les commandes ont une largeur FIXE, elles aussi : laissée « auto », une
+       ligne dont les libellés sont plus longs (« Absents au contrôle »)
+       élargissait sa propre colonne et décalait son état et sa date — quatre
+       abscisses différentes pour la même colonne avant ce correctif. */
+    --ev-kind: 3rem;
+    --ev-id: minmax(0, 1fr);
+    --ev-state: 10rem;
+    --ev-date: 9.5rem;
+    --ev-actions: 21rem;
+}
+
+/* Ligne d'en-tête : le vocabulaire des colonnes, en capitales discrètes. */
+.ev-board__head {
+    display: grid;
+    grid-template-columns: var(--ev-kind) var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'kind id state date actions';
+    align-items: center;
+    gap: .75rem;
+    padding: .5rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, hsl(var(--border)) 76%, transparent);
+    background: color-mix(in srgb, hsl(var(--muted)) 52%, transparent);
+    color: hsl(var(--muted-foreground));
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.ev-board__rows > .ev-row {
+    display: grid;
+    grid-template-columns: var(--ev-kind) var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'kind id state date actions';
+    align-items: center;
+    gap: .25rem .75rem;
+    min-height: 56px;
+    padding: .5rem 1rem;
+    transition: background-color 160ms ease;
+}
+/* Filet de séparation : une ligne sur deux bordures ne se lit pas. */
+.ev-board__rows > .ev-row + .ev-row {
+    border-top: 1px solid color-mix(in srgb, hsl(var(--border)) 62%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+    .ev-board__rows > .ev-row:hover {
+        background: color-mix(in srgb, hsl(var(--muted)) 58%, transparent);
+    }
+}
+/* Le clavier se voit comme la souris : la ligne prend le focus du contrôle. */
+.ev-board__rows > .ev-row:focus-within {
+    background: color-mix(in srgb, hsl(var(--muted)) 58%, transparent);
+}
+
+.ev-row__kind { grid-area: kind; justify-self: start; }
+.ev-row__id { grid-area: id; }
+/* L'identité d'une activité empile un titre, sa nature écrite et sa note :
+   l'espacement appartient au tableau, pas au balisage. */
+.ev-row__id .tone-chip { margin-top: .15rem; }
+.ev-row__id p { margin: .15rem 0 0; }
+.ev-row__state { grid-area: state; justify-self: start; }
+.ev-row__date { grid-area: date; }
+.ev-row__actions { grid-area: actions; justify-self: end; }
+.ev-board__head > :nth-child(1) { grid-area: kind; }
+.ev-board__head > :nth-child(2) { grid-area: id; }
+.ev-board__head > :nth-child(3) { grid-area: state; }
+.ev-board__head > :nth-child(4) { grid-area: date; }
+.ev-board__head > :nth-child(5) { grid-area: actions; justify-self: end; }
+
+/* La pastille de nature : même lavis que les cartes, un cran plus petite
+   pour que la ligne reste légère. */
+.ev-row > .ev-row__kind .hub-card__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0;
+    border-radius: 11px;   /* rayon imbriqué : 14 px de ligne − 3 px */
+}
+.ev-row > .ev-row__kind .hub-card__icon .app-icon { width: 1.15rem; height: 1.15rem; }
+
+/* L'état peut s'écrire sur deux lignes (« Écart de date avec le cahier ») :
+   la colonne est étroite, le sens passe avant l'alignement optique. */
+.ev-row__state > * { white-space: normal; text-align: start; }
+
+/* Repère de groupe (semestre) : discret, en capitales, il range sans
+   concurrencer le titre de la zone — la hiérarchie se lit d'un coup. */
+.ev-group__title {
+    margin: 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+/* Commandes de ligne : un libellé écrit, jamais une icône seule — la même
+   promesse que les cartes, en plus compact. Le ton de la ligne les teinte
+   quand la commande porte un état (document rédigé, absents consignés). */
+.ev-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3rem;
+    min-height: 2.25rem;
+    padding-inline: .625rem;
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 88%, transparent);
+    border-radius: 10px;
+    background: hsl(var(--background) / .7);
+    color: hsl(var(--muted-foreground));
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+.ev-action:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.ev-action:active { transform: scale(.97); }
+.ev-action:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
+.ev-action[data-filled='tone'] {
+    color: var(--tone);
+    border-color: color-mix(in srgb, var(--tone) 30%, hsl(var(--border)));
+    background: color-mix(in srgb, var(--tone) 8%, hsl(var(--card)));
+}
+/* Un état critique garde SA couleur, même si la ligne porte un ton : c'est la
+   charte — le rouge sémantique ne se mélange pas à la marque. */
+.ev-action[data-filled='danger'] {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / .3);
+    background: hsl(var(--destructive) / .08);
+}
+
+/* Bouton-icône de ligne (restaurer une date, supprimer) : 36 px sur grand
+   écran, 44 px au doigt. */
+.ev-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+.ev-icon-btn:hover { background: color-mix(in srgb, hsl(var(--muted)) 70%, transparent); color: hsl(var(--foreground)); }
+.ev-icon-btn[data-danger='true']:hover { background: hsl(var(--destructive) / .1); border-color: hsl(var(--destructive) / .25); color: hsl(var(--destructive)); }
+.ev-icon-btn:active { transform: scale(.92); }
+.ev-icon-btn:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
+/* Activité réalisée : le vert sémantique, la même valeur que la pastille
+   d'état (`tone-chip[data-state='done']`) — un état, une couleur. */
+.ev-icon-btn[data-done='true'] {
+    color: #15803d;
+    border-color: color-mix(in srgb, #15803d 32%, transparent);
+    background: color-mix(in srgb, #15803d 10%, transparent);
+}
+.dark .ev-icon-btn[data-done='true'] { color: #76d59a; }
+
+/* Période d'une activité : lecture seule, chiffres alignés, une seule ligne. */
+.ev-row__period {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: hsl(var(--muted-foreground));
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Contrôles du tableau : posés à plat au repos, soulignés au survol et au
+   focus. Rien à cliquer ne se cache, mais rien ne crie non plus. */
+.ev-row__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .375rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+.ev-row__date {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    min-width: 0;
+}
+.ev-row__date input[type='date'] {
+    height: 2.25rem;
+    min-width: 0;
+    width: 100%;
+    padding-inline: .5rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: hsl(var(--foreground));
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+.ev-row__date input[type='date']:hover { border-color: color-mix(in srgb, hsl(var(--border)) 90%, transparent); background: hsl(var(--background) / .6); }
+.ev-row__date input[type='date']:focus-visible { outline: none; border-color: color-mix(in srgb, hsl(var(--primary)) 55%, transparent); background: hsl(var(--background)); }
+/* Date ajustée par le professeur : elle est écrite en accent, comme partout. */
+.ev-row__date input[type='date'][data-custom='true'] { color: hsl(var(--primary)); font-weight: 800; }
+
+/* La ligne d'une activité réalisée s'éteint sans disparaître. */
+.ev-board__rows > .ev-row[data-done='true'] .ev-row__id {
+    text-decoration: line-through;
+    color: hsl(var(--muted-foreground));
+}
+.ev-board__rows > .ev-row[data-done='true'] .ev-row__kind .hub-card__icon { opacity: .7; filter: saturate(.5); }
+
+@media (max-width: 1023px) {
+    /* Repli en deux lignes : l'en-tête de colonnes n'a plus de colonnes. */
+    .ev-board__head { display: none; }
+    .ev-board__rows > .ev-row {
+        grid-template-columns: var(--ev-kind) var(--ev-id) auto;
+        grid-template-areas:
+            'kind id state'
+            'kind date actions';
+        gap: .4rem .5rem;
+        padding: .65rem .75rem;
+        align-items: start;
+    }
+    .ev-row__kind { align-self: start; }
+    .ev-row__id { align-self: center; min-height: 2rem; }
+    .ev-row__date { align-self: center; }
+    .ev-row__actions { align-self: center; }
+    /* Les deux lignes se touchent : on annule l'étirement hérité du tableau. */
+    .ev-row__state { align-self: start; }
+    /* Cibles tactiles : jamais moins de 44 px pour la date ni pour agir. */
+    .ev-row__date input[type='date'] { height: 2.75rem; border-color: color-mix(in srgb, hsl(var(--border)) 84%, transparent); background: hsl(var(--background) / .65); }
+    .ev-action { min-height: 2.75rem; padding-inline: .75rem; font-size: 11.5px; }
+    .ev-icon-btn { width: 2.75rem; height: 2.75rem; }
+}
+
+/* Repli en trois lignes SOUS 640 px — date et commandes ne tiennent plus côte
+   à côte (mesuré : à 480 px, l'action la plus large laissait 62 px à la date,
+   soit un champ illisible). L'état monte à côté du titre, où il se replie au
+   besoin au lieu d'affamer le titre. */
+@media (max-width: 639px) {
+    .ev-board__rows > .ev-row {
+        grid-template-columns: var(--ev-kind) minmax(0, 1fr) auto;
+        grid-template-areas:
+            'kind id state'
+            'date date date'
+            'actions actions actions';
+        gap: .35rem .5rem;
+        padding: .6rem .7rem;
+    }
+    .ev-row__state { justify-self: end; max-width: 45%; align-self: center; }
+    .ev-row__state > * { text-align: end; }
+    .ev-row__date { justify-self: stretch; }
+    .ev-row__actions { justify-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ev-board__rows > .ev-row, .ev-row__date input[type='date'] { transition: none; }
+}

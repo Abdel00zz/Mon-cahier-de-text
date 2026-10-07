@@ -51,7 +51,9 @@ export interface KindStyle {
 /** Activités pédagogiques : hors bulletin, mais dans la vie de la classe. */
 export const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, KindStyle> = {
   evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', tone: 'blue', Icon: ListChecks },
-  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'blue', Icon: CheckSquare },
+  // Le contrôle des cahiers : une vérification administrative, pas une épreuve —
+  // la teinte ardoise le dit et le distingue du diagnostic, qui est bleu.
+  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'slate', Icon: CheckSquare },
   examen_blanc: { labelKey: 'evaluations.event.examen_blanc', tone: 'rose', Icon: FileSignature },
   olympiade: { labelKey: 'evaluations.event.olympiade', tone: 'amber', Icon: AwardIcon },
   concours: { labelKey: 'evaluations.event.concours', tone: 'violet', Icon: GraduationCap },

@@ -36,7 +36,7 @@ import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
 import { KindGroupHeader } from './components/KindGroupHeader';
-import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
+import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -88,13 +88,19 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
 };
 
 /**
- * Une seule pastille d'état par devoir, et pas d'icône dedans : « Consigné »
- * ou « Écart de date » se lisent au mot, la couleur porte le reste. Seuls les
- * deux états qui demandent une action sont affichés.
+ * Une seule pastille d'état par devoir, et pas d'icône dedans : « Consigné ›
+ * ou « Écart de date » se lisent au mot, la couleur porte le reste.
+ * Les quatre états s'affichent — une colonne de tableau sans valeur ne se lit
+ * pas —, mais à deux niveaux : les deux états qui demandent une ACTION portent
+ * la couleur vive (vert consigné, ambre écart), les deux états de routine
+ * restent en sourdine (bleu « échéance à venir », gris « non encore consigné »),
+ * pour que l'œil ne s'arrête que là où il y a quelque chose à faire.
  */
-const STATUS_CHIP: Partial<Record<AssessmentLink['status'], string>> = {
+const STATUS_CHIP: Record<AssessmentLink['status'], string> = {
   done: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
   mismatch: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
+  upcoming: 'bg-primary/8 text-primary ring-primary/20',
+  missing: 'bg-muted text-muted-foreground ring-border',
 };
 
 /*
@@ -539,19 +545,32 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   const ofSemester = links.filter((l) => l.planned.semestre === sem);
                   if (ofSemester.length === 0) return null;
                   return (
-                    <section key={sem} className="space-y-2.5">
-                      <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center">
-                          <h3 className="evaluations-category-title text-foreground">
-                            {t('evaluations.semester', { number: number.format(sem) })}
-                          </h3>
-                        </div>
+                    <section key={sem} className="space-y-2" aria-label={t('evaluations.semester', { number: number.format(sem) })}>
+                      {/* Repère de groupe — petit, en capitales, comme les sections d'un
+                          logiciel de gestion : il range les devoirs sans concurrencer
+                          le titre de la zone (l'ancien titre de semestre avait la même
+                          taille que « Devoirs et évaluations », donc aucune hiérarchie). */}
+                      <div className="flex items-baseline justify-between px-1">
+                        <h4 className="ev-group__title">
+                          {t('evaluations.semester', { number: number.format(sem) })}
+                        </h4>
                         <span className="text-[11px] font-semibold text-muted-foreground">
                           {ofSemester.length} {ofSemester.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
                         </span>
                       </div>
 
-                      <div className="grid gap-2.5">
+                      {/* UN TABLEAU, pas une pile de cartes : une seule surface, des filets
+                          d'un demi-pixel, et des colonnes tenues par des jetons partagés
+                          avec la zone des activités — nature, identité, état, date, actions. */}
+                      <div className="ev-board">
+                        <div className="ev-board__head" aria-hidden="true">
+                          <span>{t('evaluations.stepKind')}</span>
+                          <span>{t('evaluations.assessmentSingle')}</span>
+                          <span>{t('evaluations.colState')}</span>
+                          <span>{t('evaluations.manualDate')}</span>
+                          <span>{t('evaluations.colActions')}</span>
+                        </div>
+                        <div className="ev-board__rows">
                         {ofSemester.map((link) => {
                           const a = link.planned;
                           const custom = !!(
@@ -568,55 +587,71 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                           );
                           const status = STATUS_STYLE[link.status];
                           const isSupervised = a.type !== 'maison';
+                          const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
+                          const KindIcon = kindStyle.Icon;
 
-                          // Type accents
+                          // UNE LIGNE DU TABLEAU. Cinq colonnes, la même grille que les
+                          // activités : la nature (icône teintée), l'identité cliquable,
+                          // l'état, la date réglable, puis les actions — toujours dans cet
+                          // ordre, donc on sait où cliquer sans relire.
                           return (
                             <div
                               key={a.id}
-                              className={cn(
-                                'group flex flex-col gap-3 rounded-2xl border bg-card/85 p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:shadow-md sm:flex-row sm:items-center sm:justify-between backdrop-blur-xs',
-                                link.status === 'done' ? 'border-border/70' : link.status === 'mismatch' ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/90'
-                              )}
+                              className="ev-row evaluation-tone"
+                              data-assessment-id={a.id}
+                              data-tone={kindStyle.tone}
                             >
-                              {/* Left Info */}
-                              <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-                                <div className="flex min-w-0 items-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditAssessment(a)}
-                                    className="group/title inline-flex min-h-9 min-w-0 cursor-pointer items-center rounded-xl px-1 text-start transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                                    title={t('evaluations.editDevoir')}
-                                  >
-                                    <span className="truncate text-sm font-bold text-foreground transition-colors group-hover/title:text-primary">
-                                      {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
-                                    </span>
-                                  </button>
-                                </div>
+                              <span className="ev-row__kind">
+                                <span className="hub-card__icon" aria-hidden="true"><KindIcon /></span>
+                              </span>
 
-                                {/* Status badges */}
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  {STATUS_CHIP[link.status] && (
-                                    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
-                                      {t(status.labelKey)}
-                                    </span>
-                                  )}
-
-                                </div>
+                              <div className="ev-row__id min-w-0">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditAssessment(a)}
+                                  className="-ms-1.5 inline-flex min-h-9 max-w-full cursor-pointer items-center truncate rounded-lg px-1.5 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                                  title={t('evaluations.editDevoir')}
+                                >
+                                  {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
+                                </button>
                               </div>
 
-                              {/* Right Actions & Date Selector */}
-                              <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:pt-0">
+                              <div className="ev-row__state">
+                                <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
+                                  {t(status.labelKey)}
+                                </span>
+                              </div>
+
+                              <div className="ev-row__date">
+                                <input
+                                  type="date"
+                                  value={a.dateISO}
+                                  onChange={(e) => setAssessmentDate(a.id, e.target.value)}
+                                  data-custom={custom}
+                                  title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
+                                  aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+                                />
+                                {custom && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setAssessmentDate(a.id, '')}
+                                    className="ev-icon-btn"
+                                    title={t('evaluations.restoreDate')}
+                                    aria-label={t('evaluations.restoreDate')}
+                                  >
+                                    <Undo2 className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="ev-row__actions">
                                 {/* Sujet, corrigé, fiche : le document du devoir suit le même
                                     moteur que le carnet, donc le même rendu qu'à l'impression. */}
                                 <button
                                   type="button"
                                   onClick={() => setDocumentFor({ kind: 'assessment', link })}
-                                  className={cn(
-                                    'inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:min-h-9 sm:w-auto sm:text-xs',
-                                    assessmentDocument
-                                      ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15'
-                                      : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
-                                  )}
+                                  className="ev-action"
+                                  data-filled={assessmentDocument ? 'tone' : undefined}
                                   aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
                                 >
                                   {t('evaluations.doc.open')}
@@ -626,12 +661,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => setAbsencesFor(link)}
-                                    className={cn(
-                                      'inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:min-h-9 sm:w-auto sm:text-xs',
-                                      absents.length > 0
-                                        ? 'border-rose-300 bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
-                                        : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
-                                    )}
+                                    className="ev-action"
+                                    data-filled={absents.length > 0 ? 'danger' : undefined}
                                   >
                                     {absents.length > 0
                                       ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
@@ -639,46 +670,21 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   </button>
                                 )}
 
-                                <div className="flex w-full min-w-0 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 p-0.5 shadow-2xs sm:w-auto">
-                                  <div className="relative flex min-w-0 flex-1 items-center sm:flex-none">
-                                    <input
-                                      type="date"
-                                      value={a.dateISO}
-                                      onChange={(e) => setAssessmentDate(a.id, e.target.value)}
-                                      className={cn(
-                                        'h-8 w-full min-w-0 rounded-lg bg-transparent px-2 text-[11px] font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer sm:w-auto sm:px-2.5 sm:text-xs',
-                                        custom && 'text-primary font-black'
-                                      )}
-                                      title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
-                                      aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
-                                    />
-                                  </div>
-
-                                  {custom && (
-                                    <button
-                                      type="button"
-                                      onClick={() => setAssessmentDate(a.id, '')}
-                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
-                                      title={t('evaluations.restoreDate')}
-                                    >
-                                      <Undo2 className="h-3.5 w-3.5" />
-                                    </button>
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    onClick={() => deleteAssessment(a.id)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                                    title={t('evaluations.manualDelete')}
-                                    aria-label={t('evaluations.manualDelete')}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteAssessment(a.id)}
+                                  className="ev-icon-btn"
+                                  data-danger="true"
+                                  title={t('evaluations.manualDelete')}
+                                  aria-label={t('evaluations.manualDelete')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
                               </div>
                             </div>
                           );
                         })}
+                        </div>
                       </div>
                     </section>
                   );
@@ -939,14 +945,11 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
     </div>
   );
 };
-
 /*
- * Commandes d'une carte : mêmes dimensions que dans le reste de la fenêtre,
- * cible tactile de 44 px sur tous les écrans. Elles
- * portent leur libellé et rien d'autre — l'icône de la carte dit déjà la nature
- * de l'activité, une seconde icône par bouton ne ferait que du bruit.
+ * Les commandes de ligne vivent dans `evaluationsBoard.css` (`.ev-action`, `.ev-icon-btn`) :
+ * une seule règle les sert dans les deux zones — devoirs et activités —, donc
+ * la même cible tactile de 44 px au doigt et les mêmes états au survol.
  */
-const EVENT_ACTION_CLASS = 'inline-flex h-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 px-3 text-[11px] font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer motion-reduce:transition-none';
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
@@ -969,7 +972,17 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
         />
       </div>
 
-      <ul className="hub-grid" data-rows>
+      <div className="ev-board">
+        <div className="ev-board__head" aria-hidden="true">
+          <span>{t('evaluations.stepKind')}</span>
+          <span>{t('evaluations.titleLabel')}</span>
+          <span>{t('evaluations.colState')}</span>
+          <span>{t('evaluations.manualDate')}</span>
+          <span>{t('evaluations.colActions')}</span>
+        </div>
+        {/* Même tableau que les devoirs : une activité se lit dans les mêmes
+            colonnes, avec sa nature, son état, sa période et ses commandes. */}
+        <ul className="ev-board__rows">
         {events.map((event) => {
           const done = event.status === 'done';
           const { labelKey, tone, Icon } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
@@ -982,39 +995,49 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
           return (
             <li
               key={event.id}
-              className="hub-card"
-              data-layout="row"
-              data-static="true"
+              className="ev-row evaluation-tone"
               data-activity-card="true"
               data-activity-type={event.type}
               data-tone={tone}
               {...(done ? { 'data-done': 'true' } : {})}
             >
-              {/* Icône de la nature de l'activité */}
-              <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
+              {/* 1 · La nature, réduite à son icône teintée : la colonne reste
+                  alignée avec celle des devoirs. */}
+              <span className="ev-row__kind">
+                <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
+              </span>
 
-              {/* Corps : titre + méta (date, type, état) */}
-              <div className="hub-card__body min-w-0 flex-1">
-                <h4 className="hub-card__title text-start" dir="auto">{title}</h4>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  {showType && <span className="tone-chip">{typeLabel}</span>}
-                  <time dateTime={event.date} className="activity-card__date hub-card__hint text-start">
-                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                  </time>
-                  {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
-                </div>
+              {/* 2 · L'identité : le titre, sa nature écrite SEULEMENT si le titre ne
+                  la dit pas déjà, et la note qui reste utile. */}
+              <div className="ev-row__id min-w-0">
+                <h4 className="text-[13.5px] font-bold leading-snug text-foreground" dir="auto">{title}</h4>
+                {showType && <span className="tone-chip">{typeLabel}</span>}
                 {showNote && (
-                  <p className="hub-card__hint line-clamp-2 text-start">{event.note}</p>
+                  <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground text-start">{event.note}</p>
                 )}
               </div>
 
-              {/* Tous les boutons sur la même ligne : texte(s) d'action + icônes de contrôle */}
-              <div className="activity-card__actions">
+              {/* 3 · L'état : écrit seulement quand il y a quelque chose à dire. */}
+              <div className="ev-row__state">
+                {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
+              </div>
+
+              {/* 4 · La période : lecture seule — une activité se date à sa création. */}
+              <div className="ev-row__date">
+                <time dateTime={event.date} className="ev-row__period">
+                  {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
+                </time>
+              </div>
+
+              {/* 5 · Les commandes, toujours dans le même ordre que celles d'un devoir :
+                  le document, les élèves, l'état, la suppression. */}
+              <div className="ev-row__actions">
                 {event.type !== REMARK_EVENT_TYPE && (
                   <button
                     type="button"
                     onClick={() => onOpenDocument(event)}
-                    className={cn(EVENT_ACTION_CLASS, event.document && 'activity-card__action-filled')}
+                    className="ev-action"
+                    data-filled={event.document ? 'tone' : undefined}
                     aria-label={t('evaluations.doc.title', { activity: event.title })}
                   >
                     {t('evaluations.doc.open')}
@@ -1023,7 +1046,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenStudents(event)}
-                  className={cn(EVENT_ACTION_CLASS, names > 0 && 'activity-card__action-filled')}
+                  className="ev-action"
+                  data-filled={names > 0 ? 'tone' : undefined}
                   aria-label={`${t('evaluations.students.open')} — ${event.title}`}
                 >
                   {names > 0 ? `${t('evaluations.students.open')} · ${names}` : t('evaluations.students.open')}
@@ -1032,12 +1056,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onToggle(event.id)}
-                  className={cn(
-                    'activity-card__icon-btn',
-                    done
-                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/20'
-                      : 'border-border/60 bg-background/60 text-muted-foreground hover:border-primary/40 hover:bg-primary/8 hover:text-primary'
-                  )}
+                  className="ev-icon-btn"
+                  data-done={done}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
                   {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
@@ -1045,16 +1065,18 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onDelete(event.id)}
-                  className="activity-card__icon-btn border-transparent text-destructive hover:border-destructive/25 hover:bg-destructive/10 active:bg-destructive/20"
+                  className="ev-icon-btn"
+                  data-danger="true"
                   aria-label={t('evaluations.deleteEventAria', { title: event.title })}
                 >
-                  <Trash2 className="h-5 w-5" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </li>
           );
         })}
-      </ul>
+        </ul>
+      </div>
     </section>
   );
 };

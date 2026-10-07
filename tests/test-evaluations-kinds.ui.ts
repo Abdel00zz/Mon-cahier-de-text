@@ -132,7 +132,7 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
     // Une seule déclaration des natures : la vue l'importe.
     assert.equal((catalog.match(/export const PEDAGOGICAL_EVENT_CONFIG/g) ?? []).length, 1);
-    assert.match(view, /import \{ KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
+    assert.match(view, /import \{ DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
     assert.match(view, /kindLabelKey\(chosenKind\)/, 'le fil d’étapes nomme la nature via sa clé traduite');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
     // Le parcours en deux étapes : choix puis champs, avec retour.

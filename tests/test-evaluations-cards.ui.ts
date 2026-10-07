@@ -50,31 +50,38 @@ test('les neuf types affichent leur titre sans répéter la nature ou la note', 
   }
 });
 
-test('chaque activité est une grande carte, teintée selon sa nature', () => {
+test('chaque activité est une ligne de tableau, teintée selon sa nature', () => {
   const html = renderSheet([
     event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14'),
     event('e2', 'controle_cahiers', 'مراقبة دفاتر التلاميذ', '2026-09-15', { students: { names: ['Amin', 'Salma'], updatedAt: '2026-09-15T00:00:00.000Z' } }),
   ]);
-  // La grille des réglages, en une colonne sur téléphone et deux dès 640 px :
-  // la fenêtre est montée par `ClassEvaluationsSheet`, dont la modale ne se
+  // UN tableau : une surface, un en-tête de colonnes, et une ligne par activité.
+  // La fenêtre est montée par `ClassEvaluationsSheet`, dont la modale ne se
   // sérialise pas hors navigateur — on éprouve donc son corps, ici.
-  assert.match(html, /class="hub-grid" data-rows/);
-  assert.equal(occurrences(html, 'class="hub-card"'), 2);
-  assert.equal(occurrences(html, 'data-static="true"'), 2);
-  // Une teinte par nature : ambre pour l'olympiade, bleu pour le contrôle des
-  // cahiers. On vise la carte (`data-activity-type`), pas le document : la
-  // teinte de l'en-tête de famille — bleu lui aussi — ne compte pas deux fois.
+  assert.match(html, /class="ev-board"/);
+  assert.match(html, /class="ev-board__head" aria-hidden="true"/, 'les colonnes sont nommées');
+  assert.match(html, /class="ev-board__rows"/);
+  assert.equal(occurrences(html, 'class="ev-row evaluation-tone"'), 2);
+  assert.equal(occurrences(html, 'data-activity-card="true"'), 2);
+  // Les cinq colonnes de chaque ligne : nature, identité, état, période, actions.
+  for (const cell of ['ev-row__kind', 'ev-row__id', 'ev-row__state', 'ev-row__date', 'ev-row__actions']) {
+    assert.equal(occurrences(html, cell), 2, `colonne ${cell} sur chaque ligne`);
+  }
+  // Une teinte par nature : ambre pour l'olympiade, ardoise pour le contrôle des
+  // cahiers (une vérification administrative, pas une épreuve). On vise la ligne
+  // (`data-activity-type`), pas le document : la teinte de l'en-tête de famille
+  // — violette — ne compte pas comme une nature.
   assert.equal(occurrences(html, 'data-activity-type="olympiade" data-tone="amber"'), 1);
-  assert.equal(occurrences(html, 'data-activity-type="controle_cahiers" data-tone="blue"'), 1);
+  assert.equal(occurrences(html, 'data-activity-type="controle_cahiers" data-tone="slate"'), 1);
   // L'en-tête de famille : une pastille d'icône teintée, puis le titre.
   assert.match(html, /class="kind-group evaluation-tone" data-tone="violet"[\s\S]{0,120}kind-group__badge/, 'la famille des activités ouvre sa section');
-  // Le sigle de la famille est écrit, la carte dit ce qu'elle est.
+  // Le sigle de la famille est écrit, la ligne dit ce qu'elle est.
   assert.match(html, /class="tone-chip">Olympiade</);
   assert.match(html, /class="tone-chip">Contrôle des cahiers des élèves</);
   assert.match(html, /Olympiade de mathématiques/);
-  // La liste d'élèves consignés est comptée DANS la carte.
+  // La liste d'élèves consignés est comptée DANS la commande de la ligne.
   assert.match(html, /Élèves consignés · 2/);
-  // État et suppression restent des commandes, jamais un clic sur la carte.
+  // État et suppression restent des commandes, jamais un clic sur la ligne.
   assert.match(html, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/);
   assert.match(html, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
