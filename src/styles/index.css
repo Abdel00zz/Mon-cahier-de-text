@@ -9,6 +9,7 @@
 @import "../features/dashboard/dashboardCanvas.css";
 @import "./mobile-performance.css";
 @import "./onboarding.css";
+@import "../features/evaluations/components/evaluation-choices.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
@@ -148,8 +149,8 @@
   :root { --app-text-scale-base: 0.92; }
 }
 
-/* ── Taille du texte : un seul curseur, quatre crans ─────────────────────
-   `--app-text-density` est posé par le contrôleur de thème (1 = normal) et
+/* ── Taille du texte : un seul curseur, quatre crans ─────────────���───────
+   `--app-text-density` est posé par le contr��leur de thème (1 = normal) et
    multiplie la base contextuelle. Espacements, rayons et cibles tactiles
    restent en pixels : agrandir le texte ne casse jamais la mise en page. */
 html {
@@ -668,7 +669,7 @@ html[lang="ar"] .modal-header h2,
 
 
 
-  /* ── Typographie des contenus du cahier ───────────────────────────────
+  /* ── Typographie des contenus du cahier ─────────────────���─────────────
      Une seule décision : la direction du tableau. Aucune classe de police
      optionnelle ne subsiste, un contenu ne peut plus contredire sa langue. */
   [data-content-direction="ltr"] [data-row-content="true"],
@@ -1198,20 +1199,20 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
 }
 /* Une couleur par rubrique (icône, fond de pastille, anneau de focus). Niveaux 600-700 en clair,
    plus clairs et moins saturés en sombre pour ne pas vibrer. */
-.hub-card[data-tone='blue'] { --tone: #2563eb; }
-.hub-card[data-tone='violet'] { --tone: #7c3aed; }
-.hub-card[data-tone='pink'] { --tone: #db2777; }
-.hub-card[data-tone='amber'] { --tone: #b45309; }
-.hub-card[data-tone='green'] { --tone: #15803d; }
-.hub-card[data-tone='teal'] { --tone: #0f766e; }
-.hub-card[data-tone='rose'] { --tone: #be123c; }
-.dark .hub-card[data-tone='blue'] { --tone: #86a9f5; }
-.dark .hub-card[data-tone='violet'] { --tone: #b79bf2; }
-.dark .hub-card[data-tone='pink'] { --tone: #f08cba; }
-.dark .hub-card[data-tone='amber'] { --tone: #f0b45c; }
-.dark .hub-card[data-tone='green'] { --tone: #76d59a; }
-.dark .hub-card[data-tone='teal'] { --tone: #6fcfc5; }
-.dark .hub-card[data-tone='rose'] { --tone: #f2a3b6; }
+.hub-card[data-tone='blue'], .evaluation-tone[data-tone='blue'] { --tone: #2563eb; }
+.hub-card[data-tone='violet'], .evaluation-tone[data-tone='violet'] { --tone: #7c3aed; }
+.hub-card[data-tone='pink'], .evaluation-tone[data-tone='pink'] { --tone: #db2777; }
+.hub-card[data-tone='amber'], .evaluation-tone[data-tone='amber'] { --tone: #b45309; }
+.hub-card[data-tone='green'], .evaluation-tone[data-tone='green'] { --tone: #15803d; }
+.hub-card[data-tone='teal'], .evaluation-tone[data-tone='teal'] { --tone: #0f766e; }
+.hub-card[data-tone='rose'], .evaluation-tone[data-tone='rose'] { --tone: #be123c; }
+.dark .hub-card[data-tone='blue'], .dark .evaluation-tone[data-tone='blue'] { --tone: #86a9f5; }
+.dark .hub-card[data-tone='violet'], .dark .evaluation-tone[data-tone='violet'] { --tone: #b79bf2; }
+.dark .hub-card[data-tone='pink'], .dark .evaluation-tone[data-tone='pink'] { --tone: #f08cba; }
+.dark .hub-card[data-tone='amber'], .dark .evaluation-tone[data-tone='amber'] { --tone: #f0b45c; }
+.dark .hub-card[data-tone='green'], .dark .evaluation-tone[data-tone='green'] { --tone: #76d59a; }
+.dark .hub-card[data-tone='teal'], .dark .evaluation-tone[data-tone='teal'] { --tone: #6fcfc5; }
+.dark .hub-card[data-tone='rose'], .dark .evaluation-tone[data-tone='rose'] { --tone: #f2a3b6; }
 .dark .hub-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 24px -18px rgb(0 0 0 / 0.6); }
 /* Liste de cartes-lignes : une colonne sur téléphone, deux dès 640 px. */
 .hub-grid[data-rows] { grid-template-columns: minmax(0, 1fr); }
@@ -2299,8 +2300,8 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 .hub-card[data-done] { background: color-mix(in srgb, hsl(var(--card)) 55%, hsl(var(--muted))); }
 .hub-card[data-done] .hub-card__title { text-decoration: line-through; color: hsl(var(--muted-foreground)); }
 .hub-card[data-done] .hub-card__icon { opacity: 0.75; filter: saturate(0.45); }
-.hub-card[data-tone='slate'] { --tone: #475569; }
-.dark .hub-card[data-tone='slate'] { --tone: #9aa7b4; }
+.hub-card[data-tone='slate'], .evaluation-tone[data-tone='slate'] { --tone: #475569; }
+.dark .hub-card[data-tone='slate'], .dark .evaluation-tone[data-tone='slate'] { --tone: #9aa7b4; }
 
 /* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
    Elle remplace une seconde couleur inventée — une carte, une teinte. */
