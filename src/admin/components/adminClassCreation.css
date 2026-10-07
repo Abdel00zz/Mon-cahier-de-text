@@ -1,0 +1,20 @@
+/* Shared teacher wizard, with neutral editorial choices in administration. */
+html:has(#admin-root) .modal-motion-surface button[data-keep-tone] {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+  filter: none !important;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+html:has(#admin-root) .modal-motion-surface button[data-keep-tone] > span {
+  font-family: var(--font-display); font-size: 19px; font-weight: 500; line-height: 1.35;
+}
+html:has(#admin-root) .modal-motion-surface button[data-keep-tone]:hover {
+  border-color: hsl(var(--primary) / .55) !important;
+  background: hsl(var(--muted) / .3) !important;
+}
+.admin-managed-class { transition: border-color 180ms ease, box-shadow 180ms ease; }
+.admin-managed-class .font-semibold.text-foreground { font-family: var(--font-display); font-size: 20px; font-weight: 500; }
+.admin-managed-class button { min-height: 44px; }
+@media (hover: hover) { .admin-managed-class:hover { border-color: hsl(var(--muted-foreground) / .4); box-shadow: 0 5px 16px -12px hsl(var(--foreground) / .2); } }
+@media (prefers-reduced-motion: reduce) { .admin-managed-class, html:has(#admin-root) .modal-motion-surface button[data-keep-tone] { transition: none; } }

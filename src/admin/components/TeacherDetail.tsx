@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
@@ -20,6 +20,8 @@ import { preparePrintContent, printDocument } from '../../infrastructure/printin
 import { ClassJsonImportModal } from './ClassJsonImportModal';
 import { AdminDocumentPreview } from './AdminDocumentPreview';
 import { ClassProgression } from './ClassProgression';
+import { CreateClassModal } from '../../features/dashboard/modals/CreateClassModal';
+import './adminClassCreation.css';
 
 const calendar = getBundledCalendar();
 
@@ -454,10 +456,9 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const [messageTitle, setMessageTitle] = useState('Message de la direction');
     const [messageBody, setMessageBody] = useState('');
     const [isClassModalOpen, setClassModalOpen] = useState(false);
+    const activeTeacherRef = useRef(phone);
+    activeTeacherRef.current = phone;
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
-    const [className, setClassName] = useState('');
-    const [classSubject, setClassSubject] = useState('');
-    const [classCycle, setClassCycle] = useState<Cycle>('college');
     const [activeTab, setActiveTab] = useState<TeacherDetailTab>('classes');
     const [importingClass, setImportingClass] = useState<ClassInfo | null>(null);
     const [lessonRevisions, setLessonRevisions] = useState<Record<string, number>>({});
@@ -506,13 +507,14 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         selectTab(TEACHER_DETAIL_TAB_ORDER[nextIndex], true);
     };
 
-    const runAction = async (fn: () => Promise<string>) => {
+    const runAction = async (fn: () => Promise<string>, propagateError = false) => {
         setBusy(true);
         setActionMessage(null);
         try {
             setActionMessage(await fn());
         } catch (err) {
             setActionMessage(err instanceof Error ? err.message : 'Action échouée.');
+            if (propagateError) throw err;
         } finally {
             setBusy(false);
         }
@@ -550,26 +552,24 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
 
     const openClassModal = (classInfo?: ClassInfo) => {
         setEditingClass(classInfo ?? null);
-        setClassName(classInfo?.name ?? '');
-        setClassSubject(classInfo?.subject ?? '');
-        setClassCycle(classInfo?.cycle ?? 'college');
         setClassModalOpen(true);
     };
 
-    const handleSaveClass = () =>
+    const handleSaveClass = (details: Pick<ClassInfo, 'name' | 'subject' | 'cycle'>, classId?: string) =>
         runAction(async () => {
-            const name = className.trim();
-            const subject = classSubject.trim();
+            const name = details.name.trim();
+            const subject = details.subject.trim();
             if (!name || !subject) throw new Error('Le nom de la classe et la matière sont requis.');
             const result = await upsertTeacherClass(phone, {
-                id: editingClass?.id,
+                id: classId,
                 name,
                 subject,
-                cycle: classCycle,
+                cycle: details.cycle ?? 'college',
             });
+            if (activeTeacherRef.current !== phone) return '';
             setData(current => {
                 if (!current) return current;
-                const classes = editingClass
+                const classes = current.classes.some(item => item.id === result.classInfo.id)
                     ? current.classes.map(item => item.id === result.classInfo.id ? result.classInfo : item)
                     : [...current.classes, result.classInfo];
                 const snapshot = current.snapshot
@@ -602,7 +602,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
             return result.created
                 ? 'Classe ajoutée. Elle apparaîtra au prochain rafraîchissement de l’application du professeur.'
                 : 'Classe mise à jour. Les informations administratives seront appliquées au prochain rafraîchissement.';
-        });
+        }, true);
 
     const handleDeleteClassConfirmed = () => {
         const classInfo = confirmAction?.classInfo;
@@ -735,6 +735,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     useEffect(() => {
         let cancelled = false;
         setActiveTab('classes');
+        setClassModalOpen(false);
+        setEditingClass(null);
         setImportingClass(null);
         setLessonRevisions({});
         const load = async (showLoading: boolean) => {
@@ -959,58 +961,22 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         </div>
                     </Modal>
 
-                    <Modal
+                    <CreateClassModal
+                        key={phone}
                         isOpen={isClassModalOpen}
                         onClose={() => !busy && setClassModalOpen(false)}
-                        title={editingClass ? 'Modifier la classe' : 'Ajouter une classe'}
-                        description="La classe est affectée au professeur sélectionné. Les informations administratives sont protégées contre les anciennes copies hors ligne."
-                        maxWidth="lg"
-                        className="sm:rounded-2xl"
-                        footer={(
-                            <div className="flex w-full justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setClassModalOpen(false)} disabled={busy} className="rounded-xl">Annuler</Button>
-                                <Button type="button" onClick={() => void handleSaveClass()} disabled={busy || !className.trim() || !classSubject.trim()} className="rounded-xl">
-                                    {busy ? 'Enregistrement…' : editingClass ? 'Enregistrer' : 'Ajouter la classe'}
-                                </Button>
-                            </div>
-                        )}
-                    >
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
-                                Classe
-                                <input
-                                    value={className}
-                                    onChange={event => setClassName(event.target.value)}
-                                    maxLength={120}
-                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
-                                    placeholder="Ex. 1ère année collège"
-                                    autoFocus
-                                />
-                            </label>
-                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
-                                Matière
-                                <input
-                                    value={classSubject}
-                                    onChange={event => setClassSubject(event.target.value)}
-                                    maxLength={120}
-                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
-                                    placeholder="Ex. Mathématiques"
-                                />
-                            </label>
-                            <label className="block space-y-1.5 text-xs font-bold text-foreground sm:col-span-2">
-                                Cycle
-                                <select
-                                    value={classCycle}
-                                    onChange={event => setClassCycle(event.target.value as Cycle)}
-                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
-                                >
-                                    <option value="college">Collège</option>
-                                    <option value="lycee">Lycée qualifiant</option>
-                                    <option value="prepa">Classes préparatoires</option>
-                                </select>
-                            </label>
-                        </div>
-                    </Modal>
+                        editingClass={editingClass}
+                        existingClasses={classes}
+                        defaultCycle={editingClass?.cycle ?? classes[0]?.cycle ?? 'college'}
+                        teacherCycles={[...new Set(classes.map(item => item.cycle).filter((cycle): cycle is Cycle => Boolean(cycle)))]}
+                        teacherSubjects={[...new Set(classes.map(item => item.subject).filter(Boolean))]}
+                        onCreate={details => handleSaveClass(details)}
+                        onUpdate={(id, updates) => handleSaveClass({
+                            name: updates.name ?? editingClass!.name,
+                            subject: updates.subject ?? editingClass!.subject,
+                            cycle: updates.cycle ?? editingClass?.cycle ?? 'college',
+                        }, id)}
+                    />
 
                     <div
                         id="teacher-panel-classes"
@@ -1037,7 +1003,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                 const snapshot = snapshotsByClassId.get(cls.id);
                                 const lateness = snapshot ? latenessBadge(snapshot, data?.snapshot) : null;
                                 return (
-                                    <div key={cls.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                                    <div key={cls.id} className="admin-managed-class rounded-xl border border-border bg-card p-4 shadow-sm">
                                         <div className="flex flex-wrap items-start justify-between gap-2">
                                             <div>
                                                 <div className="font-semibold text-foreground">{cls.name}</div>
