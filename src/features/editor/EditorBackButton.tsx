@@ -29,7 +29,7 @@ export const EditorBackButton: React.FC<{ onBack: () => void; className?: string
             title={label}
             aria-label={label}
         >
-            <ArrowLeft className="editor-back-button__arrow" size={26} strokeWidth={2.5} aria-hidden="true" />
+            <ArrowLeft className="editor-back-button__arrow" size={22} strokeWidth={1.75} aria-hidden="true" />
         </button>
     );
 };
