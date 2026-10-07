@@ -10,9 +10,9 @@ import type { CSSProperties } from 'react';
 const DASHBOARD_CANVAS = {
     /** Neutres teintés : la page s'accorde au papier profond de la palette. */
     colors: {
-        mint: '#f3f1e8',
-        rose: '#f2f0e8',
-        sky: '#efede3',
+        mint: '#e2e8f0',
+        rose: '#e8edf3',
+        sky: '#cbd5e1',
     },
     /** Mode sombre : versions étagées autour du fond nuit d'argile */
     darkColors: {

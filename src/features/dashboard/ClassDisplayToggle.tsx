@@ -44,11 +44,10 @@ const GLYPHS: Record<ClassDisplayMode, React.ReactNode> = {
     </>,
     double: (
         <>
-            <rect x="2" y="4" width="8.5" height="16" rx="2.25" fill="currentColor" fillOpacity=".12" />
-            <rect x="13.5" y="4" width="8.5" height="16" rx="2.25" fill="currentColor" fillOpacity=".12" />
-            <rect x="4.5" y="7" width="3.5" height="4" rx="1" fill="currentColor" fillOpacity=".24" stroke="none" />
-            <rect x="16" y="7" width="3.5" height="4" rx="1" fill="currentColor" fillOpacity=".24" stroke="none" />
-            <path d="M4.5 15.5H8M16 15.5h3.5" />
+            <rect width="7" height="7" x="3" y="3" rx="2" />
+            <rect width="7" height="7" x="14" y="3" rx="2" />
+            <rect width="7" height="7" x="14" y="14" rx="2" />
+            <rect width="7" height="7" x="3" y="14" rx="2" />
         </>
     ),
 };

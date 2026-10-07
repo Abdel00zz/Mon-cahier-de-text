@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Settings, CircleHelp, AlarmBell, CalendarCheck, Menu } from '@/components/ui/icons';
+import { Book as Users, Settings, CircleHelp, Bell as AlarmBell, CalendarCheck, Menu } from 'lucide-react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useLocale, AppLocale } from '@/i18n/LocaleProvider';

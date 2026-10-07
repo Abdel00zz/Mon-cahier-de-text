@@ -156,7 +156,7 @@ test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   const start = cards.indexOf('.class-card .class-card__group {');
   assert.ok(start > 0, 'le style du numéro doit exister');
   const group = cards.slice(start, cards.indexOf('.dark .class-card .class-card__group {'));
-  assert.match(group, /color: color-mix\(in srgb, hsl\(var\(--foreground\)\) 68%, var\(--class-surface\)\)/, 'encre adoucie à 68 %');
+  assert.match(group, /color: var\(--class-accent\)/, 'encre pastel lisible');
   assert.match(group, /font-family: var\(--font-latin-display\)/, 'la grande serif d’affichage');
   // DROIT et GRAS : l'inclinaison italique rendait le chiffre menu ; la
   // majesté vient de la graisse 800 (vraie graisse, Newsreader étant variable
@@ -167,11 +167,10 @@ test('les numéros de classe sont à l’encre, opaques et détourés', () => {
   assert.match(group, /font-size: 30px;/, 'plus grand que le titre (21 px)');
   assert.match(group, /align-self: baseline;/, 'posé sur la ligne de base du nom');
   assert.match(group, /line-height: \.8;/, 'la boîte du chiffre ne pousse pas la ligne du titre');
-  assert.match(group, /text-shadow:[\s\S]*black 38%[\s\S]*white 28%/, 'gravure : sillon sombre au-dessus, lumière en dessous');
-  // Le filigrane créatif : DEUX ombres de plus — l'aura claire qui détache le
-  // chiffre du fond, et l'assise diffuse qui le fait tenir debout sur la carte.
-  assert.match(group, /text-shadow:[\s\S]*0 0 10px[\s\S]*0 3px 6px/, 'aura + assise du filigrane');
-  assert.match(group, /-webkit-text-stroke: \.5px color-mix/, 'filet d’encre qui affine la silhouette');
+  assert.match(group, /text-shadow: none;/, 'chiffre net sans halo');
+  // Le numéro reste dans le même flux que le titre, sans halo.
+  assert.match(cards, /\.class-card__identity \{ display: block;/, 'titre et numéro dans le même flux de texte');
+  assert.match(group, /-webkit-text-stroke: 0;/, 'chiffre sans contour artificiel');
   assert.match(group, /paint-order: stroke fill;/, 'le filet passe derrière le dessin');
   assert.doesNotMatch(group, /transform: (rotate|skew)/, 'aucun penché sur le chiffre gravé');
   assert.doesNotMatch(group, /background: color-mix|border: 1px solid|border-radius: 10px/, 'plus de pastille ni d’anneau');

@@ -3,7 +3,7 @@ import type { ClassInfo } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Clock, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
+import { Clock, MoreHorizontal as MoreVertical, Settings, Trash2 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuSeparator, DropdownMenuTrigger,

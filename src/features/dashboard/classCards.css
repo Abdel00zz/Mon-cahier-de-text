@@ -11,8 +11,8 @@
   --class-border: color-mix(in srgb, var(--class-accent) 17%, var(--class-surface));
   /* Encre et texte secondaire : ceux de la palette, donc chauds. Les cartes ne
      portent plus une gamme de gris froids à part. */
-  --class-ink: hsl(var(--foreground));
-  --class-muted: hsl(var(--muted-foreground));
+  --class-ink: var(--class-accent);
+  --class-muted: var(--class-accent);
   /* Verre teinté : la surface du ton reste la référence, mais à 94 % — le
      canevas du tableau de bord affleure derrière (charte §12 : 88-95 %), sans
      coûter un point de contraste au texte. */
@@ -27,9 +27,9 @@
   height: 100%;
   overflow: hidden;
   border: 1px solid var(--class-border);
-  border-radius: 22px;
+  border-radius: 20px;
   color: var(--class-ink);
-  background: var(--class-glass);
+  background: var(--class-surface);
   -webkit-backdrop-filter: blur(14px) saturate(1.28);
   backdrop-filter: blur(14px) saturate(1.28);
   /* Liseré supérieur spéculaire + ombre basse : la carte est POSÉE sur le
@@ -49,7 +49,7 @@
   background:
     radial-gradient(118% 92% at 10% -14%, color-mix(in srgb, var(--class-vivid) 22%, transparent), transparent 60%),
     radial-gradient(96% 84% at 106% 116%, color-mix(in srgb, var(--class-accent) 12%, transparent), transparent 64%);
-  opacity: .8;
+  opacity: 0;
   transition: opacity 260ms ease;
 }
 /* Mode sombre : la surface du ton est un gris profond (jamais du noir), le
@@ -68,7 +68,7 @@
   inset: 0;
   pointer-events: none;
   background-color: var(--class-accent);
-  opacity: .045;
+  opacity: 0;
   -webkit-mask-image: var(--class-texture);
   mask-image: var(--class-texture);
   -webkit-mask-size: 300px 300px;
@@ -115,36 +115,17 @@
 .dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
-/* La ligne du titre porte le nom PUIS le sceau : c'est la proximité qui dit
-   « même classe, groupe 3 ». L'alignement se fait sur la LIGNE DE BASE (et non
-   un décalage en pixels) : le chiffre reste posé sur la première ligne du nom
-   quelle que soit la taille du titre — 21 px sur bureau, 18,5 px sur
-   téléphone. */
-.class-card__identity { display: flex; align-items: baseline; min-height: 56px; }
+/* Le titre et le numéro partagent une ligne naturelle en LTR comme en RTL. */
+.class-card__identity { display: block; min-height: 56px; text-align: start; }
 /* Titre : Roboto Slab, posée en ligne par `constants/classTitleTypography.ts`.
    21 px — un cran sous l'ancien 23 px de Lora, Roboto Slab étant plus large.
    `flex: 0 1 auto` (et non `1`) : le titre ne s'étire pas jusqu'au bord, donc le
    numéro de groupe se pose JUSTE APRÈS le nom au lieu de partir à l'autre bout
    de la carte. Il rétrécit toujours quand le nom est long, et se replie sur
    deux lignes en laissant la place au chiffre. */
-.class-card__title { flex: 0 1 auto; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
+.class-card__title { display: inline; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
-/* Numéro de groupe : GRAVÉ dans la carte, collé au nom et plus grand que lui.
-   Plus de pastille ni d'anneau : c'est un filigrane. Une encre adoucie — 68 %
-   de l'encre du thème, mesurée de 5,3:1 à 6,7:1 sur les huit tons —, le corps
-   d'une GRANDE serif d'affichage (Newsreader, fontes variable 200-800 donc la
-   graisse 800 est un vrai dessin, jamais un gras synthétique) posée DROITE :
-   l'ancienne italique penchait le chiffre, ce qui le rendait plus menu que
-   majestueux. La gravure garde le sillon sombre AU-DESSUS du chiffre et la
-   lumière EN DESSOUS, et gagne deux ombres qui font le filigrane : une AURA
-   claire tout autour — le chiffre se détache du fond comme une marque sèche —
-   et une ASSISE diffuse en dessous, qui le fait tenir debout sur la carte.
-   Un filet d'encre à .5 px, peint DERRIÈRE le dessin (`paint-order: stroke
-   fill`), affine la silhouette sans l'alourdir.
-   `line-height: .8` réduit la boîte du chiffre sans toucher au glyphe, donc la
-   ligne du titre ne bouge pas ; `align-self: baseline` le pose sur la ligne de
-   base du nom, à 21 px comme à 18,5 px. Le nom accessible porte déjà le
-   groupe : le chiffre reste décoratif et ne se lit pas deux fois. */
+/* Le numéro suit le titre dans le flux de texte, même après un retour à la ligne. */
 .class-card .class-card__group {
   position: relative;
   inset: auto;
@@ -156,7 +137,7 @@
   min-width: 0;
   min-height: 0;
   margin: 0;
-  margin-inline-start: .3em;
+  margin-inline-start: .18em;
   padding: 0;
   /* Décor : la carte entière reste cliquable, aucun angle mort sous le pouce. */
   pointer-events: none;
@@ -168,46 +149,36 @@
   font-variant-numeric: lining-nums;
   letter-spacing: -.045em;
   line-height: .8;
-  color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
+  color: var(--class-accent);
   opacity: 1;
   background: none;
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  -webkit-text-stroke: .5px color-mix(in srgb, hsl(var(--foreground)) 26%, var(--class-surface));
+  -webkit-text-stroke: 0;
   paint-order: stroke fill;
-  text-shadow:
-    0 -1px 0 color-mix(in srgb, var(--class-surface) 62%, black 38%),
-    0 1px 0 color-mix(in srgb, var(--class-surface) 72%, white 28%),
-    0 0 10px color-mix(in srgb, var(--class-surface) 55%, white 45%),
-    0 3px 6px color-mix(in srgb, var(--class-surface) 55%, black 45%);
+  text-shadow: none;
   transform: none;
   translate: none;
   filter: none;
 }
-/* La gravure en mode sombre : l'aura devient une ombre portée (une lumière
-   blanche vibrerait sur le gris profond) et le filet s'éclaircit juste assez
-   pour que la silhouette reste nette. */
+/* Encre lisible sur les surfaces sombres. */
 .dark .class-card .class-card__group {
-  color: color-mix(in srgb, hsl(var(--foreground)) 68%, var(--class-surface));
+  color: var(--class-accent);
   opacity: 1;
   background: none;
   border: 0;
   box-shadow: none;
-  -webkit-text-stroke: .5px rgb(255 255 255 / .16);
-  text-shadow:
-    0 -1px 0 rgb(0 0 0 / .55),
-    0 1px 0 rgb(255 255 255 / .08),
-    0 0 10px rgb(0 0 0 / .5),
-    0 3px 6px rgb(0 0 0 / .55);
+  -webkit-text-stroke: 0;
+  text-shadow: none;
 }
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
-.class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
+.class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 12px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
    en interface latine — en arabe, `--font-sans` porte la fonte locale
    (Arabswell 3) qu'un Lato forcé ferait perdre. */
 :is(html[lang='fr'], html[lang='en']) :is(.class-card__status, .class-card__live) { font-family: var(--font-lato); }
-.class-card__clock { width: 13px; height: 13px; flex-shrink: 0; }
+.class-card__clock { width: 16px; height: 16px; flex-shrink: 0; }
 /* Unboxed liquid lettering is reserved for the active class. */
 .class-card__live {
   display: inline-flex;
@@ -230,12 +201,12 @@
     border-color: color-mix(in srgb, var(--class-accent) 46%, var(--class-surface));
     box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 24px 42px -28px color-mix(in srgb, var(--class-vivid) 62%, transparent), 0 8px 18px -12px rgb(32 30 26 / .22);
   }
-  .class-card:hover::before { opacity: 1; }
-  .class-card:hover .class-card__texture { opacity: .07; }
+  .class-card:hover::before { opacity: 0; }
+  .class-card:hover .class-card__texture { opacity: 0; }
 }
 /* Clavier : le même soulèvement, sans dépendre du survol. */
 .class-card:has(.class-card__open:focus-visible) { transform: translateY(-4px); }
-.class-card:has(.class-card__open:focus-visible)::before { opacity: 1; }
+.class-card:has(.class-card__open:focus-visible)::before { opacity: 0; }
 .class-card:has(.class-card__open:active) { transform: scale(.988); }
 @media (max-width: 639px) {
   .class-card { min-height: 173px; border-radius: 18px; }
@@ -248,4 +219,19 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .class-card, .class-card *, .class-card:hover, .class-card:has(.class-card__open:active) { transition: none; transform: none; }
+}
+
+/* Reference pastel palette, scoped to class cards to preserve other screens. */
+.class-card[data-keep-tone="mint"]:not([data-class-color]), .class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #d1fae5; --class-border: #a7f3d0; --class-accent: #065f46; --class-vivid: #059669; }
+.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e0f2fe; --class-border: #bae6fd; --class-accent: #0369a1; --class-vivid: #0284c7; }
+.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fef3c7; --class-border: #fde68a; --class-accent: #92400e; --class-vivid: #d97706; }
+.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f3e8ff; --class-border: #e9d5ff; --class-accent: #6b21a8; --class-vivid: #9333ea; }
+.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e0e7ff; --class-border: #c7d2fe; --class-accent: #3730a3; --class-vivid: #4f46e5; }
+.class-card[data-keep-tone="coral"]:not([data-class-color]), .class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #ffe4e6; --class-border: #fecdd3; --class-accent: #9f1239; --class-vivid: #e11d48; }
+.dark .class-card[data-keep-tone] { --class-surface: var(--keep-dark, #252729); --class-accent: var(--keep-accent); --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface)); }
+@media (min-width: 640px) and (max-width: 1023px) {
+  .class-card__body { padding-inline: 18px; }
+  .class-card__title { font-size: 20px; }
+  .class-card .class-card__group { font-size: 28px; }
+  .class-card__footer { padding-inline: 18px; }
 }
