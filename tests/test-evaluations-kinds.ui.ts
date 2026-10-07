@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
-import { KindChooser, KindHeader, ProgrammedList, StepTrail } from '../src/features/evaluations/components/KindChooser';
+import { ClassChooser, KindChooser, KindHeader, ProgrammedList, StepTrail } from '../src/features/evaluations/components/KindChooser';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey } from '../src/features/evaluations/kindCatalog';
 
 /*
@@ -77,22 +77,61 @@ test('chaque famille ouvre sa grille par une icône, un titre et son compte', ()
     assert.match(html, /kind-group__badge[^>]*aria-hidden="true"/);
 });
 
-test('l’étape 2 rappelle la nature choisie et permet d’y revenir', () => {
+test('le rappel de nature nomme le choix et permet d’y revenir — sans icône', () => {
     const kind = KIND_GROUPS[0].kinds[0];
     const html = render(React.createElement(KindHeader, { kind, onBack: () => undefined }));
-    assert.match(html, new RegExp(`data-tone="${kind.style.tone}"`), 'même teinte que la carte choisie');
     assert.match(html, /Changer le type/, 'le retour au choix est explicite');
     assert.match(html, /min-h-11/, 'cible tactile de 44 px');
+    // « Minimiser les icônes dans les zones » : la nature est ÉCRITE, pas dessinée.
+    assert.doesNotMatch(html, /<svg/, 'aucune icône dans le rappel');
+    assert.doesNotMatch(html, /hub-card__icon/, 'plus de pastille teintée');
+    assert.ok(html.includes(kindLabelKey(kind) === 'evaluations.type.controle' ? 'Devoir surveillé' : ''), 'la nature est nommée en toutes lettres');
 });
 
-test('le fil d’étapes n’annonce la nature que lorsqu’elle est choisie', () => {
-    const stepOne = render(React.createElement(StepTrail, { step: 1, label: 'Nature' }));
-    assert.match(stepOne, /aria-current="step"/, 'l’étape courante est annoncée');
-    assert.equal((stepOne.match(/Nature/g) ?? []).length, 1, 'aucune redite « Nature › Nature »');
+test('l’étape 1 propose les classes en grandes cartes, sans aucune icône', () => {
+    const classes = [
+        { id: 'c1', tier: '2ème Bac Sc. Physiques', title: 'Sciences Physiques', group: '3', fullName: '2ème Bac Sc. Physiques Sciences Physiques 3' },
+        { id: 'c2', tier: '1ère Année Collégiale', title: 'Première Année Collégiale', group: null, fullName: '1ère Année Collégiale' },
+    ];
+    const html = render(React.createElement(ClassChooser, { classes, currentId: 'c2', onSelect: () => undefined }));
+    for (const item of classes) {
+        assert.match(html, new RegExp(`data-class-id="${item.id}"`), `${item.id} est proposée`);
+    }
+    assert.equal((html.match(/data-current="true"/g) ?? []).length, 1, 'une seule classe active');
+    assert.match(html, /data-class-id="c2"[^>]*data-current="true"/, 'la classe ouverte est marquée');
+    assert.match(html, /Classe active/, 'et elle le dit en toutes lettres');
+    assert.match(html, /class-choice__group/, 'le numéro de groupe s’écrit à côté');
+    // « Minimiser l'utilisation des icônes dans les zones » : cette étape est
+    // entièrement textuelle — palier, libellé, groupe.
+    assert.equal((html.match(/<svg/g) ?? []).length, 0, 'aucune icône');
+});
 
-    const stepTwo = render(React.createElement(StepTrail, { step: 2, label: 'Devoir maison' }));
-    assert.match(stepTwo, /Nature/, 'la première étape reste lisible');
-    assert.match(stepTwo, /Devoir maison/, 'la nature choisie nomme l’étape 2');
+test('les zones ne portent plus d’icônes de navigation', () => {
+    const items = [
+        { id: 'a1', label: 'Devoir maison 1', dateISO: '2026-09-14', statusLabel: 'À vérifier', statusClass: 'ring-amber-500/40', hasDocument: true },
+    ];
+    const list = render(React.createElement(ProgrammedList, { items, onOpen: () => undefined, onCreate: () => undefined }));
+    // Les pastilles d'état et de document suffisent : plus de chevron d'un côté,
+    // plus de « + » de l'autre — le libellé de la création porte l'action.
+    assert.equal((list.match(/<svg/g) ?? []).length, 0, 'la liste programmée est textuelle');
+    assert.match(list, /Créer un devoir hors programmation/);
+    assert.match(list, /border-dashed/);
+    assert.match(list, /tone-chip/);
+});
+
+test('le fil d’étapes montre les trois crans et sert de retour', () => {
+    const first = render(React.createElement(StepTrail, { step: 1, onStep: () => undefined }));
+    assert.match(first, /aria-current="step"/, 'l’étape courante est annoncée');
+    for (const label of ['Classe', 'Nature', 'Contenu']) {
+        assert.ok(first.includes(label), `le cran « ${label} » est visible`);
+    }
+    assert.equal((first.match(/<svg/g) ?? []).length, 0, 'des numéros, pas des icônes');
+    assert.equal((first.match(/<button/g) ?? []).length, 0, 'rien à recliquer avant d’avoir avancé');
+
+    const third = render(React.createElement(StepTrail, { step: 3, label: 'Devoir maison', onStep: () => undefined }));
+    assert.ok(third.includes('Devoir maison'), 'la nature choisie nomme le troisième cran');
+    assert.equal((third.match(/<button/g) ?? []).length, 2, 'les deux crans franchis se recliquent');
+    assert.match(third, /aria-current="step"/);
 });
 
 test('un devoir programmé s’ouvre depuis la liste, la création libre reste en repli', () => {
@@ -135,9 +174,11 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     assert.match(view, /import \{ DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
     assert.match(view, /kindLabelKey\(chosenKind\)/, 'le fil d’étapes nomme la nature via sa clé traduite');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
-    // Le parcours en deux étapes : choix puis champs, avec retour.
-    assert.match(view, /<KindChooser onSelect=\{setChosenKind\} \/>/, 'étape 1 : les cartes');
-    assert.match(view, /<KindHeader kind=\{chosenKind\} onBack=\{\(\) => \{ setChosenKind\(null\); setManualFormOpen\(false\); \}\} \/>/, 'étape 2 : retour au choix');
+    // Le parcours en TROIS étapes : la classe, la nature, puis ses zones.
+    assert.match(view, /const \[wizardStep, setWizardStep\] = useState<1 \| 2 \| 3>\(1\)/, 'un cran d’assistant');
+    assert.match(view, /<ClassChooser classes=\{classChoices\} currentId=\{selectedClass\.id\} onSelect=\{chooseClass\} \/>/, 'étape 1 : la classe');
+    assert.match(view, /<KindChooser onSelect=\{\(kind\) => \{ setChosenKind\(kind\); setWizardStep\(3\); \}\} \/>/, 'étape 2 : la nature');
+    assert.match(view, /<KindHeader[\s\S]{0,200}setWizardStep\(2\)/, 'étape 3 : retour au choix de la nature');
     // Le type n'est plus redemandé par le formulaire d'activité.
     assert.match(view, /const \[type\] = useState<PedagogicalEventType>\(initialType\)/, 'type fixé par l’étape 1');
     assert.doesNotMatch(view, /evaluations\.activityType/, 'plus de sélecteur de type dans la fiche');

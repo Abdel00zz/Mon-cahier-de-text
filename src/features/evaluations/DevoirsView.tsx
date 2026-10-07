@@ -34,9 +34,10 @@ import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
-import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
+import { KindChooser, ClassChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
 import { KindGroupHeader } from './components/KindGroupHeader';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
+import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -143,6 +144,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [chosenKind, setChosenKind] = useState<EvaluationKind | null>(null);
   /** 3ᵉ temps d'un devoir : la création hors programmation, à la demande. */
   const [manualFormOpen, setManualFormOpen] = useState(false);
+  /** Étape de la fenêtre de création : 1 la classe, 2 la nature, 3 ses zones. */
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
 
@@ -194,12 +197,26 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setChosenKind(null);
   };
 
+  /**
+   * Les classes proposées à la première étape, dans le vocabulaire des cartes du
+   * tableau de bord : palier reconnu (« 2ème Bac Sc. Physiques »), libellé
+   * localisé, numéro de groupe. Le parcours commence donc par « à qui ? ».
+   */
+  const classChoices = useMemo(() => classes.map((item) => {
+    const identity = classIdentityFor(item.name, locale);
+    const label = classCardLabelFor(identity, locale);
+    return { id: item.id, tier: label.tier, title: label.title, group: label.group, fullName: label.fullName };
+  }), [classes, locale]);
+
   /*
-   * Une seule porte d'entrée pour tout créer : le CHOIX de la nature est la
-   * première étape de la fenêtre, pas une liste déroulante dans un formulaire.
+   * Une seule porte d'entrée pour tout créer, et elle se franchit PAS À PAS :
+   * 1 la classe, 2 la nature, 3 les zones de cette nature. Le cran déjà franchi
+   * reste cliquable dans le fil d'étapes, donc on revient sans rien perdre.
    */
   const openKindChooser = () => {
     setChosenKind(null);
+    setManualFormOpen(false);
+    setWizardStep(1);
     setKindChooserOpen(true);
   };
 
@@ -207,6 +224,18 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setKindChooserOpen(false);
     setChosenKind(null);
     setManualFormOpen(false);
+    setWizardStep(1);
+  };
+
+  /** Étape 1 : choisir la classe ferme aussi tout ce qui en dépendait. */
+  const chooseClass = (classId: string) => {
+    setSelectedClassId(classId);
+    setAbsencesFor(null);
+    setDocumentFor(null);
+    setStudentsFor(null);
+    setChosenKind(null);
+    setManualFormOpen(false);
+    setWizardStep(2);
   };
 
   /**
@@ -705,12 +734,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
         title={
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-              {chosenKind
-                ? <chosenKind.style.Icon className="h-5 w-5" />
-                : <Plus className="h-5 w-5" />}
-            </span>
+          <div className="flex min-w-0 items-center gap-3">
             <div className="min-w-0">
               <span className="block text-lg font-bold tracking-tight text-foreground sm:text-xl">{t('evaluations.add')}</span>
               {selectedClass && (
@@ -720,40 +744,64 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           </div>
         }
       >
-        {selectedClass && (chosenKind ? (
+        {selectedClass && (
           <>
-            <StepTrail step={2} label={t(kindLabelKey(chosenKind))} />
-            {/* 2ᵉ étape : la nature choisie reste visible, et se change d'un geste. */}
-            <KindHeader kind={chosenKind} onBack={() => { setChosenKind(null); setManualFormOpen(false); }} />
-            {chosenKind.family === 'event' ? (
-              <PedagogicalEventEditor
-                today={today}
-                initialType={chosenKind.type}
-                onCancel={closeKindChooser}
-                onSave={addPedagogicalEvent}
-              />
-            ) : manualFormOpen ? (
-              <ManualAssessmentEditor
-                today={today}
-                initial={null}
-                initialType={chosenKind.type}
-                assessments={assessments}
-                onCancel={() => setManualFormOpen(false)}
-                onSave={saveAssessment}
-              />
-            ) : (
-              <ProgrammedList
-                items={programmedFor(chosenKind.type)}
-                onOpen={openProgrammedAssessment}
-                onCreate={() => setManualFormOpen(true)}
-              />
+            {/* Le fil d'étapes EST la navigation : un cran franchi se reclique,
+                donc revenir ne coûte ni un bouton de plus ni la saisie. */}
+            <StepTrail
+              step={wizardStep}
+              label={chosenKind ? t(kindLabelKey(chosenKind)) : undefined}
+              onStep={(next) => {
+                setWizardStep(next);
+                if (next < 3) setManualFormOpen(false);
+                if (next < 3) setChosenKind(null);
+              }}
+            />
+
+            {/* 1 · LA CLASSE — tout ce qui suit lui appartient. */}
+            {wizardStep === 1 && (
+              <ClassChooser classes={classChoices} currentId={selectedClass.id} onSelect={chooseClass} />
+            )}
+
+            {/* 2 · LA NATURE — la décision de l'écran, en grandes cartes. */}
+            {wizardStep === 2 && (
+              <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(3); }} />
+            )}
+
+            {/* 3 · LES ZONES DE CETTE NATURE — devoirs programmés, ou champs. */}
+            {wizardStep === 3 && chosenKind && (
+              <>
+                <KindHeader
+                  kind={chosenKind}
+                  onBack={() => { setChosenKind(null); setManualFormOpen(false); setWizardStep(2); }}
+                />
+                {chosenKind.family === 'event' ? (
+                  <PedagogicalEventEditor
+                    today={today}
+                    initialType={chosenKind.type}
+                    onCancel={closeKindChooser}
+                    onSave={addPedagogicalEvent}
+                  />
+                ) : manualFormOpen ? (
+                  <ManualAssessmentEditor
+                    today={today}
+                    initial={null}
+                    initialType={chosenKind.type}
+                    assessments={assessments}
+                    onCancel={() => setManualFormOpen(false)}
+                    onSave={saveAssessment}
+                  />
+                ) : (
+                  <ProgrammedList
+                    items={programmedFor(chosenKind.type)}
+                    onOpen={openProgrammedAssessment}
+                    onCreate={() => setManualFormOpen(true)}
+                  />
+                )}
+              </>
             )}
           </>
-        ) : (
-          <>
-            <StepTrail step={1} label={t('evaluations.stepKind')} />            <KindChooser onSelect={setChosenKind} />
-          </>
-        ))}
+        )}
       </Modal>
 
       {/* Add / Edit Devoir Modal */}

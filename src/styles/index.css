@@ -2276,6 +2276,29 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   .kind-group__badge::after { animation: none; }
 }
 
+/* ── Étape « Classe » du parcours de création ───────────────────────────────
+   De grandes cartes SANS icône : le palier, le libellé localisé, le numéro de
+   groupe. Le groupe s'écrit comme sur les cartes du tableau de bord — graisse
+   800, chiffres alignés — pour que « 2Bac PC 3 » se repère d'un coup d'œil,
+   et la classe déjà ouverte se marque d'un filet d'accent, pas d'un
+   pictogramme. */
+.class-choice { align-items: center; }
+.class-choice__group {
+  flex: none;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-latin-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.class-choice[data-current='true'] {
+  border-color: color-mix(in srgb, hsl(var(--primary)) 44%, hsl(var(--border)));
+  background: color-mix(in srgb, hsl(var(--primary)) 5%, hsl(var(--card)));
+}
+.class-choice[data-current='true'] .class-choice__group { color: hsl(var(--primary)); }
+
 /* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
    Elle remplace une seconde couleur inventée — une carte, une teinte. */
 .tone-chip {
