@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 'react';
+import './settingsModal.css';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -358,7 +359,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               );
             })}
           </ul>
-          <div className="mt-auto border-t border-border/60 pt-2">
+          <div className="settings-nav-footer mt-auto pt-2">
             <button type="button" onClick={() => requestExit('guide')} className={navRowClass(false)}>
               <BookOpen className="h-[18px] w-[18px] shrink-0 stroke-[1.5]" />
               <span className="truncate">{t('settings.item.support')}</span>

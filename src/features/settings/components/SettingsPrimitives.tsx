@@ -25,7 +25,7 @@ interface SettingsSectionProps {
 }
 
 export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, hint, action, children, separators = true }) => (
-  <section className="space-y-1">
+  <section className="settings-section space-y-1">
     {(title || action) && (
       <header className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pb-1.5">
         <div className="min-w-0 grow basis-56">
@@ -35,7 +35,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, hint, a
         {action && <div className="shrink-0">{action}</div>}
       </header>
     )}
-    <div className={separators ? "divide-y divide-border/60 border-y border-border/60" : "space-y-4"}>{children}</div>
+    <div className={separators ? "settings-section__body divide-y divide-border/60 border-t border-border/60" : "space-y-4"}>{children}</div>
   </section>
 );
 

@@ -1,0 +1,37 @@
+/* Continuous structural rules, with one shared inset for content and controls. */
+.settings-modal-frame { --settings-rule: hsl(var(--border) / .85); --settings-inset: 24px; }
+.settings-modal-frame.modal-motion-surface .modal-pro-header { border-bottom: 1px solid var(--settings-rule); padding-block: 12px; }
+.settings-modal-frame .settings-shell { min-height: 0; }
+.settings-modal-frame .settings-nav {
+  align-self: stretch;
+  padding: 16px 12px 12px;
+  border-inline-end: 1px solid var(--settings-rule);
+  background: hsl(var(--muted) / .25);
+}
+.settings-modal-frame .settings-nav-footer {
+  margin-inline: -12px;
+  padding: 12px 12px 0;
+  border-top: 1px solid var(--settings-rule);
+}
+.settings-modal-frame .settings-scroll {
+  margin: 0;
+  padding: 20px var(--settings-inset) 24px;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.settings-modal-frame .settings-section__body { border-color: var(--settings-rule); }
+.settings-modal-frame .settings-section__body > :not(:first-child) { border-color: var(--settings-rule); }
+.settings-modal-frame .settings-section { min-width: 0; }
+.settings-modal-frame .modal-pro-footer { border-top: 1px solid var(--settings-rule); padding-inline: var(--settings-inset); }
+@media (min-width: 1024px) {
+  .settings-modal-frame.modal-motion-surface { height: min(42rem, calc(var(--modal-visible-height) - 3rem)); border-radius: 16px; }
+  .settings-modal-frame .settings-shell { flex: 1; }
+}
+@media (max-width: 639px) {
+  .settings-modal-frame { --settings-inset: 16px; }
+  .settings-modal-frame .modal-body.settings-modal-body { padding-inline: 0; }
+  .settings-modal-frame .settings-home { padding-inline: var(--settings-inset); }
+  .settings-modal-frame .settings-scroll { padding-block: 16px 24px; }
+}
