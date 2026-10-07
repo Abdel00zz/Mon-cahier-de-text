@@ -43,8 +43,9 @@ test('la file de push ne s’arrête plus sur un cahier insynchronisable', () =>
   // s'interrompait, donc AUCUNE autre classe ne montait au cloud.
   const source = readFileSync('src/contexts/SyncContext.tsx', 'utf8');
   assert.match(source, /planPushBatches\(entries, PUSH_BATCH_BUDGET_BYTES\)/, 'le découpage est planifié, jamais recopié');
-  assert.match(source, /networkError\.status === 413 && batches\[i\]\.length === 1 && oversizedIds\.has\(batches\[i\]\[0\]\.classId\)/);
-  assert.match(source, /notifySyncError\(413, syncText\('sync\.classTooLarge', \{ name \}\)\)/, 'le message nomme la classe à répartir');
+  assert.match(source, /networkError\.status === 413 && batches\[i\]\.length === 1/, 'tout refus 413 d’une classe SEULE est isolé');
+  assert.match(source, /const known = oversizedIds\.has\(tooBig\.classId\)/, 'message précis quand le planificateur l’a nommée');
+  assert.match(source, /syncText\(known \? 'sync\.classTooLarge' : 'sync\.tooLarge', \{ name \}\)/, 'le message nomme la classe à répartir');
   assert.match(source, /const oversizedIds = new Set\(plan\.oversized\.map\(entry => entry\.classId\)\)/);
   // Ce qui compte pour les données : le cahier écarté N'EST PAS marqué synchronisé.
   // Le nettoyage complet est donc réservé au cas sans cahier écarté…

@@ -333,21 +333,27 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         : error instanceof SyntaxError ? new SyncRequestError('Réponse serveur invalide.', 502) : null;
                     if (!networkError) throw error;
                     /*
-                     * UN CAHIER TROP GROS NE BLOQUE PAS LE COMPTE : le planificateur
-                     * l'a isolé (`oversized`), il part seul, et son refus (413) laisse
-                     * la file continuer — les classes suivantes montent au cloud, la
-                     * sienne garde sa copie locale et son travail en attente. Le
-                     * professeur est prévenu une fois, en nommant la classe : c'est un
-                     * contenu à répartir, pas une panne de synchronisation.
+                     * UN CAHIER TROP GROS NE BLOQUE PAS LE COMPTE : seul dans son lot,
+                     * il ne peut être refusé que POUR LUI-MÊME (au-delà du budget de
+                     * lot, ou de l'enveloppe du transport après compression). Sa copie
+                     * locale reste, son travail reste en attente, et la file continue :
+                     * les classes suivantes montent au cloud. Le professeur est prévenu
+                     * une fois, en nommant la classe : c'est un contenu à répartir, pas
+                     * une panne de synchronisation.
                      *
-                     * Toute autre panne (réseau, serveur, conflit) arrête la file :
-                     * enchaîner des requêtes vouées à l'échec ne ferait que la retarder.
+                     * Toute autre panne (réseau, serveur, conflit, lot de plusieurs
+                     * classes) arrête la file : enchaîner des requêtes vouées à l'échec
+                     * ne ferait que la retarder.
                      */
-                    if (networkError.status === 413 && batches[i].length === 1 && oversizedIds.has(batches[i][0].classId)) {
+                    if (networkError.status === 413 && batches[i].length === 1) {
                         blockedByOversized = true;
                         const tooBig = batches[i][0];
                         const name = classes.find(c => c.id === tooBig.classId)?.name ?? tooBig.classId;
-                        notifySyncError(413, syncText('sync.classTooLarge', { name }));
+                        // Une classe déjà nommée par le planificateur mérite le message
+                        // précis (répartir son contenu) ; sinon on garde le message
+                        // générique de taille, enrichi du nom de la classe.
+                        const known = oversizedIds.has(tooBig.classId);
+                        notifySyncError(413, syncText(known ? 'sync.classTooLarge' : 'sync.tooLarge', { name }));
                         continue;
                     }
                     if (!failure) {
