@@ -10,6 +10,57 @@ export class SyncRequestError extends Error {
   }
 }
 
+/** Ce qu'une entrée de push doit dire pour être planifiable : qui, et combien d'octets. */
+export interface PushPlanEntry {
+  classId: string;
+  /** Taille JSON de la classe SEULE, en octets UTF-8 (`syncJsonBytes`). */
+  bytes: number;
+}
+
+export interface PushPlan<T extends PushPlanEntry> {
+  /** Lots envoyés dans cet ordre ; un lot VIDE en tête = liste, réglages et suppressions seuls. */
+  batches: T[][];
+  /**
+   * Classes qui dépassent À ELLES SEULES le budget d'un lot. Elles partent
+   * seules (on ne coupe pas un cahier en deux requêtes : son horodatage et son
+   * verrou de conflit portent sur la classe entière) et elles sont NOMMÉES pour
+   * que l'appelant n'arrête pas la file sur leur échec.
+   */
+  oversized: T[];
+}
+
+/**
+ * Découpe un envoi en lots qui tiennent sous `maxBytes`.
+ *
+ * Règle née d'un défaut réel : le serveur refuse un corps au-delà d'environ
+ * 950 Ko (413). Un cahier officiel volumineux partait seul dans son lot, était
+ * refusé, et l'échec INTERROMPAIT la file — donc AUCUNE autre classe ne montait
+ * plus au cloud tant que ce cahier restait en attente. La planification sépare
+ * les deux questions : ce qui tient ensemble, et ce qui, trop gros, doit être
+ * envoyé seul en sachant que son échec ne concerne que lui.
+ */
+export const planPushBatches = <T extends PushPlanEntry>(entries: readonly T[], maxBytes: number): PushPlan<T> => {
+  const batches: T[][] = [];
+  const oversized: T[] = [];
+  let current: T[] = [];
+  let currentBytes = 0;
+  for (const entry of entries) {
+    if (entry.bytes > maxBytes) oversized.push(entry);
+    if (current.length > 0 && currentBytes + entry.bytes > maxBytes) {
+      batches.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+    current.push(entry);
+    currentBytes += entry.bytes;
+  }
+  if (current.length > 0) batches.push(current);
+  // Aucune classe en attente : les métadonnées (liste, réglages, suppressions)
+  // partent quand même, dans un lot vide.
+  if (batches.length === 0) batches.push([]);
+  return { batches, oversized };
+};
+
 export const retryDelayMs = (attempt: number, retryAfter?: string | null, now = Date.now(), random = Math.random()): number => {
   const seconds = Number(retryAfter);
   const requested = retryAfter

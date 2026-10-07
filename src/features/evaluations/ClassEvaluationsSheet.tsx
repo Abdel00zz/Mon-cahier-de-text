@@ -35,10 +35,9 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             isOpen={open}
             onClose={() => onOpenChange(false)}
             maxWidth="5xl"
-            className="sm:max-w-5xl md:max-w-5xl lg:max-w-5xl xl:max-w-5xl sm:rounded-2xl"
-            mobileDetents={[0.72, 0.94]}
-            headerClassName="border-b border-border/70 bg-card"
-            bodyClassName="min-h-0 px-4 py-4 sm:px-6 sm:py-5"
+            className="sm:max-w-5xl sm:rounded-2xl"
+            headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
+            bodyClassName="px-4 py-4 sm:px-7 sm:py-6 max-h-[82vh] overflow-y-auto"
             title={(
                 <div className="flex items-center gap-3.5 min-w-0">
                     <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary ring-1 ring-primary/20">

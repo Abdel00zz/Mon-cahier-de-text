@@ -33,7 +33,8 @@ import { measurements, MEASURES } from '../platform/performanceMarks';
 import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
-import { requestSyncJson, requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError } from '../infrastructure/sync/syncTransport';
+import { requestSyncJson, requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError, planPushBatches } from '../infrastructure/sync/syncTransport';
+import { PUSH_BATCH_BUDGET_BYTES } from '../infrastructure/sync/syncProtocol';
 import { readLocalSyncSnapshot } from '../infrastructure/sync/localSnapshot';
 import { settingsPushDelay, touchesImmediateSettings } from '../infrastructure/sync/settingsPush';
 import { LocalSyncDataError } from '../infrastructure/storage/localJson';
@@ -53,8 +54,6 @@ interface SyncContextValue {
 const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {}, flushPush: () => {} });
 
 const PUSH_DEBOUNCE_MS = 3_000;
-/** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
-const MAX_PUSH_BYTES = 700_000;
 
 const syncText = (key: string, values: Record<string, string | number> = {}): string => {
     const locale = readCachedConfig().applicationLocale;
@@ -267,21 +266,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
              * du badge « Erreur de synchro » permanent. Chaque lot reste sous
              * ~700 Ko ; un cahier volumineux part seul et est compressé par
              * le transport après vérification de la taille du corps complet.
+             * Le planificateur NOMME aussi les cahiers trop gros pour un lot
+             * (`oversized`) : leur échec ne doit pas arrêter la file.
              */
-            const batches: (typeof entries)[] = [];
-            let current: typeof entries = [];
-            let currentBytes = 0;
-            for (const entry of entries) {
-                if (current.length > 0 && currentBytes + entry.bytes > MAX_PUSH_BYTES) {
-                    batches.push(current);
-                    current = [];
-                    currentBytes = 0;
-                }
-                current.push(entry);
-                currentBytes += entry.bytes;
-            }
-            if (current.length > 0) batches.push(current);
-            if (batches.length === 0) batches.push([]); // métadonnées seules (liste/settings)
+            const plan = planPushBatches(entries, PUSH_BATCH_BUDGET_BYTES);
+            const batches = plan.batches;
+            const oversizedIds = new Set(plan.oversized.map(entry => entry.classId));
 
             const snapshot = computeTeacherSnapshot(
                 currentUser,
@@ -308,6 +298,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             let pushedSettingsAt: string | null = null;
             let requiresPull = false;
             let failure: { status: number; message?: string; code?: string; retryAfter?: string | null; firstBatch: boolean } | null = null;
+            /** La file a continué malgré un cahier trop gros : ce n'est pas une panne de compte. */
+            let blockedByOversized = false;
 
             for (let i = 0; i < batches.length; i++) {
                 if (!isCurrent()) return;
@@ -340,8 +332,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         : error instanceof TypeError ? new SyncRequestError('Connexion interrompue.')
                         : error instanceof SyntaxError ? new SyncRequestError('Réponse serveur invalide.', 502) : null;
                     if (!networkError) throw error;
-                    failure = { status: networkError.status, message: networkError.message, code: networkError.code,
-                        retryAfter: networkError.retryAfter, firstBatch: isFirst };
+                    /*
+                     * UN CAHIER TROP GROS NE BLOQUE PAS LE COMPTE : le planificateur
+                     * l'a isolé (`oversized`), il part seul, et son refus (413) laisse
+                     * la file continuer — les classes suivantes montent au cloud, la
+                     * sienne garde sa copie locale et son travail en attente. Le
+                     * professeur est prévenu une fois, en nommant la classe : c'est un
+                     * contenu à répartir, pas une panne de synchronisation.
+                     *
+                     * Toute autre panne (réseau, serveur, conflit) arrête la file :
+                     * enchaîner des requêtes vouées à l'échec ne ferait que la retarder.
+                     */
+                    if (networkError.status === 413 && batches[i].length === 1 && oversizedIds.has(batches[i][0].classId)) {
+                        blockedByOversized = true;
+                        const tooBig = batches[i][0];
+                        const name = classes.find(c => c.id === tooBig.classId)?.name ?? tooBig.classId;
+                        notifySyncError(413, syncText('sync.classTooLarge', { name }));
+                        continue;
+                    }
+                    if (!failure) {
+                        failure = { status: networkError.status, message: networkError.message, code: networkError.code,
+                            retryAfter: networkError.retryAfter, firstBatch: isFirst };
+                    }
                     break;
                 }
                 if (!isCurrent()) return;
@@ -363,7 +375,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (!isCurrent()) return;
-            if (!failure) {
+            if (!failure && !blockedByOversized) {
                 if (pushedSettingsAt) markSettingsSynced(pushedSettingsAt);
                 clearPendingWork(work);
                 lastErrorKeyRef.current = null;
@@ -374,8 +386,21 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return;
             }
 
-            // échec partiel : ne nettoyer QUE ce qui est réellement parti
-            if (!failure.firstBatch || pushedIds.length > 0) {
+            if (!failure) {
+                /*
+                 * File poursuivie malgré un cahier trop gros : tout ce qui pouvait
+                 * monter est monté. Le cahier écarté doit rester EN ATTENTE — un
+                 * nettoyage complet le marquerait « synchronisé » alors que rien de
+                 * lui n'a rejoint le cloud.
+                 */
+                if (pushedSettingsAt) markSettingsSynced(pushedSettingsAt);
+                retryAttemptRef.current = 0;
+                setLastSyncAt(serverTime ?? new Date().toISOString());
+            }
+
+            // échec partiel — ou cahier écarté : ne nettoyer QUE ce qui est réellement parti
+            const firstBatchFailed = failure?.firstBatch === true;
+            if (!firstBatchFailed || pushedIds.length > 0) {
                 const pushedVersions: Record<string, number> = {};
                 for (const id of pushedIds) {
                     const version = work.dirtyClassVersions[id];
@@ -386,15 +411,21 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     dirtyClassIds: pushedIds,
                     dirtyClassVersions: pushedVersions,
                     // liste/settings/suppressions portées par le 1er lot
-                    listVersion: failure.firstBatch ? 0 : work.listVersion,
-                    deletedClassIds: failure.firstBatch ? [] : work.deletedClassIds,
-                    deletedClasses: failure.firstBatch ? [] : work.deletedClasses,
+                    listVersion: firstBatchFailed ? 0 : work.listVersion,
+                    deletedClassIds: firstBatchFailed ? [] : work.deletedClassIds,
+                    deletedClasses: firstBatchFailed ? [] : work.deletedClasses,
                 });
             }
-            setSyncStatus(failure.status === 0 ? 'offline' : 'error');
-            if (failure.status !== 0 && failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
+            /*
+             * Un cahier trop gros laisse le travail EN ATTENTE, il ne met pas le
+             * compte en erreur : tout ce qui pouvait monter est monté. Le professeur
+             * est prévenu une fois (message nommant la classe) et l'état reste
+             * « en attente », honnête sur ce qui n'a pas encore rejoint le cloud.
+             */
+            setSyncStatus(!failure ? 'pending' : failure.status === 0 ? 'offline' : 'error');
+            if (failure && failure.status !== 0 && failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
             // Bounded jitter and Retry-After avoid synchronized retries and preserve dirty work.
-            if (failure.status === 0 || failure.status === 408 || failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT') {
+            if (failure && (failure.status === 0 || failure.status === 408 || failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT')) {
                 const delay = retryDelayMs(retryAttemptRef.current++, failure.retryAfter);
                 if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
                 scheduledPushAtRef.current = Date.now() + delay;

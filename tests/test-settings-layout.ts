@@ -71,8 +71,11 @@ test('paramètres : grandes cartes colorées sur téléphone et tablette, menu l
   assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
   const css = read('src/styles/index.css');
   for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal', 'rose']) {
-    assert.match(css, new RegExp(`\\.hub-card\\[data-tone='${tone}'\\]`));
-    assert.match(css, new RegExp(`\\.dark \\.hub-card\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
+    // Une seule règle sert les deux familles de cartes (`:is(.hub-card, .evaluation-tone)`) :
+    // la teinte est écrite une fois, jamais recopiée pour chaque famille.
+    const owner = '(?:\\.hub-card|:is\\(\\.hub-card, \\.evaluation-tone\\))';
+    assert.match(css, new RegExp(`${owner}\\[data-tone='${tone}'\\]`));
+    assert.match(css, new RegExp(`\\.dark ${owner}\\[data-tone='${tone}'\\]`), `teinte ${tone} adaptée au mode sombre`);
   }
   assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home \{ display: none; \}/, 'cartes masquées sur grand écran');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.hub-card/, 'mouvement réduit respecté');
