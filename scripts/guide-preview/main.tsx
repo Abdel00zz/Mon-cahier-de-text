@@ -123,7 +123,7 @@ function Preview() {
         } }} />}
       {(screen === 'editor' || screen === 'add') && <>
         <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
-        <div className="sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+        <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
           {new URLSearchParams(location.search).has('back') && <EditorBackButton onBack={noop} />}
           <div className="min-w-0 flex-1">
         <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop} onSave={noop}

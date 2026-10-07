@@ -4,16 +4,16 @@
   position: relative;
   isolation: isolate;
   display: inline-flex;
-  flex: 0 0 48px;
+  flex: 0 0 58px;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   padding: 0;
   overflow: hidden;
-  border: 1px solid hsl(var(--border) / .65);
+  border: 1px solid hsl(var(--border) / .6);
   border-radius: 12px;
-  background: hsl(var(--card));
+  background: hsl(var(--background) / .95);
   color: hsl(var(--foreground) / .8);
   box-shadow: inset 0 1px 0 hsl(var(--foreground) / .025), 0 3px 8px -6px hsl(var(--foreground) / .18);
   cursor: pointer;
@@ -33,8 +33,8 @@
 }
 .editor-back-button[dir='rtl'] { --back-direction: 1; --back-rotation: 180deg; }
 .editor-back-button__arrow {
-  width: 19px;
-  height: 19px;
+  width: 22px;
+  height: 22px;
   transform: rotate(var(--back-rotation));
   transition: transform 230ms cubic-bezier(.16,1,.3,1);
 }
@@ -58,4 +58,17 @@
   .editor-back-button, .editor-back-button::before, .editor-back-button__arrow { transition: none; }
   .editor-back-button:is(:hover, :active) { transform: none; }
   .editor-back-button:hover .editor-back-button__arrow { transform: rotate(var(--back-rotation)); }
+}
+
+/* Match the actual toolbar height, including any wrapped or enlarged controls. */
+.editor-toolbar-row { align-items: stretch; }
+.editor-toolbar-row > .editor-back-button {
+  align-self: stretch;
+  height: auto;
+  min-height: 44px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(4px);
+}
+@media (min-width: 640px) {
+  .editor-toolbar-row > .editor-back-button { flex-basis: 64px; width: 64px; }
 }

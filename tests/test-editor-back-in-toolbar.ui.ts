@@ -76,7 +76,7 @@ test('le bouton voyage avec la barre dès que la page défile, à côté d’ell
   // Un seul conteneur collant porte [retour séparé] puis [barre].
   assert.match(
     editor,
-    /<div className="sticky top-0 z-\[50\] flex items-center gap-2 print:hidden">\s*\{isScrolled && onBack && \(\s*<EditorBackButton/,
+    /<div className="editor-toolbar-row sticky top-0 z-\[50\] flex items-center gap-2 print:hidden">\s*\{isScrolled && onBack && \(\s*<EditorBackButton/,
     'le retour est le premier enfant du conteneur collant, hors de la barre',
   );
   assert.match(editor, /<div className="min-w-0 flex-1">\s*<Toolbar/, 'la barre reste seule dans son propre bloc');

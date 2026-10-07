@@ -1322,7 +1322,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                côté de la barre — jamais dedans. Le sens de lecture le place tout
                seul (à gauche en français, à droite en arabe) et il voyage avec
                la barre dès que la page défile. */
-            <div className="sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+            <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
               {isScrolled && onBack && (
                 <EditorBackButton onBack={onBack} className="animate-fade-in motion-reduce:animate-none" />
               )}
