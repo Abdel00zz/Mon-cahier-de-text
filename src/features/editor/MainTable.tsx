@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { LessonsData, Indices, ContentDirection } from '@/types';
+import { withAbsenceRows, groupRowsWithAbsences, type AbsenceSession, type AbsenceDisplayRow } from '@/domain/notebook/absenceSessions';
+import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { type LessonRow } from '@/domain/notebook/lessonRows';
 import type { ContentDateOrder } from '@/domain/calendar/dateOrder';
 import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/domain/notebook/tableRows';
+import { getMergeableDate, getMergeableRemark, type FlatDataItem, type RenderRow } from '@/domain/notebook/tableRows';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { logger } from '@/lib/logger';
@@ -26,6 +28,7 @@ const TABLE_GRID_CLASS = 'editor-table-grid';
 interface MainTableProps {
   lessonsData: LessonsData;
   visibleRows: LessonRow[];
+  absenceSessions?: readonly AbsenceSession[];
   onClearSearch: () => void;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
@@ -73,6 +76,7 @@ const VIRTUAL_OVERSCAN = 16;
 /** Référence stable : un `[]` littéral par défaut créait un nouveau tableau à
  *  chaque rendu et invalidait les `useMemo` dont il est une dépendance. */
 const NO_DESCRIPTION_TYPES: string[] = [];
+const NO_ABSENCES: readonly AbsenceSession[] = [];
 
 const TableHeader: React.FC = React.memo(() => {
   const { t } = useLocale();
@@ -470,6 +474,7 @@ const EmptyState: React.FC<{
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
   visibleRows,
+  absenceSessions = NO_ABSENCES,
   onClearSearch,
   contentDirection,
   onOpenAddContentModal,
@@ -495,11 +500,20 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onLoadPredefined,
 }) => {
   const { t } = useLocale();
-  const { flatData, renderRows } = useMemo(() => groupLessonRows(visibleRows), [visibleRows]);
+  const { flatData, renderRows: courseRows } = useMemo(() => groupRowsWithAbsences(hasOnlyPristineStarterDiagnostic(lessonsData) ? [] : visibleRows, absenceSessions), [visibleRows, absenceSessions, lessonsData]);
+  const renderRows = useMemo(() => {
+    const query = searchQuery?.trim().toLocaleLowerCase();
+    const sessions = query ? absenceSessions.filter(session =>
+      [session.date, formatDateDDMMYYYY(session.date) ?? session.date, t('notifications.absenceCertificate'), ...session.reasons]
+        .some(text => text.toLocaleLowerCase().includes(query))) : absenceSessions;
+    return withAbsenceRows(courseRows, sessions, row =>
+      (row.kind === 'single' ? [row.item] : row.items).map(item => getMergeableDate(item)).filter((date): date is string => !!date));
+  }, [courseRows, absenceSessions, searchQuery, t]);
 
   const measurementIds = useRef(new WeakMap<object, number>());
   const nextMeasurementId = useRef(0);
   const itemKeys = useMemo(() => renderRows.map(row => {
+    if (row.kind === 'absence') return row.key + ':' + JSON.stringify(row.session.reasons) + ':' + contentDirection;
     const items = row.kind === 'single' ? [row.item] : row.items;
     return items.map(item => {
       let id = measurementIds.current.get(item.data);
@@ -527,7 +541,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   useEffect(() => {
     if (!focusKey) return;
 
-    const targetIndex = renderRows.findIndex(row => (
+    const targetIndex = renderRows.findIndex(row => row.kind !== 'absence' && (
         row.kind === 'single'
             ? row.item.key === focusKey
             : row.items.some(item => item.key === focusKey)
@@ -565,7 +579,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     });
   }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
 
-  if (!lessonsData || lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) {
+  if ((!lessonsData || lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) && absenceSessions.length === 0) {
       return (
           <div dir={contentDirection} data-content-direction={contentDirection}>
               <EmptyState
@@ -577,7 +591,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       );
   }
 
-  if (visibleRows.length === 0 && searchQuery?.trim()) {
+  if (renderRows.length === 0 && searchQuery?.trim()) {
     return (
       <div className="rounded-2xl border border-border bg-card p-8 text-center" dir={contentDirection}>
         <LessonSearchIllustration size={120} className="mx-auto mb-3" />
@@ -598,11 +612,20 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       <CardContent className="!p-0">
         <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
           {(() => {
-              const rows: Array<{ row: RenderRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
+              const rows: Array<{ row: RenderRow | AbsenceDisplayRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
                 ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
                 : renderRows.map((row, absoluteIndex) => ({ row, absoluteIndex }));
 
               return rows.map(({ row, virtualItem, absoluteIndex }) => {
+                  if (row.kind === 'absence') return (
+                      <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
+                          <div data-absence-session={row.session.date} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
+                              <div title={formatDateDDMMYYYY(row.session.date) ?? row.session.date} className="flex items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><DateCard dateStr={row.session.date} /></div>
+                              <div className="flex items-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
+                              <div dir={textDirectionAttribute(row.session.reasons.join(' · '))} className="flex items-center whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">{row.session.reasons.join(' · ')}</div>
+                          </div>
+                      </VirtualListRow>
+                  );
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
@@ -664,6 +687,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
               });
           })()}
         </div>
+        {(lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) && (
+          <div className="border-t border-border p-3"><Button variant="outline" className="min-h-11 w-full" onClick={() => onOpenAddContentModal()}>{t('emptyNotebook.createChapter')}</Button></div>
+        )}
       </CardContent>
     </Card>
   );

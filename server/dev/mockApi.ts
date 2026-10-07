@@ -665,6 +665,9 @@ export function setupMockApi(app: express.Express) {
                                 schoolYearStart: settings.schoolYearStart,
                                 printDescriptionMode: settings.printDescriptionMode,
                                 printDescriptionTypes: settings.printDescriptionTypes,
+                                absences: settings.absences,
+                                timetable: settings.timetable,
+                                timetableClock: settings.timetableClock,
                             },
                             adminMessages: devAdminMessages,
                         });

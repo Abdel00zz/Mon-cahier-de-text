@@ -1,3 +1,4 @@
+import { addDaysIso } from './dataUtils';
 import type { TimetableClockPolicy, TimetableEntry } from '../../types';
 import { getDaySessionBlocks } from '../calendar/timetable';
 import { FREE_TYPE } from './freeLineType';
@@ -37,6 +38,8 @@ interface NotebookNode {
   date?: string;
   items?: NotebookNode[];
   sections?: NotebookNode[];
+  subsections?: NotebookNode[];
+  subsubsections?: NotebookNode[];
 }
 
 const isIsoDate = (value: unknown): value is string => typeof value === 'string' && ISO_DATE.test(value);
@@ -99,7 +102,8 @@ export const notebookSessionDates = (lessonsData: unknown): string[] => {
   const found = new Set<string>();
   const visit = (list: NotebookNode[]) => {
     for (const node of list) {
-      if (isIsoDate(node.date)) found.add(node.date);
+      const date = addDaysIso(node.date, 0);
+      if (isIsoDate(date)) found.add(date);
       childLists(node).forEach(visit);
     }
   };
@@ -112,7 +116,7 @@ export const notebookSessionDates = (lessonsData: unknown): string[] => {
  * chronologique doit modifier le tableau de l'arbre, pas un tableau jetable.
  */
 const childLists = (node: NotebookNode): NotebookNode[][] =>
-  [node.items, node.sections].filter((list): list is NotebookNode[] => Array.isArray(list));
+  [node.items, node.sections, node.subsections, node.subsubsections].filter((list): list is NotebookNode[] => Array.isArray(list));
 
 /** Dernière ligne datée au plus tard à `date`, en ordre de lecture (items puis sections). */
 const chronologicalAnchor = (rows: NotebookNode[], date: string): { list: NotebookNode[]; index: number } | null => {

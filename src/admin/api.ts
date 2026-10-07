@@ -1,4 +1,4 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
+import type { AppConfig, AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { AdminActivityDocument } from '../domain/evaluations/adminDocuments';
 import type { HolidayCalendar } from '../domain/calendar/calendar';
 import type { OfficialStudentEventsFile } from '../domain/evaluations/officialStudentEvents';
@@ -26,7 +26,7 @@ export interface TeacherDetail {
  */
 export type { AdminActivityDocument };
 
-export interface TeacherPrintSettings {
+export interface TeacherPrintSettings extends Pick<AppConfig, 'absences' | 'timetable' | 'timetableClock'> {
     establishmentName?: string;
     defaultTeacherName?: string;
     academyRegion?: string;

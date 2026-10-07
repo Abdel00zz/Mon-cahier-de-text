@@ -299,3 +299,14 @@ test('la direction décide de la direction d’écriture par le contenu, pas par
   assert.match(teacherDetail, /dir=\{textDirectionAttribute\(item\.title\)\}/);
   assert.match(teacherDetail, /dir=\{textDirectionAttribute\(item\.description\)\}/);
 });
+
+
+test('admin print preserves independent absence dates and freezes the selected scope', () => {
+  assert.match(teacherDetail, /buildAbsenceSessions\(config, cls.id, lessonsData\)/);
+  assert.match(teacherDetail, /collectSessionDates\(printTarget.lessonsData, printTarget.absenceSessions\)/);
+  assert.match(teacherDetail, /absenceSessions.filter\(session => chosen.includes\(session.date\)\)/);
+  assert.match(teacherDetail, /config=\{printSnapshot.config\}/);
+  assert.match(teacherDetail, /absenceSessions=\{printSnapshot.absenceSessions\}/);
+  const api = sourceOf('api/admin.ts');
+  for (const field of ['absences', 'timetable']) assert.ok(api.includes(`${field}: settings.${field}`));
+});

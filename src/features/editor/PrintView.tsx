@@ -1,3 +1,5 @@
+import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
+import { buildAbsenceSessions, withAbsenceRows, type AbsenceSession } from '@/domain/notebook/absenceSessions';
 import React, { useMemo } from 'react';
 import './print.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
@@ -32,6 +34,7 @@ import type { PrintHeaderMode } from './modals/PrintModal';
 // Props interfaces
 interface PrintViewProps {
     lessonsData: LessonsData;
+    absenceSessions?: readonly AbsenceSession[];
     classInfo: ClassInfo;
     config: AppConfig;
     /** Même direction que le tableau d'édition, pour une impression fidèle. */
@@ -65,13 +68,16 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
+    const lessonsData = useMemo(() => hasOnlyPristineStarterDiagnostic(sourceLessons) ? [] : sourceLessons, [sourceLessons]);
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
 
     const flatData = useMemo(() => buildLessonRows(lessonsData), [lessonsData]);
 
-    const printRows = useMemo<PrintRow[]>(() => {
+    const absenceSessions = useMemo(() => suppliedAbsences ?? buildAbsenceSessions(config, classInfo.id, lessonsData),
+        [suppliedAbsences, config.absences, config.timetable, config.timetableClock, classInfo.id, lessonsData]);
+    const coursePrintRows = useMemo<PrintRow[]>(() => {
         const rows: PrintRow[] = [];
         let sessionDate: string | null = null;
         let sessionItems: FlatDataItem[] = [];
@@ -104,7 +110,9 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         return rows;
     }, [flatData]);
 
-    const printDates = useMemo(() => collectSessionDates(lessonsData), [lessonsData]);
+    const printRows = useMemo(() => withAbsenceRows(coursePrintRows, absenceSessions,
+        row => row.kind === 'session' ? [row.date] : row.item.data.date ? [row.item.data.date] : []), [coursePrintRows, absenceSessions]);
+    const printDates = useMemo(() => collectSessionDates(lessonsData, absenceSessions), [lessonsData, absenceSessions]);
     const firstPrintDate = printDates[0];
     const lastPrintDate = printDates[printDates.length - 1];
     const isRtlPrint = contentDirection === 'rtl' || isArabicClassName;
@@ -332,6 +340,13 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 <tbody>
                     {printRows.length > 0 ? (
                         printRows.map((row, index) => {
+                            if (row.kind === 'absence') return (
+                                <tr key={row.key} data-absence-session={row.session.date} className="print-absence-row">
+                                    <td className="print-col-date"><span className="print-date-text">{formatDateDDMMYYYY(row.session.date)}</span></td>
+                                    <td className="print-col-content">{translateLocaleMessage(isRtlPrint ? 'ar' : 'fr', 'notifications.absenceCertificate')}</td>
+                                    <td className="print-col-remark" dir={textDirectionAttribute(row.session.reasons.join(' · '))}>{row.session.reasons.join(' · ')}</td>
+                                </tr>
+                            );
                             if (row.kind === 'session') {
                                 const remarks = collectSessionRemarks(row.items, row.date);
                                 const rowClassName = [

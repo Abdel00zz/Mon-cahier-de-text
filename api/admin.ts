@@ -349,6 +349,9 @@ const pickPrintSettings = (settings: Partial<AppConfig> | undefined, displayName
         schoolYearStart: settings.schoolYearStart,
         printDescriptionMode: settings.printDescriptionMode,
         printDescriptionTypes: settings.printDescriptionTypes,
+        absences: settings.absences,
+        timetable: settings.timetable,
+        timetableClock: settings.timetableClock,
     };
 };
 

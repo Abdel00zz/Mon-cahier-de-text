@@ -35,6 +35,13 @@
     break-inside: auto;
     page-break-inside: auto;
 }
+.print-table .print-absence-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-absence-row .print-col-content {
+    font-weight: 500;
+}
 .print-table {
     width: 100%;
     border-collapse: collapse;

@@ -22,3 +22,5 @@ statiques pour la pause et la réduction des animations.
 Vérifier les quatre GIF avant de remplacer les archives de `assets/showcase`.
 Ces exports historiques sont conservés hors de `public/` : l'accueil utilise
 aujourd'hui un aperçu HTML/SVG et ne télécharge aucun GIF.
+
+Pour vérifier les justificatifs indépendants, utiliser `&absences` avec `screen=editor` ou `screen=print`.

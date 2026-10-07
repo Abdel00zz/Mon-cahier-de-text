@@ -1,5 +1,6 @@
+import type { AbsenceSession } from '../../domain/notebook/absenceSessions';
 import { LessonsData } from '../../types.js';
-import { flattenLessons } from '../../domain/notebook/dataUtils.js';
+import { addDaysIso, flattenLessons } from '../../domain/notebook/dataUtils.js';
 import { buildContentNumbers } from '../../domain/notebook/contentNumbering.js';
 import { buildLessonRows } from '../../domain/notebook/lessonRows.js';
 
@@ -99,17 +100,17 @@ export const savePrintPrefs = (classId: string, prefs: PrintPrefs): void => {
 };
 
 /** Toutes les dates de séances distinctes présentes dans le cahier. */
-export const collectSessionDates = (lessonsData: LessonsData): string[] => {
-    const dates = new Set<string>();
+export const collectSessionDates = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = []): string[] => {
+    const dates = new Set<string>(absences.map(session => session.date));
     for (const entry of flattenLessons(lessonsData)) {
         const date = (entry.data as any)?.date;
-        if (typeof date === 'string' && date.trim()) dates.add(date.trim());
+        if (typeof date === 'string' && date.trim()) dates.add(addDaysIso(date, 0));
     }
     return Array.from(dates).sort();
 };
 
 /** A content revision on the same date is new too. One traversal, bounded depth. */
-export const sessionPrintSignatures = (lessonsData: LessonsData): Record<string, string> => {
+export const sessionPrintSignatures = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = []): Record<string, string> => {
     const contextByKey = new Map<string, string>();
     const contentByDate = new Map<string, string[]>();
     for (const row of buildLessonRows(lessonsData)) {
@@ -118,11 +119,16 @@ export const sessionPrintSignatures = (lessonsData: LessonsData): Record<string,
             .sort(([a], [b]) => a.localeCompare(b));
         const own = JSON.stringify(scalarFields);
         contextByKey.set(row.key, own);
-        const date = typeof row.data.date === 'string' ? row.data.date.trim() : '';
+        const date = typeof row.data.date === 'string' ? addDaysIso(row.data.date, 0) : '';
         if (!date) continue;
         const content = JSON.stringify([...row.ancestorKeys.map(key => contextByKey.get(key)), own]);
         const pieces = contentByDate.get(date) ?? [];
         pieces.push(content); contentByDate.set(date, pieces);
+    }
+    for (const session of absences) {
+        const pieces = contentByDate.get(session.date) ?? [];
+        pieces.push(JSON.stringify(['absence', session.reasons]));
+        contentByDate.set(session.date, pieces);
     }
     return Object.fromEntries([...contentByDate].sort(([a], [b]) => a.localeCompare(b)).map(([date, pieces]) => {
         const content = JSON.stringify(pieces);
@@ -136,12 +142,12 @@ export const sessionPrintSignatures = (lessonsData: LessonsData): Record<string,
     }));
 };
 
-export const getNewDates = (lessonsData: LessonsData, classId: string, meta = readPrintMeta(classId)): string[] =>
-    Object.entries(sessionPrintSignatures(lessonsData)).filter(([date, signature]) => meta.confirmedContent[date] !== signature).map(([date]) => date);
+export const getNewDates = (lessonsData: LessonsData, classId: string, meta = readPrintMeta(classId), absences: readonly AbsenceSession[] = []): string[] =>
+    Object.entries(sessionPrintSignatures(lessonsData, absences)).filter(([date, signature]) => meta.confirmedContent[date] !== signature).map(([date]) => date);
 
 const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
     if (typeof node !== 'object' || node === null) return false;
-    const date = typeof node.date === 'string' ? node.date.trim() : '';
+    const date = typeof node.date === 'string' ? addDaysIso(node.date, 0) : '';
     if (date && keep.has(date)) return true;
     for (const childKey of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
         const children = node[childKey];
@@ -154,7 +160,7 @@ const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
 
 const pruneNode = <T extends Record<string, any>>(node: T, keep: Set<string>): T => {
     const clone: any = { ...node };
-    const ownDate = typeof clone.date === 'string' ? clone.date.trim() : '';
+    const ownDate = typeof clone.date === 'string' ? addDaysIso(clone.date, 0) : '';
     // Un parent peut rester pour donner le contexte d'une séance retenue,
     // mais sa propre date ne doit jamais réapparaître dans un tirage filtré.
     if (ownDate && !keep.has(ownDate)) delete clone.date;
@@ -178,7 +184,7 @@ const pruneNode = <T extends Record<string, any>>(node: T, keep: Set<string>): T
  * pour le contexte).
  */
 export const filterLessonsByDates = (lessonsData: LessonsData, dates: string[]): LessonsData => {
-    const keep = new Set(dates.map(date => date.trim()).filter(Boolean));
+    const keep = new Set(dates.map(date => addDaysIso(date, 0)).filter(Boolean));
     return lessonsData
         .filter(chapter => nodeHasKeptContent(chapter, keep))
         .map(chapter => pruneNode(chapter, keep));

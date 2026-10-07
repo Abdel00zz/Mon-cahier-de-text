@@ -1,3 +1,5 @@
+import { buildAbsenceSessions, type AbsenceSession } from '../../domain/notebook/absenceSessions';
+import { migrateLessonsData } from '../../domain/notebook/dataUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
@@ -104,6 +106,9 @@ const buildPrintConfig = (settings: TeacherPrintSettings | null | undefined, cla
     schoolYearStart: settings?.schoolYearStart,
     printDescriptionMode: settings?.printDescriptionMode ?? 'all',
     printDescriptionTypes: settings?.printDescriptionTypes ?? [],
+    absences: settings?.absences,
+    timetable: settings?.timetable,
+    timetableClock: settings?.timetableClock,
 });
 
 /**
@@ -471,6 +476,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         classInfo: ClassInfo;
         lessonsData: LessonsData;
         contentDirection: ContentDirection;
+        absenceSessions: AbsenceSession[];
+        config: AppConfig;
     } | null>(null);
     /**
      * Document figé au lancement : c'est lui, et lui seul, qui est composé en
@@ -482,6 +489,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         lessonsData: LessonsData;
         contentDirection: ContentDirection;
         options: PrintOptions;
+        absenceSessions: AbsenceSession[];
+        config: AppConfig;
     } | null>(null);
     /** Mise en page choisie par la direction pour cet aperçu (jamais réécrite chez l'enseignant). */
     const [printPrefs, setPrintPrefs] = useState<Pick<AppConfig, 'printDescriptionMode' | 'printDescriptionTypes'>>({});
@@ -649,12 +658,14 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         setActionMessage(null);
         try {
             const blob = await fetchClassLessons(phone, cls.id);
-            const lessonsData = Array.isArray(blob.lessonsData) ? blob.lessonsData : [];
-            if (lessonsData.length === 0) {
+            const lessonsData = migrateLessonsData(Array.isArray(blob.lessonsData) ? blob.lessonsData : []);
+            const config = buildPrintConfig(data?.printSettings, cls);
+            const absenceSessions = buildAbsenceSessions(config, cls.id, lessonsData);
+            if (lessonsData.length === 0 && absenceSessions.length === 0) {
                 setActionMessage('Ce cahier ne contient aucune séance à imprimer.');
                 return;
             }
-            setPrintTarget({ classInfo: cls, lessonsData, contentDirection: blob.contentDirection ?? 'ltr' });
+            setPrintTarget({ classInfo: cls, lessonsData, contentDirection: blob.contentDirection ?? 'ltr', config, absenceSessions });
         } catch (err) {
             setActionMessage(err instanceof Error ? err.message : 'Impression impossible.');
         } finally {
@@ -664,13 +675,13 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
 
     /** Dates de séances du cahier chargé (l'historique d'impression reste chez l'enseignant). */
     const printDates = useMemo(
-        () => (printTarget ? collectSessionDates(printTarget.lessonsData) : []),
+        () => (printTarget ? collectSessionDates(printTarget.lessonsData, printTarget.absenceSessions) : []),
         [printTarget]
     );
 
     /** Réglages lus par la modale : ceux de l'enseignant, puis l'aperçu en cours. */
     const printModalConfig: AppConfig | null = printTarget
-        ? { ...buildPrintConfig(data?.printSettings, printTarget.classInfo), ...printPrefs }
+        ? { ...printTarget.config, ...printPrefs }
         : null;
 
     /**
@@ -684,6 +695,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         if (!target || isPrinting) return;
 
         let lessonsData = target.lessonsData;
+        let absenceSessions = target.absenceSessions;
         if (mode === 'custom') {
             const available = new Set(printDates);
             const chosen = Array.from(new Set((selectedDates ?? []).filter(date => available.has(date)))).sort();
@@ -694,6 +706,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
             // Les numéros visibles sont figés avant le filtrage : un tirage
             // partiel garde la numérotation du cahier complet.
             lessonsData = createPrintSelection(target.lessonsData, chosen, true);
+            absenceSessions = absenceSessions.filter(session => chosen.includes(session.date));
         }
 
         setIsPrinting(true);
@@ -701,7 +714,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         // Le document est figé avant la composition : une synchronisation reçue
         // pendant l'aperçu ne peut pas modifier ce qui part sur le papier.
         flushSync(() => {
-            setPrintSnapshot({ classInfo: target.classInfo, lessonsData, contentDirection: target.contentDirection, options });
+            setPrintSnapshot({ classInfo: target.classInfo, lessonsData, contentDirection: target.contentDirection, options, absenceSessions, config: { ...target.config, ...printPrefs } });
             setPrintTarget(null);
         });
 
@@ -1072,10 +1085,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 <PrintView
                     lessonsData={printSnapshot.lessonsData}
                     classInfo={printSnapshot.classInfo}
-                    config={{
-                        ...buildPrintConfig(data?.printSettings, printSnapshot.classInfo),
-                        ...printPrefs,
-                    }}
+                    config={printSnapshot.config}
+                    absenceSessions={printSnapshot.absenceSessions}
                     contentDirection={printSnapshot.contentDirection}
                     newlyAddedIds={[]}
                     {...printSnapshot.options}

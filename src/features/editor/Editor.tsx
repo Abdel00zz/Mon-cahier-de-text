@@ -1,3 +1,4 @@
+import { buildAbsenceSessions, groupRowsWithAbsences } from '@/domain/notebook/absenceSessions';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useSelectionEngine, createSelectionState } from './hooks/useSelectionEngine';
@@ -58,7 +59,6 @@ import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/domain/notebook/freeContent';
 import { isFreeContent } from '@/domain/notebook/freeLineType';
-import { groupLessonRows } from '@/domain/notebook/tableRows';
 import { logger } from '@/lib/logger';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
@@ -374,9 +374,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, []);
 
   const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
+  const absenceSessions = useMemo(() => buildAbsenceSessions(config, classInfo.id, lessonsData),
+    [config.absences, config.timetable, config.timetableClock, classInfo.id, lessonsData]);
   // UN SEUL groupement pour tout l'écran : les cibles d'édition et les cibles
   // de séance en dérivent, au lieu de refaire le parcours de fusion deux fois.
-  const groupedRows = useMemo(() => groupLessonRows(allRows).renderRows, [allRows]);
+  const groupedRows = useMemo(() => groupRowsWithAbsences(allRows, absenceSessions).renderRows, [allRows, absenceSessions]);
   const contentEditTargets = useMemo(() => buildContentEditTargetsGrouped(groupedRows), [groupedRows]);
   /** Même moteur de fusion, autre intention : une séance fusionnée est UNE
    *  ligne pour la remarque et pour le déplacement. */
@@ -933,8 +935,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    */
   const printStats = useMemo(() => {
       const meta = readPrintMeta(classInfo.id);
-      const allDates = collectSessionDates(lessonsData);
-      const newDates = getNewDates(lessonsData, classInfo.id, meta);
+      const allDates = collectSessionDates(lessonsData, absenceSessions);
+      const newDates = getNewDates(lessonsData, classInfo.id, meta, absenceSessions);
       return {
           totalDates: allDates.length,
           allDates,
@@ -944,7 +946,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           lastPrintedAt: meta.lastPrintedAt,
           prefs: meta.prefs ?? null,
       };
-  }, [classInfo.id, lessonsData, printMetaVersion]);
+  }, [classInfo.id, lessonsData, absenceSessions, printMetaVersion]);
 
   const handleSmartPrint = useCallback(() => {
       setEditorState(draft => { draft.activeModal = 'print'; });
@@ -993,12 +995,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (isPrintingRef.current || !workspaceIsActive()) return;
 
       const classId = classInfo.id;
-      if (isNotebookAwaitingContent) {
+      if (isNotebookAwaitingContent && absenceSessions.length === 0) {
           showNotification(t('editorNotice.noPrintContent'), 'info');
           return;
       }
-      const allDates = collectSessionDates(lessonsData);
-      const newDates = getNewDates(lessonsData, classId);
+      const allDates = collectSessionDates(lessonsData, absenceSessions);
+      const newDates = getNewDates(lessonsData, classId, undefined, absenceSessions);
 
       // sous-ensemble à imprimer selon le mode ; null = document complet
       let selection: LessonsData | null = null;
@@ -1029,7 +1031,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
       // Capture the content being printed, not edits received while the
       // system dialog or a remote printer is still processing the job.
-      const currentSignatures = sessionPrintSignatures(lessonsData);
+      const currentSignatures = sessionPrintSignatures(lessonsData, absenceSessions);
       const signatures = Object.fromEntries(datesToRecord.map(date => [date, currentSignatures[date]]));
 
       isPrintingRef.current = true;
@@ -1045,7 +1047,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
       // Commit the frozen document before preparing fonts and formula layout.
       flushSync(() => {
-          setPrintSnapshot({ lessonsData: selection ?? lessonsData, classInfo, config, contentDirection, newlyAddedIds: [], ...options });
+          setPrintSnapshot({ lessonsData: selection ?? lessonsData, absenceSessions: absenceSessions.filter(session => datesToRecord.includes(session.date)), classInfo, config, contentDirection, newlyAddedIds: [], ...options });
           setEditorState(draft => { draft.activeModal = null; });
       });
 
@@ -1088,7 +1090,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       };
 
       void launchPrint();
-  }, [classInfo, config, contentDirection, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
+  }, [classInfo, config, contentDirection, lessonsData, absenceSessions, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
 
   /* Ouvrir l'editeur de contenu NE TOUCHE PAS la selection : un double-clic
@@ -1331,7 +1333,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           {/* Barre d'outils COLLANTE : masquée tant que le cahier est vide
               en attente du choix de démarrage (importer le programme ou créer un chapitre).
               Elle s'affiche dès que du contenu est créé ou importé. */}
-          {!isNotebookAwaitingContent && (
+          {(!isNotebookAwaitingContent || absenceSessions.length > 0) && (
             /* Conteneur collant : le retour rapide est un bouton SÉPARÉ, posé à
                côté de la barre — jamais dedans. Le sens de lecture le place tout
                seul (à gauche en français, à droite en arabe) et il voyage avec
@@ -1363,6 +1365,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               lessonsData={lessonsData}
+              absenceSessions={absenceSessions}
               visibleRows={visibleRows}
               onClearSearch={handleClearSearch}
               contentDirection={contentDirection}
