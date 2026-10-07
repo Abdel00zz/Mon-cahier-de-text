@@ -165,12 +165,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   /** Activité dont on consigne les élèves (cahiers contrôlés, participants). */
   const [studentsFor, setStudentsFor] = useState<PedagogicalEvent | null>(null);
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
+  const [eventTypeStep, setEventTypeStep] = useState<PedagogicalEventType | null>(null);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
   const [assessmentFilter, setAssessmentFilter] = useState<AssessmentFilter>('all');
   const [assessmentFamily, setAssessmentFamily] = useState<AssessmentFamily>('all');
-  const [assessmentQuery, setAssessmentQuery] = useState('');
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -187,7 +187,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const periodLinks = useMemo(() => links.filter(link => activeTab !== 's1' && activeTab !== 's2' || link.planned.semestre === (activeTab === 's1' ? 1 : 2)), [links, activeTab]);
   const scopedLinks = useMemo(() => periodLinks.filter(link => assessmentFamily === 'all' || (assessmentFamily === 'homework' ? link.planned.type === 'maison' : link.planned.type !== 'maison')), [periodLinks, assessmentFamily]);
-  const visibleLinks = useMemo(() => filterAssessmentBoard(periodLinks, assessmentFilter, assessmentFamily, assessmentQuery, link => `${t(`evaluations.type.${link.planned.type}`)} ${number.format(link.planned.num)}`), [periodLinks, assessmentFilter, assessmentFamily, assessmentQuery, t, number]);
+  const visibleLinks = useMemo(() => filterAssessmentBoard(periodLinks, assessmentFilter, assessmentFamily, '', link => `${t(`evaluations.type.${link.planned.type}`)} ${number.format(link.planned.num)}`), [periodLinks, assessmentFilter, assessmentFamily, t, number]);
 
   const pedagogicalEvents = useMemo(
     () =>
@@ -219,7 +219,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setSelectedClassId(classId);
     setAssessmentFilter('all');
     setAssessmentFamily('all');
-    setAssessmentQuery('');
     setAbsencesFor(null);
     setDocumentFor(null);
     setStudentsFor(null);
@@ -490,7 +489,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         {/* Devoirs et évaluations, par semestre */}
         {activeTab !== 'events' && (
           <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
-            {hasPlan && <AssessmentOverview links={scopedLinks} filter={assessmentFilter} family={assessmentFamily} query={assessmentQuery} onFilterChange={setAssessmentFilter} onFamilyChange={setAssessmentFamily} onQueryChange={setAssessmentQuery} />}
+            {hasPlan && <AssessmentOverview links={scopedLinks} filter={assessmentFilter} family={assessmentFamily} onFilterChange={setAssessmentFilter} onFamilyChange={setAssessmentFamily} />}
             <div className="flex items-center justify-between px-1">
               <h3 id="evaluations-assessments-title" className="evaluations-category-title text-foreground">
                 {t('evaluations.assessments')}
@@ -692,7 +691,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       {/* Add Pedagogical Event Modal */}
       <Modal
         isOpen={eventEditorOpen}
-        onClose={() => setEventEditorOpen(false)}
+        onClose={() => { setEventEditorOpen(false); setEventTypeStep(null); }}
         maxWidth="md"
         className="sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
@@ -712,13 +711,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           </div>
         }
       >
-        {selectedClass && (
+        {selectedClass && (eventTypeStep ? (
           <PedagogicalEventEditor
             today={today}
-            onCancel={() => setEventEditorOpen(false)}
+            initialType={eventTypeStep}
+            onBack={() => setEventTypeStep(null)}
+            onCancel={() => { setEventEditorOpen(false); setEventTypeStep(null); }}
             onSave={addPedagogicalEvent}
           />
-        )}
+        ) : (
+          <EventTypeStep onSelect={setEventTypeStep} />
+        ))}
       </Modal>
 
       {/* Add / Edit Devoir Modal */}
@@ -1028,16 +1031,38 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   );
 };
 
+const EventTypeStep: React.FC<{ onSelect: (type: PedagogicalEventType) => void }> = ({ onSelect }) => {
+  const { t } = useLocale();
+  const options = (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[]).map(value => ({
+    value,
+    label: t(PEDAGOGICAL_EVENT_CONFIG[value].labelKey),
+    Icon: PEDAGOGICAL_EVENT_CONFIG[value].Icon,
+    tone: PEDAGOGICAL_EVENT_CONFIG[value].tone,
+    description: t(`evaluations.choice.${value}`),
+  }));
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <p className="text-base font-bold text-foreground">{t('evaluations.activityType')}</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('evaluations.board.hint')}</p>
+      </div>
+      <EvaluationChoices label="" value={'' as PedagogicalEventType} options={options} onChange={onSelect} />
+    </div>
+  );
+};
+
 interface PedagogicalEventEditorProps {
   today: string;
+  initialType: PedagogicalEventType;
+  onBack: () => void;
   onCancel: () => void;
   onSave: (event: PedagogicalEvent) => void;
 }
 
-const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, onCancel, onSave }) => {
+const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, initialType, onBack, onCancel, onSave }) => {
   const { t } = useLocale();
-  const [type, setType] = useState<PedagogicalEventType>('evaluation_diagnostic');
-  const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic.labelKey));
+  const [type, setType] = useState<PedagogicalEventType>(initialType);
+  const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG[initialType].labelKey));
   const [date, setDate] = useState(today);
   const [endDate, setEndDate] = useState('');
   const [note, setNote] = useState('');
@@ -1077,18 +1102,11 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
   return (
     <div className="evaluation-editor">
       <div className="flex flex-col gap-5">
-        <EvaluationChoices
-          label={t('evaluations.activityType')}
-          value={type}
-          onChange={changeType}
-          options={(Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[]).map(value => ({
-            value,
-            label: t(PEDAGOGICAL_EVENT_CONFIG[value].labelKey),
-            Icon: PEDAGOGICAL_EVENT_CONFIG[value].Icon,
-            tone: PEDAGOGICAL_EVENT_CONFIG[value].tone,
-            description: t(`evaluations.choice.${value}`),
-          }))}
-        />
+        <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2.5">
+          <span className="evaluation-icon evaluation-icon--compact" data-tone={PEDAGOGICAL_EVENT_CONFIG[type].tone}><Icon /></span>
+          <span className="min-w-0 text-sm font-semibold text-foreground">{t(PEDAGOGICAL_EVENT_CONFIG[type].labelKey)}</span>
+          <button type="button" onClick={onBack} className="ms-auto min-h-11 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-background">{t('common.back')}</button>
+        </div>
 
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-foreground">{t('evaluations.titleLabel')}</span>

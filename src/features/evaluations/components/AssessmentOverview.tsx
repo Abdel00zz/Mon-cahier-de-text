@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CalendarCheck, CircleCheck, ListChecks, Search } from '@/components/ui/icons';
+import { CalendarCheck, CircleCheck, ListChecks } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -16,13 +16,11 @@ interface Props {
   links: AssessmentLink[];
   filter: AssessmentFilter;
   family: AssessmentFamily;
-  query: string;
   onFilterChange: (value: AssessmentFilter) => void;
   onFamilyChange: (value: AssessmentFamily) => void;
-  onQueryChange: (value: string) => void;
 }
 
-export function AssessmentOverview({ links, filter, family, query, onFilterChange, onFamilyChange, onQueryChange }: Props) {
+export function AssessmentOverview({ links, filter, family, onFilterChange, onFamilyChange }: Props) {
   const { t, locale } = useLocale();
   const counts = useMemo(() => summarizeAssessments(links), [links]);
   const number = useMemo(() => numberFormat(locale), [locale]);
@@ -47,19 +45,12 @@ export function AssessmentOverview({ links, filter, family, query, onFilterChang
         ))}
       </div>
       <p className="text-xs text-muted-foreground">{t('evaluations.board.recorded', { done: number.format(counts.done), total: number.format(links.length) })}</p>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div role="group" aria-label={t('evaluations.manualType')} className="flex flex-wrap gap-1 rounded-xl bg-muted/50 p-1">
-          {(['all', 'controls', 'homework'] as const).map(value => (
-            <button key={value} type="button" aria-pressed={family === value} onClick={() => onFamilyChange(value)} className={cn('min-h-11 rounded-lg px-3 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary', family === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-              {t(`evaluations.board.family.${value}`)}
-            </button>
-          ))}
-        </div>
-        <label className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-primary sm:max-w-60">
-          <Search className="size-4 shrink-0 text-muted-foreground" />
-          <span className="sr-only">{t('evaluations.board.search')}</span>
-          <input type="search" value={query} onChange={event => onQueryChange(event.target.value)} placeholder={t('evaluations.board.search')} className="min-w-0 w-full bg-transparent py-2 text-base text-foreground outline-none sm:text-sm" />
-        </label>
+      <div role="group" aria-label={t('evaluations.manualType')} className="flex flex-wrap gap-1 rounded-xl bg-muted/50 p-1">
+        {(['all', 'controls', 'homework'] as const).map(value => (
+          <button key={value} type="button" aria-pressed={family === value} onClick={() => onFamilyChange(value)} className={cn('min-h-11 rounded-lg px-3 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary', family === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+            {t(`evaluations.board.family.${value}`)}
+          </button>
+        ))}
       </div>
     </section>
   );
