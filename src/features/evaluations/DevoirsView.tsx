@@ -47,13 +47,15 @@ import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
 import { numberFormat } from '@/lib/formatters';
 import { EvaluationChoices } from './components/EvaluationChoices';
+import { AssessmentOverview } from './components/AssessmentOverview';
+import { filterAssessmentBoard, type AssessmentFilter, type AssessmentFamily } from '@/domain/evaluations/assessmentBoard';
 
-const ASSESSMENT_TYPE_CHOICES: { value: DevoirType; Icon: typeof BookOpen }[] = [
-  { value: 'controle', Icon: FileSignature },
-  { value: 'controle_court', Icon: Clock },
-  { value: 'controle_global', Icon: ListChecks },
-  { value: 'oral', Icon: Users },
-  { value: 'maison', Icon: Home },
+const ASSESSMENT_TYPE_CHOICES: { value: DevoirType; Icon: typeof BookOpen; tone: ActivityTone }[] = [
+  { value: 'controle', Icon: FileSignature, tone: 'blue' },
+  { value: 'controle_court', Icon: Clock, tone: 'amber' },
+  { value: 'controle_global', Icon: ListChecks, tone: 'violet' },
+  { value: 'oral', Icon: Users, tone: 'teal' },
+  { value: 'maison', Icon: Home, tone: 'green' },
 ];
 
 interface DevoirsViewProps {
@@ -166,6 +168,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
+  const [assessmentFilter, setAssessmentFilter] = useState<AssessmentFilter>('all');
+  const [assessmentFamily, setAssessmentFamily] = useState<AssessmentFamily>('all');
+  const [assessmentQuery, setAssessmentQuery] = useState('');
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -179,6 +184,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     if (!selectedClass) return [];
     return linkAssessments(assessments, findNotebookAssessments(readLessons(selectedClass.id)), today);
   }, [assessments, selectedClass, today]);
+
+  const periodLinks = useMemo(() => links.filter(link => activeTab !== 's1' && activeTab !== 's2' || link.planned.semestre === (activeTab === 's1' ? 1 : 2)), [links, activeTab]);
+  const scopedLinks = useMemo(() => periodLinks.filter(link => assessmentFamily === 'all' || (assessmentFamily === 'homework' ? link.planned.type === 'maison' : link.planned.type !== 'maison')), [periodLinks, assessmentFamily]);
+  const visibleLinks = useMemo(() => filterAssessmentBoard(periodLinks, assessmentFilter, assessmentFamily, assessmentQuery, link => `${t(`evaluations.type.${link.planned.type}`)} ${number.format(link.planned.num)}`), [periodLinks, assessmentFilter, assessmentFamily, assessmentQuery, t, number]);
 
   const pedagogicalEvents = useMemo(
     () =>
@@ -208,6 +217,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const selectClass = (classId: string) => {
     setSelectedClassId(classId);
+    setAssessmentFilter('all');
+    setAssessmentFamily('all');
+    setAssessmentQuery('');
     setAbsencesFor(null);
     setDocumentFor(null);
     setStudentsFor(null);
@@ -438,7 +450,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       )}
 
       {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
-      <div className="flex flex-col gap-3 border-b border-border/60 pb-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
         {/* Organic Pill Segmented Filter avec auto-centrage fluide */}
         <div className="w-full sm:w-auto">
           <FluidTabRail<'all' | 's1' | 's2' | 'events'>
@@ -475,32 +487,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Main Content Area */}
       <div className="space-y-5">
-        {/* Activités pédagogiques : de grandes cartes, une par activité. Sans
-            activité, on invite à en créer une plutôt que de laisser un vide. */}
-        {(activeTab === 'all' || activeTab === 'events') && (
-          pedagogicalEvents.length > 0
-            ? (
-              <PedagogicalEventsSection
-                events={pedagogicalEvents}
-                onToggle={togglePedagogicalEvent}
-                onDelete={deletePedagogicalEvent}
-                onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-                onOpenStudents={(event) => setStudentsFor(event)}
-              />
-            )
-            : activeTab === 'events' && <ActivitiesEmptyState onCreate={() => setEventEditorOpen(true)} />
-        )}
-
         {/* Devoirs et évaluations, par semestre */}
         {activeTab !== 'events' && (
           <section className="space-y-4" aria-labelledby="evaluations-assessments-title">
+            {hasPlan && <AssessmentOverview links={scopedLinks} filter={assessmentFilter} family={assessmentFamily} query={assessmentQuery} onFilterChange={setAssessmentFilter} onFamilyChange={setAssessmentFamily} onQueryChange={setAssessmentQuery} />}
             <div className="flex items-center justify-between px-1">
               <h3 id="evaluations-assessments-title" className="evaluations-category-title text-foreground">
                 {t('evaluations.assessments')}
               </h3>
               {links.length > 0 && (
                 <span className="text-[11px] font-semibold text-muted-foreground">
-                  {links.length} {links.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
+                  <span role="status">{number.format(visibleLinks.length)} {visibleLinks.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}</span>
                 </span>
               )}
             </div>
@@ -522,8 +519,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               </div>
             ) : (
               <div className="space-y-5">
+                {visibleLinks.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border p-6 text-center">
+                    <ListChecks className="size-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">{t('evaluations.board.empty')}</p>
+                    <button type="button" className="min-h-11 rounded-xl bg-muted px-4 text-sm font-medium" onClick={() => { setAssessmentFilter('all'); setAssessmentFamily('all'); setAssessmentQuery(''); }}>{t('evaluations.board.reset')}</button>
+                  </div>
+                )}
                 {semesters.map((sem) => {
-                  const ofSemester = links.filter((l) => l.planned.semestre === sem);
+                  const ofSemester = visibleLinks.filter((l) => l.planned.semestre === sem);
                   if (ofSemester.length === 0) return null;
                   return (
                     <section key={sem} className="space-y-2.5">
@@ -555,6 +559,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                           );
                           const status = STATUS_STYLE[link.status];
                           const isSupervised = a.type !== 'maison';
+                          const visual = ASSESSMENT_TYPE_CHOICES.find(choice => choice.value === a.type)!;
 
                           // Type accents
                           return (
@@ -567,6 +572,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             >
                               {/* Left Info */}
                               <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                                <span className="evaluation-tone evaluation-icon evaluation-icon--compact" data-tone={visual.tone}><visual.Icon /></span>
                                 <div className="flex min-w-0 items-center">
                                   <button
                                     type="button"
@@ -592,7 +598,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                               </div>
 
                               {/* Right Actions & Date Selector */}
-                              <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:pt-0">
+                              <div className="grid w-full min-w-0 grid-cols-2 items-stretch gap-2 sm:flex sm:flex-wrap sm:items-center lg:w-auto">
                                 {/* Sujet, corrigé, fiche : le document du devoir suit le même
                                     moteur que le carnet, donc le même rendu qu'à l'impression. */}
                                 <button
@@ -626,14 +632,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   </button>
                                 )}
 
-                                <div className="flex w-full min-w-0 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 p-0.5 shadow-2xs sm:w-auto">
+                                <div className="col-span-2 flex w-full min-w-0 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 p-0.5 shadow-2xs sm:w-auto">
                                   <div className="relative flex min-w-0 flex-1 items-center sm:flex-none">
                                     <input
                                       type="date"
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 w-full min-w-0 rounded-lg bg-transparent px-2 text-[11px] font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer sm:w-auto sm:px-2.5 sm:text-xs',
+                                        'min-h-11 w-full min-w-0 rounded-lg bg-transparent px-2 text-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer sm:w-auto sm:px-2.5',
                                         custom && 'text-primary font-black'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
@@ -645,7 +651,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => setAssessmentDate(a.id, '')}
-                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+                                      className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
                                       title={t('evaluations.restoreDate')}
                                     >
                                       <Undo2 className="h-3.5 w-3.5" />
@@ -655,7 +661,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => deleteAssessment(a.id)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                                    className="flex size-11 shrink-0 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                                     title={t('evaluations.manualDelete')}
                                     aria-label={t('evaluations.manualDelete')}
                                   >
@@ -673,6 +679,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               </div>
             )}
           </section>
+        )}
+        {/* Activités pédagogiques : de grandes cartes, une par activité. Sans
+            activité, on invite à en créer une plutôt que de laisser un vide. */}
+        {(activeTab === 'all' || activeTab === 'events') && (
+          pedagogicalEvents.length > 0
+            ? <PedagogicalEventsSection events={pedagogicalEvents} onToggle={togglePedagogicalEvent} onDelete={deletePedagogicalEvent} onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })} onOpenStudents={(event) => setStudentsFor(event)} />
+            : activeTab === 'events' && <ActivitiesEmptyState onCreate={() => setEventEditorOpen(true)} />
         )}
       </div>
 
@@ -1072,6 +1085,8 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
             value,
             label: t(PEDAGOGICAL_EVENT_CONFIG[value].labelKey),
             Icon: PEDAGOGICAL_EVENT_CONFIG[value].Icon,
+            tone: PEDAGOGICAL_EVENT_CONFIG[value].tone,
+            description: t(`evaluations.choice.${value}`),
           }))}
         />
 
@@ -1211,7 +1226,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           label={t('evaluations.manualType')}
           value={type}
           onChange={changeType}
-          options={ASSESSMENT_TYPE_CHOICES.map(option => ({ ...option, label: t(`evaluations.type.${option.value}`) }))}
+          options={ASSESSMENT_TYPE_CHOICES.map(option => ({ ...option, label: t(`evaluations.type.${option.value}`), description: t(`evaluations.choice.${option.value}`) }))}
         />
         <EvaluationChoices
           compact

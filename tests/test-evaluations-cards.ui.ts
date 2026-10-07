@@ -8,6 +8,8 @@ import { DevoirsView } from '../src/features/evaluations/DevoirsView';
 import { EvaluationChoices } from '../src/features/evaluations/components/EvaluationChoices';
 import { Home, Users } from '../src/components/ui/icons';
 import { translateLocaleMessage } from '../src/i18n/messages';
+import { filterAssessmentBoard, summarizeAssessments } from '../src/domain/evaluations/assessmentBoard';
+import type { AssessmentLink } from '../src/domain/evaluations/assessmentSync';
 import type { AppConfig, ClassInfo, PedagogicalEvent, PedagogicalEventType } from '../src/types';
 
 /*
@@ -38,6 +40,34 @@ const renderSheet = (events: PedagogicalEvent[], locale: 'fr' | 'ar' = 'fr') => 
 );
 
 const occurrences = (html: string, needle: string) => html.split(needle).length - 1;
+
+test('suivi : compteurs exclusifs, contrôles prioritaires et filtres combinés sans mutation', () => {
+  const link = (id: string, type: 'controle' | 'maison', status: AssessmentLink['status'], dateISO: string): AssessmentLink => ({
+    status, planned: { id, type, num: 1, semestre: 1, dateISO, label: type } as AssessmentLink['planned'],
+  });
+  const links = [
+    link('home', 'maison', 'missing', '2026-09-01'),
+    link('future', 'controle', 'upcoming', '2026-11-01'),
+    link('logged', 'controle', 'done', '2026-10-01'),
+    link('review', 'controle', 'mismatch', '2026-09-15'),
+  ];
+  const label = (item: AssessmentLink) => item.planned.type === 'controle' ? 'Évaluation surveillée' : 'Maison';
+  assert.deepEqual(summarizeAssessments(links), { attention: 2, upcoming: 1, done: 1 });
+  assert.deepEqual(filterAssessmentBoard(links, 'all', 'all', '', label).map(item => item.planned.id), ['review', 'future', 'logged', 'home']);
+  assert.deepEqual(filterAssessmentBoard(links, 'attention', 'controls', 'evaluation', label).map(item => item.planned.id), ['review']);
+  assert.equal(filterAssessmentBoard(links, 'done', 'homework', '', label).length, 0);
+  assert.deepEqual(filterAssessmentBoard(links, 'all', 'all', '2026-11', label).map(item => item.planned.id), ['future']);
+  assert.equal(links[0].planned.id, 'home');
+});
+
+test('les descriptions des cartes sont traduites dans les trois langues', () => {
+  for (const locale of ['fr', 'ar', 'en'] as const) {
+    for (const type of ['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre']) {
+      const key = `evaluations.choice.${type}`;
+      assert.notEqual(translateLocaleMessage(locale, key), key);
+    }
+  }
+});
 
 test('les cartes de choix exposent un groupe radio natif et une sélection unique', () => {
   const html = renderToStaticMarkup(React.createElement(EvaluationChoices, {

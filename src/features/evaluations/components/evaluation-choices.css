@@ -1,5 +1,30 @@
 .evaluation-choice {
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.evaluation-tone { --tone: #2563eb; }
+.evaluation-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.375rem;
+  height: 3.375rem;
+  border-radius: 1rem;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+.evaluation-icon .app-icon { width: 1.875rem; height: 1.875rem; }
+.evaluation-icon .icon-wash { fill-opacity: .46; }
+.evaluation-icon--compact { width: 2.5rem; height: 2.5rem; border-radius: .75rem; }
+.evaluation-icon--compact .app-icon { width: 1.375rem; height: 1.375rem; }
+.evaluation-choice__check { color: var(--tone); }
+.evaluation-tone input:checked + .evaluation-choice {
+  border-color: var(--tone);
+  box-shadow: inset 0 0 0 1px var(--tone);
+  background: color-mix(in srgb, var(--tone) 4%, hsl(var(--card)));
+}
+.evaluation-board-summary[aria-pressed='true'] {
+  border-color: var(--tone);
+  box-shadow: inset 0 0 0 1px var(--tone);
 }
 @media (hover: hover) {
   .evaluation-choice:hover { background-color: hsl(var(--muted)); }
