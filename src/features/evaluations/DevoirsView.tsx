@@ -21,18 +21,9 @@ import {
 } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import {
-  BookOpen,
-  AwardIcon,
   CalendarCheck,
-  CheckSquare,
   CircleCheck,
-  FileSignature,
-  GraduationCap,
-  History,
-  ListChecks,
-  PenLine,
   Plus,
-  RefreshCw,
   Trash2,
   Undo2,
   Users,
@@ -43,6 +34,8 @@ import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
+import { KindChooser, KindHeader } from './components/KindChooser';
+import { PEDAGOGICAL_EVENT_CONFIG, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -103,28 +96,11 @@ const STATUS_CHIP: Partial<Record<AssessmentLink['status'], string>> = {
   mismatch: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
 };
 
-/** Teintes disponibles pour une carte d'activité (voir `.hub-card[data-tone]`). */
-type ActivityTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal' | 'rose' | 'slate';
-
 /*
- * Une icône ET une teinte par nature d'activité : la carte se reconnaît d'un
- * coup d'œil, sans empiler les pastilles. Les icônes disent la chose et rien
- * d'autre — trophée pour l'olympiade, cahier coché pour le contrôle des
- * cahiers, flèche circulaire pour la remédiation —, et deux natures qui
- * partagent une teinte (diagnostic et contrôle des cahiers : la même famille
- * d'évaluation) se distinguent par leur dessin.
+ * Les natures d'évaluation (libellé, teinte, icône) vivent dans `kindCatalog.ts` :
+ * la page, le choix de la nature et les cartes d'activité partagent donc la même
+ * source, et une nouvelle nature s'ajoute à UN seul endroit.
  */
-const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; tone: ActivityTone; Icon: typeof BookOpen }> = {
-  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', tone: 'blue', Icon: ListChecks },
-  olympiade: { labelKey: 'evaluations.event.olympiade', tone: 'amber', Icon: AwardIcon },
-  concours: { labelKey: 'evaluations.event.concours', tone: 'violet', Icon: GraduationCap },
-  soutien: { labelKey: 'evaluations.event.soutien', tone: 'green', Icon: BookOpen },
-  remediation: { labelKey: 'evaluations.event.remediation', tone: 'teal', Icon: RefreshCw },
-  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', tone: 'rose', Icon: FileSignature },
-  rattrapage: { labelKey: 'evaluations.event.rattrapage', tone: 'pink', Icon: History },
-  controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'blue', Icon: CheckSquare },
-  autre: { labelKey: 'evaluations.event.autre', tone: 'slate', Icon: PenLine },
-};
 
 const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
   if (!end || end === start) return formatLongDate(start, locale);
@@ -151,8 +127,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [documentFor, setDocumentFor] = useState<DocumentTarget | null>(null);
   /** Activité dont on consigne les élèves (cahiers contrôlés, participants). */
   const [studentsFor, setStudentsFor] = useState<PedagogicalEvent | null>(null);
-  const [eventEditorOpen, setEventEditorOpen] = useState(false);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
+  /**
+   * Parcours de création en DEUX ÉTAPES : la nature (cartes colorées), puis
+   * ses champs. `chosenKind === null` = on montre le choix.
+   */
+  const [kindChooserOpen, setKindChooserOpen] = useState(false);
+  const [chosenKind, setChosenKind] = useState<EvaluationKind | null>(null);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
 
@@ -200,7 +181,22 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setAbsencesFor(null);
     setDocumentFor(null);
     setStudentsFor(null);
-    setEventEditorOpen(false);
+    setKindChooserOpen(false);
+    setChosenKind(null);
+  };
+
+  /*
+   * Une seule porte d'entrée pour tout créer : le CHOIX de la nature est la
+   * première étape de la fenêtre, pas une liste déroulante dans un formulaire.
+   */
+  const openKindChooser = () => {
+    setChosenKind(null);
+    setKindChooserOpen(true);
+  };
+
+  const closeKindChooser = () => {
+    setKindChooserOpen(false);
+    setChosenKind(null);
   };
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
@@ -230,7 +226,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const addPedagogicalEvent = (event: PedagogicalEvent) => {
     savePedagogicalEvents([...pedagogicalEvents, event]);
-    setEventEditorOpen(false);
+    closeKindChooser();
     toast.success(t('evaluations.eventAddedToast', {
       event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
       className: selectedClassDisplayName,
@@ -290,8 +286,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const openCreateAssessment = () => {
-    setEditingAssessment(null);
-    setManualEditorOpen(true);
+    // Le devoir se crée par le MÊME chemin que les activités : la nature d'abord.
+    openKindChooser();
   };
 
   const openEditAssessment = (assessment: { id: string; type: DevoirType; num: number; dateISO: string; duree?: string; semestre: 1 | 2 }) => {
@@ -327,6 +323,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       manualAssessments: { ...(config.manualAssessments ?? {}), [classId]: nextManual },
     });
     setManualEditorOpen(false);
+    closeKindChooser();
     setEditingAssessment(null);
     toast.success(
       t('evaluations.manualSaved', { type: t(`evaluations.type.${manual.type}`), number: manual.num })
@@ -440,32 +437,29 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           />
         </div>
 
-        {/* Les deux créations restent côte à côte : ajouter un devoir est l'action
-            principale, ajouter une activité l'action secondaire. */}
-        <div className="grid grid-cols-2 gap-1.5 sm:flex sm:items-center">
-          <button
-            type="button"
-            onClick={() => setEventEditorOpen(true)}
-            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-muted/60 px-2.5 text-[10.5px] font-semibold text-foreground shadow-2xs transition-all hover:bg-muted active:scale-[0.97] sm:px-3 sm:text-xs cursor-pointer"
-          >
-            <Plus className="h-5 w-5 text-primary" aria-hidden="true" />
-            <span>{t('evaluations.addActivity')}</span>
-          </button>
-          <button
-            type="button"
-            onClick={openCreateAssessment}
-            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:px-3.5 sm:text-xs cursor-pointer"
-          >
-            <Plus className="h-5 w-5" aria-hidden="true" />
-            <span>{t('evaluations.addDevoir')}</span>
-          </button>
-        </div>
+        {/*
+         * UNE seule action de création : ajouter un devoir ET une activité sont
+         * le même geste (créer une évaluation) ; la nature se choisit dans la
+         * fenêtre, en cartes colorées. Deux boutons juxtaposés obligeaient à
+         * savoir d'avance dans quelle famille on se trouve.
+         */}
+        <button
+          type="button"
+          onClick={openKindChooser}
+          className="inline-flex h-8 w-full min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto sm:px-3.5 sm:text-xs cursor-pointer"
+        >
+          <Plus className="h-5 w-5" aria-hidden="true" />
+          <span>{t('evaluations.add')}</span>
+        </button>
       </div>
 
       {/* Main Content Area */}
       <div className="space-y-5">
-        {/* Activités pédagogiques : de grandes cartes, une par activité. Sans
-            activité, on invite à en créer une plutôt que de laisser un vide. */}
+        {/*
+         * Activités pédagogiques : TOUJOURS là, y compris vides. La page montre
+         * ainsi tout ce qu'une classe peut porter — devoirs et activités — au
+         * lieu de faire disparaître une famille entière tant qu'elle est vide.
+         */}
         {(activeTab === 'all' || activeTab === 'events') && (
           pedagogicalEvents.length > 0
             ? (
@@ -477,7 +471,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 onOpenStudents={(event) => setStudentsFor(event)}
               />
             )
-            : activeTab === 'events' && <ActivitiesEmptyState onCreate={() => setEventEditorOpen(true)} />
+            : <ActivitiesEmptyState onCreate={openKindChooser} compact={activeTab === 'all'} />
         )}
 
         {/* Devoirs et évaluations, par semestre */}
@@ -665,10 +659,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         )}
       </div>
 
-      {/* Add Pedagogical Event Modal */}
+      {/* Ajouter une évaluation : la nature d'abord (cartes), puis ses champs */}
       <Modal
-        isOpen={eventEditorOpen}
-        onClose={() => setEventEditorOpen(false)}
+        isOpen={kindChooserOpen}
+        onClose={closeKindChooser}
         maxWidth="md"
         className="sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
@@ -676,25 +670,45 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         footerClassName="border-t-0 bg-background"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-              <AwardIcon className="h-5 w-5" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              {chosenKind
+                ? <chosenKind.style.Icon className="h-5 w-5" />
+                : <Plus className="h-5 w-5" />}
             </span>
-            <div>
-              <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">{t('evaluations.addActivity')}</span>
+            <div className="min-w-0">
+              <span className="block text-lg font-bold tracking-tight text-foreground sm:text-xl">{t('evaluations.add')}</span>
               {selectedClass && (
-                <p className="text-xs font-medium text-muted-foreground mt-0.5">{selectedClassDisplayName}</p>
+                <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">{selectedClassDisplayName}</p>
               )}
             </div>
           </div>
         }
       >
-        {selectedClass && (
-          <PedagogicalEventEditor
-            today={today}
-            onCancel={() => setEventEditorOpen(false)}
-            onSave={addPedagogicalEvent}
-          />
-        )}
+        {selectedClass && (chosenKind ? (
+          <>
+            {/* 2ᵉ étape : la nature choisie reste visible, et se change d'un geste. */}
+            <KindHeader kind={chosenKind} onBack={() => setChosenKind(null)} />
+            {chosenKind.family === 'event' ? (
+              <PedagogicalEventEditor
+                today={today}
+                initialType={chosenKind.type}
+                onCancel={closeKindChooser}
+                onSave={addPedagogicalEvent}
+              />
+            ) : (
+              <ManualAssessmentEditor
+                today={today}
+                initial={null}
+                initialType={chosenKind.type}
+                assessments={assessments}
+                onCancel={closeKindChooser}
+                onSave={saveAssessment}
+              />
+            )}
+          </>
+        ) : (
+          <KindChooser onSelect={setChosenKind} />
+        ))}
       </Modal>
 
       {/* Add / Edit Devoir Modal */}
@@ -862,13 +876,15 @@ interface PedagogicalEventsSectionProps {
 
 /**
  * Aucune activité : un état vide qui propose l'action suivante plutôt qu'une
- * surface muette — c'est le moment où l'enseignant découvre la rubrique.
+ * surface muette — c'est le moment où l'enseignant découvre la rubrique. Sur
+ * l'onglet « tout », la variante `compact` se contente de la ligne d'invitation :
+ * la page montre alors ses deux familles sans doubler la hauteur.
  */
-const ActivitiesEmptyState: React.FC<{ onCreate: () => void }> = ({ onCreate }) => {
+const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }> = ({ onCreate, compact = false }) => {
   const { t } = useLocale();
   return (
-    <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/40 px-4 py-8 text-center">
-      <SchedulePlanningIllustration size={120} className="mb-2" />
+    <div className={`flex flex-col items-center border border-dashed border-border bg-card/40 text-center ${compact ? 'gap-2 rounded-2xl px-4 py-4' : 'rounded-3xl px-4 py-8'}`}>
+      {!compact && <SchedulePlanningIllustration size={120} className="mb-2" />}
       <h4 className="text-sm font-bold text-foreground">{t('evaluations.activitiesEmptyTitle')}</h4>
       <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground text-pretty">
         {t('evaluations.activitiesEmptyHint')}
@@ -1006,24 +1022,20 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 
 interface PedagogicalEventEditorProps {
   today: string;
+  /** Nature choisie à l'étape précédente : la fiche ne la redemande pas. */
+  initialType: PedagogicalEventType;
   onCancel: () => void;
   onSave: (event: PedagogicalEvent) => void;
 }
 
-const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, onCancel, onSave }) => {
+const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, initialType, onCancel, onSave }) => {
   const { t } = useLocale();
-  const [type, setType] = useState<PedagogicalEventType>('evaluation_diagnostic');
-  const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic.labelKey));
+  const [type] = useState<PedagogicalEventType>(initialType);
+  const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG[initialType].labelKey));
   const [date, setDate] = useState(today);
   const [endDate, setEndDate] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
-
-  const changeType = (nextType: PedagogicalEventType) => {
-    const previousDefault = t(PEDAGOGICAL_EVENT_CONFIG[type].labelKey);
-    setType(nextType);
-    if (!title.trim() || title === previousDefault) setTitle(t(PEDAGOGICAL_EVENT_CONFIG[nextType].labelKey));
-  };
 
   const submit = () => {
     if (!title.trim()) {
@@ -1053,21 +1065,6 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
   return (
     <div className="space-y-4">
       <div className="space-y-3.5">
-        <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-foreground">{t('evaluations.activityType')}</span>
-          <select
-            value={type}
-            onChange={(event) => changeType(event.target.value as PedagogicalEventType)}
-            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, conf]) => (
-              <option key={value} value={value}>
-                {t(conf.labelKey)}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-foreground">{t('evaluations.titleLabel')}</span>
           <input
@@ -1155,15 +1152,20 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
 interface ManualAssessmentEditorProps {
   today: string;
   initial?: ManualAssessment | null;
+  /** Nature choisie à l'étape précédente (création) : la fiche ne la redemande pas. */
+  initialType?: DevoirType;
   assessments?: { id: string; type: DevoirType }[];
   onCancel: () => void;
   onSave: (manual: ManualAssessment) => void;
 }
 
-const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, initial, assessments = [], onCancel, onSave }) => {
+const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, initial, initialType, assessments = [], onCancel, onSave }) => {
   const { t } = useLocale();
-  const [type, setType] = useState<DevoirType>(initial?.type ?? 'controle');
-  const [num, setNum] = useState(String(initial?.num ?? 1));
+  const initialKind: DevoirType = initial?.type ?? initialType ?? 'controle';
+  const [type, setType] = useState<DevoirType>(initialKind);
+  // Numéro suivant de SA famille : le premier « devoir maison 1 » arrive quand
+  // les contrôles existent déjà.
+  const [num, setNum] = useState(String(initial?.num ?? (assessments.filter(a => a.type === initialKind).length + 1)));
   const [date, setDate] = useState(initial?.dateISO ?? today);
   const [duree, setDuree] = useState(initial?.duree ?? '');
   const [semestre, setSemestre] = useState<1 | 2>(initial?.semestre ?? 1);
@@ -1202,20 +1204,32 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
     <div className="space-y-3.5 sm:space-y-4">
       <div className="space-y-3 sm:space-y-3.5">
         <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2">
-          <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
-            <select
-              value={type}
-              onChange={(event) => changeType(event.target.value as DevoirType)}
-              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
-            >
-              <option value="controle">{t('evaluations.type.controle')}</option>
-              <option value="controle_court">{t('evaluations.type.controle_court')}</option>
-              <option value="controle_global">{t('evaluations.type.controle_global')}</option>
-              <option value="oral">{t('evaluations.type.oral')}</option>
-              <option value="maison">{t('evaluations.type.maison')}</option>
-            </select>
-          </label>
+          {/*
+           * Le type n'est proposé QUE pour une modification : à la création, il
+           * vient de la carte choisie à l'étape précédente — le redemander ici
+           * serait une seconde décision pour la même information.
+           */}
+          {initial ? (
+            <label className="block space-y-1.5">
+              <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
+              <select
+                value={type}
+                onChange={(event) => changeType(event.target.value as DevoirType)}
+                className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
+              >
+                <option value="controle">{t('evaluations.type.controle')}</option>
+                <option value="controle_court">{t('evaluations.type.controle_court')}</option>
+                <option value="controle_global">{t('evaluations.type.controle_global')}</option>
+                <option value="oral">{t('evaluations.type.oral')}</option>
+                <option value="maison">{t('evaluations.type.maison')}</option>
+              </select>
+            </label>
+          ) : (
+            <div className="flex flex-col justify-end gap-1 rounded-xl bg-muted/40 px-3 py-2">
+              <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
+              <span className="truncate text-xs font-semibold text-muted-foreground">{t(`evaluations.type.${type}`)}</span>
+            </div>
+          )}
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualSemester')}</span>
             <select

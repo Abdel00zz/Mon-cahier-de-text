@@ -106,7 +106,7 @@ test('les titres disent ce que la fenêtre contient, sans répétition', () => {
 
 test('sans activité, l’onglet invite à en créer une', () => {
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  assert.match(view, /activeTab === 'events' && <ActivitiesEmptyState onCreate=\{\(\) => setEventEditorOpen\(true\)\}/);
+  assert.match(view, /<ActivitiesEmptyState onCreate=\{openKindChooser\} compact=\{activeTab === 'all'\} \/>/);
   assert.match(view, /SchedulePlanningIllustration size=\{120\}/);
   assert.match(view, /evaluations\.activitiesEmptyTitle/);
   assert.match(view, /evaluations\.activitiesEmptyHint/);
@@ -114,7 +114,10 @@ test('sans activité, l’onglet invite à en créer une', () => {
 
 test('une icône et une teinte par nature, aucune couleur inventée', () => {
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  const config = view.slice(view.indexOf('const PEDAGOGICAL_EVENT_CONFIG'), view.indexOf('const formatDateRange'));
+  // Les natures vivent désormais dans le catalogue partagé : c'est lui qui porte
+  // les icônes et les teintes, la page ne fait que les lire.
+  const catalog = readFileSync('src/features/evaluations/kindCatalog.ts', 'utf8');
+  const config = catalog.slice(catalog.indexOf('export const PEDAGOGICAL_EVENT_CONFIG'), catalog.indexOf('export const DEVOIR_KIND_CONFIG'));
   const types: PedagogicalEventType[] = [
     'evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation',
     'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre',
