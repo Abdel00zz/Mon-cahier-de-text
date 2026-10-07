@@ -1,5 +1,7 @@
 import React from 'react';
-import { ChevronRight, Undo2 } from '@/components/ui/icons';
+import { ChevronRight, Plus, Undo2 } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
+import { dateTimeFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { KIND_GROUPS, kindLabelKey, type EvaluationKind } from '../kindCatalog';
 
@@ -17,6 +19,29 @@ import { KIND_GROUPS, kindLabelKey, type EvaluationKind } from '../kindCatalog';
  * Aucune barre de recherche : quinze natures tiennent sur un écran de téléphone,
  * une recherche ajouterait un geste sans rien résoudre.
  */
+
+/** Fil d'étapes : où l'on est dans le parcours, sans texte inutile. */
+export const StepTrail: React.FC<{ step: 1 | 2; label: string }> = ({ step, label }) => {
+  const { t } = useLocale();
+  return (
+    <ol className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold" aria-label={t('evaluations.add')}>
+      <li
+        aria-current={step === 1 ? 'step' : undefined}
+        className={cn(
+          'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5',
+          step === 1 ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+        )}
+      >
+        <span className="grid h-4 w-4 place-items-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">1</span>
+        {t('evaluations.stepKind')}
+      </li>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground rtl:-scale-x-100" aria-hidden="true" />
+      {step === 2 && (
+        <li aria-current="step" className="truncate font-bold text-foreground">{label}</li>
+      )}
+    </ol>
+  );
+};
 
 export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }> = ({ onSelect }) => {
   const { t } = useLocale();
@@ -84,6 +109,78 @@ export const KindHeader: React.FC<{ kind: EvaluationKind; onBack: () => void }> 
       >
         <Undo2 className="h-4 w-4" aria-hidden="true" />
         {t('evaluations.changeKind')}
+      </button>
+    </div>
+  );
+};
+
+export interface ProgrammedItem {
+  id: string;
+  label: string;
+  dateISO: string;
+  statusLabel: string;
+  /** Classes d'état de la page (mêmes pastilles, même vocabulaire). */
+  statusClass: string;
+  /** Un sujet a déjà été rédigé pour ce devoir. */
+  hasDocument: boolean;
+}
+
+/**
+ * DEUXIÈME ÉTAPE D'UN DEVOIR : LA LISTE PROGRAMMÉE, PAS UN FORMULAIRE VIDE.
+ *
+ * Les devoirs d'une classe sont déjà programmés — planning officiel, plus les
+ * ajouts hors programmation. Le professeur qui choisit « devoir maison » veut
+ * donc d'abord VOIR ses devoirs maison, pour ouvrir le sujet du jour, plutôt que
+ * de saisir un numéro et une date qui existent déjà. La création libre reste
+ * possible, mais en dernier : c'est l'exception, pas le chemin.
+ */
+export const ProgrammedList: React.FC<{
+  items: ProgrammedItem[];
+  onOpen: (id: string) => void;
+  onCreate: () => void;
+}> = ({ items, onOpen, onCreate }) => {
+  const { t, locale } = useLocale();
+  const dateLabel = dateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  return (
+    <div className="space-y-3">
+      <p className="text-xs leading-relaxed text-muted-foreground text-pretty">
+        {items.length > 0 ? t('evaluations.programmedHint') : t('evaluations.programmedEmpty')}
+      </p>
+      {items.length > 0 && (
+        <ul className="hub-grid" data-rows>
+          {items.map(item => (
+            <li key={item.id} className="min-w-0">
+              <button
+                type="button"
+                data-programmed-id={item.id}
+                onClick={() => onOpen(item.id)}
+                aria-label={`${item.label} — ${dateLabel.format(new Date(item.dateISO))}`}
+                className="hub-card h-full w-full"
+                data-layout="row"
+              >
+                <span className="hub-card__body min-w-0 flex-1">
+                  <span className="hub-card__title block text-start">{item.label}</span>
+                  <span className="hub-card__hint block text-start">{dateLabel.format(new Date(item.dateISO))}</span>
+                </span>
+                {item.hasDocument && <span className="tone-chip shrink-0">{t('evaluations.doc.open')}</span>}
+                <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-bold ring-1', item.statusClass)}>
+                  {item.statusLabel}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* La création hors programmation est le repli : trait discontinu, jamais
+          la couleur de l'action principale. */}
+      <button
+        type="button"
+        onClick={onCreate}
+        className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        {t('evaluations.manualCreate')}
       </button>
     </div>
   );

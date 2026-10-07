@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
-import { KindChooser, KindHeader } from '../src/features/evaluations/components/KindChooser';
+import { KindChooser, KindHeader, ProgrammedList, StepTrail } from '../src/features/evaluations/components/KindChooser';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey } from '../src/features/evaluations/kindCatalog';
 
 /*
@@ -61,16 +61,59 @@ test('l’étape 2 rappelle la nature choisie et permet d’y revenir', () => {
     assert.match(html, /min-h-11/, 'cible tactile de 44 px');
 });
 
+test('le fil d’étapes n’annonce la nature que lorsqu’elle est choisie', () => {
+    const stepOne = render(React.createElement(StepTrail, { step: 1, label: 'Nature' }));
+    assert.match(stepOne, /aria-current="step"/, 'l’étape courante est annoncée');
+    assert.equal((stepOne.match(/Nature/g) ?? []).length, 1, 'aucune redite « Nature › Nature »');
+
+    const stepTwo = render(React.createElement(StepTrail, { step: 2, label: 'Devoir maison' }));
+    assert.match(stepTwo, /Nature/, 'la première étape reste lisible');
+    assert.match(stepTwo, /Devoir maison/, 'la nature choisie nomme l’étape 2');
+});
+
+test('un devoir programmé s’ouvre depuis la liste, la création libre reste en repli', () => {
+    const items = [
+        { id: 'a1', label: 'Devoir maison 1', dateISO: '2026-09-14', statusLabel: 'À vérifier', statusClass: 'ring-amber-500/40', hasDocument: false },
+        { id: 'a2', label: 'Devoir maison 2', dateISO: '2026-10-26', statusLabel: 'À venir', statusClass: 'ring-blue-500/40', hasDocument: true },
+    ];
+    const html = render(React.createElement(ProgrammedList, { items, onOpen: () => undefined, onCreate: () => undefined }));
+    for (const item of items) {
+        assert.match(html, new RegExp(`data-programmed-id="${item.id}"`), `${item.id} est proposé`);
+        assert.match(html, new RegExp(item.statusLabel), 'son état est écrit, pas seulement coloré');
+    }
+    // Le sujet déjà rédigé est signalé ; la date est en toutes lettres.
+    assert.match(html, /septembre/, 'la date se lit en clair');
+    assert.match(html, /tone-chip/, 'un devoir déjà rédigé le dit');
+    // Créer hors programmation reste possible, mais discret (trait discontinu).
+    assert.match(html, /border-dashed/);
+    assert.match(html, /Créer un devoir hors programmation/);
+    // Aucun devoir de ce type : le message guide au lieu d'un écran vide.
+    const empty = render(React.createElement(ProgrammedList, { items: [], onOpen: () => undefined, onCreate: () => undefined }));
+    assert.match(empty, /Aucun devoir de ce type/, 'état vide expliqué');
+});
+
+test('les devoirs passent par leur LISTE programmée, pas par un formulaire vide', () => {
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+    assert.match(view, /manualFormOpen \? \([\s\S]{0,400}<ProgrammedList/, 'la liste programmée précède le formulaire');
+    assert.match(view, /items=\{programmedFor\(chosenKind\.type\)\}/, 'la liste suit la nature choisie');
+    assert.match(view, /onOpen=\{openProgrammedAssessment\}/, 'un devoir programmé s’ouvre');
+    assert.match(view, /onCreate=\{\(\) => setManualFormOpen\(true\)\}/, 'la création libre est demandée explicitement');
+    assert.match(view, /const openProgrammedAssessment = \(assessmentId: string\) => \{[\s\S]{0,300}setDocumentFor\(\{ kind: 'assessment', link \}\)/, 'on accède au sujet du devoir');
+    // L'état manuel ne survit pas à la fermeture du parcours.
+    assert.match(view, /const closeKindChooser = \(\) => \{[\s\S]{0,120}setManualFormOpen\(false\)/, 'parcours remis à zéro');
+});
+
 test('le catalogue est la SOURCE des natures pour la page et pour le choix', () => {
     const catalog = readFileSync('src/features/evaluations/kindCatalog.ts', 'utf8');
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
     // Une seule déclaration des natures : la vue l'importe.
     assert.equal((catalog.match(/export const PEDAGOGICAL_EVENT_CONFIG/g) ?? []).length, 1);
-    assert.match(view, /import \{ PEDAGOGICAL_EVENT_CONFIG, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
+    assert.match(view, /import \{ PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
+    assert.match(view, /kindLabelKey\(chosenKind\)/, 'le fil d’étapes nomme la nature via sa clé traduite');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
     // Le parcours en deux étapes : choix puis champs, avec retour.
     assert.match(view, /<KindChooser onSelect=\{setChosenKind\} \/>/, 'étape 1 : les cartes');
-    assert.match(view, /<KindHeader kind=\{chosenKind\} onBack=\{\(\) => setChosenKind\(null\)\} \/>/, 'étape 2 : retour au choix');
+    assert.match(view, /<KindHeader kind=\{chosenKind\} onBack=\{\(\) => \{ setChosenKind\(null\); setManualFormOpen\(false\); \}\} \/>/, 'étape 2 : retour au choix');
     // Le type n'est plus redemandé par le formulaire d'activité.
     assert.match(view, /const \[type\] = useState<PedagogicalEventType>\(initialType\)/, 'type fixé par l’étape 1');
     assert.doesNotMatch(view, /evaluations\.activityType/, 'plus de sélecteur de type dans la fiche');

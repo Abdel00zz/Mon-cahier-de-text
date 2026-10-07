@@ -33,7 +33,7 @@ import {
   ListChecks,
   PenLine,
   RefreshCw,
-  Sparkles,
+  Users,
 } from '@/components/ui/icons';
 import type { DevoirType, PedagogicalEventType } from '@/types';
 
@@ -61,10 +61,15 @@ export const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, KindStyle> =
 
 /** Devoirs et évaluations : les cinq natures qui alimentent le bulletin. */
 export const DEVOIR_KIND_CONFIG: Record<DevoirType, KindStyle> = {
+  // L'épreuve écrite en classe : le calendrier des évaluations.
   controle: { labelKey: 'evaluations.type.controle', tone: 'blue', Icon: CalendarCheck },
+  // L'épreuve courte : le temps d'une séance.
   controle_court: { labelKey: 'evaluations.type.controle_court', tone: 'violet', Icon: Clock },
+  // L'épreuve longue : une copie complète.
   controle_global: { labelKey: 'evaluations.type.controle_global', tone: 'green', Icon: FileText },
-  oral: { labelKey: 'evaluations.type.oral', tone: 'rose', Icon: Sparkles },
+  // L'oral : la classe prend la parole.
+  oral: { labelKey: 'evaluations.type.oral', tone: 'rose', Icon: Users },
+  // Le travail à la maison.
   maison: { labelKey: 'evaluations.type.maison', tone: 'teal', Icon: Home },
 };
 

@@ -34,8 +34,8 @@ import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { CurriculumImportIllustration, SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
-import { KindChooser, KindHeader } from './components/KindChooser';
-import { PEDAGOGICAL_EVENT_CONFIG, type EvaluationKind } from './kindCatalog';
+import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
+import { PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 interface DevoirsViewProps {
@@ -134,6 +134,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
    */
   const [kindChooserOpen, setKindChooserOpen] = useState(false);
   const [chosenKind, setChosenKind] = useState<EvaluationKind | null>(null);
+  /** 3ᵉ temps d'un devoir : la création hors programmation, à la demande. */
+  const [manualFormOpen, setManualFormOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
 
@@ -197,6 +199,34 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const closeKindChooser = () => {
     setKindChooserOpen(false);
     setChosenKind(null);
+    setManualFormOpen(false);
+  };
+
+  /**
+   * Les devoirs DÉJÀ programmés de cette nature, dans l'ordre du planning :
+   * le professeur ouvre celui du jour au lieu de ressaisir un numéro et une date.
+   * Les ajouts hors programmation sont dans la même liste (ils vivent dans
+   * `assessments`), donc rien n'échappe à l'écran.
+   */
+  const programmedFor = (type: DevoirType): ProgrammedItem[] =>
+    links
+      .filter(link => link.planned.type === type)
+      .map(link => ({
+        id: link.planned.id,
+        label: `${t(`evaluations.type.${link.planned.type}`)} ${number.format(link.planned.num)}`,
+        dateISO: link.planned.dateISO,
+        statusLabel: t(STATUS_STYLE[link.status].labelKey),
+        statusClass: STATUS_CHIP[link.status] ?? 'bg-muted text-muted-foreground ring-border/60',
+        hasDocument: !!(config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.id]
+          ?? (link.planned.legacyId ? config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.legacyId] : undefined)),
+      }));
+
+  /** Ouvrir le sujet d'un devoir programmé : le document du devoir, en lecture ou rédaction. */
+  const openProgrammedAssessment = (assessmentId: string) => {
+    const link = links.find(item => item.planned.id === assessmentId);
+    if (!link) return;
+    closeKindChooser();
+    setDocumentFor({ kind: 'assessment', link });
   };
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
@@ -686,8 +716,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       >
         {selectedClass && (chosenKind ? (
           <>
+            <StepTrail step={2} label={t(kindLabelKey(chosenKind))} />
             {/* 2ᵉ étape : la nature choisie reste visible, et se change d'un geste. */}
-            <KindHeader kind={chosenKind} onBack={() => setChosenKind(null)} />
+            <KindHeader kind={chosenKind} onBack={() => { setChosenKind(null); setManualFormOpen(false); }} />
             {chosenKind.family === 'event' ? (
               <PedagogicalEventEditor
                 today={today}
@@ -695,19 +726,27 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 onCancel={closeKindChooser}
                 onSave={addPedagogicalEvent}
               />
-            ) : (
+            ) : manualFormOpen ? (
               <ManualAssessmentEditor
                 today={today}
                 initial={null}
                 initialType={chosenKind.type}
                 assessments={assessments}
-                onCancel={closeKindChooser}
+                onCancel={() => setManualFormOpen(false)}
                 onSave={saveAssessment}
+              />
+            ) : (
+              <ProgrammedList
+                items={programmedFor(chosenKind.type)}
+                onOpen={openProgrammedAssessment}
+                onCreate={() => setManualFormOpen(true)}
               />
             )}
           </>
         ) : (
-          <KindChooser onSelect={setChosenKind} />
+          <>
+            <StepTrail step={1} label={t('evaluations.stepKind')} />            <KindChooser onSelect={setChosenKind} />
+          </>
         ))}
       </Modal>
 
