@@ -56,13 +56,16 @@ export const useWindowVirtualizer = ({
       const rect = element.getBoundingClientRect();
       const { top: nextTop, height: nextHeight } = listViewport(rect.top, rect.height, window.innerHeight, scrollMargin);
 
-      setViewport(current => (
-        Math.abs(current.top - nextTop) < 1 && Math.abs(current.height - nextHeight) < 1
+      setViewport(current => {
+        const previousRange = visibleRange(offsetsRef.current, current.top, current.height, overscan);
+        const nextRange = visibleRange(offsetsRef.current, nextTop, nextHeight, overscan);
+        // Native scrolling needs no React render while the same rows stay visible.
+        return previousRange.start === nextRange.start && previousRange.end === nextRange.end
           ? current
-          : { top: nextTop, height: nextHeight }
-      ));
+          : { top: nextTop, height: nextHeight };
+      });
     });
-  }, [scrollMargin]);
+  }, [scrollMargin, overscan]);
 
   React.useEffect(() => {
     if (!enabled) return;
