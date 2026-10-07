@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent, PedagogicalEventType } from '@/types';
@@ -11,11 +11,12 @@ import { resolveClassAssessments } from '@/domain/evaluations/assessments';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import './evaluationsResponsive.css';
+import './evaluationReference.css';
 import './classPickerCards.css';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { Modal } from '@/components/ui/modal';
 import {
-  ArrowLeft,
+  ArrowDown,
   CalendarCheck,
   CircleCheck,
   Plus,
@@ -39,6 +40,7 @@ interface DevoirsViewProps {
   onConfigChange: (patch: Partial<AppConfig>) => void;
   /** Mode contextuel : la classe est déjà connue, aucun sélecteur ni lien de retour. */
   embedded?: boolean;
+  onBackToClassesChange?: (action: (() => void) | null) => void;
 }
 
 /**
@@ -112,9 +114,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   classes,
   config,
   onConfigChange,
-  embedded = false,
+  embedded = false, onBackToClassesChange,
 }) => {
-  const { t, locale, isRtl } = useLocale();
+  const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   /**
@@ -228,10 +230,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   /** Retour aux classes : on referme aussi les tiroirs. */
-  const backToClasses = () => {
+  const backToClasses = useCallback(() => {
     setOpenedClassId(null);
     setOpenActivityKeys(undefined);
-  };
+  }, []);
+  useEffect(() => {
+    if (!onBackToClassesChange) return;
+    onBackToClassesChange(openedClassId ? backToClasses : null);
+    return () => onBackToClassesChange(null);
+  }, [openedClassId, backToClasses, onBackToClassesChange]);
 
   /**
    * Les classes proposées à la première vue, dans le vocabulaire des cartes du
@@ -615,14 +622,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <>
           <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              {!embedded && (
+              {!embedded && !onBackToClassesChange && (
                 <button
                   type="button"
                   onClick={backToClasses}
-                  className="evaluation-back inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+                  aria-label={t('evaluations.allClasses')}
+                  title={t('evaluations.allClasses')}
+                  className="evaluation-back inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
                 >
-                  <ArrowLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} aria-hidden="true" />
-                  {t('evaluations.allClasses')}
+                  <ArrowDown className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                 </button>
               )}
               <div className="min-w-0">

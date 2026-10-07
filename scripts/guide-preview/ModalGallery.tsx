@@ -1,5 +1,8 @@
 /** Interactive review of production dialogs with fictitious, local-only data. */
-import { useState } from 'react';
+import { ArrowDown } from 'lucide-react';
+import { Modal } from '../../src/components/ui/modal';
+import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
+import { useCallback, useState } from 'react';
 import { AuthProvider } from '../../src/contexts/AuthContext';
 import { Button } from '../../src/components/ui/button';
 import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
@@ -35,7 +38,9 @@ const dialogs = {
 export function ModalGallery({ config, classes, lessons, onChange }: {
   config: AppConfig; classes: ClassInfo[]; lessons: LessonsData; onChange: (patch: Partial<AppConfig>) => void;
 }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
+  const [back, setBack] = useState<(() => void) | null>(null);
+  const updateBack = useCallback((action: (() => void) | null) => setBack(() => action), []);
   const params = new URLSearchParams(location.search);
   const current = params.get('modal') ?? 'settings';
   const [open, setOpen] = useState(true);
@@ -72,6 +77,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'restore' && <ImportPlatformModal {...common} onImport={close} />}
     {current === 'settings' && <AuthProvider><ConfigModal {...common} config={config} onConfigChange={onChange} classes={classes} onOpenGuide={close} onExportPlatform={close} onOpenImport={close} /></AuthProvider>}
     {current === 'guide' && <GuideModal {...common} />}
+    {current === 'evaluations-global' && <Modal {...common} className="evaluation-modal evaluation-reference" title={<span className="evaluation-header-title">{back && <button type="button" className="evaluation-header-back" onClick={back} aria-label={t('evaluations.allClasses')}><ArrowDown aria-hidden="true" className="h-5 w-5" /></button>}<span>{t('evaluationsSheet.title')}</span></span>}><DevoirsView classes={classes} config={config} onConfigChange={onChange} onBackToClassesChange={updateBack} /></Modal>}
     {current === 'evaluations' && <ClassEvaluationsSheet open={open} onOpenChange={setOpen} classInfo={classInfo} config={config} onConfigChange={onChange} />}
     {current === 'message' && open && <AdminMessageModal message={{ id: 'visual-review', title: l('Bienvenue pour cette rentrée', 'مرحبًا بكم في هذا الموسم الدراسي', 'Welcome to the new school year'), body: l('Votre espace est prêt. Vous pouvez commencer à préparer vos premières séances.', 'فضاؤكم جاهز. يمكنكم الآن إعداد حصصكم الأولى.', 'Your workspace is ready. You can start preparing your first lessons.'), createdAt: '2026-09-01T08:00:00Z' }} onAcknowledge={async () => close()} />}
     {current === 'admin-import' && <ClassJsonImportModal {...common} phone="0600000000" classInfo={classInfo} onImported={close} />}

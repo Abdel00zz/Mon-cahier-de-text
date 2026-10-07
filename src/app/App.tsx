@@ -1,3 +1,4 @@
+import { ArrowDown } from 'lucide-react';
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
@@ -101,6 +102,8 @@ const App: React.FC = () => {
       : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
   );
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
+  const [evaluationsBack, setEvaluationsBack] = useState<(() => void) | null>(null);
+  const handleEvaluationsBackChange = useCallback((action: (() => void) | null) => setEvaluationsBack(() => action), []);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
@@ -585,12 +588,16 @@ const App: React.FC = () => {
           isOpen={isEvaluationsOpen}
           onClose={() => setIsEvaluationsOpen(false)}
           maxWidth="4xl"
-          className="sm:rounded-2xl"
-          title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
+          className="evaluation-modal evaluation-reference sm:rounded-2xl"
+          title={<span className="evaluation-header-title">
+            {evaluationsBack && <button type="button" onClick={evaluationsBack} className="evaluation-header-back" aria-label={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.allClasses')} title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.allClasses')}><ArrowDown className="h-5 w-5" strokeWidth={2} aria-hidden="true" /></button>}
+            <span>{translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}</span>
+          </span>}
           bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
         >
           <Suspense fallback={<AppBootSkeleton />}>
             <DevoirsView
+              onBackToClassesChange={handleEvaluationsBackChange}
               classes={classes}
               config={config}
               onConfigChange={updateConfig}
