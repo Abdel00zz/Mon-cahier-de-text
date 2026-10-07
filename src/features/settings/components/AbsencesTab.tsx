@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AbsencePeriod, AppConfig, ClassInfo, ContentDirection, LessonsData } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
-import { classSessionsDuring, absenceDates, injectAbsenceLine } from '@/domain/notebook/absenceInjection';
+import { classSessionsDuring, absenceDates, injectAbsenceLine, notebookSessionDates } from '@/domain/notebook/absenceInjection';
 import { defaultContentDirection, detectContentDirection } from '@/domain/notebook/contentDirection';
 import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
@@ -50,29 +50,42 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
      * Écrit les lignes manquantes dans chaque cahier concerné : UNE lecture et
      * UNE écriture par classe, même quand plusieurs absences la visent — dix
      * dates corrigées d'un coup font un seul envoi, pas dix.
+     *
+     * Les dates retenues sont l'UNION de deux sources : les séances prévues à
+     * l'emploi du temps, ET les séances que le cahier porte déjà (contenus
+     * datés). L'emploi du temps peut être vide ou pas encore synchronisé sur
+     * l'appareil ; s'y fier seul rendait le certificat invisible alors que le
+     * cahier montrait bel et bien des séances à ces dates.
      */
     const inject = useCallback((periods: AbsencePeriod[]) => {
         const classIds = classes.map(item => item.id);
-        const datesByClass = new Map<string, string[]>();
+        const timetableDates = new Map<string, string[]>();
+        const window = new Set<string>();
         const motifByDate = new Map<string, string>();
         for (const period of periods) {
-            for (const { classId, dates } of classSessionsDuring(config.timetable, config.timetableClock, period, classIds)) {
-                datesByClass.set(classId, [...new Set([...(datesByClass.get(classId) ?? []), ...dates])]);
-            }
             for (const date of absenceDates(period)) {
+                window.add(date);
                 // Deux absences qui se chevauchent : le premier motif saisi gagne.
                 if (!motifByDate.has(date)) motifByDate.set(date, period.motif?.trim() ?? '');
+            }
+            for (const { classId, dates } of classSessionsDuring(config.timetable, config.timetableClock, period, classIds)) {
+                timetableDates.set(classId, [...new Set([...(timetableDates.get(classId) ?? []), ...dates])]);
             }
         }
         let notebooks = 0;
         let lines = 0;
-        for (const [classId, dates] of datesByClass) {
+        let targets = 0;
+        for (const classId of classIds) {
             let stored: { lessonsData: unknown; contentDirection?: ContentDirection };
             try {
                 stored = readStoredNotebook(classId);
             } catch {
                 continue; // Cahier illisible : jamais remplacé à l'aveugle.
             }
+            const fromNotebook = notebookSessionDates(stored.lessonsData).filter(date => window.has(date));
+            const dates = [...new Set([...(timetableDates.get(classId) ?? []), ...fromNotebook])].sort();
+            if (dates.length === 0) continue;
+            targets += 1;
             let lessons = stored.lessonsData;
             let changed = false;
             for (const date of dates) {
@@ -94,7 +107,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, classes, onCon
             saveNotebook(classId, lessons as unknown as LessonsData, direction);
             notebooks += 1;
         }
-        return { targets: datesByClass.size, notebooks, lines };
+        return { targets, notebooks, lines };
     }, [classes, config.timetable, config.timetableClock, lineTitle, locale]);
 
     /*

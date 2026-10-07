@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { absenceDates, classSessionsDuring, injectAbsenceLine } from '../src/domain/notebook/absenceInjection';
+import { absenceDates, classSessionsDuring, injectAbsenceLine, notebookSessionDates } from '../src/domain/notebook/absenceInjection';
 import { FREE_TYPE } from '../src/domain/notebook/freeLineType';
 
 type Node = { type?: string; title?: string; description?: string; date?: string; items?: Node[]; sections?: Node[] };
@@ -81,6 +81,25 @@ test('cahier illisible ou date invalide : aucune écriture', () => {
   assert.equal(injectAbsenceLine(null, line), null);
   assert.equal(injectAbsenceLine({}, line), null);
   assert.equal(injectAbsenceLine(lessons, { ...line, date: '14/09/2026' }), null);
+});
+
+test('l’union décide : jour prévu à l’emploi du temps OU séance déjà datée dans le cahier', () => {
+  // Un cahier réel : un chapitre daté, un exercice daté, et une ligne libre datée.
+  const notebook = [
+    { type: 'chapter', title: 'C1', date: '2026-10-07', items: [{ type: 'exercice', title: 'E', date: '2026-10-08' }, { type: 'free', title: 'Note', date: '2026-10-09' }] },
+  ];
+  assert.deepEqual(notebookSessionDates(notebook), ['2026-10-07', '2026-10-08', '2026-10-09']);
+  assert.deepEqual(notebookSessionDates([]), []);
+  assert.deepEqual(notebookSessionDates(null), []);
+  assert.deepEqual(notebookSessionDates({ lessonsData: [] }), [], 'jamais un objet : un tableau de racine');
+  // Sans emploi du temps (ou emploi du temps pas encore synchronisé), l'union
+  // seule poserait le certificat : c'est ce qui manquait en production.
+  assert.deepEqual(classSessionsDuring(undefined, undefined, { debut: '2026-10-07', fin: '2026-10-08' }, ['A']), []);
+  const dates = [...new Set([
+    ...classSessionsDuring(undefined, undefined, { debut: '2026-10-07', fin: '2026-10-08' }, ['A']).flatMap(entry => entry.dates),
+    ...notebookSessionDates(notebook).filter(date => date >= '2026-10-07' && date <= '2026-10-08'),
+  ])].sort();
+  assert.deepEqual(dates, ['2026-10-07', '2026-10-08']);
 });
 
 test('une ligne par JOUR DE SÉANCE, le motif seul : la date vit dans la cellule date', () => {

@@ -84,6 +84,30 @@ export const classSessionsDuring = (
 };
 
 /**
+ * Les dates qu'un cahier atteste DÉJÀ : chaque contenu daté est une séance
+ * réellement consignée.
+ *
+ * Indispensable, car l'emploi du temps n'est pas toujours rempli (ou pas encore
+ * synchronisé sur l'appareil) : sans cette seconde source, une absence ne posait
+ * aucune ligne alors que le cahier portait bel et bien des séances à ces dates —
+ * c'est l'écart constaté en production (« le certificat ne s'affiche pas »).
+ * C'est donc l'UNION des deux qui décide : jour de séance prévu, OU séance déjà
+ * datée dans le cahier.
+ */
+export const notebookSessionDates = (lessonsData: unknown): string[] => {
+  if (!Array.isArray(lessonsData)) return [];
+  const found = new Set<string>();
+  const visit = (list: NotebookNode[]) => {
+    for (const node of list) {
+      if (isIsoDate(node.date)) found.add(node.date);
+      childLists(node).forEach(visit);
+    }
+  };
+  visit(lessonsData as NotebookNode[]);
+  return [...found].sort();
+};
+
+/**
  * Les VRAIES listes d'enfants d'un nœud — jamais des copies : l'insertion
  * chronologique doit modifier le tableau de l'arbre, pas un tableau jetable.
  */
