@@ -6,6 +6,7 @@ export function useTableSearch(query: string, onChange: (query: string) => void)
   const [localSearch, setLocalSearch] = useState(query);
   const [isComposing, setIsComposing] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const mobilePanelRef = useRef<HTMLDivElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const latest = useRef({ query, onChange });
@@ -45,12 +46,12 @@ export function useTableSearch(query: string, onChange: (query: string) => void)
 
   useEffect(() => {
     const handleOutside = (event: PointerEvent) => {
-      if (!searchContainerRef.current?.contains(event.target as Node) && !latest.current.query) closeSearch();
+      if (!searchContainerRef.current?.contains(event.target as Node) && !mobilePanelRef.current?.contains(event.target as Node) && !latest.current.query) closeSearch();
     };
     const handleKey = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing || document.querySelector('[role="dialog"]')) return;
       const target = event.target instanceof Element ? event.target : null;
-      const inSearch = !!target && !!searchContainerRef.current?.contains(target);
+      const inSearch = !!target && !!(searchContainerRef.current?.contains(target) || mobilePanelRef.current?.contains(target));
       if (target?.closest('input,textarea,select,[contenteditable="true"]') && !inSearch) return;
       if (event.key === 'Escape' && isSearchVisible) {
         event.preventDefault(); clearSearch(); closeSearch(); return;
@@ -69,5 +70,5 @@ export function useTableSearch(query: string, onChange: (query: string) => void)
   }, [isSearchVisible, clearSearch, closeSearch]);
 
   return { isSearchVisible, setIsSearchVisible, localSearch, setLocalSearch, setIsComposing,
-    searchContainerRef, mobileInputRef, desktopInputRef, clearSearch, closeSearch };
+    searchContainerRef, mobilePanelRef, mobileInputRef, desktopInputRef, clearSearch, closeSearch };
 }

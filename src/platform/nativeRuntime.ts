@@ -1,3 +1,4 @@
+import { handleNativeBack } from './nativeBack';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { notificationTarget } from '../domain/notifications/notificationPresentation';
 import { readWorkspaceScope } from '../infrastructure/storage/accountWorkspace';
@@ -36,19 +37,7 @@ export async function initNativeRuntime(): Promise<void> {
     };
     applySystemTheme();
     new MutationObserver(applySystemTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    await App.addListener('backButton', () => {
-      if (document.documentElement.dataset.keyboard === 'open' || document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
-        (document.activeElement as HTMLElement | null)?.blur();
-        return;
-      }
-      if (document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-        return;
-      }
-      const request = new Event('native-back', { cancelable: true });
-      window.dispatchEvent(request);
-      if (!request.defaultPrevented) void App.minimizeApp();
-    });
+    await App.addListener('backButton', () => handleNativeBack(document, window, () => { void App.minimizeApp(); }));
     await App.addListener('appStateChange', ({ isActive }) => {
       document.documentElement.dataset.nativeActive = String(isActive);
       window.dispatchEvent(new Event(isActive ? 'native-resume' : 'native-pause'));
