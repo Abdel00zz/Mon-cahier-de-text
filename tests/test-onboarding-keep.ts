@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { hasCompletedOnboarding } from '../src/domain/auth/onboardingCompletion';
 import {
   initialOnboardingStep,
   canAdvanceOnboarding,
@@ -18,6 +19,12 @@ import { switchAccountWorkspace } from '../src/infrastructure/storage/accountWor
 import type { ClassInfo } from '../src/types';
 
 const owner = '0600000001';
+test('le nouveau compte et la préparation interrompue restent dans le parcours jusqu’à validation explicite', () => {
+  assert.equal(hasCompletedOnboarding({}, { hasCompletedWelcome: false }), false);
+  assert.equal(hasCompletedOnboarding({ hasCompletedWelcome: false }, null), false);
+  assert.equal(hasCompletedOnboarding({ hasCompletedWelcome: true }, null), true);
+  assert.equal(hasCompletedOnboarding({}, { hasCompletedWelcome: true }), true);
+});
 const setup: RegistrationSetup = {
   cycle: 'college',
   className: '1AC 1',

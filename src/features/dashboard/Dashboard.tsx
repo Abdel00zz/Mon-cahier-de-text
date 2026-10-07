@@ -13,6 +13,7 @@ import { ClassListItem } from './ClassListItem';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
+import { hasCompletedOnboarding } from '../../domain/auth/onboardingCompletion';
 import { ClassInfo, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
@@ -58,7 +59,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
-    const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true || classes.length > 0;
+    const welcomeCompleted = hasCompletedOnboarding(config, accountUser);
 
     useEffect(() => {
         if (!isClassDisplayMode(classDisplayMode)) {

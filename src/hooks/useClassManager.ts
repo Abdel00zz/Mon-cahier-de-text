@@ -3,7 +3,7 @@ import { ClassDraft, ClassInfo } from '../types';
 import { logger } from '../lib/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
-import { CLASS_STORAGE_KEY, DEFAULT_STARTER_CLASSES, readStoredClasses } from '../infrastructure/storage/localClassStorage';
+import { CLASS_STORAGE_KEY, readStoredClasses } from '../infrastructure/storage/localClassStorage';
 import { assignClassColors } from '../domain/classes/classColors';
 import { removeQuarantine } from '../infrastructure/storage/safeStorage';
 
@@ -13,13 +13,7 @@ export const useClassManager = () => {
     const [workspaceIsActive] = useState(() => captureWorkspaceLease());
     const [classes, setClasses] = useState<ClassInfo[]>(() => {
         try {
-            const stored = readStoredClasses();
-            if (stored.length > 0) return stored;
-            if (typeof window !== 'undefined' && localStorage.getItem(CLASS_STORAGE_KEY) === null) {
-                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(DEFAULT_STARTER_CLASSES));
-                return DEFAULT_STARTER_CLASSES;
-            }
-            return stored;
+            return readStoredClasses();
         }
         catch (error) { logger.error('Failed to read local classes', error); return []; }
     });
@@ -29,16 +23,12 @@ export const useClassManager = () => {
     useEffect(() => {
         if (!workspaceIsActive()) return;
         try {
-            let normalized = readStoredClasses();
+            const normalized = readStoredClasses();
             const raw = localStorage.getItem(CLASS_STORAGE_KEY);
-            if (raw === null && normalized.length === 0) {
-                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(DEFAULT_STARTER_CLASSES));
-                normalized = DEFAULT_STARTER_CLASSES;
-            } else if (raw !== null && raw !== JSON.stringify(normalized)) {
+            if (raw !== null && raw !== JSON.stringify(normalized)) {
                 localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(normalized));
                 markClassesListDirty();
             }
-            localStorage.setItem('app_first_launch_v1', 'true');
             setClasses(normalized);
         } catch (error) {
             // Un stockage corrompu reste récupérable : ne jamais le remplacer par [].

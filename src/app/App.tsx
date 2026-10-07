@@ -1,4 +1,5 @@
 import { ArrowDown } from 'lucide-react';
+import { hasCompletedOnboarding } from '../domain/auth/onboardingCompletion';
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
@@ -474,16 +475,12 @@ const App: React.FC = () => {
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
 
-  // L'accueil ne masque la navigation que pendant le vrai premier parcours :
-  // aucune classe et compte non validé. Si des classes existent déjà,
-  // la navigation reste toujours visible pour l'enseignant.
+  // Une classe ajoutée pendant la préparation ne termine pas le parcours.
   const shouldBootOnboarding =
     backgroundView === 'dashboard' &&
-    classes.length === 0 &&
-    !config.hasCompletedWelcome &&
-    authUser?.hasCompletedWelcome !== true;
+    !hasCompletedOnboarding(config, authUser);
   const isCurrentlyOnboarding =
-    (isOnboardingVisible && classes.length === 0) || shouldBootOnboarding;
+    isOnboardingVisible || shouldBootOnboarding;
 
   const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
