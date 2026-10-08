@@ -930,8 +930,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       <Modal
         isOpen={studentsFor !== null}
         onClose={() => setStudentsFor(null)}
-        maxWidth={studentsFor?.type === REMARK_EVENT_TYPE ? 'lg' : 'md'}
-        className="evaluation-modal sm:rounded-2xl"
+        maxWidth={studentsFor?.type === REMARK_EVENT_TYPE ? 'xl' : 'md'}
+        className={cn('evaluation-modal sm:rounded-2xl', studentsFor?.type === REMARK_EVENT_TYPE && 'notebook-tracking-modal')}
+        bodyClassName={studentsFor?.type === REMARK_EVENT_TYPE ? 'notebook-tracking-body' : undefined}
         headerClassName="border-b-0 bg-background"
         title={
           <div className="flex items-center gap-3">
@@ -958,6 +959,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             initialNames={studentsFor.students?.names ?? []}
             trackNotebookCondition={studentsFor.type === REMARK_EVENT_TYPE}
             initialNotebookConditions={studentsFor.students?.notebookConditions}
+            reportContext={`${selectedClassDisplayName} · ${studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)} · ${formatLongDate(studentsFor.date, locale)}`}
             updatedAt={studentsFor.students?.updatedAt}
             onCancel={() => setStudentsFor(null)}
             onSave={saveEventStudents}

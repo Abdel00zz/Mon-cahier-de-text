@@ -24,6 +24,7 @@ const locale = ar ? 'ar' : 'fr';
 const screen = params.get('screen') ?? 'classes';
 const mobile = params.has('portrait');
 if (params.has('android')) document.documentElement.dataset.platform = 'android';
+if (params.has('dark')) document.documentElement.classList.add('dark');
 const noop = () => {};
 const classes = assignClassColors(['2ème Bac Sciences Physiques 1', '2ème Bac Sciences Physiques 2', '1er Bac Sciences Mathématiques 1', 'Tronc Commun Scientifique 3'].map((name, i) => ({ id: `showcase-${i}`, name, subject: 'Mathématiques', cycle: 'lycee', teacherName: '', color: '', createdAt: `2026-09-0${i + 1}`, lastOpenedAt: '2026-09-21T09:30:00Z' } as ClassInfo)));
 const config = { establishmentName: '', defaultTeacherName: '', applicationLocale: locale, selectedSubjects: ['Mathématiques'], schoolYearStart: '2026-09-07', timetable: [{ day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id }, { day: 1, slot: 2, classId: classes[1].id }, { day: 2, slot: 0, classId: classes[2].id }, { day: 2, slot: 1, classId: classes[2].id }, { day: 3, slot: 2, classId: classes[3].id }, { day: 4, slot: 0, classId: classes[1].id }, { day: 5, slot: 3, classId: classes[0].id }] } as AppConfig;

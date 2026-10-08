@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { assertValidSyncSettings } from '../api/_lib/validate';
-import { countNotebookConditions, retainNotebookConditions } from '../src/domain/evaluations/notebookConditions';
+import { countNotebookConditions, retainNotebookConditions, notebookConditionReport } from '../src/domain/evaluations/notebookConditions';
 import { buildSessionActivityRemarks } from '../src/domain/evaluations/sessionActivityRemarks';
 import { extractSyncableSettings } from '../src/infrastructure/sync/syncSettings';
 import { sessionPrintSignatures } from '../src/infrastructure/printing/printMeta';
@@ -19,6 +19,16 @@ test('counts cover the four chosen states; legacy or unchecked names have no pre
   assert.deepEqual(countNotebookConditions(names, conditions), { good: 1, average: 1, needs_work: 1, missing: 1 });
   assert.deepEqual(countNotebookConditions(names), { good: 0, average: 0, needs_work: 0, missing: 0 });
   assert.deepEqual(retainNotebookConditions(['Salma', 'Youssef'], conditions), { Salma: 'average' });
+});
+
+test('copied notebook reports contain the complete roster, date context, and pending students', () => {
+  const report = notebookConditionReport([...names, 'constructor'], { ...conditions, Unknown: 'good' },
+    condition => translateLocaleMessage('fr', `evaluations.notebook.${condition}`), 'Suivi des cahiers', 'Classe A · 8 octobre');
+  assert.match(report, /^Suivi des cahiers\nClasse A · 8 octobre/);
+  for (const [name, label] of [['Amine', 'Bon'], ['Salma', 'Moyen'], ['Ali', 'À améliorer'], ['Lina', 'Non apporté'], ['Youssef', 'À contrôler']])
+    assert.ok(report.includes(`- ${name} : ${label}`));
+  assert.ok(!report.includes('Unknown'));
+  assert.ok(report.includes('- constructor : À contrôler'));
 });
 
 test('cloud settings and JSON preserve the notebook classifications and accept legacy name lists', () => {
