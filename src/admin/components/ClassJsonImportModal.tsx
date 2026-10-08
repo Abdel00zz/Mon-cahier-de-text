@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { Textarea } from '../../components/ui/textarea';
 import type { ClassInfo } from '../../types';
 import { prepareImportedLessons } from '../../domain/notebook/importPipeline';
@@ -43,6 +44,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
     const [currentTopLevel, setCurrentTopLevel] = useState(0);
     const [isLoadingVersion, setIsLoadingVersion] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
+    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const fileRequestRef = useRef(0);
 
@@ -58,6 +60,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
         setCurrentTopLevel(0);
         setMessage(null);
         setIsImporting(false);
+        setShowReplaceConfirmation(false);
         setIsLoadingVersion(true);
 
         void fetchClassLessons(phone, classInfo.id)
@@ -160,6 +163,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
     };
 
     return (
+        <>
         <Modal
             isOpen={isOpen}
             onClose={safeClose}
@@ -188,7 +192,13 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                     {preview ? (
                         <Button
                             type="button"
-                            onClick={() => void confirmImport()}
+                            onClick={() => {
+                                if (mode === 'replace') {
+                                    setShowReplaceConfirmation(true);
+                                } else {
+                                    void confirmImport();
+                                }
+                            }}
                             disabled={isImporting || isLoadingVersion}
                             aria-busy={isImporting}
                             className="rounded-xl h-10 px-5 text-xs font-bold sm:text-sm shadow-sm"
@@ -285,5 +295,17 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                 )}
             </div>
         </Modal>
+        <ConfirmDialog
+            open={showReplaceConfirmation}
+            onOpenChange={setShowReplaceConfirmation}
+            title="Remplacer le cahier ?"
+            description={`Le cahier actuel de ${classInfo?.name ?? 'cette classe'} sera remplacé par le contenu vérifié. Cette action peut supprimer les données existantes.`}
+            confirmLabel="Remplacer le cahier"
+            cancelLabel="Annuler"
+            confirmationPhrase={classInfo?.name ?? undefined}
+            confirmationHint={`Saisissez « ${classInfo?.name ?? 'le nom de la classe'} » pour confirmer.`}
+            onConfirm={confirmImport}
+        />
+        </>
     );
 };
