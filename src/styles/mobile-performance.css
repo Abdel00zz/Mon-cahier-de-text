@@ -1,4 +1,8 @@
-/* Android pauses its WebView without always changing document.visibilityState. */
+/* ==========================================================================
+   Android APK & Mobile Native Performance, Visuals, Robustness and Fluidity
+   ========================================================================== */
+
+/* Économie CPU/batterie lorsque l'application passe en arrière-plan */
 html[data-native-active="false"] *,
 html[data-native-active="false"] *::before,
 html[data-native-active="false"] *::after,
@@ -6,13 +10,79 @@ html[data-app-visible="false"] *,
 html[data-app-visible="false"] *::before,
 html[data-app-visible="false"] *::after {
   animation-play-state: paused !important;
+  transition: none !important;
 }
 
-/* Opaque, legible surfaces use less GPU bandwidth than stacked mobile glass. */
+/* Rendu typographique net et sans bavure sur écrans AMOLED/OLED Android (Samsung / Pixel) */
+html[data-platform="android"] {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+
+/* Optimisations tactiles et GPU pour smartphones et tablettes */
 @media (pointer: coarse) {
+  /* Élimination totale de la latence de clic (300ms) et suppression du rectangle bleu natif */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label,
+  [tabindex="0"],
+  .class-card__open {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Défilement inertiel natif à 60/120 Hz pour tous les conteneurs scrollables */
+  .overflow-y-auto,
+  .overflow-x-auto,
+  [data-radix-scroll-area-viewport],
+  .sheet-content,
+  .modal-motion-surface {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Confinement du sur-défilement (overscroll) pour éviter le rebond parasite de la page sous-jacente */
+  [role="dialog"],
+  [role="alertdialog"],
+  .modal-motion-surface,
+  .bottom-sheet {
+    overscroll-behavior: contain;
+  }
+
+  /* Prévention de la sélection parasite de texte lors du balayage gestuel au pouce */
+  .mobile-tab-bar,
+  .class-card__header,
+  .class-card__footer,
+  .class-card__group,
+  .class-actions-menu,
+  header,
+  nav {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Flou GPU maîtrisé pour les surfaces vitrées : fluidité constante sans saturation du compositing */
   html:root .selection-bar {
     background: hsl(var(--card) / .97);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+
+  .mobile-tab-bar {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 240ms cubic-bezier(0.2, 0, 0, 1), opacity 180ms ease, box-shadow 200ms ease;
+    will-change: transform, opacity;
+  }
+
+  .class-actions-menu {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 }

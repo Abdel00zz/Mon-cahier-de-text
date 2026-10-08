@@ -379,7 +379,7 @@ export const TabBar = React.memo<TabBarProps>(({
               <motion.button
                 key={tab.id}
                 type="button"
-                whileTap={{ scale: 0.96 }}
+                whileTap={{ scale: 0.92 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => goTo(tab.id)}
                 className="relative flex h-[54px] min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
@@ -428,7 +428,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
           <motion.button
             type="button"
-            whileTap={{ scale: 0.96 }}
+            whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
             onClick={() => goTo('settings')}
             onTouchStart={preloadSettingsPage}

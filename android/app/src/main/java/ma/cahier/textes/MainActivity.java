@@ -30,5 +30,25 @@ public class MainActivity extends BridgeActivity {
             return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(content);
+        configureWebView();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        configureWebView();
+    }
+
+    private void configureWebView() {
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            android.webkit.WebView webView = getBridge().getWebView();
+            android.webkit.WebSettings settings = webView.getSettings();
+            settings.setTextZoom(100);
+            settings.setDomStorageEnabled(true);
+            settings.setDatabaseEnabled(true);
+            webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            webView.setVerticalScrollBarEnabled(false);
+            webView.setHorizontalScrollBarEnabled(false);
+        }
     }
 }
