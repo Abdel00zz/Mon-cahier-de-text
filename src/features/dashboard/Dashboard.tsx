@@ -99,7 +99,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         // fermer l'onglet avant l'étape finale. Dans ce cas le parcours doit
         // reprendre, sans exposer le tableau de bord prématurément.
         if (welcomeCompleted) return;
-        setOnboardingOpen(true);
+        
+        // Le pull cloud (SyncContext) démarre juste après le montage initial.
+        // On retarde légèrement l'affichage pour éviter un flash de l'onboarding
+        // avant que l'écran de chargement global (AppBootSkeleton) ne prenne le relais.
+        const timer = setTimeout(() => {
+            setOnboardingOpen(true);
+        }, 50);
+        return () => clearTimeout(timer);
     }, [isLoading, welcomeCompleted]);
 
     // Le shell applicatif ne doit pas réafficher sa navigation au premier
