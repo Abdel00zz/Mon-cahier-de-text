@@ -1,8 +1,8 @@
 {
   "name": "cahier-de-textes-interactif",
   "private": true,
-  "version": "1.2.11",
-  "androidVersionCode": 13,
+  "version": "1.2.12",
+  "androidVersionCode": 14,
   "type": "module",
   "engines": {
     "node": "24.x"
