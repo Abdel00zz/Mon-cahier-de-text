@@ -54,7 +54,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   onSave,
 }) => {
   const { t } = useLocale();
-  const [tab, setTab] = useState<'source' | 'preview'>('source');
+  const [tab, setTab] = useState<'source' | 'preview'>('preview');
   const [source, setSource] = useState('');
   const [showHelp, setShowHelp] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -64,7 +64,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setSource(saved?.source ?? '');
-    setTab('source');
+    setTab('preview');
     setShowHelp(false);
   }, [isOpen, saved?.source]);
 
@@ -97,9 +97,9 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     >
       <div className="space-y-3.5">
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
-            haute et étroite — on écrit OU on relit, jamais les deux à moitié. */}
+            haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
         <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-muted/40 p-1">
-          {(['source', 'preview'] as const).map((value) => {
+          {(['preview', 'source'] as const).map((value) => {
             const isActive = tab === value;
             return (
               <button
@@ -114,8 +114,8 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
                     : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
                 )}
               >
-                {value === 'source' ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                {t(value === 'source' ? 'evaluations.doc.source' : 'evaluations.doc.preview')}
+                {value === 'preview' ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+                {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
               </button>
             );
           })}
@@ -174,16 +174,26 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
                  étirée sur toute la largeur d'un grand écran. */
               <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{preview}</div>
             ) : (
-              <p className="py-8 text-center text-xs text-muted-foreground">{t('evaluations.doc.empty')}</p>
+              <div className="space-y-3 py-8 text-center text-xs text-muted-foreground">
+                <p>{t('evaluations.doc.empty')}</p>
+                <button
+                  type="button"
+                  onClick={() => { setTab('source'); textareaRef.current?.focus(); }}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 cursor-pointer"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>{t('evaluations.doc.source')}</span>
+                </button>
+              </div>
             )}
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 border-t border-border/60 pt-3">
+        <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="h-11 rounded-md bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
+            className="h-11 w-full sm:w-auto rounded-md bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
           >
             {t('common.cancel')}
           </button>
@@ -191,7 +201,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             type="button"
             onClick={handleSave}
             disabled={isTooLong}
-            className="h-11 rounded-md bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="h-11 w-full sm:w-auto rounded-md bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {t('common.save')}
           </button>

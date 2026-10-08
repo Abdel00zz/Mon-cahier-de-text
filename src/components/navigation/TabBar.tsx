@@ -188,7 +188,7 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
-            <Menu className="h-5 w-5 stroke-[2]" />
+            <Menu className="size-[23px] stroke-[2]" />
           </motion.button>
 
           <AnimatePresence>
@@ -264,7 +264,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon
                     className={cn(
                       'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      'size-[20px] aspect-square',
+                      'size-[23px] aspect-square',
                       isActive
                         ? 'text-foreground stroke-[2]'
                         : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
@@ -334,7 +334,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
             <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
-                'size-[20px] aspect-square shrink-0 transition-colors duration-200',
+                'size-[23px] aspect-square shrink-0 transition-colors duration-200',
                 activeTab === 'help'
                   ? 'text-foreground stroke-[2]'
                   : 'stroke-[2] text-muted-foreground group-hover:text-foreground'

@@ -191,7 +191,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             {/* 2. Date Input */}
             <div className="space-y-2.5">
               <label htmlFor="assign-date-input" className="block text-sm font-medium text-foreground text-start font-sans">
-                {t('assignDate.chooseDate')}
+                {t('assignDate.chooseDate')} :
               </label>
 
               <div className="relative flex flex-col items-center gap-2">
@@ -260,7 +260,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             ligne : la remarque s'écrit partout d'un seul coup. */}
         <div className="space-y-2.5 border-t border-border/60 pt-5">
           <label htmlFor="assign-date-remark" className="block text-sm font-medium text-foreground text-start font-sans">
-            {t('remark.title')}
+            {t('remark.title')} :
           </label>
           <textarea
             id="assign-date-remark"

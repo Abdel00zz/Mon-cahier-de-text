@@ -248,7 +248,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     <section className="keep-surface space-y-5 p-4 sm:p-5">
       {hasCycleChoice && (
         <div className="space-y-1.5">
-          <label htmlFor="edit-class-cycle" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.cycle}</label>
+          <label htmlFor="edit-class-cycle" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.cycle} :</label>
           <Select value={cycle} onValueChange={value => {
             const nextCycle = value as Cycle;
             setCycle(nextCycle);
@@ -263,7 +263,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-3">
-          <label htmlFor="edit-class-level" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.level}</label>
+          <label htmlFor="edit-class-level" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.level} :</label>
           <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setCustomLevel(''); }} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">
             {customMode ? copy.switchToOfficial : copy.createCustom}
           </button>
@@ -280,12 +280,12 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
       <div className="space-y-3">
         <div className="grid gap-1.5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center sm:gap-3">
-          <label htmlFor="edit-class-group" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.group}</label>
+          <label htmlFor="edit-class-group" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.group} :</label>
           <Input id="edit-class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} inputMode="numeric" enterKeyHint="done" maxLength={2} aria-invalid={Boolean(groupError)} className="h-11 w-full rounded-[12px] border border-border bg-background text-center text-sm font-bold focus:border-primary" />
         </div>
         {showSubjectChoice && (
           <div className="grid gap-1.5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center sm:gap-3">
-            <label htmlFor="edit-class-subject" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>
+            <label htmlFor="edit-class-subject" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.subject} :</label>
             {customMode ? (
               <Input id="edit-class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" />
             ) : (

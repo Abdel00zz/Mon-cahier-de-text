@@ -277,11 +277,11 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </p>
         </details>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60 sm:flex sm:items-center sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
+            className="h-11 w-full sm:w-auto px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
@@ -291,7 +291,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               const next = commitDraft(draft);
               if (next) onSave(next);
             }}
-            className="h-11 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
+            className="h-11 w-full sm:w-auto px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer truncate"
           >
             {names.length === 0
               ? t('common.save')

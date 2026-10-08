@@ -51,7 +51,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
     {!titleOnly && !free && <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_.45fr_.45fr]">
         <div className="col-span-2 sm:col-span-1">
-          <label htmlFor={`${id}-type`} className={labelClass}>{t('addContent.contentType')}</label>
+          <label htmlFor={`${id}-type`} className={labelClass}>{t('addContent.contentType')} :</label>
           <Select value={value.type ?? ''} onValueChange={type => update('type', type)} required>
             <SelectTrigger id={`${id}-type`} className={fieldClass}><SelectValue placeholder={t('addContent.choose')} /></SelectTrigger>
             <SelectContent>{options.map(type => <SelectItem key={type} value={type}>
@@ -60,20 +60,20 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
             </SelectItem>)}</SelectContent>
           </Select>
         </div>
-        <div><label htmlFor={`${id}-number`} className={labelClass}>{t('addContent.number')}</label>
+        <div><label htmlFor={`${id}-number`} className={labelClass}>{t('addContent.number')} :</label>
           <Input id={`${id}-number`} value={value.number ?? ''} dir={fieldDir(String(value.number ?? ''))} onChange={event => update('number', event.target.value)}
             className={fieldClass} aria-describedby={`${id}-number-hint`} placeholder={t('addContent.numberPlaceholder')} /></div>
-        <div><label htmlFor={`${id}-page`} className={labelClass}>{t('editor.page')}</label>
+        <div><label htmlFor={`${id}-page`} className={labelClass}>{t('editor.page')} :</label>
           <Input id={`${id}-page`} value={value.page ?? ''} dir={fieldDir(String(value.page ?? ''))} onChange={event => update('page', event.target.value)}
             className={fieldClass} placeholder={t('editor.pagePlaceholder')} /></div>
       </div>
       <p id={`${id}-number-hint`} className="text-xs leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
     </>}
-    <div><label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ?? t('editor.title')}</label>
+    <div><label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ? `${titleLabel} :` : `${t('editor.title')} :`}</label>
       <Input id={`${id}-title`} ref={titleRef} value={title} dir={fieldDir(title)} onChange={event => update(titleField, event.target.value)}
         required={titleRequired} className={fieldClass} placeholder={titleRequired ? undefined : t('addContent.optionalTitlePlaceholder')} /></div>
     {!titleOnly && <div>
-      <label htmlFor={`${id}-description`} className={labelClass}>{t('addContent.descriptionLabel')}</label>
+      <label htmlFor={`${id}-description`} className={labelClass}>{t('addContent.descriptionLabel')} :</label>
       <ContextualDescriptionEditor id={`${id}-description`} value={description} onChange={text => update('description', text)}
         dir={fieldDir(description)} rows={5} className="min-h-[130px]" placeholder={t(free ? 'addContent.freeHint' : 'addContent.descriptionPlaceholder')} />
       {free && <p className="mt-2 text-xs text-muted-foreground">{t('addContent.freeHelp')}</p>}
