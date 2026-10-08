@@ -293,6 +293,9 @@ export function ModalBottomSheet({
           )}
 
           {/* Header - Optimisé hiérarchie visuelle mobile */}
+          {!title && (
+            <DialogPrimitive.Title className="sr-only">{t('common.dialog')}</DialogPrimitive.Title>
+          )}
           {(title || description) && (
             <div
               className={cn(

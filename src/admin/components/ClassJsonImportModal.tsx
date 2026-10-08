@@ -38,6 +38,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
 }) => {
     const [jsonText, setJsonText] = useState('');
     const [fileName, setFileName] = useState('');
+    const [fileSize, setFileSize] = useState(0);
     const [mode, setMode] = useState<ImportMode>('replace');
     const [preview, setPreview] = useState<PreparedImport | null>(null);
     const [expectedUpdatedAt, setExpectedUpdatedAt] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
         fileRequestRef.current += 1;
         setJsonText('');
         setFileName('');
+        setFileSize(0);
         setMode('replace');
         setPreview(null);
         setExpectedUpdatedAt(null);
@@ -84,6 +86,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
     const resetPreview = (text: string, name = '') => {
         setJsonText(text);
         setFileName(name);
+        if (!name) setFileSize(encoder.encode(text).byteLength);
         setPreview(null);
         setMessage(null);
     };
@@ -94,12 +97,14 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
         const requestId = ++fileRequestRef.current;
         if (file.size > MAX_IMPORT_BYTES) {
             resetPreview('', file.name);
+            setFileSize(file.size);
             setMessage(`Fichier trop volumineux (${formatBytes(file.size)}). Limite : ${formatBytes(MAX_IMPORT_BYTES)}.`);
             return;
         }
         const reader = new FileReader();
         reader.onload = () => {
             if (requestId !== fileRequestRef.current) return;
+            setFileSize(file.size);
             resetPreview(typeof reader.result === 'string' ? reader.result : '', file.name);
         };
         reader.onerror = () => {
@@ -222,7 +227,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                     </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2" aria-label="Mode d’import">
+                <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Mode d’import">
                     {([
                         ['replace', 'Remplacer le cahier', 'Le contenu actuel est remplacé après confirmation.'],
                         ['append', 'Ajouter à la suite', 'Les nouveaux blocs sont ajoutés après le contenu actuel.'],
@@ -231,7 +236,8 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                             key={value}
                             type="button"
                             onClick={() => setMode(value)}
-                            aria-pressed={mode === value}
+                            role="radio"
+                            aria-checked={mode === value}
                             className={`min-h-16 rounded-xl border p-4 text-left transition-all cursor-pointer ${
                                 mode === value
                                     ? 'border-primary/50 bg-primary/10 text-foreground ring-2 ring-primary/20 shadow-xs'
@@ -273,7 +279,10 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                         placeholder={'{\n  "lessonsData": [\n    { "type": "chapter", "title": "Chapitre 1", "sections": [] }\n  ]\n}'}
                         className="min-h-48 resize-y font-mono text-xs leading-relaxed rounded-xl border-border/80 bg-muted/20 focus-visible:bg-card"
                     />
-                    <p className="text-[11px] text-muted-foreground font-medium">Taille maximale : {formatBytes(MAX_IMPORT_BYTES)} en UTF-8.</p>
+                    <p className="text-[11px] text-muted-foreground font-medium">
+                        {fileName ? `${fileName}${fileSize ? ` · ${formatBytes(fileSize)}` : ''} · ` : ''}
+                        Taille maximale : {formatBytes(MAX_IMPORT_BYTES)} en UTF-8.
+                    </p>
                 </div>
 
                 {message && (
