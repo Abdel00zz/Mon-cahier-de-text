@@ -35,8 +35,11 @@ test('la grille propose TOUTES les natures, en deux familles', () => {
     for (const expected of ['maison', 'controle_cahiers', 'olympiade', 'oral', 'correction_controle_continu']) {
         assert.ok(kinds.some(kind => kind.type === expected), `${expected} dans le catalogue`);
     }
-    assert.ok(KIND_GROUPS.find(group => group.titleKey === 'evaluations.assessments')!.kinds
-        .some(kind => kind.type === 'correction_controle_continu'), 'la correction figure avec les devoirs');
+    for (const type of ['evaluation_diagnostic', 'correction_controle_continu']) {
+        assert.ok(KIND_GROUPS.find(group => group.titleKey === 'evaluations.assessments')!.kinds
+            .some(kind => kind.type === type && kind.family === 'event'), `${type} figure avec les évaluations et conserve son circuit`);
+        assert.ok(!KIND_GROUPS.find(group => group.id === 'event')!.kinds.some(kind => kind.type === type), `${type} ne se répète pas dans les activités`);
+    }
     // Deux familles annoncées, jamais une liste indifférenciée.
     assert.equal((html.match(/data-kind-family="devoir"/g) ?? []).length, Object.keys(DEVOIR_KIND_CONFIG).length);
     assert.equal((html.match(/data-kind-family="event"/g) ?? []).length, Object.keys(PEDAGOGICAL_EVENT_CONFIG).length);
