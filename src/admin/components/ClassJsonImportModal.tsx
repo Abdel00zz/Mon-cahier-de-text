@@ -188,7 +188,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                     </span>
                 </div>
             }
-            description="La destination est verrouillée sur la classe choisie ; l’identifiant éventuellement présent dans le fichier est ignoré."
+                    description="La classe de destination est verrouillée. L’identifiant éventuellement présent dans le fichier est ignoré."
             footer={(
                 <div className="flex w-full items-center justify-end gap-2.5">
                     <Button type="button" variant="secondary" onClick={safeClose} disabled={isImporting} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -218,7 +218,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                 </div>
             )}
         >
-            <div className="space-y-5">
+            <div className="flex flex-col gap-5">
                 <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 sm:p-5 shadow-xs">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary">Classe de destination</p>
                     <p className="mt-1 text-base sm:text-lg font-bold text-foreground">{classInfo?.name}</p>
@@ -252,19 +252,19 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
 
                 {mode === 'replace' && (
                     <p className="rounded-xl border border-warning/30 bg-warning/10 p-3.5 text-xs font-semibold text-warning leading-relaxed">
-                        Le remplacement est destructif. Une vérification du contenu et de la version cloud est faite avant l’écriture.
+                        Le remplacement remplace le cahier actuel. Vérifiez le contenu et la version cloud avant l’écriture.
                     </p>
                 )}
 
                 <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <label className="block text-xs sm:text-sm font-bold text-foreground" htmlFor="admin-class-json">
-                            Coller le JSON
+                            Données JSON
                         </label>
                         <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-muted/30 px-3.5 text-xs font-bold text-foreground hover:bg-muted transition-colors">
-                            <FileUp className="h-4 w-4 text-muted-foreground" />
+                            <FileUp aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
                             {fileName || 'Choisir un fichier .json'}
-                            <input type="file" accept=".json,application/json" onChange={handleFile} className="sr-only" />
+                            <input id="admin-class-json-file" type="file" accept=".json,application/json" onChange={handleFile} className="sr-only" aria-label="Choisir un fichier JSON" />
                         </label>
                     </div>
                     <Textarea
@@ -286,7 +286,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                 </div>
 
                 {message && (
-                    <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs font-semibold text-destructive">
+                    <div role="alert" aria-live="assertive" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs font-semibold text-destructive">
                         {message}
                     </div>
                 )}
@@ -307,8 +307,8 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
         <ConfirmDialog
             open={showReplaceConfirmation}
             onOpenChange={setShowReplaceConfirmation}
-            title="Remplacer le cahier ?"
-            description={`Le cahier actuel de ${classInfo?.name ?? 'cette classe'} sera remplacé par le contenu vérifié. Cette action peut supprimer les données existantes.`}
+            title={`Voulez-vous remplacer le cahier de ${classInfo?.name ?? 'cette classe'} ?`}
+            description={`Les données actuelles de ${classInfo?.name ?? 'cette classe'} seront remplacées par le contenu vérifié. Conservez une sauvegarde avant de continuer.`}
             confirmLabel="Remplacer le cahier"
             cancelLabel="Annuler"
             confirmationPhrase={classInfo?.name ?? undefined}
