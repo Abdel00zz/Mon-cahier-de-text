@@ -198,12 +198,15 @@
 }
 
 /* Reference pastel palette, scoped to class cards to preserve other screens. */
-.class-card[data-keep-tone="mint"]:not([data-class-color]), .class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #d1fae5; --class-border: #a7f3d0; --class-accent: #065f46; --class-vivid: #059669; }
+.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #d1fae5; --class-border: #a7f3d0; --class-accent: #065f46; --class-vivid: #059669; }
+.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #edf4cf; --class-border: #cbdc9a; --class-accent: #4d601b; --class-vivid: #7c931d; }
 .class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e0f2fe; --class-border: #bae6fd; --class-accent: #0369a1; --class-vivid: #0284c7; }
 .class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fef3c7; --class-border: #fde68a; --class-accent: #92400e; --class-vivid: #d97706; }
 .class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f3e8ff; --class-border: #e9d5ff; --class-accent: #6b21a8; --class-vivid: #9333ea; }
 .class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e0e7ff; --class-border: #c7d2fe; --class-accent: #3730a3; --class-vivid: #4f46e5; }
-.class-card[data-keep-tone="coral"]:not([data-class-color]), .class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #ffe4e6; --class-border: #fecdd3; --class-accent: #9f1239; --class-vivid: #e11d48; }
+.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #ffe6d5; --class-border: #efc4a7; --class-accent: #9b431c; --class-vivid: #db723b; }
+.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #ffe4e6; --class-border: #fecdd3; --class-accent: #9f1239; --class-vivid: #e11d48; }
+.class-card[data-class-color] { --class-surface: hsl(var(--class-hue) 55% 92%); }
 .dark .class-card[data-keep-tone] { --class-surface: var(--keep-dark, #252729); --class-accent: var(--keep-accent); --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface)); }
 @media (min-width: 640px) and (max-width: 1023px) {
   .class-card__body { padding-inline: 18px; }

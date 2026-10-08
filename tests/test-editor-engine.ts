@@ -94,8 +94,8 @@ test('séance : la chronologie encadre une sélection non datée sans comparer s
 const buildContentRowsCount = (data: LessonsData, type: string): number =>
   buildLessonRows(data).filter(row => (row.data as { type?: string }).type === type).length;
 
-test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-retour serveur', () => {
-  const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
+test('couleurs : 120 classes libres distinctes, stables après tri, renommage et aller-retour serveur', () => {
+  const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, name: 'Ma classe libre', id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
   const assigned = assignClassColors(source);
   assert.equal(new Set(assigned.map(c => c.color)).size, 120);
   assert.ok(assigned.every(c => isClassColor(c.color)));
@@ -104,7 +104,7 @@ test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-
   assert.deepEqual(roundtrip.map(c => c.color), assigned.map(c => c.color));
   const renamed = assigned.slice(1).map(c => ({ ...c, name: 'Nouveau nom' }));
   assert.deepEqual(assignClassColors(renamed).map(c => c.color), renamed.map(c => c.color));
-  const added = assignClassColors([...renamed, { ...dateClass, id: 'new', color: '' }]);
+  const added = assignClassColors([...renamed, { ...dateClass, name: 'Ma classe libre', id: 'new', color: '' }]);
   assert.deepEqual(added.slice(0, -1), renamed);
   assert.equal(new Set(added.map(c => c.color)).size, added.length);
   assert.ok(classColorAttributes(assigned.find(c => c.color.startsWith('class-hue:'))!).style);
