@@ -7,6 +7,7 @@ import {
 } from '../../src/domain/evaluations/officialStudentEvents';
 import { prepareImportedLessons, summarizeImportedLessons } from '../../src/domain/notebook/importPipeline';
 import { mergeAdminAssessmentDates } from '../../src/infrastructure/sync/syncSettings';
+import { normalizeStudentNames } from '../../src/domain/evaluations/studentRoster';
 import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from '../../src/domain/calendar/timetable';
 import type { TimetableClockAssignment, TimetableClockPolicy } from '../../src/types';
 import crypto from 'crypto';
@@ -259,6 +260,8 @@ export function setupMockApi(app: express.Express) {
                         timetable: (body.timetable ?? (existingBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
                         settings: (() => {
                             const settings = { ...(body.settings ?? (existingBlob?.settings as any) ?? {}) };
+                            settings.classRosters = { ...((existingBlob?.settings as any)?.classRosters ?? {}) };
+                            for (const id of deletedIds) delete settings.classRosters[id];
                             if (body.settings) {
                                 // Parite avec l'API reelle : une date de devoir imposee par
                                 // la direction resiste a un appareil reste hors ligne.
@@ -450,7 +453,7 @@ export function setupMockApi(app: express.Express) {
                         delete adminClassOverrides[classId];
                         const deletedClasses = { ...((classesBlob?.deletedClasses as Record<string, unknown>) ?? {}), [classId]: { deletedAt: now } };
                         const settings = { ...((classesBlob?.settings as Record<string, any>) ?? {}) };
-                        for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents']) {
+                        for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents']) {
                             if (settings[key]) {
                                 settings[key] = { ...settings[key] };
                                 delete settings[key][classId];
@@ -594,6 +597,24 @@ export function setupMockApi(app: express.Express) {
                             return send(res, 400, { error: error instanceof Error ? error.message : 'Bulletin JSON invalide.' });
                         }
                     }
+                    if (body.action === 'saveClassRoster') {
+                        const phone = String(body.phone ?? DEV_PHONE);
+                        const target = workspacesByPhone.get(phone);
+                        const blob = target?.classesBlob ?? (phone === DEV_PHONE ? classesBlob : null);
+                        const classId = String(body.classId ?? '');
+                        if (!(blob?.classes as any[])?.some(item => item.id === classId)) return send(res, 404, { error: 'Classe introuvable pour cet enseignant.' });
+                        if (!Array.isArray(body.studentNames) || body.studentNames.some(name => typeof name !== 'string')) return send(res, 400, { error: 'Liste invalide.' });
+                        let names: string[];
+                        try { names = normalizeStudentNames(body.studentNames); }
+                        catch (error) { return send(res, 400, { error: error instanceof Error ? error.message : 'Liste invalide.' }); }
+                        const settings = (blob?.settings as Record<string, any>) ?? {};
+                        const current = settings.classRosters?.[classId];
+                        if ((current?.version ?? 0) !== body.expectedRosterVersion) return send(res, 409, { error: 'La liste a été modifiée. Rechargez la fiche avant de publier.' });
+                        const roster = { names, version: (current?.version ?? 0) + 1, updatedAt: new Date().toISOString() };
+                        classesBlob = { ...blob, updatedAt: roster.updatedAt, settings: { ...settings, classRosters: { ...settings.classRosters, [classId]: roster } } };
+                        workspacesByPhone.set(phone, { classesBlob, lessonsByClass: target?.lessonsByClass ?? new Map() });
+                        return send(res, 200, { ok: true, classId, roster });
+                    }
                     if (body.action === 'saveAssessmentDate') {
                         const classId = String(body.classId ?? '');
                         const assessmentId = String(body.assessmentId ?? '');
@@ -657,6 +678,7 @@ export function setupMockApi(app: express.Express) {
                             classMeta: (classesBlob?.classMeta as any) ?? {},
                             snapshot: devSnapshot,
                             assessmentDates: settings.assessmentDates ?? {},
+                            classRosters: settings.classRosters ?? {},
                             printSettings: {
                                 establishmentName: settings.establishmentName ?? '',
                                 defaultTeacherName: settings.defaultTeacherName ?? '',

@@ -3,9 +3,10 @@ import { toast } from 'sonner';
 import { Copy, Info, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
-import type { NotebookCondition } from '@/types';
-import { retainNotebookConditions, countNotebookConditions, notebookConditionReport } from '@/domain/evaluations/notebookConditions';
-import { NotebookConditionList } from './NotebookConditionList';
+import type { ClassRoster, NotebookCondition, OralOutcome } from '@/types';
+import { retainNotebookConditions, notebookConditionReport } from '@/domain/evaluations/notebookConditions';
+import { namesWithRoster, normalizeStudentNames, parseStudentNames, retainOralOutcomes } from '@/domain/evaluations/studentRoster';
+import { StudentReviewList, NOTEBOOK_REVIEW_CHOICES, ORAL_REVIEW_CHOICES } from './NotebookConditionList';
 import './notebookTracking.css';
 
 /*
@@ -61,10 +62,13 @@ interface StudentNamesEditorProps {
   initialNames: string[];
   updatedAt?: string;
   onCancel: () => void;
-  onSave: (names: string[], conditions?: Record<string, NotebookCondition>) => void;
+  onSave: (names: string[], conditions?: Record<string, NotebookCondition>, oralOutcomes?: Record<string, OralOutcome>) => void;
   trackNotebookCondition?: boolean;
   initialNotebookConditions?: Record<string, NotebookCondition>;
   reportContext?: string;
+  roster?: ClassRoster;
+  trackOral?: boolean;
+  initialOralOutcomes?: Record<string, OralOutcome>;
   /** Habillage : absents d'un devoir, ou élèves consignés sur une activité. */
   variant?: StudentNamesVariant;
 }
@@ -77,53 +81,50 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   trackNotebookCondition = false,
   initialNotebookConditions,
   reportContext,
+  roster,
+  trackOral = false,
+  initialOralOutcomes,
 }) => {
   const { t, locale } = useLocale();
   const copy = VARIANT_COPY[variant];
-  const [names, setNames] = useState<string[]>(() => [...new Set(initialNames)]);
+  const trackReview = trackNotebookCondition || trackOral;
+  type ReviewCondition = NotebookCondition | OralOutcome;
+  const retainConditions = (next: string[], values: Record<string, ReviewCondition>) => trackOral
+    ? retainOralOutcomes(next, values as Record<string, OralOutcome>)
+    : retainNotebookConditions(next, values as Record<string, NotebookCondition>);
+  const [names, setNames] = useState<string[]>(() => trackReview ? namesWithRoster(initialNames, roster) : [...new Set(initialNames)]);
   const [draft, setDraft] = useState('');
-  const [conditions, setConditions] = useState(() => retainNotebookConditions(initialNames, initialNotebookConditions));
-  const [removed, setRemoved] = useState<{ names: string[]; conditions: Record<string, NotebookCondition> } | null>(null);
+  const [conditions, setConditions] = useState<Record<string, ReviewCondition>>(() => trackOral ? retainOralOutcomes(initialNames, initialOralOutcomes) : retainNotebookConditions(initialNames, initialNotebookConditions));
+  const [removed, setRemoved] = useState<{ names: string[]; conditions: Record<string, ReviewCondition> } | null>(null);
 
   const commitDraft = (raw: string) => {
-    const parts = raw
-      .split(/[،؛,;\n]+/)
-      .map((p) => p.trim().replace(/\s+/g, ' '))
-      .filter(Boolean);
-    if (parts.length === 0) return names;
-    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
-    const seen = new Set(names.map((n) => n.toLocaleLowerCase(localeCode)));
-    const additions = parts.filter((p) => {
-      const key = p.toLocaleLowerCase(localeCode);
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-    if (additions.some(name => name.length > 120) || names.length + additions.length > 200) {
+    let next: string[];
+    try { next = normalizeStudentNames([...names, ...parseStudentNames(raw)]); }
+    catch {
       toast.error(t('evaluations.students.limit'));
       return null;
     }
-    const next = [...names, ...additions];
     setNames(next);
     setDraft('');
-    if (additions.length) setRemoved(null);
+    if (next.length > names.length) setRemoved(null);
     return next;
   };
 
   const removeName = (name: string) => {
-    if (trackNotebookCondition) setRemoved({ names, conditions });
+    if (trackReview) setRemoved({ names, conditions });
     const next = names.filter(value => value !== name);
     setNames(next);
-    setConditions(previous => retainNotebookConditions(next, previous));
+    setConditions(previous => retainConditions(next, previous));
   };
 
   const handleCopy = async () => {
     if (names.length === 0) return;
     try {
-      const report = trackNotebookCondition ? notebookConditionReport(names, conditions,
+      const report = trackOral ? [t('evaluations.oral.title'), reportContext, ...names.map(name => `- ${name} : ${t(`evaluations.oral.${Object.hasOwn(conditions, name) ? conditions[name] : 'pending'}`)}`)].filter(Boolean).join('\n')
+        : trackNotebookCondition ? notebookConditionReport(names, retainNotebookConditions(names, conditions as Record<string, NotebookCondition>),
         condition => t(`evaluations.notebook.${condition}`), t('evaluations.notebook.title'), reportContext) : names.join('\n');
       await navigator.clipboard.writeText(report);
-      toast.success(t(trackNotebookCondition ? 'evaluations.notebook.reportCopied' : copy.copied));
+      toast.success(t(trackReview ? 'evaluations.notebook.reportCopied' : copy.copied));
     } catch {
       toast.error(t('common.error'));
     }
@@ -131,16 +132,19 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
 
   const restoreRemoved = () => {
     if (!removed) return;
-    const restoredConditions = retainNotebookConditions(removed.names.filter(name => !names.includes(name)), removed.conditions);
+    const restoredConditions = retainConditions(removed.names.filter(name => !names.includes(name)), removed.conditions);
     setNames(removed.names);
     setConditions({ ...conditions, ...restoredConditions });
     setRemoved(null);
   };
 
-  if (trackNotebookCondition) {
-    const reviewed = Object.values(countNotebookConditions(names, conditions)).reduce((sum, count) => sum + count, 0);
-    return <NotebookConditionList names={names} conditions={conditions} onChange={setConditions} onRemove={removeName}
-      entry={<div className="notebook-entry">
+  if (trackReview) {
+    const reviewed = Object.keys(retainConditions(names, conditions)).length;
+    return <StudentReviewList<ReviewCondition> names={names} conditions={conditions} onChange={setConditions} onRemove={removeName}
+      mode={trackOral ? 'oral' : 'notebook'} choices={trackOral ? ORAL_REVIEW_CHOICES : NOTEBOOK_REVIEW_CHOICES}
+      entry={<>
+        {roster?.names.some(name => !names.includes(name)) && <div className="notebook-filter-info"><button type="button" onClick={() => { setNames(namesWithRoster(names, roster)); setRemoved(null); }}>{t('evaluations.students.restoreRoster')}</button></div>}
+        <div className="notebook-entry">
         <input type="text" value={draft} onChange={event => setDraft(event.target.value)}
           onKeyDown={event => { if (['Enter', ',', '،'].includes(event.key) && !event.nativeEvent.isComposing) { event.preventDefault(); commitDraft(draft); } }}
           onPaste={event => { const text = event.clipboardData.getData('text'); if (/[،؛,;\n]/.test(text)) { event.preventDefault(); commitDraft(text); } }}
@@ -148,7 +152,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         <button type="button" onClick={() => commitDraft(draft)} aria-label={t(copy.add)} disabled={!draft.trim()} className="notebook-primary notebook-entry__add">
           <Plus className="h-4 w-4" aria-hidden="true"/><span>{t('evaluations.add')}</span>
         </button>
-      </div>}
+      </div></>}
       footer={<>
         {removed && <div className="notebook-undo" role="status">
           <span>{t('evaluations.notebook.removed')}</span>
@@ -168,7 +172,10 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </div>
           <div className="notebook-footer__commit">
             <button type="button" className="notebook-text-action notebook-footer__cancel" onClick={onCancel}>{t('common.cancel')}</button>
-            <button type="button" className="notebook-primary" onClick={() => { const next = commitDraft(draft); if (next) onSave(next, retainNotebookConditions(next, conditions)); }}>{t('common.save')} <bdi>({numberFormat(locale).format(reviewed)})</bdi></button>
+            <button type="button" className="notebook-primary" onClick={() => { const next = commitDraft(draft); if (next) onSave(next,
+              trackOral ? undefined : retainNotebookConditions(next, conditions as Record<string, NotebookCondition>),
+              trackOral ? retainOralOutcomes(next, conditions as Record<string, OralOutcome>) : undefined);
+            }}>{t('common.save')}</button>
           </div>
         </div>
       </>}/>;

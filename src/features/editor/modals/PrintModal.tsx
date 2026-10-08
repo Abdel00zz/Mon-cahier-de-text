@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { AppConfig } from '@/types';
+import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
-import { Printer, CalendarCheck, CalendarDays, FileText, Info } from '@/components/ui/icons';
-import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
+import { Printer, CalendarCheck, CalendarDays, FileText } from '@/components/ui/icons';
 import { DescriptionVisibilityControl } from '@/features/settings/components/DescriptionVisibilityControl';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
@@ -76,7 +76,6 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const { t, locale } = useLocale();
   const number = React.useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
   const sessionCountLabel = (count: number) => t(count === 1 ? 'print.sessionOne' : 'print.sessionMany', { count: number.format(count) });
-  const printedCount = Math.max(0, totalDates - newDates.length);
   const hasHistory = lastPrintedAt !== null;
   // sans historique consultable, « nouveauté » n'a aucun sens : on ne
   // recommande jamais un mode qui prétendrait savoir ce qui a déjà été tiré.
@@ -213,49 +212,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       }
     >
       <div className="space-y-4">
-        <div className="rounded-xl border border-border/70 bg-muted/25 px-4 py-3">
-          <p className="text-sm font-medium">{t('print.vectorQuality')}</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('print.outputHint')}</p>
-        </div>
-        {/* État de l'impression : sans historique consultable, on annonce le
-            volume de séances sans prétendre savoir ce qui a déjà été tiré. */}
-        {!historyKnown ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background px-4 py-3 shadow-xs">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Info className="h-5 w-5 stroke-[2]" />
-            </span>
-            <div className="min-w-0">
-              <p className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black tabular-nums text-foreground">{number.format(totalDates)}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('print.sessions')}</span>
-              </p>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{t('print.historyUnavailable')}</p>
-            </div>
-          </div>
-        ) : (
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-xs">
-          <div className="grid grid-cols-3 divide-x divide-border/70 text-center">
-            <div className="flex flex-col items-center justify-center p-3 sm:py-4">
-              <span className="text-xl sm:text-2xl font-black text-foreground">{number.format(totalDates)}</span>
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.sessions')}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center p-3 sm:py-4">
-              <span className="text-xl sm:text-2xl font-black text-muted-foreground">{number.format(printedCount)}</span>
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.printed')}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center p-3 sm:py-4 bg-emerald-500/[0.08] dark:bg-emerald-950/20">
-              <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">{number.format(newDates.length)}</span>
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mt-0.5">{t('print.new')}</span>
-            </div>
-          </div>
-          {lastPrintedAt && (
-            <p className="border-t border-border/70 bg-muted/30 px-4 py-2 text-center text-[11px] font-medium text-muted-foreground">
-              {t('print.lastPrint')} · {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
-            </p>
-          )}
-          <p className="border-t border-border/70 px-4 py-2 text-[11px] leading-relaxed text-muted-foreground">{t('print.historyHint')}</p>
-        </div>
-        )}
+        {!historyKnown && <p className="text-xs text-muted-foreground">{t('print.historyUnavailable')}</p>}
 
         {/* Choix du mode */}
         <div className="rounded-2xl border border-border/70 bg-background p-3 sm:p-4 shadow-xs space-y-3">

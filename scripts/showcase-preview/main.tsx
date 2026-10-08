@@ -1,10 +1,19 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { TeacherDetail } from '../../src/admin/components/TeacherDetail';
+import { fetchTeacher } from '../../src/admin/api';
 import { useNotebookOpeningFocus } from '../../src/features/editor/hooks/useNotebookOpeningFocus';
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { buildSessionActivityRemarks } from '../../src/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '../../src/i18n/messages';
 import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
+import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
+import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
+import { UiGallery } from './UiGallery';
+import App from '../../src/app/App';
+import { AuthProvider } from '../../src/contexts/AuthContext';
+import { SyncProvider } from '../../src/contexts/SyncContext';
+import { initAppViewport } from '../../src/platform/appViewport';
 import { PrintView } from '../../src/features/editor/PrintView';
 import { buildAbsenceSessions } from '../../src/domain/notebook/absenceSessions';
 import { createRoot } from 'react-dom/client';
@@ -15,7 +24,7 @@ import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab'
 import { BookOpen, CalendarDays, LayoutGrid } from '../../src/components/ui/icons';
 import { assignClassColors } from '../../src/domain/classes/classColors';
 import { buildLessonRows } from '../../src/domain/notebook/lessonRows';
-import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
+import type { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '../../src/types';
 import '../../src/styles/index.css';
 
 const params = new URLSearchParams(location.search);
@@ -75,6 +84,25 @@ function Capture() {
  const [search, setSearch] = useState('');
  const [opening, setOpening] = useState(0);
  const [previewConfig, setPreviewConfig] = useState(config);
+ const [evaluationClasses, setEvaluationClasses] = useState(classes);
+ const [evaluationTarget, setEvaluationTarget] = useState<{ classInfo: ClassInfo; entry: ClassEvaluationEntry; open: boolean } | null>(null);
+ useEffect(() => {
+  if (!params.has('roster-live')) return;
+  let cancelled = false;
+  void fetchTeacher('0600000000').then(detail => {
+   if (cancelled || !detail.classes[0]) return;
+   const classId = detail.classes[0].id;
+   const rosterNames = detail.classRosters?.[classId]?.names ?? [];
+   setEvaluationClasses(detail.classes);
+   setPreviewConfig(previous => ({ ...previous, classRosters: detail.classRosters,
+    pedagogicalEvents: { [classId]: [{ id: 'notebook-check', type: 'controle_cahiers', title: ar ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers', date: '2026-10-08', status: 'planned', createdAt: '2026-10-08T08:00:00Z',
+      students: screen === 'tracking' ? { names: rosterNames, updatedAt: '2026-10-08T08:00:00Z', notebookConditions: Object.fromEntries(rosterNames.slice(0, 4).map((name, index) => [name, (['good', 'average', 'needs_work', 'missing'] as const)[index]])) } : undefined }] },
+    assessmentParticipants: screen === 'tracking' ? { [classId]: { 'oral-roster': { names: rosterNames, updatedAt: '2026-10-08T09:00:00Z', oralOutcomes: Object.fromEntries(rosterNames.slice(0, 3).map((name, index) => [name, (['mastered', 'developing', 'needs_support'] as const)[index]])) } } } : undefined,
+    manualAssessments: { [classId]: [{ id: 'oral-roster', type: 'oral', num: 1, semestre: 1, dateISO: '2026-10-08' }] },
+   }));
+  }).catch(() => {});
+  return () => { cancelled = true; };
+ }, []);
  return <LocaleProvider locale={locale}><div dir={ar?'rtl':'ltr'} className="showcase-capture" style={{minHeight:'100vh',padding:mobile?20:32}}>
   <style>{`* { animation:none !important; transition:none !important; } html, body, #root { margin:0; background:#fbfaf7 !important; } html { overflow-y:auto; } body { overflow:visible; } .showcase-capture { background:#fbfaf7; color:#282d2b; } .capture-page { max-width:1040px; margin:auto; }`}</style>
   <div className="capture-page"><header className="flex items-center justify-between gap-4 pb-5 border-b border-stone-400/15"><div className="flex items-center gap-3"><img src="/icons/icon-192.png" width="40" height="40" alt="" className="rounded-xl"/><div><p className="font-semibold text-lg">{ar?'دفتر نصوصي':'Mon cahier de textes'}</p><p className="text-xs text-muted-foreground mt-1">{ar?'مساحة واضحة ليوم دراسي منظم':'Un espace clair pour votre journée'}</p></div></div><span className="text-xs text-muted-foreground">2026 · 2027</span></header>
@@ -83,14 +111,30 @@ function Capture() {
   {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('resume')&&<button type="button" onClick={()=>setOpening(value=>value+1)} className="min-h-11 mb-3">{ar?'فتح القسم مجدداً':'Rouvrir la classe'}</button>}{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<PreviewTable key={opening}/></div>}
   {screen==='print'&&<PrintView lessonsData={lessons} classInfo={classes[0]} config={config} contentDirection={ar?'rtl':'ltr'} newlyAddedIds={[]} preview/>}
   {screen==='activities'&&<KindChooser onSelect={noop}/>}
-  {screen==='checks'&&<DevoirsView embedded classes={[classes[0]]} config={previewConfig} onConfigChange={patch => setPreviewConfig(previous => ({...previous,...patch}))}/>}
+  {screen==='checks'&&<DevoirsView key={evaluationClasses[0].id} classInfo={evaluationClasses[0]} config={previewConfig} onConfigChange={patch => setPreviewConfig(previous => ({...previous,...patch}))}/>}
+  {screen==='class-menu'&&evaluationClasses.slice(0,2).map(classInfo => <ClassCard key={classInfo.id} classInfo={classInfo} onConfigure={noop} onSelect={noop} onDelete={noop} onOpenEvaluations={entry => setEvaluationTarget({ classInfo, entry, open: true })}/>)}
+  {evaluationTarget&&<ClassEvaluationsSheet key={`${evaluationTarget.classInfo.id}-${evaluationTarget.entry}`} classInfo={evaluationTarget.classInfo} entry={evaluationTarget.entry} open={evaluationTarget.open} onOpenChange={open=>setEvaluationTarget(previous=>previous ? {...previous,open} : null)} config={previewConfig} onConfigChange={patch=>setPreviewConfig(previous=>({...previous,...patch}))}/>}
+  {screen==='tracking'&&<NotificationsPage classes={evaluationClasses} config={previewConfig} feed={{ corrections: [], ignoredCorrections: [], insights: [], ignoredInsights: [], assessments: [], pedagogicalEvents: [], officialEvents: [], attentionCount: 0 }} onSelectClass={noop} onOpenSettings={noop} onBack={noop}/>}
+  {screen==='admin-roster'&&<TeacherDetail phone="0600000000" onBack={noop} onManageTimetable={noop}/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
+  {screen==='gallery'&&<UiGallery page={params.get('page') ?? 'landing'} config={config} classes={evaluationClasses} lessons={lessons}/>}
   </div>
  </div></LocaleProvider>;
 }
 if (import.meta.env.DEV) {
  const root = createRoot(document.getElementById('root')!);
- root.render(<Capture />);
+ const device = params.get('device');
+ if (device === 'phone' || device === 'tablet') {
+  const framedUrl = new URL(location.href);
+  framedUrl.searchParams.delete('device');
+  framedUrl.searchParams.set('portrait', '');
+  const width = device === 'phone' ? 390 : 820;
+  const height = device === 'phone' ? 844 : 1180;
+  root.render(<div style={{ padding: 16, background: '#f4f1eb', minHeight: height + 32 }}><iframe title={`${device} UI preview`} src={framedUrl.href} style={{ display: 'block', margin: 'auto', width, height, border: 0, background: '#fbfaf7' }}/></div>);
+ } else if (screen === 'application') {
+  initAppViewport();
+  root.render(<AuthProvider><SyncProvider><App /></SyncProvider></AuthProvider>);
+ } else root.render(<Capture />);
  import.meta.hot?.dispose(() => root.unmount());
 }
 

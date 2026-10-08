@@ -28,7 +28,7 @@ import { buildLessonRows } from '../src/domain/notebook/lessonRows.js';
 import { lastDatedContentKey } from '../src/domain/notebook/notebookOpening.js';
 import { buildSessionActivityRemarks } from '../src/domain/evaluations/sessionActivityRemarks.js';
 import { translateLocaleMessage } from '../src/i18n/messages.js';
-import type { AppConfig } from '../src/types.js';
+import type { AppConfig, ClassInfo, ClassRoster } from '../src/types.js';
 import type { LessonsData } from '../src/types.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
@@ -268,6 +268,66 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   assert.deepEqual(deletedWorkspace.classes, []);
   assert.ok(deletedWorkspace.deletedClasses[classInfo.id]);
   assert.equal((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).status, 404);
+});
+
+test('admin class rosters reach the right email account and survive stale pushes with independent notebook and oral observations', async () => {
+  process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
+  const registered = await call(authHandler, { method: 'POST', headers: {}, body: {
+    action: 'register', email: 'roster-teacher@example.com', nom: 'Roster', prenom: 'QA', password: 'Test-password-123',
+  } });
+  assert.equal(registered.status, 201);
+  const owner = (registered.body as { user: { id: string } }).user.id;
+  const headers = { cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': owner };
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  const postAdmin = (body: unknown) => call(adminHandler, { method: 'POST', headers: adminHeaders, body });
+  const create = async (name: string) => {
+    const response = await postAdmin({ action: 'upsertTeacherClass', phone: owner, classInfo: { name, cycle: 'college', subject: 'Mathématiques' } });
+    assert.equal(response.status, 200);
+    return (response.body as { classInfo: ClassInfo }).classInfo;
+  };
+  const x = await create('1AC 1'); const y = await create('2AC 2');
+  const request = { action: 'saveClassRoster', phone: owner, classId: x.id, studentNames: [' أحمد  العلوي ', 'سلمى الفاسي', 'أحمد العلوي'], expectedRosterVersion: 0 };
+  assert.equal((await call(adminHandler, { method: 'POST', headers, body: request })).status, 401, 'teacher sessions cannot publish lists');
+  assert.equal((await postAdmin({ ...request, classId: 'class-of-another-teacher' })).status, 404);
+  assert.equal((await postAdmin({ ...request, studentNames: [123] })).status, 400);
+  const first = await postAdmin(request); assert.equal(first.status, 200);
+  const roster = (first.body as { roster: ClassRoster }).roster;
+  assert.deepEqual(roster.names, ['أحمد العلوي', 'سلمى الفاسي']); assert.equal(roster.version, 1);
+  assert.equal((await postAdmin(request)).status, 409, 'stale admin sessions cannot replace a newer list');
+  assert.equal((await postAdmin({ ...request, classId: y.id, studentNames: ['Classe Y uniquement'] })).status, 200);
+  const observedAt = new Date().toISOString();
+  const observations = {
+    pedagogicalEvents: { [x.id]: [{ id: 'check', type: 'controle_cahiers', title: 'Contrôle des cahiers', date: '2026-10-08', status: 'planned', createdAt: observedAt,
+      students: { names: roster.names, notebookConditions: { 'أحمد العلوي': 'good' }, updatedAt: observedAt } }] },
+    assessmentParticipants: { [x.id]: { oral: { names: roster.names, oralOutcomes: { 'سلمى الفاسي': 'needs_support' }, updatedAt: observedAt } } },
+  };
+  const push = (settings: unknown, offset = 5_000) => call(syncHandler, { method: 'POST', headers, body: {
+    classes: [x, y], schedules: [], timetable: [], settings, settingsUpdatedAt: new Date(Date.now() + offset).toISOString(),
+  } });
+  assert.equal((await push({ ...observations, classRosters: { [x.id]: { ...roster, names: ['Forged'] } } })).status, 200);
+  const pull = async () => (await call(syncHandler, { method: 'GET', headers })).body as { settings: Partial<AppConfig> };
+  let restored = (await pull()).settings;
+  assert.deepEqual(restored.classRosters?.[x.id], roster);
+  assert.deepEqual(restored.classRosters?.[y.id]?.names, ['Classe Y uniquement']);
+  assert.deepEqual(restored.assessmentParticipants, observations.assessmentParticipants);
+  assert.deepEqual(restored.pedagogicalEvents, observations.pedagogicalEvents);
+  const next = await postAdmin({ ...request, studentNames: [...roster.names, 'يوسف'], expectedRosterVersion: 1 });
+  assert.equal(next.status, 200);
+  assert.equal((await push({ ...observations, classRosters: { [x.id]: roster } }, 10_000)).status, 200);
+  restored = (await pull()).settings;
+  assert.deepEqual(restored.classRosters?.[x.id]?.names, [...roster.names, 'يوسف']);
+  assert.equal(restored.classRosters?.[x.id]?.version, 2);
+  assert.deepEqual(restored.assessmentParticipants, observations.assessmentParticipants, 'publishing a roster cannot rewrite an oral decision');
+  const detail = await call(adminHandler, { method: 'GET', headers: adminHeaders, query: { action: 'teacher', phone: owner } });
+  assert.deepEqual((detail.body as { classRosters: Record<string, ClassRoster> }).classRosters, restored.classRosters);
+  assert.equal((await postAdmin({ ...request, studentNames: [], expectedRosterVersion: 2 })).status, 200);
+  assert.equal((await push(observations, 15_000)).status, 200);
+  assert.deepEqual((await pull()).settings.classRosters?.[x.id]?.names, [], 'empty publication must not resurrect after an old client push');
+  assert.equal((await postAdmin({ action: 'deleteTeacherClass', phone: owner, classId: x.id })).status, 200);
+  restored = (await pull()).settings;
+  assert.equal(restored.classRosters?.[x.id], undefined);
+  assert.equal(restored.assessmentParticipants?.[x.id], undefined);
+  assert.deepEqual(restored.classRosters?.[y.id]?.names, ['Classe Y uniquement']);
 });
 
 test('large imported notebook crosses the HTTP contract and is restored intact from Firestore', async () => {

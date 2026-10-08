@@ -1,13 +1,10 @@
 import { memo, useMemo, type FC } from 'react';
-import type { ClassInfo } from '@/types';
+import type { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Clock, MoreHorizontal as MoreVertical, Settings, Trash2 } from 'lucide-react';
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-    DropdownMenuSeparator, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Clock } from 'lucide-react';
+import { ClassActionsMenu } from './ClassActionsMenu';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { classOpeningLabel } from '@/infrastructure/storage/classOpening';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
@@ -24,12 +21,13 @@ interface ClassCardProps {
     onSelect: () => void;
     onConfigure: () => void;
     onDelete?: () => void;
+    onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
     isActiveSession?: boolean;
 }
 
 const ClassCardComponent: FC<ClassCardProps> = ({
-    classInfo, onSelect, onConfigure, onDelete, isActiveSession,
+    classInfo, onSelect, onConfigure, onDelete, onOpenEvaluations, isActiveSession,
 }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
@@ -79,34 +77,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <ActiveSessionGlass label={t('dashboard.welcome.nowTitle')} />
                         </span>
                     )}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                type="button"
-                                onClick={event => event.stopPropagation()}
-                                className="class-card__menu"
-                                title={t('dashboard.classActions', { className: label.fullName })}
-                                aria-label={t('dashboard.classActions', { className: label.fullName })}
-                            >
-                                <MoreVertical className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="min-w-[10.5rem]">
-                            <DropdownMenuItem onSelect={() => { impact('light'); onConfigure(); }}>
-                                <Settings aria-hidden="true" />
-                                {t('dashboard.classSettings')}
-                            </DropdownMenuItem>
-                            {onDelete && (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}>
-                                        <Trash2 aria-hidden="true" />
-                                        {t('dashboard.delete')}
-                                    </DropdownMenuItem>
-                                </>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <ClassActionsMenu name={label.fullName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
+                        triggerClassName="class-card__menu"/>
                 </div>
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
                     <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
@@ -135,6 +107,7 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
     && previous.classInfo.subject === next.classInfo.subject
     && previous.index === next.index
+    && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 

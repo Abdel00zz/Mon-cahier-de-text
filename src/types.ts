@@ -123,6 +123,10 @@ export interface AppConfig {
     assessmentDates?: Record<string, Record<string, string>>;
     /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: StudentNamesRecord } } */
     assessmentAbsences?: Record<string, Record<string, StudentNamesRecord>>;
+    /** Effectifs publiés par la direction : lecture seule pour le professeur. */
+    classRosters?: Record<string, ClassRoster>;
+    /** Observations de l'oral, séparées des absences et du programme du cahier. */
+    assessmentParticipants?: Record<string, Record<string, OralStudentsRecord>>;
     /** documents rédigés par devoir (sujet, corrigé) : { [classId]: { [assessmentId]: ContentDocument } } */
     assessmentDocuments?: Record<string, Record<string, ContentDocument>>;
     /** activités pédagogiques libres par classe (diagnostic, olympiade, soutien, examen blanc...) */
@@ -156,6 +160,20 @@ export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'or
 
 /** Élèves consignés sur un devoir ou une activité : absents, cahiers contrôlés, participants. */
 export type NotebookCondition = 'good' | 'average' | 'needs_work' | 'missing';
+
+export interface ClassRoster {
+    names: string[];
+    updatedAt: string;
+    version: number;
+}
+
+export type OralOutcome = 'mastered' | 'developing' | 'needs_support';
+export type ClassEvaluationEntry = 'all' | 'oral' | 'controle_cahiers';
+export interface OralStudentsRecord {
+    names: string[];
+    updatedAt: string;
+    oralOutcomes: Record<string, OralOutcome>;
+}
 
 interface StudentNamesRecord {
     /** noms des élèves (un nom par entrée) */

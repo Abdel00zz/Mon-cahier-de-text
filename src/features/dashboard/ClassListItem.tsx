@@ -1,18 +1,11 @@
 import { memo, useMemo, type FC } from 'react';
-import { ClassInfo } from '@/types';
+import { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
-import { MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ClassActionsMenu } from './ClassActionsMenu';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -29,6 +22,7 @@ interface ClassListItemProps {
     onConfigure: () => void;
     /** Suppression depuis le menu de la ligne ; le parent confirme l'action. */
     onDelete?: () => void;
+    onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     isActiveSession?: boolean;
 }
 
@@ -37,6 +31,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     onSelect,
     onConfigure,
     onDelete,
+    onOpenEvaluations,
     isActiveSession,
 }) => {
     const { locale, t, isRtl } = useLocale();
@@ -129,34 +124,8 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                 aria-label={t('dashboard.classActions', { className: displayName })}
                 className="flex shrink-0 items-center opacity-100 md:opacity-0 transition-opacity duration-200 md:group-hover:opacity-100 md:focus-within:opacity-100"
             >
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <button
-                            type="button"
-                            onClick={(event) => event.stopPropagation()}
-                            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-                            title={t('dashboard.classActions', { className: displayName })}
-                            aria-label={t('dashboard.classActions', { className: displayName })}
-                        >
-                            <MoreVertical className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[10.5rem]">
-                        <DropdownMenuItem onSelect={() => { impact('light'); onConfigure(); }}>
-                            <Settings aria-hidden="true" />
-                            {t('dashboard.classSettings')}
-                        </DropdownMenuItem>
-                        {onDelete && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}>
-                                    <Trash2 aria-hidden="true" />
-                                    {t('dashboard.delete')}
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <ClassActionsMenu name={displayName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
+                        triggerClassName="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"/>
             </div>
         </article>
     );
@@ -169,6 +138,7 @@ const areEqual = (previous: ClassListItemProps, next: ClassListItemProps) =>
     && previous.classInfo.name === next.classInfo.name
     && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
     && previous.classInfo.subject === next.classInfo.subject
+    && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession;
 
 ClassListItemComponent.displayName = 'ClassListItem';

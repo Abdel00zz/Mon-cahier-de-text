@@ -151,7 +151,7 @@ test('la modale n’annonce « nouveautés » que si l’historique est consulta
   );
   assert.match(printModal, /\.\.\.\(historyKnown \? \[\{/, 'le mode « nouveautés » disparaît quand l’historique est inconnu');
   assert.match(printModal, /\$\{historyKnown \? 'grid-cols-3' : 'grid-cols-2'\}/, 'deux modes au lieu de trois');
-  assert.match(printModal, /\{!historyKnown \? \(/, 'état d’impression dédié');
+  assert.match(printModal, /\{!historyKnown && /, 'explication compacte de l’historique inconnu');
   assert.match(printModal, /\{historyKnown && \(/, 'aucune pastille « déjà imprimée » inventée');
   assert.match(printModal, /t\('print\.historyUnavailable'\)/, 'explication affichée à la direction');
 });

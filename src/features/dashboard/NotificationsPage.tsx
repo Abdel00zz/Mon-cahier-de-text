@@ -36,6 +36,7 @@ import {
 } from '@/infrastructure/notifications/notificationSignals';
 import { consumeNotificationsAxis, type NotificationsAxisId } from '@/infrastructure/notifications/notificationNavigation';
 import { NotificationCalendar } from './NotificationCalendar';
+import { ClassPedagogicalSummary } from './ClassPedagogicalSummary';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
@@ -166,6 +167,10 @@ interface ClassOverview {
   sessionsCount: number;
   lastDate: string | null;
   toPrintCount: number;
+  unplannedCount: number;
+  plannedCount: number;
+  totalItems: number;
+  chapters: ReturnType<typeof computeProgressionStats>['perChapter'];
 }
 
 interface ActivityEntry extends JournalEntry {
@@ -300,6 +305,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       sessionsCount: stats.sessionsCount,
       lastDate: stats.lastDate,
       toPrintCount: getNewDates(lessons, classInfo.id).length,
+      unplannedCount: stats.unplannedItems.length,
+      plannedCount: stats.plannedCount,
+      totalItems: stats.totalItems,
+      chapters: stats.perChapter,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [classes, feed, locale]);
@@ -928,8 +937,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         {rankedOverviews.map(overview => {
                           const completionRate = Math.min(100, Math.max(0, overview.completionRate));
                           return (
+                            <article key={overview.classInfo.id}>
                             <button
-                              key={overview.classInfo.id}
                               {...classColorAttributes(overview.classInfo)}
                               type="button"
                               onClick={() => openClassById(overview.classInfo.id)}
@@ -956,6 +965,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 <span className="font-semibold text-foreground/80">
                                   {t('notifications.sessionCount', { count: overview.sessionsCount })}
                                 </span>
+                                <span>{t('analysis.plannedOfTotal', { planned: overview.plannedCount, total: overview.totalItems })}</span>
+                                {overview.unplannedCount > 0 && <span>{t('notifications.review.toDate', { count: overview.unplannedCount })}</span>}
                                 <span>
                                   {t('notifications.lastSession', { date: overview.lastDate ? formatLocalizedDate(overview.lastDate, locale) : '—' })}
                                 </span>
@@ -966,6 +977,20 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 </span>
                               </div>
                             </button>
+                            {overview.chapters.some(chapter => chapter.total > 0) && <details className="mb-2 rounded-lg border border-border/70 text-xs">
+                              <summary className="min-h-11 cursor-pointer px-3 py-3 font-medium focus-visible:outline-2 focus-visible:outline-primary">{t('analysis.byChapter')}</summary>
+                              <ul className="space-y-2 px-3 pb-3">
+                                {overview.chapters.filter(chapter => chapter.total > 0).map((chapter, index) => <li key={index} className="flex items-start justify-between gap-3">
+                                  <span dir="auto" className="min-w-0 break-words">{chapter.title}</span>
+                                  <span className="shrink-0 text-muted-foreground">{t('analysis.plannedOfTotal', { planned: chapter.planned, total: chapter.total })}</span>
+                                </li>)}
+                              </ul>
+                            </details>}
+                            <ClassPedagogicalSummary config={config} classId={overview.classInfo.id} onOpen={() => {
+                              requestEditorModal({ classId: overview.classInfo.id, modal: 'evaluations', expiresAt: Date.now() + 120_000 });
+                              openClassById(overview.classInfo.id);
+                            }}/>
+                            </article>
                           );
                         })}
                       </div>

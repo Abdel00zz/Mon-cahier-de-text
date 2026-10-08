@@ -77,8 +77,9 @@ test('documents et élèves sont branchés au devoir comme à l’activité', ()
   // Le devoir : une carte `assessmentDocuments`, comme les absences.
   assert.match(view, /assessmentDocuments/, 'les documents de devoirs sont rangés par classe et par devoir');
   // L'activité : le document et les élèves vivent DANS l'événement.
-  assert.match(view, /document: source\.trim\(\)/, 'document d’activité enregistré');
-  assert.match(view, /students: names\.length > 0/, 'élèves consignés enregistrés');
+  const actions = readFileSync('src/features/evaluations/hooks/useEvaluationActions.ts', 'utf8');
+  assert.match(actions, /document: source\.trim\(\)/, 'document d’activité enregistré');
+  assert.match(actions, /students: names\.length \?/, 'élèves consignés enregistrés');
   assert.match(view, /setDocumentFor\(\{ kind: 'assessment', link \}\)/, 'bouton « Contenu » sur un devoir');
   assert.match(view, /onOpenDocument=\{\(event\) => setDocumentFor\(\{ kind: 'event', event \}\)\}/, 'bouton « Contenu » sur une activité');
   assert.match(view, /onOpenStudents=\{\(event\) => setStudentsFor\(event\)\}/, 'bouton « Élèves » sur une activité');

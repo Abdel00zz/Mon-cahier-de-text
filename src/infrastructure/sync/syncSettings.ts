@@ -35,6 +35,7 @@ export type SyncableSettings = Pick<
     | 'absences'
     | 'assessmentDates'
     | 'assessmentAbsences'
+    | 'assessmentParticipants'
     | 'pedagogicalEvents'
     | 'manualAssessments'
     | 'removedAssessments'
@@ -42,6 +43,8 @@ export type SyncableSettings = Pick<
     | 'schoolYearStart'
     | 'notificationDismissals'
 > & {
+    /** Direction-owned lists are received, never included in a teacher push. */
+    classRosters?: AppConfig['classRosters'];
     /** préférences de notification hors états locaux à l'appareil (push, vibration) */
     notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled' | 'sessionVibration'>;
 };
@@ -72,6 +75,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'absences',
     'assessmentDates',
     'assessmentAbsences',
+    'assessmentParticipants',
     'pedagogicalEvents',
     'manualAssessments',
     'removedAssessments',

@@ -24,7 +24,7 @@ const loaders: Record<PrefetchTarget, () => Promise<unknown>> = {
     editor: () => import('../features/editor/Editor'),
     settings: () => import('../features/settings/SettingsPage'),
     notifications: () => import('../features/dashboard/NotificationsPage'),
-    evaluations: () => import('../features/evaluations/DevoirsView'),
+    evaluations: () => import('../features/evaluations/ClassEvaluationsSheet'),
     guide: () => import('../features/guide/GuideModal'),
 };
 

@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { lazy, Suspense, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useClassManager } from '@/hooks/useClassManager';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
+import { DeferredMount } from '@/components/ui/DeferredMount';
 import { Button } from '@/components/cahier/Button';
 import { ClassCard } from './ClassCard';
 import { ClassDisplayToggle } from './ClassDisplayToggle';
@@ -14,7 +15,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { hasCompletedOnboarding } from '../../domain/auth/onboardingCompletion';
-import { ClassInfo, Cycle } from '@/types';
+import { ClassInfo, ClassEvaluationEntry, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/domain/calendar/timetable';
@@ -27,8 +28,11 @@ import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
+const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
+
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
+    onEvaluationVisibilityChange?: (visible: boolean) => void;
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
@@ -38,6 +42,7 @@ const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mas
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
+    onEvaluationVisibilityChange,
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
@@ -49,6 +54,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
+    const [evaluationTarget, setEvaluationTarget] = useState<{ classId: string; entry: ClassEvaluationEntry; open: boolean } | null>(null);
+    const evaluationClass = classes.find(item => item.id === evaluationTarget?.classId);
+    const evaluationOpen = !!evaluationClass && !!evaluationTarget?.open;
+    const onOpenEvaluations = (classInfo: ClassInfo, entry: ClassEvaluationEntry) => setEvaluationTarget({ classId: classInfo.id, entry, open: true });
+    useEffect(() => {
+        onEvaluationVisibilityChange?.(evaluationOpen);
+        return () => onEvaluationVisibilityChange?.(false);
+    }, [evaluationOpen, onEvaluationVisibilityChange]);
     /** Classe dont la suppression est demandée depuis le menu d'une carte. */
     const [classPendingDelete, setClassPendingDelete] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
@@ -380,6 +393,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onOpenEvaluations={entry => onOpenEvaluations(classInfo, entry)}
                                                     onDelete={() => setClassPendingDelete(classInfo)}
                                                     isActiveSession={isActiveSession}
                                                 />
@@ -404,6 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onOpenEvaluations={entry => onOpenEvaluations(classInfo, entry)}
                                                     onDelete={() => setClassPendingDelete(classInfo)}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
@@ -432,6 +447,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 }}
             />
 
+            <DeferredMount active={evaluationOpen}>
+                {evaluationClass && evaluationTarget && <Suspense fallback={<div className="py-4 text-center text-sm text-muted-foreground" role="status">{t('common.loading')}</div>}>
+                    <ClassEvaluationsSheet key={`${evaluationClass.id}-${evaluationTarget.entry}`} open={evaluationOpen}
+                        onOpenChange={open => setEvaluationTarget(previous => previous ? { ...previous, open } : null)}
+                        classInfo={evaluationClass} entry={evaluationTarget.entry} config={config} onConfigChange={updateConfig}/>
+                </Suspense>}
+            </DeferredMount>
             <CreateClassModal
                 isOpen={isCreateModalOpen || !!editingClass}
                 onClose={() => {

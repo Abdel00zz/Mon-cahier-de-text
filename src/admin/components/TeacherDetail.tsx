@@ -20,6 +20,7 @@ import { PrintModal, type PrintMode, type PrintOptions } from '../../features/ed
 import { collectSessionDates, createPrintSelection } from '../../infrastructure/printing/printMeta';
 import { preparePrintContent, printDocument } from '../../infrastructure/printing/printUtils';
 import { ClassJsonImportModal } from './ClassJsonImportModal';
+import { ClassRosterModal } from './ClassRosterModal';
 import { AdminDocumentPreview } from './AdminDocumentPreview';
 import { ClassProgression } from './ClassProgression';
 import { CreateClassModal } from '../../features/dashboard/modals/CreateClassModal';
@@ -467,6 +468,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [activeTab, setActiveTab] = useState<TeacherDetailTab>('classes');
     const [importingClass, setImportingClass] = useState<ClassInfo | null>(null);
+    const [rosterClass, setRosterClass] = useState<ClassInfo | null>(null);
     const [lessonRevisions, setLessonRevisions] = useState<Record<string, number>>({});
     const [confirmAction, setConfirmAction] = useState<{ kind: 'block' | 'deleteAccount' | 'deleteClass'; classInfo?: ClassInfo } | null>(null);
     /**
@@ -644,6 +646,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
             `${result.mode === 'append' ? ' à la suite du cahier.' : ' en remplacement du cahier.'}`
         );
         setImportingClass(null);
+        setRosterClass(null);
 
         // Le serveur recalcule la projection de progression ; on la recharge
         // sans fermer l'onglet courant ni faire patienter toute la fiche.
@@ -752,6 +755,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         setClassModalOpen(false);
         setEditingClass(null);
         setImportingClass(null);
+        setRosterClass(null);
         setLessonRevisions({});
         const load = async (showLoading: boolean) => {
             if (showLoading) setIsLoading(true);
@@ -1035,6 +1039,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                                 </div>
                                                 <button onClick={() => void handlePrintClass(cls)} disabled={busy || isPrinting || printingClassId === cls.id} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50">{printingClassId === cls.id ? 'Chargement…' : 'Imprimer'}</button>
                                                 <button onClick={() => setImportingClass(cls)} disabled={busy} className="h-8 rounded-md border border-primary/25 bg-primary/5 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-50">Importer JSON</button>
+                                                <button onClick={() => setRosterClass(cls)} disabled={busy} className="min-h-11 rounded-md border border-border px-3 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50">Élèves · {data?.classRosters?.[cls.id]?.names.length ?? 0}</button>
                                                 <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
                                                 <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
                                             </div>
@@ -1116,6 +1121,13 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 />
             )}
 
+            {rosterClass && <ClassRosterModal key={`${phone}-${rosterClass.id}`} phone={phone} classInfo={rosterClass} roster={data?.classRosters?.[rosterClass.id]} onClose={() => setRosterClass(null)}
+                onPublished={roster => {
+                    if (activeTeacherRef.current !== phone) return;
+                    setData(current => current ? { ...current, classRosters: { ...current.classRosters, [rosterClass.id]: roster } } : current);
+                    setActionMessage(`Liste de ${roster.names.length} élève(s) transmise pour « ${rosterClass.name} ».`);
+                    setRosterClass(null);
+                }}/>}
             <ClassJsonImportModal
                 isOpen={importingClass !== null}
                 phone={phone}

@@ -56,3 +56,6 @@ google-services.json
 *.njsproj
 *.sln
 *.sw?
+
+# Generated UI capture atlas (available in the workspace).
+/screenshots-ui/

@@ -1,4 +1,3 @@
-import { ArrowDown } from 'lucide-react';
 import { hasCompletedOnboarding } from '../domain/auth/onboardingCompletion';
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Toaster } from '../components/ui/sonner';
@@ -19,14 +18,12 @@ import { useSync } from '../contexts/SyncContext';
 import { AUTH_REQUIRED } from '../config/features';
 import { normalizeOfficialClassName } from '../constants';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
-import { translateLocaleMessage } from '@/i18n/messages';
 import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { useAdminMessages } from '../hooks/useAdminMessages';
 
 import { useClassManager } from '../hooks/useClassManager';
 import { useTheme } from '../hooks/useTheme';
 import { TabBar, TabType } from '../components/navigation/TabBar';
-import { Modal } from '../components/ui/modal';
 import { DeferredMount } from '../components/ui/DeferredMount';
 import { latestClassOpening } from '../infrastructure/storage/classOpening';
 import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
@@ -43,7 +40,6 @@ const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => (
 const GuideModal = lazy(() => import('../features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
-const DevoirsView = lazy(() => import('../features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 
 type View = 'dashboard' | 'editor' | 'settings' | 'notifications';
 
@@ -102,9 +98,7 @@ const App: React.FC = () => {
       ? { view: 'dashboard', activeClass: null }
       : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
   );
-  const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
-  const [evaluationsBack, setEvaluationsBack] = useState<(() => void) | null>(null);
-  const handleEvaluationsBackChange = useCallback((action: (() => void) | null) => setEvaluationsBack(() => action), []);
+  const [isClassActivitiesOpen, setClassActivitiesOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
@@ -222,7 +216,7 @@ const App: React.FC = () => {
     previousAuthStatusRef.current = authStatus;
     if (!wasAnonymous || authStatus !== 'authenticated') return;
 
-    setIsEvaluationsOpen(false);
+    setClassActivitiesOpen(false);
     setOnboardingVisible(false);
     setActiveClass(null);
     setSettingsOrigin({ view: 'dashboard', activeClass: null });
@@ -431,6 +425,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onSelectClass={handleSelectClass}
+        onEvaluationVisibilityChange={setClassActivitiesOpen}
         activeSessionClassIds={currentSession.classIds}
           accountTeacherName={teacherName}
         onOnboardingVisibilityChange={setOnboardingVisible}
@@ -443,27 +438,20 @@ const App: React.FC = () => {
     : backgroundView;
   const routeFallback = <PageTransitionLoader />;
 
-  const activeTab: TabType = isEvaluationsOpen
-    ? 'evaluations'
-    : view === 'settings'
+  const activeTab: TabType = view === 'settings'
     ? 'settings'
     : view === 'notifications'
     ? 'notifications'
     : 'dashboard';
 
   const handleTabChange = useCallback((tab: TabType) => {
-    if (tab === 'evaluations') {
-      setIsEvaluationsOpen(true);
-    } else if (tab === 'dashboard') {
-      setIsEvaluationsOpen(false);
+    if (tab === 'dashboard') {
       if (view !== 'dashboard') {
         handleBackToDashboard();
       }
     } else if (tab === 'notifications') {
-      setIsEvaluationsOpen(false);
       handleOpenNotifications();
     } else if (tab === 'settings') {
-      setIsEvaluationsOpen(false);
       handleOpenSettings();
     } else if (tab === 'help') {
       setGuideOpen(true);
@@ -490,7 +478,7 @@ const App: React.FC = () => {
       view !== 'dashboard' ||
       isBooting ||
       isCurrentlyOnboarding ||
-      isEvaluationsOpen ||
+      isClassActivitiesOpen ||
       isGuideOpen ||
       currentSession.classIds.length !== 1 ||
       !currentSession.key ||
@@ -502,7 +490,7 @@ const App: React.FC = () => {
 
     if (!claimCurrentSessionAutoOpen(authOwner ?? 'local', currentSession.key)) return;
     handleSelectClass(classInfo);
-  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
+  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isClassActivitiesOpen, isGuideOpen, view]);
 
   const appSurface = (
     <div
@@ -577,27 +565,6 @@ const App: React.FC = () => {
           {appSurface}
         </Suspense>
 
-        {/* Évaluations globales — socle commun Modal */}
-        <Modal
-          isOpen={isEvaluationsOpen}
-          onClose={() => setIsEvaluationsOpen(false)}
-          maxWidth="4xl"
-          className="evaluation-modal evaluation-reference sm:rounded-2xl"
-          title={<span className="evaluation-header-title">
-            {evaluationsBack && <button type="button" onClick={evaluationsBack} className="evaluation-header-back" aria-label={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.allClasses')} title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.allClasses')}><ArrowDown className="h-5 w-5" strokeWidth={2} aria-hidden="true" /></button>}
-            <span>{translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}</span>
-          </span>}
-          bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
-        >
-          <Suspense fallback={<AppBootSkeleton />}>
-            <DevoirsView
-              onBackToClassesChange={handleEvaluationsBackChange}
-              classes={classes}
-              config={config}
-              onConfigChange={updateConfig}
-            />
-          </Suspense>
-        </Modal>
 
         <DeferredMount active={isGuideOpen}>
           <Suspense fallback={null}>

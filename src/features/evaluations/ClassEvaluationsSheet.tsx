@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppConfig, ClassInfo } from '@/types';
+import { AppConfig, ClassInfo, ClassEvaluationEntry } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
@@ -13,6 +13,7 @@ interface ClassEvaluationsSheetProps {
     classInfo: ClassInfo;
     config: AppConfig;
     onConfigChange: (patch: Partial<AppConfig>) => void;
+    entry?: ClassEvaluationEntry;
 }
 
 /**
@@ -24,6 +25,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     classInfo,
     config,
     onConfigChange,
+    entry = 'all',
 }) => {
     const { t, locale } = useLocale();
     const className = formatLocalizedClassDisplayName(classInfo.name, locale);
@@ -42,10 +44,11 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             description={showsSubjectLabels && classInfo.subject ? `${className} · ${classInfo.subject}` : className}
         >
             <DevoirsView
-                classes={[classInfo]}
+                key={`${classInfo.id}-${entry}`}
+                classInfo={classInfo}
                 config={config}
                 onConfigChange={onConfigChange}
-                embedded
+                entry={entry}
             />
         </Modal>
     );

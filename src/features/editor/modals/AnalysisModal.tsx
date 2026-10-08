@@ -1,18 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData } from '@/types';
-import { CurriculumChapterProgress } from '@/components/curriculum/CurriculumChapterProgress';
 import { CurriculumProgramView } from '@/components/curriculum/CurriculumProgramView';
 import { useCurriculumProgress } from '@/hooks/useCurriculumProgress';
 import { useCurriculumCatalog } from '@/hooks/useCurriculumCatalog';
 import { useClassManager } from '@/hooks/useClassManager';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
-import { computeProgressionStats } from '@/domain/curriculum/progression';
-import { chapterAssociations, findMatchingCurriculum } from '@/domain/curriculum/officialCurriculum';
+import { findMatchingCurriculum } from '@/domain/curriculum/officialCurriculum';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { Modal } from '@/components/ui/modal';
 import { MathText } from '@/components/ui/math-text';
-import { MathTitle } from '@/components/ui/math-title';
 import { BookOpen, ChevronLeft, ChevronRight, Network, TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { titleDirection } from '@/domain/notebook/contentDirection';
@@ -68,35 +65,18 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
   // La classe à jour (un lien enregistré dans la vue « Relier » se voit aussitôt dans le suivi).
   const { classes } = useClassManager();
   const current = useMemo(() => classes.find(item => item.id === classInfo.id) ?? classInfo, [classes, classInfo]);
-  const stats = useMemo(() => computeProgressionStats(lessonsData), [lessonsData]);
   // Un seul calcul d'avancement, partagé par les trois vues.
   const curriculumProgress = useCurriculumProgress(current, config, lessonsData, catalog);
   const plan = useMemo(
     () => findMatchingCurriculum(current, catalog, schoolYearLabelFromDate(config.schoolYearStart || today)),
     [current, catalog, config.schoolYearStart, today],
   );
-  const chapterProgress = useMemo(() => new Map(curriculumProgress?.rows.flatMap(row => row.indices.map(index => [index, row] as const)) ?? []), [curriculumProgress]);
   const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
 
   const warningItems = useMemo(() => {
     if (!getDateWarnings) return [];
     return getWarningItems(lessonsData, getDateWarnings, t('analysis.item'));
   }, [lessonsData, getDateWarnings, t]);
-
-  const startedCount = useMemo(
-    () => curriculumProgress?.rows.filter(row => row.startDate && row.startDate <= today && row.indices.length).length ?? 0,
-    [curriculumProgress, today],
-  );
-  const linkedCount = useMemo(
-    () => (plan ? Object.values(chapterAssociations(current, lessonsData, plan)).filter(Boolean).length : 0),
-    [plan, current, lessonsData],
-  );
-  const chapterCount = useMemo(() => lessonsData.filter(chapter => chapter.type === 'chapter').length, [lessonsData]);
-  const programHint = curriculumProgress
-    ? curriculumProgress.completionRate !== null
-      ? t('analysis.card.programRate', { started: number.format(startedCount), total: number.format(curriculumProgress.rows.length), rate: number.format(curriculumProgress.completionRate) })
-      : t('analysis.card.programHint', { started: number.format(startedCount), total: number.format(curriculumProgress.rows.length) })
-    : '';
 
   const viewTitle = view === 'program' ? t('analysis.card.program') : t('analysis.card.link');
   const title = view === 'overview'
@@ -122,24 +102,6 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
     >
       {view === 'overview' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 [&>div]:min-w-0 [&>div]:p-3">
-            <div className="rounded-2xl border border-border/70 bg-card shadow-xs">
-              <div className="mb-1 text-[11px] font-medium leading-tight text-muted-foreground">{t('analysis.completion')}</div>
-              <div className="text-2xl font-black tracking-tight text-foreground">{number.format(stats.completionRate)}%</div>
-              <div className="mt-1 text-[11px] font-medium leading-tight text-muted-foreground">{t('analysis.plannedOfTotal', { planned: number.format(stats.plannedCount), total: number.format(stats.totalItems) })}</div>
-            </div>
-            <div className="rounded-2xl border border-border/70 bg-background shadow-xs">
-              <div className="mb-1 text-[11px] font-medium leading-tight text-muted-foreground">{t('analysis.sessions')}</div>
-              <div className="text-2xl font-black tracking-tight text-foreground">{number.format(stats.sessionsCount)}</div>
-              <div className="mt-1 text-[11px] font-medium leading-tight text-muted-foreground">{t('analysis.distinctDays')}</div>
-            </div>
-            <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] shadow-xs">
-              <div className="mb-1 text-[11px] font-medium leading-tight text-[var(--workspace-active-ink)]">{t('analysis.toPlan')}</div>
-              <div className="text-2xl font-black tracking-tight text-primary">{number.format(stats.unplannedItems.length)}</div>
-              <div className="mt-1 text-[11px] font-medium leading-tight text-muted-foreground">{t('analysis.withoutDate')}</div>
-            </div>
-          </div>
-
           {plan && curriculumProgress ? (
             <ul className="hub-grid" data-rows aria-label={t('analysis.card.program')}>
               <li className="contents">
@@ -147,7 +109,6 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                   <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
                   <span className="hub-card__body">
                     <span className="hub-card__title">{t('analysis.card.program')}</span>
-                    <span className="hub-card__hint">{programHint}</span>
                   </span>
                   <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
                 </button>
@@ -157,7 +118,6 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                   <span className="hub-card__icon" aria-hidden="true"><Network /></span>
                   <span className="hub-card__body">
                     <span className="hub-card__title">{t('analysis.card.link')}</span>
-                    <span className="hub-card__hint">{t('analysis.card.linkHint', { linked: number.format(linkedCount), total: number.format(chapterCount) })}</span>
                   </span>
                   <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
                 </button>
@@ -166,40 +126,6 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
           ) : (
             <p className="rounded-2xl border border-dashed border-border/70 px-3 py-2.5 text-xs text-muted-foreground">{t('analysis.noPlan')}</p>
           )}
-          {curriculumProgress && !curriculumProgress.projectionAvailable && (
-            <p className="text-[11px] leading-relaxed text-muted-foreground">{t('analysis.needDate')}</p>
-          )}
-
-          <section className="space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('analysis.byChapter')}</h3>
-            {chapterProgress.size > 0 && <p className="text-[11px] leading-relaxed text-muted-foreground">{t('analysis.paceLegend')}</p>}
-            <div className="max-h-[min(38dvh,19rem)] space-y-3 overflow-y-auto rounded-2xl border border-border/70 bg-background p-3.5 pe-2 shadow-xs overscroll-contain">
-              {stats.perChapter.map((chapter, i) => {
-                const official = chapterProgress.get(i);
-                if (chapter.total === 0 && !official) return null;
-                return (
-                  <div key={i} className="space-y-1.5 text-start" dir={titleDirection(chapter.title, locale === 'ar' ? 'rtl' : 'ltr')}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0 break-words text-xs font-bold text-foreground" dir="auto">
-                        <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
-                          {chapter.title}
-                        </MathText>
-                      </div>
-                      {!official && <bdi dir="ltr" className="shrink-0 font-mono text-xs font-bold text-muted-foreground">{number.format(chapter.rate)}%</bdi>}
-                    </div>
-                    {official && official.officialChapter.title !== chapter.title && <p className="text-[11px] text-muted-foreground" dir="auto"><MathTitle text={official.officialChapter.title} />{official.indices.length > 1 ? ` · ${t('analysis.sharedProgress')}` : ''}</p>}
-                    {official ? <CurriculumChapterProgress row={official} /> : <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
-                        style={{ width: `${chapter.rate}%` }}
-                      />
-                    </div>}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
           {warningItems.length > 0 && (
             <section className="space-y-2">
               <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">

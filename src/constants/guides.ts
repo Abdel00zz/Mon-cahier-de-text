@@ -713,7 +713,7 @@ const chapters = [
       {
         title: 'Programmer et consigner une évaluation',
         steps: [
-          'Accédez à l’onglet Évaluations / Contrôle continu de la classe concernée.',
+          'Sur la carte de la classe concernée, ouvrez le menu ⋮ puis « Évaluations et activités ». Le contenu de cette classe s’affiche directement.',
           'Créez une évaluation : indiquez la modalité (Devoir surveillé, Devoir à domicile, Activités intégrées / Compétences orales, Évaluation diagnostique), le semestre, le numéro d’ordre et la date de passation.',
           'Précisez la durée, les compétences ciblées et le barème indicatif, puis consignez la liste des élèves absents lors de l’épreuve.',
           'Retrouvez les échéances programmées directement dans votre centre de pilotage pour anticiper la préparation des sujets, des grilles de correction et des fiches d’analyse.',
@@ -740,7 +740,7 @@ const chapters = [
       {
         title: 'تنظيم وجدولة محطات التقويم والفروض',
         steps: [
-          'افتح نافذة «المراقبة المستمرة والتقويمات» الخاصة بالقسم الدراسي المعني.',
+          'من بطاقة القسم المعني، افتح القائمة ⋮ ثم «التقويمات و الأنشطة». يظهر محتوى القسم مباشرة.',
           'أضف تقويماً جديداً: اختر طبيعته (فرض محروس، فرض منزلي، أنشطة مندمجة / شفهية، تقويم تشخيصي)، الأسدوس الدراسي، رقم الفرض، وتاريخ الإنجاز المبرمج.',
           'حدّد المدة الزمنية المخصصة للاختبار وسلّم التنقيط، ودوّن لائحة التلاميذ الغائبين أثناء إجراء الفرض للرجوع إليها عند تنظيم الفروض الاستدراكية.',
           'تابع مواعيد الفروض المقبلة في مركز القيادة للتهيئة المسبقة لمواضيع الاختبارات وعناصر الإجابة وشبكات التنقيط والتصحيح.',

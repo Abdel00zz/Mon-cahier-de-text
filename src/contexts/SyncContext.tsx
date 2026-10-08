@@ -791,6 +791,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     markClassesListDirty();
                 }
 
+                // Effectifs administratifs : indépendants des préférences locales
+                // et de leur date. Un retrait de liste est aussi transmis via {}.
+                if (settings?.classRosters !== undefined && JSON.stringify(nextConfig.classRosters ?? {}) !== JSON.stringify(settings.classRosters)) {
+                    nextConfig = { ...nextConfig, classRosters: settings.classRosters };
+                    configChanged = true;
+                }
+
                 // L'horloge de la direction n'entre jamais dans le LWW des
                 // préférences professeur : elle est autoritaire et ne repart
                 // pas dans un push utilisateur.

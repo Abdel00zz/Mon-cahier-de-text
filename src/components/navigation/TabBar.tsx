@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, CircleHelp, Bell as AlarmBell, CalendarCheck, Menu } from 'lucide-react';
+import { Settings, CircleHelp, Bell as AlarmBell, Menu } from 'lucide-react';
 import { Users } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -8,12 +8,11 @@ import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
 import { preloadSettingsPage } from '@/app/preload';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type TabType = 'dashboard' | 'evaluations' | 'settings' | 'notifications' | 'help';
+export type TabType = 'dashboard' | 'settings' | 'notifications' | 'help';
 
 interface TabBarProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
-  badgeCount?: number;
   notificationsCount?: number;
   isExpanded: boolean;
   onToggleExpanded: () => void;
@@ -22,32 +21,36 @@ interface TabBarProps {
 
 const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
   { id: 'dashboard', icon: Users },
-  { id: 'evaluations', icon: CalendarCheck },
   { id: 'notifications', icon: AlarmBell },
+];
+const sidebarTabs: typeof tabs = [
+  tabs[0],
+  { id: 'settings', icon: Settings },
+  tabs[1],
 ];
 
 const NAV_COPY: Record<AppLocale, {
   brand: string; teacherSpace: string;
-  dashboard: string; evaluations: string; notifications: string; settings: string; help: string;
-  dashboardMobile?: string; evaluationsMobile?: string; notificationsMobile?: string; settingsMobile?: string;
+  dashboard: string; notifications: string; settings: string; help: string;
+  dashboardMobile?: string; notificationsMobile?: string; settingsMobile?: string;
   collapse: string; expand: string; mainNav: string; mobileNav: string;
 }> = {
   fr: {
     brand: 'Cahier de textes', teacherSpace: 'ESPACE ENSEIGNANT',
-    dashboard: 'Classes', evaluations: 'Contrôle continu', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
-    dashboardMobile: 'Classes', evaluationsMobile: 'Évaluations', notificationsMobile: 'Pilotage', settingsMobile: 'Paramètres',
+    dashboard: 'Classes', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
+    dashboardMobile: 'Classes', notificationsMobile: 'Pilotage', settingsMobile: 'Paramètres',
     collapse: 'Réduire', expand: 'Développer', mainNav: 'Navigation principale', mobileNav: 'Navigation mobile',
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'أقسامك', evaluations: 'المراقبة المستمرة و الأنشطة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
-    dashboardMobile: 'أقسامك', evaluationsMobile: 'المراقبة', notificationsMobile: 'لوحة القيادة', settingsMobile: 'الإعدادات',
+    dashboard: 'أقسامك', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
+    dashboardMobile: 'أقسامك', notificationsMobile: 'لوحة القيادة', settingsMobile: 'الإعدادات',
     collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
   en: {
     brand: 'Lesson Notebook', teacherSpace: 'TEACHER SPACE',
-    dashboard: 'Classes', evaluations: 'Continuous Assessment', notifications: 'Dashboard', settings: 'Settings', help: 'Pedagogical Guide',
-    dashboardMobile: 'Classes', evaluationsMobile: 'Assessments', notificationsMobile: 'Dashboard', settingsMobile: 'Settings',
+    dashboard: 'Classes', notifications: 'Dashboard', settings: 'Settings', help: 'Pedagogical Guide',
+    dashboardMobile: 'Classes', notificationsMobile: 'Dashboard', settingsMobile: 'Settings',
     collapse: 'Collapse', expand: 'Expand', mainNav: 'Main navigation', mobileNav: 'Mobile navigation',
   },
 };
@@ -57,7 +60,6 @@ const countLabel = (count?: number) => count && count > 99 ? '99+' : count;
 export const TabBar = React.memo<TabBarProps>(({
   activeTab,
   onTabChange,
-  badgeCount,
   notificationsCount,
   isExpanded,
   onToggleExpanded,
@@ -84,7 +86,6 @@ export const TabBar = React.memo<TabBarProps>(({
 
   const getMobileLabel = useCallback((id: TabType) => {
     if (id === 'dashboard') return copy.dashboardMobile ?? copy.dashboard;
-    if (id === 'evaluations') return copy.evaluationsMobile ?? copy.evaluations;
     if (id === 'notifications') return copy.notificationsMobile ?? copy.notifications;
     if (id === 'settings') return copy.settingsMobile ?? copy.settings;
     return copy[id];
@@ -138,7 +139,7 @@ export const TabBar = React.memo<TabBarProps>(({
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const delta = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(delta) < 45) return;
-    const allNavTabs: TabType[] = ['dashboard', 'evaluations', 'notifications', 'settings'];
+    const allNavTabs: TabType[] = ['dashboard', 'notifications', 'settings'];
     const currentIndex = allNavTabs.indexOf(activeTab);
     if (currentIndex === -1) return;
     const direction = isRtl ? (delta > 0 ? 1 : -1) : (delta > 0 ? -1 : 1);
@@ -225,10 +226,10 @@ export const TabBar = React.memo<TabBarProps>(({
         <div
           className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
         >
-          {tabs.map((tab, idx) => {
+          {sidebarTabs.map((tab, idx) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? notificationsCount : undefined;
+            const count = tab.id === 'notifications' ? notificationsCount : undefined;
             const staggerDelay = 0.04 * (idx + 1);
 
             return (
@@ -237,6 +238,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 whileTap={{ scale: 0.98 }}
                 onClick={() => goTo(tab.id)}
+                onPointerEnter={tab.id === 'settings' ? preloadSettingsPage : undefined}
+                onFocus={tab.id === 'settings' ? preloadSettingsPage : undefined}
                 title={copy[tab.id]}
                 className={cn(
                   'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
@@ -300,67 +303,12 @@ export const TabBar = React.memo<TabBarProps>(({
           })}
         </div>
 
-        {/* Section inférieure : Paramètres & Guide en cascade */}
+        {/* Guide pédagogique accessible en bas du menu. */}
         <div
           className="mt-auto flex shrink-0 flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-4 pe-4"
         >
           {/* Ligne de séparation subtile */}
           <div className="mx-2 mb-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" aria-hidden="true" />
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.98 }}
-            onClick={() => goTo('settings')}
-            onPointerEnter={preloadSettingsPage}
-            onFocus={preloadSettingsPage}
-            title={copy.settings}
-            className={cn(
-              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-              isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
-              activeTab === 'settings'
-                ? 'font-bold'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium',
-            )}
-            aria-label={copy.settings}
-            aria-current={activeTab === 'settings' ? 'page' : undefined}
-          >
-            {activeTab === 'settings' && (
-              <motion.div
-                layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-muted"
-                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
-              />
-            )}
-
-            <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
-              <Settings
-                className={cn(
-                  'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      'size-[20px] aspect-square',
-                  activeTab === 'settings'
-                    ? 'text-foreground stroke-[2]'
-                    : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
-                )}
-              />
-            </div>
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.span
-                  initial={{ opacity: 0, x: isRtl ? 15 : -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
-                  transition={{ delay: 0.04 * 4, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                  className={cn(
-                    'relative z-10 flex-1 truncate text-start text-sm leading-normal ms-3',
-                    locale === 'ar' && 'text-[15px]',
-                    activeTab === 'settings' ? 'font-semibold text-foreground' : 'text-muted-foreground group-hover:text-foreground'
-                  )}
-                >
-                  {copy.settings}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
 
           <motion.button
             type="button"
@@ -413,7 +361,7 @@ export const TabBar = React.memo<TabBarProps>(({
         </div>
       </nav>
 
-      {/* Quatre cibles égales, icônes stables et rayons imbriqués 12 / 8 px. */}
+      {/* Trois cibles égales, icônes stables et rayons imbriqués 12 / 8 px. */}
       <nav
         className="mobile-tab-bar fixed inset-x-2 z-40 overflow-hidden rounded-xl border text-muted-foreground print:hidden sm:hidden font-sans"
         style={{ bottom: 'max(0.65rem, env(safe-area-inset-bottom, 0.65rem))' }}
@@ -421,11 +369,11 @@ export const TabBar = React.memo<TabBarProps>(({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative mx-auto grid h-16 max-w-md grid-cols-4 items-center px-1">
+        <div className="relative mx-auto grid h-16 max-w-md grid-cols-3 items-center px-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? notificationsCount : undefined;
+            const count = tab.id === 'notifications' ? notificationsCount : undefined;
 
             return (
               <motion.button

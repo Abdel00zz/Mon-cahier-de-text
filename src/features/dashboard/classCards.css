@@ -104,9 +104,10 @@
   translate: 0 -6px;
   /* Bouton flottant circulaire, en verre teinté : discret au repos, franc au
      survol — le geste attendu sur une carte tactile. */
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--class-surface) 55%, transparent);
-  color: var(--class-muted);
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--class-surface) 78%, transparent);
+  color: hsl(var(--foreground) / .75);
   cursor: pointer;
   touch-action: manipulation;
   transition: background-color 200ms ease, transform 200ms var(--ease-spring), box-shadow 200ms ease;

@@ -415,6 +415,8 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
   if (settings === undefined) return undefined;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) throw new HttpError(400, 'Réglages synchronisés invalides.');
   const result = { ...(settings as Record<string, unknown>) };
+  // Published class lists are administrative data, never writable by a teacher.
+  delete result.classRosters;
   const classRecord = (key: string): Record<string, unknown> | undefined => {
     const value = result[key];
     if (value === undefined) return undefined;
@@ -445,6 +447,23 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     for (const [assessmentId, candidate] of entries) {
       if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant d’absences invalide.');
       assertStudentNames(candidate, `absence du devoir ${assessmentId}`);
+    }
+  }
+
+  const participants = classRecord('assessmentParticipants');
+  for (const [classId, raw] of Object.entries(participants ?? {})) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, `assessmentParticipants.${classId} invalide.`);
+    const entries = Object.entries(raw);
+    if (entries.length > 300) throw new HttpError(400, 'Trop de suivis oraux.');
+    for (const [assessmentId, candidate] of entries) {
+      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant de suivi oral invalide.');
+      assertStudentNames(candidate, 'le suivi oral');
+      const record = candidate as { names: string[]; oralOutcomes?: unknown };
+      const outcomes = record.oralOutcomes;
+      if (!outcomes || typeof outcomes !== 'object' || Array.isArray(outcomes)
+        || Object.entries(outcomes).some(([name, outcome]) => !record.names.includes(name) || !['mastered', 'developing', 'needs_support'].includes(outcome as string))) {
+        throw new HttpError(400, 'Observations orales invalides.');
+      }
     }
   }
 

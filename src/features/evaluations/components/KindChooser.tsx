@@ -98,7 +98,6 @@ export const KindChooser: React.FC<{ onSelect: (kind: EvaluationKind) => void }>
           <KindGroupHeader
             title={t(group.titleKey)}
             tone={group.tone}
-            count={group.kinds.length}
             headingLevel={4}
           />
           {/*

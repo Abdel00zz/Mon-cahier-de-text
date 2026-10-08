@@ -79,7 +79,7 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
             );
         }
     }
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
         if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
             const records = { ...(cleaned[key] as Record<string, unknown>) };
             for (const classId of deletedIds) delete records[classId];
@@ -174,6 +174,9 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         acceptedSettings = { ...submittedSettings!, assessmentDates: mergedDates.assessmentDates };
         adminAssessmentDatesUpdatedAt = mergedDates.watermarks;
     }
+    // The roster belongs to the direction. Even a newer teacher settings push
+    // or an older client omitting this field must preserve the server's list.
+    acceptedSettings = { ...acceptedSettings, classRosters: existing.settings?.classRosters ?? {} };
     const submittedTimetable = assertValidTimetable(body.timetable, requestedClassIds);
     const acceptLegacySchedule = !existing.settingsUpdatedAt && !submittedSettings;
     const timetable = ((acceptSettings || acceptLegacySchedule ? submittedTimetable : undefined) ?? existing.timetable ?? [])

@@ -19,6 +19,7 @@ import {
 } from './_lib/auth.js';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../src/types.js';
 import { adminActivities, adminAssessmentDocuments } from '../src/domain/evaluations/adminDocuments.js';
+import { normalizeStudentNames, rostersForClasses } from '../src/domain/evaluations/studentRoster.js';
 import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -45,6 +46,8 @@ interface AdminBody {
     lessonsPayload?: unknown;
     importMode?: 'replace' | 'append';
     expectedUpdatedAt?: string | null;
+    studentNames?: unknown;
+    expectedRosterVersion?: number;
     timetableClockOffsetMinutes?: number;
     expectedTimetableClockVersion?: number;
     inheritGlobalTimetableClock?: boolean;
@@ -99,7 +102,7 @@ const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: s
     next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
     next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
     next.dashboardClassOrder = next.dashboardClassOrder?.filter(id => id !== classId);
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
         if (!next[key]) continue;
         const records = { ...next[key] };
         delete records[classId];
@@ -406,6 +409,7 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
         assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+        classRosters: rostersForClasses(classesBlob?.settings?.classRosters, (classesBlob?.classes ?? []).map(item => item.id)),
         // Documents rédigés et activités : la direction relit ce que le
         // professeur a écrit, avec le MÊME moteur de composition que sa feuille.
         ...pickTeacherWork(classesBlob?.settings, classesBlob?.classes ?? []),
@@ -425,6 +429,32 @@ const handleTeacherMessages = async (req: ApiRequest, res: ApiResponse) => {
     const [user, messages] = (await pipeline.exec()) as [StoredUser | null, AdminMessage[] | null];
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
     res.status(200).json({ adminMessages: recentAdminMessages(messages) });
+};
+
+const handleSaveClassRoster = async (body: AdminBody, res: ApiResponse) => {
+    assertBodySize(body);
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe', 120);
+    if (!Array.isArray(body.studentNames) || body.studentNames.length > 200 || body.studentNames.some(name => typeof name !== 'string')) {
+        throw new HttpError(400, 'Liste des élèves invalide (200 noms maximum).');
+    }
+    let names: string[];
+    try { names = normalizeStudentNames(body.studentNames); }
+    catch (error) { throw new HttpError(400, error instanceof Error ? error.message : 'Liste invalide.'); }
+    if (!Number.isSafeInteger(body.expectedRosterVersion) || body.expectedRosterVersion! < 0) throw new HttpError(400, 'Version de liste invalide.');
+    const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
+    const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    if (!blob?.classes.some(item => item.id === classId) || blob.deletedClasses?.[classId]) throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
+    const current = blob.settings?.classRosters?.[classId];
+    if ((current?.version ?? 0) !== body.expectedRosterVersion) throw new HttpError(409, 'La liste a été modifiée. Rechargez la fiche avant de publier.');
+    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1 };
+    write.set(KEYS.classes(phone), {
+        ...blob, updatedAt: roster.updatedAt,
+        settings: { ...blob.settings, classRosters: { ...blob.settings?.classRosters, [classId]: roster } },
+    });
+    await write.exec();
+    res.status(200).json({ ok: true, classId, roster });
 };
 
 const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
@@ -811,6 +841,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'saveTimetableClock') return await handleSaveTimetableClock(body, res);
             if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
+            if (body.action === 'saveClassRoster') return await handleSaveClassRoster(body, res);
             if (body.action === 'upsertTeacherClass') return await handleUpsertTeacherClass(body, res);
             if (body.action === 'deleteTeacherClass') return await handleDeleteTeacherClass(body, res);
             if (body.action === 'importClassLessons') return await handleImportClassLessons(body, res);

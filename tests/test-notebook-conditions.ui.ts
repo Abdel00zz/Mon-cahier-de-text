@@ -25,3 +25,23 @@ test('other student lists keep their simple labels and an empty notebook list ha
   assert.match(render(true, []), /أضف التلاميذ/);
   assert.match(render(true, []), /aria-label="إضافة تلميذ"/);
 });
+
+test('notebook and oral tracking prefill the class roster and always expose a floating search', () => {
+  const roster = { names: ['أحمد العلوي', 'سلمى الفاسي'], version: 1, updatedAt: '2026-10-08T08:00:00Z' };
+  for (const oral of [false, true]) {
+    const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'ar', children: React.createElement(StudentNamesEditor, {
+      initialNames: [], roster, trackNotebookCondition: !oral, trackOral: oral, variant: 'checked', onCancel: () => {}, onSave: () => {},
+    }) }));
+    assert.equal((html.match(/<fieldset/g) ?? []).length, 2);
+    assert.equal((html.match(/type="radio"/g) ?? []).length, oral ? 6 : 8);
+    assert.match(html, /type="search"/);
+    assert.match(html, /class="student-search-bar"/);
+    assert.doesNotMatch(html, /notebook-summary|notebook-progress/);
+    assert.match(html, /<select/);
+    assert.match(html, /أحمد العلوي/);
+    if (oral) {
+      for (const label of ['مكتسب', 'في طور الاكتساب', 'يحتاج إلى دعم', 'لم يُقوَّم بعد']) assert.ok(html.includes(label));
+      assert.doesNotMatch(html, /حالة دفتر/);
+    }
+  }
+});

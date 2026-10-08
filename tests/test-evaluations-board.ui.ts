@@ -33,12 +33,11 @@ const html = renderToStaticMarkup(
   React.createElement(LocaleProvider, {
     locale: 'fr',
     children: React.createElement(DevoirsView, {
-      classes: [classInfo],
+      classInfo,
       config: ({
         pedagogicalEvents: { c1: [event('e1', 'Olympiade de mathématiques', '2026-09-14'), event('e2', 'Concours national', '2026-10-02')] },
       } as unknown) as AppConfig,
       onConfigChange: () => {},
-      embedded: true,
     }),
   }),
 );
@@ -58,7 +57,7 @@ test('les deux zones partagent le MÊME tableau', () => {
   assert.match(view, /t\('evaluations\.expand'\)/, 'le mot « Ouvrir » remplace le chevron');
   assert.match(view, /t\('evaluations\.collapse'\)/, 'et « Fermer » quand il est ouvert');
   // Les tiroirs sont INDÉPENDANTS : deux activités ouvertes côte à côte.
-  assert.match(view, /const \[openActivityKeys, setOpenActivityKeys\] = useState<string\[\] \| undefined>\(undefined\)/, 'un ensemble de tiroirs ouverts');
+  assert.match(view, /const \[openActivityKeys, setOpenActivityKeys\] = useState<string\[\] \| undefined>\(/, 'un ensemble de tiroirs ouverts');
   assert.match(view, /const openKeys = openActivityKeys \?\? \(firstActivity \? \[activityKey\(firstActivity\)\] : \[\]\)/, 'le premier tiroir s’ouvre d’emblée');
   assert.equal((html.match(/class="ev-row evaluation-tone"/g) ?? []).length, 2, 'les occurrences du tiroir ouvert sont montrées');
 });

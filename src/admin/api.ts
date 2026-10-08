@@ -1,5 +1,6 @@
 import type { AppConfig, AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { AdminActivityDocument } from '../domain/evaluations/adminDocuments';
+import type { ClassRoster } from '../types';
 import type { HolidayCalendar } from '../domain/calendar/calendar';
 import type { OfficialStudentEventsFile } from '../domain/evaluations/officialStudentEvents';
 import { requestSyncJson, SyncRequestError } from '../infrastructure/sync/syncTransport';
@@ -11,6 +12,7 @@ export interface TeacherDetail {
     classMeta: Record<string, { updatedAt: string }>;
     snapshot: TeacherSnapshot | null;
     assessmentDates: Record<string, Record<string, string>>;
+    classRosters?: Record<string, ClassRoster>;
     /** Documents rédigés par le professeur : classe → devoir → source. */
     documents: Record<string, Record<string, ContentDocument>>;
     /** Activités pédagogiques, avec leur document et le nombre d'élèves consignés. */
@@ -129,6 +131,9 @@ export const upsertTeacherClass = (
 /** Supprime la classe et son cahier cloud, y compris sur les appareils hors ligne. */
 export const deleteTeacherClass = (phone: string, classId: string): Promise<{ ok: boolean; classId: string }> =>
     postAdmin({ action: 'deleteTeacherClass', phone, classId });
+
+export const saveClassRoster = (phone: string, classId: string, studentNames: string[], expectedRosterVersion: number): Promise<{ ok: boolean; classId: string; roster: ClassRoster }> =>
+    postAdmin({ action: 'saveClassRoster', phone, classId, studentNames, expectedRosterVersion });
 
 export interface ClassLessonsImportResult {
     ok: boolean;

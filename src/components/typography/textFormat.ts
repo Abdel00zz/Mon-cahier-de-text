@@ -438,7 +438,12 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
     return node;
   };
   const state: ParseCursor = { tokens: tokenizeLatex(protectedSource), index: 0 };
-  return renderBlocks(parseBlocks(state), '0').map(restore);
+  return renderBlocks(parseBlocks(state), '0').map((node, index) => {
+    const restored = restore(node);
+    return React.isValidElement(restored) && restored.key === null
+      ? React.cloneElement(restored, { key: `restored-${index}` })
+      : restored;
+  });
 }
 
 /** Titre de document : `#` centré, `##` en barre d'exercice, `###` sous-titre. */

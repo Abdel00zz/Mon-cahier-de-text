@@ -30,7 +30,7 @@ const configWith = (events: PedagogicalEvent[]) => ({ pedagogicalEvents: { c1: e
 const renderSheet = (events: PedagogicalEvent[], locale: 'fr' | 'ar' = 'fr') => renderToStaticMarkup(
   React.createElement(LocaleProvider, { locale, children:
     React.createElement(DevoirsView, {
-      classes: [classInfo], config: configWith(events), onConfigChange: () => {}, embedded: true,
+      classInfo, config: configWith(events), onConfigChange: () => {},
     }),
   }),
 );
@@ -84,7 +84,8 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.equal(occurrences(olympiade, 'data-activity-type="olympiade" data-tone="amber"'), 1);
   assert.equal(occurrences(cahiers, 'data-activity-type="controle_cahiers" data-tone="slate"'), 1);
   // L'en-tête de famille : le titre, puis le compte — aucune icône à côté.
-  assert.match(olympiade, /class="kind-group evaluation-tone" data-tone="violet"[\s\S]{0,200}kind-group__count/, 'la famille des activités ouvre sa section');
+  assert.match(olympiade, /class="kind-group evaluation-tone" data-tone="violet"/, 'la famille des activités ouvre sa section');
+  assert.doesNotMatch(olympiade, /kind-group__count/, 'les statistiques sont réservées au suivi');
   assert.doesNotMatch(olympiade, /kind-group__badge/, 'le titre d’une catégorie ne porte pas d’icône');
   // Le sigle de la famille est écrit, la ligne dit ce qu'elle est.
   assert.match(olympiade, /class="tone-chip">Olympiade</);
@@ -131,7 +132,7 @@ test('les titres disent ce que la fenêtre contient, sans répétition', () => {
 test('sans activité, la zone invite à en créer une', () => {
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
   // Plus d'onglet : la zone des activités est toujours là, pour la classe ouverte.
-  assert.match(view, /<ActivitiesEmptyState onCreate=\{openKindChooser\} \/>/);
+  assert.match(view, /<ActivitiesEmptyState onCreate=\{\(\) => openKindChooser\(\)\} \/>/);
   assert.doesNotMatch(view, /activeTab/, 'plus aucun onglet de filtrage');
   assert.match(view, /SchedulePlanningIllustration size=\{120\}/);
   assert.match(view, /evaluations\.activitiesEmptyTitle/);

@@ -58,13 +58,9 @@ test('chaque nature a une icône distincte dans sa famille, et une clé traduite
     }
 });
 
-test('chaque famille ouvre sa grille par un titre et son compte — sans icône', () => {
+test('chaque famille ouvre sa grille par un titre sans statistiques décoratives', () => {
     const html = render(React.createElement(KindChooser, { onSelect: () => undefined }));
-    assert.equal((html.match(/kind-group__count/g) ?? []).length, KIND_GROUPS.length, 'un compte par famille');
-    // Le compte annonce le nombre de natures de la section (5 devoirs, 9 activités).
-    for (const group of KIND_GROUPS) {
-        assert.match(html, new RegExp(`kind-group__count[^>]*>${group.kinds.length}<`), `compte de ${group.id}`);
-    }
+    assert.doesNotMatch(html, /kind-group__count/, 'les compteurs sont réservés au suivi pédagogique');
     // Le titre d'une CATÉGORIE se lit, il ne se dessine pas : le ton de la
     // famille ne teinte que le compte, et aucune pastille d'icône ne le précède.
     for (const group of KIND_GROUPS) {
@@ -126,7 +122,7 @@ test('l’assistant commence par la NATURE : la classe n’est pas redemandée',
     // seconde décision pour la même réponse.
     assert.doesNotMatch(view, /ClassChooser|classChoices|chooseClass/, 'plus aucune étape de classe dans l’assistant');
     assert.doesNotMatch(chooser, /ClassChooser|class-disclosure/, 'le composant de choix de classe est retiré');
-    assert.match(view, /const \[wizardStep, setWizardStep\] = useState<1 \| 2>\(1\)/, 'deux crans : nature, contenu');
+    assert.match(view, /useEvaluationModals\(\)/, 'le parcours est géré par le hook commun');
     assert.match(view, /<StepTrail[\s\S]{0,160}step=\{wizardStep\}/, 'le fil d’étapes suit ces deux crans');
     // La classe reste celle de l'écran : la fenêtre rappelle son nom en en-tête.
     assert.match(view, /\{selectedClass && \(\s*<p[\s\S]{0,120}\{selectedClassDisplayName\}/, 'le nom de la classe coiffe la fenêtre');
@@ -191,7 +187,8 @@ test('les devoirs passent par leur LISTE programmée, pas par un formulaire vide
     assert.match(view, /onCreate=\{\(\) => setManualFormOpen\(true\)\}/, 'la création libre est demandée explicitement');
     assert.match(view, /const openProgrammedAssessment = \(assessmentId: string\) => \{[\s\S]{0,300}setDocumentFor\(\{ kind: 'assessment', link \}\)/, 'on accède au sujet du devoir');
     // L'état manuel ne survit pas à la fermeture du parcours.
-    assert.match(view, /const closeKindChooser = \(\) => \{[\s\S]{0,120}setManualFormOpen\(false\)/, 'parcours remis à zéro');
+    const modals = readFileSync('src/features/evaluations/hooks/useEvaluationModals.ts', 'utf8');
+    assert.match(modals, /closeKindChooser: \(\) => close\('create'\)/, 'fermer libère le parcours de création');
 });
 
 test('le catalogue est la SOURCE des natures pour la page et pour le choix', () => {
@@ -204,7 +201,7 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
     // Le parcours en DEUX étapes : la nature, puis ses zones. La classe vient de
     // l'écran, donc elle n'est jamais redemandée.
-    assert.match(view, /const \[wizardStep, setWizardStep\] = useState<1 \| 2>\(1\)/, 'deux crans d’assistant');
+    assert.match(view, /useEvaluationModals\(\)/, 'étapes centralisées dans le hook');
     assert.match(view, /<KindChooser onSelect=\{\(kind\) => \{ setChosenKind\(kind\); setWizardStep\(2\); \}\} \/>/, 'étape 1 : la nature');
     assert.match(view, /<KindHeader[\s\S]{0,220}setWizardStep\(1\)/, 'étape 2 : retour au choix de la nature');
     assert.doesNotMatch(view, /ClassChooser|chooseClass|classChoices/, 'aucune étape de classe');
@@ -215,16 +212,15 @@ test('le catalogue est la SOURCE des natures pour la page et pour le choix', () 
     assert.match(view, /initial \? \([\s\S]{0,900}<Select value=\{type\}/, 'type modifiable seulement en édition');
 });
 
-test('l’écran commence par les classes, puis montre la classe ouverte', () => {
+test('l’écran reçoit une classe précise et expose directement ses activités', () => {
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
     // Une seule entrée de création : « Ajouter » ouvre le parcours de nature.
-    assert.match(view, /onClick=\{openKindChooser\}/, 'le bouton Ajouter ouvre le parcours');
+    assert.match(view, /onClick=\{\(\) => openKindChooser\(\)\}/, 'le bouton Ajouter ouvre le parcours');
     assert.doesNotMatch(view, /evaluations\.addActivity\}<\/span>/, 'plus de bouton « activité » séparé dans la barre');
     // VUE 1 : les classes. VUE 2 : la classe ouverte, ses devoirs puis ses activités.
-    assert.match(view, /\{!openClass && \([\s\S]{0,120}<ClassPicker classes=\{classPicks\} onOpen=\{openClassView\} \/>/, 'la vue des classes ouvre l’écran');
-    assert.match(view, /const \[openedClassId, setOpenedClassId\] = useState<string \| null>\(embedded \? \(classes\[0\]\?\.id \?\? null\) : null\)/, 'la classe ouverte est un état de navigation');
-    assert.match(view, /const openClass = embedded \? true : openedClassId !== null/, 'en mode contexte, on va droit à la classe');
-    assert.match(view, /onClick=\{backToClasses\}/, 'le retour aux classes');
+    assert.match(view, /classInfo: ClassInfo/);
+    assert.match(view, /const selectedClass = classInfo/);
+    assert.doesNotMatch(view, /ClassPicker|openedClassId|backToClasses/, 'aucun choix de classe intermédiaire');
     // Le nettoyage : ni onglets, ni sélecteur de classe, ni filtre de cycle.
     assert.doesNotMatch(view, /FluidTabRail|devoirTabItems|activeTab/, 'plus d’onglets de filtrage');
     assert.doesNotMatch(view, /evaluations-class-selector|<Select value=\{selectedClassId\}/, 'plus de sélecteur de classe dans la page');
@@ -234,8 +230,6 @@ test('l’écran commence par les classes, puis montre la classe ouverte', () =>
     assert.match(view, /<PedagogicalEventsSection[\s\S]{0,120}events=\{eventsOfKind\(kind\)\}/, 'les séances du tiroir');
     assert.match(view, /kind\.family === 'event' \? \(/, 'une seule famille à la fois dans un tiroir');
     // Les comptes de la vue des classes : ce que la classe porte déjà.
-    assert.match(view, /resolveClassAssessments\(item, planning, config, calendar, today\)\.length/, 'les devoirs programmés sont comptés par classe');
-    assert.match(view, /activities: config\.pedagogicalEvents\?\.\[item\.id\]\?\.length \?\? 0/, 'les activités aussi');
     assert.match(view, /const ActivitiesEmptyState: React\.FC<\{ onCreate: \(\) => void; compact\?: boolean \}>/, 'variante compacte de l’état vide conservée');
 });
 

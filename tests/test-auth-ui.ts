@@ -104,8 +104,8 @@ test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de li
   assert.equal((card.match(/text-\[11\.9px\]/g) ?? []).length, 0);
   assert.equal((list.match(/text-\[10\.5px\] sm:text-\[11\.9px\]/g) ?? []).length, 1);
   // Les actions de classe restent une liste déroulante dans les deux vues.
-  assert.match(card, /MoreVertical/);
-  assert.match(list, /MoreVertical/);
+  assert.match(card, /ClassActionsMenu/);
+  assert.match(list, /ClassActionsMenu/);
   // Profil modifié : deux actions dans le pied fixe, en ordre logique RTL/LTR.
   assert.match(settings, /footer=\{hasProfileChanges \? footer : undefined\}/);
   assert.match(settings, /grid w-full grid-cols-2/);
@@ -186,7 +186,7 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
   assert.match(list, /useClassPress/);
   // …et actions accessibles par la même liste déroulante dédiée.
   assert.match(card, /class-card__menu/);
-  assert.match(list, /MoreVertical/);
+  assert.match(list, /ClassActionsMenu/);
   // Titres : module typographique partagé côté carte, classe dédiée côté liste.
   assert.match(card, /classTitleStyle\(isRtl\)/);
   assert.match(list, /keep-class-title/);
