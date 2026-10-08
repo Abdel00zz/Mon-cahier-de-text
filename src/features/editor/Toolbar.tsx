@@ -92,7 +92,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 onChange={(e) => setLocalSearch(e.target.value)}
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
-                className="rounded-lg h-7.5 text-xs px-2.5 border-border/60 bg-background/80 backdrop-blur-sm focus:border-border/80 focus:ring-0"
+                className="rounded-md h-7.5 text-xs px-2.5 border-border/60 bg-background/80 backdrop-blur-sm focus:border-border/80 focus:ring-0"
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               onChange={(e) => setLocalSearch(e.target.value)}
               onCompositionStart={() => setIsComposing(true)}
               onCompositionEnd={() => setIsComposing(false)}
-              className="min-w-0 flex-1 h-11 text-base rounded-lg border-border/70 bg-background focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
+              className="min-w-0 flex-1 h-11 text-base rounded-md border-border/70 bg-background focus:border-primary/60 focus:ring-1 focus:ring-primary/40 focus:outline-none"
             />
             {localSearch && (
               <button

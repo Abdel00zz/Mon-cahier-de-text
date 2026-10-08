@@ -55,7 +55,7 @@ const ActionButton: FC<ActionButtonProps> = ({ icon: Icon, onClick, title, label
     aria-label={title}
     disabled={disabled}
     className={cn(
-      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl cursor-pointer touch-manipulation',
+      'selection-action shrink-0 inline-flex items-center justify-center rounded-lg cursor-pointer touch-manipulation',
       label ? 'h-11 gap-1.5 px-3 sm:gap-2' : 'h-11 w-11 p-0',
       accent
         ? 'bg-primary/15 font-semibold text-primary hover:bg-primary/25'
@@ -194,7 +194,7 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
             <button
               type="button"
               disabled={isPending}
-              className="selection-action inline-flex h-11 w-11 shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+              className="selection-action inline-flex h-11 w-11 shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
               title={t('selection.moreActions')}
               aria-label={t('selection.moreActions')}
             >
