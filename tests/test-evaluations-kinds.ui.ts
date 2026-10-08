@@ -32,9 +32,11 @@ test('la grille propose TOUTES les natures, en deux familles', () => {
     }
     // Devoir maison, contrôle des cahiers, olympiade et contrôle oral : les
     // natures citées par le professeur sont bien là, à égalité de traitement.
-    for (const expected of ['maison', 'controle_cahiers', 'olympiade', 'oral']) {
+    for (const expected of ['maison', 'controle_cahiers', 'olympiade', 'oral', 'correction_controle_continu']) {
         assert.ok(kinds.some(kind => kind.type === expected), `${expected} dans le catalogue`);
     }
+    assert.ok(KIND_GROUPS.find(group => group.titleKey === 'evaluations.assessments')!.kinds
+        .some(kind => kind.type === 'correction_controle_continu'), 'la correction figure avec les devoirs');
     // Deux familles annoncées, jamais une liste indifférenciée.
     assert.equal((html.match(/data-kind-family="devoir"/g) ?? []).length, Object.keys(DEVOIR_KIND_CONFIG).length);
     assert.equal((html.match(/data-kind-family="event"/g) ?? []).length, Object.keys(PEDAGOGICAL_EVENT_CONFIG).length);

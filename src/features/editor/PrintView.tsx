@@ -22,8 +22,8 @@ import {
     AppConfig,
     ContentDirection
 } from '@/types';
-import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
-import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '@/domain/evaluations/notebookCheckRemarks';
+import { formatDateDDMMYYYY, addDaysIso } from '@/domain/notebook/dataUtils';
+import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { getAcademyById } from '@/domain/classes/moroccoEducation';
@@ -211,20 +211,17 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
     }, [config.assessmentAbsences, config.assessmentDates, config.manualAssessments, classInfo.id, lessonsData]);
 
     /*
-     * Contrôle des cahiers : la trace de l'activité se lit dans la REMARQUE de la
+     * Contrôle des cahiers, remédiation et oral : les activités se lisent dans la REMARQUE de la
      * séance du même jour, jamais comme un contenu ajouté au cahier. Même règle
      * que sur l'écran (module de domaine partagé), et la langue du papier suit la
      * direction du contenu imprimé — comme les autres libellés de cette feuille.
      */
-    const notebookChecks = useMemo(() => {
+    const sessionActivities = useMemo(() => {
         const printLocale = isRtlPrint ? 'ar' : 'fr';
         const separator = isRtlPrint ? '، ' : ', ';
-        const marks = buildNotebookCheckRemarks(config.pedagogicalEvents?.[classInfo.id]);
-        return new Map([...marks].map(([date, mark]) => [
-            date,
-            notebookCheckRemarkText(mark, (key, values) => translateLocaleMessage(printLocale, key, values), separator),
-        ]));
-    }, [config.pedagogicalEvents, classInfo.id, isRtlPrint]);
+        return buildSessionActivityRemarks(config, classInfo.id,
+            (key, values) => translateLocaleMessage(printLocale, key, values), separator);
+    }, [config, classInfo.id, isRtlPrint]);
 
     const collectSessionRemarks = (items: FlatDataItem[], sessionDate?: string): string[] => {        const seen = new Set<string>();
         const remarks: string[] = [];
@@ -252,13 +249,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
             }
         }
 
-        // Contrôle des cahiers : même contrat que les absences — la trace de
-        // l'activité se lit dans la remarque de la séance du même jour, jamais
-        // comme un contenu ajouté au cahier. Un seul type d'activité produit
-        // cette ligne (voir `notebookCheckRemarks`).
-        const checkRemark = notebookChecks.get(sessionDate ?? '');
-        if (checkRemark && !remarks.some((r) => r.includes(checkRemark))) {
-            remarks.push(checkRemark);
+        // Les activités partagent la remarque de leur séance, sans toucher
+        // au contenu du cours ni répéter une note déjà saisie par l'enseignant.
+        const activityRemark = sessionActivities.get(sessionDate ? addDaysIso(sessionDate, 0) : '');
+        for (const annotation of activityRemark?.split('\n') ?? []) {
+            if (!remarks.some(remark => remark.includes(annotation))) remarks.push(annotation);
         }
 
         return remarks;

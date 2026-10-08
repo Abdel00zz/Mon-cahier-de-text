@@ -97,10 +97,9 @@ test('l’annotation suit la direction de son texte et porte son contenu en info
 test('l’éditeur et l’impression passent la même règle aux cellules', () => {
     const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8');
     const print = readFileSync('src/features/editor/PrintView.tsx', 'utf8');
-    assert.match(editor, /buildNotebookCheckRemarks\(config\.pedagogicalEvents\?\.\[classInfo\.id\]\)/);
+    assert.match(editor, /buildSessionActivityRemarks\(config, classInfo\.id, t, separator\)/);
     assert.match(editor, /getSessionAnnotation=\{getSessionAnnotation\}/);
-    assert.match(print, /buildNotebookCheckRemarks\(config\.pedagogicalEvents\?\.\[classInfo\.id\]\)/);
-    assert.match(print, /notebookCheckRemarkText\(/);
+    assert.match(print, /buildSessionActivityRemarks\(config, classInfo\.id,/);
 });
 
 test('le contrôle des cahiers ne propose pas de bouton Contenu', () => {

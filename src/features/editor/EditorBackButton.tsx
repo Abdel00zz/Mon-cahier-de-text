@@ -6,11 +6,7 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import './header.css';
 
 /**
- * Retour aux classes : UN seul bouton, un seul style (`.editor-back-button`),
- * deux emplacements. Il vit dans l'en-tête en haut de page, puis le bandeau
- * collant le reprend tel quel — à CÔTÉ de la barre, jamais dedans — dès que la
- * page défile. Le sens de lecture place le bouton tout seul : en français à
- * gauche de la barre, en arabe à droite, sans règle dédiée.
+ * Retour Web dans l'en-tête uniquement. Android utilise sa navigation native.
  */
 export const EditorBackButton: React.FC<{ onBack: () => void; className?: string }> = ({ onBack, className = '' }) => {
     const { locale } = useLocale();

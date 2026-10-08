@@ -44,6 +44,7 @@ interface TableRowProps {
    */
   getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
+  sessionAnnotation?: string;
 }
 
 
@@ -136,7 +137,8 @@ const RemarkCell: FC<{
   isSelected?: boolean;
   hasWarning?: boolean;
   onOpenRemark?: () => void;
-}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning, onOpenRemark }) => {
+  sessionAnnotation?: string;
+}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning, onOpenRemark, sessionAnnotation }) => {
   const { t } = useLocale();
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
 
@@ -162,11 +164,12 @@ const RemarkCell: FC<{
       title={cellTitle}
       aria-label={cellTitle}
       data-remark-cell="true"
-      className={`flex min-h-[44px] w-full items-center text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+      className={`flex min-h-[44px] w-full flex-col justify-center items-center text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
         <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">{merge?.sharedRemark ?? value}</div>
       )}
+      {sessionAnnotation && <span data-session-annotation="true" dir={textDirectionAttribute(sessionAnnotation)} title={sessionAnnotation} className="mt-0.5 w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary">{sessionAnnotation}</span>}
     </button>
   );
 
@@ -209,6 +212,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   getContentNumber,
   getDocumentPreview,
   onOpenDocumentPreview,
+  sessionAnnotation,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
@@ -393,7 +397,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </button>
         {contentCell}
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} />
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} />
       </div>
     );
   }
@@ -474,7 +478,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
       {contentCell}
 
-      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} />
+      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} />
     </div>
   );
 };
@@ -487,6 +491,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;
   if (prev.isEditing !== next.isEditing) return false;
+  if (prev.sessionAnnotation !== next.sessionAnnotation) return false;
   if (prev.showDescriptions !== next.showDescriptions) return false;
   if (prev.elementType !== next.elementType) return false;
   if (prev.searchQuery !== next.searchQuery) return false;

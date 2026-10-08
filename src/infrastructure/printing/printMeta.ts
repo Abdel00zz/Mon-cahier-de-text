@@ -110,7 +110,7 @@ export const collectSessionDates = (lessonsData: LessonsData, absences: readonly
 };
 
 /** A content revision on the same date is new too. One traversal, bounded depth. */
-export const sessionPrintSignatures = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = []): Record<string, string> => {
+export const sessionPrintSignatures = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = [], annotations?: ReadonlyMap<string, string>): Record<string, string> => {
     const contextByKey = new Map<string, string>();
     const contentByDate = new Map<string, string[]>();
     for (const row of buildLessonRows(lessonsData)) {
@@ -124,6 +124,10 @@ export const sessionPrintSignatures = (lessonsData: LessonsData, absences: reado
         const content = JSON.stringify([...row.ancestorKeys.map(key => contextByKey.get(key)), own]);
         const pieces = contentByDate.get(date) ?? [];
         pieces.push(content); contentByDate.set(date, pieces);
+    }
+    for (const [date, pieces] of contentByDate) {
+        const annotation = annotations?.get(date);
+        if (annotation) pieces.push(JSON.stringify(['activity', annotation]));
     }
     for (const session of absences) {
         const pieces = contentByDate.get(session.date) ?? [];
@@ -142,8 +146,8 @@ export const sessionPrintSignatures = (lessonsData: LessonsData, absences: reado
     }));
 };
 
-export const getNewDates = (lessonsData: LessonsData, classId: string, meta = readPrintMeta(classId), absences: readonly AbsenceSession[] = []): string[] =>
-    Object.entries(sessionPrintSignatures(lessonsData, absences)).filter(([date, signature]) => meta.confirmedContent[date] !== signature).map(([date]) => date);
+export const getNewDates = (lessonsData: LessonsData, classId: string, meta = readPrintMeta(classId), absences: readonly AbsenceSession[] = [], annotations?: ReadonlyMap<string, string>): string[] =>
+    Object.entries(sessionPrintSignatures(lessonsData, absences, annotations)).filter(([date, signature]) => meta.confirmedContent[date] !== signature).map(([date]) => date);
 
 const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
     if (typeof node !== 'object' || node === null) return false;

@@ -247,6 +247,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
     examen_blanc: 'Examen blanc',
     rattrapage: 'Rattrapage',
     controle_cahiers: 'Contrôle des cahiers',
+    correction_controle_continu: 'Correction du devoir surveillé',
     autre: 'Autre activité',
 };
 

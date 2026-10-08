@@ -339,7 +339,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                             data-session-annotation="true"
                             dir={textDirectionAttribute(annotation)}
                             title={annotation}
-                            className="mt-0.5 inline-flex max-w-full items-center justify-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                            className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
                           >
                             {annotation}
                           </span>
@@ -374,7 +374,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                               data-session-annotation="true"
                               dir={textDirectionAttribute(annotation)}
                               title={annotation}
-                              className="mt-0.5 inline-flex max-w-full items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                              className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
                             >
                               {annotation}
                             </span>
@@ -640,7 +640,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
                           <div data-absence-session={row.session.date} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
                               <div title={formatDateDDMMYYYY(row.session.date) ?? row.session.date} className="flex items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><DateCard dateStr={row.session.date} /></div>
-                              <div className="flex items-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
+                              <div className="flex items-center justify-center text-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
                               <div dir={textDirectionAttribute(row.session.reasons.join(' · '))} className="flex items-center whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">{row.session.reasons.join(' · ')}</div>
                           </div>
                       </VirtualListRow>
@@ -675,6 +675,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   }
 
                   const { item } = row;
+                  const itemDate = getMergeableDate(item);
 
                   const isSelected = selectedKeys.has(item.key);
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
@@ -701,6 +702,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               getContentNumber={getContentNumber}
                               getDocumentPreview={getDocumentPreview}
                               onOpenDocumentPreview={onOpenDocumentPreview}
+                              sessionAnnotation={itemDate ? getSessionAnnotation?.(itemDate) : undefined}
                           />
                       </VirtualListRow>
                   );

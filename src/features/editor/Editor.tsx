@@ -9,7 +9,6 @@ import { readInitialNotebook, notebookStorageKey } from './initialNotebook';
 import { storedNotebookChanged } from './notebookRefresh';
 import { toast } from 'sonner';
 import { Header } from './Header';
-import { EditorBackButton } from './EditorBackButton';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
@@ -27,12 +26,12 @@ import { applyContentEdit, buildContentEditTargetsGrouped, buildSessionTargetsGr
 import type { ContentDraft } from '@/domain/notebook/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData, addDaysIso } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { listExportableChapters, selectExportableChapters } from '@/domain/notebook/chapterExport';
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
-import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '@/domain/evaluations/notebookCheckRemarks';
+import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -212,18 +211,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * Contrôle des cahiers : l'activité n'ajoute AUCUN contenu au cahier — sa
    * trace est une annotation dans la cellule « remarque » de la séance du même
    * jour. Indexée par date (un contrôle de deux jours annote les deux séances)
-   * et mémoïsée, car elle traverse une table mémoïsée. Seul le type
-   * `controle_cahiers` produit une annotation (voir le module de domaine).
+   * et mémoïsée. Le contrôle des cahiers, la remédiation et les évaluations
+   * orales datées alimentent cette annotation sans modifier le plan du cours.
    */
   const sessionAnnotationTexts = useMemo(() => {
-    const marks = buildNotebookCheckRemarks(config.pedagogicalEvents?.[classInfo.id]);
     const separator = locale === 'ar' ? '، ' : ', ';
-    return new Map(
-      [...marks].map(([date, mark]) => [date, notebookCheckRemarkText(mark, t, separator)]),
-    );
-  }, [config.pedagogicalEvents, classInfo.id, locale, t]);
+    return buildSessionActivityRemarks(config, classInfo.id, t, separator);
+  }, [config, classInfo.id, locale, t]);
   const getSessionAnnotation = useCallback(
-    (date?: string) => (date ? sessionAnnotationTexts.get(date) : undefined),
+    (date?: string) => (date ? sessionAnnotationTexts.get(addDaysIso(date, 0)) : undefined),
     [sessionAnnotationTexts],
   );
 
@@ -913,7 +909,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const printStats = useMemo(() => {
       const meta = readPrintMeta(classInfo.id);
       const allDates = collectSessionDates(lessonsData, absenceSessions);
-      const newDates = getNewDates(lessonsData, classInfo.id, meta, absenceSessions);
+      const newDates = getNewDates(lessonsData, classInfo.id, meta, absenceSessions, sessionAnnotationTexts);
       return {
           totalDates: allDates.length,
           allDates,
@@ -923,7 +919,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           lastPrintedAt: meta.lastPrintedAt,
           prefs: meta.prefs ?? null,
       };
-  }, [classInfo.id, lessonsData, absenceSessions, printMetaVersion]);
+  }, [classInfo.id, lessonsData, absenceSessions, sessionAnnotationTexts, printMetaVersion]);
 
   const handleSmartPrint = useCallback(() => {
       setEditorState(draft => { draft.activeModal = 'print'; });
@@ -977,7 +973,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return;
       }
       const allDates = collectSessionDates(lessonsData, absenceSessions);
-      const newDates = getNewDates(lessonsData, classId, undefined, absenceSessions);
+      const newDates = getNewDates(lessonsData, classId, undefined, absenceSessions, sessionAnnotationTexts);
 
       // sous-ensemble à imprimer selon le mode ; null = document complet
       let selection: LessonsData | null = null;
@@ -1008,7 +1004,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
       // Capture the content being printed, not edits received while the
       // system dialog or a remote printer is still processing the job.
-      const currentSignatures = sessionPrintSignatures(lessonsData, absenceSessions);
+      const currentSignatures = sessionPrintSignatures(lessonsData, absenceSessions, sessionAnnotationTexts);
       const signatures = Object.fromEntries(datesToRecord.map(date => [date, currentSignatures[date]]));
 
       isPrintingRef.current = true;
@@ -1067,7 +1063,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       };
 
       void launchPrint();
-  }, [classInfo, config, contentDirection, lessonsData, absenceSessions, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
+  }, [classInfo, config, contentDirection, lessonsData, absenceSessions, sessionAnnotationTexts, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
 
   /* Ouvrir l'editeur de contenu NE TOUCHE PAS la selection : un double-clic
@@ -1275,24 +1271,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const isLoading = isClassLoading || isConfigLoading;
   const isInitialMathPreparing = notebookHasMath && !initialMathTypesetComplete;
 
-  /*
-   * Le bouton de retour vit dans l'en-tête, en haut de page. Dès que la page
-   * défile, l'en-tête disparaît : il revient alors À CÔTÉ de la barre, dans le
-   * même conteneur collant — un bouton séparé, jamais fusionné avec la barre,
-   * pour rentrer sans remonter la page. Seule la BASCULE re-rend l'éditeur,
-   * pas chaque pixel de défilement.
-   */
-  const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => {
-      const next = window.scrollY > 96;
-      setIsScrolled(current => (current === next ? current : next));
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   if (isLoading) {
     return <EditorSkeleton />;
   }
@@ -1311,14 +1289,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               en attente du choix de démarrage (importer le programme ou créer un chapitre).
               Elle s'affiche dès que du contenu est créé ou importé. */}
           {(!isNotebookAwaitingContent || absenceSessions.length > 0) && (
-            /* Conteneur collant : le retour rapide est un bouton SÉPARÉ, posé à
-               côté de la barre — jamais dedans. Le sens de lecture le place tout
-               seul (à gauche en français, à droite en arabe) et il voyage avec
-               la barre dès que la page défile. */
+            /* Les actions restent dans une seule surface, sans bouton de retour. */
             <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
-              {isScrolled && onBack && (
-                <EditorBackButton onBack={onBack} className="animate-fade-in motion-reduce:animate-none" />
-              )}
               <div className="min-w-0 flex-1">
                 <Toolbar
                   onUndo={handleUndo}

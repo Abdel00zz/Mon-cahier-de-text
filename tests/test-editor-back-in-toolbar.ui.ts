@@ -13,10 +13,8 @@ import { Capacitor } from '@capacitor/core';
 /*
  * Retour rapide dans le cahier.
  *
- * Contrat : UN seul bouton, un seul style (`.editor-back-button`). Il vit dans
- * l'en-tête en haut de page, puis le conteneur collant le reprend dès que la
- * page défile — POSÉ À CÔTÉ de la barre, jamais dedans. Le sens de lecture le
- * place seul : à gauche de la barre en français, à droite en arabe.
+ * Contrat : aucun bouton de retour dans la barre. Sur le Web, seul l'en-tête
+ * en contient un ; sur Android, le retour passe par la navigation native.
  */
 
 // Les suites `.ui.ts` sont empaquetées par esbuild depuis la racine du dépôt :
@@ -72,23 +70,10 @@ test('l’en-tête réutilise exactement le même bouton', () => {
   assert.doesNotMatch(headerSource, /ArrowLeft/, 'plus de bouton dupliqué dans l’en-tête');
 });
 
-test('le bouton voyage avec la barre dès que la page défile, à côté d’elle', () => {
+test('le défilement ne fait plus réapparaître une flèche de retour dans la barre', () => {
   const editor = source('src/features/editor/Editor.tsx');
-  // Un seul conteneur collant porte [retour séparé] puis [barre].
-  assert.match(
-    editor,
-    /<div className="editor-toolbar-row sticky top-0 z-\[50\] flex items-center gap-2 print:hidden">\s*\{isScrolled && onBack && \(\s*<EditorBackButton/,
-    'le retour est le premier enfant du conteneur collant, hors de la barre',
-  );
   assert.match(editor, /<div className="min-w-0 flex-1">\s*<Toolbar/, 'la barre reste seule dans son propre bloc');
-  assert.match(editor, /window\.scrollY > 96/, 'seuil de défilement explicite');
-  assert.match(
-    editor,
-    /setIsScrolled\(current => \(current === next \? current : next\)\)/,
-    'seule la bascule re-rend l’éditeur',
-  );
-  assert.match(editor, /addEventListener\('scroll', onScroll, \{ passive: true \}\)/, 'écoute passive');
-  assert.match(editor, /removeEventListener\('scroll', onScroll\)/, 'écoute retirée au démontage');
+  assert.doesNotMatch(editor, /EditorBackButton|isScrolled|window\.scrollY > 96/);
 });
 
 test('le sens de lecture place le bouton sans règle dédiée', () => {

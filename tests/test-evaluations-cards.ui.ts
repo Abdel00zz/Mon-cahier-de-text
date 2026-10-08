@@ -145,7 +145,7 @@ test('une icône et une teinte par nature, aucune couleur inventée', () => {
   const config = catalog.slice(catalog.indexOf('export const PEDAGOGICAL_EVENT_CONFIG'), catalog.indexOf('export const DEVOIR_KIND_CONFIG'));
   const types: PedagogicalEventType[] = [
     'evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation',
-    'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre',
+    'examen_blanc', 'rattrapage', 'controle_cahiers', 'correction_controle_continu', 'autre',
   ];
   for (const type of types) assert.match(config, new RegExp(`${type}: \\{ labelKey`), `${type} a sa carte`);
   assert.equal((config.match(/tone: '/g) ?? []).length, types.length, 'une teinte par nature');

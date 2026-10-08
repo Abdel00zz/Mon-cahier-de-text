@@ -59,16 +59,3 @@
   .editor-back-button:is(:hover, :active) { transform: none; }
   .editor-back-button:hover .editor-back-button__arrow { transform: rotate(var(--back-rotation)); }
 }
-
-/* Match the actual toolbar height, including any wrapped or enlarged controls. */
-.editor-toolbar-row { align-items: stretch; gap: 6px; }
-.editor-toolbar-row > .editor-back-button {
-  align-self: stretch;
-  height: auto;
-  min-height: 44px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(4px);
-}
-@media (min-width: 640px) {
-  .editor-toolbar-row > .editor-back-button { flex-basis: 50px; width: 50px; }
-}

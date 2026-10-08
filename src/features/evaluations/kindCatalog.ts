@@ -33,6 +33,7 @@ import {
   ListChecks,
   PenLine,
   RefreshCw,
+  ClipboardCheck,
   Users,
 } from 'lucide-react';
 import type { DevoirType, PedagogicalEventType } from '@/types';
@@ -52,6 +53,7 @@ export const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, KindStyle> =
   // Le contrôle des cahiers : une vérification administrative, pas une épreuve —
   // la teinte ardoise le dit et le distingue du diagnostic, qui est bleu.
   controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'slate', Icon: CheckSquare },
+  correction_controle_continu: { labelKey: 'evaluations.event.correction_controle_continu', tone: 'slate', Icon: ClipboardCheck },
   examen_blanc: { labelKey: 'evaluations.event.examen_blanc', tone: 'rose', Icon: FileSignature },
   olympiade: { labelKey: 'evaluations.event.olympiade', tone: 'amber', Icon: AwardIcon },
   concours: { labelKey: 'evaluations.event.concours', tone: 'violet', Icon: GraduationCap },
@@ -96,13 +98,20 @@ export const KIND_GROUPS: Array<{
     id: 'devoir',
     titleKey: 'evaluations.assessments',
     tone: 'blue',
-    kinds: (Object.keys(DEVOIR_KIND_CONFIG) as DevoirType[]).map(type => ({ family: 'devoir', type, style: DEVOIR_KIND_CONFIG[type] })),
+    // La correction se trouve avec les devoirs qu'elle accompagne, tout en
+    // gardant le circuit d'activité datée sans ajouter une note au bulletin.
+    kinds: [
+      ...(Object.keys(DEVOIR_KIND_CONFIG) as DevoirType[]).map(type => ({ family: 'devoir' as const, type, style: DEVOIR_KIND_CONFIG[type] })),
+      { family: 'event', type: 'correction_controle_continu', style: PEDAGOGICAL_EVENT_CONFIG.correction_controle_continu },
+    ],
   },
   {
     id: 'event',
     titleKey: 'evaluations.pedagogicalEvents',
     tone: 'violet',
-    kinds: (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[]).map(type => ({ family: 'event', type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
+    kinds: (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[])
+      .filter(type => type !== 'correction_controle_continu')
+      .map(type => ({ family: 'event', type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
   },
 ];
 

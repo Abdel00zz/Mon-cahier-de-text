@@ -17,7 +17,7 @@ import type {
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);
 const VALID_ASSESSMENT_TYPES = new Set(['controle', 'controle_court', 'controle_global', 'oral', 'maison']);
-const VALID_PEDAGOGICAL_TYPES = new Set(['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre']);
+const VALID_PEDAGOGICAL_TYPES = new Set(['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'correction_controle_continu', 'autre']);
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>

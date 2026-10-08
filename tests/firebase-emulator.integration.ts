@@ -26,6 +26,9 @@ import { encodeSyncPayload } from '../src/infrastructure/sync/syncTransport.js';
 import { SYNC_ENCODING } from '../src/infrastructure/sync/syncProtocol.js';
 import { buildLessonRows } from '../src/domain/notebook/lessonRows.js';
 import { lastDatedContentKey } from '../src/domain/notebook/notebookOpening.js';
+import { buildSessionActivityRemarks } from '../src/domain/evaluations/sessionActivityRemarks.js';
+import { translateLocaleMessage } from '../src/i18n/messages.js';
+import type { AppConfig } from '../src/types.js';
 import type { LessonsData } from '../src/types.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
@@ -230,6 +233,26 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   const workspace = await call(syncHandler, {method: 'GET', headers: teacherHeaders});
   assert.equal((workspace.body as {settings: {assessmentDates: Record<string, Record<string, string>>}}).settings.assessmentDates[classInfo.id]['controle-1'], '2026-10-10');
   assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body);
+  const activitySettings = {
+    ...(workspace.body as { settings: Partial<AppConfig> }).settings,
+    pedagogicalEvents: { [classInfo.id]: [
+      { id: 'check', type: 'controle_cahiers', title: 'مراقبة دفاتر التلاميذ', date: '2026-10-03', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
+      { id: 'remediate', type: 'remediation', title: 'معالجة التعثرات', date: '2026-10-03', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
+      { id: 'correction', type: 'correction_controle_continu', title: 'تصحيح الفرض المحروس', date: '2026-10-04', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
+    ] },
+    manualAssessments: { [classInfo.id]: [{ id: 'oral', type: 'oral', num: 1, semestre: 1, dateISO: '2026-10-03' }] },
+  };
+  const activityPush = await call(syncHandler, { method: 'POST', headers: teacherHeaders, body: {
+    classes: [classInfo], schedules: [], timetable: [], settings: activitySettings, settingsUpdatedAt: new Date().toISOString(),
+  } });
+  assert.equal(activityPush.status, 200, JSON.stringify(activityPush.body));
+  const restored = (await call(syncHandler, { method: 'GET', headers: teacherHeaders })).body as { settings: Partial<AppConfig> };
+  assert.deepEqual(restored.settings.pedagogicalEvents, activitySettings.pedagogicalEvents);
+  assert.equal(buildSessionActivityRemarks(restored.settings, classInfo.id,
+    (key, values) => translateLocaleMessage('ar', key, values), '، ').get('2026-10-03'),
+  'مراقبة دفاتر التلاميذ\nمعالجة التعثرات\nتقويم شفهي');
+  assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body,
+    'syncing activities keeps the imported course hierarchy intact');
   const notification = await postAdmin({action: 'notifyTeacher', phone: number, message: 'Votre cahier est prêt.'});
   assert.equal(notification.status, 200);
   const inbox = await call(messagesHandler, {method: 'GET', headers: teacherHeaders});

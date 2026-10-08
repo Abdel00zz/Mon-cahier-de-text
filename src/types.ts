@@ -184,6 +184,7 @@ export type PedagogicalEventType =
     | 'rattrapage'
     /** مراقبة دفاتر التلاميذ — contrôle des cahiers des élèves. */
     | 'controle_cahiers'
+    | 'correction_controle_continu'
     | 'autre';
 
 /** Activité créée par le professeur et reliée à une classe, sans la confondre avec une date ministérielle. */
