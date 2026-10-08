@@ -73,3 +73,45 @@ test('printing an absence from an untouched notebook does not print the starter 
     assert.ok(html.includes('data-absence-session="2026-09-14"'));
     assert.ok(!html.includes('Évaluation diagnostique 1'));
 });
+
+const adjacentSessions = [
+    { date: '2026-09-14', reasons: ['راحة بوصفة طبية'] },
+    { date: '2026-09-18', reasons: ['راحة بوصفة طبية'] },
+];
+const mergedTable = (absenceSessions = adjacentSessions, searchQuery?: string) => render(React.createElement(MainTable, {
+    lessonsData: [], visibleRows: [], absenceSessions, searchQuery,
+    onClearSearch: noop, contentDirection: 'rtl', onOpenAddContentModal: noop,
+    selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
+}), 'ar');
+
+test('editor and paper merge adjacent medical certificates, with every date and one shared remark', () => {
+    const screen = mergedTable();
+    const paper = render(React.createElement(PrintView, { lessonsData: [], absenceSessions: adjacentSessions,
+        classInfo, config, contentDirection: 'rtl', newlyAddedIds: [], preview: true }), 'ar');
+    for (const html of [screen, paper]) {
+        assert.equal(html.match(/data-absence-session=/g)?.length, 1);
+        assert.equal(html.match(/شهادة مرضية/g)?.length, 1);
+        assert.equal(html.match(/راحة بوصفة طبية/g)?.length, 1);
+        assert.ok(html.includes('data-absence-dates="2026-09-14,2026-09-18"'));
+        assert.ok(html.includes('14/09') && html.includes('18/09'));
+        assert.ok(!html.includes('editor-indent'));
+    }
+    assert.equal(screen.match(/data-date-token=/g)?.length, 2);
+    assert.ok(paper.includes('14/09/2026') && paper.includes('18/09/2026'));
+});
+
+test('merged certificate remarks retain their date associations on screen and paper', () => {
+    const different = [adjacentSessions[0], { ...adjacentSessions[1], reasons: ['متابعة طبية'] }];
+    const paper = render(React.createElement(PrintView, { lessonsData: [], absenceSessions: different,
+        classInfo, config, contentDirection: 'rtl', newlyAddedIds: [], preview: true }), 'ar');
+    for (const html of [mergedTable(different), paper]) {
+        assert.equal(html.match(/شهادة مرضية/g)?.length, 1);
+        assert.ok(/14\/09\/2026[\s\S]*?راحة بوصفة طبية[\s\S]*?18\/09\/2026[\s\S]*?متابعة طبية/.test(html));
+    }
+});
+
+test('searching a date filters certificates before merging', () => {
+    const html = mergedTable(adjacentSessions, '18/09/2026');
+    assert.ok(html.includes('data-absence-dates="2026-09-18"'));
+    assert.ok(!html.includes('2026-09-14'));
+});

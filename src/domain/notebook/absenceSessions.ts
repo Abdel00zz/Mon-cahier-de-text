@@ -33,6 +33,21 @@ export interface AbsenceDisplayRow {
     kind: 'absence';
     key: string;
     session: AbsenceSession;
+    sessions: readonly AbsenceSession[];
+}
+
+/** Shared remarks appear once; different remarks keep their associated dates. */
+export function absenceRemarkGroups(sessions: readonly AbsenceSession[]) {
+    const groups: Array<{ dates: string[]; reasons: string[] }> = [];
+    let previousIdentity = '';
+    for (const session of sessions) {
+        const identity = JSON.stringify(session.reasons.map(reason => reason.normalize('NFC').trim().replace(/\s+/g, ' ')).sort());
+        const previous = groups.at(-1);
+        if (previous && identity === previousIdentity) previous.dates.push(session.date);
+        else groups.push({ dates: [session.date], reasons: [...session.reasons] });
+        previousIdentity = identity;
+    }
+    return groups;
 }
 
 /** A certificate is a visual session boundary: repeated content must not merge
@@ -54,6 +69,8 @@ export function groupRowsWithAbsences(source: LessonRow[], sessions: readonly Ab
 
 /** Insert display-only rows after the latest preceding session, keeping the
  * original course order, coordinates and grouping intact on screen and paper.
+ * Adjacent certificates share their content cell, retaining every dated session.
+ * A course row always ends the run; long runs are bounded like course merges.
  */
 export function withAbsenceRows<T>(rows: T[], sessions: readonly AbsenceSession[],
     datesOf: (row: T) => readonly string[]): Array<T | AbsenceDisplayRow> {
@@ -68,7 +85,9 @@ export function withAbsenceRows<T>(rows: T[], sessions: readonly AbsenceSession[
             }
         });
         const slot = slots.get(after) ?? [];
-        slot.push({ kind: 'absence', key: `absence:${session.date}`, session });
+        const previous = slot.at(-1);
+        if (previous && previous.sessions.length < 120) previous.sessions = [...previous.sessions, session];
+        else slot.push({ kind: 'absence', key: `absence:${session.date}`, session, sessions: [session] });
         slots.set(after, slot);
     }
     const result: Array<T | AbsenceDisplayRow> = [...(slots.get(-1) ?? [])];

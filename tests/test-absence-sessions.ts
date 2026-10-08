@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildAbsenceSessions, withAbsenceRows, groupRowsWithAbsences } from '../src/domain/notebook/absenceSessions';
+import { buildAbsenceSessions, withAbsenceRows, groupRowsWithAbsences, absenceRemarkGroups, type AbsenceSession } from '../src/domain/notebook/absenceSessions';
 import { buildLessonRows } from '../src/domain/notebook/lessonRows';
 import { buildContentNumbers } from '../src/domain/notebook/contentNumbering';
 import { collectSessionDates, createPrintSelection, getNewDates, sessionPrintSignatures, type PrintMeta } from '../src/infrastructure/printing/printMeta';
@@ -99,4 +99,64 @@ test('legacy French dates connect to ISO absence dates and custom print selectio
     assert.deepEqual(collectSessionDates(legacy, sessions), ['2026-09-21']);
     assert.equal(createPrintSelection(legacy, ['2026-09-21']).length, 1);
     assert.equal(Object.keys(sessionPrintSignatures(legacy, sessions)).length, 1);
+});
+
+test('adjacent certificates merge for display while all dates and source sessions remain intact', () => {
+    const sessions: AbsenceSession[] = [
+        { date: '2026-09-14', reasons: ['Repos prescrit'] },
+        { date: '2026-09-18', reasons: ['Repos prescrit'] },
+    ];
+    const original = structuredClone(sessions);
+    const rows = buildLessonRows(lessons);
+    const display = withAbsenceRows(rows, sessions, row => row.data.date ? [row.data.date] : []);
+    const certificates = display.filter(row => 'kind' in row);
+    assert.equal(certificates.length, 1);
+    assert.deepEqual(certificates[0].sessions, sessions);
+    assert.deepEqual(absenceRemarkGroups(certificates[0].sessions), [
+        { dates: ['2026-09-14', '2026-09-18'], reasons: ['Repos prescrit'] },
+    ]);
+    assert.deepEqual(display.filter(row => !('kind' in row)), rows);
+    assert.deepEqual(sessions, original);
+    assert.deepEqual(collectSessionDates([], sessions), sessions.map(session => session.date));
+    assert.equal(Object.keys(sessionPrintSignatures([], sessions)).length, 2);
+});
+
+test('different certificate remarks remain attached to their own dates after merging', () => {
+    const sessions = [
+        { date: '2026-09-14', reasons: ['Repos', 'Maladie'] },
+        { date: '2026-09-18', reasons: ['  Maladie ', 'Repos'] },
+        { date: '2026-09-21', reasons: ['Suivi médical'] },
+        { date: '2026-09-25', reasons: [] },
+    ];
+    const display = withAbsenceRows([], sessions, () => []);
+    assert.equal(display.length, 1);
+    assert.deepEqual(absenceRemarkGroups(sessions), [
+        { dates: ['2026-09-14', '2026-09-18'], reasons: ['Repos', 'Maladie'] },
+        { dates: ['2026-09-21'], reasons: ['Suivi médical'] },
+        { dates: ['2026-09-25'], reasons: [] },
+    ]);
+});
+
+test('course boundaries end certificate merges and filtered print dates cannot return', () => {
+    const sessions = [
+        { date: '2026-09-14', reasons: ['Maladie'] },
+        { date: '2026-09-18', reasons: ['Maladie'] },
+        { date: '2026-09-21', reasons: ['Maladie'] },
+    ];
+    const rows = buildLessonRows(lessons);
+    const display = withAbsenceRows(rows, sessions, row => row.data.date ? [row.data.date] : []);
+    const certificates = display.filter(row => 'kind' in row);
+    assert.deepEqual(certificates.map(row => row.sessions.map(session => session.date)), [
+        ['2026-09-14', '2026-09-18'], ['2026-09-21'],
+    ]);
+    const selected = sessions.filter(session => session.date === '2026-09-18');
+    const filtered = withAbsenceRows([], selected, () => []);
+    assert.deepEqual(filtered.flatMap(row => row.sessions.map(session => session.date)), ['2026-09-18']);
+});
+
+test('long medical leave merges are bounded without dropping dates', () => {
+    const sessions = Array.from({ length: 121 }, (_, index) => ({ date: `date-${index}`, reasons: [] }));
+    const display = withAbsenceRows([], sessions, () => []);
+    assert.deepEqual(display.map(row => row.sessions.length), [120, 1]);
+    assert.deepEqual(display.flatMap(row => row.sessions), sessions);
 });

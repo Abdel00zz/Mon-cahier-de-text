@@ -39,9 +39,27 @@
     break-inside: avoid;
     page-break-inside: avoid;
 }
-.print-absence-row .print-col-content {
+.print-table .print-absence-row > td {
+    vertical-align: middle;
+}
+.print-table .print-absence-row .print-col-content {
     font-weight: 500;
     text-align: center;
+}
+.print-absence-dates {
+    display: grid;
+    gap: 3px;
+}
+.print-absence-reason + .print-absence-reason {
+    margin-top: 5px;
+}
+.print-absence-reason-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 2px;
 }
 .print-table {
     width: 100%;

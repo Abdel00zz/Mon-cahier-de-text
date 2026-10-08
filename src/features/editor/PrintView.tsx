@@ -1,5 +1,5 @@
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
-import { buildAbsenceSessions, withAbsenceRows, type AbsenceSession } from '@/domain/notebook/absenceSessions';
+import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups, type AbsenceSession } from '@/domain/notebook/absenceSessions';
 import React, { useMemo } from 'react';
 import './print.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
@@ -335,13 +335,20 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                 <tbody>
                     {printRows.length > 0 ? (
                         printRows.map((row, index) => {
-                            if (row.kind === 'absence') return (
-                                <tr key={row.key} data-absence-session={row.session.date} className="print-absence-row">
-                                    <td className="print-col-date"><span className="print-date-text">{formatDateDDMMYYYY(row.session.date)}</span></td>
+                            if (row.kind === 'absence') {
+                              const dates = row.sessions.map(session => session.date);
+                              const remarks = absenceRemarkGroups(row.sessions);
+                              return (
+                                <tr key={row.key} data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className="print-absence-row">
+                                    <td className="print-col-date"><div className="print-absence-dates">{dates.map(date => <bdi key={date} dir="ltr" className="print-date-text">{formatDateDDMMYYYY(date)}</bdi>)}</div></td>
                                     <td className="print-col-content">{translateLocaleMessage(isRtlPrint ? 'ar' : 'fr', 'notifications.absenceCertificate')}</td>
-                                    <td className="print-col-remark" dir={textDirectionAttribute(row.session.reasons.join(' · '))}>{row.session.reasons.join(' · ')}</td>
+                                    <td className="print-col-remark">{remarks.map(remark => <div key={remark.dates[0]} className="print-absence-reason" dir={textDirectionAttribute(remark.reasons.join(' · '))}>
+                                        {remarks.length > 1 && <div className="print-absence-reason-dates">{remark.dates.map(date => <bdi key={date} dir="ltr">{formatDateDDMMYYYY(date)}</bdi>)}</div>}
+                                        {remark.reasons.join(' · ')}
+                                    </div>)}</td>
                                 </tr>
-                            );
+                              );
+                            }
                             if (row.kind === 'session') {
                                 const remarks = collectSessionRemarks(row.items, row.date);
                                 const rowClassName = [

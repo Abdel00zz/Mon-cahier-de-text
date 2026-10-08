@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { LessonsData, Indices, ContentDirection } from '@/types';
-import { withAbsenceRows, groupRowsWithAbsences, type AbsenceSession, type AbsenceDisplayRow } from '@/domain/notebook/absenceSessions';
+import { withAbsenceRows, groupRowsWithAbsences, absenceRemarkGroups, type AbsenceSession, type AbsenceDisplayRow } from '@/domain/notebook/absenceSessions';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { type LessonRow } from '@/domain/notebook/lessonRows';
 import type { ContentDateOrder } from '@/domain/calendar/dateOrder';
@@ -518,7 +518,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   const measurementIds = useRef(new WeakMap<object, number>());
   const nextMeasurementId = useRef(0);
   const itemKeys = useMemo(() => renderRows.map(row => {
-    if (row.kind === 'absence') return row.key + ':' + JSON.stringify(row.session.reasons) + ':' + contentDirection;
+    if (row.kind === 'absence') return row.key + ':' + JSON.stringify(row.sessions) + ':' + contentDirection;
     const items = row.kind === 'single' ? [row.item] : row.items;
     return items.map(item => {
       let id = measurementIds.current.get(item.data);
@@ -535,6 +535,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   )) : -1, [focusKey, renderRows]);
   const keepIndices = useMemo(() => focusIndex < 0 ? [] : [focusIndex], [focusIndex]);
   const estimateSizes = useMemo(() => renderRows.map(row =>
+    row.kind === 'absence' ? Math.max(ESTIMATED_ROW_HEIGHT, row.sessions.length * 24, absenceRemarkGroups(row.sessions).length * 52) :
     (row.kind === 'session' && !(row.items[0].dateMerge?.mergeType === 'content'
       && row.items[0].dateMerge?.shouldMergeRemark) ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
   ), [renderRows]);
@@ -636,15 +637,26 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                 : renderRows.map((row, absoluteIndex) => ({ row, absoluteIndex }));
 
               return rows.map(({ row, virtualItem, absoluteIndex }) => {
-                  if (row.kind === 'absence') return (
+                  if (row.kind === 'absence') {
+                    const dates = row.sessions.map(session => session.date);
+                    const remarks = absenceRemarkGroups(row.sessions);
+                    return (
                       <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
-                          <div data-absence-session={row.session.date} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
-                              <div title={formatDateDDMMYYYY(row.session.date) ?? row.session.date} className="flex items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><DateCard dateStr={row.session.date} /></div>
+                          <div data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
+                              <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><MultiDateCard dates={dates} /></div>
                               <div className="flex items-center justify-center text-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
-                              <div dir={textDirectionAttribute(row.session.reasons.join(' · '))} className="flex items-center whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">{row.session.reasons.join(' · ')}</div>
+                              <div className="flex min-w-0 flex-col justify-center gap-2 whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">
+                                  {remarks.map(remark => <div key={remark.dates[0]} dir={textDirectionAttribute(remark.reasons.join(' · '))}>
+                                      {remarks.length > 1 && <div className="mb-1 text-xs font-medium tabular-nums">{remark.dates.map(date => <bdi key={date} dir="ltr" title={formatDateDDMMYYYY(date) ?? date} className="inline-block max-w-full me-1">
+                                          <span className="sm:hidden">{formatDateDDMMYYYY(date)?.slice(0, 5)}</span><span className="hidden sm:inline">{formatDateDDMMYYYY(date)}</span>
+                                      </bdi>)}</div>}
+                                      {remark.reasons.join(' · ')}
+                                  </div>)}
+                              </div>
                           </div>
                       </VirtualListRow>
-                  );
+                    );
+                  }
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
