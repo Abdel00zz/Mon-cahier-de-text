@@ -25,23 +25,44 @@
 
 [data-dashboard-root] [data-slot="class-display-toggle"] {
   border-radius: 999px;
-  background: rgb(248 250 252 / .9);
-  border-color: #e2e8f0;
-  color: #0f172a;
+  background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+[data-dashboard-root] [data-slot="class-display-toggle"]:hover {
+  background: hsl(var(--card));
+  border-color: color-mix(in srgb, hsl(var(--primary)) 40%, hsl(var(--border)));
+  color: hsl(var(--foreground));
+  box-shadow: 0 2px 8px -2px rgba(40, 36, 33, 0.08);
 }
 [data-dashboard-root] .dashboard-add-class {
   border-radius: 999px;
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #f8fafc;
-  box-shadow: 0 4px 14px rgb(37 99 235 / .22);
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 4px 14px rgb(179 84 59 / .25);
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
-[data-dashboard-root] .dashboard-add-class:hover { background: #1d4ed8; }
-.dark [data-dashboard-root] .dashboard-add-class { background: #1d4ed8; border-color: #3b82f6; }
+[data-dashboard-root] .dashboard-add-class:hover {
+  background: color-mix(in srgb, hsl(var(--primary)) 88%, white 12%);
+  border-color: color-mix(in srgb, hsl(var(--primary)) 88%, white 12%);
+  box-shadow: 0 6px 18px rgb(179 84 59 / .32);
+}
+.dark [data-dashboard-root] .dashboard-add-class {
+  background: hsl(var(--primary));
+  border-color: color-mix(in srgb, hsl(var(--primary)) 85%, white 15%);
+}
 .dark [data-dashboard-root] [data-slot="class-display-toggle"] {
-  background: #29313d;
-  border-color: #475569;
-  color: #e2e8f0;
+  background: color-mix(in srgb, hsl(var(--card)) 85%, transparent);
+  border-color: hsl(var(--border) / 0.6);
+  color: hsl(var(--foreground));
+}
+.dark [data-dashboard-root] [data-slot="class-display-toggle"]:hover {
+  background: hsl(var(--card));
+  border-color: color-mix(in srgb, hsl(var(--primary)) 50%, hsl(var(--border)));
 }
 
 /* Portrait phone: one aligned toolbar, followed immediately by the classes. */

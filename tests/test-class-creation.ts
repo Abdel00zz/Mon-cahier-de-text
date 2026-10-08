@@ -8,6 +8,15 @@ import { classNameForLevelAndGroup } from '../src/domain/classes/classGroup';
 import { formatClassStreamFullName } from '../src/constants/class-levels';
 import { availableCycles, classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel } from '../src/features/dashboard/modals/classCreationFlow';
 import { normalizeTeacherCycles } from '../src/domain/classes/teacherCycles';
+import { classLevelPartsFor } from '../src/domain/classes/classLevelParts';
+
+test('identité structurée : palier, filière et noms libres restent distincts', () => {
+  assert.deepEqual(classLevelPartsFor('lycee', '2ème Bac Sciences Mathématiques A'), { level: '2ème Bac', branch: 'Sciences Mathématiques A' });
+  assert.deepEqual(classLevelPartsFor('lycee', 'Tronc Commun Sciences'), { level: 'Tronc Commun', branch: 'Scientifique' });
+  assert.deepEqual(classLevelPartsFor('college', '1AC'), { level: '1AC', branch: '' });
+  assert.deepEqual(classLevelPartsFor('prepa', '1re année MPSI'), { level: '1re année', branch: 'MPSI' });
+  assert.deepEqual(classLevelPartsFor('college', 'Groupe de soutien'), { level: 'Groupe de soutien', branch: '' });
+});
 
 const classroom = (name: string, overrides: Partial<ClassInfo> = {}): ClassInfo => ({
   id: name, name, subject: 'Mathématiques', teacherName: 'Test', color: '', createdAt: '2026-08-31', cycle: 'college', ...overrides,

@@ -26,6 +26,12 @@ export interface ClassInfo {
     date de création et la couleur. Source unique du contrat `addClass`. */
 export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color'>;
 
+/** Identité d'une classe saisie par l'assistant de création (professeur comme
+    direction). `level`, `branch` et `group` sont transmis en plus du nom
+    affiché : les circuits officiels (plans de devoirs, liaisons de progression)
+    les lisent sans re-deviner le nom. Voir `domain/classes/classLevelParts.ts`. */
+export type ClassIdentityDraft = Pick<ClassInfo, 'name' | 'subject' | 'cycle' | 'level' | 'branch' | 'group'>;
+
 interface OfficialChapter {
   id: string;
   order: number;

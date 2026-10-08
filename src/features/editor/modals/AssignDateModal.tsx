@@ -113,7 +113,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
             }`}
           >
-            {!appliesDate ? <span>{t('common.save')}</span> : actionType === 'associate' ? (
+            {!appliesDate ? <span>{t('remark.saveRemark')}</span> : actionType === 'associate' ? (
               <span>{t('assignDate.applyDate')}</span>
             ) : (
               <span>{t('assignDate.removeDates')}</span>

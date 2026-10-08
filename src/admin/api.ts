@@ -119,6 +119,9 @@ export type ManagedClassInput = {
     name: string;
     subject: string;
     cycle: Cycle;
+    level?: string;
+    branch?: string;
+    group?: string;
 };
 
 /** Crée ou met à jour une classe, attribuée uniquement au professeur sélectionné. */

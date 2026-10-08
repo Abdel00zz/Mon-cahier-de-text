@@ -25,7 +25,7 @@
 .notebook-entry:focus-within { border-color: hsl(var(--foreground) / 0.5); box-shadow: 0 0 0 3px hsl(var(--foreground) / 0.06); }
 .notebook-entry input { min-width: 0; flex: 1; min-height: 44px; padding: 6px 8px; font-size: 0.8125rem; background: transparent; outline: none; }
 .notebook-entry input::placeholder { color: hsl(var(--muted-foreground)); }
-.notebook-primary { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: none; min-height: 44px; padding: 8px 16px; border-radius: 10px; background: color-mix(in srgb, hsl(var(--foreground)) 94%, hsl(var(--card))); color: hsl(var(--background)); font-size: 0.8125rem; font-weight: 700; cursor: pointer; transition: filter 180ms, transform 180ms; }
+.notebook-primary { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: none; min-height: 44px; padding: 8px 16px; border-radius: 10px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 0.8125rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); transition: filter 180ms, transform 180ms; }
 .student-search-bar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 8px; flex: none; min-height: 48px; padding: 3px 10px; border: 1px solid var(--notebook-line); border-radius: 12px; background: color-mix(in srgb, var(--notebook-surface) 94%, transparent); backdrop-filter: blur(16px); box-shadow: 0 3px 12px hsl(var(--foreground) / .06); color: hsl(var(--muted-foreground)); }
 .student-search-bar input { flex: 1; min-width: 0; min-height: 44px; font-size: .8125rem; background: transparent; color: hsl(var(--foreground)); outline: none; }
 .student-search-bar input::-webkit-search-cancel-button { display: none; }

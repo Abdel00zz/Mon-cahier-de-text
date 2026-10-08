@@ -138,6 +138,18 @@ export function validateBackup(value: unknown): FullBackup {
     return value as unknown as FullBackup;
 }
 
+/** Read-only preview; uses exactly the validation required by restoration. */
+export function inspectBackup(value: unknown) {
+    const backup = validateBackup(value);
+    return {
+        format: backup.format ?? 'legacy',
+        version: backup.version,
+        exportedAt: typeof backup.exportedAt === 'string' && Number.isFinite(Date.parse(backup.exportedAt)) ? backup.exportedAt : null,
+        classes: backup.classes.length,
+        blocks: backup.classes.reduce((total, entry) => total + entry.lessonsData.length, 0),
+    };
+}
+
 /**
  * Restaure une sauvegarde. Accepte le format v2 (complet) ET l'ancien format
  * (`{ config, classes:[{classInfo, lessonsData}] }`) pour compatibilité.

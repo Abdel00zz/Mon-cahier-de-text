@@ -296,7 +296,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'السنة الدراسية' : 'Année scolaire'}</span>
-                    <strong className="print-field-value">{schoolYearLabel}</strong>
+                    <strong className="print-field-value"><bdi dir="ltr">{schoolYearLabel}</bdi></strong>
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'الفترة المطبوعة' : 'Période imprimée'}</span>

@@ -15,7 +15,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { hasCompletedOnboarding } from '../../domain/auth/onboardingCompletion';
-import { ClassInfo, ClassEvaluationEntry, Cycle } from '@/types';
+import { ClassInfo, ClassIdentityDraft, ClassEvaluationEntry, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/domain/calendar/timetable';
@@ -125,7 +125,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onSelectClass(classInfo);
     }, [onSelectClass]);
 
-    const createClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => {
+    const createClass = useCallback((details: ClassIdentityDraft): ClassInfo => {
         const created = addClass({
             ...details,
             cycle: details.cycle ?? selectedCycle,
@@ -147,7 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         })
     ), [addClass, config.selectedCycles, t, teacherName]);
 
-    const handleCreateClass = (details: { name: string; subject: string; cycle?: Cycle }) => {
+    const handleCreateClass = (details: ClassIdentityDraft) => {
         createClass(details);
         setCreateModalOpen(false);
     };
@@ -155,6 +155,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const handleDeleteClass = useCallback((classId: string) => {
         deleteClass(classId);
         const patch: Partial<typeof config> = {};
+        if (config.assessmentDocuments?.[classId]) {
+            const next = { ...config.assessmentDocuments }; delete next[classId]; patch.assessmentDocuments = next;
+        }
+        if (config.assessmentParticipants?.[classId]) {
+            const next = { ...config.assessmentParticipants }; delete next[classId]; patch.assessmentParticipants = next;
+        }
+        if (config.classRosters?.[classId]) {
+            const next = { ...config.classRosters }; delete next[classId]; patch.classRosters = next;
+        }
         if (config.assessmentDates?.[classId]) {
             const next = { ...config.assessmentDates }; delete next[classId]; patch.assessmentDates = next;
         }
@@ -185,7 +194,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             patch.dashboardClassOrder = config.dashboardClassOrder.filter(id => id !== classId);
         }
         if (Object.keys(patch).length > 0) updateConfig(patch);
-    }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.manualAssessments, config.removedAssessments, config.assessmentOrder, config.notificationDismissals, config.timetable, config.dashboardClassOrder, updateConfig]);
+    }, [deleteClass, config.assessmentDocuments, config.assessmentParticipants, config.classRosters, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.manualAssessments, config.removedAssessments, config.assessmentOrder, config.notificationDismissals, config.timetable, config.dashboardClassOrder, updateConfig]);
 
     /*
      * Matières réellement portées par les classes de cet enseignant : elles
@@ -467,7 +476,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 existingClasses={classes}
                 editingClass={editingClass}
                 onUpdate={(classId, updates) => {
-                    updateClass(classId, updates);
+                    if (!updateClass(classId, updates)) throw new Error(t('common.error'));
                     setEditingClass(null);
                 }}
                 onDelete={editingClass ? () => {

@@ -214,9 +214,13 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   const teacherHeaders = {cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': number};
   const adminHeaders = {cookie: `${ADMIN_COOKIE}=${await signSession({role: 'admin'}, 60)}`};
   const postAdmin = (body: unknown) => call(adminHandler, {method: 'POST', headers: adminHeaders, body});
-  const created = await postAdmin({action: 'upsertTeacherClass', phone: number, classInfo: {name: '1AC1', cycle: 'college', subject: 'Mathématiques'}});
+  const created = await postAdmin({action: 'upsertTeacherClass', phone: number, classInfo: {name: '1AC1', cycle: 'college', subject: 'Mathématiques', level: '1AC', group: '1'}});
   assert.equal(created.status, 200);
   const classInfo = (created.body as {classInfo: {id: string}}).classInfo;
+  assert.equal((classInfo as { level?: string }).level, '1AC');
+  assert.equal((classInfo as { group?: string }).group, '1');
+  const invalidIdentity = await postAdmin({action: 'upsertTeacherClass', phone: number, classInfo: {id: classInfo.id, name: '1AC1', subject: 'Mathématiques', cycle: 'college', level: {bad: true}}});
+  assert.equal(invalidIdentity.status, 400);
   const initial = await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}});
   assert.equal(initial.status, 200);
   const expectedUpdatedAt = (initial.body as {updatedAt: string}).updatedAt;
@@ -231,6 +235,9 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   const stalePush = await call(syncHandler, {method: 'POST', headers: teacherHeaders, body: {classes: [classInfo], schedules: [], timetable: [], settings: {assessmentDates: {[classInfo.id]: {'controle-1': '2026-10-09'}}}, settingsUpdatedAt: '2020-01-01T00:00:00Z', lessons: [{classId: classInfo.id, lessonsData: [{type: 'chapter', title: 'Stale'}], updatedAt: '2020-01-01T00:00:00Z'}]}});
   assert.equal(stalePush.status, 200);
   const workspace = await call(syncHandler, {method: 'GET', headers: teacherHeaders});
+  const syncedClass = (workspace.body as { classes: Array<{ id: string; level?: string; group?: string }> }).classes.find(item => item.id === classInfo.id);
+  assert.equal(syncedClass?.level, '1AC');
+  assert.equal(syncedClass?.group, '1');
   assert.equal((workspace.body as {settings: {assessmentDates: Record<string, Record<string, string>>}}).settings.assessmentDates[classInfo.id]['controle-1'], '2026-10-10');
   assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body);
   const activitySettings = {

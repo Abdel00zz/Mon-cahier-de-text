@@ -21,6 +21,8 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
   const { t, locale } = useLocale();
   const ignoreChoiceId = useId();
   const [ignoreWarning, setIgnoreWarning] = useState(false);
+  const selectedDate = new Date(`${date}T12:00:00Z`);
+  const validDate = Number.isFinite(selectedDate.getTime());
   const distinctWarnings = warnings.filter(
     (warning, index, all) => all.findIndex(item => item.message === warning.message) === index,
   );
@@ -42,16 +44,16 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       onClose={onModify}
       title={
         <div className="flex items-center gap-3">
-          <span className="date-review-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-amber-600 dark:text-amber-300">
-            <TriangleAlert className="h-8 w-8 stroke-[1.8]" />
+          <span className="date-review-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-amber-600 dark:text-amber-300">
+            <TriangleAlert className="h-5 w-5 stroke-[1.8]" aria-hidden />
           </span>
           <span className="date-review-title max-w-[15rem] text-base sm:text-xl font-bold leading-tight tracking-tight text-foreground">
             {t('dateReview.title')}
           </span>
         </div>
       }
-      description={date ? t('dateReview.selectedDate', {
-        date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(new Date(`${date}T12:00:00Z`)),
+      description={validDate ? t('dateReview.selectedDate', {
+        date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Casablanca' }).format(selectedDate),
       }) : undefined}
       maxWidth="md"
       className="sm:max-w-lg sm:rounded-2xl"
@@ -60,11 +62,11 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       footerClassName="border-t-0 bg-background/85 backdrop-blur-md"
       footer={
         <div className="flex w-full flex-wrap items-center justify-end gap-2.5">
-          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
+          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl min-h-11 px-4 text-xs font-semibold sm:text-sm">
             {t('dateReview.modify')}
           </Button>
-          <Button type="button" onClick={handleConfirm} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
-            {t('common.confirm')}
+          <Button type="button" onClick={handleConfirm} disabled={!validDate} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
+            {t('dateReview.confirmAria')}
           </Button>
         </div>
       }

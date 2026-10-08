@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { FileDown, FileUp, HardDriveDownload, HardDriveUpload, Loader2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Segmented } from '@/components/ui/segmented';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
-import { MAX_JSON_FILE_BYTES, parseBoundedJson } from '@/domain/notebook/jsonInput';
+import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
+import { inspectNotebookImport } from '@/domain/notebook/importPreview';
+import { ImportSummary } from '@/components/ui/import-summary';
 import { StatusNotice } from '@/components/ui/status-notice';
 
 /** Bloc de premier niveau du cahier ouvert, tel que la liste d'export le montre. */
@@ -44,6 +46,15 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
   const [message, setMessage] = useState<string | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const importingRef = useRef(false);
+  const [replacementConfirmed, setReplacementConfirmed] = useState(false);
+  const deferredJson = useDeferredValue(jsonText);
+  const inspection = useMemo(() => {
+    if (!deferredJson.trim()) return { preview: null, error: null };
+    try { return { preview: inspectNotebookImport(deferredJson), error: null }; }
+    catch (error) { return { preview: null, error: error instanceof Error ? error.message : t('transfer.invalidJson') }; }
+  }, [deferredJson, t]);
+  const preview = deferredJson === jsonText ? inspection.preview : null;
   /*
    * EXPORT : deux périmètres. « Tout le cahier » reste le geste d'un clic ;
    * « chapitres choisis » sert à archiver une leçon ou à l'échanger — ce que le
@@ -68,6 +79,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
     setJsonText('');
     setFileName('');
     setImportMode('replace');
+    setReplacementConfirmed(false);
     setMessage(null);
     setIsReading(false);
     setIsImporting(false);
@@ -84,10 +96,11 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || importingRef.current) return;
     const requestId = ++readRequestRef.current;
     setIsReading(false);
     setJsonText('');
+    setReplacementConfirmed(false);
     setFileName(file.name);
     setMessage(null);
     if (file.size > MAX_JSON_FILE_BYTES) {
@@ -114,17 +127,18 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
   };
 
   const handleImport = async () => {
-    if (isReading || isImporting) return;
+    if (isReading || importingRef.current || !preview || (importMode === 'replace' && !replacementConfirmed)) return;
+    importingRef.current = true;
     setMessage(null);
     setIsImporting(true);
     try {
-      const parsed = parseBoundedJson(jsonText);
-      const imported = await onImport(parsed, importMode);
-      if (!imported) return;
+      const imported = await onImport(preview.parsed, importMode);
+      if (!imported) setMessage(t('transfer.preview.restoreFailed'));
     } catch (error) {
       const detail = error instanceof Error ? error.message : t('transfer.invalidJson');
       setMessage(t('transfer.importError', { detail }));
     } finally {
+      importingRef.current = false;
       setIsImporting(false);
     }
   };
@@ -165,7 +179,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => { if (!importingRef.current) onClose(); }}
       blockDismiss={isImporting}
       closeDisabled={isImporting}
       title={
@@ -191,7 +205,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 <HardDriveDownload aria-hidden />
                 {scope === 'all' ? t('transfer.export') : t('transfer.exportSelected')}
               </Button>
-            : <Button onClick={() => void handleImport()} disabled={!jsonText || isReading || isImporting} aria-busy={isImporting}>
+            : <Button onClick={() => void handleImport()} disabled={!preview || (importMode === 'replace' && !replacementConfirmed) || isReading || isImporting} aria-busy={isImporting}>
                 {isImporting ? <Loader2 aria-hidden className="animate-spin motion-reduce:animate-none" /> : <HardDriveUpload aria-hidden />}
                 {isImporting ? t('common.loading') : t('transfer.import')}
               </Button>}
@@ -322,7 +336,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
             <details className="group rounded-xl bg-background border border-border/70 px-4 py-3 shadow-xs">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                 <span>{t('transfer.pasteJson')}</span>
-                <span className="text-[10px] uppercase font-bold text-primary font-mono">{jsonText ? 'JSON ✓' : '+'}</span>
+                <span className="text-[10px] uppercase font-bold text-primary font-mono">{preview ? 'JSON ✓' : '+'}</span>
               </summary>
               <Textarea
                 aria-label={t('transfer.pasteJson')}
@@ -331,6 +345,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 onChange={event => {
                   readRequestRef.current += 1;
                   setJsonText(event.target.value);
+                  setReplacementConfirmed(false);
                   setFileName('');
                   setMessage(null);
                   setIsReading(false);
@@ -340,10 +355,14 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
               />
             </details>
 
+            {deferredJson === jsonText && inspection.error && !message && <StatusNotice tone="error" title={t('transfer.checkFile')} description={inspection.error} />}
+            {preview && <ImportSummary fileName={fileName} {...preview} />}
+
             <div className="grid gap-2.5 sm:grid-cols-2" aria-label={t('transfer.modeAria')}>
               <button
                 type="button"
-                onClick={() => setImportMode('replace')}
+                disabled={isImporting}
+                onClick={() => { setImportMode('replace'); setReplacementConfirmed(false); }}
                 aria-pressed={importMode === 'replace'}
                 className={`min-h-16 rounded-xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'replace' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-background border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
               >
@@ -352,7 +371,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
               </button>
               <button
                 type="button"
-                onClick={() => setImportMode('append')}
+                disabled={isImporting}
+                onClick={() => { setImportMode('append'); setReplacementConfirmed(false); }}
                 aria-pressed={importMode === 'append'}
                 className={`min-h-16 rounded-xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'append' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-background border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
               >
@@ -360,6 +380,10 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 <span className="mt-0.5 block text-[11px] font-medium leading-normal text-muted-foreground">{t('transfer.appendHint')}</span>
               </button>
             </div>
+            {preview && importMode === 'replace' && <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-destructive/30 p-3 text-sm text-destructive">
+              <Checkbox checked={replacementConfirmed} disabled={isImporting} onCheckedChange={checked => setReplacementConfirmed(checked === true)} />
+              <span>{t('transfer.preview.replaceConfirm')}</span>
+            </label>}
           </section>
         )}
       </div>

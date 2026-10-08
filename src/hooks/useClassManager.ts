@@ -85,10 +85,10 @@ export const useClassManager = () => {
     }, [persistClassesNow, workspaceIsActive]);
 
     const deleteClass = useCallback((classId: string) => {
-        if (!workspaceIsActive()) return;
+        if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
         const latest = readStoredClasses();
         if (!latest.some(c => c.id === classId)) return;
-        if (!persistClassesNow(latest.filter(c => c.id !== classId), false)) return;
+        if (!persistClassesNow(latest.filter(c => c.id !== classId), false)) throw new Error('Impossible de supprimer la classe sur cet appareil.');
         markClassDeleted(classId);
         for (const prefix of [DATA_PREFIX, 'editJournal_v1_', 'printMeta_v1_', 'editor_actions_ignored_v1_']) {
             localStorage.removeItem(prefix + classId);

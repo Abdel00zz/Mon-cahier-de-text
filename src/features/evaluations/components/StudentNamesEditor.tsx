@@ -293,7 +293,13 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             }}
             className="h-11 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
-            {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}
+            {names.length === 0
+              ? t('common.save')
+              : locale === 'ar'
+                ? (names.length === 1 ? 'حفظ اسم واحد' : names.length === 2 ? 'حفظ اسمين' : names.length <= 10 ? `حفظ ${numberFormat(locale).format(names.length)} أسماء` : `حفظ ${numberFormat(locale).format(names.length)} اسماً`)
+                : locale === 'fr'
+                  ? (names.length === 1 ? 'Enregistrer 1 nom' : `Enregistrer ${names.length} noms`)
+                  : (names.length === 1 ? 'Save 1 name' : `Save ${names.length} names`)}
           </button>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import './evaluationsResponsive.css';
 import './evaluationReference.css';
 import { Modal } from '@/components/ui/modal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   CalendarCheck,
   CircleCheck,
@@ -37,13 +38,6 @@ interface DevoirsViewProps {
   onConfigChange: (patch: Partial<AppConfig>) => void;
   entry?: ClassEvaluationEntry;
 }
-
-/**
- * Cible d'un document pédagogique : un devoir (officiel ou manuel) ou une
- * activité. Le devoir range son document dans `assessmentDocuments` — comme ses
- * absences —, l'activité le porte en propre, puisque la liste d'activités est
- * déjà enregistrée d'un bloc.
- */
 
 const readLessons = (classId: string): LessonsData => {
   try {
@@ -75,27 +69,12 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
   missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
 };
 
-/**
- * Une seule pastille d'état par devoir, et pas d'icône dedans : « Consigné ›
- * ou « Écart de date » se lisent au mot, la couleur porte le reste.
- * Les quatre états s'affichent — une colonne de tableau sans valeur ne se lit
- * pas —, mais à deux niveaux : les deux états qui demandent une ACTION portent
- * la couleur vive (vert consigné, ambre écart), les deux états de routine
- * restent en sourdine (bleu « échéance à venir », gris « non encore consigné »),
- * pour que l'œil ne s'arrête que là où il y a quelque chose à faire.
- */
 const STATUS_CHIP: Record<AssessmentLink['status'], string> = {
   done: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
   mismatch: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
   upcoming: 'bg-primary/8 text-primary ring-primary/20',
   missing: 'bg-muted text-muted-foreground ring-border',
 };
-
-/*
- * Les natures d'évaluation (libellé, teinte, icône) vivent dans `kindCatalog.ts` :
- * la page, le choix de la nature et les cartes d'activité partagent donc la même
- * source, et une nouvelle nature s'ajoute à UN seul endroit.
- */
 
 const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
   if (!end || end === start) return formatLongDate(start, locale);
@@ -121,6 +100,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   } = useEvaluationModals();
   const actions = useEvaluationActions(classInfo.id, config, onConfigChange);
 
+  const [deletingAssessment, setDeletingAssessment] = useState<{ id: string; name: string } | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<{ id: string; title: string } | null>(null);
+
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
   const links = useMemo(() => {
@@ -136,15 +118,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [config.pedagogicalEvents, selectedClass]
   );
 
-  /**
-   * LES ACTIVITÉS DE LA CLASSE — le deuxième cran du parcours.
-   *
-   * Chaque nature que la classe porte DÉJÀ, avec son nombre d'occurrences :
-   * « Devoir surveillé · 6 », « Contrôle des cahiers · 1 ». Une nature sans
-   * occurrence ne figure pas ici : elle se crée par « Ajouter », qui fait
-   * traverser le choix complet. Un professeur n'a donc jamais à décider entre
-   * douze natures vides — il voit ce qui existe, et l'ouvre.
-   */
   const classActivities = useMemo(() => {
     const countFor = (kind: EvaluationKind): number => kind.family === 'devoir'
       ? links.filter((link) => link.planned.type === kind.type).length
@@ -159,13 +132,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       .filter((group) => group.entries.length > 0);
   }, [links, pedagogicalEvents, entry]);
 
-  /**
-   * LES TIROIRS OUVERTS — un ensemble, pas un seul : deux activités peuvent
-   * rester ouvertes côte à côte, donc on COMPARE deux types sans refermer le
-   * premier. État dérivé : tant que le professeur n'a rien touché (`undefined`),
-   * le premier tiroir de la classe est ouvert — la page montre du contenu au
-   * lieu d'une liste fermée. Choix remis à zéro au changement de classe.
-   */
   const [openActivityKeys, setOpenActivityKeys] = useState<string[] | undefined>(() => entry === 'all' ? undefined : [`${entry === 'oral' ? 'devoir' : 'event'}:${entry}`]);
   const activityKey = (kind: EvaluationKind) => `${kind.family}:${kind.type}`;
   const firstActivity = classActivities[0]?.entries[0]?.kind;
@@ -175,24 +141,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setOpenActivityKeys(openKeys.includes(key) ? openKeys.filter((open) => open !== key) : [...openKeys, key]);
   };
 
-  /** Les occurrences d'UNE activité : ses devoirs, ou ses séances. */
   const linksOfKind = (kind: EvaluationKind): AssessmentLink[] =>
     (kind.family === 'devoir' ? links.filter((link) => link.planned.type === kind.type) : []);
   const eventsOfKind = (kind: EvaluationKind): PedagogicalEvent[] =>
     (kind.family === 'event' ? pedagogicalEvents.filter((event) => event.type === kind.type) : []);
 
-  /*
-   * Une seule porte d'entrée pour tout créer : la NATURE d'abord, puis ses
-   * zones. La classe n'est PAS redemandée — elle est déjà ouverte sur l'écran,
-   * et reposer la question serait une seconde décision pour la même réponse.
-   * Le cran déjà franchi reste cliquable dans le fil d'étapes.
-   */
-  /**
-   * Les devoirs DÉJÀ programmés de cette nature, dans l'ordre du planning :
-   * le professeur ouvre celui du jour au lieu de ressaisir un numéro et une date.
-   * Les ajouts hors programmation sont dans la même liste (ils vivent dans
-   * `assessments`), donc rien n'échappe à l'écran.
-   */
   const programmedFor = (type: DevoirType): ProgrammedItem[] =>
     links
       .filter(link => link.planned.type === type)
@@ -206,7 +159,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           ?? (link.planned.legacyId ? config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.legacyId] : undefined)),
       }));
 
-  /** Ouvrir le sujet d'un devoir programmé : le document du devoir, en lecture ou rédaction. */
   const openProgrammedAssessment = (assessmentId: string) => {
     const link = links.find(item => item.planned.id === assessmentId);
     if (!link) return;
@@ -228,7 +180,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const togglePedagogicalEvent = actions.toggleEvent;
   const deletePedagogicalEvent = actions.deleteEvent;
 
-  /** Activité concernée par un document ou une liste d'élèves, telle qu'affichée. */
   const activityLabelOf = (event: PedagogicalEvent) =>
     event.title || t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey);
 
@@ -280,13 +231,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     toast.success(t('evaluations.manualDeleted'));
   };
 
-  /* Les deux semestres sont toujours lus : la classe ouverte se lit en entier. */
-  /**
-   * LES LIGNES DU TABLEAU DES DEVOIRS — une par occurrence de l'activité ouverte.
-   * Quatre colonnes : l'identité cliquable (« Devoir surveillé 3 »), l'état, la
-   * date réglable, puis les actions — toujours dans cet ordre, donc on sait où
-   * cliquer sans relire. Aucune icône : la nature est écrite dans le libellé.
-   */
   const renderAssessmentRows = (group: AssessmentLink[]) => group.map((link) => {
     const a = link.planned;
     const custom = !!(
@@ -304,10 +248,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const status = STATUS_STYLE[link.status];
     const isSupervised = a.type !== 'maison';
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
+    const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
-    // UNE LIGNE DU TABLEAU : l'identité cliquable, l'état, la date réglable,
-    // puis les actions — toujours dans cet ordre, donc on sait où cliquer sans
-    // relire. La nature est déjà dans le libellé : aucune icône à répéter.
     return (
       <div
         key={a.id}
@@ -319,10 +261,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           <button
             type="button"
             onClick={() => openEditAssessment(a)}
-            className="-ms-1.5 inline-flex min-h-9 max-w-full cursor-pointer items-center truncate rounded-lg px-1.5 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            className="-ms-1.5 inline-flex min-h-11 max-w-full cursor-pointer items-center truncate rounded-lg px-2 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
             title={t('evaluations.editDevoir')}
           >
-            {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
+            {displayName}
           </button>
         </div>
 
@@ -340,6 +282,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             data-custom={custom}
             title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
             aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+            className="h-9 rounded-lg border border-border/80 bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           {custom && (
             <button
@@ -355,8 +298,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         </div>
 
         <div className="ev-row__actions">
-          {/* Sujet, corrigé, fiche : le document du devoir suit le même
-              moteur que le carnet, donc le même rendu qu'à l'impression. */}
           <button
             type="button"
             onClick={() => setDocumentFor({ kind: 'assessment', link })}
@@ -387,7 +328,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
           <button
             type="button"
-            onClick={() => deleteAssessment(a.id)}
+            onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
             className="ev-icon-btn"
             data-danger="true"
             title={t('evaluations.manualDelete')}
@@ -406,8 +347,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         ?? (absencesFor.planned.legacyId ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.legacyId] : undefined)
       : undefined;
 
-  /* Document et titres de la modale : le devoir comme l'activité parlent la
-     même langue (« Devoir surveillé n°2 », « Contrôle des cahiers »). */
   const documentOf = (() => {
     if (!documentFor || !selectedClass) return undefined;
     if (documentFor.kind === 'event') return documentFor.event.document;
@@ -415,112 +354,107 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     return forClass?.[documentFor.link.planned.id]
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
   })();
+
   const documentTitle = documentFor === null
     ? ''
     : documentFor.kind === 'event'
       ? (documentFor.event.title || t(PEDAGOGICAL_EVENT_CONFIG[documentFor.event.type].labelKey))
       : `${t(`evaluations.type.${documentFor.link.planned.type}`)} n°${documentFor.link.planned.num}`;
+
   const documentDate = documentFor === null
     ? ''
     : documentFor.kind === 'event' ? documentFor.event.date : documentFor.link.planned.dateISO;
 
   return (
     <div className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
-
-        <>
-          <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="min-w-0">
-                <h2 id="evaluations-class-context" className="sr-only">
-                  {selectedClassDisplayName}
-                </h2>
-              </div>
-            </div>
-
-            {/*
-             * UNE seule action de création : le devoir et l'activité sont le même
-             * geste ; la nature se choisit dans la fenêtre, pas à l'avance.
-             */}
-            <button
-              type="button"
-              onClick={() => openKindChooser()}
-              className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
-            >
-              <Plus className="h-5 w-5" aria-hidden="true" />
-              <span>{t('evaluations.add')}</span>
-            </button>
+      <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="min-w-0">
+            <h2 id="evaluations-class-context" className="sr-only">
+              {selectedClassDisplayName}
+            </h2>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            {classActivities.length === 0 ? (
-              <ActivitiesEmptyState onCreate={() => openKindChooser()} />
-            ) : classActivities.map(({ group, entries }) => {
-              return (
-                <section key={group.id} className="space-y-2" aria-label={t(group.titleKey)}>
-                  <KindGroupHeader
-                    title={t(group.titleKey)}
-                    tone={group.tone}
-                    headingLevel={4}
-                  />
-                  <div className="ev-board">
-                    {entries.map(({ kind, count }) => {
-                      const isOpen = openKeys.includes(activityKey(kind));
-                      const label = t(kindLabelKey(kind));
-                      const countLabel = `${number.format(count)} ${kind.family === 'devoir'
-                        ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
-                        : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
-                      return (
-                        <div key={kind.type} className="ev-accordion" data-activity-kind={kind.type} data-open={isOpen ? 'true' : undefined}>
-                          {/* Le tiroir : le type, son compte, et le mot qui dit ce
-                              qu'il fait. Aucune icône, aucun chevron — « Ouvrir » se lit. */}
-                          <button
-                            type="button"
-                            onClick={() => toggleActivity(kind)}
-                            aria-expanded={isOpen}
-                            aria-label={`${label} — ${countLabel}`}
-                            className="ev-accordion__toggle"
-                          >
-                            <span className="ev-accordion__label">{label}</span>
-                            <span className="ev-accordion__toggle-word" aria-hidden="true">
-                              {isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
-                            </span>
-                          </button>
+        <button
+          type="button"
+          onClick={() => openKindChooser()}
+          className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+        >
+          <Plus className="h-5 w-5" aria-hidden="true" />
+          <span>{t('evaluations.add')}</span>
+        </button>
+      </div>
 
-                          {isOpen && (
-                            <div className="ev-accordion__body">
-                              {count === 0 ? <ActivitiesEmptyState compact onCreate={() => openKindChooser(kind)} /> : kind.family === 'event' ? (
-                                <PedagogicalEventsSection
-                                  events={eventsOfKind(kind)}
-                                  showHeader={false}
-                                  onToggle={togglePedagogicalEvent}
-                                  onDelete={deletePedagogicalEvent}
-                                  onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-                                  onOpenStudents={(event) => setStudentsFor(event)}
-                                />
-                              ) : (
-                                <div className="ev-board__rows">
-                                  <div className="ev-board__head" aria-hidden="true">
-                                    <span>{t('evaluations.assessmentSingle')}</span>
-                                    <span>{t('evaluations.colState')}</span>
-                                    <span>{t('evaluations.manualDate')}</span>
-                                    <span>{t('evaluations.colActions')}</span>
-                                  </div>
-                                  {renderAssessmentRows(linksOfKind(kind))}
-                                </div>
-                              )}
+      <div className="space-y-4">
+        {classActivities.length === 0 ? (
+          <ActivitiesEmptyState onCreate={() => openKindChooser()} />
+        ) : classActivities.map(({ group, entries }) => {
+          return (
+            <section key={group.id} className="space-y-2" aria-label={t(group.titleKey)}>
+              <KindGroupHeader
+                title={t(group.titleKey)}
+                tone={group.tone}
+                headingLevel={4}
+              />
+              <div className="ev-board">
+                {entries.map(({ kind, count }) => {
+                  const isOpen = openKeys.includes(activityKey(kind));
+                  const label = t(kindLabelKey(kind));
+                  const countLabel = `${number.format(count)} ${kind.family === 'devoir'
+                    ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
+                    : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
+                  return (
+                    <div key={kind.type} className="ev-accordion" data-activity-kind={kind.type} data-open={isOpen ? 'true' : undefined}>
+                      <button
+                        type="button"
+                        onClick={() => toggleActivity(kind)}
+                        aria-expanded={isOpen}
+                        aria-label={`${label} — ${countLabel}`}
+                        className="ev-accordion__toggle"
+                      >
+                        <span className="ev-accordion__label">{label}</span>
+                        <span className="ev-accordion__toggle-word" aria-hidden="true">
+                          {isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
+                        </span>
+                      </button>
+
+                      {isOpen && (
+                        <div className="ev-accordion__body">
+                          {count === 0 ? (
+                            <ActivitiesEmptyState compact onCreate={() => openKindChooser(kind)} />
+                          ) : kind.family === 'event' ? (
+                            <PedagogicalEventsSection
+                              events={eventsOfKind(kind)}
+                              showHeader={false}
+                              onToggle={togglePedagogicalEvent}
+                              onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
+                              onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+                              onOpenStudents={(event) => setStudentsFor(event)}
+                            />
+                          ) : (
+                            <div className="ev-board__rows">
+                              <div className="ev-board__head" aria-hidden="true">
+                                <span>{t('evaluations.assessmentSingle')}</span>
+                                <span>{t('evaluations.colState')}</span>
+                                <span>{t('evaluations.manualDate')}</span>
+                                <span>{t('evaluations.colActions')}</span>
+                              </div>
+                              {renderAssessmentRows(linksOfKind(kind))}
                             </div>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
 
-      {/* Ajouter une évaluation : la nature d'abord (cartes), puis ses champs */}
+      {/* 1. Modal Choix de nature & Assistant d'ajout */}
       <Modal
         isOpen={kindChooserOpen}
         onClose={closeKindChooser}
@@ -542,8 +476,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       >
         {selectedClass && (
           <>
-            {/* Le fil d'étapes EST la navigation : un cran franchi se reclique,
-                donc revenir ne coûte ni un bouton de plus ni la saisie. */}
             <StepTrail
               step={wizardStep}
               label={chosenKind ? t(kindLabelKey(chosenKind)) : undefined}
@@ -554,14 +486,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               }}
             />
 
-            {/* 1 · LA NATURE — la décision de l'écran, en grandes cartes. */}
             {wizardStep === 1 && (
               <div className="wizard-step">
                 <KindChooser onSelect={(kind) => { setChosenKind(kind); setWizardStep(2); }} />
               </div>
             )}
 
-            {/* 2 · LES ZONES DE CETTE NATURE — devoirs programmés, ou champs. */}
             {wizardStep === 2 && chosenKind && (
               <div className="wizard-step">
                 <KindHeader
@@ -597,7 +527,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         )}
       </Modal>
 
-      {/* Add / Edit Devoir Modal */}
+      {/* 2. Modal Ajout / Modification manuelle d'un devoir */}
       <Modal
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
@@ -631,9 +561,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         />
       </Modal>
 
-      {/* Absences Editor Modal */}
-      <StudentReviewDialog isOpen={absencesFor !== null} onClose={() => setAbsencesFor(null)} title={t('evaluations.absentees')}
-        context={absencesFor ? selectedClassDisplayName + ' · ' + t(`evaluations.type.${absencesFor.planned.type}`) + ' ' + number.format(absencesFor.planned.num) + ' · ' + formatLongDate(absencesFor.planned.dateISO, locale) : undefined}>
+      {/* 3. Modal Absences */}
+      <StudentReviewDialog
+        isOpen={absencesFor !== null}
+        onClose={() => setAbsencesFor(null)}
+        title={t('evaluations.absentees')}
+        context={absencesFor ? `${selectedClassDisplayName} · ${t(`evaluations.type.${absencesFor.planned.type}`)} ${number.format(absencesFor.planned.num)} · ${formatLongDate(absencesFor.planned.dateISO, locale)}` : undefined}
+      >
         {absencesFor && selectedClass && (
           <StudentNamesEditor
             key={`${selectedClass.id}-${absencesFor.planned.id}`}
@@ -649,8 +583,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         )}
       </StudentReviewDialog>
 
-      {/* Document pédagogique : sujet de devoir, corrigé, fiche d'olympiade.
-          Une seule source, un aperçu composé par le moteur du carnet (KaTeX). */}
+      {/* 4. Modal Document Pédagogique */}
       <ContentDocumentModal
         isOpen={documentFor !== null}
         onClose={() => setDocumentFor(null)}
@@ -666,27 +599,43 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         }}
       />
 
-      <StudentReviewDialog isOpen={oralFor !== null} onClose={() => setOralFor(null)} tracking title={t('evaluations.oral.title')}
-        context={oralFor ? selectedClassDisplayName + ' · ' + t('evaluations.type.oral') + ' ' + number.format(oralFor.planned.num) + ' · ' + formatLongDate(oralFor.planned.dateISO, locale) : undefined}>
-        {oralFor && selectedClass && <StudentNamesEditor key={`oral-${selectedClass.id}-${oralFor.planned.id}`} variant="checked" trackOral
-          initialNames={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.names ?? []}
-          initialOralOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralOutcomes}
-          roster={config.classRosters?.[selectedClass.id]}
-          reportContext={`${selectedClassDisplayName} · ${t('evaluations.type.oral')} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}`}
-          onCancel={() => setOralFor(null)} onSave={(names, _notebook, oralOutcomes) => {
-            actions.saveOral(oralFor.planned.id, names, oralOutcomes ?? {});
-            setOralFor(null);
-            toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
-              count: number.format(names.length), activity: t('evaluations.oral.title'),
-            }));
-          }}/>}
+      {/* 5. Modal Évaluation Orale */}
+      <StudentReviewDialog
+        isOpen={oralFor !== null}
+        onClose={() => setOralFor(null)}
+        tracking
+        title={t('evaluations.oral.title')}
+        context={oralFor ? `${selectedClassDisplayName} · ${t('evaluations.type.oral')} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}` : undefined}
+      >
+        {oralFor && selectedClass && (
+          <StudentNamesEditor
+            key={`oral-${selectedClass.id}-${oralFor.planned.id}`}
+            variant="checked"
+            trackOral
+            initialNames={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.names ?? []}
+            initialOralOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralOutcomes}
+            roster={config.classRosters?.[selectedClass.id]}
+            reportContext={`${selectedClassDisplayName} · ${t('evaluations.type.oral')} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}`}
+            onCancel={() => setOralFor(null)}
+            onSave={(names, _notebook, oralOutcomes) => {
+              actions.saveOral(oralFor.planned.id, names, oralOutcomes ?? {});
+              setOralFor(null);
+              toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
+                count: number.format(names.length), activity: t('evaluations.oral.title'),
+              }));
+            }}
+          />
+        )}
       </StudentReviewDialog>
 
-      {/* Élèves consignés sur une activité : les cahiers contrôlés d'un côté, la
-          même mécanique que les absents d'un devoir de l'autre. */}
-      <StudentReviewDialog isOpen={studentsFor !== null} onClose={() => setStudentsFor(null)} tracking={studentsFor?.type === REMARK_EVENT_TYPE}
+      {/* 6. Modal Contrôle des cahiers & suivi participants */}
+      <StudentReviewDialog
+        isOpen={studentsFor !== null}
+        onClose={() => setStudentsFor(null)}
+        tracking={studentsFor?.type === REMARK_EVENT_TYPE}
         title={t(studentsFor?.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}
-        context={studentsFor ? selectedClassDisplayName + ' · ' + (studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)) + ' · ' + formatLongDate(studentsFor.date, locale) : undefined}>
+        context={studentsFor ? `${selectedClassDisplayName} · ${studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)} · ${formatLongDate(studentsFor.date, locale)}` : undefined}
+      >
         {studentsFor && (
           <StudentNamesEditor
             key={`students-${studentsFor.id}`}
@@ -702,23 +651,40 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           />
         )}
       </StudentReviewDialog>
+
+      {/* 7. Dialogue de confirmation suppression d'un devoir */}
+      <ConfirmDialog
+        open={Boolean(deletingAssessment)}
+        onOpenChange={(open) => { if (!open) setDeletingAssessment(null); }}
+        title={t('evaluations.deleteTitle', { name: deletingAssessment?.name ?? '' })}
+        description={t('evaluations.deleteAssessmentDescription')}
+        confirmLabel={t('evaluations.deleteAssessmentAction')}
+        confirmationPhrase={deletingAssessment?.name}
+        onConfirm={() => {
+          if (!deletingAssessment) return;
+          deleteAssessment(deletingAssessment.id);
+          setDeletingAssessment(null);
+        }}
+      />
+
+      {/* 8. Dialogue de confirmation suppression d'une activité */}
+      <ConfirmDialog
+        open={Boolean(deletingEvent)}
+        onOpenChange={(open) => { if (!open) setDeletingEvent(null); }}
+        title={t('evaluations.deleteTitle', { name: deletingEvent?.title ?? '' })}
+        description={t('evaluations.deleteEventDescription')}
+        confirmLabel={t('evaluations.deleteEventAction')}
+        confirmationPhrase={deletingEvent?.title}
+        onConfirm={() => {
+          if (!deletingEvent) return;
+          deletePedagogicalEvent(deletingEvent.id);
+          setDeletingEvent(null);
+        }}
+      />
     </div>
   );
 };
 
-interface PedagogicalEventsSectionProps {  events: PedagogicalEvent[];
-  onToggle: (eventId: string) => void;
-  onDelete: (eventId: string) => void;
-  onOpenDocument: (event: PedagogicalEvent) => void;
-  onOpenStudents: (event: PedagogicalEvent) => void;
-}
-
-/**
- * Aucune activité : un état vide qui propose l'action suivante plutôt qu'une
- * surface muette — c'est le moment où l'enseignant découvre la rubrique. Sur
- * l'onglet « tout », la variante `compact` se contente de la ligne d'invitation :
- * la page montre alors ses deux familles sans doubler la hauteur.
- */
 const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }> = ({ onCreate, compact = false }) => {
   const { t } = useLocale();
   return (
@@ -739,27 +705,29 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
     </div>
   );
 };
-/*
- * Les commandes de ligne vivent dans `evaluationsBoard.css` (`.ev-action`, `.ev-icon-btn`) :
- * une seule règle les sert dans les deux zones — devoirs et activités —, donc
- * la même cible tactile de 44 px au doigt et les mêmes états au survol.
- */
 
-const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps & { showHeader?: boolean }> = ({
+interface PedagogicalEventsSectionProps {
+  events: PedagogicalEvent[];
+  showHeader?: boolean;
+  onToggle: (eventId: string) => void;
+  onDelete: (event: PedagogicalEvent) => void;
+  onOpenDocument: (event: PedagogicalEvent) => void;
+  onOpenStudents: (event: PedagogicalEvent) => void;
+}
+
+const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
+  showHeader = true,
   onToggle,
   onDelete,
   onOpenDocument,
   onOpenStudents,
-  showHeader = true,
 }) => {
   const { t, locale } = useLocale();
   if (events.length === 0) return null;
 
   return (
-    <section className="space-y-2.5">
-      {/* Dans une activité ouverte, c'est la nature qui nomme l'écran :
-          l'en-tête de famille serait une redite. */}
+    <section className="space-y-2.5 font-sans">
       {showHeader && (
         <div className="px-1">
           <KindGroupHeader
@@ -777,95 +745,87 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps & { showH
           <span>{t('evaluations.manualDate')}</span>
           <span>{t('evaluations.colActions')}</span>
         </div>
-        {/* Même tableau que les devoirs : une activité se lit dans les mêmes
-            colonnes, avec sa nature, son état, sa période et ses commandes. */}
         <ul className="ev-board__rows">
-        {events.map((event) => {
-          const done = event.status === 'done';
-          const { labelKey, tone } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
-          const names = event.students?.names.length ?? 0;
-          const typeLabel = t(labelKey);
-          const title = event.title.trim() || typeLabel;
-          const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
-          const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
-          const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
-          return (
-            <li
-              key={event.id}
-              className="ev-row evaluation-tone"
-              data-activity-card="true"
-              data-activity-type={event.type}
-              data-tone={tone}
-              data-done={done ? 'true' : undefined}
-            >
-              {/* 1 · L'identité : le titre, sa nature écrite SEULEMENT si le titre ne
-                  la dit pas déjà, et la note qui reste utile. */}
-              <div className="ev-row__id min-w-0">
-                <h4 className="text-[13.5px] font-bold leading-snug text-foreground" dir="auto">{title}</h4>
-                {showType && <span className="tone-chip">{typeLabel}</span>}
-                {showNote && (
-                  <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground text-start">{event.note}</p>
-                )}
-              </div>
+          {events.map((event) => {
+            const done = event.status === 'done';
+            const { labelKey, tone } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
+            const names = event.students?.names.length ?? 0;
+            const typeLabel = t(labelKey);
+            const title = event.title.trim() || typeLabel;
+            const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
+            const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
+            const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
+            return (
+              <li
+                key={event.id}
+                className="ev-row evaluation-tone"
+                data-activity-card="true"
+                data-activity-type={event.type}
+                data-tone={tone}
+                data-done={done ? 'true' : undefined}
+              >
+                <div className="ev-row__id min-w-0">
+                  <h4 className="text-[13.5px] font-bold leading-snug text-foreground" dir="auto">{title}</h4>
+                  {showType && <span className="tone-chip">{typeLabel}</span>}
+                  {showNote && (
+                    <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground text-start">{event.note}</p>
+                  )}
+                </div>
 
-              {/* 3 · L'état : écrit seulement quand il y a quelque chose à dire. */}
-              <div className="ev-row__state">
-                {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
-              </div>
+                <div className="ev-row__state">
+                  {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
+                </div>
 
-              {/* 4 · La période : lecture seule — une activité se date à sa création. */}
-              <div className="ev-row__date">
-                <time dateTime={event.date} className="ev-row__period">
-                  {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                </time>
-              </div>
+                <div className="ev-row__date">
+                  <time dateTime={event.date} className="ev-row__period">
+                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
+                  </time>
+                </div>
 
-              {/* 5 · Les commandes, toujours dans le même ordre que celles d'un devoir :
-                  le document, les élèves, l'état, la suppression. */}
-              <div className="ev-row__actions">
-                {event.type !== REMARK_EVENT_TYPE && (
+                <div className="ev-row__actions">
+                  {event.type !== REMARK_EVENT_TYPE && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenDocument(event)}
+                      className="ev-action"
+                      data-filled={event.document ? 'tone' : undefined}
+                      aria-label={t('evaluations.doc.title', { activity: event.title })}
+                    >
+                      {t('evaluations.doc.open')}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => onOpenDocument(event)}
+                    onClick={() => onOpenStudents(event)}
                     className="ev-action"
-                    data-filled={event.document ? 'tone' : undefined}
-                    aria-label={t('evaluations.doc.title', { activity: event.title })}
+                    data-filled={names > 0 ? 'tone' : undefined}
+                    aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
                   >
-                    {t('evaluations.doc.open')}
+                    {t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => onOpenStudents(event)}
-                  className="ev-action"
-                  data-filled={names > 0 ? 'tone' : undefined}
-                  aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
-                >
-                  {t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}
-                </button>
 
-                <button
-                  type="button"
-                  onClick={() => onToggle(event.id)}
-                  className="ev-icon-btn"
-                  data-done={done}
-                  aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
-                >
-                  {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(event.id)}
-                  className="ev-icon-btn"
-                  data-danger="true"
-                  aria-label={t('evaluations.deleteEventAria', { title: event.title })}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </li>
-          );
-        })}
+                  <button
+                    type="button"
+                    onClick={() => onToggle(event.id)}
+                    className="ev-icon-btn"
+                    data-done={done}
+                    aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
+                  >
+                    {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(event)}
+                    className="ev-icon-btn"
+                    data-danger="true"
+                    aria-label={t('evaluations.deleteEventAria', { title: event.title })}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -874,7 +834,6 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps & { showH
 
 interface PedagogicalEventEditorProps {
   today: string;
-  /** Nature choisie à l'étape précédente : la fiche ne la redemande pas. */
   initialType: PedagogicalEventType;
   onCancel: () => void;
   onSave: (event: PedagogicalEvent) => void;
@@ -915,7 +874,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       <div className="space-y-3.5">
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-foreground">{t('evaluations.titleLabel')}</span>
@@ -984,16 +943,16 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
+            className="min-h-11 px-4 py-2 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
+            className="min-h-11 px-5 py-2 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
-            {t('evaluations.add')}
+            {t('evaluations.addActivity')}
           </button>
         </div>
       </div>
@@ -1004,7 +963,6 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
 interface ManualAssessmentEditorProps {
   today: string;
   initial?: ManualAssessment | null;
-  /** Nature choisie à l'étape précédente (création) : la fiche ne la redemande pas. */
   initialType?: DevoirType;
   assessments?: { id: string; type: DevoirType }[];
   onCancel: () => void;
@@ -1015,8 +973,6 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   const { t } = useLocale();
   const initialKind: DevoirType = initial?.type ?? initialType ?? 'controle';
   const [type, setType] = useState<DevoirType>(initialKind);
-  // Numéro suivant de SA famille : le premier « devoir maison 1 » arrive quand
-  // les contrôles existent déjà.
   const [num, setNum] = useState(String(initial?.num ?? (assessments.filter(a => a.type === initialKind).length + 1)));
   const [date, setDate] = useState(initial?.dateISO ?? today);
   const [duree, setDuree] = useState(initial?.duree ?? '');
@@ -1053,14 +1009,9 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-3.5 sm:space-y-4">
+    <div className="space-y-3.5 sm:space-y-4 font-sans">
       <div className="space-y-3 sm:space-y-3.5">
         <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2">
-          {/*
-           * Le type n'est proposé QUE pour une modification : à la création, il
-           * vient de la carte choisie à l'étape précédente — le redemander ici
-           * serait une seconde décision pour la même information.
-           */}
           {initial ? (
             <label className="block space-y-1.5">
               <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
@@ -1102,7 +1053,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setNum(event.target.value);
                 setError('');
               }}
-              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-2.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:px-3"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
               inputMode="numeric"
             />
           </label>
@@ -1115,7 +1066,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setDate(event.target.value);
                 setError('');
               }}
-              className="h-9.5 w-full min-w-0 rounded-xl border border-border/80 bg-background px-2 text-[11px] font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:px-3 sm:text-xs"
+              className="h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
         </div>
@@ -1128,7 +1079,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             value={duree}
             onChange={(event) => setDuree(event.target.value)}
             placeholder="1h, 2h…"
-            className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
+            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </label>
 
@@ -1142,16 +1093,16 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           <button
             type="button"
             onClick={onCancel}
-            className="h-9.5 rounded-xl bg-muted px-3 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground sm:h-10 sm:px-4 sm:text-xs cursor-pointer"
+            className="min-h-11 rounded-xl bg-muted px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-9.5 rounded-xl bg-primary px-4 text-[11px] font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 sm:h-10 sm:px-5 sm:text-xs cursor-pointer"
+            className="min-h-11 rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer"
           >
-            {initial ? t('common.save') : t('evaluations.add')}
+            {t(initial ? 'evaluations.saveAssessment' : 'evaluations.addDevoir')}
           </button>
         </div>
       </div>

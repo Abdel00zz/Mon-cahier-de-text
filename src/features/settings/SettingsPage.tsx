@@ -52,6 +52,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             toast.success(t('settings.toast.importSuccess', { count }));
             setImportOpen(false);
             setTimeout(() => window.location.reload(), 900);
+            return true;
         } catch (error) {
             logger.error('Import failed', error);
             const message = error instanceof Error ? error.message : '';
@@ -70,6 +71,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     }),
                 duration: located ? 9000 : 6000,
             });
+            return false;
         }
     };
 

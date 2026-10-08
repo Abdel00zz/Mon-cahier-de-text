@@ -83,7 +83,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
               onClick={() => onConfigChange({ appTextSize: size })}
               className={cn(settingsChoiceClass(currentTextSize === size), 'flex-col gap-1 py-2')}
             >
-              <span aria-hidden="true" dir="ltr" className="font-semibold leading-none text-foreground" style={{ fontSize: TEXT_SIZE_SAMPLE[size] }}>Aa</span>
+              <span aria-hidden="true" className="flex flex-wrap justify-center gap-x-1 font-semibold leading-relaxed text-foreground" style={{ fontSize: TEXT_SIZE_SAMPLE[size] }}><bdi lang="ar">درس</bdi><bdi lang="fr">Leçon</bdi></span>
               <span className="text-xs">{t(`settings.appearance.textSize.${size}`)}</span>
             </button>
           ))}

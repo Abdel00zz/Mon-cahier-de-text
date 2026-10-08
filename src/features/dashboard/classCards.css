@@ -27,7 +27,7 @@
   height: 100%;
   overflow: hidden;
   border: 1px solid var(--class-border);
-  border-radius: 20px;
+  border-radius: 14px;
   color: var(--class-ink);
   background: var(--class-surface);
   -webkit-backdrop-filter: blur(14px) saturate(1.28);
@@ -90,7 +90,13 @@
 }
 .class-card__open:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -4px; }
 .class-card__body, .class-card__footer { position: relative; z-index: 2; pointer-events: none; }
-.class-card__body { flex: 1; padding: 12px 20px 20px; }
+.class-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 20px 8px;
+}
 .class-card__header, .class-card__identity { position: relative; z-index: 1; }
 .class-card__header { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-height: 44px; margin-bottom: 2px; }
 .class-card__menu {
@@ -116,6 +122,28 @@
 .dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
+
+/* Compact action surface; no separators or costly backdrop blur. */
+.class-actions-menu {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: hsl(var(--popover));
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent);
+}
+.dark .class-actions-menu {
+  border: 1px solid hsl(var(--border) / 0.65);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.7), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+}
+.class-actions-menu [role="menuitem"] {
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+.class-actions-menu [role="menuitem"]:active {
+  transform: scale(0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  .class-actions-menu [role="menuitem"] { transition: none; }
+  .class-actions-menu [role="menuitem"]:active { transform: none; }
+}
 /* Reference: large translucent group numeral, with a reserved title lane. */
 .class-card__identity { display: block; min-height: 56px; text-align: start; }
 .class-card__identity[data-has-group='true'] { padding-inline-end: 76px; }
@@ -149,7 +177,52 @@
   transform: translateY(-50%);
 }
 .dark .class-card .class-card__group { color: var(--class-accent); opacity: .4; }
-.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent); color: var(--class-muted); }
+/* Numéro majestueux au style romain (1, 2...) unifié avec le nom de la classe, placé juste au-dessus du filet séparateur */
+.class-card .class-card__identity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-height: auto;
+  margin-top: auto;
+  padding-bottom: 2px;
+  text-align: start;
+  padding-inline-end: 0;
+}
+.class-card .class-card__identity .class-card__group {
+  position: relative;
+  inset: auto;
+  top: auto;
+  transform: none;
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: baseline;
+  margin-inline-start: 8px;
+  /* Rogne l'interlignage du grand chiffre : il ne gonfle pas la hauteur de la carte. */
+  margin-block: -0.14em -0.08em;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 4.16rem;
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  /* Teinte vive du ton de la carte, pleinement opaque. */
+  color: var(--class-vivid);
+  opacity: 1;
+  letter-spacing: -0.03em;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+.dark .class-card .class-card__identity .class-card__group {
+  color: var(--class-accent);
+  opacity: 1;
+  text-shadow: none;
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .class-card .class-card__identity .class-card__group { font-size: 3.6rem; }
+}
+.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent); color: var(--class-muted); }
+.dark .class-card__footer { border-top-color: color-mix(in srgb, var(--class-accent) 26%, transparent); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 12px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
    en interface latine — en arabe, `--font-sans` porte la fonte locale
@@ -186,7 +259,7 @@
 .class-card:has(.class-card__open:focus-visible)::before { opacity: 0; }
 .class-card:has(.class-card__open:active) { transform: scale(.988); }
 @media (max-width: 639px) {
-  .class-card { min-height: 173px; border-radius: 18px; }
+  .class-card { min-height: 173px; border-radius: 12px; }
   .class-card__body { padding: 6px 14px 16px; }
   .class-card__header { margin-bottom: 4px; }
   .class-card__identity { min-height: 52px; }
@@ -219,11 +292,12 @@
 /* Compact portrait cards keep the title, numeral and menu in separate lanes. */
 @media (max-width: 639px) {
   .class-card { min-height: 156px; }
-  .class-card__body { display: flex; align-items: center; padding: 36px 14px 16px; }
-  .class-card__header { position: absolute; top: 2px; inset-inline-end: 14px; margin: 0; }
+  .class-card__body { display: flex; flex-direction: column; justify-content: space-between; padding: 10px 14px 6px; }
+  .class-card__header { position: relative; top: auto; inset-inline-end: auto; margin: 0 0 4px; }
   .class-card__menu { margin: 0; translate: none; }
-  .class-card__identity { width: 100%; min-height: 52px; display: flex; align-items: center; }
-  .class-card__identity[data-has-group='true'] { padding-inline-end: 64px; }
+  .class-card .class-card__identity { width: 100%; min-height: auto; margin-top: auto; display: flex; align-items: baseline; }
+  .class-card .class-card__identity[data-has-group='true'] { padding-inline-end: 0; }
+  .class-card .class-card__identity .class-card__group { font-size: 3.2rem; margin-inline-start: 6px; }
   .class-card__title { font-size: clamp(17px, 4.7vw, 19px); }
   .class-card__footer { align-items: flex-start; padding: 10px 14px; gap: 7px; }
   .class-card__clock { margin-top: 2px; width: 14px; height: 14px; }

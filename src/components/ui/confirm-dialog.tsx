@@ -38,6 +38,7 @@ export function ConfirmDialog({
     const [failure, setFailure] = React.useState(false);
     const pendingRef = React.useRef(false);
     const requiresTypedConfirmation = Boolean(confirmationPhrase);
+    const typedConfirmationLabel = confirmationHint ?? t('confirm.typePhrase', { phrase: confirmationPhrase ?? '' });
     const confirmationIsValid = !requiresTypedConfirmation || confirmationValue === confirmationPhrase;
 
     React.useEffect(() => {
@@ -116,7 +117,7 @@ export function ConfirmDialog({
                         aria-busy={pending}
                         className="min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm"
                     >
-                        {pending ? t('common.loading') : confirmLabel ?? t('common.confirm')}
+                        {pending ? t('common.loading') : confirmLabel ?? (variant === 'destructive' ? t('common.delete') : t('common.confirm'))}
                     </Button>
                 </div>
             }
@@ -125,7 +126,7 @@ export function ConfirmDialog({
             {requiresTypedConfirmation && (
                 <label className="space-y-2 pt-2 block">
                     <span className="block text-xs font-semibold leading-relaxed text-foreground">
-                        {confirmationHint}
+                        {typedConfirmationLabel}
                     </span>
                     <Input
                         type="text"
@@ -135,7 +136,7 @@ export function ConfirmDialog({
                         autoComplete="off"
                         disabled={pending}
                         className="flex h-11 w-full rounded-xl border border-border/80 bg-muted/40 px-4 text-xs sm:text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
-                        aria-label={confirmationHint}
+                        aria-label={typedConfirmationLabel}
                     />
                 </label>
             )}

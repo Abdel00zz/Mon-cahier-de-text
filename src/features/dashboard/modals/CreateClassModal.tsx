@@ -13,13 +13,15 @@ import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
 import { keepToneForClass } from '@/platform/keepTheme';
 import { classNameForLevelAndGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/domain/classes/classGroup';
+import { classLevelPartsFor } from '@/domain/classes/classLevelParts';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
+import type { ClassIdentityDraft } from '@/types';
 
 interface CreateClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (details: { name: string; subject: string; cycle?: Cycle; color?: string }) => void | Promise<void>;
+  onCreate: (details: ClassIdentityDraft & { color?: string }) => void | Promise<void>;
   defaultCycle?: Cycle;
   teacherSubjects?: string[];
   teacherCycles?: Cycle[];
@@ -46,7 +48,7 @@ const COPY: Record<AppLocale, {
     cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe', branch: 'Branche / filière', group: 'N° de groupe',
     groupHint: 'De 1 à 99. Le premier numéro libre est proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
-    createCustom: 'Classe non listée', switchToOfficial: 'Liste officielle', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
+    createCustom: 'Classe non listée ?', switchToOfficial: 'Liste officielle', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
     otherCycle: 'Autre cycle',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
@@ -57,7 +59,7 @@ const COPY: Record<AppLocale, {
     cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم', branch: 'الشعبة أو المسلك', group: 'رقم الفوج',
     groupHint: 'من 1 إلى 99. يُقترح أول رقم فوج متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
-    createCustom: 'هل قسمك غير مدرج', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    createCustom: 'لا تجد قسمك في القائمة؟', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
     otherCycle: 'سلك آخر',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
@@ -68,7 +70,7 @@ const COPY: Record<AppLocale, {
     cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class', branch: 'Stream', group: 'Group number',
     groupHint: 'From 1 to 99. The first available number is proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
-    createCustom: 'Class not listed', switchToOfficial: 'Official list', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
+    createCustom: 'Class not listed?', switchToOfficial: 'Official list', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
     otherCycle: 'Another cycle',
     cycleLabels: { college: 'Middle school', lycee: 'High school', prepa: 'Preparatory class' },
   },
@@ -208,12 +210,27 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     submittingRef.current = true;
     setSubmitting(true);
     const name = classNameForLevelAndGroup(effectiveLevel, normalizedGroup);
+    /*
+     * Le niveau officiel est décomposé une seule fois ici : le palier (« 2ème
+     * Bac ») et la filière (« Sciences Physiques ») voyagent avec la classe au
+     * lieu d'obliger les plans de devoirs à réinterpréter le nom. Une classe
+     * hors liste garde son nom libre, sans identité inventée.
+     */
+    const identity = customMode ? null : classLevelPartsFor(cycle, effectiveLevel);
+    const details = {
+      name,
+      subject: effectiveSubject,
+      cycle,
+      level: identity?.level,
+      branch: identity?.branch || undefined,
+      group: normalizedGroup,
+    };
     try {
       if (editingClass) {
         if (!onUpdate) return;
-        await onUpdate(editingClass.id, { name, subject: effectiveSubject, cycle });
+        await onUpdate(editingClass.id, details);
       } else {
-        await onCreate({ name, subject: effectiveSubject, cycle });
+        await onCreate(details);
       }
       onClose();
     } catch {

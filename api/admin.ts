@@ -102,7 +102,7 @@ const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: s
     next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
     next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
     next.dashboardClassOrder = next.dashboardClassOrder?.filter(id => id !== classId);
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
         if (!next[key]) continue;
         const records = { ...next[key] };
         delete records[classId];
@@ -510,7 +510,15 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     if (requestedId && !existing) throw new HttpError(404, 'Classe introuvable.');
 
     const now = new Date().toISOString();
+    const identity: Partial<Pick<ClassInfo, 'level' | 'branch' | 'group'>> = {};
+    for (const field of ['level', 'branch', 'group'] as const) {
+        const value = input[field] ?? (input.name === existing?.name ? existing?.[field] : undefined);
+        if (value === undefined) continue;
+        if (typeof value !== 'string' || value.length > 120) throw new HttpError(400, `Identité de classe invalide (${field}).`);
+        if (value.trim()) identity[field] = value.trim();
+    }
     const classInfo: ClassInfo = {
+        ...identity,
         id: requestedId ?? randomUUID(),
         name: requiredText(input.name, 'Nom de classe'),
         subject: requiredText(input.subject, 'Matière'),

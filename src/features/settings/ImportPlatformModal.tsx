@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { HardDriveUpload, FileUp } from '@/components/ui/icons';
+import { HardDriveUpload, FileUp, Loader2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
+import { MAX_JSON_FILE_BYTES, parseBoundedJson } from '@/domain/notebook/jsonInput';
 import { StatusNotice } from '@/components/ui/status-notice';
+import { ImportSummary } from '@/components/ui/import-summary';
+import { inspectBackup } from '@/infrastructure/storage/backup';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (fileContent: string) => void;
+  onImport: (fileContent: string) => boolean | void | Promise<boolean | void>;
 }
 
 export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen, onClose, onImport }) => {
@@ -23,6 +25,9 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   const readerRef = useRef<FileReader | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [readError, setReadError] = useState('');
+  const [preview, setPreview] = useState<ReturnType<typeof inspectBackup> | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const importingRef = useRef(false);
 
   useEffect(() => {
     readRequestRef.current += 1;
@@ -33,6 +38,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
     setFileName('');
     setIsConfirmed(false);
     setReadError('');
+    setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     return () => { readRequestRef.current += 1; readerRef.current?.abort(); };
   }, [isOpen]);
@@ -40,9 +46,11 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (importingRef.current) return;
       const requestId = ++readRequestRef.current;
       readerRef.current?.abort();
       setFileContent(null);
+      setPreview(null);
       setIsConfirmed(false);
       setFileName(file.name);
       setReadError('');
@@ -53,7 +61,15 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       setIsReading(true);
       reader.onload = (e) => {
         if (requestId !== readRequestRef.current) return;
-        setFileContent(typeof e.target?.result === 'string' ? e.target.result : null);
+        const content = typeof e.target?.result === 'string' ? e.target.result : '';
+        try {
+          setPreview(inspectBackup(parseBoundedJson(content)));
+          setFileContent(content);
+        } catch {
+          setPreview(null);
+          setFileContent(null);
+          setReadError(t('transfer.preview.invalidBackup'));
+        }
         setIsReading(false);
       };
       reader.onerror = () => {
@@ -66,16 +82,22 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
     }
   };
 
-  const handleImport = () => {
-    if (fileContent && isConfirmed && !isReading) {
-      onImport(fileContent);
-    }
+  const handleImport = async () => {
+    if (!fileContent || !preview || !isConfirmed || isReading || importingRef.current) return;
+    importingRef.current = true;
+    setIsImporting(true);
+    try {
+      if (await onImport(fileContent) === false) setReadError(t('transfer.preview.restoreFailed'));
+    } catch { setReadError(t('transfer.preview.restoreFailed')); }
+    finally { importingRef.current = false; setIsImporting(false); }
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => { if (!importingRef.current) onClose(); }}
+      blockDismiss={isImporting}
+      closeDisabled={isImporting}
       title={
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -93,9 +115,9 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       footerClassName="border-t-0 bg-background/60"
       footer={
         <div className="flex w-full items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button variant="destructive" onClick={handleImport} disabled={!fileContent || !isConfirmed || isReading}>
-            <HardDriveUpload aria-hidden />{t('settings.importModal.importAction')}
+          <Button variant="secondary" onClick={onClose} disabled={isImporting}>{t('common.cancel')}</Button>
+          <Button variant="destructive" onClick={() => void handleImport()} disabled={!preview || !isConfirmed || isReading || isImporting} aria-busy={isImporting}>
+            {isImporting ? <Loader2 aria-hidden className="animate-spin motion-reduce:animate-none"/> : <HardDriveUpload aria-hidden />}{t(isImporting ? 'common.loading' : 'settings.importModal.importAction')}
           </Button>
         </div>
       }
@@ -117,14 +139,16 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
             </span>
             <span className="text-[11px] text-muted-foreground font-medium mt-1">{t('settings.importModal.jsonOnly')}</span>
           </label>
-          <input ref={fileInputRef} type="file" id="platform-json-file-input" accept=".json" onChange={handleFileChange} className="sr-only" />
+          <input ref={fileInputRef} type="file" id="platform-json-file-input" accept=".json" onChange={handleFileChange} disabled={isImporting} className="sr-only" />
         </div>
 
-        {fileContent && (
+        {preview && <ImportSummary fileName={fileName} {...preview} date={preview.exportedAt}/>}
+        {preview && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
             <label className="flex min-h-11 items-center gap-3 cursor-pointer text-foreground">
               <Checkbox
                 checked={isConfirmed}
+                disabled={isImporting}
                 onCheckedChange={(checked) => setIsConfirmed(checked === true)}
                 className="border-destructive/40 data-[state=checked]:bg-destructive data-[state=checked]:text-destructive-foreground data-[state=checked]:border-destructive"
               />

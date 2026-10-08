@@ -3,7 +3,8 @@ import test from 'node:test';
 import { analyzeContentJson } from '../src/domain/notebook/contentDiagnostics';
 import { prepareImportedLessons } from '../src/domain/notebook/importPipeline';
 import { parseBoundedJson } from '../src/domain/notebook/jsonInput';
-import { buildFullBackup, restoreBackup, serializeBackup, validateBackup } from '../src/infrastructure/storage/backup';
+import { buildFullBackup, inspectBackup, restoreBackup, serializeBackup, validateBackup } from '../src/infrastructure/storage/backup';
+import { inspectNotebookImport } from '../src/domain/notebook/importPreview';
 import { createArchive, downloadArchive, listArchives } from '../src/infrastructure/storage/archives';
 import { assertValidLessonsPayload } from '../api/_lib/validate';
 import { writeStorageBatch } from '../src/infrastructure/storage/storageBatch';
@@ -12,6 +13,29 @@ import { subscribe } from '../src/infrastructure/sync/syncBus';
 const lesson = { type: 'chapter', title: 'Continuité', sections: [{ name: 'Cours', items: [{ type: 'definition', title: 'Limite', description: 'Soit $x$ réel.' }] }] };
 const info = { id: 'json-test', name: '2ème Bac Sciences Physiques 1', teacherName: 'Professeur', subject: 'Mathématiques', color: '', createdAt: '2026-09-01' };
 const backup = () => ({ format: 'cdt-backup', version: 2, config: {}, classes: [{ classInfo: { ...info }, lessonsData: [structuredClone(lesson)], contentDirection: 'rtl' }] });
+
+test('aperçu : refuse un fichier incompatible avant confirmation et préserve les sources', () => {
+  const data = { ...backup(), exportedAt: '2026-10-08T10:00:00Z' };
+  const original = structuredClone(data);
+  assert.deepEqual(inspectBackup(data), { format: 'cdt-backup', version: 2, exportedAt: data.exportedAt, classes: 1, blocks: 1 });
+  assert.deepEqual(data, original);
+  assert.throws(() => inspectBackup({ ...data, version: 99 }));
+  const legacy = inspectBackup({ config: {}, classes: data.classes });
+  assert.equal(legacy.version, undefined);
+  assert.equal(legacy.exportedAt, null);
+});
+
+test('aperçu du cahier : mêmes limites et comptages que le moteur, aucune métadonnée inventée', () => {
+  const source = JSON.stringify({ lessonsData: [lesson] });
+  const preview = inspectNotebookImport(source);
+  assert.deepEqual(preview.parsed, JSON.parse(source));
+  assert.equal(preview.blocks, prepareImportedLessons(preview.parsed).lessonsData.length);
+  assert.equal(preview.date, null);
+  assert.equal(preview.version, undefined);
+  assert.throws(() => inspectNotebookImport('{"arbitrary":true}'));
+  assert.throws(() => inspectNotebookImport(JSON.stringify({ classes: [{ lessonsData: [lesson] }, { lessonsData: [lesson] }] })));
+  assert.equal(inspectNotebookImport('[]').blocks, 0);
+});
 
 test('toutes les enveloppes diagnostiquent les mêmes champs avant import', () => {
   const broken = structuredClone(lesson);

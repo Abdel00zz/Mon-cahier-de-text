@@ -9,6 +9,7 @@ import { computeLateness } from '../../domain/calendar/lateness';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../domain/evaluations/assessments';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
+import { Clock, Bell, LockKeyhole, Trash2 } from '../../components/ui/icons';
 import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
@@ -567,7 +568,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         setClassModalOpen(true);
     };
 
-    const handleSaveClass = (details: Pick<ClassInfo, 'name' | 'subject' | 'cycle'>, classId?: string) =>
+    const handleSaveClass = (details: Pick<ClassInfo, 'name' | 'subject' | 'cycle' | 'level' | 'branch' | 'group'>, classId?: string) =>
         runAction(async () => {
             const name = details.name.trim();
             const subject = details.subject.trim();
@@ -577,6 +578,9 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 name,
                 subject,
                 cycle: details.cycle ?? 'college',
+                level: details.level ?? '',
+                branch: details.branch ?? '',
+                group: details.group ?? '',
             });
             if (activeTeacherRef.current !== phone) return '';
             setData(current => {
@@ -847,28 +851,28 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                 disabled={busy}
                                 className="min-h-11 rounded-xl border border-primary/25 bg-primary/5 px-3 text-xs font-semibold text-primary hover:bg-primary/10 disabled:opacity-50"
                             >
-                                🕘 Personnaliser l’horaire
+                                <Clock aria-hidden className="me-2 inline-block h-4 w-4" />Personnaliser l’horaire
                             </button>
                             <button
                                 onClick={() => setMessageModalOpen(true)}
                                 disabled={busy}
                                 className="min-h-11 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                             >
-                                📣 Envoyer un message
+                                <Bell aria-hidden className="me-2 inline-block h-4 w-4" />Envoyer un message
                             </button>
                             <button
                                 onClick={() => setConfirmAction({ kind: 'block' })}
                                 disabled={busy}
                                 className="min-h-11 rounded-xl border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
                             >
-                                {isBlocked ? '🔓 Débloquer' : '🔒 Bloquer'}
+                                <LockKeyhole aria-hidden className="me-2 inline-block h-4 w-4" />{isBlocked ? 'Débloquer' : 'Bloquer'}
                             </button>
                             <button
                                 onClick={() => setConfirmAction({ kind: 'deleteAccount' })}
                                 disabled={busy}
                                 className="min-h-11 rounded-xl border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
                             >
-                                🗑 Supprimer le compte
+                                <Trash2 aria-hidden className="me-2 inline-block h-4 w-4" />Supprimer le compte
                             </button>
                         </div>
                         {actionMessage && (
@@ -990,6 +994,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         teacherSubjects={[...new Set(classes.map(item => item.subject).filter(Boolean))]}
                         onCreate={details => handleSaveClass(details)}
                         onUpdate={(id, updates) => handleSaveClass({
+                            ...updates,
                             name: updates.name ?? editingClass!.name,
                             subject: updates.subject ?? editingClass!.subject,
                             cycle: updates.cycle ?? editingClass?.cycle ?? 'college',

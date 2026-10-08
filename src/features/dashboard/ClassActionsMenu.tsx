@@ -1,5 +1,5 @@
 import { MoreVertical, Settings, Trash2, CalendarCheck } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
@@ -16,13 +16,12 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
             title={t('dashboard.classActions', { className: name })} aria-label={t('dashboard.classActions', { className: name })}>
             <MoreVertical className="h-[18px] w-[18px]" aria-hidden="true"/>
         </button></DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-1rem))] rounded-xl border-border/80 bg-popover/95 p-1.5 [&_[role=menuitem]]:rounded-lg [&_[role=menuitem]]:leading-snug">
-            {onOpenEvaluations && <>
+        <DropdownMenuContent align="end" sideOffset={3} className="class-actions-menu w-auto min-w-[11.5rem] max-w-[min(16rem,calc(100vw-1rem))] rounded-xl border-border/70 bg-popover p-1 shadow-lg ring-0 backdrop-blur-none [&_[role=menuitem]]:min-h-11 [&_[role=menuitem]]:gap-2 [&_[role=menuitem]]:rounded-lg [&_[role=menuitem]]:px-2.5 [&_[role=menuitem]]:py-1.5 [&_[role=menuitem]]:text-[13px] [&_[role=menuitem]]:font-medium [&_[role=menuitem]]:leading-snug [&_[role=menuitem]]:transition-[background-color,color,transform]">
+            {onOpenEvaluations &&
                 <DropdownMenuItem onSelect={() => open('all')}><CalendarCheck aria-hidden="true"/>{t('dashboard.openEvaluations')}</DropdownMenuItem>
-                <DropdownMenuSeparator/>
-            </>}
+            }
             <DropdownMenuItem onSelect={() => { impact('light'); onConfigure(); }}><Settings aria-hidden="true"/>{t('dashboard.classSettings')}</DropdownMenuItem>
-            {onDelete && <><DropdownMenuSeparator/><DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}><Trash2 aria-hidden="true"/>{t('dashboard.delete')}</DropdownMenuItem></>}
+            {onDelete && <DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}><Trash2 aria-hidden="true"/>{t('dashboard.delete')}</DropdownMenuItem>}
         </DropdownMenuContent>
     </DropdownMenu>;
 }
