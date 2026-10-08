@@ -236,7 +236,8 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   const activitySettings = {
     ...(workspace.body as { settings: Partial<AppConfig> }).settings,
     pedagogicalEvents: { [classInfo.id]: [
-      { id: 'check', type: 'controle_cahiers', title: 'مراقبة دفاتر التلاميذ', date: '2026-10-03', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
+      { id: 'check', type: 'controle_cahiers', title: 'مراقبة دفاتر التلاميذ', date: '2026-10-03', status: 'planned', createdAt: '2026-10-01T00:00:00Z',
+        students: { names: ['أمين', 'سلمى'], notebookConditions: { 'أمين': 'good', 'سلمى': 'missing' }, updatedAt: '2026-10-03T08:00:00Z' } },
       { id: 'remediate', type: 'remediation', title: 'معالجة التعثرات', date: '2026-10-03', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
       { id: 'correction', type: 'correction_controle_continu', title: 'تصحيح الفرض المحروس', date: '2026-10-04', status: 'planned', createdAt: '2026-10-01T00:00:00Z' },
     ] },
@@ -250,7 +251,7 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   assert.deepEqual(restored.settings.pedagogicalEvents, activitySettings.pedagogicalEvents);
   assert.equal(buildSessionActivityRemarks(restored.settings, classInfo.id,
     (key, values) => translateLocaleMessage('ar', key, values), '، ').get('2026-10-03'),
-  'مراقبة دفاتر التلاميذ\nمعالجة التعثرات\nتقويم شفهي');
+  'مراقبة الدفاتر: أمين، سلمى\nجيد: 1، لم يُحضَر: 1\nمعالجة التعثرات\nتقويم شفهي');
   assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body,
     'syncing activities keeps the imported course hierarchy intact');
   const notification = await postAdmin({action: 'notifyTeacher', phone: number, message: 'Votre cahier est prêt.'});

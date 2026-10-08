@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { AppConfig, AppLocale, ClassInfo, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent, PedagogicalEventType } from '@/types';
+import { AppConfig, AppLocale, ClassInfo, DevoirType, LessonsData, ManualAssessment, NotebookCondition, PedagogicalEvent, PedagogicalEventType } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
@@ -381,12 +381,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     onConfigChange({ assessmentDocuments: { ...(config.assessmentDocuments ?? {}), [classId]: forClass } });
   };
 
-  const saveEventStudents = (names: string[]) => {
+  const saveEventStudents = (names: string[], conditions?: Record<string, NotebookCondition>) => {
     if (!selectedClass || !studentsFor) return;
     const target = studentsFor.id;
     const activity = activityLabelOf(studentsFor);
     savePedagogicalEvents(pedagogicalEvents.map(event => event.id === target
-      ? { ...event, students: names.length > 0 ? { names, updatedAt: new Date().toISOString() } : undefined }
+      ? { ...event, students: names.length > 0 ? { names, updatedAt: new Date().toISOString(),
+          ...(event.type === REMARK_EVENT_TYPE && conditions ? { notebookConditions: conditions } : {}) } : undefined }
       : event));
     toast.success(names.length > 0
       ? t(names.length === 1 ? 'evaluations.students.savedOne' : 'evaluations.students.savedMany', {
@@ -929,7 +930,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       <Modal
         isOpen={studentsFor !== null}
         onClose={() => setStudentsFor(null)}
-        maxWidth="md"
+        maxWidth={studentsFor?.type === REMARK_EVENT_TYPE ? 'lg' : 'md'}
         className="evaluation-modal sm:rounded-2xl"
         headerClassName="border-b-0 bg-background"
         title={
@@ -939,7 +940,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </span>
             <div className="min-w-0">
               <span className="block break-words text-base font-semibold text-foreground sm:text-lg">
-                {t('evaluations.students.open')}
+                {t(studentsFor?.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}
               </span>
               {studentsFor && (
                 <p className="mt-0.5 text-xs font-medium text-muted-foreground">
@@ -955,6 +956,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             key={`students-${studentsFor.id}`}
             variant="checked"
             initialNames={studentsFor.students?.names ?? []}
+            trackNotebookCondition={studentsFor.type === REMARK_EVENT_TYPE}
+            initialNotebookConditions={studentsFor.students?.notebookConditions}
             updatedAt={studentsFor.students?.updatedAt}
             onCancel={() => setStudentsFor(null)}
             onSave={saveEventStudents}
@@ -1159,9 +1162,9 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps & { showH
                   onClick={() => onOpenStudents(event)}
                   className="ev-action"
                   data-filled={names > 0 ? 'tone' : undefined}
-                  aria-label={`${t('evaluations.students.open')} — ${event.title}`}
+                  aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
                 >
-                  {names > 0 ? `${t('evaluations.students.open')} · ${names}` : t('evaluations.students.open')}
+                  {t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}
                 </button>
 
                 <button

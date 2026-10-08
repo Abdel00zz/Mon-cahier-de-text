@@ -376,9 +376,9 @@ export const assertValidLessonsPayload = (
  * Élèves consignés sur un devoir ou une activité : liste bornée, horodatage
  * obligatoire (c'est lui qui décide, à la fusion, quelle version gagne).
  */
-const assertStudentNames = (candidate: unknown, label: string): void => {
+const assertStudentNames = (candidate: unknown, label: string, allowNotebookConditions = false): void => {
   if (candidate === undefined) return;
-  const value = candidate as { names?: unknown; updatedAt?: unknown };
+  const value = candidate as { names?: unknown; updatedAt?: unknown; notebookConditions?: unknown };
   if (!value || typeof value !== 'object' || !Array.isArray(value.names) || value.names.length > 200) {
     throw new HttpError(400, `Liste d'élèves invalide (${label}).`);
   }
@@ -387,6 +387,14 @@ const assertStudentNames = (candidate: unknown, label: string): void => {
   }
   if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) {
     throw new HttpError(400, `Horodatage d'élèves invalide (${label}).`);
+  }
+  if (value.notebookConditions !== undefined) {
+    const conditions = value.notebookConditions;
+    if (!allowNotebookConditions || !conditions || typeof conditions !== 'object' || Array.isArray(conditions)
+      || Object.entries(conditions).some(([name, condition]) => !(value.names as string[]).includes(name)
+        || !['good', 'average', 'needs_work', 'missing'].includes(condition as string))) {
+      throw new HttpError(400, `Suivi de cahier invalide (${label}).`);
+    }
   }
 };
 
@@ -472,7 +480,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!value || typeof value.id !== 'string' || !value.id || !VALID_PEDAGOGICAL_TYPES.has(value.type as string)) throw new HttpError(400, 'Activité pédagogique invalide.');
       if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || !ISO_DATE.test(value.date)) throw new HttpError(400, 'Titre ou date d’activité invalide.');
       if (value.status !== 'planned' && value.status !== 'done') throw new HttpError(400, 'Statut d’activité invalide.');
-      assertStudentNames(value.students, 'les élèves consignés');
+      assertStudentNames(value.students, 'les élèves consignés', value.type === 'controle_cahiers');
       assertContentDocument(value.document, 'l’activité pédagogique');
     }
   }

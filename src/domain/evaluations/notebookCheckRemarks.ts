@@ -1,4 +1,5 @@
-import type { PedagogicalEvent } from '@/types';
+import type { NotebookCondition, PedagogicalEvent } from '@/types';
+import { NOTEBOOK_CONDITIONS, countNotebookConditions } from './notebookConditions';
 
 /*
  * Contrôle des cahiers → remarque de la séance.
@@ -34,6 +35,7 @@ export interface NotebookCheckRemark {
     title: string;
     /** élèves consignés, dans l'ordre de saisie */
     names: string[];
+    conditions?: Record<string, NotebookCondition>;
 }
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,6 +84,7 @@ export const buildNotebookCheckRemarks = (
             eventId: event.id,
             title: event.title?.trim() || '',
             names,
+            conditions: event.students?.notebookConditions,
         };
         for (const date of coveredDates(event)) {
             // Le premier contrôle posé sur une date gagne : deux activités le
@@ -104,7 +107,11 @@ export const notebookCheckRemarkText = (
     if (remark.names.length === 0) return remark.title;
     const shown = remark.names.slice(0, REMARK_NAME_LIMIT).join(separator);
     const remaining = remark.names.length - REMARK_NAME_LIMIT;
-    return remaining > 0
+    const namesText = remaining > 0
         ? translate('remark.checkNamesMore', { names: shown, more: remaining })
         : translate('remark.checkNames', { names: shown });
+    const counts = countNotebookConditions(remark.names, remark.conditions);
+    const summary = NOTEBOOK_CONDITIONS.filter(condition => counts[condition] > 0)
+        .map(condition => `${translate(`evaluations.notebook.${condition}`)}: ${counts[condition]}`);
+    return summary.length ? `${namesText}\n${summary.join(separator)}` : namesText;
 };

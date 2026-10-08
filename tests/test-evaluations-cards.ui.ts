@@ -91,7 +91,7 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.match(cahiers, /class="tone-chip">Contrôle des cahiers des élèves</);
   assert.match(olympiade, /Olympiade de mathématiques/);
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
-  assert.match(cahiers, /Élèves consignés · 2/);
+  assert.match(cahiers, /Suivi des cahiers · 2/);
   // État et suppression restent des commandes, jamais un clic sur la ligne.
   assert.match(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/);
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
@@ -100,12 +100,13 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
 test('les commandes portent un libellé, pas une icône', () => {
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
+  const notebookLabel = translateLocaleMessage('fr', 'evaluations.notebook.title');
   const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
   const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
   // Un bouton dont le contenu est exactement le libellé : aucune icône injectée.
   assert.match(olympiade, new RegExp(`<button[^>]*>${documentLabel}</button>`));
   assert.match(olympiade, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
-  assert.match(cahiers, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
+  assert.match(cahiers, new RegExp(`<button[^>]*>${notebookLabel}</button>`));
   // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton.
   assert.equal(occurrences(cahiers, `>${documentLabel}</button>`), 0);
 });

@@ -3,6 +3,9 @@ import { toast } from 'sonner';
 import { Copy, Info, Plus, Trash2, X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
+import type { NotebookCondition } from '@/types';
+import { retainNotebookConditions } from '@/domain/evaluations/notebookConditions';
+import { NotebookConditionList } from './NotebookConditionList';
 
 /*
  * Une seule liste d'élèves pour deux usages : les ABSENTS d'un devoir surveillé
@@ -57,7 +60,9 @@ interface StudentNamesEditorProps {
   initialNames: string[];
   updatedAt?: string;
   onCancel: () => void;
-  onSave: (names: string[]) => void;
+  onSave: (names: string[], conditions?: Record<string, NotebookCondition>) => void;
+  trackNotebookCondition?: boolean;
+  initialNotebookConditions?: Record<string, NotebookCondition>;
   /** Habillage : absents d'un devoir, ou élèves consignés sur une activité. */
   variant?: StudentNamesVariant;
 }
@@ -67,25 +72,43 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   onCancel,
   onSave,
   variant = 'absent',
+  trackNotebookCondition = false,
+  initialNotebookConditions,
 }) => {
   const { t, locale } = useLocale();
   const copy = VARIANT_COPY[variant];
-  const [names, setNames] = useState<string[]>(initialNames);
+  const [names, setNames] = useState<string[]>(() => [...new Set(initialNames)]);
   const [draft, setDraft] = useState('');
+  const [conditions, setConditions] = useState(() => retainNotebookConditions(initialNames, initialNotebookConditions));
 
   const commitDraft = (raw: string) => {
     const parts = raw
-      .split(/[,;\n]+/)
+      .split(/[،؛,;\n]+/)
       .map((p) => p.trim().replace(/\s+/g, ' '))
       .filter(Boolean);
-    if (parts.length === 0) return;
-    setNames((prev) => {
-      const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
-      const seen = new Set(prev.map((n) => n.toLocaleLowerCase(localeCode)));
-      const additions = parts.filter((p) => !seen.has(p.toLocaleLowerCase(localeCode)));
-      return [...prev, ...additions];
+    if (parts.length === 0) return names;
+    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
+    const seen = new Set(names.map((n) => n.toLocaleLowerCase(localeCode)));
+    const additions = parts.filter((p) => {
+      const key = p.toLocaleLowerCase(localeCode);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
+    if (additions.some(name => name.length > 120) || names.length + additions.length > 200) {
+      toast.error(t('evaluations.students.limit'));
+      return null;
+    }
+    const next = [...names, ...additions];
+    setNames(next);
     setDraft('');
+    return next;
+  };
+
+  const removeName = (name: string) => {
+    const next = names.filter(value => value !== name);
+    setNames(next);
+    setConditions(previous => retainNotebookConditions(next, previous));
   };
 
   const handleCopy = async () => {
@@ -105,7 +128,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2 px-1">
               <span className="text-[11px] font-bold text-muted-foreground">
-                {t(names.length === 1 ? copy.countOne : copy.countMany, {
+                {t(trackNotebookCondition ? 'evaluations.notebook.rosterCount' : names.length === 1 ? copy.countOne : copy.countMany, {
                   count: numberFormat(locale).format(names.length),
                 })}
               </span>
@@ -113,7 +136,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                  className="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
                   title={t(copy.copy)}
                 >
                   <Copy className="h-3 w-3" />
@@ -121,8 +144,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setNames([])}
-                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                  onClick={() => { setNames([]); setConditions({}); }}
+                  className="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                   title={t(copy.clear)}
                 >
                   <Trash2 className="h-3 w-3" />
@@ -130,7 +153,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                 </button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
+            {trackNotebookCondition ? <NotebookConditionList names={names} conditions={conditions} onChange={setConditions} onRemove={removeName}/> : <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
               {names.map((name) => (
                 <span
                   key={name}
@@ -139,7 +162,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   {name}
                   <button
                     type="button"
-                    onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
+                    onClick={() => removeName(name)}
                     className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                     aria-label={t(copy.remove, { name })}
                   >
@@ -147,24 +170,25 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   </button>
                 </span>
               ))}
-            </div>
+            </div>}
           </div>
         )}
 
+        {trackNotebookCondition && names.length === 0 && <p className="rounded-xl border border-dashed border-border bg-muted/20 p-3 text-sm text-muted-foreground">{t('evaluations.notebook.empty')}</p>}
         <div className="flex gap-2">
           <input
             type="text"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ',') {
+              if (e.key === 'Enter' || e.key === ',' || e.key === '،') {
                 e.preventDefault();
                 commitDraft(draft);
               }
             }}
             onPaste={(e) => {
               const text = e.clipboardData.getData('text');
-              if (/[,;\n]/.test(text)) {
+              if (/[،؛,;\n]/.test(text)) {
                 e.preventDefault();
                 commitDraft(text);
               }
@@ -172,7 +196,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             onBlur={() => commitDraft(draft)}
             placeholder={t(copy.placeholder)}
             aria-label={t(copy.placeholder)}
-            className="h-11 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
             type="button"
@@ -204,7 +228,10 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => onSave(names)}
+            onClick={() => {
+              const next = commitDraft(draft);
+              if (next) onSave(next, trackNotebookCondition ? retainNotebookConditions(next, conditions) : undefined);
+            }}
             className="h-11 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
             {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}

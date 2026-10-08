@@ -155,10 +155,14 @@ export interface ManualAssessment {
 export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison';
 
 /** Élèves consignés sur un devoir ou une activité : absents, cahiers contrôlés, participants. */
+export type NotebookCondition = 'good' | 'average' | 'needs_work' | 'missing';
+
 interface StudentNamesRecord {
     /** noms des élèves (un nom par entrée) */
     names: string[];
     updatedAt: string;
+    /** Suivi des cahiers : un état choisi par nom. Un nom sans état reste à contrôler. */
+    notebookConditions?: Record<string, NotebookCondition>;
 }
 
 /**

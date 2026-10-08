@@ -4,6 +4,7 @@ import { Toolbar } from '../../src/features/editor/Toolbar';
 import { buildSessionActivityRemarks } from '../../src/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '../../src/i18n/messages';
 import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
+import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { PrintView } from '../../src/features/editor/PrintView';
 import { buildAbsenceSessions } from '../../src/domain/notebook/absenceSessions';
 import { createRoot } from 'react-dom/client';
@@ -27,6 +28,8 @@ const noop = () => {};
 const classes = assignClassColors(['2ème Bac Sciences Physiques 1', '2ème Bac Sciences Physiques 2', '1er Bac Sciences Mathématiques 1', 'Tronc Commun Scientifique 3'].map((name, i) => ({ id: `showcase-${i}`, name, subject: 'Mathématiques', cycle: 'lycee', teacherName: '', color: '', createdAt: `2026-09-0${i + 1}`, lastOpenedAt: '2026-09-21T09:30:00Z' } as ClassInfo)));
 const config = { establishmentName: '', defaultTeacherName: '', applicationLocale: locale, selectedSubjects: ['Mathématiques'], schoolYearStart: '2026-09-07', timetable: [{ day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id }, { day: 1, slot: 2, classId: classes[1].id }, { day: 2, slot: 0, classId: classes[2].id }, { day: 2, slot: 1, classId: classes[2].id }, { day: 3, slot: 2, classId: classes[3].id }, { day: 4, slot: 0, classId: classes[1].id }, { day: 5, slot: 3, classId: classes[0].id }] } as AppConfig;
 if (params.has('absences')) config.absences = [{ debut: '2026-09-22', fin: '2026-09-22', motif: ar ? 'راحة بوصفة طبية' : 'Repos prescrit' }];
+if (screen === 'checks') config.pedagogicalEvents = { [classes[0].id]: [{ id: 'notebook-check', type: 'controle_cahiers', title: ar ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers', date: '2026-10-08', status: 'planned', createdAt: '2026-10-08T08:00:00Z',
+ students: { names: ar ? ['أمين', 'سلمى', 'علي', 'لينا'] : ['Amine', 'Salma', 'Ali', 'Lina'], updatedAt: '2026-10-08T08:00:00Z' } }] };
 if (params.has('activities')) {
  config.pedagogicalEvents = { [classes[0].id]: ['2026-09-21', '2026-09-24'].flatMap(date => [
   { id: `check-${date}`, type: 'controle_cahiers', title: ar ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers', date, status: 'planned', createdAt: '2026-09-01T00:00:00Z' },
@@ -67,6 +70,7 @@ const tabs = [{ id: 'classes', label: ar ? 'أقسامي' : 'Mes classes', icon:
 function Capture() {
  const [search, setSearch] = useState('');
  const [opening, setOpening] = useState(0);
+ const [previewConfig, setPreviewConfig] = useState(config);
  return <LocaleProvider locale={locale}><div dir={ar?'rtl':'ltr'} className="showcase-capture" style={{minHeight:'100vh',padding:mobile?20:32}}>
   <style>{`* { animation:none !important; transition:none !important; } html, body, #root { margin:0; background:#fbfaf7 !important; } html { overflow-y:auto; } body { overflow:visible; } .showcase-capture { background:#fbfaf7; color:#282d2b; } .capture-page { max-width:1040px; margin:auto; }`}</style>
   <div className="capture-page"><header className="flex items-center justify-between gap-4 pb-5 border-b border-stone-400/15"><div className="flex items-center gap-3"><img src="/icons/icon-192.png" width="40" height="40" alt="" className="rounded-xl"/><div><p className="font-semibold text-lg">{ar?'دفتر نصوصي':'Mon cahier de textes'}</p><p className="text-xs text-muted-foreground mt-1">{ar?'مساحة واضحة ليوم دراسي منظم':'Un espace clair pour votre journée'}</p></div></div><span className="text-xs text-muted-foreground">2026 · 2027</span></header>
@@ -75,6 +79,7 @@ function Capture() {
   {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('resume')&&<button type="button" onClick={()=>setOpening(value=>value+1)} className="min-h-11 mb-3">{ar?'فتح القسم مجدداً':'Rouvrir la classe'}</button>}{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<PreviewTable key={opening}/></div>}
   {screen==='print'&&<PrintView lessonsData={lessons} classInfo={classes[0]} config={config} contentDirection={ar?'rtl':'ltr'} newlyAddedIds={[]} preview/>}
   {screen==='activities'&&<KindChooser onSelect={noop}/>}
+  {screen==='checks'&&<DevoirsView embedded classes={[classes[0]]} config={previewConfig} onConfigChange={patch => setPreviewConfig(previous => ({...previous,...patch}))}/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
   </div>
  </div></LocaleProvider>;
