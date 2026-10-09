@@ -4,11 +4,21 @@ import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { androidToolchain, run, gradle, root } from './toolchain.mjs';
 import { loadSigningEnvironment } from './load-signing.mjs';
+import { assertGoogleSigningConfigured } from './google-signing.mjs';
 
 const release = process.argv.includes('--release');
 const toolchain = androidToolchain();
 if (release) toolchain.environment = loadSigningEnvironment(toolchain.environment);
 const { java, sdk, environment } = toolchain;
+if (release) {
+  const exported = spawnSync(path.join(java, 'bin', process.platform === 'win32' ? 'keytool.exe' : 'keytool'),
+    ['-exportcert', '-rfc', '-keystore', environment.ANDROID_UPLOAD_STORE_FILE, '-alias', environment.ANDROID_UPLOAD_KEY_ALIAS,
+      '-storepass:env', 'ANDROID_UPLOAD_STORE_PASSWORD'], { env: environment, encoding: 'utf8', windowsHide: true });
+  if (exported.error || exported.status !== 0) throw new Error('Unable to inspect the release signing certificate.');
+  const certificate = new crypto.X509Certificate(exported.stdout);
+  assertGoogleSigningConfigured(JSON.parse(fs.readFileSync(path.join(root, 'android/app/google-services.json'), 'utf8')),
+    'ma.cahier.textes', certificate.fingerprint);
+}
 const metadata = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(metadata.version) || !Number.isInteger(metadata.androidVersionCode) || metadata.androidVersionCode < 1 || metadata.androidVersionCode > 2_100_000_000) throw new Error('Invalid Android version metadata.');
 run(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'android'], environment);

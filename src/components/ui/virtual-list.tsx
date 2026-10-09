@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { listViewport, visibleRange } from '@/platform/virtualGeometry';
+import { createScrollActivity } from '@/platform/scrollActivity';
 
 export interface VirtualItem {
   index: number;
@@ -42,6 +43,7 @@ export const useWindowVirtualizer = ({
   const estimatesRef = React.useRef(estimateSizes);
   estimatesRef.current = estimateSizes;
   const pendingScrollAdjustment = React.useRef(0);
+  const [scrollActivity] = React.useState(createScrollActivity);
   const [measureVersion, setMeasureVersion] = React.useState(0);
   const [viewport, setViewport] = React.useState({ top: 0, height: 0 });
 
@@ -71,7 +73,13 @@ export const useWindowVirtualizer = ({
     if (!enabled) return;
 
     measureViewport();
-    window.addEventListener('scroll', measureViewport, { passive: true });
+    const onScroll = () => { scrollActivity.move(); measureViewport(); };
+    const onTouch = (event: TouchEvent) => scrollActivity.touch(event.touches.length);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('wheel', scrollActivity.move, { passive: true });
+    const touchEvents = ['touchstart', 'touchend', 'touchcancel'] as const;
+    touchEvents.forEach(event => window.addEventListener(event, onTouch, { passive: true }));
+    window.addEventListener('blur', scrollActivity.reset);
     window.addEventListener('resize', measureViewport);
     // Layout changes above the list and async formulas can change its geometry.
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measureViewport);
@@ -81,14 +89,18 @@ export const useWindowVirtualizer = ({
     return () => {
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
-      window.removeEventListener('scroll', measureViewport);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('wheel', scrollActivity.move);
+      touchEvents.forEach(event => window.removeEventListener(event, onTouch));
+      window.removeEventListener('blur', scrollActivity.reset);
+      scrollActivity.reset();
       window.removeEventListener('resize', measureViewport);
       observer?.disconnect();
       if (measureFrameRef.current !== null) window.cancelAnimationFrame(measureFrameRef.current);
       measureFrameRef.current = null;
       pendingScrollAdjustment.current = 0;
     };
-  }, [enabled, measureViewport]);
+  }, [enabled, measureViewport, scrollActivity]);
 
   React.useEffect(() => {
     const active = new Set(itemKeys);
@@ -153,10 +165,12 @@ export const useWindowVirtualizer = ({
       const rounded = Math.max(1, Math.ceil(height));
       if (sizesRef.current.get(key) === rounded) return;
       const oldHeight = sizesRef.current.get(key) ?? estimatesRef.current?.[index] ?? estimateSize;
-      const tableTop = scrollRef.current?.getBoundingClientRect().top ?? 0;
       // Preserve the reading position when an overscanned row above it changes.
-      if (tableTop + (offsetsRef.current[index + 1] ?? 0) < 0) {
-        pendingScrollAdjustment.current += rounded - oldHeight;
+      if (!scrollActivity.isActive()) {
+        const tableTop = scrollRef.current?.getBoundingClientRect().top ?? 0;
+        if (tableTop + (offsetsRef.current[index + 1] ?? 0) < 0) {
+          pendingScrollAdjustment.current += rounded - oldHeight;
+        }
       }
       sizesRef.current.set(key, rounded);
       // One React update per frame, even when many formulas finish together.
@@ -173,14 +187,18 @@ export const useWindowVirtualizer = ({
     });
     observer?.observe(node);
     return () => { active = false; observer?.disconnect(); };
-  }, [enabled, estimateSize]);
+  }, [enabled, estimateSize, scrollActivity]);
 
   React.useLayoutEffect(() => {
     if (pendingScrollAdjustment.current) {
-      window.scrollBy({ top: pendingScrollAdjustment.current, behavior: 'instant' });
+      // An instant scroll aborts WebView momentum. Discard corrections if a
+      // gesture started since measurement; never replay them after the swipe.
+      if (!scrollActivity.isActive()) {
+        window.scrollBy({ top: pendingScrollAdjustment.current, behavior: 'instant' });
+      }
       pendingScrollAdjustment.current = 0;
     }
-  }, [measureVersion]);
+  }, [measureVersion, scrollActivity]);
   const scrollToIndex = React.useCallback((index: number) => {
     const table = scrollRef.current;
     if (!table) return;

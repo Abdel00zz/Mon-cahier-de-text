@@ -2,6 +2,8 @@ package ma.cahier.textes;
 
 import android.content.MutableContextWrapper;
 import android.os.CancellationSignal;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.core.content.ContextCompat;
 import androidx.credentials.ClearCredentialStateRequest;
 import androidx.credentials.Credential;
@@ -25,6 +27,20 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 @CapacitorPlugin(name = "NativeGoogleAuth")
 public class NativeGoogleAuthPlugin extends Plugin {
     private CancellationSignal pending;
+    private PluginCall pendingCall;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable timeout;
+
+    // A provider may deliver a late callback after cancellation. It must never
+    // complete another attempt or clear its lock.
+    private boolean finish(PluginCall call) {
+        if (pendingCall != call) return false;
+        if (timeout != null) handler.removeCallbacks(timeout);
+        timeout = null;
+        pending = null;
+        pendingCall = null;
+        return true;
+    }
 
     @PluginMethod
     public void signIn(PluginCall call) {
@@ -36,12 +52,20 @@ public class NativeGoogleAuthPlugin extends Plugin {
                 String clientId = getContext().getString(clientResource);
                 GetCredentialRequest request = new GetCredentialRequest.Builder()
                     .addCredentialOption(new GetSignInWithGoogleOption.Builder(clientId).build()).build();
-                pending = new CancellationSignal();
+                final CancellationSignal cancellation = new CancellationSignal();
+                pending = cancellation;
+                pendingCall = call;
+                timeout = () -> {
+                    if (!finish(call)) return;
+                    cancellation.cancel();
+                    call.reject("Google n’a pas répondu. Réessayez.", "GOOGLE_TIMEOUT");
+                };
+                handler.postDelayed(timeout, 90_000);
                 CredentialManager.create(getActivity()).getCredentialAsync(
                     new MutableContextWrapper(getActivity()), request, pending, ContextCompat.getMainExecutor(getContext()),
                     new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                         @Override public void onResult(GetCredentialResponse result) {
-                            pending = null;
+                            if (!finish(call)) return;
                             try {
                                 Credential credential = result.getCredential();
                                 if (!(credential instanceof CustomCredential) ||
@@ -53,7 +77,7 @@ public class NativeGoogleAuthPlugin extends Plugin {
                             } catch (Exception exception) { call.reject("Connexion Google invalide.", "GOOGLE_UNAVAILABLE"); }
                         }
                         @Override public void onError(GetCredentialException exception) {
-                            pending = null;
+                            if (!finish(call)) return;
                             // Google renvoie DEVELOPER_ERROR (code 10) quand l'empreinte du
                             // certificat qui signe l'APK n'est pas enregistrée dans le projet
                             // Firebase. Le dire explicitement évite de chercher du côté du
@@ -65,7 +89,12 @@ public class NativeGoogleAuthPlugin extends Plugin {
                                     : misconfigured ? "GOOGLE_NOT_CONFIGURED" : "GOOGLE_UNAVAILABLE");
                         }
                     });
-            } catch (Exception exception) { pending = null; call.reject("Connexion Google indisponible.", "GOOGLE_UNAVAILABLE"); }
+            } catch (Exception exception) {
+                CancellationSignal cancellation = pending;
+                finish(call);
+                if (cancellation != null) cancellation.cancel();
+                call.reject("Connexion Google indisponible.", "GOOGLE_UNAVAILABLE");
+            }
         });
     }
 
@@ -81,7 +110,13 @@ public class NativeGoogleAuthPlugin extends Plugin {
     }
 
     @Override protected void handleOnDestroy() {
-        if (pending != null) { pending.cancel(); pending = null; }
+        if (pendingCall != null) {
+            PluginCall call = pendingCall;
+            CancellationSignal cancellation = pending;
+            finish(call);
+            if (cancellation != null) cancellation.cancel();
+            call.reject("Connexion Google interrompue.", "AUTH_CANCELLED");
+        }
         super.handleOnDestroy();
     }
 }

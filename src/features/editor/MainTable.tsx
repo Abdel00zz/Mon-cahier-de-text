@@ -626,7 +626,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-lg border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
+      className="rtl-table mx-0 overflow-clip rounded-lg border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
     >
       <TableHeader />
       <CardContent className="!p-0">

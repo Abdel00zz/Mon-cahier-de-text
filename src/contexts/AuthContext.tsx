@@ -127,16 +127,15 @@ const applyProfileToConfig = (user: AuthUser): void => {
 };
 
 const postAuth = async (payload: Record<string, unknown>, onCreated?: (created: boolean) => void): Promise<AuthUser> => {
-  const response = await apiFetch('/api/auth', {
+  const data = await requestSyncJson<{ user?: unknown; isNewAccount?: boolean }>('/api/auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: JSON.stringify(payload),
+  }, 25_000).catch(error => {
+    if (error instanceof SyncRequestError && error.status === 0) error.code = 'AUTH_NETWORK_TIMEOUT';
+    throw error;
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw Object.assign(new Error(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.'), { code: data.code });
-  }
   if (!isAuthUser(data.user)) throw new Error('Réponse de connexion invalide. Réessayez.');
   onCreated?.(data.isNewAccount === true);
   return data.user;

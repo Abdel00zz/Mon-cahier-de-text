@@ -89,13 +89,12 @@ test('le numéro de groupe accompagne le nom du titre, dans la carte', () => {
 test('la carte garde son aplat pastel et se soulève doucement', () => {
   const cards = readFileSync('src/features/dashboard/classCards.css', 'utf8');
   assert.match(cards, /--class-glass: color-mix\(in srgb, var\(--class-surface\) 94%, transparent\)/, 'surface de verre (94 %)');
-  assert.match(cards, /backdrop-filter: blur\(14px\) saturate\(1\.28\)/, 'flou d’arrière-plan');
+  assert.doesNotMatch(cards, /backdrop-filter: blur/, 'pas de flou coûteux sous les aplats');
   assert.match(cards, /\.class-card::before \{[\s\S]*radial-gradient/, 'halo radial du ton');
   assert.match(cards, /\.class-card::before \{[\s\S]*z-index: 0/, 'le halo passe sous le contenu');
   assert.match(cards, /\.class-card:hover \{[\s\S]*transform: translateY\(-6px\)/, 'soulèvement au survol');
   assert.match(cards, /\.class-card:hover::before \{ opacity: 0; \}/, 'le survol préserve l’aplat pastel');
-  const mobile = cards.slice(cards.indexOf('@media (max-width: 639px)'));
-  assert.match(mobile, /\.class-card \.class-card__group \{ font-size: 4rem; \}/, 'chiffre gravé resserré sur téléphone');
+  assert.match(cards, /@container \(max-width: 360px\)/, 'la densité dépend de la largeur de carte, même sur tablette');
 });
 
 test('la disposition avance d’un seul geste, sans menu', () => {

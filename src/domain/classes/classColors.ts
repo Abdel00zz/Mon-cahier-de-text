@@ -5,10 +5,8 @@ import { classIdentityFor } from './classIdentity.js';
 
 export const isClassColor = (value: unknown): value is string => typeof value === 'string' && (KEEP_TONES.includes(value as typeof KEEP_TONES[number])
   || /^class-hue:(?:0|[1-9]\d{0,5})$/.test(value));
-const colorAt = (index: number): string => KEEP_TONES[index] ?? `class-hue:${index - KEEP_TONES.length}`;
 
-// A shared teaching family is a visual landmark, independent of group and language.
-// All common-core streams share one tone; science/letters/economics differ by year.
+// Families seed new colors; every class has its own persistent tone.
 const FAMILY_COLORS: Readonly<Record<string, string>> = {
   college1: 'sand', college2: 'lime', college3: 'rose', common: 'mint',
   'firstBac:science': 'sky', 'firstBac:letters': 'coral',
@@ -34,39 +32,51 @@ const extendedFamilyColor = (family: string): string => {
   return `class-hue:${100 + hash % 999000}`;
 };
 
-/** Migrate recognized levels to their teaching-family palette. Preserve free-name
- * assignments, list order and references when unchanged, including cloud round trips. */
+const TONE_HUES: Record<typeof KEEP_TONES[number], number> = {
+  sand: 43, coral: 24, lime: 77, mint: 155, sky: 204, indigo: 236, lavender: 276, rose: 348,
+};
+const hueOf = (color: string): number => color.startsWith('class-hue:')
+  ? (Number(color.slice(10)) * 137.508 + 22) % 360 : TONE_HUES[color as keyof typeof TONE_HUES];
+const hueDistance = (a: number, b: number): number => {
+  const delta = Math.abs(a - b);
+  return Math.min(delta, 360 - delta);
+};
+
+/** Stable per workspace. Preserve unique saved colors and repair old family
+ * duplicates once. New assignments prefer well separated curated pastels, then
+ * extend the hue wheel for larger workspaces. Shared by local storage and cloud. */
 export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
   const assigned = new Map<string, string>();
   const used = new Set<string>();
   const ordered = [...classes].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '') || a.id.localeCompare(b.id));
-  const families = new Map(classes.map(item => [item.id, classColorFamily(item.name)]));
-  const colorsByFamily = new Map<string, string>();
-  for (const family of [...new Set(families.values())].filter((key): key is string => key !== null).sort()) {
-    let color = FAMILY_COLORS[family] ?? extendedFamilyColor(family);
-    // Repair even an unlikely hash collision without depending on class display order.
-    let cursor = KEEP_TONES.length;
-    while (used.has(color)) color = colorAt(cursor++);
-    colorsByFamily.set(family, color);
-    used.add(color);
-  }
   for (const item of ordered) {
-    const family = families.get(item.id);
-    if (family) assigned.set(item.id, colorsByFamily.get(family)!);
-  }
-  for (const item of ordered) {
-    if (!assigned.has(item.id) && isClassColor(item.color) && !used.has(item.color)) {
+    if (isClassColor(item.color) && !used.has(item.color)) {
       assigned.set(item.id, item.color);
       used.add(item.color);
     }
   }
-  let cursor = 0;
+  if (assigned.size === classes.length) return classes;
+  const usedHues = [...used].map(hueOf);
+  // Cache distances to avoid comparing every pair again for each assignment.
+  const candidates = [...KEEP_TONES, ...Array.from({ length: Math.max(32, classes.length * 2) }, (_, i) => `class-hue:${i}`)]
+    .filter(color => !used.has(color))
+    .map(color => ({ color, hue: hueOf(color), distance: usedHues.reduce((min, hue) => Math.min(min, hueDistance(hueOf(color), hue)), 180) }));
   for (const item of ordered) {
     if (assigned.has(item.id)) continue;
-    while (used.has(colorAt(cursor))) cursor++;
-    const color = colorAt(cursor++);
+    const family = classColorFamily(item.name);
+    const preference = family ? FAMILY_COLORS[family] ?? extendedFamilyColor(family) : keepToneForClass(item.id);
+    const available = candidates.filter(candidate => !used.has(candidate.color));
+    const named = available.filter(candidate => KEEP_TONES.includes(candidate.color as typeof KEEP_TONES[number]));
+    const pool = named.length ? named : available;
+    const preferred = pool.find(candidate => candidate.color === preference);
+    const choice = preferred && preferred.distance >= 50 ? preferred : pool.reduce((best, candidate) => {
+      if (candidate.distance !== best.distance) return candidate.distance > best.distance ? candidate : best;
+      return hueDistance(candidate.hue, hueOf(preference)) < hueDistance(best.hue, hueOf(preference)) ? candidate : best;
+    });
+    const color = choice.color;
     assigned.set(item.id, color);
     used.add(color);
+    for (const candidate of candidates) candidate.distance = Math.min(candidate.distance, hueDistance(candidate.hue, choice.hue));
   }
   return classes.map(item => item.color === assigned.get(item.id) ? item : { ...item, color: assigned.get(item.id)! });
 }
@@ -78,6 +88,6 @@ export function classColorAttributes(item: Pick<ClassInfo, 'id' | 'color'>) {
   return {
     'data-keep-tone': KEEP_TONES.includes(color as typeof KEEP_TONES[number]) ? color : keepToneForClass(item.id),
     'data-class-color': custom ? color : undefined,
-    style: custom ? { '--class-hue': ((Number(custom[1]) * 137.508 + 22) % 360).toFixed(3) } as CSSProperties : undefined,
+    style: custom ? { '--class-hue': hueOf(color).toFixed(3) } as CSSProperties : undefined,
   };
 }

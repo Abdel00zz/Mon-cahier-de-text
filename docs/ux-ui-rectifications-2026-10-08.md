@@ -18,10 +18,23 @@ Lot regroupant les modifications UX/UI autorisées pour le push sur `main` et la
 
 ## Validation technique
 
+### Complément du 9 octobre — cartes en portrait
+
+| ID | Avant | Après | Priorité / acceptation |
+| --- | --- | --- | --- |
+| UI-012 | Le nom et le grand numéro partageaient une ligne flexible ; le numéro descendait selon la longueur du nom. | Grille dédiée au texte et au groupe, niveau puis filière, numéro réduit ; adaptation à la largeur de chaque carte, date compacte accessible en entier. | P1 — noms longs en arabe/français et groupes à deux chiffres sans numéro isolé sous le titre ; validation visuelle par l’utilisateur. |
+| UI-013 | Tous les groupes d’une même famille réutilisaient la même couleur. | Conservation des couleurs uniques ; réparation des doublons ; choix de teintes espacées, palette pastel plus douce sur le fond crème. | P1 — couleur distincte par classe, stable au tri, renommage et aller-retour JSON/cloud ; contraste AA testé sur les huit fonds. |
+
 - Tests de domaine et de composants, dont aperçu des imports, absence de métadonnées inventées et refus d’une suppression locale non persistée.
 - Test Firebase sur émulateurs : identité de classe transmise par l’administration, lecture enseignant, imports, listes d’élèves et résistance aux envois périmés.
 - Contrôles TypeScript/architecture, imports API, code inutilisé, traductions, données et secrets ; compilation web et Android.
 
 ## Couverture du guide
+
+### Défilement portrait — signalement Samsung A54, 9 octobre
+
+- Anomalies identifiées dans le code : sous 640 px, `overflow-x: hidden` créait un conteneur de défilement implicite sur `body`, associé à `overscroll-behavior-y: none` ; les rails horizontaux recevaient aussi un confinement vertical global. Ce confinement peut empêcher le geste de remonter vers la fenêtre ([règles CSS de défilement](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/overscroll-behavior)). La page et le cadre du tableau utilisent désormais `clip`, et les rails laissent passer les gestes verticaux. Les modales gardent leur confinement.
+- La virtualisation corrigeait les hauteurs avec `window.scrollBy` même pendant un geste. Ces corrections sont maintenant ignorées pendant le toucher, la molette et l’inertie, sans saut différé à la fin du geste. Les mesures et le rendu des lignes continuent normalement ; le positionnement explicite à l’ouverture du cahier reste branché.
+- Validation : 3 tests ciblés (toucher prolongé, inertie, multi-touch, annulation, molette, nettoyage et règles portrait), 158 tests éditeur/UI et contrôle TypeScript/architecture réussis. Pas de vérification visuelle ni de reproduction sur le téléphone : le résultat réel sur A54 reste à confirmer. Aucun APK ni commit pour ce correctif.
 
 Ce registre décrit le lot effectivement livré ; il ne constitue pas une validation visuelle exhaustive du guide. Le parcours progressif, le formulaire de classe partagé, les feuilles mobiles, le suivi des cahiers et de l’oral, la recherche et la séparation contenu/activités reposent sur les mécanismes existants. La séparation explicite présence/qualité du cahier, un objectif de compétence pour l’oral et une protection généralisée des brouillons demandent un lot fonctionnel distinct ; aucun champ existant « cahier non apporté » n’a été requalifié en absence de l’élève.

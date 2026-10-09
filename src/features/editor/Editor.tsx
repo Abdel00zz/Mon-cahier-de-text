@@ -233,7 +233,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const documentPreviews = useNotebookDocumentPreviews(classInfo, config, lessonsData);
   const [openDocument, setOpenDocument] = useState<NotebookDocumentPreview | null>(null);
   const getDocumentPreview = useCallback(
-    (rowKey: string) => documentPreviews.get(rowKey),
+    (rowKey: string) => documentPreviews.rows.get(rowKey),
+    [documentPreviews],
+  );
+  const getSessionDocuments = useCallback(
+    (date: string) => documentPreviews.sessions.get(date),
     [documentPreviews],
   );
   const handleOpenDocumentPreview = useCallback(
@@ -1334,6 +1338,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               getContentNumber={getContentNumber}
               getSessionAnnotation={getSessionAnnotation}
               getDocumentPreview={getDocumentPreview}
+              getSessionDocuments={getSessionDocuments}
               onOpenDocumentPreview={handleOpenDocumentPreview}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}

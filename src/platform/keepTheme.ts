@@ -4,7 +4,8 @@
  * Les valeurs de couleur vivent dans `index.css` (`[data-keep-tone]`), qui
  * expose `--keep-vivid` (teinte décorative), `--keep-accent` (déclinaison
  * lisible AA), `--keep-light` / `--keep-dark` (surfaces) et `--keep-border`.
- * Les couleurs sont attribuées par famille pédagogique dans `domain/classes/classColors.ts` ;
+ * Chaque classe reçoit un ton distinct et persistant dans `domain/classes/classColors.ts`,
+ * avec une préférence initiale liée à sa famille pédagogique ;
  * `keepToneForClass` ne sert plus que de repli pour un nom libre.
  */
 export const KEEP_TONES = ['sand', 'coral', 'lime', 'mint', 'sky', 'indigo', 'lavender', 'rose'] as const;

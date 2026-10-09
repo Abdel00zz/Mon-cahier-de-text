@@ -3,6 +3,8 @@ export function authErrorMessage(error: unknown, locale: 'fr' | 'ar'): string | 
   const code = (error as { code?: string } | null)?.code;
   if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || code === 'AUTH_CANCELLED') return null;
   const messages: Record<string, readonly [string, string]> = {
+    GOOGLE_TIMEOUT: ['Google n’a pas répondu. Fermez le sélecteur de compte puis réessayez.', 'لم يستجب Google. أغلق نافذة اختيار الحساب ثم أعد المحاولة.'],
+    AUTH_NETWORK_TIMEOUT: ['Le serveur de connexion ne répond pas. Vérifiez Internet puis réessayez.', 'خادم تسجيل الدخول لا يستجيب. تحقق من الإنترنت ثم أعد المحاولة.'],
     INVALID_CREDENTIALS: ['Vérifiez votre e-mail et votre mot de passe.', 'تحقق من بريدك الإلكتروني وكلمة المرور.'],
     ACCOUNT_EXISTS: ['Ce compte existe déjà. Connectez-vous ou réinitialisez votre mot de passe.', 'هذا الحساب موجود. سجّل الدخول أو أعد تعيين كلمة المرور.'],
     ACCOUNT_BLOCKED: ['Accès suspendu. Contactez votre établissement.', 'تم إيقاف الولوج. تواصل مع إدارتك.'],

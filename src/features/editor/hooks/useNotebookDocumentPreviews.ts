@@ -3,6 +3,8 @@ import { AppConfig, ClassInfo, LessonsData } from '../../../types';
 import { useClassAssessments } from '../../../hooks/useAssessments';
 import { useMoroccoToday } from '../../../hooks/useMoroccoToday';
 import { findNotebookAssessments, linkAssessments, notebookDocumentPreviews, type NotebookDocumentPreview } from '../../../domain/evaluations/assessmentSync';
+import { activityDocumentPreviews } from '@/domain/evaluations/activityDocumentPreviews';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 /*
  * Sujets écrits par le professeur, rangés par la LIGNE du cahier qui les porte.
@@ -21,23 +23,26 @@ import { findNotebookAssessments, linkAssessments, notebookDocumentPreviews, typ
 
 /** Référence partagée : « aucun document » ne crée pas de nouvelle Map à
  *  chaque rendu (sinon les mémoïsations de la table se cassent). */
-const NO_PREVIEWS: ReadonlyMap<string, NotebookDocumentPreview> = new Map();
+const NO_PREVIEWS = { rows: new Map<string, NotebookDocumentPreview>(), sessions: new Map<string, NotebookDocumentPreview[]>() };
 
 export const useNotebookDocumentPreviews = (
     classInfo: ClassInfo,
     config: AppConfig,
     lessonsData: LessonsData,
-): ReadonlyMap<string, NotebookDocumentPreview> => {
+) => {
+    const { t } = useLocale();
     const documents = config.assessmentDocuments?.[classInfo.id];
+    const events = config.pedagogicalEvents?.[classInfo.id];
     const { assessments } = useClassAssessments(classInfo, config);
     const today = useMoroccoToday();
-    const hasDocuments = !!documents && Object.keys(documents).length > 0;
+    const hasDocuments = (!!documents && Object.keys(documents).length > 0) || events?.some(event => event.document?.source.trim());
 
     return useMemo(() => {
-        if (!hasDocuments || assessments.length === 0 || lessonsData.length === 0) return NO_PREVIEWS;
+        if (!hasDocuments || lessonsData.length === 0) return NO_PREVIEWS;
         const entries = findNotebookAssessments(lessonsData);
-        if (entries.length === 0) return NO_PREVIEWS;
-        const previews = notebookDocumentPreviews(linkAssessments(assessments, entries, today), documents);
-        return previews.size > 0 ? previews : NO_PREVIEWS;
-    }, [hasDocuments, documents, assessments, lessonsData, today]);
+        const links = linkAssessments(assessments, entries, today);
+        const previews = activityDocumentPreviews(config, classInfo.id, lessonsData, links, t);
+        notebookDocumentPreviews(links, documents).forEach((preview, key) => previews.rows.set(key, preview));
+        return previews;
+    }, [hasDocuments, documents, assessments, lessonsData, today, config, classInfo.id, t]);
 };

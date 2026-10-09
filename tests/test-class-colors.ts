@@ -8,7 +8,7 @@ const classFor = (name: string, id: string): ClassInfo => ({
   name, id, cycle: 'lycee', subject: 'Mathématiques', teacherName: '', color: 'mint', createdAt: '2026-09-01',
 });
 
-test('les couleurs regroupent les niveaux et filières, indépendamment du groupe et de la langue', () => {
+test('les familles restent reconnues mais chaque classe obtient une couleur distincte', () => {
   const families = [
     ['Tronc Commun Scientifique 1', 'Tronc Commun Lettres et Sciences Humaines 2', 'الجذع المشترك العلمي ٣'],
     ['1er Bac Sciences Expérimentales 1', '1er Bac Sciences Mathématiques 2', 'الأولى بكالوريا علوم رياضية ٣'],
@@ -24,10 +24,11 @@ test('les couleurs regroupent les niveaux et filières, indépendamment du group
   const colors = families.map((names, index) => {
     assert.ok(names.every(name => classColorFamily(name) === classColorFamily(names[0])), names.join(' / '));
     const members = migrated.filter(item => item.id.startsWith(`${index}-`));
-    assert.equal(new Set(members.map(item => item.color)).size, 1);
+    assert.equal(new Set(members.map(item => item.color)).size, names.length);
     return members[0].color;
   });
   assert.equal(new Set(colors).size, families.length);
+  assert.equal(new Set(migrated.map(item => item.color)).size, source.length);
   assert.ok(migrated.every(item => isClassColor(item.color)));
   assert.deepEqual(assignClassColors([...source].reverse()).reverse(), migrated);
   assert.deepEqual(assignClassColors(JSON.parse(JSON.stringify(migrated))), migrated);
@@ -35,17 +36,27 @@ test('les couleurs regroupent les niveaux et filières, indépendamment du group
   assert.ok(source.every(item => item.color === 'mint'), 'la migration ne modifie pas la source');
 });
 
-test('ajout, suppression et renommage gardent les repères des familles et réparent les collisions libres', () => {
+test('ajout, suppression et renommage conservent les couleurs déjà attribuées', () => {
   const original = assignClassColors([classFor('1er Bac Sciences Mathématiques 1', 'science'), classFor('Ma classe libre', 'free')]);
   const added = assignClassColors([...original, classFor('1er Bac Sciences Expérimentales 9', 'new'), classFor('2ème Bac Lettres 1', 'letters')]);
   assert.deepEqual(added.slice(0, 2), original);
-  assert.equal(added[0].color, added[2].color);
+  assert.notEqual(added[0].color, added[2].color);
   assert.notEqual(added[0].color, added[3].color);
   assert.deepEqual(assignClassColors(added.slice(1)), added.slice(1));
   const renamed = assignClassColors(added.map(item => item.id === 'science' ? { ...item, name: '2ème Bac Lettres 3' } : item));
-  assert.equal(renamed[0].color, renamed[3].color);
+  assert.deepEqual(renamed.map(item => item.color), added.map(item => item.color));
   const collision = assignClassColors([classFor('1er Bac Sciences Mathématiques 1', 'science'), { ...classFor('Ma classe libre', 'free'), color: 'sky' }]);
   assert.notEqual(collision[0].color, collision[1].color);
+});
+
+test('trois classes de sciences indigo et une classe menthe deviennent quatre repères distincts', () => {
+  const source = ['2ème Bac Sciences Physiques 3', '2ème Bac SVT 2', '2ème Bac Sciences Physiques 4', 'Tronc Commun Lettres 6']
+    .map((name, i) => ({ ...classFor(name, `class-${i}`), color: i === 3 ? 'mint' : 'indigo' }));
+  const colors = assignClassColors(source);
+  assert.equal(new Set(colors.map(item => item.color)).size, 4);
+  assert.equal(colors[0].color, 'indigo');
+  assert.equal(colors[3].color, 'mint');
+  assert.equal(assignClassColors(colors), colors, 'les couleurs enregistrées ne sont pas recalculées');
 });
 
 test('les huit aplats du dashboard sont distincts et les textes conservent un contraste AA', () => {

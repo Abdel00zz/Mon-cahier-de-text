@@ -33,7 +33,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { locale, t, isRtl } = useLocale();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
-    const title = [label.tier, label.title].filter(Boolean).join(' ');
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
     // Préparation du cahier : la carte garde sa géométrie, un voile discret
@@ -47,6 +46,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const preparing = !hasNotebook
         && (progress.state === 'pulling' || (progress.state === 'notebooks' && progress.done < progress.total));
     const subtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale), [classInfo.lastOpenedAt, locale]);
+    const compactSubtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale, { compact: true }), [classInfo.lastOpenedAt, locale]);
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
         () => { impact('medium'); onConfigure(); },
@@ -83,7 +83,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
                     <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
                         <span className="sr-only">{label.fullName}</span>
-                        <span aria-hidden="true">{formatWithOrdinals(title)}</span>
+                        <span aria-hidden="true" className="class-card__name">
+                            {label.tier && <span className="class-card__tier">{formatWithOrdinals(label.tier)}</span>}
+                            <span className="class-card__stream">{formatWithOrdinals(label.title)}</span>
+                        </span>
                     </h3>
                     {label.group && (
                         <ClassGroupWatermark group={label.group} variant="engraved" className="class-card__group" />
@@ -93,7 +96,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div className="class-card__footer">
                 <Clock className="class-card__clock" aria-hidden="true" />
                 <span className="class-card__status" title={subtext}>
-                    {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{subtext}</time> : subtext}
+                    <span className="sr-only">{subtext}</span>
+                    <span aria-hidden="true" className="class-card__status-full">{classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{subtext}</time> : subtext}</span>
+                    <span aria-hidden="true" className="class-card__status-compact">{classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{compactSubtext}</time> : compactSubtext}</span>
                 </span>
             </div>
         </article>

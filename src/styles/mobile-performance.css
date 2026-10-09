@@ -44,8 +44,11 @@ html[data-platform="android"] {
   .sheet-content,
   .modal-motion-surface {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
   }
+
+  /* Horizontal rails must pass vertical gestures to the document. Only
+     overlays below isolate scrolling from the page behind them. */
+  .overflow-x-auto { overscroll-behavior-x: contain; overscroll-behavior-y: auto; }
 
   /* Confinement du sur-défilement (overscroll) pour éviter le rebond parasite de la page sous-jacente */
   [role="dialog"],

@@ -31,6 +31,23 @@ Pour `cahier-text`, Google et e-mail sont activés, le domaine `mon-cahier-de-te
 
 ## Vérifications
 
+### Incident du 9 octobre 2026 — APK direct 1.2.13
+
+Le certificat SHA-1 du fichier `mon-cahier-de-textes-1.2.13-release.apk`
+(`0aa5f42b98435c7844d5d378eeea23caa31a8334`) différait de celui des versions
+1.2.11/1.2.12. Il manquait dans la configuration Firebase Android. Ses empreintes
+SHA-1/SHA-256 ont été ajoutées au projet existant ; une seconde lecture de Firebase
+confirme leur présence. Google et e-mail étaient déjà activés, le domaine autorisé
+et le projet du serveur corrects. La configuration locale Google a été actualisée.
+La connexion interactive sur le téléphone reste à confirmer par l’utilisateur.
+
+La compilation release vérifie désormais le certificat du keystore contre le client
+OAuth Android du même paquet dans `google-services.json` avant de compiler. Ce garde-fou
+local complète la vérification distante ci-dessus ; il ne remplace pas un essai réel.
+Le sélecteur Google libère sa tentative après 90 secondes sans réponse, ignore les
+callbacks tardifs et permet un nouvel essai. L’ouverture de session serveur dispose
+d’un délai de 25 secondes, avec un message distinct du délai Google.
+
 `npm run test:firebase` couvre les comptes sans téléphone, la non-fusion par contact, les sessions Google émulées, la synchronisation, les messages, le blocage et la suppression. Les jetons Google de ces tests sont fictifs ; ils ne prouvent pas une connexion Google réelle.
 
 Sur un appareil de test : ouvrir Google, choisir un compte, vérifier le cahier, se déconnecter puis revenir ; tester aussi l'annulation du sélecteur, e-mail/mot de passe, récupération, mode hors connexion et changement de compte. Le serveur local de démonstration simule l'e-mail mais refuse explicitement de prétendre envoyer un lien ou connecter Google sans Firebase.
