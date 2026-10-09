@@ -60,6 +60,8 @@ test('les deux zones partagent le MÊME tableau', () => {
   assert.match(view, /className="ev-accordion__toggle-icon/, 'le conteneur d’icône remplace le texte visible');
   assert.match(view, /className="ev-accordion__kind-icon/, 'chaque tiroir porte l’icône de sa nature');
   assert.match(css, /\.ev-accordion__kind-icon/, 'l’icône du tiroir a son style dédié');
+  assert.match(css, /\.ev-accordion\[data-open='true'\] \.ev-accordion__kind-icon/, 'l’icône s’illumine à l’ouverture');
+  assert.match(css, /prefers-reduced-motion[\s\S]{0,200}\.ev-accordion__kind-icon/, 'le mouvement réduit désactive l’animation de l’icône');
   // Les tiroirs sont INDÉPENDANTS : deux activités ouvertes côte à côte.
   assert.match(view, /const \[openActivityKeys, setOpenActivityKeys\] = useState<string\[\] \| undefined>\(/, 'un ensemble de tiroirs ouverts');
   assert.match(view, /const openKeys = openActivityKeys \?\? \(firstActivity \? \[activityKey\(firstActivity\)\] : \[\]\)/, 'le premier tiroir s’ouvre d’emblée');

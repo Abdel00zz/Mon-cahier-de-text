@@ -43,6 +43,10 @@ test('les paramètres comptent six rubriques et gardent les anciens liens direct
   assert.match(modal, /archives: 'compte'/);
   assert.ok(!/id: 'assistance'/.test(modal), 'l’aide est un lien, plus un onglet');
   assert.match(modal, /footer=\{hasProfileChanges \? footer : undefined\}/);
+  const messages = read('src/i18n/messages.ts');
+  assert.match(messages, /'settings\.item\.appearance':\s*'Apparence et langue'/, 'rubrique Apparence et langue en français');
+  assert.match(messages, /'settings\.item\.appearance':\s*'Appearance & language'/, 'rubrique Appearance & language en anglais');
+  assert.match(messages, /'settings\.item\.appearance':\s*'المظهر واللغة'/, 'rubrique المظهر واللغة en arabe');
 });
 
 test('déplacement : le mécanisme existant (menu de la barre) est conservé, les exercices passent de paragraphe en paragraphe', () => {

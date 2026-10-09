@@ -74,3 +74,53 @@
   src: url('@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2') format('woff2');
   font-style: italic; font-weight: 200 800; font-display: swap;
 }
+
+/*
+ * Polices Officielles Samsung (SamsungOne / SamsungOne Arabic / Samsung Sans / One UI Sans / Samsung Sharp Sans)
+ * Charge la fonte officielle Samsung embarquée et les variantes natives Samsung One UI sur Galaxy & Android.
+ */
+@font-face {
+  font-family: 'SamsungOne Arabic';
+  src: local('SamsungOne Arabic'),
+       local('SamsungOneArabic'),
+       local('SamsungOneArabic-400'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
+       url('/SamsungOneArabic-400.ttf') format('truetype'),
+       url('/maghribi-font-3.ttf') format('truetype');
+  font-style: normal; font-weight: 300 900; font-display: swap;
+}
+
+@font-face {
+  font-family: 'SamsungOne';
+  src: local('SamsungOne'),
+       local('SamsungOne-400'),
+       local('SamsungOne 400'),
+       local('Samsung Sans'),
+       local('One UI Sans'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
+       url('/SamsungOneArabic-400.ttf') format('truetype');
+  font-style: normal; font-weight: 300 900; font-display: swap;
+}
+
+@font-face {
+  font-family: 'Samsung Sans';
+  src: local('Samsung Sans'),
+       local('SamsungSans'),
+       local('One UI Sans'),
+       local('One UI Sans App VF'),
+       local('SamsungOne'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
+       url('/SamsungOneArabic-400.ttf') format('truetype');
+  font-style: normal; font-weight: 300 900; font-display: swap;
+}
+
+@font-face {
+  font-family: 'Samsung Sharp Sans';
+  src: local('Samsung Sharp Sans'),
+       local('SamsungSharpSans'),
+       local('SamsungSharpSans-Bold'),
+       local('SamsungOne'),
+       local('Samsung Sans'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
+  font-style: normal; font-weight: 600 900; font-display: swap;
+}

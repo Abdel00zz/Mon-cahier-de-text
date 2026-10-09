@@ -78,16 +78,16 @@
      Arabe        : Arabswell 3 pour la lecture, Maghribi Font 3 pour les
      titres. Les deux polices arabes sont embarquées dans public/ : une
      seule paire par langue, aucun choix exposé au professeur. */
-  --font-latin-body: 'DM Sans', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'One UI Sans App VF', 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   /* Feuille de devoir : la fonte de composition LaTeX d'abord (Latin Modern
      Sans), sa remplaçante libre ensuite. Les deux ne portent que le latin (voir
      `fonts.css`) : l'arabe du document retombe donc seul sur la fonte arabe du
      carnet, sans règle de langue. */
   --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
-  --font-latin-display: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
-  --font-arabic-body: 'Arabswell 3', 'DM Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
-  --font-arabic-display: 'Maghribi Font 3', 'Rubik', 'DM Sans', serif;
-  --font-lato: 'Lato', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-latin-display: 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif;
+  --font-arabic-body: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic-display: 'SamsungOne Arabic', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'Maghribi Font 3', sans-serif;
+  --font-lato: 'SamsungOne', 'Samsung Sans', 'Lato', 'DM Sans', system-ui, sans-serif;
   --font-sans: var(--font-latin-body);
   --font-display: var(--font-latin-display);
   --content-font-latin: var(--font-latin-body);

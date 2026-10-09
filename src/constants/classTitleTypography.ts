@@ -28,8 +28,8 @@ export type TitleFontRole = 'card' | 'list' | 'page';
 /** Piles de caractères. Newsreader (sérif éditoriale haute fidélité inspirée
  *  de l'artisanat typographique moderne) pour le français/latin. */
 const TITLE_FAMILIES: Record<TitleScript, string> = {
-    latin: "'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif",
-    arabic: "'Maghribi Font 3', 'Rubik', 'DM Sans', serif",
+    latin: "'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif",
+    arabic: "'SamsungOne Arabic', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'Maghribi Font 3', sans-serif",
 };
 
 /** Titres : sérif éditoriale expressive en latin (élégante et sculptée) ;
