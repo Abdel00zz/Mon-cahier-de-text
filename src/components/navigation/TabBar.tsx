@@ -255,7 +255,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 {isActive && (
                   <motion.div
                     layoutId="desktop-sidebar-active-pill"
-                    className="absolute inset-0 rounded-xl bg-background/85 border border-border/50 shadow-xs"
+                    className="sidebar-active-surface absolute inset-0 rounded-xl"
                     transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
                   />
                 )}
@@ -289,7 +289,7 @@ export const TabBar = React.memo<TabBarProps>(({
                       exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
                       transition={{ delay: staggerDelay, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                       className={cn(
-                        'relative z-10 min-w-0 flex-1 truncate text-start text-sm leading-normal ms-3',
+                        'sidebar-tab-label relative z-10 min-w-0 flex-1 truncate text-start text-sm leading-normal ms-3',
                         locale === 'ar' && 'text-[15px]',
                         isActive ? 'font-semibold text-foreground' : 'text-muted-foreground group-hover:text-foreground'
                       )}

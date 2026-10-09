@@ -8,7 +8,7 @@ import { TriangleAlert } from '@/components/ui/icons';
 interface DateReviewModalProps {
   isOpen: boolean;
   date: string;
-  warnings: { message: string }[];
+  warnings: { message: string; blocking?: boolean }[];
   /** Revient exactement au formulaire qui a proposé la date, sans perdre la saisie. */
   onModify: () => void;
   onConfirm: () => void;
@@ -23,6 +23,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
   const [ignoreWarning, setIgnoreWarning] = useState(false);
   const selectedDate = new Date(`${date}T12:00:00Z`);
   const validDate = Number.isFinite(selectedDate.getTime());
+  const blocked = warnings.some(warning => warning.blocking);
   const distinctWarnings = warnings.filter(
     (warning, index, all) => all.findIndex(item => item.message === warning.message) === index,
   );
@@ -34,6 +35,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
   }, [date, isOpen]);
 
   const handleConfirm = () => {
+    if (blocked) return;
     if (ignoreWarning && onIgnore) onIgnore();
     else onConfirm();
   };
@@ -65,7 +67,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
           <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl min-h-11 px-4 text-xs font-semibold sm:text-sm">
             {t('dateReview.modify')}
           </Button>
-          <Button type="button" onClick={handleConfirm} disabled={!validDate} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
+          <Button type="button" onClick={handleConfirm} disabled={!validDate || blocked} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
             {t('dateReview.confirmAria')}
           </Button>
         </div>
@@ -86,7 +88,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
             {t('dateReview.hint')}
           </p>
         </div>
-        {onIgnore && (
+        {onIgnore && !blocked && (
           <label
             htmlFor={ignoreChoiceId}
             dir={locale === 'ar' ? 'rtl' : 'ltr'}

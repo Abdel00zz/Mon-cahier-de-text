@@ -27,9 +27,10 @@ import {
   BookCheck,
   Mic,
   ChevronDown,
-  X,
 } from 'lucide-react';
 import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
+import { useEvaluationConflictGuard } from './hooks/useEvaluationConflictGuard';
+import { assessmentSlot, eventSlot, evaluationSlots } from '@/domain/evaluations/evaluationConflicts';
 import {
   syncEventToNotebook,
   syncAssessmentDateToNotebook,
@@ -126,6 +127,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [config.pedagogicalEvents, selectedClass]
   );
 
+  const conflictSlots = useMemo(() => evaluationSlots(activeLessons, assessments, pedagogicalEvents), [activeLessons, assessments, pedagogicalEvents]);
+  const conflictRevision = useMemo(() => ({ config, activeLessons }), [config, activeLessons]);
+  const conflicts = useEvaluationConflictGuard(conflictSlots, conflictRevision);
+
   const classActivities = useMemo(() => {
     const countFor = (kind: EvaluationKind): number => kind.family === 'devoir'
       ? links.filter((link) => link.planned.type === kind.type).length
@@ -164,7 +169,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         statusLabel: t(STATUS_STYLE[link.status].labelKey),
         statusClass: STATUS_CHIP[link.status] ?? 'bg-muted text-muted-foreground ring-border/60',
         hasDocument: !!(config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.id]
-          ?? (link.planned.legacyId ? config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.legacyId] : undefined)),
+          ?? (link.planned.legacyId ? config.assessmentDocuments?.[selectedClass?.id ?? '']?.[link.planned.legacyId] : undefined))?.source.trim(),
       }));
 
   const openProgrammedAssessment = (assessmentId: string) => {
@@ -177,38 +182,44 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
     const targetAssessment = assessments.find(item => item.id === assessmentId);
     if (targetAssessment) {
-      const { lessons: nextLessons } = syncAssessmentDateToNotebook(
-        activeLessons,
-        {
-          id: targetAssessment.id,
-          type: targetAssessment.type,
-          num: targetAssessment.num,
-          dateISO,
-          label: targetAssessment.label,
-          clearIfEmpty: !dateISO,
-          entryKey: links.find(link => link.planned.id === assessmentId)?.entry?.key,
-        },
-        locale
-      );
-      commitNotebookChange(nextLessons, () => actions.setAssessmentDate(assessmentId, dateISO, targetAssessment.legacyId));
+      conflicts.run(assessmentSlot({ ...targetAssessment, dateISO }), () => {
+        const { lessons: nextLessons } = syncAssessmentDateToNotebook(
+          activeLessons,
+          {
+            id: targetAssessment.id,
+            type: targetAssessment.type,
+            num: targetAssessment.num,
+            dateISO,
+            label: targetAssessment.label,
+            clearIfEmpty: !dateISO,
+            entryKey: links.find(link => link.planned.id === assessmentId)?.entry?.key,
+          },
+          locale
+        );
+        commitNotebookChange(nextLessons, () => actions.setAssessmentDate(assessmentId, dateISO, targetAssessment.legacyId));
+      }, assessmentId);
     }
   };
 
   const addPedagogicalEvent = (event: PedagogicalEvent) => {
-    const { lessons: nextLessons } = syncEventToNotebook(activeLessons, event, locale);
-    if (!commitNotebookChange(nextLessons, () => actions.addEvent(event))) return;
-    closeKindChooser();
-    toast.success(t('evaluations.eventAddedToast', {
-      event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
-      className: selectedClassDisplayName,
-    }));
+    conflicts.run(eventSlot(event), () => {
+      const { lessons: nextLessons } = syncEventToNotebook(activeLessons, event, locale);
+      if (!commitNotebookChange(nextLessons, () => actions.addEvent(event))) return;
+      closeKindChooser();
+      toast.success(t('evaluations.eventAddedToast', {
+        event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
+        className: selectedClassDisplayName,
+      }));
+    });
   };
 
   const togglePedagogicalEvent = actions.toggleEvent;
   const changeEventDate = (event: PedagogicalEvent, date: string, endDate?: string) => {
     const next = { ...event, date, endDate: date && endDate && endDate >= date ? endDate : undefined };
-    const notebook = syncEventToNotebook(activeLessons, next, locale);
-    commitNotebookChange(notebook.lessons, () => actions.updateEvent(next));
+    conflicts.run(eventSlot(next), () => {
+      const notebook = syncEventToNotebook(activeLessons, next, locale);
+      commitNotebookChange(notebook.lessons, () => actions.updateEvent(next));
+    }, event.id);
   };
   const deletePedagogicalEvent = (eventOrId: string | { id: string; title?: string }) => {
     const id = typeof eventOrId === 'string' ? eventOrId : eventOrId.id;
@@ -260,25 +271,28 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const saveAssessment = (manual: ManualAssessment) => {
-    const previous = editingAssessment;
-    const entryKey = links.find(link => link.planned.id === previous?.id)?.entry?.key;
-    const source = previous && previous.type !== manual.type
-      ? removeAssessmentFromNotebook(activeLessons, previous.id, previous.type, previous.num, entryKey).lessons
-      : activeLessons;
-    const { lessons: nextLessons } = syncAssessmentDateToNotebook(
-      source,
-      { id: editingAssessment?.id ?? manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO,
-        entryKey: source === activeLessons ? entryKey : undefined,
-        updatedTitle: previous && (previous.num !== manual.num || previous.type !== manual.type) ? `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` : undefined },
-      locale
-    );
-    if (!commitNotebookChange(nextLessons, () => actions.saveAssessment(manual, editingAssessment?.id))) return;
-    setManualEditorOpen(false);
-    closeKindChooser();
-    setEditingAssessment(null);
-    toast.success(
-      t('evaluations.manualSaved', { type: t(`evaluations.type.${manual.type}`), number: manual.num })
-    );
+    conflicts.run(assessmentSlot({ ...manual, id: editingAssessment?.id ?? manual.id,
+      label: `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` }), () => {
+      const previous = editingAssessment;
+      const entryKey = links.find(link => link.planned.id === previous?.id)?.entry?.key;
+      const source = previous && previous.type !== manual.type
+        ? removeAssessmentFromNotebook(activeLessons, previous.id, previous.type, previous.num, entryKey).lessons
+        : activeLessons;
+      const { lessons: nextLessons } = syncAssessmentDateToNotebook(
+        source,
+        { id: editingAssessment?.id ?? manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO,
+          entryKey: source === activeLessons ? entryKey : undefined,
+          updatedTitle: previous && (previous.num !== manual.num || previous.type !== manual.type) ? `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` : undefined },
+        locale
+      );
+      if (!commitNotebookChange(nextLessons, () => actions.saveAssessment(manual, editingAssessment?.id))) return;
+      setManualEditorOpen(false);
+      closeKindChooser();
+      setEditingAssessment(null);
+      toast.success(
+        t('evaluations.manualSaved', { type: t(`evaluations.type.${manual.type}`), number: manual.num })
+      );
+    }, editingAssessment?.id);
   };
 
   const deleteAssessment = (id: string) => {
@@ -502,6 +516,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   return (
     <div className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
+      {conflicts.dialog}
       <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="min-w-0">
@@ -732,6 +747,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* 4. Modal Document Pédagogique */}
       <ContentDocumentModal
+        key={documentFor?.kind === 'event' ? documentFor.event.id : documentFor?.link.planned.id ?? 'closed'}
         isOpen={documentFor !== null}
         onClose={() => setDocumentFor(null)}
         title={t('evaluations.doc.title', { activity: documentTitle })}
@@ -1001,7 +1017,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       type="button"
                       onClick={() => onOpenDocument(event)}
                       className="ev-action"
-                      data-filled={event.document ? 'tone' : undefined}
+                      data-filled={event.document?.source.trim() ? 'tone' : undefined}
                       aria-label={t('evaluations.doc.title', { activity: event.title })}
                       title={eventDocTooltip}
                       data-tippy-content={eventDocTooltip}

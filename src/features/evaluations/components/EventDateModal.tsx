@@ -1,5 +1,5 @@
-import React, { FC, useEffect, useState } from 'react';
-import { CalendarDays, Trash2, Check, X } from 'lucide-react';
+import { type FC, useEffect, useState } from 'react';
+import { CalendarDays, Trash2, Check } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -26,7 +26,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
   event,
   onSave,
 }) => {
-  const { locale, isRtl } = useLocale();
+  const { locale } = useLocale();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isRange, setIsRange] = useState(false);

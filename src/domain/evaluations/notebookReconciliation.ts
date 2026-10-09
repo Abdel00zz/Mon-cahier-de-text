@@ -39,7 +39,14 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     const semester = Number(date.slice(5, 7)) >= 2 && Number(date.slice(5, 7)) <= 7 ? 2 : 1;
     return { id: `${schoolYearLabelFromDate(date)}:s${semester}-${entry.type}${entry.num}` };
   };
+  // A copied stable ID must never let the last row silently overwrite its twin.
+  const identityCounts = new Map<string, number>();
+  for (const entry of entries) {
+    const id = identity(entry)?.id;
+    if (id) identityCounts.set(id, (identityCounts.get(id) ?? 0) + 1);
+  }
   const update = (entry: NotebookAssessmentEntry, target: { id: string; legacyId?: string }) => {
+    if ((identityCounts.get(target.id) ?? 0) > 1) return;
     const date = extractDateRange(entry.date).startDate;
     if (validDate(date)) dates[target.id] = date;
     else delete dates[target.id];
@@ -48,10 +55,11 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     if (target.legacyId) removed.delete(target.legacyId);
     const index = manual.findIndex(item => item.id === target.id);
     const planned = options.planned?.find(item => item.id === target.id);
+    const num = entry.declaredNum ?? manual[index]?.num ?? planned?.num ?? entry.num;
     if (index >= 0) manual[index] = { ...manual[index], schoolYear: manual[index].schoolYear ?? schoolYearLabelFromDate(manual[index].dateISO),
-      type: entry.type, num: entry.num, dateISO: validDate(date) ? date : '' };
-    else if ((validDate(date) && !planned) || (planned && (!validDate(date) || planned.type !== entry.type || planned.num !== entry.num))) {
-      manual.push({ id: target.id, schoolYear: planned?.schoolYear ?? schoolYearLabelFromDate(date!), type: entry.type, num: entry.num,
+      type: entry.type, num, dateISO: validDate(date) ? date : '' };
+    else if ((validDate(date) && !planned) || (planned && (!validDate(date) || planned.type !== entry.type || planned.num !== num))) {
+      manual.push({ id: target.id, schoolYear: planned?.schoolYear ?? schoolYearLabelFromDate(date!), type: entry.type, num,
         dateISO: validDate(date) ? date : '', semestre: planned?.semestre ?? (/:s2-/.test(target.id) ? 2 : 1) });
     }
   };
@@ -94,8 +102,15 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
       && ('title' in row.data && (event.title === row.data.title || (previous && 'title' in previous.data && event.title === previous.data.title))));
     return candidates.length === 1 ? candidates[0] : undefined;
   };
-  for (const row of rows.filter(eventType)) {
+  const eventRows = rows.filter(eventType);
+  const rowIdentityCounts = new Map<string, number>();
+  for (const row of eventRows) if (row.data._tempId) rowIdentityCounts.set(row.data._tempId, (rowIdentityCounts.get(row.data._tempId) ?? 0) + 1);
+  for (const row of eventRows) {
     const existing = findEvent(row);
+    if (row.data._tempId && (rowIdentityCounts.get(row.data._tempId) ?? 0) > 1) {
+      if (existing) matched.add(existing.id);
+      continue;
+    }
     const { startDate, endDate } = extractDateRange(row.data.date);
     if (!existing && !validDate(startDate)) continue;
     const id = existing?.id ?? (row.data._tempId?.startsWith('event-') ? row.data._tempId.slice(6) : `notebook-${row.data._tempId ?? row.key}`);

@@ -453,7 +453,7 @@ export function setupMockApi(app: express.Express) {
                         delete adminClassOverrides[classId];
                         const deletedClasses = { ...((classesBlob?.deletedClasses as Record<string, unknown>) ?? {}), [classId]: { deletedAt: now } };
                         const settings = { ...((classesBlob?.settings as Record<string, any>) ?? {}) };
-                        for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents']) {
+                        for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents']) {
                             if (settings[key]) {
                                 settings[key] = { ...settings[key] };
                                 delete settings[key][classId];

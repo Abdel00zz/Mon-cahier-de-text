@@ -33,6 +33,9 @@ import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
 import { useClassAssessments } from '@/hooks/useAssessments';
+import { produce, type Draft } from 'immer';
+import { applySessionEdit } from '@/domain/notebook/sessionEditing';
+import { evaluationSlots, newEvaluationWarnings } from '@/domain/evaluations/evaluationConflicts';
 import { syncNotebookToEvaluations, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
@@ -447,7 +450,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   );
 
   const sessionAssignment = useSessionAssignment({
-    lessonsData, locale, setState, getDateWarnings, isActive: workspaceIsActive,
+    lessonsData, locale, setState, getDateWarnings, revision: config, isActive: workspaceIsActive,
+    getSelectionWarnings: (source, targets, patch) => {
+      const events = config.pedagogicalEvents?.[classInfo.id] ?? [];
+      const next = produce(source, draft => { applySessionEdit(draft, targets, patch); });
+      return newEvaluationWarnings(evaluationSlots(source, syncAssessments, events), evaluationSlots(next, syncAssessments, events), locale);
+    },
     onOpen: () => setEditorState(draft => { draft.activeModal = 'assignDate'; }),
     onClose: () => setEditorState(draft => { draft.activeModal = null; }),
     onSaved: () => {
@@ -850,8 +858,31 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     });
   }, [setEditorState, cancelSession]);
 
+  const [pendingEvaluationEdit, setPendingEvaluationEdit] = useState<{ message: string; commit: () => void } | null>(null);
+  const reviewNotebookChange = useCallback((source: LessonsData, next: LessonsData, commit: () => void) => {
+    if (!workspaceIsActive()) return;
+    const events = config.pedagogicalEvents?.[classInfo.id] ?? [];
+    const warnings = newEvaluationWarnings(evaluationSlots(source, syncAssessments, events), evaluationSlots(next, syncAssessments, events), locale);
+    const blocking = warnings.find(warning => warning.blocking);
+    if (blocking) { showNotification(blocking.message, 'error'); return; }
+    if (!warnings.length) { commit(); return; }
+    setPendingEvaluationEdit({ message: warnings.map(warning => warning.message).join('\n'), commit: () => {
+      if (!workspaceIsActive() || lessonsDataRef.current !== source || evaluationContext.current.config !== config) {
+        showNotification(t('evaluations.conflict.stale'), 'info');
+        return;
+      }
+      commit();
+    } });
+  }, [classInfo.id, config, locale, syncAssessments, workspaceIsActive, showNotification, t]);
+
   const handleConfirmAddContent = useCallback((type: string, data: any) => {
       let notificationMessage = '';
+      let nextLessons = lessonsData;
+      let action = 'add-content';
+      const prepare = (recipe: (draft: Draft<LessonsData>) => void, label: string) => {
+        nextLessons = produce(nextLessons, draft => { recipe(draft); });
+        action = label;
+      };
       const newId = crypto.randomUUID();
       const anchor = selectedIndices[selectedIndices.length - 1];
       const anchorCanReceiveEmbeddedBlock =
@@ -869,9 +900,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale, intersecting) : rawStart) : undefined;
 
       if (type === 'free') {
-          setState(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
+          prepare(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
           notificationMessage = t('editorNotice.itemAdded');
-          addNewItemHighlight(newId);
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchorCanReceiveEmbeddedBlock) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
           if (anchor.sectionIndex !== undefined) parentLevelIndices.sectionIndex = anchor.sectionIndex;
@@ -879,36 +909,31 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           if (anchor.subsubsectionIndex !== undefined) parentLevelIndices.subsubsectionIndex = anchor.subsubsectionIndex;
           const insertAfterIndex = anchor.itemIndex;
           const newItem: EmbeddableTopLevelItem = { type: type as EmbeddableTopLevelType, title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
-          setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-embedded-item');
+          prepare(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-embedded-item');
           notificationMessage = t('editorNotice.blockInserted');
-          addNewItemHighlight(newId);
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
-          setState(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
+          prepare(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
-          addNewItemHighlight(newId);
       } else if (type === 'section' && anchor) {
           const parentIndices = { chapterIndex: anchor.chapterIndex };
           const insertAfterIndex = anchor.sectionIndex;
           const newSection: Section = { name: data.name, items: [], _tempId: newId };
-          setState(draft => addSection(draft, parentIndices, newSection, insertAfterIndex), 'add-section');
+          prepare(draft => addSection(draft, parentIndices, newSection, insertAfterIndex), 'add-section');
           notificationMessage = t('editorNotice.sectionAdded');
-          addNewItemHighlight(newId);
       } else if (type === 'subsection' && anchor && anchor.sectionIndex !== undefined) {
           const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex };
           const insertAfterIndex = anchor.subsectionIndex;
           const newSubSection: SubSection = { name: data.name, items: [], _tempId: newId };
-          setState(draft => addSubSection(draft, parentIndices, newSubSection, insertAfterIndex), 'add-subsection');
+          prepare(draft => addSubSection(draft, parentIndices, newSubSection, insertAfterIndex), 'add-subsection');
           notificationMessage = t('editorNotice.subsectionAdded');
-          addNewItemHighlight(newId);
       } else if (type === 'subsubsection' && anchor && anchor.sectionIndex !== undefined && anchor.subsectionIndex !== undefined) {
           const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex, subsectionIndex: anchor.subsectionIndex };
           const insertAfterIndex = anchor.subsubsectionIndex;
           const newSubSubSection: SubSubSection = { name: data.name, items: [], _tempId: newId };
-          setState(draft => addSubSubSection(draft, parentIndices, newSubSubSection, insertAfterIndex), 'add-subsubsection');
+          prepare(draft => addSubSubSection(draft, parentIndices, newSubSubSection, insertAfterIndex), 'add-subsubsection');
           notificationMessage = t('editorNotice.subsubsectionAdded');
-          addNewItemHighlight(newId);
       } else if (type === 'item' && anchor) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
           if (anchor.sectionIndex !== undefined) parentLevelIndices.sectionIndex = anchor.sectionIndex;
@@ -918,18 +943,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
           const normalizedType = TYPE_MAP[data.type.toLowerCase()] || data.type;
           const newItem: LessonItem = { ...data, type: normalizedType, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
-          setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-item');
+          prepare(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-item');
           notificationMessage = t('editorNotice.itemAdded');
-          addNewItemHighlight(newId);
       }
 
-      if (notificationMessage) {
-        showNotification(notificationMessage, "success");
-        setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-      }
-      setSelectionState(createSelectionState());
-      handleModalClose();
-  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t]);
+      reviewNotebookChange(lessonsData, nextLessons, () => {
+        setState(() => nextLessons, action);
+        if (notificationMessage) {
+          addNewItemHighlight(newId);
+          showNotification(notificationMessage, "success");
+          setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+        }
+        setSelectionState(createSelectionState());
+        handleModalClose();
+      });
+  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -1145,20 +1173,24 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
 
-      setState(draft => {
+      const source = lessonsDataRef.current;
+      const next = produce(source, draft => {
           applyContentEdit(draft, targets, finalItem, effectiveLocale, {
             classId: classInfo.id,
             timetable: config.timetable,
             timetableClock: config.timetableClock,
           });
-      }, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
-      showNotification(t('editorNotice.contentUpdated'), "success");
-      setEditorState(draft => {
-        draft.saveStatus = 'unsaved';
-        draft.editingIndices = null;
-        draft.activeModal = null;
       });
-  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t]);
+      reviewNotebookChange(source, next, () => {
+        setState(() => next, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
+        showNotification(t('editorNotice.contentUpdated'), "success");
+        setEditorState(draft => {
+          draft.saveStatus = 'unsaved';
+          draft.editingIndices = null;
+          draft.activeModal = null;
+        });
+      });
+  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t, classInfo.id, config, reviewNotebookChange]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       if (!workspaceIsActive()) return false;
@@ -1458,6 +1490,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           if (editingIndices) handleConfirmContentEdit(editingIndices, value);
         }}
       />
+
+      <ConfirmDialog open={!!pendingEvaluationEdit} onOpenChange={open => { if (!open) setPendingEvaluationEdit(null); }}
+        title={t('evaluations.conflict.title')} description={pendingEvaluationEdit?.message ?? ''} variant="default"
+        confirmLabel={t('dateReview.confirmAria')} cancelLabel={t('evaluations.conflict.modify')}
+        onConfirm={() => pendingEvaluationEdit?.commit()} />
 
       <DateReviewModal
         isOpen={sessionAssignment.review !== null}

@@ -1406,18 +1406,16 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
    L'ombre portée suit la même bascule via `--sidebar-shadow-x`. */
 /* Barre latérale inspirée de Claude (Anthropic) :
    Surface lin/ivoire chaude, apaisante et en harmonie totale avec le canevas du dashboard.
-   Bord intérieur arrondi (logique RTL/LTR), liseré subtil et flou satiné 24px. */
+   Surface opaque et liseré logique RTL/LTR, sans flou pendant le défilement. */
 [data-app-sidebar] {
   --sidebar-shadow-x: 5px;
   --sidebar-radius: 20px;
   background:
-    linear-gradient(180deg, rgba(246, 245, 240, 0.94) 0%, rgba(242, 240, 233, 0.92) 100%);
-  border-inline-end: 1px solid rgba(220, 216, 206, 0.75);
+    linear-gradient(165deg, #f6f2eb 0%, #efede5 65%, #eaece5 100%);
+  border-inline-end: 1px solid #dcd7ce;
   border-start-end-radius: var(--sidebar-radius);
   border-end-end-radius: var(--sidebar-radius);
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.75), var(--sidebar-shadow-x) 0 24px -10px rgba(45, 40, 32, 0.05);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
 }
 [dir='rtl'] [data-app-sidebar] {
   --sidebar-shadow-x: -5px;
@@ -1425,12 +1423,28 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 .dark [data-app-sidebar] {
   background:
-    linear-gradient(180deg, rgba(26, 25, 22, 0.94) 0%, rgba(22, 21, 18, 0.96) 100%);
+    linear-gradient(165deg, #292723 0%, #242522 100%);
   border-inline-end: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03), var(--sidebar-shadow-x) 0 24px -10px rgba(0, 0, 0, 0.5);
 }
 .dark[dir='rtl'] [data-app-sidebar] {
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.03), var(--sidebar-shadow-x) 0 24px -10px rgba(0, 0, 0, 0.5);
+}
+[data-app-sidebar] [aria-current='page'] { color: #86452f; }
+[data-app-sidebar] [aria-current='page'] :is(svg, .sidebar-tab-label) { color: inherit; }
+[data-app-sidebar] .sidebar-active-surface {
+  background: #f9f5ef;
+  border: 1px solid #d8bdad;
+  box-shadow: 0 2px 5px rgb(77 54 38 / .06), inset 0 1px 0 rgb(255 255 255 / .6);
+}
+.dark [data-app-sidebar] [aria-current='page'] { color: #edb299; }
+.dark [data-app-sidebar] .sidebar-active-surface {
+  background: #38302b;
+  border-color: #6a4c3d;
+  box-shadow: 0 2px 6px rgb(14 13 12 / .15);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-app-sidebar], [data-app-sidebar] * { transition: none !important; animation: none !important; }
 }
 .mobile-tab-bar {
   background: hsl(var(--card) / .97);
@@ -1802,7 +1816,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dark .date-review-alert { background: linear-gradient(135deg, hsl(35 32% 18% / 0.95), hsl(35 28% 14% / 0.85)); border-color: hsl(38 90% 58% / 0.32); }
 
   /* En-tête et navigation : même langage artisanal que les cartes. */
-  .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(174 42% 62% / 0.1) 0 1px, transparent 1.5px), radial-gradient(circle at 8% 0%, hsl(174 42% 30% / 0.22), transparent 30rem), radial-gradient(circle at 92% 0%, hsl(205 45% 28% / 0.18), transparent 34rem); }
   /* Mobile premium : Pixel, Galaxy S24 et iPhone 16 — safe areas, densité et tactile. */
   @media (max-width: 639px) {
     :root { --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; }

@@ -1,4 +1,5 @@
 import { AppConfig } from '../../types.js';
+import { mergePedagogicalDocuments } from '../../domain/evaluations/documentSync.js';
 
 /**
  * Sous-ensemble de la configuration qui appartient AU PROFESSEUR et doit
@@ -35,6 +36,7 @@ export type SyncableSettings = Pick<
     | 'absences'
     | 'assessmentDates'
     | 'assessmentAbsences'
+    | 'assessmentDocuments'
     | 'assessmentParticipants'
     | 'pedagogicalEvents'
     | 'manualAssessments'
@@ -75,6 +77,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'absences',
     'assessmentDates',
     'assessmentAbsences',
+    'assessmentDocuments',
     'assessmentParticipants',
     'pedagogicalEvents',
     'manualAssessments',
@@ -155,5 +158,5 @@ export const mergeAdminAssessmentDates = (
             sessionVibration: local.notificationSettings?.sessionVibration ?? false,
         } as NonNullable<AppConfig['notificationSettings']>;
     }
-    return merged;
+    return mergePedagogicalDocuments(merged, local);
 };

@@ -8,8 +8,9 @@
     background-color: var(--canvas-base, #faf9f5);
     background-image:
         /* Douce aura champagne / ambre au zénith : profondeur éditoriale noble sans bruit */
-        radial-gradient(ellipse 70% 35% at 50% -5%, rgba(217, 119, 87, 0.045) 0%, rgba(245, 240, 230, 0.45) 45%, transparent 80%),
-        linear-gradient(180deg, #faf9f5 0%, #f7f5ed 100%);
+        radial-gradient(ellipse 85% 45% at 80% 0%, rgb(188 120 85 / .055), transparent 75%),
+        radial-gradient(ellipse 65% 50% at 0% 75%, rgb(123 143 120 / .04), transparent 80%),
+        linear-gradient(180deg, #faf8f3 0%, #f5f3ec 100%);
     background-repeat: no-repeat, no-repeat;
     background-size: 100% 100%, 100% 100%;
     background-position: 0 0, 0 0;
@@ -21,8 +22,9 @@
 .dark .keep-futuristic-surface {
     background-color: var(--canvas-base-dark, #181816);
     background-image:
-        radial-gradient(ellipse 70% 35% at 50% -5%, rgba(217, 119, 87, 0.04) 0%, transparent 75%),
-        linear-gradient(180deg, #181816 0%, #151413 100%);
+        radial-gradient(ellipse 85% 45% at 80% 0%, rgb(199 143 112 / .055), transparent 75%),
+        radial-gradient(ellipse 65% 50% at 0% 75%, rgb(139 159 133 / .035), transparent 80%),
+        linear-gradient(180deg, #22221f 0%, #1c1d1a 100%);
     background-repeat: no-repeat, no-repeat;
     background-size: 100% 100%, 100% 100%;
     background-position: 0 0, 0 0;

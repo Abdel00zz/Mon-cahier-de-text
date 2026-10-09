@@ -10,6 +10,7 @@ import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSn
 import { withCurriculumSettings } from '../src/domain/classes/classCurriculumSettings.js';
 import { assignClassColors } from '../src/domain/classes/classColors.js';
 import { mergeAdminAssessmentDates } from '../src/infrastructure/sync/syncSettings.js';
+import { mergePedagogicalDocuments } from '../src/domain/evaluations/documentSync.js';
 import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../src/domain/calendar/timetable.js';
 
 interface ClassesBlob {
@@ -79,7 +80,7 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
             );
         }
     }
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
         if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
             const records = { ...(cleaned[key] as Record<string, unknown>) };
             for (const classId of deletedIds) delete records[classId];
@@ -159,7 +160,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const requestedClassIds = new Set(requestedClasses.map(c => c.id));
     const submittedSettings = assertValidSyncSettings(body.settings, requestedClassIds);
     const submittedSettingsAt = isTimestamp(body.settingsUpdatedAt) ? body.settingsUpdatedAt : now;
-    const acceptSettings = !!submittedSettings && (!existing.settingsUpdatedAt || submittedSettingsAt >= existing.settingsUpdatedAt);
+    const acceptSettings = !!submittedSettings && (!existing.settingsUpdatedAt || Date.parse(submittedSettingsAt) >= Date.parse(existing.settingsUpdatedAt));
     // Les dates de devoirs imposées par la direction survivent à un appareil
     // resté hors ligne : le filigrane les protège jusqu'à un réglage plus récent.
     let adminAssessmentDatesUpdatedAt: Record<string, string> = { ...(existing.adminAssessmentDatesUpdatedAt ?? {}) };
@@ -172,6 +173,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             submittedSettingsAt,
         );
         acceptedSettings = { ...submittedSettings!, assessmentDates: mergedDates.assessmentDates };
+        acceptedSettings = mergePedagogicalDocuments(acceptedSettings, existing.settings ?? {});
         adminAssessmentDatesUpdatedAt = mergedDates.watermarks;
     }
     // The roster belongs to the direction. Even a newer teacher settings push

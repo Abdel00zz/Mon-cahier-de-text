@@ -23,6 +23,7 @@ import {
 import { useAuth } from './AuthContext';
 import { logger } from '../lib/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
+import { mergePedagogicalDocuments, pedagogicalDocumentsEqual } from '../domain/evaluations/documentSync';
 import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
 import { translateLocaleMessage } from '../i18n/messages';
 import { isContentDirection } from '../domain/notebook/contentDirection';
@@ -85,7 +86,7 @@ const removeDeletedClassReferences = (
         }
     }
 
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
         const records = next[key];
         if (!records) continue;
         const filtered = { ...records };
@@ -774,6 +775,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     (nextConfig.timetable?.length ?? 0) > 0 ||
                     !!nextConfig.establishmentName ||
                     Object.keys(nextConfig.assessmentDates ?? {}).length > 0 ||
+                    Object.keys(nextConfig.assessmentDocuments ?? {}).length > 0 ||
                     Object.keys(nextConfig.pedagogicalEvents ?? {}).length > 0;
                 const shouldApplyRemoteSettings =
                     !!settings &&
@@ -782,14 +784,22 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt
                             && remoteSettingsAt !== settingsMeta.lastSyncedAt)
                     );
+                let appliedSettingsAt: string | undefined;
+                let settingsNeedPush = false;
                 if (settings && shouldApplyRemoteSettings) {
                     nextConfig = mergeSyncableSettings(nextConfig, settings);
-                    if (remoteSettingsAt) markSettingsSynced(remoteSettingsAt);
+                    if (remoteSettingsAt) appliedSettingsAt = remoteSettingsAt;
                     configChanged = true;
                 } else if (settings && localHasSettings && !settingsMeta.localUpdatedAt && remoteSettingsAt) {
-                    touchSettingsSyncMeta();
-                    markClassesListDirty();
+                    settingsNeedPush = true;
                 }
+
+                // Recover formerly local-only subjects and merge content even
+                // when the settings watermark itself did not change.
+                const withDocuments = removeDeletedClassReferences(mergePedagogicalDocuments(nextConfig, settings ?? {}), deletedIds).config;
+                if (!pedagogicalDocumentsEqual(nextConfig, withDocuments)) configChanged = true;
+                nextConfig = withDocuments;
+                if (!pedagogicalDocumentsEqual(nextConfig, settings ?? {})) settingsNeedPush = true;
 
                 // Effectifs administratifs : indépendants des préférences locales
                 // et de leur date. Un retrait de liste est aussi transmis via {}.
@@ -809,11 +819,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                 }
                 if (configChanged) {
-                    try {
-                        localStorage.setItem('appConfig_v1', JSON.stringify(nextConfig));
-                        localChanged = true;
-                    } catch { /* stockage plein */ }
+                    // A failed local write must not acknowledge a cloud version.
+                    localStorage.setItem('appConfig_v1', JSON.stringify(nextConfig));
+                    localChanged = true;
                 }
+                if (appliedSettingsAt) markSettingsSynced(appliedSettingsAt);
+                if (settingsNeedPush) { touchSettingsSyncMeta(); markClassesListDirty(); }
                 // Réglages et emploi du temps appliqués : première étape du
                 // premier chargement (voir domain/sync/bootstrapProgress).
                 bootstrapStore.markTimetable();

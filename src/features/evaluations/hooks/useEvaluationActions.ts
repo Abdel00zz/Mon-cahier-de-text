@@ -17,16 +17,16 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                 ...(current?.some(item => item.id === id) ? { manualAssessments: { ...config.manualAssessments,
                     [classId]: current.map(item => item.id === id ? { ...item, schoolYear: item.schoolYear ?? schoolYearLabelFromDate(item.dateISO), dateISO: date } : item) } } : {}) });
         },
-        addEvent: (event: PedagogicalEvent) => saveEvents([...events, event]),
+        addEvent: (event: PedagogicalEvent) => { if (!events.some(item => item.id === event.id)) saveEvents([...events, event]); },
         updateEvent: (event: PedagogicalEvent) => saveEvents(events.map(item => item.id === event.id ? event : item)),
         toggleEvent: (id: string) => saveEvents(events.map(event => event.id === id ? { ...event, status: event.status === 'done' ? 'planned' : 'done' } : event)),
         deleteEvent: (id: string) => saveEvents(events.filter(event => event.id !== id)),
-        saveEventDocument: (id: string, source: string) => saveEvents(events.map(event => event.id === id ? { ...event, document: source.trim() ? { source, updatedAt: new Date().toISOString() } : undefined } : event)),
+        saveEventDocument: (id: string, source: string) => saveEvents(events.map(event => event.id === id ? { ...event, document: source.trim() ? { source: source.trim(), updatedAt: new Date().toISOString() } : { source: '', updatedAt: new Date().toISOString() } } : event)),
         saveAssessmentDocument(id: string, source: string, legacyId?: string) {
             const documents = { ...config.assessmentDocuments?.[classId] };
-            if (source.trim()) documents[id] = { source, updatedAt: new Date().toISOString() };
-            else delete documents[id];
-            if (legacyId) delete documents[legacyId];
+            const updatedAt = new Date().toISOString();
+            documents[id] = { source: source.trim() ? source : '', updatedAt };
+            if (legacyId) documents[legacyId] = { source: '', updatedAt };
             onChange({ assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents } });
         },
         saveEventStudents(id: string, names: string[], conditions?: Record<string, NotebookCondition>) {
@@ -46,10 +46,10 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
         },
         saveAssessment(manual: ManualAssessment, editingId?: string) {
             const current = config.manualAssessments?.[classId] ?? [];
-            const next = editingId && current.some(item => item.id === editingId)
-                ? current.map(item => item.id === editingId ? { ...manual, id: editingId } : item)
-                : [...current, editingId ? { ...manual, id: editingId } : manual];
             const id = editingId ?? manual.id;
+            const next = current.some(item => item.id === id)
+                ? current.map(item => item.id === id ? { ...manual, id } : item)
+                : [...current, { ...manual, id }];
             onChange({ manualAssessments: { ...config.manualAssessments, [classId]: next },
                 assessmentDates: { ...config.assessmentDates, [classId]: { ...config.assessmentDates?.[classId], [id]: manual.dateISO } },
                 removedAssessments: { ...config.removedAssessments, [classId]: (config.removedAssessments?.[classId] ?? []).filter(value => value !== id) } });

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
@@ -57,16 +58,23 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   const [tab, setTab] = useState<'source' | 'preview'>('preview');
   const [source, setSource] = useState('');
   const [showHelp, setShowHelp] = useState(false);
+  const [conflictOpen, setConflictOpen] = useState(false);
+  const opened = useRef(false);
+  const baseline = useRef<ContentDocument | undefined>(undefined);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Le document est rechargé à chaque ouverture : deux devoirs ne partagent
   // jamais le même brouillon, et fermer sans enregistrer laisse le précédent.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) { opened.current = false; return; }
+    if (opened.current) return;
+    opened.current = true;
+    baseline.current = saved;
     setSource(saved?.source ?? '');
     setTab(saved?.source.trim() ? 'preview' : 'source');
     setShowHelp(false);
-  }, [isOpen, saved?.source]);
+    setConflictOpen(false);
+  }, [isOpen, saved]);
 
   const length = source.length;
   const isTooLong = length > MAX_CONTENT_DOCUMENT_CHARS;
@@ -79,11 +87,23 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     [tab, source],
   );
 
+  const commit = () => {
+    if (isTooLong) return;
+    try {
+      onSave(source.trim() ? source : '');
+      toast.success(source.trim() ? t('evaluations.doc.saved') : t('evaluations.doc.cleared'));
+      onClose();
+    } catch {
+      toast.error(t('editorNotice.saveError'));
+    }
+  };
   const handleSave = () => {
     if (isTooLong) return;
-    onSave(source.trim() ? source : '');
-    toast.success(source.trim() ? t('evaluations.doc.saved') : t('evaluations.doc.cleared'));
-    onClose();
+    if ((saved?.source ?? '') !== (baseline.current?.source ?? '') && source !== (saved?.source ?? '')) {
+      setConflictOpen(true);
+      return;
+    }
+    commit();
   };
 
   return (
@@ -96,6 +116,9 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
       title={t('documentPreview.heading')}
     >
       <div className="space-y-3.5">
+        <ConfirmDialog open={conflictOpen} onOpenChange={setConflictOpen} variant="default"
+          title={t('evaluations.doc.concurrentTitle')} description={t('evaluations.doc.concurrentBody')}
+          confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
         <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-muted/40 p-1">

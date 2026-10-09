@@ -30,11 +30,53 @@ import { buildSessionActivityRemarks } from '../src/domain/evaluations/sessionAc
 import { translateLocaleMessage } from '../src/i18n/messages.js';
 import type { AppConfig, ClassInfo, ClassRoster } from '../src/types.js';
 import type { LessonsData } from '../src/types.js';
+import { extractSyncableSettings, mergeSyncableSettings, type SyncableSettings } from '../src/infrastructure/sync/syncSettings.js';
 
 if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) throw new Error('Emulators required; refusing production integration tests');
 const store = new FirestoreStore();
 const client = store as unknown as RedisClient;
 const phone = '0611111111';
+
+test('pedagogical text survives two devices, legacy clients, deletion and account isolation through the real sync API', async () => {
+  process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
+  const owner = '0617779955';
+  const registered = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', phone: owner, nom: 'Documents', prenom: 'QA', password: 'Test-password-123' } });
+  assert.equal(registered.status, 201);
+  const headers = { cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': owner };
+  const classInfo: ClassInfo = { id: 'document-class', name: '1AC 1', subject: 'Mathématiques', cycle: 'college', color: 'blue', teacherName: 'Professeur', createdAt: '2026-10-09T08:00:00Z' };
+  const base = Date.now();
+  const at = (offset: number) => new Date(base + offset * 1000).toISOString();
+  const docText = (source: string, offset: number) => ({ source, updatedAt: at(offset) });
+  const post = (settings: unknown, offset: number, extra = {}) => call(syncHandler, { method: 'POST', headers, body: {
+    classes: [classInfo], schedules: [], timetable: [], settings, settingsUpdatedAt: at(offset), ...extra,
+  } });
+  const pull = async () => {
+    const result = await call(syncHandler, { method: 'GET', headers });
+    assert.equal(result.status, 200);
+    return result.body as { settings: Partial<AppConfig> };
+  };
+  const source = '## فرض 🧮\n**Exercice** $x^2$\nأجب عن السؤال دون تغيير النص.';
+  const a: Partial<AppConfig> = { assessmentDocuments: { [classInfo.id]: { a: docText(source, 1) } },
+    pedagogicalEvents: { [classInfo.id]: [{ id: 'diagnostic', type: 'evaluation_diagnostic', title: 'تشخيص', date: '2026-10-09', status: 'planned', createdAt: at(1), document: docText(source, 1) }] } };
+  assert.equal((await post(extractSyncableSettings(a), 2)).status, 200);
+  const restored = mergeSyncableSettings({}, (await pull()).settings as unknown as SyncableSettings);
+  assert.deepEqual(restored.assessmentDocuments, a.assessmentDocuments);
+  assert.deepEqual(restored.pedagogicalEvents, a.pedagogicalEvents);
+  const secondDevice = { ...a, assessmentDocuments: { [classInfo.id]: { b: docText('Devoir maison\nسؤال ثان', 3) } } };
+  assert.equal((await post(extractSyncableSettings(secondDevice), 4)).status, 200);
+  assert.deepEqual(Object.keys((await pull()).settings.assessmentDocuments![classInfo.id]).sort(), ['a', 'b']);
+  assert.equal((await post({ establishmentName: 'Older APK' }, 5)).status, 200);
+  assert.equal((await pull()).settings.assessmentDocuments![classInfo.id].a.source, source);
+  assert.equal((await post({ assessmentDocuments: { [classInfo.id]: { a: docText('', 6) } } }, 7)).status, 200);
+  assert.equal((await post(extractSyncableSettings(a), 8)).status, 200);
+  assert.equal((await pull()).settings.assessmentDocuments![classInfo.id].a.source, '', 'late stale text cannot resurrect a deleted subject');
+  const stale = await post(extractSyncableSettings(a), 1);
+  assert.equal((stale.body as { settingsAccepted: boolean }).settingsAccepted, false);
+  assert.equal((await call(syncHandler, { method: 'GET', headers: { ...headers, 'x-workspace-owner': '0617779956' } })).status, 409);
+  assert.equal((await call(syncHandler, { method: 'GET', headers: {} })).status, 401);
+  assert.equal((await post(undefined, 9, { deletedClassIds: [classInfo.id] })).status, 200);
+  assert.equal((await pull()).settings.assessmentDocuments?.[classInfo.id], undefined);
+});
 
 test('native notification bindings survive transfer, token rotation and late unsubscribe', async () => {
   const savedKey = process.env.FCM_PRIVATE_KEY; const savedEmail = process.env.FCM_CLIENT_EMAIL;

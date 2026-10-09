@@ -165,7 +165,7 @@ export function extractDateRange(rawDate: string | undefined): { startDate?: str
   if (isoMatches && isoMatches.length > 0) {
     return {
       startDate: isoMatches[0],
-      endDate: isoMatches.length > 1 && isoMatches[1] !== isoMatches[0] ? isoMatches[1] : undefined,
+      endDate: isoMatches.length > 1 && isoMatches.at(-1) !== isoMatches[0] ? isoMatches.at(-1) : undefined,
     };
   }
   const ddmmyyyyMatches = rawDate.match(/\b\d{1,2}[/.-]\d{1,2}[/.-]\d{4}\b/g);
@@ -176,7 +176,7 @@ export function extractDateRange(rawDate: string | undefined): { startDate?: str
     };
     return {
       startDate: toIso(ddmmyyyyMatches[0]),
-      endDate: ddmmyyyyMatches.length > 1 && ddmmyyyyMatches[1] !== ddmmyyyyMatches[0] ? toIso(ddmmyyyyMatches[1]) : undefined,
+      endDate: ddmmyyyyMatches.length > 1 && ddmmyyyyMatches.at(-1) !== ddmmyyyyMatches[0] ? toIso(ddmmyyyyMatches.at(-1)!) : undefined,
     };
   }
   const single = extractEarliestDate(rawDate);
@@ -257,19 +257,22 @@ export function syncEventToNotebook(
 /**
  * Supprime le bloc correspondant à un événement pédagogique du cahier de textes.
  */
-function deleteRow(lessons: LessonsData, row: LessonRow | undefined) {
-  if (!row) return { lessons, updated: false };
+function deleteRows(lessons: LessonsData, rows: LessonRow[]) {
+  if (!rows.length) return { lessons, updated: false };
   return { lessons: produce(lessons, draft => {
-    const { parent, targetIndex } = findItem(draft, row.indices);
-    if (Array.isArray(parent) && typeof targetIndex === 'number') parent.splice(targetIndex, 1);
+    // Reverse document order preserves sibling indices, including nested copies.
+    for (const row of [...rows].reverse()) {
+      const { parent, targetIndex } = findItem(draft, row.indices);
+      if (Array.isArray(parent) && typeof targetIndex === 'number') parent.splice(targetIndex, 1);
+    }
   }), updated: true };
 }
 
 export function removeEventFromNotebook(lessons: LessonsData, eventId: string, eventType?: string, eventTitle?: string) {
   const rows = buildLessonRows(lessons);
-  const exact = rows.find(row => row.data._tempId === 'event-' + eventId);
+  const exact = rows.filter(row => row.data._tempId === 'event-' + eventId);
   const legacy = rows.filter(row => !row.data._tempId?.startsWith('event-') && row.elementType === eventType && 'title' in row.data && row.data.title === eventTitle);
-  return deleteRow(lessons, exact ?? (legacy.length === 1 ? legacy[0] : undefined));
+  return deleteRows(lessons, exact.length ? exact : legacy.length === 1 ? legacy : []);
 }
 
 function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
@@ -284,7 +287,9 @@ function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?:
 
 export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
   if (type !== 'controle' && type !== 'maison') return { lessons, updated: false };
-  return deleteRow(lessons, assessmentRow(lessons, id, type, num, entryKey));
+  const exact = buildLessonRows(lessons).filter(row => row.data._tempId === 'dev-block-' + id);
+  const legacy = exact.length ? undefined : assessmentRow(lessons, id, type, num, entryKey);
+  return deleteRows(lessons, exact.length ? exact : legacy ? [legacy] : []);
 }
 
 export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {

@@ -17,6 +17,8 @@ interface Options {
   locale: AppLocale;
   setState: (recipe: (draft: Draft<LessonsData>) => void, action: string) => void;
   getDateWarnings: (date: string) => DateWarning[];
+  getSelectionWarnings?: (source: LessonsData, targets: readonly Indices[], patch: SessionPatch) => DateWarning[];
+  revision?: unknown;
   isActive: () => boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -43,11 +45,11 @@ export function useSessionAssignment(options: Options) {
   }, []);
 
   const request = useCallback((session: SessionEditorState, patch: SessionPatch) => {
-    const { getDateWarnings, locale } = latest.current;
+    const { getDateWarnings, locale, revision } = latest.current;
     setEditor({ ...session, patch });
     const commit = () => {
       const current = latest.current;
-      if (!current.isActive() || current.lessonsData !== session.source) {
+      if (!current.isActive() || current.lessonsData !== session.source || current.revision !== revision) {
         cancel();
         current.onClose();
         current.onStale();
@@ -61,6 +63,7 @@ export function useSessionAssignment(options: Options) {
     const warnings = patch.date ? [
       ...getDateWarnings(patch.date),
       ...dateOrderWarnings(patch.date, selectionDateOrder(session.source, session.selection.targets), locale),
+      ...(latest.current.getSelectionWarnings?.(session.source, session.selection.targets, patch) ?? []),
     ] : [];
     if (warnings.length) {
       setReview({ date: patch.date!, warnings, commit });
@@ -82,6 +85,6 @@ export function useSessionAssignment(options: Options) {
     setReview(null);
     latest.current.onOpen();
   }, []);
-  const confirm = useCallback(() => { review?.commit(); }, [review]);
+  const confirm = useCallback(() => { if (!review?.warnings.some(warning => warning.blocking)) review?.commit(); }, [review]);
   return { editor, review, open, apply, assignDate, modify, confirm, cancel };
 }

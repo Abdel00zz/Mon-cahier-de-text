@@ -26,6 +26,7 @@ export interface NotebookAssessmentEntry {
     key: string;
     /** Persistent notebook-to-planning identity; independent of date and order. */
     assessmentId?: string;
+    declaredNum?: number;
 }
 
 /** type de bloc du cahier → type de devoir du planning */
@@ -35,7 +36,8 @@ const NOTEBOOK_TYPE_MAP: Record<string, NotebookAssessmentEntry['type']> = {
 };
 
 const parseTrailingNumber = (title: string | undefined): number | null => {
-    const match = (title ?? '').trim().match(/(\d+)\s*$/);
+    const normalized = (title ?? '').replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) - (digit >= '۰' ? 0x6F0 : 0x660)));
+    const match = normalized.trim().match(/(\d+)\s*$/);
     return match ? parseInt(match[1], 10) : null;
 };
 
@@ -90,7 +92,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
                 num = cursor;
                 taken.add(num);
             }
-            result.push({ type, num, title: entry.title, date: entry.date, key: entry.key, ...(entry.assessmentId ? { assessmentId: entry.assessmentId } : {}) });
+            result.push({ type, num, title: entry.title, date: entry.date, key: entry.key, ...(entry.declaredNum !== null ? { declaredNum: entry.declaredNum } : {}), ...(entry.assessmentId ? { assessmentId: entry.assessmentId } : {}) });
         }
     }
     return result;
