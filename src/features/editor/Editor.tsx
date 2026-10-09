@@ -32,6 +32,7 @@ import { listExportableChapters, selectExportableChapters } from '@/domain/noteb
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
+import { syncNotebookSessionToEvaluations } from '@/domain/evaluations/notebookSyncBridge';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -445,6 +446,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     onSaved: () => {
       setSelectionState(createSelectionState());
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+      try {
+        const currentLessons = lessonsDataRef.current;
+        for (const item of currentLessons) {
+          if (item.type && item.date) {
+            const { patch, updated } = syncNotebookSessionToEvaluations(classInfo.id, config, item, currentLessons);
+            if (updated) updateConfig(patch);
+          }
+        }
+      } catch { /* sync silencieuse */ }
     },
     onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
   });

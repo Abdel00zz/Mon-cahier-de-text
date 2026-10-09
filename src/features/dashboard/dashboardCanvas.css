@@ -1,26 +1,46 @@
-/* Quiet tinted neutrals keep the class cards and main action in focus. */
+/* Fond futuriste ultra haute qualité : auras cyan, pêche, lavande et trame micro-points */
 
-[data-dashboard-surface] {
+[data-dashboard-surface],
+[data-dashboard-root],
+.keep-futuristic-surface {
     position: relative;
     min-height: 100dvh;
-    background-color: var(--canvas-rose, #faf9f5);
+    background-color: var(--canvas-base, #fafaf9);
     background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.16' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.12'/%3E%3C/svg%3E"),
-        linear-gradient(to right, var(--canvas-mint, #f6f4ec) 0%, var(--canvas-rose, #faf9f5) 45%, var(--canvas-sky, #f3efe6) 80%);
-    background-repeat: repeat, no-repeat;
-    background-size: 24px 24px, 100% 100%;
-
+        /* 1. Trame micro-points futuriste haute résolution (Dot Matrix) */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2' cy='2' r='1.15' fill='%230f172a' fill-opacity='0.085'/%3E%3C/svg%3E"),
+        /* 2. Halo gauche : Cyan / Menthe lumineuse */
+        radial-gradient(ellipse 65% 55% at -5% 20%, rgba(45, 212, 191, 0.32) 0%, rgba(94, 234, 212, 0.16) 38%, transparent 72%),
+        /* 3. Halo central : Pêche / Rose poudré chaleureux */
+        radial-gradient(ellipse 55% 50% at 50% 15%, rgba(254, 205, 211, 0.38) 0%, rgba(254, 215, 170, 0.20) 38%, transparent 70%),
+        /* 4. Halo droit : Céleste / Indigo / Pervenche */
+        radial-gradient(ellipse 65% 55% at 105% 25%, rgba(165, 180, 252, 0.34) 0%, rgba(186, 230, 253, 0.18) 40%, transparent 75%),
+        /* 5. Dégradé de base neutre lumineux */
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 18px 18px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
 }
 
-/* Mode sombre : dégradé étagé profond, grille carrée discrète */
-.dark [data-dashboard-surface] {
-    background-color: var(--canvas-rose-dark, #262625);
+/* Mode sombre : dégradé cosmique profond avec étoiles micro-points et auras immersives */
+.dark [data-dashboard-surface],
+.dark [data-dashboard-root],
+.dark .keep-futuristic-surface {
+    background-color: var(--canvas-base-dark, #0c0f17);
     background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.035' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.025'/%3E%3C/svg%3E"),
-        linear-gradient(to right, var(--canvas-mint-dark, #232322) 0%, var(--canvas-rose-dark, #262625) 45%, var(--canvas-sky-dark, #2a2927) 80%);
-    background-repeat: repeat, no-repeat;
-    background-size: 24px 24px, 100% 100%;
-
+        /* 1. Trame micro-points étoilée haute résolution */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2' cy='2' r='1.15' fill='%23ffffff' fill-opacity='0.065'/%3E%3C/svg%3E"),
+        /* 2. Halo gauche sombre : Cyan / Émeraude profonde */
+        radial-gradient(ellipse 65% 55% at -5% 20%, rgba(20, 184, 166, 0.22) 0%, rgba(13, 148, 136, 0.08) 38%, transparent 72%),
+        /* 3. Halo central sombre : Rose / Fuchsia poudré nocturne */
+        radial-gradient(ellipse 55% 50% at 50% 15%, rgba(225, 29, 72, 0.15) 0%, rgba(190, 24, 93, 0.06) 38%, transparent 70%),
+        /* 4. Halo droit sombre : Indigo / Violet cosmique */
+        radial-gradient(ellipse 65% 55% at 105% 25%, rgba(99, 102, 241, 0.24) 0%, rgba(79, 70, 229, 0.08) 40%, transparent 75%),
+        /* 5. Dégradé de base nuit profonde */
+        linear-gradient(180deg, #0b0f19 0%, #0f172a 100%);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 18px 18px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
 }
 
 [data-dashboard-root] [data-slot="class-display-toggle"] {

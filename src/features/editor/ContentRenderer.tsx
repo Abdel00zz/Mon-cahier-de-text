@@ -242,9 +242,27 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div dir={textDirectionAttribute(item.title)} className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-              <span dir={textDirectionAttribute(item.title)}>
-                <HighlightedText text={item.title} query={highlight} />
-              </span>
+              {documentPreview ? (
+                <button
+                  type="button"
+                  data-document-title-link="true"
+                  className="inline-flex cursor-pointer items-center text-start font-bold text-blue-600 underline underline-offset-4 decoration-blue-500/50 transition-colors hover:text-blue-700 hover:decoration-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm dark:text-blue-400 dark:hover:text-blue-300"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpenDocumentPreview?.(documentPreview);
+                  }}
+                  title={t('documentPreview.openAria', { title: documentPreview.title })}
+                  aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
+                >
+                  <span dir={textDirectionAttribute(item.title)}>
+                    <HighlightedText text={item.title} query={highlight} />
+                  </span>
+                </button>
+              ) : (
+                <span dir={textDirectionAttribute(item.title)}>
+                  <HighlightedText text={item.title} query={highlight} />
+                </span>
+              )}
               {documentPreview && (
                 <button
                   type="button"
@@ -364,6 +382,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         ? `${BADGE_TOOLTIP_MAP[normalizedType]}${displayNumber ? ` ${displayNumber}` : ''}`
         : `${normalizedType}${displayNumber ? ` ${displayNumber}` : ''}`;
 
+      const itemDocumentPreview = getDocumentPreview && onOpenDocumentPreview
+        ? getDocumentPreview(indicesKey(indices))
+        : undefined;
+
       const content = (
         <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content text-start font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
@@ -382,7 +404,25 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             dir={textDirectionAttribute(item.title)}
             className="editor-type-item-title text-start min-w-0 break-words p-0 font-semibold text-foreground"
           >
-            {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
+            {itemDocumentPreview ? (
+              <button
+                type="button"
+                data-document-title-link="true"
+                className="inline-flex cursor-pointer items-center text-start font-bold text-blue-600 underline underline-offset-4 decoration-blue-500/50 transition-colors hover:text-blue-700 hover:decoration-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm dark:text-blue-400 dark:hover:text-blue-300"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenDocumentPreview?.(itemDocumentPreview);
+                }}
+                title={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
+                aria-label={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
+              >
+                <HighlightedText text={item.title} query={highlight} />
+              </button>
+            ) : item.title ? (
+              <HighlightedText text={item.title} query={highlight} />
+            ) : (
+              <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>
+            )}
           </div>
 
           {/* Description : encadré sobre sous le titre façon Google Keep */}

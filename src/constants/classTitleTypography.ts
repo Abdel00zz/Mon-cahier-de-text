@@ -25,26 +25,26 @@ type TitleScript = 'latin' | 'arabic';
 /** Rôle du titre, du plus discret au plus affirmé. */
 export type TitleFontRole = 'card' | 'list' | 'page';
 
-/** Piles de caractères. Les replis évitent tout rendu cassé si la police
- *  principale n'est pas encore chargée (`display=swap`). */
+/** Piles de caractères. Newsreader (sérif éditoriale haute fidélité inspirée
+ *  de l'artisanat typographique moderne) pour le français/latin. */
 const TITLE_FAMILIES: Record<TitleScript, string> = {
-    latin: "'Roboto Slab', 'Lato', 'DM Sans', ui-sans-serif, sans-serif",
+    latin: "'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif",
     arabic: "'Maghribi Font 3', 'Rubik', 'DM Sans', serif",
 };
 
-/** Titres : demi-gras moderne en latin (Roboto Slab est plus large que Lora,
- *  d'où un interlettrage un peu plus serré) ; pas de gras synthétique en arabe. */
+/** Titres : sérif éditoriale expressive en latin (élégante et sculptée) ;
+ *  pas de gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 500, tracking: '-0.012em' },
+        latin: { weight: 600, tracking: '-0.016em' },
         arabic: { weight: 400, tracking: '0' },
     },
     list: {
-        latin: { weight: 400, tracking: '-0.008em' },
+        latin: { weight: 500, tracking: '-0.01em' },
         arabic: { weight: 400, tracking: '0' },
     },
     page: {
-        latin: { weight: 600, tracking: '-0.022em' },
+        latin: { weight: 600, tracking: '-0.024em' },
         arabic: { weight: 700, tracking: '0.015em' },
     },
 };

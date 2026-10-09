@@ -68,6 +68,43 @@ const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
   }
 };
 
+interface ParsedRange {
+  kind: 'range' | 'pair';
+  start: { day: string; numericMonth: string };
+  end: { day: string; numericMonth: string };
+}
+
+const parseRangeOrPair = (str: string, locale: AppLocale): ParsedRange | null => {
+  if (!str) return null;
+  const trimmed = str.trim();
+
+  // 1. Détection de plage : "Du ... au ...", "من ... إلى ...", "From ... to ..."
+  const rangeMatch = trimmed.match(
+    /(?:Du|du|De|de|From|from|من)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:au|à|a|to|إلى)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)/i
+  );
+  if (rangeMatch) {
+    const d1 = parseDate(rangeMatch[1], locale);
+    const d2 = parseDate(rangeMatch[2], locale);
+    if (d1 && d2) {
+      return { kind: 'range', start: d1, end: d2 };
+    }
+  }
+
+  // 2. Détection de deux jours avec 'et' / 'و' / 'and'
+  const pairMatch = trimmed.match(
+    /(?:^|\s)(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:et|and|و)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)(?:\s|$)/i
+  );
+  if (pairMatch) {
+    const d1 = parseDate(pairMatch[1], locale);
+    const d2 = parseDate(pairMatch[2], locale);
+    if (d1 && d2) {
+      return { kind: 'pair', start: d1, end: d2 };
+    }
+  }
+
+  return null;
+};
+
 /** Les dates simples et fusionnées partagent exactement la même typographie. */
 export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => (
   <MultiDateCard dates={dateStr ? [dateStr] : []} hasWarning={hasWarning} />
@@ -77,6 +114,40 @@ DateCard.displayName = 'DateCard';
 
 export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo(({ dates, hasWarning }) => {
   const { locale } = useLocale();
+
+  // Support direct des plages ("Du XX au YY") et des couples ("XX et YY")
+  if (dates.length === 1) {
+    const rangeOrPair = parseRangeOrPair(dates[0], locale);
+    if (rangeOrPair) {
+      if (rangeOrPair.kind === 'range') {
+        const fromWord = locale === 'ar' ? 'من' : locale === 'en' ? 'From' : 'Du';
+        const toWord = locale === 'ar' ? 'إلى' : locale === 'en' ? 'to' : 'au';
+        return (
+          <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.82rem] font-semibold leading-snug tabular-nums sm:text-[0.92rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+            <span data-date-token className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
+              <span className="font-normal text-foreground text-xs">{fromWord}</span>
+              <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.start.day}/{rangeOrPair.start.numericMonth}</bdi>
+              <span className="font-normal text-foreground text-xs">{toWord}</span>
+              <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.end.day}/{rangeOrPair.end.numericMonth}</bdi>
+            </span>
+          </div>
+        );
+      }
+      if (rangeOrPair.kind === 'pair') {
+        const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
+        return (
+          <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.85rem] font-semibold leading-snug tabular-nums sm:text-[0.95rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+            <span data-date-token className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
+              <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.start.day}/{rangeOrPair.start.numericMonth}</bdi>
+              <span className="font-normal text-foreground text-xs">{conjunction}</span>
+              <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.end.day}/{rangeOrPair.end.numericMonth}</bdi>
+            </span>
+          </div>
+        );
+      }
+    }
+  }
+
   const parsedDates = [...new Set(dates)].flatMap(date => {
     const parsed = parseDate(date, locale);
     return parsed ? [{ ...parsed, source: date }] : [];

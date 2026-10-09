@@ -17,9 +17,12 @@ import {
   CalendarCheck,
   CircleCheck,
   Plus,
+  RefreshCw,
   Trash2,
   Undo2,
 } from 'lucide-react';
+import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
+import { syncEventToNotebook, syncAssessmentDateToNotebook } from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { useEvaluationModals } from './hooks/useEvaluationModals';
@@ -37,6 +40,8 @@ interface DevoirsViewProps {
   config: AppConfig;
   onConfigChange: (patch: Partial<AppConfig>) => void;
   entry?: ClassEvaluationEntry;
+  lessonsData?: LessonsData;
+  onLessonsChange?: (newLessons: LessonsData) => void;
 }
 
 const readLessons = (classId: string): LessonsData => {
@@ -86,7 +91,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   config,
   onConfigChange,
   entry = 'all',
+  lessonsData,
+  onLessonsChange,
 }) => {
+  const activeLessons = useMemo(() => lessonsData ?? readLessons(classInfo.id), [lessonsData, classInfo.id]);
+  const persistLessons = (nextLessons: LessonsData) => {
+    if (onLessonsChange) {
+      onLessonsChange(nextLessons);
+    } else {
+      saveNotebook(classInfo.id, nextLessons, 'ltr');
+    }
+  };
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
@@ -107,8 +122,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const links = useMemo(() => {
     if (!selectedClass) return [];
-    return linkAssessments(assessments, findNotebookAssessments(readLessons(selectedClass.id)), today);
-  }, [assessments, selectedClass, today]);
+    return linkAssessments(assessments, findNotebookAssessments(activeLessons), today);
+  }, [assessments, selectedClass, today, activeLessons]);
 
   const pedagogicalEvents = useMemo(
     () =>
@@ -166,10 +181,25 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setDocumentFor({ kind: 'assessment', link });
   };
 
-  const setAssessmentDate = (assessmentId: string, dateISO: string) => actions.setAssessmentDate(assessmentId, dateISO, assessments.find(item => item.id === assessmentId)?.legacyId);
+  const setAssessmentDate = (assessmentId: string, dateISO: string) => {
+    actions.setAssessmentDate(assessmentId, dateISO, assessments.find(item => item.id === assessmentId)?.legacyId);
+    const targetAssessment = assessments.find(item => item.id === assessmentId);
+    if (targetAssessment && dateISO) {
+      const { lessons: nextLessons, updated } = syncAssessmentDateToNotebook(
+        activeLessons,
+        { id: targetAssessment.id, type: targetAssessment.type, num: targetAssessment.num, dateISO, label: targetAssessment.label },
+        locale
+      );
+      if (updated) persistLessons(nextLessons);
+    }
+  };
 
   const addPedagogicalEvent = (event: PedagogicalEvent) => {
     actions.addEvent(event);
+    const { lessons: nextLessons, updated } = syncEventToNotebook(activeLessons, event, locale);
+    if (updated) {
+      persistLessons(nextLessons);
+    }
     closeKindChooser();
     toast.success(t('evaluations.eventAddedToast', {
       event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
@@ -218,6 +248,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const saveAssessment = (manual: ManualAssessment) => {
     actions.saveAssessment(manual, editingAssessment?.id);
+    const { lessons: nextLessons, updated } = syncAssessmentDateToNotebook(
+      activeLessons,
+      { id: manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO },
+      locale
+    );
+    if (updated) persistLessons(nextLessons);
     setManualEditorOpen(false);
     closeKindChooser();
     setEditingAssessment(null);
@@ -268,10 +304,27 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           </button>
         </div>
 
-        <div className="ev-row__state">
+        <div className="ev-row__state flex flex-col items-center gap-1">
           <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
             {t(status.labelKey)}
           </span>
+          {link.status === 'mismatch' && link.entry?.date && (
+            <button
+              type="button"
+              onClick={() => {
+                const targetDate = link.entry?.date;
+                if (!targetDate) return;
+                setAssessmentDate(a.id, targetDate);
+                toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
+              }}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
+              title={locale === 'ar' ? `ضبط تاريخ التخطيط ليتوافق مع دفتر النصوص (${link.entry?.date})` : `Aligner la date sur le cahier (${link.entry?.date})`}
+              aria-label={locale === 'ar' ? `ضبط مع دفتر النصوص (${link.entry?.date})` : `Aligner sur le cahier (${link.entry?.date})`}
+            >
+              <RefreshCw className="h-3 w-3" />
+              <span>{locale === 'ar' ? 'مزامنة' : 'Aligner'}</span>
+            </button>
+          )}
         </div>
 
         <div className="ev-row__date">

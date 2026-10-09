@@ -300,7 +300,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             /* Fond du tableau de bord : les valeurs vivent dans
                `dashboardCanvas.ts`, la structure dans `dashboardCanvas.css`. */
             style={DASHBOARD_CANVAS_STYLE}
-            className="keep-dashboard-canvas min-h-dvh bg-background text-foreground font-sans antialiased pb-6 sm:pb-8 pt-3 sm:pt-6"
+            className="keep-dashboard-canvas min-h-dvh bg-transparent text-foreground font-sans antialiased pb-6 sm:pb-8 pt-3 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>

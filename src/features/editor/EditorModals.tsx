@@ -170,6 +170,8 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             classInfo={classInfo}
             config={config}
             onConfigChange={onConfigChange}
+            lessonsData={lessonsData}
+            onLessonsChange={handleUpdateLessons}
           />
         );
       default:

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppConfig, ClassInfo, ClassEvaluationEntry } from '@/types';
+import { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
@@ -14,6 +14,8 @@ interface ClassEvaluationsSheetProps {
     config: AppConfig;
     onConfigChange: (patch: Partial<AppConfig>) => void;
     entry?: ClassEvaluationEntry;
+    lessonsData?: LessonsData;
+    onLessonsChange?: (newLessons: LessonsData) => void;
 }
 
 /**
@@ -26,6 +28,8 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     config,
     onConfigChange,
     entry = 'all',
+    lessonsData,
+    onLessonsChange,
 }) => {
     const { t, locale } = useLocale();
     const className = formatLocalizedClassDisplayName(classInfo.name, locale);
@@ -49,6 +53,8 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                 config={config}
                 onConfigChange={onConfigChange}
                 entry={entry}
+                lessonsData={lessonsData}
+                onLessonsChange={onLessonsChange}
             />
         </Modal>
     );

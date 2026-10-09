@@ -467,7 +467,8 @@ html[lang="ar"] .keep-class-title {
   html:not([lang="ar"]) :is(h1, h2, h3, .keep-class-title, [data-ui-title]) {
     font-family: var(--font-latin-display);
     font-optical-sizing: auto;
-    letter-spacing: -0.012em;
+    font-feature-settings: 'opsz' 36, 'liga', 'kern';
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
   html:not([lang="ar"]) :is(h4, h5, h6, button, [role="button"], .workspace-nav-label) {

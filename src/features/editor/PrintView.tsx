@@ -57,6 +57,33 @@ const getSchoolYearLabel = (schoolYearStart: string | undefined, fallbackDate: s
     return schoolYearLabelFromDate(source).replace('-', ' – ');
 };
 
+const formatPrintDate = (rawDate: string | undefined, isRtl: boolean): string => {
+    if (!rawDate) return '';
+    const trimmed = rawDate.trim();
+
+    // 1. Plage "Du ... au ..." ou "من ... إلى ..."
+    const rangeMatch = trimmed.match(
+        /(?:Du|du|De|de|From|from|من)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:au|à|a|to|إلى)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)/i
+    );
+    if (rangeMatch) {
+        const f1 = formatDateDDMMYYYY(rangeMatch[1]) || rangeMatch[1];
+        const f2 = formatDateDDMMYYYY(rangeMatch[2]) || rangeMatch[2];
+        return isRtl ? `من ${f1} إلى ${f2}` : `Du ${f1} au ${f2}`;
+    }
+
+    // 2. Deux jours avec connecteur 'et' / 'و'
+    const pairMatch = trimmed.match(
+        /(?:^|\s)(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)\s+(?:et|and|و)\s+(\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?)(?:\s|$)/i
+    );
+    if (pairMatch) {
+        const f1 = formatDateDDMMYYYY(pairMatch[1]) || pairMatch[1];
+        const f2 = formatDateDDMMYYYY(pairMatch[2]) || pairMatch[2];
+        return isRtl ? `${f1} و ${f2}` : `${f1} et ${f2}`;
+    }
+
+    return formatDateDDMMYYYY(trimmed) || trimmed;
+};
+
 interface FlatDataItem {
     data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
     indices: Indices;
@@ -360,7 +387,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                                 return (
                                     <tr key={`session-${row.date}-${index}`} className={rowClassName}>
                                         <td className="print-col-date">
-                                            <span className="print-date-text">{formatDateDDMMYYYY(row.date)}</span>
+                                            <span className="print-date-text">{formatPrintDate(row.date, isRtlPrint)}</span>
                                         </td>
                                         <td className="print-col-content">
                                             <div className="print-session-content">
