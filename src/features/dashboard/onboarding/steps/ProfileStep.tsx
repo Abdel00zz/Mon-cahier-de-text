@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
 import { ONBOARDING_CYCLES } from '../content';
@@ -38,10 +39,12 @@ export const ProfileStep = memo<ProfileStepProps>(
           const isSelected = cycles.includes(key);
           const Icon = key === 'college' ? School : key === 'lycee' ? BookOpen : GraduationCap;
           return (
-            <button
+            <motion.button
               key={key}
               type="button"
               aria-pressed={isSelected}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               onClick={() =>
                 onCyclesChange(
                   isSelected
@@ -49,9 +52,9 @@ export const ProfileStep = memo<ProfileStepProps>(
                     : [...cycles, key],
                 )
               }
-              className={`onboarding-cycle-card keep-choice group relative rounded-xl border transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+              className={`onboarding-cycle-card keep-choice group relative rounded-2xl border transition-colors duration-200 cursor-pointer ${
                 isSelected
-                  ? 'border-primary bg-primary/10'
+                  ? 'border-primary bg-primary/10 shadow-sm'
                   : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted/60'
               }`}
             >
@@ -65,7 +68,7 @@ export const ProfileStep = memo<ProfileStepProps>(
               </span>
               </span>
               <span className="onboarding-cycle-check" aria-hidden="true">{isSelected && <Check size={15} />}</span>
-            </button>
+            </motion.button>
           );
         })}
       </div>

@@ -1,4 +1,5 @@
 import { memo, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { Check } from '@/components/ui/icons';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
@@ -69,15 +70,17 @@ export const SubjectsStep = memo<SubjectsStepProps>(
           {visibleSubjects.map((subject) => {
             const selected = selectedSubjects.includes(subject);
             return (
-              <button
+              <motion.button
                 key={subject}
                 type="button"
                 role="checkbox"
                 aria-checked={selected}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => onToggle(subject)}
                 className={cn(
-                  'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base transition-all active:scale-[0.98]',
-                  selected && 'border-primary/40 bg-primary/10'
+                  'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base transition-colors duration-200',
+                  selected && 'border-primary/40 bg-primary/10 shadow-sm'
                 )}
               >
                 <span
@@ -95,7 +98,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
                 <span className="min-w-0 flex-1">
                   {formatLocalizedSubjectDisplayName(subject, lang)}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>

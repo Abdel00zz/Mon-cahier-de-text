@@ -1,4 +1,5 @@
 import { memo, useMemo, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   formatLocalizedClassDisplayName,
@@ -414,39 +415,45 @@ export const ClassesStep = memo<ClassesStepProps>(
         {/* Barre de navigation directe avec boutons tactiles ergonomiques */}
         <div className="onboarding-navigation onboarding-class-navigation">
           {onBack ? (
-            <button
+            <motion.button
               type="button"
               onClick={onBack}
               disabled={isSubmitting}
+              whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               aria-label={copy.back}
-              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-2xl border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               <span className="onboarding-back-label">{copy.back}</span>
-            </button>
+            </motion.button>
           ) : (
             <div />
           )}
 
           <div className="onboarding-class-next flex min-w-0 items-center gap-2.5 w-full sm:w-auto">
             {onSkip && (
-              <button
+              <motion.button
                 type="button"
                 onClick={onSkip}
                 disabled={isSubmitting}
-                className="inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                className="inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center rounded-2xl px-5 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <span>{isAr ? 'تخطي' : 'Passer'}</span>
-              </button>
+              </motion.button>
             )}
 
-            <button
+            <motion.button
               type="button"
               disabled={!isFormValid || isSubmitting}
               onClick={handleCreateClass}
-              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md  active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              whileTap={{ scale: (!isFormValid || isSubmitting) ? 1 : 0.95 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-2xl px-8 py-2.5 text-[15px] font-bold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-110 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer transition-all duration-200"
             >
               <span>{isSubmitting ? copy.addingClass : isAr ? 'إنشاء قسمي' : 'Créer ma classe'}</span>
-            </button>
+            </motion.button>
           </div>
         </div>
 

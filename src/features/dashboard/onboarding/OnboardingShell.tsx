@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { Check, Loader2, Sun, Moon, Laptop } from '@/components/ui/icons';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
@@ -186,29 +187,33 @@ export function OnboardingShell({
         </fieldset>
         {step !== 3 && (
           <footer className="onboarding-navigation" data-first-step={step === 1 || undefined}>
-            <button
+            <motion.button
               type="button"
               disabled={step === 1 || finishing}
               onClick={onBack}
+              whileTap={{ scale: (step === 1 || finishing) ? 1 : 0.95 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               aria-label={copy.back}
-              className="inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-card px-5 py-3 text-sm font-semibold text-foreground/80 shadow-sm hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
+              className="inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-1.5 rounded-2xl border border-border/80 bg-card px-6 py-3 text-sm font-semibold text-foreground/80 shadow-sm hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer transition-colors duration-200"
             >
               <span className="onboarding-back-label">{copy.back}</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="button"
               disabled={!canContinue || finishing}
               onClick={onNext}
-              className="artistic-cta-button inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-7 py-3 text-sm font-bold active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              whileTap={{ scale: (!canContinue || finishing) ? 1 : 0.95 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              className="artistic-cta-button inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-2 rounded-2xl px-8 py-3 text-[15px] font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-110 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer transition-all duration-200"
             >
               {finishing && (
                 <Loader2
-                  className="h-4 w-4 animate-spin motion-reduce:animate-none"
+                  className="h-4.5 w-4.5 animate-spin motion-reduce:animate-none"
                   aria-hidden="true"
                 />
               )}
               <span>{finishing ? copy.finishing : primaryLabel}</span>
-            </button>
+            </motion.button>
           </footer>
         )}
       </main>
