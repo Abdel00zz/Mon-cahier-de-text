@@ -484,7 +484,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 title={t('evaluations.manualDelete')}
                 aria-label={t('evaluations.manualDelete')}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 text-destructive shrink-0" />
               </button>
             </div>
           </div>
@@ -1002,12 +1002,17 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     type="button"
                     onClick={() => onToggle(event.id)}
                     className="ev-icon-btn"
-                    data-done={done}
+                    data-agenda={!done ? 'true' : undefined}
+                    data-done={done ? 'true' : undefined}
                     aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                     title={toggleTooltip}
                     data-tippy-content={toggleTooltip}
                   >
-                    {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
+                    {done ? (
+                      <CircleCheck className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    ) : (
+                      <CalendarCheck className="h-4.5 w-4.5 text-primary shrink-0" />
+                    )}
                   </button>
                   <button
                     type="button"
@@ -1018,7 +1023,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     title={deleteTooltip}
                     data-tippy-content={deleteTooltip}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 text-destructive shrink-0" />
                   </button>
                 </div>
               </li>

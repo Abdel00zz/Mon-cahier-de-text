@@ -15,6 +15,7 @@ import {
   removeAssessmentFromNotebook,
   formatPedagogicalDateCell,
   extractEarliestDate,
+  extractDateRange,
 } from '../src/domain/evaluations/notebookSyncBridge';
 import type { NotebookDocumentPreview } from '../src/domain/evaluations/assessmentSync';
 
@@ -293,5 +294,72 @@ test('synchronisation bidirectionnelle globale du cahier vers les évaluations (
   const { patch, updated } = syncNotebookToEvaluations('class-2', config, lessons);
   assert.equal(updated, true);
   assert.equal(patch.pedagogicalEvents?.['class-2']?.[0].date, '2026-09-08');
+  assert.equal(patch.pedagogicalEvents?.['class-2']?.[0].endDate, '2026-09-15', 'La date de fin est extraite et synchronisée');
   assert.equal(patch.assessmentDates?.['class-2']?.['2026-2027:s1-controle1'], '2026-10-22');
 });
+
+test('extraction robuste des plages de dates (extractDateRange)', () => {
+  // Date simple
+  assert.deepEqual(extractDateRange('2026-09-08'), { startDate: '2026-09-08', endDate: undefined });
+
+  // Plage deux jours 'et'
+  assert.deepEqual(extractDateRange('2026-09-08 et 2026-09-09'), { startDate: '2026-09-08', endDate: '2026-09-09' });
+
+  // Plage multi-jours 'Du...au'
+  assert.deepEqual(extractDateRange('Du 2026-09-08 au 2026-09-15'), { startDate: '2026-09-08', endDate: '2026-09-15' });
+
+  // Plage en arabe 'من...إلى'
+  assert.deepEqual(extractDateRange('من 2026-09-08 إلى 2026-09-15'), { startDate: '2026-09-08', endDate: '2026-09-15' });
+
+  // Deux fois la même date
+  assert.deepEqual(extractDateRange('2026-09-08 et 2026-09-08'), { startDate: '2026-09-08', endDate: undefined });
+
+  // Format français JJ/MM/AAAA
+  assert.deepEqual(extractDateRange('08/09/2026 et 09/09/2026'), { startDate: '2026-09-08', endDate: '2026-09-09' });
+
+  // Chaîne vide
+  assert.deepEqual(extractDateRange(''), {});
+  assert.deepEqual(extractDateRange(undefined), {});
+});
+
+test('synchronisation inverse table -> modale pour les plages et remarques', () => {
+  const config: AppConfig = {
+    theme: 'light',
+    appTextSize: 'md',
+    applicationLocale: 'fr',
+    pedagogicalEvents: {
+      'class-3': [
+        {
+          id: 'evt-soutien',
+          type: 'soutien_scolaire',
+          title: 'Soutien scolaire',
+          date: '2026-10-01',
+          status: 'planned',
+          createdAt: '2026-09-20T08:00:00.000Z',
+        },
+      ],
+    },
+    assessmentDates: {},
+  };
+
+  const modifiedLessons: LessonsData = [
+    {
+      type: 'soutien_scolaire',
+      title: 'Soutien scolaire intensif',
+      date: 'Du 2026-10-05 au 2026-10-08',
+      remark: 'Séance de révision générale pour le contrôle',
+      sections: [],
+      items: [],
+      _tempId: 'event-evt-soutien',
+    },
+  ];
+
+  const { patch, updated } = syncNotebookToEvaluations('class-3', config, modifiedLessons);
+  assert.equal(updated, true);
+  const updatedEvt = patch.pedagogicalEvents?.['class-3']?.[0];
+  assert.equal(updatedEvt?.title, 'Soutien scolaire intensif');
+  assert.equal(updatedEvt?.date, '2026-10-05');
+  assert.equal(updatedEvt?.endDate, '2026-10-08');
+  assert.equal(updatedEvt?.note, 'Séance de révision générale pour le contrôle');
+});
+

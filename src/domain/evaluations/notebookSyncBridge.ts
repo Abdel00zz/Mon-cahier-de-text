@@ -165,6 +165,33 @@ export function extractEarliestDate(rawDate: string | undefined): string | undef
 }
 
 /**
+ * Extrait les dates ISO de début et de fin d'une cellule date (simple ou plage avec 'et' ou 'Du...au').
+ */
+export function extractDateRange(rawDate: string | undefined): { startDate?: string; endDate?: string } {
+  if (!rawDate) return {};
+  const isoMatches = rawDate.match(/\b\d{4}-\d{2}-\d{2}\b/g);
+  if (isoMatches && isoMatches.length > 0) {
+    return {
+      startDate: isoMatches[0],
+      endDate: isoMatches.length > 1 && isoMatches[1] !== isoMatches[0] ? isoMatches[1] : undefined,
+    };
+  }
+  const ddmmyyyyMatches = rawDate.match(/\b\d{1,2}[/.-]\d{1,2}[/.-]\d{4}\b/g);
+  if (ddmmyyyyMatches && ddmmyyyyMatches.length > 0) {
+    const toIso = (s: string) => {
+      const parts = s.split(/[/.-]/);
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    };
+    return {
+      startDate: toIso(ddmmyyyyMatches[0]),
+      endDate: ddmmyyyyMatches.length > 1 && ddmmyyyyMatches[1] !== ddmmyyyyMatches[0] ? toIso(ddmmyyyyMatches[1]) : undefined,
+    };
+  }
+  const single = extractEarliestDate(rawDate);
+  return { startDate: single };
+}
+
+/**
  * Synchronise l'ajout ou la mise à jour d'un événement pédagogique
  * (ex: évaluation diagnostique, correction) dans le cahier de textes.
  * Les dates sont affectées à la CELLULE DATE avec connecteur adapté ('et' ou 'Du...au'),
@@ -396,6 +423,7 @@ export function syncNotebookToEvaluations(
   const notebookAssessments = findNotebookAssessments(lessons);
   const currentDates = { ...(config.assessmentDates?.[classId] ?? {}) };
   const nextDates = { ...currentDates };
+  const manualList = config.manualAssessments?.[classId] ?? [];
 
   for (const entry of notebookAssessments) {
     if (entry.date?.trim()) {
@@ -410,6 +438,12 @@ export function syncNotebookToEvaluations(
         if (nextDates[targetId] !== isoDate || nextDates[legacyId] !== isoDate) {
           nextDates[targetId] = isoDate;
           nextDates[legacyId] = isoDate;
+          updated = true;
+        }
+
+        const manualMatch = manualList.find(m => m.type === entry.type && m.num === entry.num);
+        if (manualMatch && nextDates[manualMatch.id] !== isoDate) {
+          nextDates[manualMatch.id] = isoDate;
           updated = true;
         }
       }
@@ -439,7 +473,7 @@ export function syncNotebookToEvaluations(
   for (const item of lessons) {
     const isSyncableType = syncableTypes.has(item.type) || item._tempId?.startsWith('event-');
     if (isSyncableType && item.date?.trim()) {
-      const isoDate = extractEarliestDate(item.date);
+      const { startDate: isoDate, endDate: isoEndDate } = extractDateRange(item.date);
       if (isoDate) {
         const eventId = item._tempId?.replace(/^event-/, '');
         const existingIdx = nextEvents.findIndex(
@@ -448,11 +482,16 @@ export function syncNotebookToEvaluations(
 
         if (existingIdx >= 0) {
           const existing = nextEvents[existingIdx];
-          if (existing.date !== isoDate || (item.title && existing.title !== item.title)) {
+          const titleChanged = item.title && existing.title !== item.title.trim();
+          const dateChanged = existing.date !== isoDate || existing.endDate !== isoEndDate;
+          const noteChanged = item.remark?.trim() && existing.note !== item.remark.trim();
+          if (dateChanged || titleChanged || noteChanged) {
             nextEvents[existingIdx] = {
               ...existing,
               date: isoDate,
+              endDate: isoEndDate,
               title: item.title?.trim() || existing.title,
+              note: item.remark?.trim() || existing.note,
             };
             eventsChanged = true;
           }
@@ -462,6 +501,8 @@ export function syncNotebookToEvaluations(
             type: (item.type as PedagogicalEvent['type']) || 'autre',
             title: item.title?.trim() || 'Activité pédagogique',
             date: isoDate,
+            endDate: isoEndDate,
+            note: item.remark?.trim() || undefined,
             status: 'planned',
             createdAt: new Date().toISOString(),
           };

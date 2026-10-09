@@ -18,8 +18,23 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
         const preview = { document: event.document, title: event.title.trim() || translate(`evaluations.event.${event.type}`), assessmentId: `event:${event.id}` };
         // Correspondance directe par identifiant ou par type/date non ambigu
         const exactId = notebook.find(row => (row.data as { _tempId?: string })._tempId === `event-${event.id}`);
-        const candidates = notebook.filter(row => row.data.type === event.type && (row.data.date === event.date || !row.data.date));
-        const target = exactId ?? (candidates.length === 1 ? candidates[0] : notebook.find(row => row.data.type === event.type && row.data.date === event.date));
+        const candidates = notebook.filter(row =>
+            row.data.type === event.type && (
+                row.data.date === event.date ||
+                (typeof row.data.date === 'string' && row.data.date.includes(event.date)) ||
+                !row.data.date
+            )
+        );
+        const target = exactId ?? (
+            candidates.length === 1
+                ? candidates[0]
+                : notebook.find(row =>
+                    row.data.type === event.type && (
+                        row.data.date === event.date ||
+                        (typeof row.data.date === 'string' && row.data.date.includes(event.date))
+                    )
+                )
+        );
         if (target && !rows.has(target.key)) rows.set(target.key, preview);
         else coveredDates(event).forEach(date => addSession(date, preview));
     }

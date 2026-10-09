@@ -124,6 +124,10 @@ test('les couleurs restent sémantiques et le mouvement facultatif', () => {
   assert.match(css, /\.ev-action\[data-filled='danger'\] \{[\s\S]{0,120}var\(--destructive\)/, 'les absents critiques gardent le rouge sémantique');
   assert.match(css, /\.ev-icon-btn\[data-done='true'\] \{[\s\S]{0,140}#15803d/, 'réalisé = vert sémantique en clair');
   assert.match(css, /\.dark \.ev-icon-btn\[data-done='true'\] \{ color: #76d59a/, 'et sa valeur sombre');
+  assert.match(css, /\.ev-icon-btn\[data-danger='true'\] \{[\s\S]{0,140}var\(--destructive\)/, 'bouton corbeille = cadre et rouge sémantique');
+  assert.match(css, /\.ev-icon-btn\[data-agenda='true'\] \{[\s\S]{0,140}var\(--primary\)/, 'bouton agenda = cadre bleu primaire');
+  assert.match(view, /data-danger="true"/, 'le bouton corbeille porte l’attribut de danger');
+  assert.match(view, /data-agenda=\{!done \? 'true' : undefined\}/, 'le bouton agenda non complété porte l’attribut agenda');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,120}\.ev-board__rows > \.ev-row/, 'mouvement facultatif');
   // Le tableau se positionne en propriétés logiques : il se lit en arabe comme en français.
   assert.doesNotMatch(css, /(margin|padding|border)-(left|right)\s*:/, 'aucune propriété physique horizontale');
