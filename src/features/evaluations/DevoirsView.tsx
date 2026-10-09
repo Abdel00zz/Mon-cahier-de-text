@@ -14,6 +14,8 @@ import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   CalendarCheck,
+  CalendarDays,
+  Circle,
   CircleCheck,
   Plus,
   RefreshCw,
@@ -41,6 +43,7 @@ import { useEvaluationActions } from './hooks/useEvaluationActions';
 import { StudentReviewDialog } from './components/StudentReviewDialog';
 import { StudentNamesEditor } from './components/StudentNamesEditor';
 import { ContentDocumentModal } from './components/ContentDocumentModal';
+import { EventDateModal } from './components/EventDateModal';
 import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem } from './components/KindChooser';
 import { KindGroupHeader } from './components/KindGroupHeader';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
@@ -874,7 +877,21 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
+  const [editingDateEvent, setEditingDateEvent] = useState<PedagogicalEvent | null>(null);
+
   if (events.length === 0) return null;
+
+  const formatDateBadge = (date: string | undefined, endDate: string | undefined): string => {
+    if (!date) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
+    const formatPart = (iso: string) => {
+      const [y, m, d] = iso.split('-');
+      return y && m && d ? `${d}/${m}/${y}` : iso;
+    };
+    if (endDate && endDate !== date) {
+      return `${formatPart(date)} → ${formatPart(endDate)}`;
+    }
+    return formatPart(date);
+  };
 
   return (
     <section className="space-y-2.5 font-sans">
@@ -946,37 +963,25 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
                 </div>
 
-                <div className="ev-row__date flex items-center gap-1.5 flex-wrap">
-                  <input type="date" value={event.date} onChange={e => onDateChange(event, e.target.value, event.endDate)}
+                <div className="ev-row__date">
+                  <button
+                    type="button"
+                    onClick={() => setEditingDateEvent(event)}
+                    className={cn(
+                      "ev-date-trigger inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none",
+                      event.date
+                        ? "border-border/70 bg-card/90 text-foreground hover:border-primary/50 hover:bg-accent/40 active:scale-95 shadow-xs"
+                        : "border-dashed border-border/80 bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    )}
+                    title={event.endDate ? `${event.date} → ${event.endDate}` : (event.date || t('evaluations.assignDate'))}
+                    data-tippy-content={locale === 'ar' ? 'تعديل تاريخ هذا النشاط التربوي' : 'Modifier la date de cette activité'}
                     aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
-                    className="min-h-11 min-w-0 max-w-full rounded-lg border border-border/80 bg-background px-2 text-xs"/>
-                  {event.endDate ? (
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">{t('evaluations.rangeSeparator')}</span>
-                      <input type="date" value={event.endDate} min={event.date}
-                        onChange={e => onDateChange(event, event.date, e.target.value)}
-                        aria-label={`${t('evaluations.rangeSeparator')} — ${title}`}
-                        className="min-h-11 min-w-0 max-w-full rounded-lg border border-border/80 bg-background px-2 text-xs"/>
-                      <button
-                        type="button"
-                        onClick={() => onDateChange(event, event.date, undefined)}
-                        className="p-1 rounded text-muted-foreground hover:text-foreground cursor-pointer"
-                        title={t('editor.removeRange')}
-                        aria-label={t('editor.removeRange')}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onDateChange(event, event.date, event.date)}
-                      className="text-[11px] text-muted-foreground hover:text-primary transition-colors py-1 px-1.5 rounded cursor-pointer"
-                      title={t('editor.defineRange')}
-                    >
-                      + {t('editor.defineRange')}
-                    </button>
-                  )}
+                  >
+                    <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                    <span className="whitespace-nowrap tabular-nums text-xs" dir="ltr">
+                      {formatDateBadge(event.date, event.endDate)}
+                    </span>
+                  </button>
                 </div>
 
                 <div className="ev-row__actions">
@@ -1029,7 +1034,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     {done ? (
                       <CircleCheck className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : (
-                      <CalendarCheck className="h-4.5 w-4.5 text-primary shrink-0" />
+                      <Circle className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
                     )}
                   </button>
                   <button
@@ -1049,6 +1054,13 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
           })}
         </ul>
       </div>
+
+      <EventDateModal
+        isOpen={Boolean(editingDateEvent)}
+        onClose={() => setEditingDateEvent(null)}
+        event={editingDateEvent}
+        onSave={onDateChange}
+      />
     </section>
   );
 };

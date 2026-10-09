@@ -264,6 +264,24 @@
 /* Date ajustée par le professeur : elle est écrite en accent, comme partout. */
 .ev-row__date input[type='date'][data-custom='true'] { color: hsl(var(--primary)); font-weight: 800; }
 
+/* Pastille interactive de date (activité / période) */
+.ev-date-trigger {
+    min-height: 2.125rem;
+    max-width: 100%;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+}
+.ev-date-trigger:hover {
+    background: color-mix(in srgb, hsl(var(--muted)) 65%, transparent);
+}
+.ev-date-trigger:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, hsl(var(--primary)) 55%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
+}
+
 /* La ligne d'une activité réalisée s'éteint sans disparaître. */
 .ev-board__rows > .ev-row[data-done='true'] .ev-row__id {
     text-decoration: line-through;
@@ -289,6 +307,7 @@
     .ev-row__state { align-self: start; }
     /* Cibles tactiles : jamais moins de 44 px pour la date ni pour agir. */
     .ev-row__date input[type='date'] { height: 2.75rem; border-color: color-mix(in srgb, hsl(var(--border)) 84%, transparent); background: hsl(var(--background) / .65); }
+    .ev-date-trigger { height: 2.75rem; }
     .ev-action { min-height: 2.75rem; padding-inline: .75rem; font-size: 11.5px; }
     .ev-icon-btn { width: 2.75rem; height: 2.75rem; }
 }
