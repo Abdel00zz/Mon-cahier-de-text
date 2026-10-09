@@ -98,18 +98,18 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 
-test('les commandes portent un libellé, pas une icône', () => {
+test('les commandes portent un libellé, une icône et une infobulle explicative', () => {
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
   const notebookLabel = translateLocaleMessage('fr', 'evaluations.notebook.title');
   const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
   const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
-  // Un bouton dont le contenu est exactement le libellé : aucune icône injectée.
-  assert.match(olympiade, new RegExp(`<button[^>]*>${documentLabel}</button>`));
-  assert.match(olympiade, new RegExp(`<button[^>]*>${studentsLabel}</button>`));
-  assert.match(cahiers, new RegExp(`<button[^>]*>${notebookLabel}</button>`));
-  // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton.
-  assert.equal(occurrences(cahiers, `>${documentLabel}</button>`), 0);
+  // Les boutons combinent une icône SVG significative, le libellé texte et une infobulle explicative
+  assert.match(olympiade, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${documentLabel}[\\s\\S]*?</button>`));
+  assert.match(olympiade, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${studentsLabel}[\\s\\S]*?</button>`));
+  assert.match(cahiers, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${notebookLabel}[\\s\\S]*?</button>`));
+  // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton document.
+  assert.equal(occurrences(cahiers, `<span>${documentLabel}</span>`), 0);
 });
 
 test('les titres disent ce que la fenêtre contient, sans répétition', () => {

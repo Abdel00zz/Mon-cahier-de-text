@@ -20,6 +20,11 @@ import {
   RefreshCw,
   Trash2,
   Undo2,
+  FileText,
+  Users,
+  UserX,
+  BookCheck,
+  Mic,
 } from 'lucide-react';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 import { syncEventToNotebook, syncAssessmentDateToNotebook } from '@/domain/evaluations/notebookSyncBridge';
@@ -286,112 +291,164 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
     const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
+    const statusExplanation = link.status === 'synced'
+      ? (locale === 'ar' ? 'متزامن تماماً: التاريخ يطابق تماماً الحصة المسجلة في دفتر النصوص' : 'Parfaitement synchronisé : la date correspond exactement à la séance dans le cahier')
+      : link.status === 'mismatch'
+        ? (locale === 'ar' ? `اختلاف تاريخ التخطيط (${link.planned.dateISO}) مع دفتر النصوص (${link.entry?.date ?? ''})` : `Écart de date entre la programmation (${link.planned.dateISO}) et le cahier (${link.entry?.date ?? ''})`)
+        : link.status === 'done'
+          ? (locale === 'ar' ? 'تم إجراء هذه المراقبة' : 'Évaluation effectuée')
+          : (locale === 'ar' ? 'مراقبة مبرمجة في التقويم' : 'Évaluation planifiée');
+
+    const docTooltip = assessmentDocument
+      ? (locale === 'ar' ? 'المحتوى محرر — انقر للاطلاع أو تعديل نص الموضوع، التمارين وعناصر الإجابة' : 'Sujet et corrigé rédigés — Cliquer pour consulter ou modifier')
+      : (locale === 'ar' ? 'لم يتم تحرير أي محتوى — انقر لكتابة نص الفرض، التمارين وسلّم التنقيط' : 'Aucun document rédigé — Cliquer pour rédiger le sujet ou le corrigé');
+
+    const absentsTooltip = absents.length > 0
+      ? (locale === 'ar' ? `${absents.length} تلميذ(ة) متغيب(ة) — إدارة لائحة الغياب وبرمجة الاستدراك` : `${absents.length} élève(s) absent(s) — Gérer la liste des absents et le rattrapage`)
+      : (locale === 'ar' ? 'تسجيل التلاميذ المتغيبين في هذا الفرض لتنظيم حصة الاستدراك' : 'Consigner les élèves absents pour programmer la séance de rattrapage');
+
+    const oralTooltip = locale === 'ar'
+      ? 'تقييم مهارات التعبير الشفهي وتدوين ملاحظات ومكتسبات التلاميذ'
+      : 'Évaluer les compétences orales et consigner les observations des élèves';
+
     return (
       <div
         key={a.id}
         className="ev-row evaluation-tone"
         data-assessment-id={a.id}
+        data-assessment-type={a.type}
+        data-legacy-id={a.legacyId}
         data-tone={kindStyle.tone}
+        data-custom={custom ? 'true' : undefined}
       >
-        <div className="ev-row__id min-w-0">
-          <button
-            type="button"
-            onClick={() => openEditAssessment(a)}
-            className="-ms-1.5 inline-flex min-h-11 max-w-full cursor-pointer items-center truncate rounded-lg px-2 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-            title={t('evaluations.editDevoir')}
-          >
-            {displayName}
-          </button>
-        </div>
+            <div className="ev-row__id min-w-0">
+              <button
+                type="button"
+                onClick={() => setEditingAssessment(a)}
+                className="-ms-1.5 inline-flex min-h-11 max-w-full cursor-pointer items-center truncate rounded-lg px-2 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                title={t('evaluations.editDevoir')}
+                data-tippy-content={locale === 'ar' ? `تعديل تفاصيل ${displayName}` : `Modifier les détails de ${displayName}`}
+              >
+                {displayName}
+              </button>
+            </div>
 
-        <div className="ev-row__state flex flex-col items-center gap-1">
-          <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}>
-            {t(status.labelKey)}
-          </span>
-          {link.status === 'mismatch' && link.entry?.date && (
-            <button
-              type="button"
-              onClick={() => {
-                const targetDate = link.entry?.date;
-                if (!targetDate) return;
-                setAssessmentDate(a.id, targetDate);
-                toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
-              }}
-              className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
-              title={locale === 'ar' ? `ضبط تاريخ التخطيط ليتوافق مع دفتر النصوص (${link.entry?.date})` : `Aligner la date sur le cahier (${link.entry?.date})`}
-              aria-label={locale === 'ar' ? `ضبط مع دفتر النصوص (${link.entry?.date})` : `Aligner sur le cahier (${link.entry?.date})`}
-            >
-              <RefreshCw className="h-3 w-3" />
-              <span>{locale === 'ar' ? 'مزامنة' : 'Aligner'}</span>
-            </button>
-          )}
-        </div>
+            <div className="ev-row__state flex flex-col items-center gap-1">
+              <span
+                className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}
+                data-tippy-content={statusExplanation}
+                title={statusExplanation}
+              >
+                {t(status.labelKey)}
+              </span>
+              {link.status === 'mismatch' && link.entry?.date && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetDate = link.entry?.date;
+                    if (!targetDate) return;
+                    setAssessmentDate(a.id, targetDate);
+                    toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
+                  }}
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
+                  title={locale === 'ar' ? `ضبط تاريخ التخطيط ليتوافق مع دفتر النصوص (${link.entry?.date})` : `Aligner la date sur le cahier (${link.entry?.date})`}
+                  data-tippy-content={locale === 'ar' ? `مزامنة تاريخ التخطيط مع تاريخ الحصة المسجلة في دفتر النصوص (${link.entry?.date})` : `Harmoniser la date sur celle de la séance consignée dans le cahier (${link.entry?.date})`}
+                  aria-label={locale === 'ar' ? `ضبط مع دفتر النصوص (${link.entry?.date})` : `Aligner sur le cahier (${link.entry?.date})`}
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  <span>{locale === 'ar' ? 'مزامنة' : 'Aligner'}</span>
+                </button>
+              )}
+            </div>
 
-        <div className="ev-row__date">
-          <input
-            type="date"
-            value={a.dateISO}
-            onChange={(e) => setAssessmentDate(a.id, e.target.value)}
-            data-custom={custom}
-            title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
-            aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
-            className="h-9 rounded-lg border border-border/80 bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          {custom && (
-            <button
-              type="button"
-              onClick={() => setAssessmentDate(a.id, '')}
-              className="ev-icon-btn"
-              title={t('evaluations.restoreDate')}
-              aria-label={t('evaluations.restoreDate')}
-            >
-              <Undo2 className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+            <div className="ev-row__date">
+              <input
+                type="date"
+                value={a.dateISO}
+                onChange={(e) => setAssessmentDate(a.id, e.target.value)}
+                data-custom={custom}
+                title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
+                data-tippy-content={locale === 'ar' ? `تعديل تاريخ إجراء ${displayName} في التقويم` : `Modifier la date d'exécution de ${displayName}`}
+                aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+                className="h-9 rounded-lg border border-border/80 bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {custom && (
+                <button
+                  type="button"
+                  onClick={() => setAssessmentDate(a.id, '')}
+                  className="ev-icon-btn"
+                  title={t('evaluations.restoreDate')}
+                  data-tippy-content={locale === 'ar' ? 'استعادة التاريخ الرسمي المقترح' : 'Rétablir la date officielle préconisée'}
+                  aria-label={t('evaluations.restoreDate')}
+                >
+                  <Undo2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
 
-        <div className="ev-row__actions">
-          <button
-            type="button"
-            onClick={() => setDocumentFor({ kind: 'assessment', link })}
-            className="ev-action"
-            data-filled={assessmentDocument ? 'tone' : undefined}
-            aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
-          >
-            {t('evaluations.doc.open')}
-          </button>
+            <div className="ev-row__actions">
+              <button
+                type="button"
+                onClick={() => setDocumentFor({ kind: 'assessment', link })}
+                className="ev-action"
+                data-filled={assessmentDocument ? 'tone' : undefined}
+                data-tippy-content={docTooltip}
+                title={docTooltip}
+                aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
+              >
+                <FileText className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                <span>{t('evaluations.doc.open')}</span>
+              </button>
 
-          {isSupervised && (
-            <button
-              type="button"
-              onClick={() => setAbsencesFor(link)}
-              className="ev-action"
-              data-filled={absents.length > 0 ? 'danger' : undefined}
-            >
-              {absents.length > 0
-                ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
-                : t('evaluations.absentees')}
-            </button>
-          )}
+              {isSupervised && (
+                <button
+                  type="button"
+                  onClick={() => setAbsencesFor(link)}
+                  className="ev-action"
+                  data-filled={absents.length > 0 ? 'danger' : undefined}
+                  data-tippy-content={absentsTooltip}
+                  title={absentsTooltip}
+                  aria-label={absents.length > 0
+                    ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
+                    : t('evaluations.absentees')}
+                >
+                  <UserX className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                  <span>
+                    {absents.length > 0
+                      ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
+                      : t('evaluations.absentees')}
+                  </span>
+                </button>
+              )}
 
-          {a.type === 'oral' && <button type="button" onClick={() => setOralFor(link)} className="ev-action"
-            aria-label={`${t('evaluations.oral.title')} — ${t('evaluations.type.oral')} ${number.format(a.num)}`}>
-            {t('evaluations.oral.title')}
-          </button>}
+              {a.type === 'oral' && (
+                <button
+                  type="button"
+                  onClick={() => setOralFor(link)}
+                  className="ev-action"
+                  data-tippy-content={oralTooltip}
+                  title={oralTooltip}
+                  aria-label={`${t('evaluations.oral.title')} — ${t('evaluations.type.oral')} ${number.format(a.num)}`}
+                >
+                  <Mic className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                  <span>{t('evaluations.oral.title')}</span>
+                </button>
+              )}
 
-          <button
-            type="button"
-            onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
-            className="ev-icon-btn"
-            data-danger="true"
-            title={t('evaluations.manualDelete')}
-            aria-label={t('evaluations.manualDelete')}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    );
+              <button
+                type="button"
+                onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
+                className="ev-icon-btn"
+                data-danger="true"
+                data-tippy-content={locale === 'ar' ? `حذف ${displayName} نهائياً` : `Supprimer définitivement ${displayName}`}
+                title={t('evaluations.manualDelete')}
+                aria-label={t('evaluations.manualDelete')}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        );
   });
 
   const absencesRecord =
@@ -432,6 +489,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <button
           type="button"
           onClick={() => openKindChooser()}
+          title={locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique'}
+          data-tippy-content={locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique'}
           className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
         >
           <Plus className="h-5 w-5" aria-hidden="true" />
@@ -739,7 +798,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 };
 
 const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }> = ({ onCreate, compact = false }) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const addTooltip = locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique';
   return (
     <div className={`flex flex-col items-center border border-dashed border-border bg-card/40 text-center ${compact ? 'gap-2 rounded-2xl px-4 py-4' : 'rounded-3xl px-4 py-8'}`}>
       {!compact && <SchedulePlanningIllustration size={120} className="mb-2" />}
@@ -750,6 +810,8 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
       <button
         type="button"
         onClick={onCreate}
+        title={addTooltip}
+        data-tippy-content={addTooltip}
         className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] cursor-pointer"
       >
         <Plus className="h-4 w-4 stroke-[2.2]" />
@@ -808,6 +870,26 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
             const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
             const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
             const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
+            const eventDocTooltip = locale === 'ar'
+              ? (event.document ? 'عرض وتعديل وثيقة أو موضوع هذا النشاط' : 'إرفاق وثيقة أو نص أو رابط لهذا النشاط التربوي')
+              : (event.document ? 'Consulter ou modifier le document/sujet associé' : 'Associer un document, sujet ou lien à cette activité');
+
+            const eventStudentsTooltip = event.type === REMARK_EVENT_TYPE
+              ? (locale === 'ar'
+                  ? (names > 0 ? `متابعة دفاتر التلاميذ (${names} تلميذ محدد)` : 'تسجيل التلاميذ المعنيين بمراقبة الدفاتر وملاحظات التفتيش')
+                  : (names > 0 ? `Suivi des cahiers (${names} élève(s))` : 'Pointer les élèves dont les cahiers sont contrôlés'))
+              : (locale === 'ar'
+                  ? (names > 0 ? `قائمة التلاميذ المشاركين (${names} مشارك)` : 'تحديد التلاميذ المشاركين أو المستفيدين من النشاط')
+                  : (names > 0 ? `Élèves participants (${names} élève(s))` : 'Désigner les élèves concernés par cette activité'));
+
+            const toggleTooltip = done
+              ? (locale === 'ar' ? 'إعادة فتح هذا النشاط (وضع قيد الإنجاز)' : 'Rouvrir cette activité (marquer comme en cours)')
+              : (locale === 'ar' ? 'تحديد هذا النشاط كمكتمل ومنجز' : 'Marquer cette activité comme terminée / effectuée');
+
+            const deleteTooltip = locale === 'ar'
+              ? 'حذف هذا النشاط التربوي نهائياً'
+              : 'Supprimer définitivement cette activité pédagogique';
+
             return (
               <li
                 key={event.id}
@@ -843,8 +925,11 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       className="ev-action"
                       data-filled={event.document ? 'tone' : undefined}
                       aria-label={t('evaluations.doc.title', { activity: event.title })}
+                      title={eventDocTooltip}
+                      data-tippy-content={eventDocTooltip}
                     >
-                      {t('evaluations.doc.open')}
+                      <FileText className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                      <span>{t('evaluations.doc.open')}</span>
                     </button>
                   )}
                   <button
@@ -853,8 +938,15 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     className="ev-action"
                     data-filled={names > 0 ? 'tone' : undefined}
                     aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
+                    title={eventStudentsTooltip}
+                    data-tippy-content={eventStudentsTooltip}
                   >
-                    {t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}
+                    {event.type === REMARK_EVENT_TYPE ? (
+                      <BookCheck className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                    ) : (
+                      <Users className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                    )}
+                    <span>{t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}</span>
                   </button>
 
                   <button
@@ -863,6 +955,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     className="ev-icon-btn"
                     data-done={done}
                     aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
+                    title={toggleTooltip}
+                    data-tippy-content={toggleTooltip}
                   >
                     {done ? <CircleCheck className="h-5 w-5" /> : <CalendarCheck className="h-5 w-5" />}
                   </button>
@@ -872,6 +966,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     className="ev-icon-btn"
                     data-danger="true"
                     aria-label={t('evaluations.deleteEventAria', { title: event.title })}
+                    title={deleteTooltip}
+                    data-tippy-content={deleteTooltip}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
