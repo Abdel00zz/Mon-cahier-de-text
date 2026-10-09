@@ -190,7 +190,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     const annotationOwners = new Map<string, string>();
     for (const item of items) {
       const date = getMergeableDate(item);
-      if (!date || annotationOwners.has(date)) continue;
+      if (!date) continue;
       const text = getSessionAnnotation?.(date);
       if (!text) continue;
       annotationsByDate.set(date, text);
@@ -386,7 +386,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                           ) : null;
                         })()}
                     </button>
-                    <SessionDocuments documents={getMergeableDate(item) && items.find(entry => getMergeableDate(entry) === getMergeableDate(item)) === item
+                    <SessionDocuments documents={getMergeableDate(item) && annotationOwners.get(getMergeableDate(item)!) === item.key
                       ? getSessionDocuments?.(getMergeableDate(item)!) : undefined} onOpen={onOpenDocumentPreview}/>
                 </div>
             ))}

@@ -88,13 +88,13 @@ test('CreateClassModal renders neutral uncolored branch choice cards without ton
   assert.doesNotMatch(code, /keepToneForClass/);
 });
 
-test('classCards.css has +5% font size (3.15rem), tracking -.04em, and opacity 1 for group number', () => {
+test('classCards.css has artistic enlarged font size (3.75rem), tracking -.03em, and opacity 1 for group number', () => {
   const css = readFileSync('src/features/dashboard/classCards.css', 'utf8');
-  assert.match(css, /\.class-card \.class-card__group \{[^}]*font-size:\s*3\.15rem;/s);
-  assert.match(css, /\.class-card \.class-card__group \{[^}]*letter-spacing:\s*-\.04em;/s);
+  assert.match(css, /\.class-card \.class-card__group \{[^}]*font-size:\s*3\.75rem;/s);
+  assert.match(css, /\.class-card \.class-card__group \{[^}]*letter-spacing:\s*-\.03em;/s);
   assert.match(css, /\.class-card \.class-card__group \{[^}]*opacity:\s*1;/s);
-  assert.match(css, /\.class-card \.class-card__group \{ font-size:\s*2\.625rem; \}/);
-  assert.match(css, /\.class-card \.class-card__group \{ font-size:\s*2\.1rem; \}/);
+  assert.match(css, /\.class-card \.class-card__group \{ font-size:\s*3\.15rem; \}/);
+  assert.match(css, /\.class-card \.class-card__group \{ font-size:\s*2\.45rem; \}/);
 });
 
 test('sidebar background harmonizes with canvas background in index.css and icon size is balanced', () => {

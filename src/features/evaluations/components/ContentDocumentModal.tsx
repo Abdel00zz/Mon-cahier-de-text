@@ -71,7 +71,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     opened.current = true;
     baseline.current = saved;
     setSource(saved?.source ?? '');
-    setTab(saved?.source.trim() ? 'preview' : 'source');
+    setTab('preview');
     setShowHelp(false);
     setConflictOpen(false);
   }, [isOpen, saved]);

@@ -76,6 +76,7 @@ test('l’annotation n’est écrite qu’une fois par séance', () => {
     const split = renderTable(splitData, () => ANNOTATION);
     assert.equal(occurrences(split, 'data-session-annotation="true"'), 1);
     assert.equal(split.includes('Absents : Ali'), true);
+    assert.equal(split.includes('Devoir rendu'), true);
 });
 
 test('sans contrôle des cahiers, la cellule de remarque reste nue', () => {

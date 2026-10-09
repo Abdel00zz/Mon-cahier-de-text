@@ -33,16 +33,31 @@ export function buildSessionActivityRemarks(config: ActivitySettings, classId: s
   for (const assessment of manual) {
     if (assessment.type === 'oral' && !removed.has(assessment.id)) {
       add(dates[assessment.id] || assessment.dateISO, translate('evaluations.type.oral'));
+    } else if (assessment.type === 'maison' && !removed.has(assessment.id)) {
+      const num = assessment.num ? String(assessment.num) : '';
+      const text = num
+        ? translate('remark.devoirMaisonGiven', { num })
+        : translate('remark.devoirMaisonGivenSimple');
+      add(dates[assessment.id] || assessment.dateISO, text);
     }
   }
-  // Official oral assessments enter here only after the teacher chooses a
+  // Official oral and homework assessments enter here only after the teacher chooses a
   // date. Predicted planning dates never announce an activity as completed.
   for (const [id, date] of Object.entries(dates)) {
     if (removed.has(id) || manual.some(assessment => assessment.id === id)) continue;
     const legacyId = id.split(':').at(-1)!;
-    if (!/^s[12]-oral\d+$/.test(legacyId) || removed.has(legacyId)) continue;
+    if (removed.has(legacyId)) continue;
     if (id === legacyId && Object.keys(dates).some(key => key.endsWith(`:${legacyId}`))) continue;
-    add(date, translate('evaluations.type.oral'));
+    if (/^s[12]-oral\d+$/.test(legacyId)) {
+      add(date, translate('evaluations.type.oral'));
+    } else if (/^s[12]-maison\d+$/.test(legacyId) || /(?:^|:)maison-?\d*/i.test(id) || /(?:^|-)maison\d*/i.test(legacyId)) {
+      const numMatch = legacyId.match(/\d+$/) ?? id.match(/\d+$/);
+      const num = numMatch ? numMatch[0] : '';
+      const text = num
+        ? translate('remark.devoirMaisonGiven', { num })
+        : translate('remark.devoirMaisonGivenSimple');
+      add(date, text);
+    }
   }
   return new Map([...byDate].map(([date, texts]) => [date, [...texts].join('\n')]));
 }

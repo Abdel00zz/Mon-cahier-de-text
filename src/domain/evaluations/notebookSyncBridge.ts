@@ -295,7 +295,7 @@ export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, t
 export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
   id: string; type: DevoirType; num: number; dateISO: string; label?: string; clearIfEmpty?: boolean; entryKey?: string; updatedTitle?: string;
 }, locale: AppLocale = 'fr'): { lessons: LessonsData; updated: boolean } {
-  // Oral activities belong to the dated remark, never to a written-test block.
+  // Oral and homework activities belong to the dated remark, never to a written-test block.
   if (assessment.type !== 'controle' && assessment.type !== 'maison') return { lessons, updated: false };
   const row = assessmentRow(lessons, assessment.id, assessment.type, assessment.num, assessment.entryKey);
   const date = assessment.dateISO || undefined;
@@ -309,9 +309,10 @@ export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
     // Nested assessments retain their chapter and its contents.
     return { lessons: next, updated: true };
   }
-  if (!date) return { lessons, updated: false };
-  const type = assessment.type === 'maison' ? 'devoir_maison' : 'controle_continu';
-  const title = assessment.label || (locale === 'ar' ? (type === 'devoir_maison' ? 'فرض منزلي ' : 'مراقبة مستمرة ') : (type === 'devoir_maison' ? 'Devoir maison ' : 'Contrôle continu ')) + assessment.num;
+  // Homework belongs to the dated remark; it does not insert a new course block.
+  if (!date || assessment.type === 'maison') return { lessons, updated: false };
+  const type = 'controle_continu';
+  const title = assessment.label || (locale === 'ar' ? 'مراقبة مستمرة ' : 'Contrôle continu ') + assessment.num;
   const block: TopLevelItem = { type, title, date, _tempId: 'dev-block-' + assessment.id };
   return { lessons: placeBlockChronologically(lessons, block).lessons, updated: true };
 }

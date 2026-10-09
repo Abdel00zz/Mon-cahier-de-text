@@ -31,9 +31,9 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
         if (entry || removed.has(planned.id) || (planned.legacyId && removed.has(planned.legacyId))) continue;
         const document = documents?.[planned.id] ?? (planned.legacyId ? documents?.[planned.legacyId] : undefined);
         if (!document?.source.trim()) continue;
-        // A forecast alone must not announce that an oral activity took place.
+        // A forecast alone must not announce that an oral or homework activity took place.
         const enteredDate = dates[planned.id] || (planned.legacyId ? dates[planned.legacyId] : undefined);
-        if (planned.type === 'oral' && !manual.has(planned.id) && !enteredDate) continue;
+        if ((planned.type === 'oral' || planned.type === 'maison') && !manual.has(planned.id) && !enteredDate) continue;
         addSession(enteredDate || planned.dateISO, { document, title: `${translate(`evaluations.type.${planned.type}`)} ${planned.num}`, assessmentId: planned.id });
     }
     return { rows, sessions };

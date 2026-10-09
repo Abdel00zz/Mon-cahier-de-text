@@ -75,3 +75,14 @@ test('changing a remark activity invalidates that printed session without adding
   settings.pedagogicalEvents!.A[1].title = 'Remédiation modifiée';
   assert.notEqual(sessionPrintSignatures(lessons, [], translated(settings))['2026-10-01'], annotated['2026-10-01']);
 });
+
+test('homework assessments (devoir maison) add "تم إعطاء الفرض المنزلي" to the session remark', () => {
+  const settings: Partial<AppConfig> = {
+    assessmentDates: { A: { '2026-2027:s1-maison1': '2026-10-15', 's1-maison2': '2026-11-20' } },
+    manualAssessments: { A: [{ id: 'manual-dm', type: 'maison', num: 3, dateISO: '2026-12-05', semestre: 1 }] },
+  };
+  assert.equal(translated(settings).get('2026-10-15'), 'تم إعطاء الفرض المنزلي 1');
+  assert.equal(translated(settings).get('2026-11-20'), 'تم إعطاء الفرض المنزلي 2');
+  assert.equal(translated(settings).get('2026-12-05'), 'تم إعطاء الفرض المنزلي 3');
+});
+

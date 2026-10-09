@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
-import { TriangleAlert, FileText } from '@/components/ui/icons';
+import { TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { indicesKey } from '@/domain/notebook/lessonRows';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
@@ -247,7 +247,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   type="button"
                   data-document-title-link="true"
                   data-document-highlight="true"
-                  className="editor-document-highlight group max-w-full"
+                  className="editor-document-highlight group max-w-full text-base sm:text-lg"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDocumentPreview?.(documentPreview);
@@ -255,7 +255,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   title={t('documentPreview.openAria', { title: documentPreview.title })}
                   aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
                 >
-                  <FileText className="h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-200 group-hover:scale-110 group-hover:opacity-100" aria-hidden="true" />
                   <span dir={textDirectionAttribute(item.title)}>
                     <HighlightedText text={item.title} query={highlight} />
                   </span>
@@ -395,7 +394,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 type="button"
                 data-document-title-link="true"
                 data-document-highlight="true"
-                className="editor-document-highlight group max-w-full"
+                className="editor-document-highlight group max-w-full text-sm sm:text-[15px]"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenDocumentPreview?.(itemDocumentPreview);
@@ -403,7 +402,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 title={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
                 aria-label={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
               >
-                <FileText className="h-3 w-3 shrink-0 opacity-75 transition-transform duration-200 group-hover:scale-110 group-hover:opacity-100" aria-hidden="true" />
                 <HighlightedText text={item.title} query={highlight} />
               </button>
             ) : item.title ? (
