@@ -367,6 +367,9 @@ export type TopLevelType =
     | 'evaluation_diagnostic'
     | 'devoir_maison'
     | 'controle_continu'
+    | 'controle_court'
+    | 'controle_global'
+    | 'oral'
     | 'correction_devoir_maison'
     | 'correction_controle_continu';
 

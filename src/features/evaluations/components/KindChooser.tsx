@@ -150,7 +150,7 @@ export const KindHeader: React.FC<{ kind: EvaluationKind; onBack: () => void; ba
   const { t } = useLocale();
   const label = t(kindLabelKey(kind));
   return (
-    <div className="mb-3 flex items-center gap-2 rounded-xl border border-border/70 bg-card/60 px-3 py-2">
+    <div className="mb-3 flex items-center gap-2 rounded-lg border border-border/70 bg-card/60 px-3 py-2">
       <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{label}</span>
       <button
         type="button"
@@ -225,7 +225,7 @@ export const ProgrammedList: React.FC<{
       <button
         type="button"
         onClick={onCreate}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-dashed border-border px-3 text-xs font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-dashed border-border px-3 text-xs font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
       >
         {t('evaluations.manualCreate')}
       </button>

@@ -220,7 +220,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
         try {
             const visitItemForDate = (type: string, title: string | undefined, date?: string) => {
                 if (!date || dateMap.has(date)) return;
-                const isAssessment = ['controle_continu', 'controle_court', 'controle_global', 'devoir_maison'].includes(type);
+                const isAssessment = ['controle_continu', 'controle_court', 'controle_global', 'oral', 'devoir_maison'].includes(type);
                 if (!isAssessment) return;
 
                 for (const [assessmentId, record] of Object.entries(classAbsences)) {

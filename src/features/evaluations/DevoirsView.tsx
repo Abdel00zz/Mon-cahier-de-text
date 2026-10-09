@@ -15,12 +15,9 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   CalendarCheck,
   CalendarDays,
-  Circle,
-  CircleCheck,
   Plus,
   RefreshCw,
   Trash2,
-  Undo2,
   FileText,
   Users,
   UserX,
@@ -109,6 +106,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   } = useEvaluationModals();
   const actions = useEvaluationActions(classInfo.id, config, onConfigChange);
 
+  const [editingDateAssessment, setEditingDateAssessment] = useState<{ id: string; name: string; date: string } | null>(null);
   const [deletingAssessment, setDeletingAssessment] = useState<{ id: string; name: string } | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<{ id: string; title: string } | null>(null);
 
@@ -116,8 +114,35 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const links = useMemo(() => {
     if (!selectedClass) return [];
-    return linkAssessments(assessments, findNotebookAssessments(activeLessons), today);
-  }, [assessments, selectedClass, today, activeLessons]);
+    const notebookEntries = findNotebookAssessments(activeLessons);
+    if (notebookEntries.length === 0) return [];
+
+    const allLinks = linkAssessments(assessments, notebookEntries, today);
+    // Afficher STRICTEMENT les devoirs qui existent sur le table editor (saisis par l'utilisateur)
+    const linked = allLinks.filter(link => link.entry !== undefined);
+
+    const matchedEntries = new Set(linked.map(l => l.entry));
+    const extraEntries = notebookEntries.filter(entry => !matchedEntries.has(entry));
+    const syntheticLinks: AssessmentLink[] = extraEntries.map(entry => ({
+      planned: {
+        id: entry.assessmentId || `${entry.type}-${entry.num}-${entry.date || 'custom'}`,
+        schoolYear: '',
+        semestre: 1,
+        type: entry.type,
+        num: entry.num,
+        label: `${t(`evaluations.type.${entry.type}`)} ${number.format(entry.num)}`,
+        dateISO: entry.date || '',
+        semaine: 0,
+        predictionStatus: 'manual',
+        confidence: 'high',
+        predictionReason: 'Saisie dans le cahier',
+      },
+      entry,
+      status: entry.date ? 'done' : 'upcoming',
+    }));
+
+    return [...linked, ...syntheticLinks];
+  }, [assessments, selectedClass, today, activeLessons, t, number]);
 
   const pedagogicalEvents = useMemo(
     () =>
@@ -212,8 +237,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       }));
     });
   };
-
-  const togglePedagogicalEvent = actions.toggleEvent;
   const changeEventDate = (event: PedagogicalEvent, date: string, endDate?: string) => {
     const next = { ...event, date, endDate: date && endDate && endDate >= date ? endDate : undefined };
     conflicts.run(eventSlot(next), () => {
@@ -318,6 +341,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
     )?.names ?? [];
+    const rawDate = link.entry ? (link.entry.date ?? '') : a.dateISO;
+    const formatSingleDate = (iso: string) => {
+      if (!iso) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
+      const parts = iso.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return iso;
+    };
     const assessmentDocument = (
       config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
@@ -359,7 +389,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <button
                 type="button"
                 onClick={() => openEditAssessment(a)}
-                className="-ms-1.5 inline-flex min-h-11 max-w-full cursor-pointer items-center truncate rounded-lg px-2 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                className="-ms-1 inline-flex max-w-full cursor-pointer items-center truncate rounded-md px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 title={t('evaluations.editDevoir')}
                 data-tippy-content={locale === 'ar' ? `تعديل تفاصيل ${displayName}` : `Modifier les détails de ${displayName}`}
               >
@@ -396,35 +426,31 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </div>
 
             <div className="ev-row__date">
-              <input
-                type="date"
-                value={link.entry ? (link.entry.date ?? '') : a.dateISO}
-                onChange={(e) => setAssessmentDate(a.id, e.target.value)}
-                data-custom={custom}
+              <button
+                type="button"
+                onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: rawDate })}
+                className={cn(
+                  "ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold select-none cursor-pointer transition-all active:scale-95 border-0 shadow-none",
+                  rawDate
+                    ? "text-foreground hover:text-primary hover:bg-muted/40 rounded-md"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md"
+                )}
                 title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
-                data-tippy-content={locale === 'ar' ? `تعديل تاريخ إجراء ${displayName} في التقويم` : `Modifier la date d'exécution de ${displayName}`}
+                data-tippy-content={locale === 'ar' ? `تعديل تاريخ إجراء ${displayName}` : `Modifier la date de ${displayName}`}
                 aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
-                className="h-9 rounded-lg border border-border/80 bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              {custom && (
-                <button
-                  type="button"
-                  onClick={() => setAssessmentDate(a.id, '')}
-                  className="ev-icon-btn"
-                  title={t('evaluations.restoreDate')}
-                  data-tippy-content={locale === 'ar' ? 'استعادة التاريخ الرسمي المقترح' : 'Rétablir la date officielle préconisée'}
-                  aria-label={t('evaluations.restoreDate')}
-                >
-                  <Undo2 className="h-3.5 w-3.5" />
-                </button>
-              )}
+              >
+                <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                <span className="whitespace-nowrap tabular-nums text-xs font-bold" dir="ltr">
+                  {rawDate ? formatSingleDate(rawDate) : (locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date')}
+                </span>
+              </button>
             </div>
 
-            <div className="ev-row__actions">
+            <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
               <button
                 type="button"
                 onClick={() => setDocumentFor({ kind: 'assessment', link })}
-                className="ev-action"
+                className="ev-action shrink-0"
                 data-filled={assessmentDocument ? 'tone' : undefined}
                 data-tippy-content={docTooltip}
                 title={docTooltip}
@@ -438,7 +464,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setAbsencesFor(link)}
-                  className="ev-action"
+                  className="ev-action shrink-0"
                   data-filled={absents.length > 0 ? 'danger' : undefined}
                   data-tippy-content={absentsTooltip}
                   title={absentsTooltip}
@@ -464,7 +490,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setOralFor(link)}
-                  className="ev-action"
+                  className="ev-action shrink-0"
                   data-tippy-content={oralTooltip}
                   title={oralTooltip}
                   aria-label={`${t('evaluations.oral.title')} — ${t('evaluations.type.oral')} ${number.format(a.num)}`}
@@ -477,7 +503,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
-                className="ev-icon-btn"
+                className="ev-icon-btn shrink-0"
                 data-danger="true"
                 data-tippy-content={locale === 'ar' ? `حذف ${displayName} نهائياً` : `Supprimer définitivement ${displayName}`}
                 title={t('evaluations.manualDelete')}
@@ -529,12 +555,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <button
           type="button"
           onClick={() => openKindChooser()}
-          title={locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité'}
-          data-tippy-content={locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité'}
-          className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
+          aria-label={t('evaluations.add')}
+          title={locale === 'ar' ? 'إضافة نشاط تربوي' : 'Ajouter une activité'}
+          data-tippy-content={locale === 'ar' ? 'إضافة نشاط تربوي' : 'Ajouter une activité'}
+          className="evaluation-add inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-100 shadow-xs transition-all hover:bg-zinc-900 active:scale-[0.96] dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-white cursor-pointer"
         >
-          <Plus className="h-5 w-5" aria-hidden="true" />
-          <span>{t('evaluations.add')}</span>
+          <Plus className="h-4.5 w-4.5" aria-hidden="true" />
         </button>
       </div>
 
@@ -588,7 +614,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             <PedagogicalEventsSection
                               events={eventsOfKind(kind)}
                               showHeader={false}
-                              onToggle={togglePedagogicalEvent}
                               onDateChange={changeEventDate}
                               onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
                               onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
@@ -597,7 +622,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                           ) : (
                             <div className="ev-board__rows">
                               <div className="ev-board__head" aria-hidden="true">
-                                <span>{t('evaluations.assessmentSingle')}</span>
+                                <span>{t('evaluations.titleLabel')}</span>
                                 <span>{t('evaluations.colState')}</span>
                                 <span>{t('evaluations.manualDate')}</span>
                                 <span>{t('evaluations.colActions')}</span>
@@ -621,7 +646,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={kindChooserOpen}
         onClose={closeKindChooser}
         maxWidth="md"
-        className="evaluation-modal sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-xl"
         headerClassName="border-b-0 bg-background"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
@@ -694,7 +719,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
-        className="evaluation-modal sm:rounded-2xl"
+        className="evaluation-modal sm:rounded-xl"
         headerClassName="border-b-0 bg-background"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
@@ -844,6 +869,21 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           setDeletingEvent(null);
         }}
       />
+
+      {/* 9. Dialogue de sélection de date moderne pour un devoir */}
+      <EventDateModal
+        isOpen={Boolean(editingDateAssessment)}
+        onClose={() => setEditingDateAssessment(null)}
+        title={editingDateAssessment?.name}
+        initialDate={editingDateAssessment?.date}
+        allowRange={false}
+        onApplyDate={(date) => {
+          if (editingDateAssessment) {
+            setAssessmentDate(editingDateAssessment.id, date);
+            setEditingDateAssessment(null);
+          }
+        }}
+      />
     </div>
   );
 };
@@ -852,7 +892,7 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
   const { t, locale } = useLocale();
   const addTooltip = locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité';
   return (
-    <div className={`flex flex-col items-center border border-dashed border-border bg-card/40 text-center ${compact ? 'gap-2 rounded-2xl px-4 py-4' : 'rounded-3xl px-4 py-8'}`}>
+    <div className={`flex flex-col items-center border border-dashed border-border bg-card/40 text-center ${compact ? 'gap-2 rounded-lg px-4 py-3.5' : 'rounded-xl px-4 py-7'}`}>
       {!compact && <SchedulePlanningIllustration size={120} className="mb-2" />}
       <h4 className="text-sm font-bold text-foreground">{t('evaluations.activitiesEmptyTitle')}</h4>
       <p className="mt-1.5 max-w-md text-xs leading-relaxed text-muted-foreground text-pretty">
@@ -863,7 +903,7 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
         onClick={onCreate}
         title={addTooltip}
         data-tippy-content={addTooltip}
-        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] cursor-pointer"
+        className="mt-3.5 inline-flex min-h-10 items-center gap-2 rounded-lg bg-zinc-800 px-3.5 text-xs font-bold text-zinc-100 shadow-xs transition-all hover:bg-zinc-900 active:scale-[0.97] dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-white cursor-pointer"
       >
         <Plus className="h-4 w-4 stroke-[2.2]" />
         {t('evaluations.addActivity')}
@@ -875,7 +915,6 @@ const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }
 interface PedagogicalEventsSectionProps {
   events: PedagogicalEvent[];
   showHeader?: boolean;
-  onToggle: (eventId: string) => void;
   onDateChange: (event: PedagogicalEvent, date: string, endDate?: string) => void;
   onDelete: (event: PedagogicalEvent) => void;
   onOpenDocument: (event: PedagogicalEvent) => void;
@@ -885,7 +924,6 @@ interface PedagogicalEventsSectionProps {
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
   showHeader = true,
-  onToggle,
   onDateChange,
   onDelete,
   onOpenDocument,
@@ -910,12 +948,17 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
       return iso;
     };
     if (endDate && endDate !== date) {
-      const [y1] = date.split('-');
-      const [y2] = endDate.split('-');
-      if (y1 === y2) {
-        return `${formatDayMonth(date)} → ${formatFull(endDate)}`;
+      const partsStart = date.split('-');
+      const partsEnd = endDate.split('-');
+      const d1 = partsStart[2] || '';
+      const m1 = partsStart[1] || '';
+      const d2 = partsEnd[2] || '';
+      const m2 = partsEnd[1] || '';
+      const y2 = partsEnd[0] || '';
+      if (locale === 'ar') {
+        return `من ${d1}/${m1} إلى ${d2}/${m2}/${y2}`;
       }
-      return `${formatFull(date)} → ${formatFull(endDate)}`;
+      return `Du ${d1}/${m1} au ${d2}/${m2}/${y2}`;
     }
     return formatFull(date);
   };
@@ -945,10 +988,42 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
             const { labelKey, tone } = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
             const names = event.students?.names.length ?? 0;
             const typeLabel = t(labelKey);
-            const title = event.title.trim() || typeLabel;
             const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
+            const title = event.title.trim() || typeLabel;
             const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
             const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
+
+            const eventStatus = (() => {
+              if (done) {
+                return {
+                  label: t('evaluations.completed'),
+                  chip: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
+                };
+              }
+              if (!event.date) {
+                return {
+                  label: locale === 'ar' ? 'غير مؤرخ' : 'À planifier',
+                  chip: 'bg-muted text-muted-foreground ring-border',
+                };
+              }
+              const todayISO = todayInMorocco(new Date(), getBundledCalendar());
+              if (event.date < todayISO) {
+                return {
+                  label: locale === 'ar' ? 'منجز' : 'Effectué',
+                  chip: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
+                };
+              }
+              if (event.date === todayISO) {
+                return {
+                  label: locale === 'ar' ? 'اليوم' : 'Aujourd\'hui',
+                  chip: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
+                };
+              }
+              return {
+                label: locale === 'ar' ? 'مبرمج' : 'Planifié',
+                chip: 'bg-primary/8 text-primary ring-primary/20',
+              };
+            })();
             const eventDocTooltip = locale === 'ar'
               ? (event.document ? 'عرض وتعديل وثيقة أو موضوع هذا النشاط' : 'إرفاق وثيقة أو نص أو رابط لهذا النشاط التربوي')
               : (event.document ? 'Consulter ou modifier le document/sujet associé' : 'Associer un document, sujet ou lien à cette activité');
@@ -960,10 +1035,6 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
               : (locale === 'ar'
                   ? (names > 0 ? `قائمة التلاميذ المشاركين (${names} مشارك)` : 'تحديد التلاميذ المشاركين أو المستفيدين من النشاط')
                   : (names > 0 ? `Élèves participants (${names} élève(s))` : 'Désigner les élèves concernés par cette activité'));
-
-            const toggleTooltip = done
-              ? (locale === 'ar' ? 'إعادة فتح هذا النشاط (وضع قيد الإنجاز)' : 'Rouvrir cette activité (marquer comme en cours)')
-              : (locale === 'ar' ? 'تحديد هذا النشاط كمكتمل ومنجز' : 'Marquer cette activité comme terminée / effectuée');
 
             const deleteTooltip = locale === 'ar'
               ? 'حذف هذا النشاط التربوي نهائياً'
@@ -979,15 +1050,17 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 data-done={done ? 'true' : undefined}
               >
                 <div className="ev-row__id min-w-0">
-                  <h4 className="text-[13.5px] font-bold leading-snug text-foreground" dir="auto">{title}</h4>
+                  <h4 className="text-[13px] font-bold leading-tight text-foreground truncate" dir="auto">{title}</h4>
                   {showType && <span className="tone-chip">{typeLabel}</span>}
                   {showNote && (
-                    <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground text-start">{event.note}</p>
+                    <p className="line-clamp-1 text-[11px] leading-tight text-muted-foreground text-start mt-0.5">{event.note}</p>
                   )}
                 </div>
 
                 <div className="ev-row__state">
-                  {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
+                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', eventStatus.chip)}>
+                    {eventStatus.label}
+                  </span>
                 </div>
 
                 <div className="ev-row__date">
@@ -995,12 +1068,12 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     type="button"
                     onClick={() => setEditingDateEvent(event)}
                     className={cn(
-                      "ev-date-trigger inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none",
+                      "ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 border-0 shadow-none",
                       event.date
-                        ? "text-foreground bg-muted/40 hover:bg-muted/75 border border-border/50 hover:border-primary/40 active:scale-95"
-                        : "border border-dashed border-border/70 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/20"
+                        ? "text-foreground hover:text-primary hover:bg-muted/40 rounded-md"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md"
                     )}
-                    title={event.endDate ? `${event.date} → ${event.endDate}` : (event.date || t('evaluations.assignDate'))}
+                    title={event.endDate ? `${event.date} / ${event.endDate}` : (event.date || t('evaluations.assignDate'))}
                     data-tippy-content={locale === 'ar' ? 'تعديل تاريخ هذا النشاط التربوي' : 'Modifier la date de cette activité'}
                     aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
                   >
@@ -1011,12 +1084,12 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   </button>
                 </div>
 
-                <div className="ev-row__actions">
+                <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
                   {event.type !== REMARK_EVENT_TYPE && (
                     <button
                       type="button"
                       onClick={() => onOpenDocument(event)}
-                      className="ev-action"
+                      className="ev-action shrink-0"
                       data-filled={event.document?.source.trim() ? 'tone' : undefined}
                       aria-label={t('evaluations.doc.title', { activity: event.title })}
                       title={eventDocTooltip}
@@ -1029,7 +1102,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   <button
                     type="button"
                     onClick={() => onOpenStudents(event)}
-                    className="ev-action"
+                    className="ev-action shrink-0"
                     data-filled={names > 0 ? 'tone' : undefined}
                     aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
                     title={eventStudentsTooltip}
@@ -1050,24 +1123,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onToggle(event.id)}
-                    className="ev-icon-btn"
-                    data-agenda={!done ? 'true' : undefined}
-                    data-done={done ? 'true' : undefined}
-                    aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
-                    title={toggleTooltip}
-                    data-tippy-content={toggleTooltip}
-                  >
-                    {done ? (
-                      <CircleCheck className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    ) : (
-                      <Circle className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => onDelete(event)}
-                    className="ev-icon-btn"
+                    className="ev-icon-btn shrink-0"
                     data-danger="true"
                     aria-label={t('evaluations.deleteEventAria', { title: event.title })}
                     title={deleteTooltip}

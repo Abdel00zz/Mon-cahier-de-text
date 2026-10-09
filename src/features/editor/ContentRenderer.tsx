@@ -173,7 +173,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
      * sur le papier. Les corrections gardent leur couleur de famille — elles
      * répondent au devoir, elles ne le rejouent pas.
      */
-    const isAssessment = item.type === 'devoir_maison' || item.type === 'controle_continu';
+    const isAssessment = item.type === 'devoir_maison' || item.type === 'controle_continu' || item.type === 'controle_court' || item.type === 'controle_global' || item.type === 'oral';
     const titleColorClass = isAssessment ? 'editor-type-evaluation' : config.color;
 
     if (isPrint) {
@@ -189,7 +189,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     }
 
-    const isEvaluation = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu'].includes(item.type);
+    const isEvaluation = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'controle_court', 'controle_global', 'oral', 'correction_devoir_maison', 'correction_controle_continu'].includes(item.type);
     const isCenteredInApp = isEvaluation;
 
     /*

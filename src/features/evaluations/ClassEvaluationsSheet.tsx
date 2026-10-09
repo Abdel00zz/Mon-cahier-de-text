@@ -41,10 +41,14 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             isOpen={open}
             onClose={() => onOpenChange(false)}
             maxWidth="5xl"
-            className="evaluation-modal evaluation-reference sm:max-w-5xl sm:rounded-2xl"
+            className="evaluation-modal evaluation-reference sm:max-w-5xl sm:rounded-xl"
             headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
-            bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
-            title={t('evaluationsSheet.title', { className })}
+            title={
+                <span className="inline-flex items-baseline flex-nowrap sm:flex-wrap gap-x-2 gap-y-0.5 max-w-full">
+                    <span className="shrink-0">{t('evaluationsSheet.title')}&nbsp;:</span>
+                    <span className="font-bold text-primary truncate sm:whitespace-normal">{className}</span>
+                </span>
+            }
             description={showsSubjectLabels && classInfo.subject ? `${className} · ${classInfo.subject}` : className}
         >
             <DevoirsView

@@ -1,4 +1,4 @@
-import { ContentDocument, Indices, LessonsData, Section, SubSection, SubSubSection, LessonItem, EmbeddableTopLevelItem } from '../../types.js';
+import { ContentDocument, Indices, LessonsData, Section, SubSection, SubSubSection, LessonItem, EmbeddableTopLevelItem, DevoirType } from '../../types.js';
 import { PlannedAssessment } from './assessments.js';
 import { indicesKey } from '../notebook/lessonRows.js';
 
@@ -17,7 +17,7 @@ import { indicesKey } from '../notebook/lessonRows.js';
  */
 
 export interface NotebookAssessmentEntry {
-    type: 'controle' | 'maison';
+    type: DevoirType;
     /** numéro d'ordre dans l'année (déclaré dans le titre, sinon ordre d'apparition) */
     num: number;
     title: string;
@@ -30,9 +30,14 @@ export interface NotebookAssessmentEntry {
 }
 
 /** type de bloc du cahier → type de devoir du planning */
-const NOTEBOOK_TYPE_MAP: Record<string, NotebookAssessmentEntry['type']> = {
+const NOTEBOOK_TYPE_MAP: Record<string, DevoirType> = {
     controle_continu: 'controle',
+    controle: 'controle',
+    controle_court: 'controle_court',
+    controle_global: 'controle_global',
+    oral: 'oral',
     devoir_maison: 'maison',
+    maison: 'maison',
 };
 
 const parseTrailingNumber = (title: string | undefined): number | null => {
@@ -81,7 +86,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
     /* numérotation finale PAR TYPE : le numéro déclaré dans le titre prime,
        les titres sans numéro prennent le premier ordinal libre (ordre du doc) */
     const result: NotebookAssessmentEntry[] = [];
-    for (const type of ['controle', 'maison'] as const) {
+    for (const type of ['controle', 'controle_court', 'controle_global', 'oral', 'maison'] as const) {
         const ofType = raw.filter(e => e.type === type);
         const taken = new Set(ofType.map(e => e.declaredNum).filter((n): n is number => n !== null));
         let cursor = 1;
@@ -175,7 +180,11 @@ export const linkAssessments = (
     };
 
     return planned.map(assessment => {
-        const isLinkable = assessment.type === 'controle' || assessment.type === 'maison';
+        const isLinkable = assessment.type === 'controle'
+            || assessment.type === 'maison'
+            || assessment.type === 'controle_court'
+            || assessment.type === 'controle_global'
+            || assessment.type === 'oral';
         // Le numéro recommence au semestre 2. On garde donc toutes les entrées
         // homonymes et on choisit d'abord la date la plus proche, sans réutiliser
         // un même bloc pour deux devoirs.

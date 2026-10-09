@@ -98,8 +98,7 @@ export const KIND_GROUPS: Array<{
     id: 'devoir',
     titleKey: 'evaluations.assessments',
     tone: 'blue',
-    // Le diagnostic et la correction appartiennent visuellement aux évaluations,
-    // tout en gardant leur circuit d'activité datée sans note au bulletin.
+    // L'évaluation diagnostique et la correction appartiennent logiquement à la catégorie Devoirs et évaluations
     kinds: [
       { family: 'event', type: 'evaluation_diagnostic', style: PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic },
       ...(Object.keys(DEVOIR_KIND_CONFIG) as DevoirType[]).map(type => ({ family: 'devoir' as const, type, style: DEVOIR_KIND_CONFIG[type] })),
@@ -111,8 +110,8 @@ export const KIND_GROUPS: Array<{
     titleKey: 'evaluations.pedagogicalEvents',
     tone: 'violet',
     kinds: (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[])
-      .filter(type => type !== 'correction_controle_continu' && type !== 'evaluation_diagnostic')
-      .map(type => ({ family: 'event', type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
+      .filter(type => type !== 'evaluation_diagnostic' && type !== 'correction_controle_continu')
+      .map(type => ({ family: 'event' as const, type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
   },
 ];
 

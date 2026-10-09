@@ -8,6 +8,7 @@ import { countOccurrencesOfType, findItem } from '@/domain/notebook/dataUtils';
 import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
   TestTube, Home, FileSignature, CheckCheck, CheckSquare, CircleAlert,
+  Clock, FileText, Users,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
@@ -248,6 +249,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
         (selectedElementType.startsWith('evaluation_') ||
           selectedElementType.startsWith('devoir_') ||
           selectedElementType.startsWith('controle_') ||
+          selectedElementType === 'oral' ||
           selectedElementType.startsWith('correction_')));
   }, [selectedElementType]);
 
@@ -410,23 +412,38 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
               <CategoryCard
                 icon={TestTube}
                 label={tc('manageLessons.type.evaluation_diagnostic')}
-
                 colorClass="text-amber-600 dark:text-amber-400"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
-                icon={Home}
-                label={tc('manageLessons.type.devoir_maison')}
-
-                colorClass="text-orange-600 dark:text-orange-400"
-                onClick={() => handleSelectType('devoir_maison')}
-              />
-              <CategoryCard
                 icon={FileSignature}
                 label={tc('manageLessons.type.controle_continu')}
-
                 colorClass="text-rose-600 dark:text-rose-400"
                 onClick={() => handleSelectType('controle_continu')}
+              />
+              <CategoryCard
+                icon={Clock}
+                label={tc('manageLessons.type.controle_court')}
+                colorClass="text-violet-600 dark:text-violet-400"
+                onClick={() => handleSelectType('controle_court')}
+              />
+              <CategoryCard
+                icon={FileText}
+                label={tc('manageLessons.type.controle_global')}
+                colorClass="text-emerald-600 dark:text-emerald-400"
+                onClick={() => handleSelectType('controle_global')}
+              />
+              <CategoryCard
+                icon={Users}
+                label={tc('manageLessons.type.oral')}
+                colorClass="text-pink-600 dark:text-pink-400"
+                onClick={() => handleSelectType('oral')}
+              />
+              <CategoryCard
+                icon={Home}
+                label={tc('manageLessons.type.devoir_maison')}
+                colorClass="text-orange-600 dark:text-orange-400"
+                onClick={() => handleSelectType('devoir_maison')}
               />
             </div>
           </div>

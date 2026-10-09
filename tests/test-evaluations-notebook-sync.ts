@@ -17,7 +17,12 @@ import {
   extractEarliestDate,
   extractDateRange,
 } from '../src/domain/evaluations/notebookSyncBridge';
-import type { NotebookDocumentPreview } from '../src/domain/evaluations/assessmentSync';
+import {
+  type NotebookDocumentPreview,
+  linkAssessments,
+  findNotebookAssessments,
+} from '../src/domain/evaluations/assessmentSync';
+import type { PlannedAssessment } from '../src/domain/evaluations/assessments';
 
 test('placement chronologique intelligent des blocs dans le tableau', () => {
   const initialLessons: LessonsData = [
@@ -378,3 +383,72 @@ test('oral dates never create or remove a written-test block', () => {
   assert.equal(syncAssessmentDateToNotebook(lessons, { id: 'oral-1', type: 'oral', num: 1, dateISO: '2026-10-02' }).lessons, lessons);
   assert.equal(removeAssessmentFromNotebook(lessons, 'oral-1', 'oral', 1).lessons, lessons);
 });
+
+test('tous les types de devoirs (court, global, oral) saisis dans le tableau sont détectés et transmis à la modale', () => {
+  const lessons: LessonsData = [
+    { type: 'controle_continu', title: 'Devoir surveillé 1', date: '2026-10-05', _tempId: 'ds-1' },
+    { type: 'controle_court', title: 'Devoir écrit court 1', date: '2026-10-12', _tempId: 'dc-1' },
+    { type: 'controle_global', title: 'Devoir écrit global 1', date: '2026-10-20', _tempId: 'dg-1' },
+    { type: 'oral', title: 'Évaluation orale 1', date: '2026-10-25', _tempId: 'or-1' },
+    { type: 'devoir_maison', title: 'Devoir maison 1', date: '2026-11-02', _tempId: 'dm-1' },
+  ];
+
+  const config: AppConfig = {
+    establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
+    theme: 'light', appTextSize: 'md', applicationLocale: 'fr',
+    manualAssessments: {}, assessmentDates: {}, pedagogicalEvents: {},
+  };
+
+  const { patch, updated } = syncNotebookToEvaluations('class-all-types', config, lessons);
+  assert.equal(updated, true, 'La synchronisation détecte les nouveaux devoirs saisis dans le tableau');
+
+  const manuals = patch.manualAssessments?.['class-all-types'] ?? [];
+  const types = manuals.map(m => m.type);
+  assert.ok(types.includes('controle_court'), 'Devoir court transmis dans les évaluations');
+  assert.ok(types.includes('controle_global'), 'Devoir global transmis dans les évaluations');
+  assert.ok(types.includes('oral'), 'Évaluation orale transmise dans les évaluations');
+  assert.ok(types.includes('controle'), 'Devoir surveillé transmis dans les évaluations');
+  assert.ok(types.includes('maison'), 'Devoir maison transmis dans les évaluations');
+
+  // Les dates et numéros sont parfaitement synchronisés
+  const court = manuals.find(m => m.type === 'controle_court');
+  assert.equal(court?.dateISO, '2026-10-12');
+  assert.equal(court?.num, 1);
+
+  const global = manuals.find(m => m.type === 'controle_global');
+  assert.equal(global?.dateISO, '2026-10-20');
+  assert.equal(global?.num, 1);
+
+  const oral = manuals.find(m => m.type === 'oral');
+  assert.equal(oral?.dateISO, '2026-10-25');
+  assert.equal(oral?.num, 1);
+});
+
+test('linkAssessments calcule le statut done et mismatch pour tous les types (court, global, oral)', () => {
+  const planned = [
+    { id: 'p-cc-1', type: 'controle_court', num: 1, dateISO: '2026-10-12', label: 'Devoir court 1', schoolYear: '2026-2027', semestre: 1 },
+    { id: 'p-cg-1', type: 'controle_global', num: 1, dateISO: '2026-10-20', label: 'Devoir global 1', schoolYear: '2026-2027', semestre: 1 },
+    { id: 'p-or-1', type: 'oral', num: 1, dateISO: '2026-10-25', label: 'Oral 1', schoolYear: '2026-2027', semestre: 1 },
+  ];
+
+  const notebookLessons: LessonsData = [
+    { type: 'controle_court', title: 'Devoir écrit court 1', date: '2026-10-12' },
+    { type: 'controle_global', title: 'Devoir écrit global 1', date: '2026-10-22' }, // Mismatch d'un jour
+    { type: 'oral', title: 'Évaluation orale 1', date: '2026-10-25' },
+  ];
+
+  const notebookEntries = findNotebookAssessments(notebookLessons);
+  const links = linkAssessments(planned as unknown as PlannedAssessment[], notebookEntries, '2026-10-01');
+
+  assert.equal(links.length, 3);
+  const courtLink = links.find(l => l.planned.type === 'controle_court');
+  assert.equal(courtLink?.status, 'done', 'Devoir court avec date identique est done');
+
+  const globalLink = links.find(l => l.planned.type === 'controle_global');
+  assert.equal(globalLink?.status, 'mismatch', 'Devoir global avec date différente est mismatch');
+  assert.equal(globalLink?.entry?.date, '2026-10-22');
+
+  const oralLink = links.find(l => l.planned.type === 'oral');
+  assert.equal(oralLink?.status, 'done', 'Évaluation orale avec date identique est done');
+});
+

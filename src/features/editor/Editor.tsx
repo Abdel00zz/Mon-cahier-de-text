@@ -1379,7 +1379,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
                   onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
                   onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-                  onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
+                  onOpenEvaluations={() => {
+                    persistCurrentData(false);
+                    setEditorState(draft => { draft.activeModal = 'evaluations'; });
+                  }}
                   onPrint={handleSmartPrint}
                   searchQuery={searchQuery}
                   setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}

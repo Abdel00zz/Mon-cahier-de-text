@@ -94,7 +94,7 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
   assert.match(cahiers, /Suivi des cahiers · 2/);
   // État et suppression restent des commandes, jamais un clic sur la ligne.
-  assert.match(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/);
+  assert.doesNotMatch(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/, 'le bouton marquer comme réalisé est purgé');
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 

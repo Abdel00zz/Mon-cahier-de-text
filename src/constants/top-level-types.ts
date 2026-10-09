@@ -6,6 +6,9 @@ export const TOP_LEVEL_CONTENT_META: Record<TopLevelType, { name: string; autoNu
   evaluation_diagnostic: { name: 'Évaluation diagnostique', autoNumber: true },
   devoir_maison: { name: 'Devoir maison', autoNumber: true },
   controle_continu: { name: 'Devoir surveillé', autoNumber: true },
+  controle_court: { name: 'Devoir écrit court', autoNumber: true },
+  controle_global: { name: 'Devoir écrit global', autoNumber: true },
+  oral: { name: 'Évaluation orale', autoNumber: true },
   correction_devoir_maison: { name: 'Correction Devoir maison', autoNumber: true },
   correction_controle_continu: { name: 'Correction du devoir surveillé', autoNumber: true },
 };
