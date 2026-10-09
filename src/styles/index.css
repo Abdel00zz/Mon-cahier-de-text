@@ -1404,22 +1404,35 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
    direction du document (attribut `dir` posé sur <html> par LocaleProvider)
    fait basculer l'arrondi de l'autre côté en arabe, sans règle dédiée.
    L'ombre portée suit la même bascule via `--sidebar-shadow-x`. */
+/* Barre latérale Liquid Glass Architecture (AGENTS.md § 12.2) :
+   Harmonisation artistique et innovante avec le canvas futuriste (auras cyan & trame micro-points).
+   Bord intérieur arrondi (logique RTL/LTR), liseré spéculaire optique et flou satiné 24px. */
 [data-app-sidebar] {
-  --sidebar-shadow-x: 4px;
-  --sidebar-radius: 18px;
-  background: color-mix(in srgb, hsl(var(--background)) 78%, hsl(var(--card)) 22%);
-  border-inline-end: 1px solid hsl(var(--border) / .8);
+  --sidebar-shadow-x: 6px;
+  --sidebar-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.12) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 250, 252, 0.72) 50%, rgba(240, 253, 250, 0.76) 100%);
+  border-inline-end: 1px solid rgba(226, 232, 240, 0.8);
   border-start-end-radius: var(--sidebar-radius);
   border-end-end-radius: var(--sidebar-radius);
-  box-shadow: var(--sidebar-shadow-x) 0 24px -18px rgb(20 20 19 / .1);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 32px -12px rgba(15, 23, 42, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
 }
-[dir='rtl'] [data-app-sidebar] { --sidebar-shadow-x: -4px; }
+[dir='rtl'] [data-app-sidebar] {
+  --sidebar-shadow-x: -6px;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 32px -12px rgba(15, 23, 42, 0.08);
+}
 .dark [data-app-sidebar] {
-  background: color-mix(in srgb, hsl(var(--background)) 82%, hsl(var(--card)) 18%);
-  border-inline-end-color: hsl(var(--border) / .8);
-  box-shadow: var(--sidebar-shadow-x) 0 24px -18px rgb(0 0 0 / .35);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(20, 184, 166, 0.12) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(11, 15, 25, 0.78) 50%, rgba(15, 23, 42, 0.85) 100%);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04), var(--sidebar-shadow-x) 0 32px -12px rgba(0, 0, 0, 0.6);
+}
+.dark[dir='rtl'] [data-app-sidebar] {
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.04), var(--sidebar-shadow-x) 0 32px -12px rgba(0, 0, 0, 0.6);
 }
 .mobile-tab-bar {
   background: hsl(var(--card) / .97);
