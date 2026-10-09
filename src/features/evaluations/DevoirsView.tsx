@@ -25,6 +25,7 @@ import {
   UserX,
   BookCheck,
   Mic,
+  ChevronDown,
 } from 'lucide-react';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 import {
@@ -430,8 +431,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 title={docTooltip}
                 aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
               >
-                <FileText className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
-                <span>{t('evaluations.doc.open')}</span>
+                <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                <span className="sr-only">{t('evaluations.doc.open')}</span>
               </button>
 
               {isSupervised && (
@@ -446,8 +447,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                     : t('evaluations.absentees')}
                 >
-                  <UserX className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
-                  <span>
+                  <UserX className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                  {absents.length > 0 && (
+                    <span className="inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-destructive/15 px-1 text-[10px] font-bold text-destructive dark:text-red-400">
+                      {number.format(absents.length)}
+                    </span>
+                  )}
+                  <span className="sr-only">
                     {absents.length > 0
                       ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                       : t('evaluations.absentees')}
@@ -464,8 +470,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   title={oralTooltip}
                   aria-label={`${t('evaluations.oral.title')} — ${t('evaluations.type.oral')} ${number.format(a.num)}`}
                 >
-                  <Mic className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
-                  <span>{t('evaluations.oral.title')}</span>
+                  <Mic className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                  <span className="sr-only">{t('evaluations.oral.title')}</span>
                 </button>
               )}
 
@@ -557,12 +563,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                         onClick={() => toggleActivity(kind)}
                         aria-expanded={isOpen}
                         aria-label={`${label} — ${countLabel}`}
+                        title={isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
+                        data-tippy-content={isOpen ? (locale === 'ar' ? 'طي وإخفاء هذه الفئة' : 'Réduire cette catégorie') : (locale === 'ar' ? 'توسيع وعرض هذه الفئة' : 'Déplier cette catégorie')}
                         className="ev-accordion__toggle"
                       >
                         <span className="ev-accordion__label">{label}</span>
-                        <span className="ev-accordion__toggle-word" aria-hidden="true">
-                          {isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
+                        <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
+                          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
                         </span>
+                        <span className="sr-only">{isOpen ? t('evaluations.collapse') : t('evaluations.expand')}</span>
                       </button>
 
                       {isOpen && (
@@ -873,6 +882,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   onOpenStudents,
 }) => {
   const { t, locale } = useLocale();
+  const number = useMemo(() => numberFormat(locale), [locale]);
   if (events.length === 0) return null;
 
   return (
@@ -962,8 +972,8 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       title={eventDocTooltip}
                       data-tippy-content={eventDocTooltip}
                     >
-                      <FileText className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
-                      <span>{t('evaluations.doc.open')}</span>
+                      <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                      <span className="sr-only">{t('evaluations.doc.open')}</span>
                     </button>
                   )}
                   <button
@@ -976,11 +986,16 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     data-tippy-content={eventStudentsTooltip}
                   >
                     {event.type === REMARK_EVENT_TYPE ? (
-                      <BookCheck className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                      <BookCheck className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
                     ) : (
-                      <Users className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden="true" />
+                      <Users className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
                     )}
-                    <span>{t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}</span>
+                    {names > 0 && (
+                      <span className="inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-bold text-primary">
+                        {number.format(names)}
+                      </span>
+                    )}
+                    <span className="sr-only">{t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}</span>
                   </button>
 
                   <button

@@ -36,11 +36,11 @@
   .ev-row__date { justify-self: stretch; }
   .ev-row__actions { justify-self: stretch; flex-wrap: wrap; }
   .ev-row__date input[type='date'] { min-height: 44px; }
-  .ev-action { min-height: 44px; min-width: 0; flex: 1 1 0; white-space: normal; text-align: center; }
+  .ev-action { min-height: 44px; min-width: 44px; padding-inline: 8px; flex: none; text-align: center; }
   .ev-icon-btn { width: 44px; height: 44px; flex: 0 0 44px; }
   .ev-accordion__toggle {
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'id state' 'actions actions';
+    grid-template-areas: 'id actions';
     gap: 6px 12px;
   }
 }

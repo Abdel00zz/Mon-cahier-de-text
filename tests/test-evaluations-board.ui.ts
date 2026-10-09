@@ -54,8 +54,10 @@ test('les deux zones partagent le MÊME tableau', () => {
   assert.doesNotMatch(view, /ev-row__kind/, 'plus aucune colonne d’icône de nature');
   assert.match(view, /className="ev-accordion__toggle"/, 'les activités s’ouvrent en tiroirs');
   assert.match(view, /aria-expanded=\{isOpen\}/, 'l’état du tiroir est annoncé');
-  assert.match(view, /t\('evaluations\.expand'\)/, 'le mot « Ouvrir » remplace le chevron');
-  assert.match(view, /t\('evaluations\.collapse'\)/, 'et « Fermer » quand il est ouvert');
+  assert.match(view, /ChevronDown/, 'l’icône chevron anime l’ouverture et fermeture');
+  assert.match(view, /t\('evaluations\.expand'\)/, 'l’accessibilité conserve le libellé Ouvrir');
+  assert.match(view, /t\('evaluations\.collapse'\)/, 'et Fermer quand il est ouvert');
+  assert.match(view, /className="ev-accordion__toggle-icon/, 'le conteneur d’icône remplace le texte visible');
   // Les tiroirs sont INDÉPENDANTS : deux activités ouvertes côte à côte.
   assert.match(view, /const \[openActivityKeys, setOpenActivityKeys\] = useState<string\[\] \| undefined>\(/, 'un ensemble de tiroirs ouverts');
   assert.match(view, /const openKeys = openActivityKeys \?\? \(firstActivity \? \[activityKey\(firstActivity\)\] : \[\]\)/, 'le premier tiroir s’ouvre d’emblée');
