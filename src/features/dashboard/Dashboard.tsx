@@ -385,7 +385,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             {locale === 'ar' ? 'لا توجد أقسام مطابقة' : 'Aucune classe correspondante'}
                                         </h3>
                                         <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                                            {locale === 'ar' ? 'يمكنك عرض كل المواد أو إنشاء قسم جديد' : 'Sélectionnez « Toutes » les matières ou ajoutez une nouvelle classe.'}
+                                            {locale === 'ar' ? 'اعرض جميع المواد أو أضف قسماً جديداً' : 'Affichez toutes les matières ou créez une classe.'}
                                         </p>
                                         <motion.button
                                             type="button"
@@ -395,7 +395,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             onClick={() => setSubjectFilter('all')}
                                             className="mt-4 inline-flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
                                         >
-                                            {locale === 'ar' ? 'عرض كل الأقسام' : 'Afficher toutes les classes'}
+                                            {locale === 'ar' ? 'جميع الأقسام' : 'Toutes les classes'}
                                         </motion.button>
                                     </div>
                                 ) : currentDisplay === 'list' ? (

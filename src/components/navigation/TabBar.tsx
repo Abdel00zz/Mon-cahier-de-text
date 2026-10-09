@@ -43,9 +43,9 @@ const NAV_COPY: Record<AppLocale, {
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'أقسامك', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
-    dashboardMobile: 'أقسامك', notificationsMobile: 'لوحة القيادة', settingsMobile: 'الإعدادات',
-    collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
+    dashboard: 'الأقسام', notifications: 'المتابعة', settings: 'الإعدادات', help: 'الدليل',
+    dashboardMobile: 'الأقسام', notificationsMobile: 'المتابعة', settingsMobile: 'الإعدادات',
+    collapse: 'طي القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
   en: {
     brand: 'Lesson Notebook', teacherSpace: 'TEACHER SPACE',

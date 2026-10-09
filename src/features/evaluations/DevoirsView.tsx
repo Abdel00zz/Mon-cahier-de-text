@@ -511,8 +511,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <button
           type="button"
           onClick={() => openKindChooser()}
-          title={locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique'}
-          data-tippy-content={locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique'}
+          title={locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité'}
+          data-tippy-content={locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité'}
           className="evaluation-add inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:w-auto cursor-pointer"
         >
           <Plus className="h-5 w-5" aria-hidden="true" />
@@ -547,7 +547,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                         aria-expanded={isOpen}
                         aria-label={`${label} — ${countLabel}`}
                         title={isOpen ? t('evaluations.collapse') : t('evaluations.expand')}
-                        data-tippy-content={isOpen ? (locale === 'ar' ? 'طي وإخفاء هذه الفئة' : 'Réduire cette catégorie') : (locale === 'ar' ? 'توسيع وعرض هذه الفئة' : 'Déplier cette catégorie')}
+                        data-tippy-content={isOpen ? (locale === 'ar' ? 'طي' : 'Réduire') : (locale === 'ar' ? 'توسيع' : 'Déplier')}
                         className="ev-accordion__toggle"
                       >
                         <span className="ev-accordion__label">
@@ -831,7 +831,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
 const ActivitiesEmptyState: React.FC<{ onCreate: () => void; compact?: boolean }> = ({ onCreate, compact = false }) => {
   const { t, locale } = useLocale();
-  const addTooltip = locale === 'ar' ? 'إضافة فرض محروس، مراقبة مستمرة أو نشاط تربوي جديد' : 'Ajouter un devoir surveillé ou une activité pédagogique';
+  const addTooltip = locale === 'ar' ? 'إضافة فرض أو نشاط تربوي' : 'Ajouter un devoir ou une activité';
   return (
     <div className={`flex flex-col items-center border border-dashed border-border bg-card/40 text-center ${compact ? 'gap-2 rounded-2xl px-4 py-4' : 'rounded-3xl px-4 py-8'}`}>
       {!compact && <SchedulePlanningIllustration size={120} className="mb-2" />}
