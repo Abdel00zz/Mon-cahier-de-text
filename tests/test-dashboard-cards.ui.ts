@@ -133,3 +133,9 @@ test('le tableau de bord ne propose plus deux chemins pour changer d’affichage
   assert.match(source, /isClassDisplayMode\(classDisplayMode\)/, 'une valeur inconnue retombe sur deux colonnes');
 });
 
+test('taille du nom de classe sur les cartes augmentée de 15% sans toucher au niveau', () => {
+  const cardsCss = readFileSync('src/features/dashboard/classCards.css', 'utf8');
+  assert.match(cardsCss, /\.class-card__stream\s*\{[\s\S]*?font-size:\s*1\.15em/, 'le nom de la filière est agrandi de 15% (1.15em)');
+  assert.match(cardsCss, /\.class-card__tier\s*\{[\s\S]*?font-size:\s*\.78em/, 'le nom du niveau garde sa taille d’origine (.78em)');
+});
+

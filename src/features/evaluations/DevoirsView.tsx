@@ -553,6 +553,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 {entries.map(({ kind, count }) => {
                   const isOpen = openKeys.includes(activityKey(kind));
                   const label = t(kindLabelKey(kind));
+                  const KindIcon = kind.style.Icon;
                   const countLabel = `${number.format(count)} ${kind.family === 'devoir'
                     ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
                     : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
@@ -567,7 +568,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                         data-tippy-content={isOpen ? (locale === 'ar' ? 'طي وإخفاء هذه الفئة' : 'Réduire cette catégorie') : (locale === 'ar' ? 'توسيع وعرض هذه الفئة' : 'Déplier cette catégorie')}
                         className="ev-accordion__toggle"
                       >
-                        <span className="ev-accordion__label">{label}</span>
+                        <span className="ev-accordion__label">
+                          <span className="ev-accordion__kind-icon evaluation-tone" data-tone={kind.style.tone} aria-hidden="true">
+                            <KindIcon className="h-4 w-4 shrink-0" />
+                          </span>
+                          <span className="ev-accordion__label-text">{label}</span>
+                        </span>
                         <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
                           <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
                         </span>

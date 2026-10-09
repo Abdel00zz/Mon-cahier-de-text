@@ -169,7 +169,11 @@
 .class-card[dir="rtl"] .class-card__title { line-height: 1.6; }
 .class-card__name { display: grid; gap: 3px; }
 .class-card__tier { font-size: .78em; font-weight: 600; }
-.class-card__stream { display: block; }
+.class-card__stream {
+  display: block;
+  font-size: 1.15em;
+  line-height: 1.35;
+}
 .class-card .class-card__group {
   position: static;
   display: block;

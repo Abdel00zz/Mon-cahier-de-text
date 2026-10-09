@@ -349,12 +349,36 @@
 .ev-accordion__label {
     grid-area: id;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: .625rem;
     color: hsl(var(--foreground));
     font-size: .875rem;
     font-weight: 700;
+}
+.ev-accordion__label-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ev-accordion__kind-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--tone, hsl(var(--primary))) 12%, transparent);
+    color: var(--tone, hsl(var(--primary)));
+    border: 1px solid color-mix(in srgb, var(--tone, hsl(var(--primary))) 24%, transparent);
+    flex-shrink: 0;
+    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease, border-color 150ms ease;
+}
+.ev-accordion__toggle:hover .ev-accordion__kind-icon {
+    transform: scale(1.06);
+    background: color-mix(in srgb, var(--tone, hsl(var(--primary))) 18%, transparent);
+    border-color: color-mix(in srgb, var(--tone, hsl(var(--primary))) 42%, transparent);
 }
 .ev-accordion__count { grid-area: state; justify-self: start; }
 .ev-accordion__toggle-word {
