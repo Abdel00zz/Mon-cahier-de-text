@@ -85,7 +85,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
             <CalendarDays className="size-4 text-primary" />
             <span>{isRange ? t('editor.dateRange') : t('editor.startDate')}</span>
           </label>
-          {!isRange && (
+          {!isRange ? (
             <button
               type="button"
               onClick={() => {
@@ -99,12 +99,28 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
               <Plus className="size-3.5" />
               <span>{t('editor.defineRange')}</span>
             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setShowRange(false);
+                const next = { ...value };
+                delete next.endDate;
+                onChange(next);
+              }}
+              className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer"
+              title={t('editor.removeRange')}
+              aria-label={t('editor.removeRange')}
+            >
+              <X className="size-3.5" />
+              <span>{t('editor.removeRange')}</span>
+            </button>
           )}
         </div>
 
         <div className={cn("grid gap-3", isRange ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
-          <div>
-            <label htmlFor={`${id}-date`} className="mb-1.5 block text-xs font-medium text-foreground">
+          <div className="space-y-1.5">
+            <label htmlFor={`${id}-date`} className="block text-xs font-medium text-foreground">
               {isRange ? t('editor.startDate') : t('assignDate.chooseDate')} :
             </label>
             <Input
@@ -117,26 +133,10 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
           </div>
 
           {isRange && (
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor={`${id}-end-date`} className="block text-xs font-medium text-foreground">
-                  {t('editor.endDate')} :
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowRange(false);
-                    const next = { ...value };
-                    delete next.endDate;
-                    onChange(next);
-                  }}
-                  className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer"
-                  title={t('editor.removeRange')}
-                  aria-label={t('editor.removeRange')}
-                >
-                  <X className="size-3.5" />
-                </button>
-              </div>
+            <div className="space-y-1.5">
+              <label htmlFor={`${id}-end-date`} className="block text-xs font-medium text-foreground">
+                {t('editor.endDate')} :
+              </label>
               <Input
                 id={`${id}-end-date`}
                 type="date"
@@ -150,9 +150,8 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
         </div>
 
         {value.date && (
-          <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
-            <span className="font-medium">{t('descriptionModal.preview')} :</span>
-            <span className="font-semibold text-foreground px-2 py-0.5 rounded-md bg-background border border-border/80 shadow-2xs">
+          <div className="flex items-center gap-2 pt-0.5">
+            <span className="font-semibold text-foreground px-2.5 py-1 rounded-lg bg-background border border-border/80 shadow-2xs text-xs">
               {formatPedagogicalDateCell(value.date, value.endDate, contentLocale)}
             </span>
           </div>
@@ -165,8 +164,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
         dir={fieldDir(description)} rows={5} className="min-h-[130px]" placeholder={t(free ? 'addContent.freeHint' : 'addContent.descriptionPlaceholder')} />
       {free && <p className="mt-2 text-xs text-muted-foreground">{t('addContent.freeHelp')}</p>}
     </div>}
-    {hasMathSyntax(source) && <section className="rounded-xl border border-border bg-muted/40 p-3" aria-label={t('descriptionModal.preview')}>
-      <p className="mb-2 text-xs font-medium text-muted-foreground">{t('descriptionModal.preview')}</p>
+    {hasMathSyntax(source) && <section className="rounded-xl border border-border bg-muted/40 p-3" aria-label="Aperçu">
       <div className="overflow-x-auto whitespace-pre-wrap break-words text-sm">
         <MathText source={source}>{title && <div dir="auto">{title}</div>}
           {!titleOnly && description && <div dir="auto">{renderDescriptionWithBold(description)}</div>}</MathText>

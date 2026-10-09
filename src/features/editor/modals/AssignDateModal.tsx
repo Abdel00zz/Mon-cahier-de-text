@@ -6,9 +6,10 @@ import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
 import { todayInMorocco } from '@/domain/calendar/calendar';
-import { addDaysIso, formatDateLong } from '@/domain/notebook/dataUtils';
+import { addDaysIso } from '@/domain/notebook/dataUtils';
 import { extractDateRange, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { cn } from '@/lib/utils';
 
 interface AssignDateModalProps {
   isOpen: boolean;
@@ -20,10 +21,6 @@ interface AssignDateModalProps {
 }
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
-
-/** Date complète « lundi 5 octobre 2026 » ; une valeur illisible reste affichée telle quelle. */
-const formatFullDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) =>
-  formatDateLong(dateStr, localeCode, '') || dateStr || emptyLabel;
 
 export const AssignDateModal: FC<AssignDateModalProps> = ({
   isOpen,
@@ -200,47 +197,13 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               </Button>
             </div>
 
-            {/* 2. Date Input */}
-            <div className="space-y-2.5">
-              <label htmlFor="assign-date-input" className="block text-sm font-medium text-foreground text-start font-sans">
-                {t('assignDate.chooseDate')} :
-              </label>
-
-              <div className="relative flex flex-col items-center gap-2">
-                <div className="relative flex items-center justify-between w-full h-12 px-4 rounded-xl border border-border bg-background shadow-sm hover:border-primary/50 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                  <span className="text-[16px] font-bold tracking-[0.02em] text-foreground" dir="ltr">
-                    {selectedDate ? (() => {
-                      const [y, m, d] = selectedDate.split('-');
-                      return y && m && d ? `${d}/${m}/${y}` : 'JJ/MM/AAAA';
-                    })() : 'JJ/MM/AAAA'}
-                  </span>
-                  <CalendarDays className="w-5 h-5 text-muted-foreground" />
-                  <input
-                    id="assign-date-input"
-                    type="date"
-                    value={selectedDate}
-                    onChange={event => chooseDate(event.target.value)}
-                    onClick={(e) => {
-                      try {
-                        if (typeof e.currentTarget.showPicker === 'function') {
-                          e.currentTarget.showPicker();
-                        }
-                      } catch (err) {
-                        // fallback if showPicker fails
-                      }
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                </div>
-                {/* Intelligent date readout */}
-                <span className="text-sm font-medium text-muted-foreground capitalize font-sans">
-                  {formatFullDate(selectedDate, localeCode, t('assignDate.noDateSelected'))}
-                </span>
-              </div>
-
-              {/* Période (de XX à YY) */}
-              {!isRangeOpen ? (
-                <div className="pt-0.5 text-start">
+            {/* 2. Date Input(s) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-foreground text-start font-sans">
+                  {isRangeOpen ? t('editor.dateRange') : `${t('assignDate.chooseDate')} :`}
+                </label>
+                {!isRangeOpen ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -253,62 +216,97 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     <Plus className="size-3.5" />
                     <span>{t('editor.defineRange')}</span>
                   </button>
-                </div>
-              ) : (
-                <div className="space-y-2 pt-2.5 border-t border-border/50 animate-fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="assign-end-date-input" className="block text-sm font-medium text-foreground text-start font-sans">
-                      {t('editor.endDate')} :
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRangeOpen(false);
+                      setEndDate('');
+                      setDateChanged(true);
+                    }}
+                    className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer"
+                    title={t('editor.removeRange')}
+                  >
+                    <X className="size-3.5" />
+                    <span>{t('editor.removeRange')}</span>
+                  </button>
+                )}
+              </div>
+
+              <div className={cn("grid gap-3.5", isRangeOpen ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+                <div className="space-y-1.5">
+                  {isRangeOpen && (
+                    <label htmlFor="assign-date-input" className="block text-xs font-medium text-muted-foreground text-start font-sans">
+                      {t('editor.startDate')} :
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsRangeOpen(false);
-                        setEndDate('');
-                        setDateChanged(true);
-                      }}
-                      className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer"
-                      title={t('editor.removeRange')}
-                    >
-                      <X className="size-3.5" />
-                      <span>{t('editor.removeRange')}</span>
-                    </button>
-                  </div>
+                  )}
                   <div className="relative flex items-center justify-between w-full h-12 px-4 rounded-xl border border-border bg-background shadow-sm hover:border-primary/50 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
                     <span className="text-[16px] font-bold tracking-[0.02em] text-foreground" dir="ltr">
-                      {endDate ? (() => {
-                        const [y, m, d] = endDate.split('-');
+                      {selectedDate ? (() => {
+                        const [y, m, d] = selectedDate.split('-');
                         return y && m && d ? `${d}/${m}/${y}` : 'JJ/MM/AAAA';
                       })() : 'JJ/MM/AAAA'}
                     </span>
                     <CalendarDays className="w-5 h-5 text-muted-foreground" />
                     <input
-                      id="assign-end-date-input"
+                      id="assign-date-input"
                       type="date"
-                      min={selectedDate || undefined}
-                      value={endDate}
-                      onChange={event => { setEndDate(event.target.value); setDateChanged(true); }}
+                      value={selectedDate}
+                      onChange={event => chooseDate(event.target.value)}
                       onClick={(e) => {
                         try {
                           if (typeof e.currentTarget.showPicker === 'function') {
                             e.currentTarget.showPicker();
                           }
                         } catch {
-                          // fallback
+                          // fallback if showPicker fails
                         }
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                   </div>
-                  {/* Intelligent date readout */}
-                  {selectedDate && endDate && endDate > selectedDate && (
-                    <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
-                      <span className="font-medium">{t('descriptionModal.preview')} :</span>
-                      <span className="font-semibold text-foreground px-2 py-0.5 rounded-md bg-muted/60 border border-border/80">
-                        {formatPedagogicalDateCell(selectedDate, endDate, locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr')}
+                </div>
+
+                {isRangeOpen && (
+                  <div className="space-y-1.5">
+                    <label htmlFor="assign-end-date-input" className="block text-xs font-medium text-muted-foreground text-start font-sans">
+                      {t('editor.endDate')} :
+                    </label>
+                    <div className="relative flex items-center justify-between w-full h-12 px-4 rounded-xl border border-border bg-background shadow-sm hover:border-primary/50 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                      <span className="text-[16px] font-bold tracking-[0.02em] text-foreground" dir="ltr">
+                        {endDate ? (() => {
+                          const [y, m, d] = endDate.split('-');
+                          return y && m && d ? `${d}/${m}/${y}` : 'JJ/MM/AAAA';
+                        })() : 'JJ/MM/AAAA'}
                       </span>
+                      <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                      <input
+                        id="assign-end-date-input"
+                        type="date"
+                        min={selectedDate || undefined}
+                        value={endDate}
+                        onChange={event => { setEndDate(event.target.value); setDateChanged(true); }}
+                        onClick={(e) => {
+                          try {
+                            if (typeof e.currentTarget.showPicker === 'function') {
+                              e.currentTarget.showPicker();
+                            }
+                          } catch {
+                            // fallback
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
                     </div>
-                  )}
+                  </div>
+                )}
+              </div>
+
+              {isRangeOpen && selectedDate && endDate && endDate > selectedDate && (
+                <div className="flex items-center gap-2 pt-0.5">
+                  <span className="font-semibold text-foreground px-2.5 py-1 rounded-lg bg-muted/60 border border-border/80 text-xs">
+                    {formatPedagogicalDateCell(selectedDate, endDate, locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr')}
+                  </span>
                 </div>
               )}
 
