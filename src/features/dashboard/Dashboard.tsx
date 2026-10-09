@@ -74,6 +74,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = hasCompletedOnboarding(config, accountUser);
 
+    // Si le cloud sait que l'accueil est terminé (config.hasCompletedWelcome) mais que
+    // le profil Redis/Local ne l'est pas (vieux compte), on répare l'état Redis.
+    useEffect(() => {
+        if (welcomeCompleted && accountUser && !accountUser.hasCompletedWelcome) {
+            void completeWelcome().catch(() => {});
+        }
+    }, [welcomeCompleted, accountUser, completeWelcome]);
+
     useEffect(() => {
         if (!isClassDisplayMode(classDisplayMode)) {
             setClassDisplayMode('double');
