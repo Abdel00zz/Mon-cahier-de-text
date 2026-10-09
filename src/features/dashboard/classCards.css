@@ -8,11 +8,10 @@
   --class-vivid: var(--keep-vivid, #ffc701);
   --class-accent: var(--keep-accent, #8a5a00);
   --class-surface: var(--keep-light, #fcfaf6);
-  --class-border: color-mix(in srgb, var(--class-accent) 17%, var(--class-surface));
-  /* Encre et texte secondaire : ceux de la palette, donc chauds. Les cartes ne
-     portent plus une gamme de gris froids à part. */
-  --class-ink: var(--class-accent);
-  --class-muted: var(--class-accent);
+  --class-border: color-mix(in srgb, var(--class-accent) 18%, hsl(var(--border)));
+  /* Encre et texte secondaire unifiés : ceux du thème, chauds, nobles et lisibles. */
+  --class-ink: hsl(var(--foreground));
+  --class-muted: hsl(var(--muted-foreground));
   /* Verre teinté : la surface du ton reste la référence, mais à 94 % — le
      canevas du tableau de bord affleure derrière (charte §12 : 88-95 %), sans
      coûter un point de contraste au texte. */
@@ -28,12 +27,12 @@
   height: 100%;
   overflow: hidden;
   border: 1px solid var(--class-border);
-  border-radius: 14px;
+  border-radius: 16px;
   color: var(--class-ink);
-  background: var(--class-surface);
+  background: hsl(var(--card));
   /* Liseré supérieur spéculaire + ombre basse : la carte est POSÉE sur le
      canevas, pas collée à lui. */
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .42), 0 2px 4px rgb(32 30 26 / .03), 0 10px 26px -22px rgb(32 30 26 / .18);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 0 2px 4px rgb(32 30 26 / .03), 0 8px 24px -18px rgb(32 30 26 / .12);
   transition: transform 260ms var(--ease-spring), box-shadow 260ms ease, border-color 200ms ease;
 }
 /* Halo radial : la couleur du ton sans aucun aplat. Deux sources très douces —
@@ -55,7 +54,8 @@
    verre reste teinté, et le halo se pose sur une élévation plus marquée. */
 .dark .class-card {
   --class-surface: var(--keep-dark, #252729);
-  --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface));
+  --class-border: color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border) / 0.55));
+  background: hsl(var(--card));
   box-shadow: inset 0 1px 0 rgb(240 244 248 / .07), 0 12px 28px -24px rgb(0 0 0 / .6);
 }
 /* Texture « toile + taches » : un masque SVG (trame tissée de 3 px et taches
@@ -110,15 +110,28 @@
   /* Bouton flottant circulaire, en verre teinté : discret au repos, franc au
      survol — le geste attendu sur une carte tactile. */
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--class-accent) 12%, transparent);
-  background: color-mix(in srgb, var(--class-surface) 78%, transparent);
-  color: hsl(var(--foreground) / .75);
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 75%, transparent);
+  background: color-mix(in srgb, hsl(var(--card)) 80%, transparent);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 200ms ease, transform 200ms var(--ease-spring), box-shadow 200ms ease;
+  transition: background-color 200ms ease, color 180ms ease, border-color 200ms ease, transform 200ms var(--ease-spring), box-shadow 200ms ease;
 }
-.class-card__menu:hover, .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 92%, white 8%); box-shadow: 0 2px 8px -4px color-mix(in srgb, var(--class-accent) 45%, transparent); }
-.dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] { background: color-mix(in srgb, var(--class-surface) 88%, white 12%); }
+.class-card__menu:hover, .class-card__menu[data-state="open"] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-color: color-mix(in srgb, var(--class-accent) 45%, hsl(var(--border)));
+  box-shadow: 0 2px 8px -3px color-mix(in srgb, var(--class-accent) 30%, transparent);
+}
+.dark .class-card__menu {
+  border-color: color-mix(in srgb, hsl(var(--border)) 55%, transparent);
+  background: color-mix(in srgb, hsl(var(--card)) 70%, transparent);
+  color: hsl(var(--muted-foreground));
+}
+.dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
 .class-card__menu:active { transform: scale(.94); }
 
@@ -200,9 +213,12 @@
   -webkit-text-stroke: 0;
   text-shadow: none;
 }
+.dark .class-card .class-card__group {
+  color: var(--class-vivid);
+}
 .class-card__status-compact { display: none; }
-.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent); color: var(--class-muted); }
-.dark .class-card__footer { border-top-color: color-mix(in srgb, var(--class-accent) 26%, transparent); }
+.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, hsl(var(--border)) 70%, transparent); color: var(--class-muted); }
+.dark .class-card__footer { border-top-color: color-mix(in srgb, hsl(var(--border)) 50%, transparent); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 12px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
    en interface latine — en arabe, `--font-sans` porte la fonte locale

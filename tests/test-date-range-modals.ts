@@ -70,8 +70,8 @@ test('classCards.css has +5% font size (3.15rem), tracking -.04em, and opacity 1
 test('sidebar background harmonizes with canvas background in index.css and icon size is balanced', () => {
   const indexCss = readFileSync('src/styles/index.css', 'utf8');
   assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*backdrop-filter:\s*blur\(24px\)/s);
-  assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*rgba\(45,\s*212,\s*191/s);
-  assert.match(indexCss, /\.dark \[data-app-sidebar\]\s*\{[^}]*rgba\(20,\s*184,\s*166/s);
+  assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*rgba\(246,\s*245,\s*240/s);
+  assert.match(indexCss, /\.dark \[data-app-sidebar\]\s*\{[^}]*rgba\(26,\s*25,\s*22/s);
 
   const tabBar = readFileSync('src/components/navigation/TabBar.tsx', 'utf8');
   assert.ok(tabBar.includes('size-[20.5px]'), 'sidebar icons are rebalanced to 20.5px');

@@ -1,46 +1,31 @@
-/* Fond futuriste ultra haute qualité : auras cyan, pêche, lavande et trame micro-points */
+/* Fond canevas inspiré de Claude (Anthropic) : teinte papier ivoire reposante, sereine et chaleureuse */
 
 [data-dashboard-surface],
 [data-dashboard-root],
 .keep-futuristic-surface {
     position: relative;
     min-height: 100dvh;
-    background-color: var(--canvas-base, #fafaf9);
+    background-color: var(--canvas-base, #faf9f5);
     background-image:
-        /* 1. Trame micro-points futuriste haute résolution (Dot Matrix) */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2' cy='2' r='1.15' fill='%230f172a' fill-opacity='0.085'/%3E%3C/svg%3E"),
-        /* 2. Halo gauche : Cyan / Menthe lumineuse */
-        radial-gradient(ellipse 65% 55% at -5% 20%, rgba(45, 212, 191, 0.32) 0%, rgba(94, 234, 212, 0.16) 38%, transparent 72%),
-        /* 3. Halo central : Pêche / Rose poudré chaleureux */
-        radial-gradient(ellipse 55% 50% at 50% 15%, rgba(254, 205, 211, 0.38) 0%, rgba(254, 215, 170, 0.20) 38%, transparent 70%),
-        /* 4. Halo droit : Céleste / Indigo / Pervenche */
-        radial-gradient(ellipse 65% 55% at 105% 25%, rgba(165, 180, 252, 0.34) 0%, rgba(186, 230, 253, 0.18) 40%, transparent 75%),
-        /* 5. Dégradé de base neutre lumineux */
-        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-    background-size: 18px 18px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+        /* Douce aura champagne / ambre au zénith : profondeur éditoriale noble sans bruit */
+        radial-gradient(ellipse 70% 35% at 50% -5%, rgba(217, 119, 87, 0.045) 0%, rgba(245, 240, 230, 0.45) 45%, transparent 80%),
+        linear-gradient(180deg, #faf9f5 0%, #f7f5ed 100%);
+    background-repeat: no-repeat, no-repeat;
+    background-size: 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0;
 }
 
-/* Mode sombre : dégradé cosmique profond avec étoiles micro-points et auras immersives */
+/* Mode sombre : nuit d'argile profonde et apaisante (style Claude dark) */
 .dark [data-dashboard-surface],
 .dark [data-dashboard-root],
 .dark .keep-futuristic-surface {
-    background-color: var(--canvas-base-dark, #0c0f17);
+    background-color: var(--canvas-base-dark, #181816);
     background-image:
-        /* 1. Trame micro-points étoilée haute résolution */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2' cy='2' r='1.15' fill='%23ffffff' fill-opacity='0.065'/%3E%3C/svg%3E"),
-        /* 2. Halo gauche sombre : Cyan / Émeraude profonde */
-        radial-gradient(ellipse 65% 55% at -5% 20%, rgba(20, 184, 166, 0.22) 0%, rgba(13, 148, 136, 0.08) 38%, transparent 72%),
-        /* 3. Halo central sombre : Rose / Fuchsia poudré nocturne */
-        radial-gradient(ellipse 55% 50% at 50% 15%, rgba(225, 29, 72, 0.15) 0%, rgba(190, 24, 93, 0.06) 38%, transparent 70%),
-        /* 4. Halo droit sombre : Indigo / Violet cosmique */
-        radial-gradient(ellipse 65% 55% at 105% 25%, rgba(99, 102, 241, 0.24) 0%, rgba(79, 70, 229, 0.08) 40%, transparent 75%),
-        /* 5. Dégradé de base nuit profonde */
-        linear-gradient(180deg, #0b0f19 0%, #0f172a 100%);
-    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-    background-size: 18px 18px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+        radial-gradient(ellipse 70% 35% at 50% -5%, rgba(217, 119, 87, 0.04) 0%, transparent 75%),
+        linear-gradient(180deg, #181816 0%, #151413 100%);
+    background-repeat: no-repeat, no-repeat;
+    background-size: 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0;
 }
 
 [data-dashboard-root] [data-slot="class-display-toggle"] {

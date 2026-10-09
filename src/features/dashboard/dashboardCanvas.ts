@@ -1,24 +1,24 @@
 import type { CSSProperties } from 'react';
 
 /* ───────────────────────────────────────────────────────────────────────────
- *  SOURCE UNIQUE du fond futuriste haute qualité.
- *  Inspiré des plateformes IA modernes (auras cyan, pêche, lavande et trame micro-points).
+ *  SOURCE UNIQUE du canevas du tableau de bord.
+ *  Inspiré de l'esthétique Claude (Anthropic) : papier ivoire chaud et nuit d'argile noble.
  * ────────────────────────────────────────────────────────────────────────── */
 
 const DASHBOARD_CANVAS = {
-    /** Auras lumineuses mode clair */
+    /** Auras lumineuses mode clair (Claude Anthropic warm paper) */
     colors: {
-        base: '#fafaf9',
-        mint: '#2dd4bf', // Cyan / menthe lumineuse
-        rose: '#fda4af', // Rose poudré / pêche douce
-        sky: '#a5b4fc',  // Indigo céleste / pervenche
+        base: '#faf9f5',
+        warm: '#d97757', // Terracotta chaud
+        amber: '#f59e0b',
+        sand: '#f7f5ed',
     },
-    /** Auras profondes mode sombre */
+    /** Auras profondes mode sombre (Claude Anthropic dark ink) */
     darkColors: {
-        base: '#0c0f17',
-        mint: '#14b8a6', // Cyan profond
-        rose: '#e11d48', // Rose / fuchsia nocturne
-        sky: '#6366f1',  // Indigo cosmique
+        base: '#181816',
+        warm: '#c25e3e',
+        amber: '#d97706',
+        sand: '#151413',
     },
 } as const;
 
@@ -28,11 +28,11 @@ const { colors, darkColors } = DASHBOARD_CANVAS;
  *  référence, aucune allocation pendant les rendus. */
 export const DASHBOARD_CANVAS_STYLE = Object.freeze({
     '--canvas-base': colors.base,
-    '--canvas-mint': colors.mint,
-    '--canvas-rose': colors.rose,
-    '--canvas-sky': colors.sky,
+    '--canvas-warm': colors.warm,
+    '--canvas-amber': colors.amber,
+    '--canvas-sand': colors.sand,
     '--canvas-base-dark': darkColors.base,
-    '--canvas-mint-dark': darkColors.mint,
-    '--canvas-rose-dark': darkColors.rose,
-    '--canvas-sky-dark': darkColors.sky,
+    '--canvas-warm-dark': darkColors.warm,
+    '--canvas-amber-dark': darkColors.amber,
+    '--canvas-sand-dark': darkColors.sand,
 } as CSSProperties);
