@@ -75,3 +75,25 @@ test('les huit aplats du dashboard sont distincts et les textes conservent un co
     assert.ok((luminance(token(body, 'surface')) + .05) / (luminance(token(body, 'accent')) + .05) >= 4.5, tone);
   }
 });
+
+test('classes de même niveau et filière obtiennent des couleurs d’arrière-plan distinctes et contrastées', () => {
+  const commonClasses = [
+    classFor('Tronc Commun Scientifique 1', 'tcs-1'),
+    classFor('Tronc Commun Scientifique 2', 'tcs-2'),
+    classFor('Tronc Commun Scientifique 3', 'tcs-3'),
+  ];
+  const assigned = assignClassColors(commonClasses);
+  const colors = assigned.map(c => c.color);
+  assert.equal(new Set(colors).size, 3, 'chaque groupe de Tronc Commun a sa propre couleur');
+  assert.notEqual(colors[0], colors[1]);
+  assert.notEqual(colors[1], colors[2]);
+  assert.notEqual(colors[0], colors[2]);
+
+  const bacClasses = [
+    classFor('2ème Bac Sciences Physiques 1', '2bac-1'),
+    classFor('2ème Bac Sciences Physiques 2', '2bac-2'),
+  ];
+  const assignedBac = assignClassColors(bacClasses);
+  assert.notEqual(assignedBac[0].color, assignedBac[1].color, 'les groupes 2BAC PC ont des couleurs distinctes');
+});
+

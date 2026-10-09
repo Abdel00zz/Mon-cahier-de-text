@@ -43,24 +43,39 @@ const hueDistance = (a: number, b: number): number => {
 };
 
 /** Stable per workspace. Preserve unique saved colors and repair old family
- * duplicates once. New assignments prefer well separated curated pastels, then
- * extend the hue wheel for larger workspaces. Shared by local storage and cloud. */
+ * duplicates or visually ambiguous sister-class colors.
+ * Guarantees that classes of the same level and branch receive distinct,
+ * well-separated, harmonious background colors. */
 export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
   const assigned = new Map<string, string>();
   const used = new Set<string>();
+  const familyUsedHues = new Map<string, number[]>();
   const ordered = [...classes].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '') || a.id.localeCompare(b.id));
+
   for (const item of ordered) {
-    if (isClassColor(item.color) && !used.has(item.color)) {
+    const family = classColorFamily(item.name);
+    const itemHue = isClassColor(item.color) ? hueOf(item.color) : -1;
+    const existingFamilyHues = family ? familyUsedHues.get(family) ?? [] : [];
+    const familyCollision = existingFamilyHues.some(h => hueDistance(h, itemHue) < 45);
+
+    if (isClassColor(item.color) && !used.has(item.color) && !familyCollision) {
       assigned.set(item.id, item.color);
       used.add(item.color);
+      if (family) {
+        existingFamilyHues.push(itemHue);
+        familyUsedHues.set(family, existingFamilyHues);
+      }
     }
   }
+
   if (assigned.size === classes.length) return classes;
+
   const usedHues = [...used].map(hueOf);
   // Cache distances to avoid comparing every pair again for each assignment.
   const candidates = [...KEEP_TONES, ...Array.from({ length: Math.max(32, classes.length * 2) }, (_, i) => `class-hue:${i}`)]
     .filter(color => !used.has(color))
     .map(color => ({ color, hue: hueOf(color), distance: usedHues.reduce((min, hue) => Math.min(min, hueDistance(hueOf(color), hue)), 180) }));
+
   for (const item of ordered) {
     if (assigned.has(item.id)) continue;
     const family = classColorFamily(item.name);
@@ -69,13 +84,18 @@ export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
     const named = available.filter(candidate => KEEP_TONES.includes(candidate.color as typeof KEEP_TONES[number]));
     const pool = named.length ? named : available;
     const preferred = pool.find(candidate => candidate.color === preference);
-    const choice = preferred && preferred.distance >= 50 ? preferred : pool.reduce((best, candidate) => {
+    const choice = (preferred && preferred.distance >= 50) ? preferred : pool.reduce((best, candidate) => {
       if (candidate.distance !== best.distance) return candidate.distance > best.distance ? candidate : best;
-      return hueDistance(candidate.hue, hueOf(preference)) < hueDistance(best.hue, hueOf(preference)) ? candidate : best;
+      return hueDistance(candidate.hue, hueOf(preference)) > hueDistance(best.hue, hueOf(preference)) ? candidate : best;
     });
     const color = choice.color;
     assigned.set(item.id, color);
     used.add(color);
+    if (family) {
+      const existing = familyUsedHues.get(family) ?? [];
+      existing.push(choice.hue);
+      familyUsedHues.set(family, existing);
+    }
     for (const candidate of candidates) candidate.distance = Math.min(candidate.distance, hueDistance(candidate.hue, choice.hue));
   }
   return classes.map(item => item.color === assigned.get(item.id) ? item : { ...item, color: assigned.get(item.id)! });

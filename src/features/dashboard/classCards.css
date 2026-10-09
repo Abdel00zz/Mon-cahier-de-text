@@ -48,7 +48,7 @@
   background:
     radial-gradient(118% 92% at 10% -14%, color-mix(in srgb, var(--class-vivid) 22%, transparent), transparent 60%),
     radial-gradient(96% 84% at 106% 116%, color-mix(in srgb, var(--class-accent) 12%, transparent), transparent 64%);
-  opacity: 0;
+  opacity: 0.45;
   transition: opacity 260ms ease;
 }
 /* Mode sombre : la surface du ton est un gris profond (jamais du noir), le
@@ -243,17 +243,34 @@
   .class-card, .class-card *, .class-card:hover, .class-card:has(.class-card__open:active) { transition: none; transform: none; }
 }
 
-/* Reference pastel palette, scoped to class cards to preserve other screens. */
-.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e3f0e9; --class-border: #bfd9cb; --class-accent: #285d4a; --class-vivid: #438363; }
-.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eef0dc; --class-border: #d3d9b3; --class-accent: #536032; --class-vivid: #7d8b4d; }
-.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e4eef4; --class-border: #c4d9e6; --class-accent: #315c77; --class-vivid: #4984a5; }
-.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #f3ead3; --class-border: #dfd0a7; --class-accent: #765b24; --class-vivid: #a07c35; }
-.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #ede5f1; --class-border: #d7c5e0; --class-accent: #684775; --class-vivid: #9265a0; }
-.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e7e9f5; --class-border: #c9cde6; --class-accent: #484e87; --class-vivid: #6972af; }
-.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #f5e5da; --class-border: #e3c5b0; --class-accent: #874b30; --class-vivid: #b67653; }
-.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #f2e1e6; --class-border: #dfbfcb; --class-accent: #854457; --class-vivid: #b16980; }
-.class-card[data-class-color] { --class-surface: hsl(var(--class-hue) 55% 92%); }
-.dark .class-card[data-keep-tone] { --class-surface: var(--keep-dark, #252729); --class-accent: var(--keep-accent); --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface)); }
+/* Reference pastel palette, scoped to class cards to preserve other screens.
+   Palette chromatique haute précision : pastels frais, lumineux et contrastés (WCAG AA > 5.5:1),
+   garantissant une différenciation nette et immédiate entre classes du même niveau ou de niveaux différents. */
+.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #def4e8; --class-border: #b3e2cb; --class-accent: #165a3e; --class-vivid: #10b981; }
+.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #edf6d0; --class-border: #d0e698; --class-accent: #435c12; --class-vivid: #84cc16; }
+.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #def0fc; --class-border: #b3daf7; --class-accent: #145582; --class-vivid: #38bdf8; }
+.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf1cf; --class-border: #f6dc9a; --class-accent: #754c04; --class-vivid: #f59e0b; }
+.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f2e2f8; --class-border: #e0c0ed; --class-accent: #6c2a82; --class-vivid: #c084fc; }
+.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e8eafa; --class-border: #c6cbf2; --class-accent: #343b80; --class-vivid: #6366f1; }
+.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #ffe3d5; --class-border: #fdc3a9; --class-accent: #8e3710; --class-vivid: #f97316; }
+.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fce1e8; --class-border: #f6bccb; --class-accent: #8a1c3e; --class-vivid: #f43f5e; }
+.class-card[data-class-color] {
+  --class-surface: hsl(var(--class-hue) 60% 93%);
+  --class-accent: hsl(var(--class-hue) 65% 26%);
+  --class-border: hsl(var(--class-hue) 45% 82%);
+  --class-vivid: hsl(var(--class-hue) 70% 52%);
+}
+.dark .class-card[data-keep-tone] {
+  --class-surface: var(--keep-dark, #1c1e22);
+  --class-accent: var(--keep-accent);
+  --class-border: color-mix(in srgb, var(--class-accent) 30%, var(--class-surface));
+}
+.dark .class-card[data-class-color] {
+  --class-surface: hsl(var(--class-hue) 24% 15%);
+  --class-accent: hsl(var(--class-hue) 60% 75%);
+  --class-border: hsl(var(--class-hue) 28% 28%);
+  --class-vivid: hsl(var(--class-hue) 65% 65%);
+}
 
 
 /* Card width, not device width: two columns on a tablet need the same compact
