@@ -883,14 +883,25 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 
   const formatDateBadge = (date: string | undefined, endDate: string | undefined): string => {
     if (!date) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
-    const formatPart = (iso: string) => {
-      const [y, m, d] = iso.split('-');
-      return y && m && d ? `${d}/${m}/${y}` : iso;
+    const formatDayMonth = (iso: string) => {
+      const parts = iso.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+      return iso;
+    };
+    const formatFull = (iso: string) => {
+      const parts = iso.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return iso;
     };
     if (endDate && endDate !== date) {
-      return `${formatPart(date)} → ${formatPart(endDate)}`;
+      const [y1] = date.split('-');
+      const [y2] = endDate.split('-');
+      if (y1 === y2) {
+        return `${formatDayMonth(date)} → ${formatFull(endDate)}`;
+      }
+      return `${formatFull(date)} → ${formatFull(endDate)}`;
     }
-    return formatPart(date);
+    return formatFull(date);
   };
 
   return (
@@ -968,17 +979,17 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     type="button"
                     onClick={() => setEditingDateEvent(event)}
                     className={cn(
-                      "ev-date-trigger inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none",
+                      "ev-date-trigger inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none",
                       event.date
-                        ? "border-border/70 bg-card/90 text-foreground hover:border-primary/50 hover:bg-accent/40 active:scale-95 shadow-xs"
-                        : "border-dashed border-border/80 bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        ? "text-foreground bg-muted/40 hover:bg-muted/75 border border-border/50 hover:border-primary/40 active:scale-95"
+                        : "border border-dashed border-border/70 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/20"
                     )}
                     title={event.endDate ? `${event.date} → ${event.endDate}` : (event.date || t('evaluations.assignDate'))}
                     data-tippy-content={locale === 'ar' ? 'تعديل تاريخ هذا النشاط التربوي' : 'Modifier la date de cette activité'}
                     aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
                   >
                     <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-                    <span className="whitespace-nowrap tabular-nums text-xs" dir="ltr">
+                    <span className="whitespace-nowrap tabular-nums text-xs font-bold" dir="ltr">
                       {formatDateBadge(event.date, event.endDate)}
                     </span>
                   </button>
