@@ -10,6 +10,9 @@ import {
   syncEventToNotebook,
   syncAssessmentDateToNotebook,
   syncNotebookSessionToEvaluations,
+  syncNotebookToEvaluations,
+  removeEventFromNotebook,
+  removeAssessmentFromNotebook,
   formatPedagogicalDateCell,
   extractEarliestDate,
 } from '../src/domain/evaluations/notebookSyncBridge';
@@ -218,4 +221,77 @@ test('formatage de la cellule Date selon les règles pédagogiques (1 jour, 2 jo
   assert.equal(extractEarliestDate('2026-09-08 et 2026-09-09'), '2026-09-08');
   assert.equal(extractEarliestDate('Du 2026-09-08 au 2026-09-15'), '2026-09-08');
   assert.equal(extractEarliestDate('من 2026-09-08 إلى 2026-09-15'), '2026-09-08');
+});
+
+test('suppression d’un événement ou d’un devoir synchronise et nettoie le tableau', () => {
+  const lessons: LessonsData = [
+    {
+      type: 'evaluation_diagnostic',
+      title: 'Évaluation diagnostique',
+      date: '2026-09-10',
+      sections: [],
+      items: [],
+      _tempId: 'event-evt-1',
+    },
+    {
+      type: 'controle_continu',
+      title: 'Contrôle continu 1',
+      date: '2026-10-15',
+      sections: [],
+      items: [],
+      _tempId: 'dev-block-cc-1',
+    },
+    {
+      type: 'chapter',
+      title: 'Chapitre 1',
+      date: '2026-10-20',
+      sections: [],
+      items: [],
+    },
+  ];
+
+  // 1. Suppression de l'évaluation diagnostique
+  const { lessons: afterEventDel, updated: eventDelUpdated } = removeEventFromNotebook(lessons, 'evt-1');
+  assert.equal(eventDelUpdated, true);
+  assert.equal(afterEventDel.length, 2);
+  assert.equal(afterEventDel.some(item => item.type === 'evaluation_diagnostic'), false);
+
+  // 2. Suppression du contrôle continu
+  const { lessons: afterDevDel, updated: devDelUpdated } = removeAssessmentFromNotebook(afterEventDel, 'cc-1', 'controle', 1);
+  assert.equal(devDelUpdated, true);
+  assert.equal(afterDevDel.length, 1);
+  assert.equal(afterDevDel[0].title, 'Chapitre 1');
+});
+
+test('synchronisation bidirectionnelle globale du cahier vers les évaluations (ajouts, modifications et suppressions)', () => {
+  const config: AppConfig = {
+    theme: 'light',
+    appTextSize: 'md',
+    applicationLocale: 'fr',
+    pedagogicalEvents: {},
+    assessmentDates: {},
+  };
+
+  const lessons: LessonsData = [
+    {
+      type: 'evaluation_diagnostic',
+      title: 'التقويم التشخيصي',
+      date: 'من 2026-09-08 إلى 2026-09-15',
+      sections: [],
+      items: [],
+      _tempId: 'event-diag-ar',
+    },
+    {
+      type: 'controle_continu',
+      title: 'Contrôle continu 1',
+      date: '2026-10-22',
+      sections: [],
+      items: [],
+    },
+  ];
+
+  const { patch, updated } = syncNotebookToEvaluations('class-2', config, lessons);
+  assert.equal(updated, true);
+  assert.equal(patch.pedagogicalEvents?.['class-2']?.[0].date, '2026-09-08');
+  assert.equal(patch.assessmentDates?.['class-2']?.['2026-2027:s1-controle1'], '2026-10-22');
 });

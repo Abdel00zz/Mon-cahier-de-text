@@ -25,6 +25,7 @@ interface EditorModalsProps {
   exportChapters: ExportableChapterOption[];
   lessonsData: LessonsData;
   handleUpdateLessons: (newLessons: LessonsData) => void;
+  handleEvaluationsLessonsChange?: (newLessons: LessonsData) => void;
   config: AppConfig;
   onConfigChange: (patch: Partial<AppConfig>) => void;
   sessionEditor: SessionEditorState | null;
@@ -171,7 +172,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             config={config}
             onConfigChange={onConfigChange}
             lessonsData={lessonsData}
-            onLessonsChange={handleUpdateLessons}
+            onLessonsChange={handleEvaluationsLessonsChange ?? handleUpdateLessons}
           />
         );
       default:

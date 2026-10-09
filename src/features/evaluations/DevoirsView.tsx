@@ -27,7 +27,12 @@ import {
   Mic,
 } from 'lucide-react';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
-import { syncEventToNotebook, syncAssessmentDateToNotebook } from '@/domain/evaluations/notebookSyncBridge';
+import {
+  syncEventToNotebook,
+  syncAssessmentDateToNotebook,
+  removeEventFromNotebook,
+  removeAssessmentFromNotebook,
+} from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { SchedulePlanningIllustration } from '@/components/ui/DynamicIllustration';
 import { useEvaluationModals } from './hooks/useEvaluationModals';
@@ -187,12 +192,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
-    actions.setAssessmentDate(assessmentId, dateISO, assessments.find(item => item.id === assessmentId)?.legacyId);
     const targetAssessment = assessments.find(item => item.id === assessmentId);
-    if (targetAssessment && dateISO) {
+    actions.setAssessmentDate(assessmentId, dateISO, targetAssessment?.legacyId);
+    if (targetAssessment) {
       const { lessons: nextLessons, updated } = syncAssessmentDateToNotebook(
         activeLessons,
-        { id: targetAssessment.id, type: targetAssessment.type, num: targetAssessment.num, dateISO, label: targetAssessment.label },
+        {
+          id: targetAssessment.id,
+          type: targetAssessment.type,
+          num: targetAssessment.num,
+          dateISO,
+          label: targetAssessment.label,
+          clearIfEmpty: !dateISO,
+        },
         locale
       );
       if (updated) persistLessons(nextLessons);
@@ -213,7 +225,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const togglePedagogicalEvent = actions.toggleEvent;
-  const deletePedagogicalEvent = actions.deleteEvent;
+  const deletePedagogicalEvent = (eventOrId: string | { id: string; title?: string }) => {
+    const id = typeof eventOrId === 'string' ? eventOrId : eventOrId.id;
+    const title = typeof eventOrId === 'string' ? undefined : eventOrId.title;
+    const target = pedagogicalEvents.find(e => e.id === id);
+    actions.deleteEvent(id);
+    const { lessons: nextLessons, updated } = removeEventFromNotebook(
+      activeLessons,
+      id,
+      target?.type,
+      target?.title || title
+    );
+    if (updated) persistLessons(nextLessons);
+  };
 
   const activityLabelOf = (event: PedagogicalEvent) =>
     event.title || t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey);
@@ -268,7 +292,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const deleteAssessment = (id: string) => {
+    const target = assessments.find(item => item.id === id);
     actions.deleteAssessment(id);
+    if (target) {
+      const { lessons: nextLessons, updated } = removeAssessmentFromNotebook(
+        activeLessons,
+        target.id,
+        target.type,
+        target.num
+      );
+      if (updated) persistLessons(nextLessons);
+    }
     toast.success(t('evaluations.manualDeleted'));
   };
 

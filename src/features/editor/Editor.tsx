@@ -32,7 +32,7 @@ import { listExportableChapters, selectExportableChapters } from '@/domain/noteb
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
-import { syncNotebookSessionToEvaluations } from '@/domain/evaluations/notebookSyncBridge';
+import { syncNotebookSessionToEvaluations, syncNotebookToEvaluations } from '@/domain/evaluations/notebookSyncBridge';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -448,12 +448,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
       try {
         const currentLessons = lessonsDataRef.current;
-        for (const item of currentLessons) {
-          if (item.type && item.date) {
-            const { patch, updated } = syncNotebookSessionToEvaluations(classInfo.id, config, item, currentLessons);
-            if (updated) updateConfig(patch);
-          }
-        }
+        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, currentLessons);
+        if (updated) updateConfig(patch);
       } catch { /* sync silencieuse */ }
     },
     onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
@@ -539,6 +535,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (withVisualStatus) {
         setEditorState(draft => { draft.saveStatus = 'saved'; });
       }
+      try {
+        const currentLessons = lessonsDataRef.current;
+        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, currentLessons);
+        if (updated) updateConfig(patch);
+      } catch { /* sync silencieuse */ }
       return true;
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);
@@ -549,7 +550,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       return false;
     }
-  }, [classInfo.id, showNotification, setEditorState, t, workspaceIsActive]);
+  }, [classInfo.id, showNotification, setEditorState, t, workspaceIsActive, config, updateConfig]);
 
   useEffect(() => registerWorkspaceWriter(() => (
     workspaceIsActive() ? persistCurrentData(false) : true
@@ -1201,7 +1202,19 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection]);
+      try {
+        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, newLessons);
+        if (updated) updateConfig(patch);
+      } catch { /* sync silencieuse */ }
+  }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection, classInfo.id, config, updateConfig]);
+
+  const handleEvaluationsLessonsChange = useCallback((newLessons: LessonsData) => {
+      setState(() => newLessons.length > 0
+        ? withStarterDiagnostic(newLessons, contentLocaleFromDirection(contentDirection))
+        : newLessons, 'evaluations-sync');
+      setEditorState(draft => { draft.saveStatus = 'saved'; });
+      saveNotebook(classInfo.id, newLessons, contentDirection);
+  }, [setState, setEditorState, classInfo.id, contentDirection]);
 
   const addAfterTarget = useMemo(
     () => resolveAddAfterTarget(allRows, expandContentSelection(contentEditTargets, selectionState.keys)),
@@ -1408,6 +1421,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         exportChapters={exportChapters}
         lessonsData={lessonsData}
         handleUpdateLessons={handleUpdateLessons}
+        handleEvaluationsLessonsChange={handleEvaluationsLessonsChange}
         config={config}
         onConfigChange={updateConfig}
         sessionEditor={sessionAssignment.editor}
