@@ -134,6 +134,10 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             onApply={onApplySession}
             session={sessionEditor}
             getDateWarnings={getDateWarnings}
+            classId={classInfo.id}
+            timetable={config.timetable}
+            timetableClock={config.timetableClock}
+            lessonsData={lessonsData}
           />
         );
       case 'addContent':
@@ -146,6 +150,9 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
             subject={classInfo.subject}
             contentDirection={contentDirection}
+            classId={classInfo.id}
+            timetable={config.timetable}
+            timetableClock={config.timetableClock}
           />
         );
       case 'editContent':
@@ -160,6 +167,10 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             titleOnly={editingTitleOnly}
             titleField={editingTitleField}
             affectedCount={editingCount}
+            classId={classInfo.id}
+            timetable={config.timetable}
+            timetableClock={config.timetableClock}
+            lessonsData={lessonsData}
           />
         );
       case 'analyse':

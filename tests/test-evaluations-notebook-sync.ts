@@ -107,7 +107,7 @@ test('synchronisation d’une évaluation diagnostique avec plage de dates XX à
   assert.equal(updated, true);
   assert.equal(lessons.length, 2);
   assert.equal(lessons[0].type, 'evaluation_diagnostic');
-  assert.equal(lessons[0].date, 'من 2026-09-08 إلى 2026-09-15', 'La plage est dans la cellule date avec connecteur convenable');
+  assert.equal(lessons[0].date, '2026-09-08 و 2026-09-15', 'La plage est dans la cellule date avec connecteur convenable sans Du...au');
   assert.equal(lessons[0].remark, 'تمرير روائز التقويم والدعم', 'La remarque ne porte plus la date et garde la note de l’enseignant');
 
   // Test de deux jours consécutifs : utilisation du connecteur 'et' en français et 'و' en arabe
@@ -207,7 +207,7 @@ test('titre cliquable en bleu si un contenu/document est associé dans la table'
   assert.doesNotMatch(markupWithoutDoc, /data-document-highlight="true"/);
 });
 
-test('formatage de la cellule Date selon les règles pédagogiques (1 jour, 2 jours "et", >2 jours "Du...au")', () => {
+test('formatage de la cellule Date selon les règles pédagogiques (1 jour, 2 jours "et", >2 jours sans "Du...au")', () => {
   // 1. Date simple
   assert.equal(formatPedagogicalDateCell('2026-09-08', undefined, 'fr'), '2026-09-08');
   assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-08', 'fr'), '2026-09-08');
@@ -216,11 +216,16 @@ test('formatage de la cellule Date selon les règles pédagogiques (1 jour, 2 jo
   assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-09', 'fr'), '2026-09-08 et 2026-09-09');
   assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-09', 'ar'), '2026-09-08 و 2026-09-09');
 
-  // 3. Plus de deux jours : connecteur 'Du XX au YY' en français et 'من XX إلى YY' en arabe
-  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'fr'), 'Du 2026-09-08 au 2026-09-15');
-  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'ar'), 'من 2026-09-08 إلى 2026-09-15');
+  // 3. Plage sans liste de séances : connecteur 'et' en français et 'و' en arabe (jamais 'Du...au')
+  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'fr'), '2026-09-08 et 2026-09-15');
+  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'ar'), '2026-09-08 و 2026-09-15');
 
-  // 4. Extraction de la date de début pour le tri chronologique
+  // 4. Plage avec séances intersectées de la classe
+  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'fr', ['2026-09-08', '2026-09-11']), '2026-09-08 et 2026-09-11');
+  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'fr', ['2026-09-08', '2026-09-11', '2026-09-15']), '2026-09-08, 2026-09-11 et 2026-09-15');
+  assert.equal(formatPedagogicalDateCell('2026-09-08', '2026-09-15', 'ar', ['2026-09-08', '2026-09-11', '2026-09-15']), '2026-09-08 و 2026-09-11 و 2026-09-15');
+
+  // 5. Extraction de la date de début pour le tri chronologique
   assert.equal(extractEarliestDate('2026-09-08 et 2026-09-09'), '2026-09-08');
   assert.equal(extractEarliestDate('Du 2026-09-08 au 2026-09-15'), '2026-09-08');
   assert.equal(extractEarliestDate('من 2026-09-08 إلى 2026-09-15'), '2026-09-08');

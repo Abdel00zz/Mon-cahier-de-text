@@ -15,6 +15,8 @@ import { translateLocaleMessage } from '@/i18n/messages';
 import { ContentFields } from './ContentFields';
 import { createContentDraft, contentDraftChanged, type ContentDraft, type EditableContent } from '@/domain/notebook/contentDraft';
 import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
+import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
+import type { TimetableEntry, TimetableClockPolicy } from '@/types';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -28,6 +30,10 @@ export interface EditContentModalProps {
   titleOnly?: boolean;
   titleField?: 'title' | 'name';
   affectedCount?: number;
+  classId?: string;
+  timetable?: TimetableEntry[];
+  timetableClock?: TimetableClockPolicy;
+  lessonsData?: LessonsData;
 }
 const EMPTY_LESSONS: LessonsData = [];
 
@@ -41,6 +47,9 @@ export interface AddContentModalProps {
   subject?: string;
   /** sens d'écriture du cahier : les éléments ajoutés suivent cette langue (FR/AR). */
   contentDirection?: ContentDirection;
+  classId?: string;
+  timetable?: TimetableEntry[];
+  timetableClock?: TimetableClockPolicy;
 }
 
 const getElementTypeFromIndices = (data: LessonsData, indices: Indices): string | null => {
@@ -108,7 +117,7 @@ type ContentModalProps = AddContentModalProps | (EditContentModalProps & { mode:
 export const ContentModal: React.FC<ContentModalProps> = (props) => {
   const { isOpen, onClose, subject, contentDirection } = props;
   const edit = 'mode' in props ? props : null;
-  const lessonsData = 'lessonsData' in props ? props.lessonsData : EMPTY_LESSONS;
+  const lessonsData = ('lessonsData' in props && props.lessonsData) ? props.lessonsData : EMPTY_LESSONS;
   const selectedIndices = 'selectedIndices' in props ? props.selectedIndices : null;
   const { t } = useLocale();
   const tc = (key: string, values?: Record<string, string | number>): string =>
@@ -209,7 +218,12 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     const finalData = { ...formData };
     if (finalData.date && finalData.endDate && finalData.endDate > finalData.date) {
       const localeCode = contentDirection === 'rtl' ? 'ar' : 'fr';
-      finalData.date = formatPedagogicalDateCell(finalData.date, finalData.endDate, localeCode);
+      const lessons = 'lessonsData' in props ? props.lessonsData : undefined;
+      const classId = 'classId' in props ? props.classId : undefined;
+      const timetable = 'timetable' in props ? props.timetable : undefined;
+      const timetableClock = 'timetableClock' in props ? props.timetableClock : undefined;
+      const intersecting = resolveClassSessionDatesInRange(finalData.date, finalData.endDate, classId, timetable, timetableClock, lessons);
+      finalData.date = formatPedagogicalDateCell(finalData.date, finalData.endDate, localeCode, intersecting);
     }
     if (edit) {
       if (edit.item && isDirty) edit.onSave(finalData);

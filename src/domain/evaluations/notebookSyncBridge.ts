@@ -108,43 +108,37 @@ export function placeBlockChronologically(
 
 /**
  * Formate une plage de dates pour la cellule Date du cahier selon la règle pédagogique :
+ * Ne produit JAMAIS de texte brut « Du XX au YY » ou « من XX إلى YY ».
  * - 1 jour : la date simple
- * - Exactement 2 jours : connecteur 'et' (ex: "08/09 et 09/09" ou "2026-09-08 et 2026-09-09")
- * - Plus de 2 jours : connecteur 'de XX a YY' / 'Du XX au YY' (ex: "Du 2026-09-08 au 2026-09-15")
+ * - Plusieurs séances fournies (ou 2 jours) : connecteur 'et' / 'و'
+ * - Plus de 2 séances : liste séparée avec connecteur final
  */
 export function formatPedagogicalDateCell(
   startDate: string,
   endDate?: string,
-  locale: AppLocale = 'fr'
+  locale: AppLocale = 'fr',
+  sessionDates?: readonly string[],
 ): string {
+  if (sessionDates && sessionDates.length > 0) {
+    if (sessionDates.length === 1) return sessionDates[0];
+    const connector = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
+    if (sessionDates.length === 2) {
+      return `${sessionDates[0]} ${connector} ${sessionDates[1]}`;
+    }
+    if (locale === 'ar') {
+      return sessionDates.join(' و ');
+    }
+    return `${sessionDates.slice(0, -1).join(', ')} ${connector} ${sessionDates[sessionDates.length - 1]}`;
+  }
+
   if (!endDate || endDate === startDate) {
     return startDate;
   }
 
-  // Calcul du nombre de jours civils entre startDate et endDate
-  const d1 = new Date(startDate);
-  const d2 = new Date(endDate);
-  let totalDays = 0;
-  if (!Number.isNaN(d1.getTime()) && !Number.isNaN(d2.getTime())) {
-    const diffTime = Math.abs(d2.getTime() - d1.getTime());
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    totalDays = diffDays + 1;
-  }
-
-  // Exactement deux jours : connecteur 'et'
-  if (totalDays === 2) {
-    const connector = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
-    return `${startDate} ${connector} ${endDate}`;
-  }
-
-  // Plus de deux jours : connecteur 'Du XX au YY' / 'من XX إلى YY'
-  if (locale === 'ar') {
-    return `من ${startDate} إلى ${endDate}`;
-  }
-  if (locale === 'en') {
-    return `From ${startDate} to ${endDate}`;
-  }
-  return `Du ${startDate} au ${endDate}`;
+  // Ne produit JAMAIS « Du XX au YY » ou « من XX إلى YY » :
+  // on relie les bornes de la plage par le connecteur pédagogique ('et' / 'و')
+  const connector = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
+  return `${startDate} ${connector} ${endDate}`;
 }
 
 /**

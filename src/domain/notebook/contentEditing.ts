@@ -1,11 +1,12 @@
 import type { Draft } from 'immer';
-import type { AppLocale, Indices, LessonsData } from '../../types';
+import type { AppLocale, Indices, LessonsData, TimetableClockPolicy, TimetableEntry } from '../../types';
 import { findItem } from './dataUtils';
 import { indicesKey, type LessonRow } from './lessonRows';
 import { groupLessonRows, type RenderRow } from './tableRows';
 import { contentFields, type ContentDraft } from './contentDraft';
 import { TOP_LEVEL_CONTENT_META } from '../../constants/top-level-types';
 import { formatPedagogicalDateCell } from '../evaluations/notebookSyncBridge';
+import { resolveClassSessionDatesInRange } from './classSessionDates';
 
 export type ContentEditTargets = ReadonlyMap<string, readonly Indices[]>;
 
@@ -55,10 +56,15 @@ export function expandContentSelection(targets: ContentEditTargets, keys: Readon
 /** Une seule mutation Immer pour tout le groupe, annulable en une action.
  * Valide toutes les coordonnées avant d'écrire et exclut les métadonnées. */
 export function applyContentEdit(
-  draft: Draft<LessonsData>,
+  draft: Draft<LessonsData> | LessonsData,
   targets: readonly Indices[],
   patch: ContentDraft,
   locale: AppLocale = 'fr',
+  context?: {
+    classId?: string;
+    timetable?: TimetableEntry[];
+    timetableClock?: TimetableClockPolicy;
+  },
 ): boolean {
   const keys = new Set<string>();
   const items = targets.map(indices => {
@@ -77,8 +83,11 @@ export function applyContentEdit(
           const rawStart = patch.date?.trim();
           const rawEnd = patch.endDate?.trim();
           if (rawStart) {
+            const intersecting = rawEnd && rawEnd > rawStart
+              ? resolveClassSessionDatesInRange(rawStart, rawEnd, context?.classId, context?.timetable, context?.timetableClock, draft)
+              : undefined;
             const formatted = rawEnd && rawEnd > rawStart
-              ? formatPedagogicalDateCell(rawStart, rawEnd, locale)
+              ? formatPedagogicalDateCell(rawStart, rawEnd, locale, intersecting)
               : rawStart;
             item.date = formatted;
           } else if (patch.date === '') {

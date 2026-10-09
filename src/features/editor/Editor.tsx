@@ -34,6 +34,7 @@ import { contentLocaleFromDirection, defaultContentDirection, detectContentDirec
 import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { syncNotebookToEvaluations, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
+import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -862,7 +863,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
       const rawStart = typeof data.date === 'string' ? data.date.trim() : undefined;
       const rawEnd = typeof data.endDate === 'string' ? data.endDate.trim() : undefined;
-      const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale) : rawStart) : undefined;
+      const intersecting = rawStart && rawEnd && rawEnd > rawStart
+        ? resolveClassSessionDatesInRange(rawStart, rawEnd, classInfo.id, config.timetable, config.timetableClock, lessonsData)
+        : undefined;
+      const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale, intersecting) : rawStart) : undefined;
 
       if (type === 'free') {
           setState(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
@@ -1142,7 +1146,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
 
       setState(draft => {
-          applyContentEdit(draft, targets, finalItem, effectiveLocale);
+          applyContentEdit(draft, targets, finalItem, effectiveLocale, {
+            classId: classInfo.id,
+            timetable: config.timetable,
+            timetableClock: config.timetableClock,
+          });
       }, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
       showNotification(t('editorNotice.contentUpdated'), "success");
       setEditorState(draft => {

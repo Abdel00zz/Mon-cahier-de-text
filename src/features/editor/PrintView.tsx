@@ -1,5 +1,6 @@
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
 import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups, type AbsenceSession } from '@/domain/notebook/absenceSessions';
+import { normalizeDateForMerge } from '@/domain/notebook/classSessionDates';
 import React, { useMemo } from 'react';
 import './print.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
@@ -68,7 +69,7 @@ const formatPrintDate = (rawDate: string | undefined, isRtl: boolean): string =>
     if (rangeMatch) {
         const f1 = formatDateDDMMYYYY(rangeMatch[1]) || rangeMatch[1];
         const f2 = formatDateDDMMYYYY(rangeMatch[2]) || rangeMatch[2];
-        return isRtl ? `من ${f1} إلى ${f2}` : `Du ${f1} au ${f2}`;
+        return isRtl ? `${f1} و ${f2}` : `${f1} et ${f2}`;
     }
 
     // 2. Deux jours avec connecteur 'et' / 'و'
@@ -79,6 +80,16 @@ const formatPrintDate = (rawDate: string | undefined, isRtl: boolean): string =>
         const f1 = formatDateDDMMYYYY(pairMatch[1]) || pairMatch[1];
         const f2 = formatDateDDMMYYYY(pairMatch[2]) || pairMatch[2];
         return isRtl ? `${f1} و ${f2}` : `${f1} et ${f2}`;
+    }
+
+    // 3. Plusieurs dates dans la cellule (ex: 3 dates et plus)
+    const allMatches = trimmed.match(/\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?\b/g);
+    if (allMatches && allMatches.length > 2) {
+        const formatted = allMatches.map(d => formatDateDDMMYYYY(d) || d);
+        if (isRtl) {
+            return formatted.join(' و ');
+        }
+        return `${formatted.slice(0, -1).join(', ')} et ${formatted[formatted.length - 1]}`;
     }
 
     return formatDateDDMMYYYY(trimmed) || trimmed;
@@ -107,6 +118,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
     const coursePrintRows = useMemo<PrintRow[]>(() => {
         const rows: PrintRow[] = [];
         let sessionDate: string | null = null;
+        let sessionNormalizedDate: string | null = null;
         let sessionItems: FlatDataItem[] = [];
 
         const flushSession = () => {
@@ -114,21 +126,24 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                 rows.push({ kind: 'session', date: sessionDate, items: sessionItems });
             }
             sessionDate = null;
+            sessionNormalizedDate = null;
             sessionItems = [];
         };
 
         flatData.forEach((item) => {
             const itemDate = item.data.date;
-            if (!itemDate) {
+            const normalized = normalizeDateForMerge(itemDate);
+            if (!itemDate || !normalized) {
                 flushSession();
                 rows.push({ kind: 'single', item });
                 return;
             }
 
-            if (sessionDate && sessionDate !== itemDate) {
+            if (sessionNormalizedDate && sessionNormalizedDate !== normalized) {
                 flushSession();
             }
 
+            sessionNormalizedDate = normalized;
             sessionDate = itemDate;
             sessionItems.push(item);
         });

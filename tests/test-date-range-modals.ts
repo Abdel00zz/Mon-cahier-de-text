@@ -29,22 +29,22 @@ test('createContentDraft and contentDraftChanged track date and endDate', () => 
   assert.equal(contentDraftChanged(modifiedStart, draft), true);
 });
 
-test('applyContentEdit writes pedagogical date range cell format in French and Arabic', () => {
+test('applyContentEdit writes pedagogical date range cell format in French and Arabic without raw ranges', () => {
   const lessons: LessonsData = [
     { type: 'evaluation_diagnostic', title: 'Diag', date: '2026-09-08', _tempId: 'diag-1' }
   ];
 
-  // French formatting
+  // French formatting (without timetable: bounds joined with 'et')
   const updatedFr = produce(lessons, draft => {
     applyContentEdit(draft, [{ chapterIndex: 0 }], { date: '2026-09-08', endDate: '2026-09-15' }, 'fr');
   });
-  assert.equal(updatedFr[0].date, 'Du 2026-09-08 au 2026-09-15');
+  assert.equal(updatedFr[0].date, '2026-09-08 et 2026-09-15');
 
   // Arabic formatting
   const updatedAr = produce(lessons, draft => {
     applyContentEdit(draft, [{ chapterIndex: 0 }], { date: '2026-09-08', endDate: '2026-09-15' }, 'ar');
   });
-  assert.equal(updatedAr[0].date, 'من 2026-09-08 إلى 2026-09-15');
+  assert.equal(updatedAr[0].date, '2026-09-08 و 2026-09-15');
 
   // Consecutive days formatting (French "et", Arabic "و")
   const consecutiveFr = produce(lessons, draft => {
@@ -56,6 +56,36 @@ test('applyContentEdit writes pedagogical date range cell format in French and A
     applyContentEdit(draft, [{ chapterIndex: 0 }], { date: '2026-09-08', endDate: '2026-09-09' }, 'ar');
   });
   assert.equal(consecutiveAr[0].date, '2026-09-08 و 2026-09-09');
+
+  // With timetable context: resolves intersecting session dates!
+  // Tuesday 2026-09-08 (day 2) and Friday 2026-09-11 (day 5)
+  const timetable = [
+    { day: 2, slot: 0, classId: 'cls-1' },
+    { day: 5, slot: 2, classId: 'cls-1' },
+  ];
+  // Range up to 2026-09-14: Tuesday 08 and Friday 11 (2 sessions)
+  const withTimetable2 = produce(lessons, draft => {
+    applyContentEdit(draft, [{ chapterIndex: 0 }], { date: '2026-09-08', endDate: '2026-09-14' }, 'fr', {
+      classId: 'cls-1',
+      timetable,
+    });
+  });
+  assert.equal(withTimetable2[0].date, '2026-09-08 et 2026-09-11');
+
+  // Range up to 2026-09-15: Tuesday 08, Friday 11, Tuesday 15 (3 sessions)
+  const withTimetable3 = produce(lessons, draft => {
+    applyContentEdit(draft, [{ chapterIndex: 0 }], { date: '2026-09-08', endDate: '2026-09-15' }, 'fr', {
+      classId: 'cls-1',
+      timetable,
+    });
+  });
+  assert.equal(withTimetable3[0].date, '2026-09-08, 2026-09-11 et 2026-09-15');
+});
+
+test('CreateClassModal renders neutral uncolored branch choice cards without tone', () => {
+  const code = readFileSync('src/features/dashboard/modals/CreateClassModal.tsx', 'utf8');
+  assert.doesNotMatch(code, /ChoiceCard[^>]*tone=/);
+  assert.doesNotMatch(code, /keepToneForClass/);
 });
 
 test('classCards.css has +5% font size (3.15rem), tracking -.04em, and opacity 1 for group number', () => {

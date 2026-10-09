@@ -1,6 +1,7 @@
 import type { LessonRow } from './lessonRows';
 import { toDisplayText } from '../../lib/text/textValue';
 import { FREE_TYPE } from './freeLineType';
+import { normalizeDateForMerge } from './classSessionDates';
 
 export interface DateMergeMeta {
   isMerged: boolean;
@@ -78,7 +79,7 @@ const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
  * Fusion intelligente des séances et contenus (Optimisée)
  */
 const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
-  const dates = items.map(getMergeableDate);
+  const dates = items.map(it => normalizeDateForMerge(getMergeableDate(it)));
   const identities = items.map(getPedagogicalIdentity);
 
   const follows = (index: number): boolean =>

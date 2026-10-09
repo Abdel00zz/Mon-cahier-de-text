@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
+import type { TimetableEntry, TimetableClockPolicy, LessonsData } from '@/types';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
 import { extractDateRange, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
+import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +20,10 @@ interface AssignDateModalProps {
   session: SessionEditorState;
   /** validation intelligente : alertes live pour la date choisie (emploi du temps, fériés, vacances, absences) */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  classId?: string;
+  timetable?: TimetableEntry[];
+  timetableClock?: TimetableClockPolicy;
+  lessonsData?: LessonsData | unknown;
 }
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
@@ -28,6 +34,10 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   onApply,
   session,
   getDateWarnings,
+  classId,
+  timetable,
+  timetableClock,
+  lessonsData,
 }) => {
   const { t, locale, isRtl } = useLocale();
   const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
@@ -77,9 +87,11 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const handleApply = () => {
     if (invalidDate) return;
     const effectiveLocale = locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr';
-    const finalDate = isRangeOpen && endDate && endDate > selectedDate
-      ? formatPedagogicalDateCell(selectedDate, endDate, effectiveLocale)
-      : selectedDate;
+    let finalDate = selectedDate;
+    if (isRangeOpen && endDate && endDate > selectedDate) {
+      const intersecting = resolveClassSessionDatesInRange(selectedDate, endDate, classId, timetable, timetableClock, lessonsData ?? session.source);
+      finalDate = formatPedagogicalDateCell(selectedDate, endDate, effectiveLocale, intersecting);
+    }
     onApply({
       ...(appliesDate ? { date: actionType === 'associate' ? finalDate : '' } : {}),
       ...(remarkChanged ? { remark } : {}),
@@ -305,7 +317,11 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               {isRangeOpen && selectedDate && endDate && endDate > selectedDate && (
                 <div className="flex items-center gap-2 pt-0.5">
                   <span className="font-semibold text-foreground px-2.5 py-1 rounded-lg bg-muted/60 border border-border/80 text-xs">
-                    {formatPedagogicalDateCell(selectedDate, endDate, locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr')}
+                    {(() => {
+                      const effLocale = locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr';
+                      const intersecting = resolveClassSessionDatesInRange(selectedDate, endDate, classId, timetable, timetableClock, lessonsData ?? session.source);
+                      return formatPedagogicalDateCell(selectedDate, endDate, effLocale, intersecting);
+                    })()}
                   </span>
                 </div>
               )}
