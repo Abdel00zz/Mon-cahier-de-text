@@ -1,7 +1,6 @@
 import React from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { School, User } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { EditorBackButton } from './EditorBackButton';
 import './header.css';

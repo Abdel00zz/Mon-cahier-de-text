@@ -64,7 +64,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setSource(saved?.source ?? '');
-    setTab('preview');
+    setTab(saved?.source.trim() ? 'preview' : 'source');
     setShowHelp(false);
   }, [isOpen, saved?.source]);
 

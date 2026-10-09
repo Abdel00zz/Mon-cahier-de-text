@@ -14,6 +14,7 @@ import { translateLocaleMessage } from '@/i18n/messages';
 
 import { ContentFields } from './ContentFields';
 import { createContentDraft, contentDraftChanged, type ContentDraft, type EditableContent } from '@/domain/notebook/contentDraft';
+import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -205,19 +206,25 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    const finalData = { ...formData };
+    if (finalData.date && finalData.endDate && finalData.endDate > finalData.date) {
+      const localeCode = contentDirection === 'rtl' ? 'ar' : 'fr';
+      finalData.date = formatPedagogicalDateCell(finalData.date, finalData.endDate, localeCode);
+    }
     if (edit) {
-      if (edit.item && isDirty) edit.onSave(formData);
+      if (edit.item && isDirty) edit.onSave(finalData);
     } else if (selectedType && 'onConfirm' in props) {
-      props.onConfirm(selectedType, formData);
+      props.onConfirm(selectedType, finalData);
     }
   };
 
   const structure = selectedType === 'section' || selectedType === 'subsection' || selectedType === 'subsubsection';
   const titleOnly = edit ? Boolean(edit.titleOnly) : Boolean(structure || (selectedType && TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType]));
   const titleField = edit ? (edit.titleField ?? 'title') : structure ? 'name' : 'title';
+  const canEditDate = Boolean(isEditing || selectedType === 'evaluation_diagnostic' || (selectedType && TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType]));
   const renderForm = () => <ContentFields value={formData} onChange={setFormData} subject={subject}
     contentDirection={contentDirection} titleOnly={titleOnly} titleField={titleField}
-    titleRequired={!edit && titleOnly} titleRef={initialFocusRef} />;
+    titleRequired={!edit && titleOnly} titleRef={initialFocusRef} canEditDate={canEditDate} />;
 
   // Check constraints
   const canAddSection = useMemo(() => {

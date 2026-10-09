@@ -1,10 +1,11 @@
 import type { Draft } from 'immer';
-import type { Indices, LessonsData } from '../../types';
+import type { AppLocale, Indices, LessonsData } from '../../types';
 import { findItem } from './dataUtils';
 import { indicesKey, type LessonRow } from './lessonRows';
 import { groupLessonRows, type RenderRow } from './tableRows';
 import { contentFields, type ContentDraft } from './contentDraft';
 import { TOP_LEVEL_CONTENT_META } from '../../constants/top-level-types';
+import { formatPedagogicalDateCell } from '../evaluations/notebookSyncBridge';
 
 export type ContentEditTargets = ReadonlyMap<string, readonly Indices[]>;
 
@@ -53,7 +54,12 @@ export function expandContentSelection(targets: ContentEditTargets, keys: Readon
 
 /** Une seule mutation Immer pour tout le groupe, annulable en une action.
  * Valide toutes les coordonnées avant d'écrire et exclut les métadonnées. */
-export function applyContentEdit(draft: Draft<LessonsData>, targets: readonly Indices[], patch: ContentDraft): boolean {
+export function applyContentEdit(
+  draft: Draft<LessonsData>,
+  targets: readonly Indices[],
+  patch: ContentDraft,
+  locale: AppLocale = 'fr',
+): boolean {
   const keys = new Set<string>();
   const items = targets.map(indices => {
     keys.add(indicesKey(indices));
@@ -64,9 +70,24 @@ export function applyContentEdit(draft: Draft<LessonsData>, targets: readonly In
     if (!item) continue;
     const type = 'type' in item ? String(item.type) : '';
     const titleOnly = 'name' in item || Object.hasOwn(TOP_LEVEL_CONTENT_META, type);
-    const fields = contentFields(type, titleOnly, 'name' in item ? 'name' : 'title');
+    const fields = contentFields(type, titleOnly, 'name' in item ? 'name' : 'title', true);
     for (const field of fields) {
-      if (Object.hasOwn(patch, field)) Object.assign(item, { [field]: patch[field] });
+      if (Object.hasOwn(patch, field)) {
+        if (field === 'date') {
+          const rawStart = patch.date?.trim();
+          const rawEnd = patch.endDate?.trim();
+          if (rawStart) {
+            const formatted = rawEnd && rawEnd > rawStart
+              ? formatPedagogicalDateCell(rawStart, rawEnd, locale)
+              : rawStart;
+            item.date = formatted;
+          } else if (patch.date === '') {
+            delete (item as any).date;
+          }
+        } else {
+          Object.assign(item, { [field]: patch[field] });
+        }
+      }
     }
   }
   return true;

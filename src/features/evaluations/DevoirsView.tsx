@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, ClassEvaluationEntry, DevoirType, LessonsData, ManualAssessment, NotebookCondition, PedagogicalEvent, PedagogicalEventType } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
-import { migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
@@ -26,8 +25,9 @@ import {
   BookCheck,
   Mic,
   ChevronDown,
+  X,
 } from 'lucide-react';
-import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
+import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
 import {
   syncEventToNotebook,
   syncAssessmentDateToNotebook,
@@ -55,17 +55,8 @@ interface DevoirsViewProps {
   onLessonsChange?: (newLessons: LessonsData) => void;
 }
 
-const readLessons = (classId: string): LessonsData => {
-  try {
-    const raw = localStorage.getItem(`classData_v1_${classId}`);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return migrateLessonsData(Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []));
-  } catch {
-    return [];
-  }
-};
-
 const formatLongDate = (iso: string, locale: AppLocale): string => {
+  if (!iso) return '—';
   try {
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA', {
@@ -92,11 +83,6 @@ const STATUS_CHIP: Record<AssessmentLink['status'], string> = {
   missing: 'bg-muted text-muted-foreground ring-border',
 };
 
-const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
-  if (!end || end === start) return formatLongDate(start, locale);
-  return `${formatLongDate(start, locale)} ${rangeSeparator} ${formatLongDate(end, locale)}`;
-};
-
 export const DevoirsView: React.FC<DevoirsViewProps> = ({
   classInfo,
   config,
@@ -105,15 +91,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   lessonsData,
   onLessonsChange,
 }) => {
-  const activeLessons = useMemo(() => lessonsData ?? readLessons(classInfo.id), [lessonsData, classInfo.id]);
-  const persistLessons = (nextLessons: LessonsData) => {
-    if (onLessonsChange) {
-      onLessonsChange(nextLessons);
-    } else {
-      saveNotebook(classInfo.id, nextLessons, 'ltr');
-    }
-  };
   const { t, locale } = useLocale();
+  const { lessons: activeLessons, commit: commitNotebookChange } = useEvaluationNotebook(classInfo.id, locale, lessonsData, onLessonsChange);
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
   const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
@@ -194,9 +173,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
     const targetAssessment = assessments.find(item => item.id === assessmentId);
-    actions.setAssessmentDate(assessmentId, dateISO, targetAssessment?.legacyId);
     if (targetAssessment) {
-      const { lessons: nextLessons, updated } = syncAssessmentDateToNotebook(
+      const { lessons: nextLessons } = syncAssessmentDateToNotebook(
         activeLessons,
         {
           id: targetAssessment.id,
@@ -205,19 +183,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           dateISO,
           label: targetAssessment.label,
           clearIfEmpty: !dateISO,
+          entryKey: links.find(link => link.planned.id === assessmentId)?.entry?.key,
         },
         locale
       );
-      if (updated) persistLessons(nextLessons);
+      commitNotebookChange(nextLessons, () => actions.setAssessmentDate(assessmentId, dateISO, targetAssessment.legacyId));
     }
   };
 
   const addPedagogicalEvent = (event: PedagogicalEvent) => {
-    actions.addEvent(event);
-    const { lessons: nextLessons, updated } = syncEventToNotebook(activeLessons, event, locale);
-    if (updated) {
-      persistLessons(nextLessons);
-    }
+    const { lessons: nextLessons } = syncEventToNotebook(activeLessons, event, locale);
+    if (!commitNotebookChange(nextLessons, () => actions.addEvent(event))) return;
     closeKindChooser();
     toast.success(t('evaluations.eventAddedToast', {
       event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
@@ -226,18 +202,22 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const togglePedagogicalEvent = actions.toggleEvent;
+  const changeEventDate = (event: PedagogicalEvent, date: string, endDate?: string) => {
+    const next = { ...event, date, endDate: date && endDate && endDate >= date ? endDate : undefined };
+    const notebook = syncEventToNotebook(activeLessons, next, locale);
+    commitNotebookChange(notebook.lessons, () => actions.updateEvent(next));
+  };
   const deletePedagogicalEvent = (eventOrId: string | { id: string; title?: string }) => {
     const id = typeof eventOrId === 'string' ? eventOrId : eventOrId.id;
     const title = typeof eventOrId === 'string' ? undefined : eventOrId.title;
     const target = pedagogicalEvents.find(e => e.id === id);
-    actions.deleteEvent(id);
-    const { lessons: nextLessons, updated } = removeEventFromNotebook(
+    const { lessons: nextLessons } = removeEventFromNotebook(
       activeLessons,
       id,
       target?.type,
       target?.title || title
     );
-    if (updated) persistLessons(nextLessons);
+    commitNotebookChange(nextLessons, () => actions.deleteEvent(id));
   };
 
   const activityLabelOf = (event: PedagogicalEvent) =>
@@ -277,13 +257,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const saveAssessment = (manual: ManualAssessment) => {
-    actions.saveAssessment(manual, editingAssessment?.id);
-    const { lessons: nextLessons, updated } = syncAssessmentDateToNotebook(
-      activeLessons,
-      { id: manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO },
+    const previous = editingAssessment;
+    const entryKey = links.find(link => link.planned.id === previous?.id)?.entry?.key;
+    const source = previous && previous.type !== manual.type
+      ? removeAssessmentFromNotebook(activeLessons, previous.id, previous.type, previous.num, entryKey).lessons
+      : activeLessons;
+    const { lessons: nextLessons } = syncAssessmentDateToNotebook(
+      source,
+      { id: editingAssessment?.id ?? manual.id, type: manual.type, num: manual.num, dateISO: manual.dateISO,
+        entryKey: source === activeLessons ? entryKey : undefined,
+        updatedTitle: previous && (previous.num !== manual.num || previous.type !== manual.type) ? `${t(`evaluations.type.${manual.type}`)} ${number.format(manual.num)}` : undefined },
       locale
     );
-    if (updated) persistLessons(nextLessons);
+    if (!commitNotebookChange(nextLessons, () => actions.saveAssessment(manual, editingAssessment?.id))) return;
     setManualEditorOpen(false);
     closeKindChooser();
     setEditingAssessment(null);
@@ -294,16 +280,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const deleteAssessment = (id: string) => {
     const target = assessments.find(item => item.id === id);
-    actions.deleteAssessment(id);
-    if (target) {
-      const { lessons: nextLessons, updated } = removeAssessmentFromNotebook(
+    const nextLessons = target ? removeAssessmentFromNotebook(
         activeLessons,
         target.id,
         target.type,
-        target.num
-      );
-      if (updated) persistLessons(nextLessons);
-    }
+        target.num,
+        links.find(link => link.planned.id === id)?.entry?.key
+      ).lessons : activeLessons;
+    if (!commitNotebookChange(nextLessons, () => actions.deleteAssessment(id, target?.legacyId))) return;
     toast.success(t('evaluations.manualDeleted'));
   };
 
@@ -322,17 +306,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
     const status = STATUS_STYLE[link.status];
-    const isSupervised = a.type !== 'maison';
+    const isSupervised = ['controle', 'controle_court', 'controle_global'].includes(a.type);
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
     const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
-    const statusExplanation = link.status === 'synced'
+    const statusExplanation = link.status === 'done'
       ? (locale === 'ar' ? 'متزامن تماماً: التاريخ يطابق تماماً الحصة المسجلة في دفتر النصوص' : 'Parfaitement synchronisé : la date correspond exactement à la séance dans le cahier')
       : link.status === 'mismatch'
         ? (locale === 'ar' ? `اختلاف تاريخ التخطيط (${link.planned.dateISO}) مع دفتر النصوص (${link.entry?.date ?? ''})` : `Écart de date entre la programmation (${link.planned.dateISO}) et le cahier (${link.entry?.date ?? ''})`)
-        : link.status === 'done'
-          ? (locale === 'ar' ? 'تم إجراء هذه المراقبة' : 'Évaluation effectuée')
-          : (locale === 'ar' ? 'مراقبة مبرمجة في التقويم' : 'Évaluation planifiée');
+        : (locale === 'ar' ? 'مراقبة مبرمجة في التقويم' : 'Évaluation planifiée');
 
     const docTooltip = assessmentDocument
       ? (locale === 'ar' ? 'المحتوى محرر — انقر للاطلاع أو تعديل نص الموضوع، التمارين وعناصر الإجابة' : 'Sujet et corrigé rédigés — Cliquer pour consulter ou modifier')
@@ -359,7 +341,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <div className="ev-row__id min-w-0">
               <button
                 type="button"
-                onClick={() => setEditingAssessment(a)}
+                onClick={() => openEditAssessment(a)}
                 className="-ms-1.5 inline-flex min-h-11 max-w-full cursor-pointer items-center truncate rounded-lg px-2 text-start text-sm font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                 title={t('evaluations.editDevoir')}
                 data-tippy-content={locale === 'ar' ? `تعديل تفاصيل ${displayName}` : `Modifier les détails de ${displayName}`}
@@ -399,7 +381,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <div className="ev-row__date">
               <input
                 type="date"
-                value={a.dateISO}
+                value={link.entry ? (link.entry.date ?? '') : a.dateISO}
                 onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                 data-custom={custom}
                 title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
@@ -499,7 +481,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const documentOf = (() => {
     if (!documentFor || !selectedClass) return undefined;
-    if (documentFor.kind === 'event') return documentFor.event.document;
+    if (documentFor.kind === 'event') return pedagogicalEvents.find(event => event.id === documentFor.event.id)?.document;
     const forClass = config.assessmentDocuments?.[selectedClass.id];
     return forClass?.[documentFor.link.planned.id]
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
@@ -589,6 +571,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                               events={eventsOfKind(kind)}
                               showHeader={false}
                               onToggle={togglePedagogicalEvent}
+                              onDateChange={changeEventDate}
                               onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
                               onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
                               onOpenStudents={(event) => setStudentsFor(event)}
@@ -874,6 +857,7 @@ interface PedagogicalEventsSectionProps {
   events: PedagogicalEvent[];
   showHeader?: boolean;
   onToggle: (eventId: string) => void;
+  onDateChange: (event: PedagogicalEvent, date: string, endDate?: string) => void;
   onDelete: (event: PedagogicalEvent) => void;
   onOpenDocument: (event: PedagogicalEvent) => void;
   onOpenStudents: (event: PedagogicalEvent) => void;
@@ -883,6 +867,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
   showHeader = true,
   onToggle,
+  onDateChange,
   onDelete,
   onOpenDocument,
   onOpenStudents,
@@ -961,10 +946,37 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   {done && <span className="tone-chip" data-state="done">{t('evaluations.completed')}</span>}
                 </div>
 
-                <div className="ev-row__date">
-                  <time dateTime={event.date} className="ev-row__period">
-                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                  </time>
+                <div className="ev-row__date flex items-center gap-1.5 flex-wrap">
+                  <input type="date" value={event.date} onChange={e => onDateChange(event, e.target.value, event.endDate)}
+                    aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
+                    className="min-h-11 min-w-0 max-w-full rounded-lg border border-border/80 bg-background px-2 text-xs"/>
+                  {event.endDate ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">{t('evaluations.rangeSeparator')}</span>
+                      <input type="date" value={event.endDate} min={event.date}
+                        onChange={e => onDateChange(event, event.date, e.target.value)}
+                        aria-label={`${t('evaluations.rangeSeparator')} — ${title}`}
+                        className="min-h-11 min-w-0 max-w-full rounded-lg border border-border/80 bg-background px-2 text-xs"/>
+                      <button
+                        type="button"
+                        onClick={() => onDateChange(event, event.date, undefined)}
+                        className="p-1 rounded text-muted-foreground hover:text-foreground cursor-pointer"
+                        title={t('editor.removeRange')}
+                        aria-label={t('editor.removeRange')}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onDateChange(event, event.date, event.date)}
+                      className="text-[11px] text-muted-foreground hover:text-primary transition-colors py-1 px-1.5 rounded cursor-pointer"
+                      title={t('editor.defineRange')}
+                    >
+                      + {t('editor.defineRange')}
+                    </button>
+                  )}
                 </div>
 
                 <div className="ev-row__actions">

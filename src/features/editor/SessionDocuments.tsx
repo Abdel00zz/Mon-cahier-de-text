@@ -10,7 +10,7 @@ export function SessionDocuments({ documents, onOpen }: {
     const { t } = useLocale();
     if (!documents?.length || !onOpen) return null;
     return <div className="flex w-full flex-col items-center gap-1 print:hidden" data-session-documents>
-        {documents.map(preview => <button key={preview.assessmentId} type="button" className="editor-doc-chip max-w-full whitespace-normal text-center"
+        {[...new Map(documents.map(preview => [preview.assessmentId, preview])).values()].map(preview => <button key={preview.assessmentId} type="button" className="editor-doc-chip max-w-full whitespace-normal text-center"
             aria-label={t('documentPreview.openAria', { title: preview.title })}
             onClick={event => { event.stopPropagation(); onOpen(preview); }}>
             <FileText className="h-3 w-3 shrink-0" aria-hidden="true"/>

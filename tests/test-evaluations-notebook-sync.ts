@@ -128,6 +128,7 @@ test('synchronisation d’une évaluation diagnostique avec plage de dates XX à
 
 test('synchronisation inverse : une séance modifiée dans le tableau met à jour les évaluations', () => {
   const config: AppConfig = {
+    establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
     theme: 'light',
     appTextSize: 'md',
     applicationLocale: 'fr',
@@ -182,6 +183,7 @@ test('titre cliquable en bleu si un contenu/document est associé dans la table'
     })
   );
 
+  assert.equal(opened, false);
   assert.match(markupWithDoc, /data-document-title-link="true"/, 'Le titre porte le lien de document cliquable');
   assert.match(markupWithDoc, /data-document-highlight="true"/, 'Le titre porte le highlight moderne');
   assert.match(markupWithDoc, /editor-document-highlight/, 'La classe de style moderne est appliquée');
@@ -266,6 +268,7 @@ test('suppression d’un événement ou d’un devoir synchronise et nettoie le 
 
 test('synchronisation bidirectionnelle globale du cahier vers les évaluations (ajouts, modifications et suppressions)', () => {
   const config: AppConfig = {
+    establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
     theme: 'light',
     appTextSize: 'md',
     applicationLocale: 'fr',
@@ -324,6 +327,7 @@ test('extraction robuste des plages de dates (extractDateRange)', () => {
 
 test('synchronisation inverse table -> modale pour les plages et remarques', () => {
   const config: AppConfig = {
+    establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
     theme: 'light',
     appTextSize: 'md',
     applicationLocale: 'fr',
@@ -331,7 +335,7 @@ test('synchronisation inverse table -> modale pour les plages et remarques', () 
       'class-3': [
         {
           id: 'evt-soutien',
-          type: 'soutien_scolaire',
+          type: 'correction_controle_continu',
           title: 'Soutien scolaire',
           date: '2026-10-01',
           status: 'planned',
@@ -344,7 +348,7 @@ test('synchronisation inverse table -> modale pour les plages et remarques', () 
 
   const modifiedLessons: LessonsData = [
     {
-      type: 'soutien_scolaire',
+      type: 'correction_controle_continu',
       title: 'Soutien scolaire intensif',
       date: 'Du 2026-10-05 au 2026-10-08',
       remark: 'Séance de révision générale pour le contrôle',
@@ -363,3 +367,9 @@ test('synchronisation inverse table -> modale pour les plages et remarques', () 
   assert.equal(updatedEvt?.note, 'Séance de révision générale pour le contrôle');
 });
 
+
+test('oral dates never create or remove a written-test block', () => {
+  const lessons: LessonsData = [{ type: 'controle_continu', title: 'Contrôle 1', date: '2026-10-01' }];
+  assert.equal(syncAssessmentDateToNotebook(lessons, { id: 'oral-1', type: 'oral', num: 1, dateISO: '2026-10-02' }).lessons, lessons);
+  assert.equal(removeAssessmentFromNotebook(lessons, 'oral-1', 'oral', 1).lessons, lessons);
+});

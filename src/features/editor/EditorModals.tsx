@@ -83,6 +83,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   exportChapters,
   lessonsData,
   handleUpdateLessons,
+  handleEvaluationsLessonsChange,
   config,
   onConfigChange,
   sessionEditor,

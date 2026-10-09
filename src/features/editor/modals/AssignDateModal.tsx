@@ -1,12 +1,13 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso, formatDateLong } from '@/domain/notebook/dataUtils';
+import { extractDateRange, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface AssignDateModalProps {
@@ -36,6 +37,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const number = useMemo(() => new Intl.NumberFormat(localeCode), [localeCode]);
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
   const [selectedDate, setSelectedDate] = useState(() => isoFromOffset(0));
+  const [endDate, setEndDate] = useState('');
+  const [isRangeOpen, setIsRangeOpen] = useState(false);
   const [remark, setRemark] = useState('');
   const [dateChanged, setDateChanged] = useState(false);
   const [remarkChanged, setRemarkChanged] = useState(false);
@@ -53,7 +56,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setActionType(patch?.date === '' ? 'dissociate' : 'associate');
-    setSelectedDate(patch?.date ?? (selection.date || (selection.mixedDates ? '' : isoFromOffset(0))));
+    const rawDate = patch?.date ?? selection.date;
+    const { startDate, endDate: extractedEnd } = extractDateRange(rawDate);
+    const initialStart = startDate || (selection.mixedDates ? '' : isoFromOffset(0));
+    setSelectedDate(initialStart);
+    setEndDate(extractedEnd || '');
+    setIsRangeOpen(Boolean(extractedEnd));
     setRemark(patch?.remark ?? selection.remark);
     setDateChanged(patch?.date !== undefined);
     setRemarkChanged(patch?.remark !== undefined);
@@ -71,8 +79,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
   const handleApply = () => {
     if (invalidDate) return;
+    const effectiveLocale = locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr';
+    const finalDate = isRangeOpen && endDate && endDate > selectedDate
+      ? formatPedagogicalDateCell(selectedDate, endDate, effectiveLocale)
+      : selectedDate;
     onApply({
-      ...(appliesDate ? { date: actionType === 'associate' ? selectedDate : '' } : {}),
+      ...(appliesDate ? { date: actionType === 'associate' ? finalDate : '' } : {}),
       ...(remarkChanged ? { remark } : {}),
     });
   };
@@ -225,6 +237,81 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   {formatFullDate(selectedDate, localeCode, t('assignDate.noDateSelected'))}
                 </span>
               </div>
+
+              {/* Période (de XX à YY) */}
+              {!isRangeOpen ? (
+                <div className="pt-0.5 text-start">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRangeOpen(true);
+                      setEndDate(selectedDate);
+                      setDateChanged(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>{t('editor.defineRange')}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2 pt-2.5 border-t border-border/50 animate-fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="assign-end-date-input" className="block text-sm font-medium text-foreground text-start font-sans">
+                      {t('editor.endDate')} :
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRangeOpen(false);
+                        setEndDate('');
+                        setDateChanged(true);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer"
+                      title={t('editor.removeRange')}
+                    >
+                      <X className="size-3.5" />
+                      <span>{t('editor.removeRange')}</span>
+                    </button>
+                  </div>
+                  <div className="relative flex items-center justify-between w-full h-12 px-4 rounded-xl border border-border bg-background shadow-sm hover:border-primary/50 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                    <span className="text-[16px] font-bold tracking-[0.02em] text-foreground" dir="ltr">
+                      {endDate ? (() => {
+                        const [y, m, d] = endDate.split('-');
+                        return y && m && d ? `${d}/${m}/${y}` : 'JJ/MM/AAAA';
+                      })() : 'JJ/MM/AAAA'}
+                    </span>
+                    <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                    <input
+                      id="assign-end-date-input"
+                      type="date"
+                      min={selectedDate || undefined}
+                      value={endDate}
+                      onChange={event => { setEndDate(event.target.value); setDateChanged(true); }}
+                      onClick={(e) => {
+                        try {
+                          if (typeof e.currentTarget.showPicker === 'function') {
+                            e.currentTarget.showPicker();
+                          }
+                        } catch {
+                          // fallback
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                  {/* Intelligent date readout */}
+                  {selectedDate && endDate && endDate > selectedDate && (
+                    <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                      <span className="font-medium">{t('descriptionModal.preview')} :</span>
+                      <span className="font-semibold text-foreground px-2 py-0.5 rounded-md bg-muted/60 border border-border/80">
+                        {formatPedagogicalDateCell(selectedDate, endDate, locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {selection.mixedDates && !dateChanged && <p className="text-xs text-muted-foreground">{t('assignDate.keepDates')}</p>}
             </div>
 

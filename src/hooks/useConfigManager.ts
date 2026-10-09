@@ -209,12 +209,13 @@ export const useConfigManager = () => {
         // dès cet événement. Une écriture différée par React les faisait donc
         // relire l'ancienne valeur et imposait un second clic à l'utilisateur.
         const nextConfig: AppConfig = { ...configRef.current, ...newConfig };
-        configRef.current = nextConfig;
         try {
             localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
         } catch (error) {
             logger.error("Failed to save config to localStorage", error);
+            throw error;
         }
+        configRef.current = nextConfig;
         setConfig(() => nextConfig);
         /*
          * TOUT réglage synchronisé (emploi du temps, absences, devoirs,

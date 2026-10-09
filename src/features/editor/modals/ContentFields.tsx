@@ -1,13 +1,16 @@
-import React, { useId, useMemo } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MathText } from '@/components/ui/math-text';
+import { CalendarDays, X, Plus } from '@/components/ui/icons';
 import { ContextualDescriptionEditor } from './ContextualDescriptionEditor';
 import { BADGE_TEXT_MAP, TYPE_MAP, contentBadgeClass, getContentTypesForSubject } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { hasMathSyntax } from '@/lib/text/math';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
+import { cn } from '@/lib/utils';
+import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import type { ContentDirection } from '@/types';
 import type { ContentDraft, ContentField } from '@/domain/notebook/contentDraft';
 
@@ -22,11 +25,12 @@ interface ContentFieldsProps {
   titleLabel?: string;
   titleRequired?: boolean;
   titleRef?: React.Ref<HTMLInputElement>;
+  canEditDate?: boolean;
 }
 
 /** Formulaire identique en saisie et en modification, y compris pour les lignes libres. */
 export function ContentFields({ value, onChange, subject, contentDirection, titleOnly = false,
-  titleField = 'title', titleLabel, titleRequired = false, titleRef }: ContentFieldsProps) {
+  titleField = 'title', titleLabel, titleRequired = false, titleRef, canEditDate = false }: ContentFieldsProps) {
   const { t, isRtl } = useLocale();
   const id = useId();
   const contentLocale = contentDirection === 'rtl' ? 'ar' : 'fr';
@@ -45,6 +49,8 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   // un champ vide garde le sens de l'interface pour que le repère d'aide soit bien orienté.
   const uiDir = isRtl ? 'rtl' : 'ltr';
   const fieldDir = (text: string) => (text ? 'auto' : uiDir);
+  const [showRange, setShowRange] = useState(Boolean(value.endDate || value.type === 'evaluation_diagnostic'));
+  const isRange = Boolean(showRange || value.endDate || value.type === 'evaluation_diagnostic');
   const labelClass = 'mb-2 block text-sm font-medium text-foreground';
   const fieldClass = 'h-11 rounded-xl border-border';
   return <div className="space-y-4">
@@ -72,6 +78,87 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
     <div><label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ? `${titleLabel} :` : `${t('editor.title')} :`}</label>
       <Input id={`${id}-title`} ref={titleRef} value={title} dir={fieldDir(title)} onChange={event => update(titleField, event.target.value)}
         required={titleRequired} className={fieldClass} placeholder={titleRequired ? undefined : t('addContent.optionalTitlePlaceholder')} /></div>
+    {canEditDate && (
+      <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <CalendarDays className="size-4 text-primary" />
+            <span>{isRange ? t('editor.dateRange') : t('editor.startDate')}</span>
+          </label>
+          {!isRange && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowRange(true);
+                if (!value.endDate && value.date) {
+                  onChange({ ...value, endDate: value.date });
+                }
+              }}
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              <span>{t('editor.defineRange')}</span>
+            </button>
+          )}
+        </div>
+
+        <div className={cn("grid gap-3", isRange ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+          <div>
+            <label htmlFor={`${id}-date`} className="mb-1.5 block text-xs font-medium text-foreground">
+              {isRange ? t('editor.startDate') : t('assignDate.chooseDate')} :
+            </label>
+            <Input
+              id={`${id}-date`}
+              type="date"
+              value={value.date ?? ''}
+              onChange={event => onChange({ ...value, date: event.target.value })}
+              className={fieldClass}
+            />
+          </div>
+
+          {isRange && (
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label htmlFor={`${id}-end-date`} className="block text-xs font-medium text-foreground">
+                  {t('editor.endDate')} :
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRange(false);
+                    const next = { ...value };
+                    delete next.endDate;
+                    onChange(next);
+                  }}
+                  className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer"
+                  title={t('editor.removeRange')}
+                  aria-label={t('editor.removeRange')}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+              <Input
+                id={`${id}-end-date`}
+                type="date"
+                min={value.date || undefined}
+                value={value.endDate ?? ''}
+                onChange={event => onChange({ ...value, endDate: event.target.value })}
+                className={fieldClass}
+              />
+            </div>
+          )}
+        </div>
+
+        {value.date && (
+          <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <span className="font-medium">{t('descriptionModal.preview')} :</span>
+            <span className="font-semibold text-foreground px-2 py-0.5 rounded-md bg-background border border-border/80 shadow-2xs">
+              {formatPedagogicalDateCell(value.date, value.endDate, contentLocale)}
+            </span>
+          </div>
+        )}
+      </div>
+    )}
     {!titleOnly && <div>
       <label htmlFor={`${id}-description`} className={labelClass}>{t('addContent.descriptionLabel')} :</label>
       <ContextualDescriptionEditor id={`${id}-description`} value={description} onChange={text => update('description', text)}

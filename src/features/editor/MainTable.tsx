@@ -17,6 +17,7 @@ import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagn
 import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
 import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
+import { SessionDocuments } from './SessionDocuments';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
 // résout `--cdt-table-cols`, redéfini par `index.css` pour le téléphone
@@ -59,6 +60,7 @@ interface MainTableProps {
    * (voir `notebookDocumentPreviews`). Lecture pure, aucun parcours par rangée.
    */
   getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+  getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
   /** ouvre l'aperçu du sujet en lecture seule */
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   /** terme de recherche actif (surlignage dans les lignes) */
@@ -131,6 +133,7 @@ interface SessionGroupRowProps {
     getSessionAnnotation?: (date?: string) => string | undefined;
     /** sujet écrit par le professeur, par ligne du cahier */
     getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
+    getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
     onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
@@ -153,6 +156,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     getContentNumber,
     getSessionAnnotation,
     getDocumentPreview,
+    getSessionDocuments,
     onOpenDocumentPreview,
 }) => {
     const { t } = useLocale();
@@ -320,7 +324,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             {sameRemark ? (
                 <div
                     data-session-cell="remark"
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -345,13 +349,14 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                           </span>
                         ))}
                     </button>
+                    <SessionDocuments documents={uniqueDates.flatMap(date => getSessionDocuments?.(date) ?? [])} onOpen={onOpenDocumentPreview}/>
                 </div>
             ) : items.map((item, index) => (
                 <div
                     key={`remark-${item.key}`}
                     data-session-cell="remark"
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: index + 1 }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -381,6 +386,8 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                           ) : null;
                         })()}
                     </button>
+                    <SessionDocuments documents={getMergeableDate(item) && items.find(entry => getMergeableDate(entry) === getMergeableDate(item)) === item
+                      ? getSessionDocuments?.(getMergeableDate(item)!) : undefined} onOpen={onOpenDocumentPreview}/>
                 </div>
             ))}
         </div>
@@ -397,6 +404,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
         || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds
         || previous.getSessionAnnotation !== next.getSessionAnnotation
         || previous.getDocumentPreview !== next.getDocumentPreview
+        || previous.getSessionDocuments !== next.getSessionDocuments
         || previous.onOpenDocumentPreview !== next.onOpenDocumentPreview) return false;
     return previous.items.every(item => previous.selectedKeys.has(item.key) === next.selectedKeys.has(item.key));
 });
@@ -498,6 +506,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   getContentNumber,
   getSessionAnnotation,
   getDocumentPreview,
+  getSessionDocuments,
   onOpenDocumentPreview,
   searchQuery,
   focusKey,
@@ -680,6 +689,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   getContentNumber={getContentNumber}
                                   getSessionAnnotation={getSessionAnnotation}
                                   getDocumentPreview={getDocumentPreview}
+                                  getSessionDocuments={getSessionDocuments}
                                   onOpenDocumentPreview={onOpenDocumentPreview}
                               />
                           </VirtualListRow>
@@ -715,6 +725,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               getDocumentPreview={getDocumentPreview}
                               onOpenDocumentPreview={onOpenDocumentPreview}
                               sessionAnnotation={itemDate ? getSessionAnnotation?.(itemDate) : undefined}
+                              sessionDocuments={itemDate ? getSessionDocuments?.(itemDate) : undefined}
                           />
                       </VirtualListRow>
                   );

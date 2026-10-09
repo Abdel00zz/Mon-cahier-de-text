@@ -32,7 +32,8 @@ import { listExportableChapters, selectExportableChapters } from '@/domain/noteb
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
-import { syncNotebookSessionToEvaluations, syncNotebookToEvaluations } from '@/domain/evaluations/notebookSyncBridge';
+import { useClassAssessments } from '@/hooks/useAssessments';
+import { syncNotebookToEvaluations, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -164,6 +165,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [pendingPrintConfirmation, setPendingPrintConfirmation] = useState<{ classId: string; signatures: Record<string, string> } | null>(null);
   useEffect(() => { setPrintSnapshot(null); setPendingPrintConfirmation(null); }, [initialClassInfo.id]);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
+  const evaluationsBaseline = useRef(lessonsData);
+  const eventArchive = useRef(new Map<string, import('@/types').PedagogicalEvent>());
+  const { assessments: syncAssessments } = useClassAssessments(initialClassInfo, config);
+  const evaluationContext = useRef({ config, assessments: syncAssessments });
+  evaluationContext.current = { config, assessments: syncAssessments };
   /*
    * Ordre chronologique : chaque contenu daté connaît son plus proche
    * voisin daté (avant / après). Le contrôle est mémoïsé : passé à
@@ -446,11 +452,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     onSaved: () => {
       setSelectionState(createSelectionState());
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-      try {
-        const currentLessons = lessonsDataRef.current;
-        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, currentLessons);
-        if (updated) updateConfig(patch);
-      } catch { /* sync silencieuse */ }
+
     },
     onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
   });
@@ -504,6 +506,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(nextDirection))
         : migratedLessons;
       resetState(normalizedLessons, 'initial-load');
+      evaluationsBaseline.current = normalizedLessons;
       setEditorState(draft => { draft.contentDirection = nextDirection; });
 
       // Répare une fois les cahiers existants créés avant cette règle. La
@@ -535,11 +538,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (withVisualStatus) {
         setEditorState(draft => { draft.saveStatus = 'saved'; });
       }
-      try {
-        const currentLessons = lessonsDataRef.current;
-        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, currentLessons);
-        if (updated) updateConfig(patch);
-      } catch { /* sync silencieuse */ }
+      const latest = evaluationContext.current;
+      (latest.config.pedagogicalEvents?.[classInfo.id] ?? []).forEach(event => eventArchive.current.set(event.id, event));
+      const { patch, updated } = syncNotebookToEvaluations(classInfo.id, latest.config, lessonsDataRef.current, {
+        previousLessons: evaluationsBaseline.current, planned: latest.assessments, eventArchive: eventArchive.current,
+      });
+      if (updated) updateConfig(patch);
+      evaluationsBaseline.current = lessonsDataRef.current;
       return true;
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);
@@ -550,7 +555,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       return false;
     }
-  }, [classInfo.id, showNotification, setEditorState, t, workspaceIsActive, config, updateConfig]);
+  }, [classInfo.id, showNotification, setEditorState, t, workspaceIsActive, updateConfig]);
 
   useEffect(() => registerWorkspaceWriter(() => (
     workspaceIsActive() ? persistCurrentData(false) : true
@@ -854,6 +859,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
            anchor.subsectionIndex !== undefined ||
            anchor.subsubsectionIndex !== undefined);
 
+      const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
+      const rawStart = typeof data.date === 'string' ? data.date.trim() : undefined;
+      const rawEnd = typeof data.endDate === 'string' ? data.endDate.trim() : undefined;
+      const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale) : rawStart) : undefined;
+
       if (type === 'free') {
           setState(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
           notificationMessage = t('editorNotice.itemAdded');
@@ -864,13 +874,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           if (anchor.subsectionIndex !== undefined) parentLevelIndices.subsectionIndex = anchor.subsectionIndex;
           if (anchor.subsubsectionIndex !== undefined) parentLevelIndices.subsubsectionIndex = anchor.subsubsectionIndex;
           const insertAfterIndex = anchor.itemIndex;
-          const newItem: EmbeddableTopLevelItem = { type: type as EmbeddableTopLevelType, title: data.title, _tempId: newId };
+          const newItem: EmbeddableTopLevelItem = { type: type as EmbeddableTopLevelType, title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-embedded-item');
           notificationMessage = t('editorNotice.blockInserted');
           addNewItemHighlight(newId);
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
-          const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, _tempId: newId };
+          const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           setState(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
           addNewItemHighlight(newId);
@@ -903,7 +913,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const insertAfterIndex = anchor.itemIndex;
 
           const normalizedType = TYPE_MAP[data.type.toLowerCase()] || data.type;
-          const newItem: LessonItem = { ...data, type: normalizedType, _tempId: newId };
+          const newItem: LessonItem = { ...data, type: normalizedType, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-item');
           notificationMessage = t('editorNotice.itemAdded');
           addNewItemHighlight(newId);
@@ -1129,9 +1139,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (normalizedType) {
           finalItem.type = normalizedType;
       }
+      const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
 
       setState(draft => {
-          applyContentEdit(draft, targets, finalItem);
+          applyContentEdit(draft, targets, finalItem, effectiveLocale);
       }, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
       showNotification(t('editorNotice.contentUpdated'), "success");
       setEditorState(draft => {
@@ -1139,7 +1150,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         draft.editingIndices = null;
         draft.activeModal = null;
       });
-  }, [setState, showNotification, setEditorState, contentEditTargets, t]);
+  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       if (!workspaceIsActive()) return false;
@@ -1202,19 +1213,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-      try {
-        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, config, newLessons);
-        if (updated) updateConfig(patch);
-      } catch { /* sync silencieuse */ }
+
   }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection, classInfo.id, config, updateConfig]);
 
   const handleEvaluationsLessonsChange = useCallback((newLessons: LessonsData) => {
-      setState(() => newLessons.length > 0
-        ? withStarterDiagnostic(newLessons, contentLocaleFromDirection(contentDirection))
-        : newLessons, 'evaluations-sync');
-      setEditorState(draft => { draft.saveStatus = 'saved'; });
+      if (!workspaceIsActive()) return;
       saveNotebook(classInfo.id, newLessons, contentDirection);
-  }, [setState, setEditorState, classInfo.id, contentDirection]);
+      evaluationsBaseline.current = newLessons;
+      lessonsDataRef.current = newLessons;
+      saveStatusRef.current = 'saved';
+      setState(() => newLessons, 'evaluations-sync');
+      setEditorState(draft => { draft.saveStatus = 'saved'; });
+  }, [setState, setEditorState, classInfo.id, contentDirection, workspaceIsActive]);
 
   const addAfterTarget = useMemo(
     () => resolveAddAfterTarget(allRows, expandContentSelection(contentEditTargets, selectionState.keys)),

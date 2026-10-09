@@ -26,7 +26,9 @@
 .notebook-entry input { min-width: 0; flex: 1; min-height: 44px; padding: 6px 8px; font-size: 0.8125rem; background: transparent; outline: none; }
 .notebook-entry input::placeholder { color: hsl(var(--muted-foreground)); }
 .notebook-primary { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: none; min-height: 44px; padding: 8px 16px; border-radius: 10px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 0.8125rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); transition: filter 180ms, transform 180ms; }
-.student-search-bar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 8px; flex: none; min-height: 48px; padding: 3px 10px; border: 1px solid var(--notebook-line); border-radius: 12px; background: color-mix(in srgb, var(--notebook-surface) 94%, transparent); backdrop-filter: blur(16px); box-shadow: 0 3px 12px hsl(var(--foreground) / .06); color: hsl(var(--muted-foreground)); }
+.student-search-bar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 4px; flex: none; min-height: 46px; padding: 1px 4px; border: 1px solid var(--notebook-line); border-radius: 10px; background: var(--notebook-surface); box-shadow: 0 2px 6px hsl(var(--foreground) / .05); color: hsl(var(--muted-foreground)); }
+.student-search-bar__input { display: flex; flex: 1; min-width: 0; align-items: center; gap: 4px; padding-inline-start: 6px; }
+.student-search-bar__input button:disabled { visibility: hidden; }
 .student-search-bar input { flex: 1; min-width: 0; min-height: 44px; font-size: .8125rem; background: transparent; color: hsl(var(--foreground)); outline: none; }
 .student-search-bar input::-webkit-search-cancel-button { display: none; }
 .student-search-bar:focus-within { border-color: hsl(var(--primary)); box-shadow: 0 0 0 2px hsl(var(--primary) / .12); }
@@ -79,6 +81,26 @@
 @media (prefers-reduced-motion: reduce) {
     .notebook-tracker *, .notebook-tracker *::before, .notebook-tracker *::after { transition: none !important; }
     .notebook-primary:active:not(:disabled) { transform: none; }
+}
+@media (max-width: 639px) {
+    .notebook-tracker__scroll { padding: 10px; gap: 8px; }
+    .notebook-students { gap: 6px; }
+    .notebook-student { padding: 6px 8px; gap: 4px; border-radius: 10px; content-visibility: auto; contain-intrinsic-size: auto 110px; }
+    .notebook-student__identity { gap: 7px; }
+    .notebook-student__name { font-size: .875rem; line-height: 1.5; }
+    .notebook-avatar { width: 26px; height: 26px; font-size: .75rem; }
+    .notebook-segments { padding: 2px; gap: 2px; border-radius: 8px; }
+    .notebook-segment > span { font-size: .6875rem; gap: 3px; padding: 3px 2px; border-radius: 6px; }
+    .student-search-bar input { font-size: 16px; }
+    .student-search-bar select { width: 112px; max-width: 38%; }
+}
+@media (min-width: 380px) and (max-width: 639px) {
+    .notebook-segments { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 379px) {
+    .student-search-bar { flex-wrap: wrap; }
+    .student-search-bar__input { flex-basis: 100%; }
+    .student-search-bar select { width: 100%; max-width: none; }
 }
 /* Leave room for the entry field when the phone keyboard reduces the viewport. */
 @media (max-width: 639px) and (max-height: 560px) {

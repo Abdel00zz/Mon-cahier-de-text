@@ -24,6 +24,8 @@ export interface NotebookAssessmentEntry {
     date?: string;
     /** clé de la LIGNE du cahier qui porte ce devoir (voir `indicesKey`) */
     key: string;
+    /** Persistent notebook-to-planning identity; independent of date and order. */
+    assessmentId?: string;
 }
 
 /** type de bloc du cahier → type de devoir du planning */
@@ -42,13 +44,13 @@ const parseTrailingNumber = (title: string | undefined): number | null => {
  * (les blocs de premier niveau ET les devoirs imbriqués dans les sections).
  */
 export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmentEntry[] => {
-    const raw: { type: NotebookAssessmentEntry['type']; title: string; date?: string; declaredNum: number | null; key: string }[] = [];
+    const raw: { type: NotebookAssessmentEntry['type']; title: string; date?: string; declaredNum: number | null; key: string; assessmentId?: string }[] = [];
 
     const visitItem = (item: LessonItem | EmbeddableTopLevelItem, indices: Indices): void => {
         const mapped = NOTEBOOK_TYPE_MAP[item.type];
         if (mapped) {
             const title = 'title' in item ? (item.title ?? '') : '';
-            raw.push({ type: mapped, title, date: item.date, declaredNum: parseTrailingNumber(title), key: indicesKey(indices) });
+            raw.push({ type: mapped, title, date: item.date, declaredNum: parseTrailingNumber(title), key: indicesKey(indices), ...(item._tempId?.startsWith('dev-block-') ? { assessmentId: item._tempId.slice(10) } : {}) });
         }
     };
 
@@ -68,8 +70,9 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
         const base: Indices = { chapterIndex };
         const mapped = NOTEBOOK_TYPE_MAP[top.type];
         if (mapped) {
-            raw.push({ type: mapped, title: top.title, date: top.date, declaredNum: parseTrailingNumber(top.title), key: indicesKey(base) });
+            raw.push({ type: mapped, title: top.title, date: top.date, declaredNum: parseTrailingNumber(top.title), key: indicesKey(base), ...(top._tempId?.startsWith('dev-block-') ? { assessmentId: top._tempId.slice(10) } : {}) });
         }
+        (top.items ?? []).forEach((item, itemIndex) => visitItem(item, { ...base, itemIndex }));
         (top.sections ?? []).forEach((section, sectionIndex) => visitSection(section, { ...base, sectionIndex }));
     });
 
@@ -87,7 +90,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
                 num = cursor;
                 taken.add(num);
             }
-            result.push({ type, num, title: entry.title, date: entry.date, key: entry.key });
+            result.push({ type, num, title: entry.title, date: entry.date, key: entry.key, ...(entry.assessmentId ? { assessmentId: entry.assessmentId } : {}) });
         }
     }
     return result;
@@ -174,14 +177,17 @@ export const linkAssessments = (
         // Le numéro recommence au semestre 2. On garde donc toutes les entrées
         // homonymes et on choisit d'abord la date la plus proche, sans réutiliser
         // un même bloc pour deux devoirs.
+        const exact = notebook.find(entry => !used.has(entry) && entry.assessmentId && (entry.assessmentId === assessment.id || entry.assessmentId === assessment.legacyId));
+        const belongsToAnotherDate = (entry: NotebookAssessmentEntry) => entry.date !== assessment.dateISO
+            && planned.some(other => other.id !== assessment.id && other.type === entry.type && other.num === entry.num && other.dateISO === entry.date);
         const candidates = isLinkable
-            ? notebook.filter(entry => !used.has(entry) && entry.type === assessment.type && entry.num === assessment.num)
+            ? notebook.filter(entry => !used.has(entry) && !entry.assessmentId && entry.type === assessment.type && entry.num === assessment.num && !belongsToAnotherDate(entry))
             : [];
-        let entry = candidates.sort((a, b) => distance(a.date, assessment.dateISO) - distance(b.date, assessment.dateISO))[0];
+        let entry = exact ?? candidates.sort((a, b) => distance(a.date, assessment.dateISO) - distance(b.date, assessment.dateISO))[0];
         // Compatibilité avec les anciens cahiers numérotés en continu sur l'année.
         if (!entry && isLinkable) {
             entry = notebook
-                .filter(candidate => !used.has(candidate) && candidate.type === assessment.type)
+                .filter(candidate => !used.has(candidate) && !candidate.assessmentId && candidate.type === assessment.type && candidate.date === assessment.dateISO)
                 .sort((a, b) => distance(a.date, assessment.dateISO) - distance(b.date, assessment.dateISO))[0];
         }
         if (entry) used.add(entry);
@@ -192,7 +198,7 @@ export const linkAssessments = (
             // bloc créé mais pas encore daté : considéré comme à venir
             status = 'upcoming';
         } else {
-            status = assessment.dateISO >= todayISO ? 'upcoming' : 'missing';
+            status = !assessment.dateISO || assessment.dateISO >= todayISO ? 'upcoming' : 'missing';
         }
         return { planned: assessment, entry, status };
     });

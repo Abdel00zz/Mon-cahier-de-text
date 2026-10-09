@@ -33,11 +33,12 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     const number = numberFormat(locale);
     const copy = `evaluations.${mode}`;
     const reviewed = names.filter(name => Object.hasOwn(conditions, name) && choices.some(choice => choice.value === conditions[name])).length;
-    const stateOf = (name: string) => Object.hasOwn(conditions, name) ? conditions[name] : 'pending';
-    const searchIndex = useMemo(() => new Map(names.map(name => [name, studentSearchKey(name)])), [names]);
+    const searchIndex = useMemo(() => names.map((name, index) => ({ name, index, key: studentSearchKey(name) })), [names]);
     const search = useDeferredValue(studentSearchKey(query));
-    const shownNames = names.filter(name => searchIndex.get(name)!.includes(search)
-        && (!filter || stateOf(name) === filter));
+    const tokens = useMemo(() => search.split(' ').filter(Boolean), [search]);
+    const shownStudents = useMemo(() => searchIndex.filter(({ name, key }) => tokens.every(token => key.includes(token))
+        && (!filter || (Object.hasOwn(conditions, name) ? conditions[name] : 'pending') === filter)), [searchIndex, tokens, filter, conditions]);
+    const shownNames = shownStudents.map(student => student.name);
 
     return <div className="notebook-tracker" data-review-mode={mode} data-notebook-check-list={mode === 'notebook' ? '' : undefined}>
         <div className="notebook-tracker__scroll modern-scrollbar" data-swipe-scroll-region>
@@ -57,7 +58,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
             {names.length === 0 ? <p className="notebook-empty">{t(`${copy}.empty`)}</p>
                 : shownNames.length === 0 && <p className="notebook-empty">{t(query ? 'evaluations.notebook.noResult' : filter === 'pending' && reviewed === names.length ? `${copy}.allReviewed` : 'evaluations.notebook.emptyFilter')}</p>}
             <div className="notebook-students">
-                {shownNames.map(name => <fieldset key={name} className="notebook-student" aria-describedby={`${id}-hint`}>
+                {shownStudents.map(({ name, index }) => <fieldset key={name} className="notebook-student" aria-describedby={`${id}-hint`}>
                     <legend className="sr-only">{name}</legend>
                     <div className="notebook-student__identity">
                         <span className="notebook-avatar" aria-hidden="true">{Array.from(name)[0]}</span>
@@ -70,7 +71,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                         {choices.map(({ value: condition, labelKey, Icon }) => {
                             const selected = Object.hasOwn(conditions, name) && conditions[name] === condition;
                             return <label key={condition} className="notebook-segment" data-condition={condition} data-selected={selected ? 'true' : undefined}>
-                                <input type="radio" name={`${id}-${names.indexOf(name)}`} value={condition} checked={selected}
+                                <input type="radio" name={`${id}-${index}`} value={condition} checked={selected}
                                     onChange={() => onChange({ ...conditions, [name]: condition })} className="sr-only"/>
                                 <span><Icon className="h-4 w-4 shrink-0" aria-hidden="true"/>{t(labelKey)}</span>
                             </label>;

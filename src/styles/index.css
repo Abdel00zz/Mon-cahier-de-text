@@ -1407,7 +1407,7 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 [data-app-sidebar] {
   --sidebar-shadow-x: 4px;
   --sidebar-radius: 18px;
-  background: hsl(var(--card) / .98);
+  background: color-mix(in srgb, hsl(var(--background)) 78%, hsl(var(--card)) 22%);
   border-inline-end: 1px solid hsl(var(--border) / .8);
   border-start-end-radius: var(--sidebar-radius);
   border-end-end-radius: var(--sidebar-radius);
@@ -1417,7 +1417,7 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 [dir='rtl'] [data-app-sidebar] { --sidebar-shadow-x: -4px; }
 .dark [data-app-sidebar] {
-  background: hsl(var(--card) / .98);
+  background: color-mix(in srgb, hsl(var(--background)) 82%, hsl(var(--card)) 18%);
   border-inline-end-color: hsl(var(--border) / .8);
   box-shadow: var(--sidebar-shadow-x) 0 24px -18px rgb(0 0 0 / .35);
 }

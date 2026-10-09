@@ -3,6 +3,7 @@ import { dateOrderWarnings, type ContentDateOrder } from '@/domain/calendar/date
 import React, { useCallback, FC, memo } from 'react';
 import { Indices, ElementType } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
+import { SessionDocuments } from './SessionDocuments';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
@@ -45,6 +46,7 @@ interface TableRowProps {
   getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   sessionAnnotation?: string;
+  sessionDocuments?: readonly NotebookDocumentPreview[];
 }
 
 
@@ -209,7 +211,9 @@ const RemarkCell: FC<{
   hasWarning?: boolean;
   onOpenRemark?: () => void;
   sessionAnnotation?: string;
-}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning, onOpenRemark, sessionAnnotation }) => {
+  sessionDocuments?: readonly NotebookDocumentPreview[];
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
+}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning, onOpenRemark, sessionAnnotation, sessionDocuments, onOpenDocumentPreview }) => {
   const { t } = useLocale();
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
 
@@ -228,6 +232,7 @@ const RemarkCell: FC<{
   const editable = typeof onOpenRemark === 'function';
   const cellTitle = editable ? t('remark.editTitle') : undefined;
   const body = (isMergedCell: boolean) => (
+    <div className="flex w-full flex-col justify-center">
     <button
       type="button"
       onClick={onOpenRemark}
@@ -242,6 +247,8 @@ const RemarkCell: FC<{
       )}
       {sessionAnnotation && <span data-session-annotation="true" dir={textDirectionAttribute(sessionAnnotation)} title={sessionAnnotation} className="mt-0.5 w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary">{sessionAnnotation}</span>}
     </button>
+    <SessionDocuments documents={sessionDocuments} onOpen={onOpenDocumentPreview}/>
+    </div>
   );
 
   if (shouldMerge) {
@@ -284,6 +291,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   getDocumentPreview,
   onOpenDocumentPreview,
   sessionAnnotation,
+  sessionDocuments,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
@@ -468,7 +476,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </button>
         {contentCell}
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} />
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} sessionDocuments={sessionDocuments} onOpenDocumentPreview={onOpenDocumentPreview} />
       </div>
     );
   }
@@ -549,7 +557,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
       {contentCell}
 
-      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} />
+      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} onOpenRemark={onOpenRemark ? () => onOpenRemark(indices) : undefined} sessionAnnotation={sessionAnnotation} sessionDocuments={sessionDocuments} onOpenDocumentPreview={onOpenDocumentPreview} />
     </div>
   );
 };
@@ -562,7 +570,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;
   if (prev.isEditing !== next.isEditing) return false;
-  if (prev.sessionAnnotation !== next.sessionAnnotation) return false;
+  if (prev.sessionAnnotation !== next.sessionAnnotation || prev.sessionDocuments !== next.sessionDocuments) return false;
   if (prev.showDescriptions !== next.showDescriptions) return false;
   if (prev.elementType !== next.elementType) return false;
   if (prev.searchQuery !== next.searchQuery) return false;

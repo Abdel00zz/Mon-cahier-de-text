@@ -1,6 +1,9 @@
-import type { AppConfig, AppLocale, DevoirType, LessonsData, PedagogicalEvent, TopLevelItem } from '@/types';
-import { findNotebookAssessments, linkAssessments } from './assessmentSync';
-import { schoolYearLabelFromDate } from '../calendar/calendar';
+import type { AppLocale, DevoirType, LessonsData, PedagogicalEvent, TopLevelItem } from '@/types';
+import { findNotebookAssessments } from './assessmentSync';
+import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
+import { findItem } from '../notebook/dataUtils';
+import { produce } from 'immer';
+export { syncNotebookToEvaluations, syncNotebookSessionToEvaluations } from './notebookReconciliation';
 
 /**
  * Extrait la date d'un bloc de premier niveau : sa propre date si renseignée,
@@ -55,12 +58,7 @@ export function placeBlockChronologically(
   const copy = [...lessons];
 
   // Retirer le bloc de sa position actuelle s'il existe déjà
-  const existingIdx = copy.findIndex(
-    item =>
-      (block._tempId && item._tempId === block._tempId) ||
-      (item.type === block.type && item.title === block.title) ||
-      (block.type === 'evaluation_diagnostic' && item.type === 'evaluation_diagnostic')
-  );
+  const existingIdx = copy.findIndex(item => item === block || (block._tempId && item._tempId === block._tempId));
 
   let preserved = block;
   if (existingIdx >= 0) {
@@ -245,6 +243,19 @@ export function syncEventToNotebook(
     _tempId: `event-${event.id}`,
   };
 
+  const rows = buildLessonRows(lessons);
+  const exact = rows.find(row => row.data._tempId === blockToInsert._tempId);
+  const candidates = rows.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-')
+    && ('title' in row.data && (row.data.title === title || (event.type === 'evaluation_diagnostic' && !row.data.date))));
+  const target = exact ?? (candidates.length === 1 ? candidates[0] : undefined);
+  if (target) {
+    const next = produce(lessons, draft => {
+      const { item } = findItem(draft, target.indices);
+      if (item) Object.assign(item, { title, date: cellDate, remark, _tempId: blockToInsert._tempId });
+    });
+    return { lessons: next, updated: next !== lessons };
+  }
+
   const { lessons: nextLessons } = placeBlockChronologically(lessons, blockToInsert);
   return { lessons: nextLessons, updated: true };
 }
@@ -252,288 +263,56 @@ export function syncEventToNotebook(
 /**
  * Supprime le bloc correspondant à un événement pédagogique du cahier de textes.
  */
-export function removeEventFromNotebook(
-  lessons: LessonsData,
-  eventId: string,
-  eventType?: string,
-  eventTitle?: string
-): { lessons: LessonsData; updated: boolean } {
-  const targetTempId = `event-${eventId}`;
-  const idx = lessons.findIndex(item => {
-    if (item._tempId === targetTempId) return true;
-    if (eventType && item.type === eventType) {
-      if (eventTitle && item.title) {
-        return item.title.trim().toLowerCase() === eventTitle.trim().toLowerCase();
-      }
-      return true;
-    }
-    return false;
-  });
-
-  if (idx >= 0) {
-    const copy = [...lessons];
-    copy.splice(idx, 1);
-    return { lessons: copy, updated: true };
-  }
-  return { lessons, updated: false };
+function deleteRow(lessons: LessonsData, row: LessonRow | undefined) {
+  if (!row) return { lessons, updated: false };
+  return { lessons: produce(lessons, draft => {
+    const { parent, targetIndex } = findItem(draft, row.indices);
+    if (Array.isArray(parent) && typeof targetIndex === 'number') parent.splice(targetIndex, 1);
+  }), updated: true };
 }
 
-/**
- * Supprime le bloc correspondant à un devoir (contrôle continu / devoir maison) du cahier de textes.
- */
-export function removeAssessmentFromNotebook(
-  lessons: LessonsData,
-  assessmentId: string,
-  type: DevoirType,
-  num?: number
-): { lessons: LessonsData; updated: boolean } {
-  const targetTempId = `dev-block-${assessmentId}`;
-  const notebookType = type === 'maison' ? 'devoir_maison' : 'controle_continu';
-
-  const idx = lessons.findIndex(item => {
-    if (item._tempId === targetTempId) return true;
-    if (item.type === notebookType) {
-      if (num !== undefined) {
-        const trailingNum = (item.title ?? '').trim().match(/(\d+)\s*$/);
-        if (trailingNum && parseInt(trailingNum[1], 10) === num) return true;
-      }
-      return true;
-    }
-    return false;
-  });
-
-  if (idx >= 0) {
-    const copy = [...lessons];
-    copy.splice(idx, 1);
-    return { lessons: copy, updated: true };
-  }
-  return { lessons, updated: false };
+export function removeEventFromNotebook(lessons: LessonsData, eventId: string, eventType?: string, eventTitle?: string) {
+  const rows = buildLessonRows(lessons);
+  const exact = rows.find(row => row.data._tempId === 'event-' + eventId);
+  const legacy = rows.filter(row => !row.data._tempId?.startsWith('event-') && row.elementType === eventType && 'title' in row.data && row.data.title === eventTitle);
+  return deleteRow(lessons, exact ?? (legacy.length === 1 ? legacy[0] : undefined));
 }
 
-/**
- * Synchronise l'affectation de date d'un devoir (contrôle continu / maison)
- * dans le cahier de textes en mettant à jour ou insérant le bloc correspondant.
- */
-export function syncAssessmentDateToNotebook(
-  lessons: LessonsData,
-  assessment: {
-    id: string;
-    type: DevoirType;
-    num: number;
-    dateISO: string;
-    label?: string;
-    clearIfEmpty?: boolean;
-  },
-  locale: AppLocale = 'fr'
-): { lessons: LessonsData; updated: boolean } {
-  const notebookType = assessment.type === 'maison' ? 'devoir_maison' : 'controle_continu';
-  const defaultTitle =
-    assessment.label ||
-    (assessment.type === 'maison'
-      ? (locale === 'ar' ? `فرض منزلي ${assessment.num}` : `Devoir maison ${assessment.num}`)
-      : (locale === 'ar' ? `مراقبة مستمرة ${assessment.num}` : `Contrôle continu ${assessment.num}`));
+function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
+  const rows = buildLessonRows(lessons);
+  const exact = rows.find(row => row.data._tempId === 'dev-block-' + id);
+  if (exact) return exact;
+  if (type !== 'controle' && type !== 'maison') return undefined;
+  if (entryKey) return rows.find(row => row.key === entryKey && !row.data._tempId?.startsWith('dev-block-'));
+  const candidates = findNotebookAssessments(lessons).filter(entry => !entry.assessmentId && entry.type === type && entry.num === num);
+  return candidates.length === 1 ? rows.find(row => row.key === candidates[0].key) : undefined;
+}
 
-  // Chercher si un bloc de même type et même numéro existe déjà
-  const entries = findNotebookAssessments(lessons);
-  const match = entries.find(
-    e =>
-      (e.type === 'controle' && notebookType === 'controle_continu' && e.num === assessment.num) ||
-      (e.type === 'maison' && notebookType === 'devoir_maison' && e.num === assessment.num)
-  );
+export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
+  if (type !== 'controle' && type !== 'maison') return { lessons, updated: false };
+  return deleteRow(lessons, assessmentRow(lessons, id, type, num, entryKey));
+}
 
-  if (match) {
-    // Si la date doit être vidée
-    if (!assessment.dateISO && assessment.clearIfEmpty) {
-      const modified = lessons.map(item => {
-        if (item.type === notebookType) {
-          const trailingNum = (item.title ?? '').trim().match(/(\d+)\s*$/);
-          const itemNum = trailingNum ? parseInt(trailingNum[1], 10) : match.num;
-          if (itemNum === assessment.num) {
-            return { ...item, date: undefined };
-          }
-        }
-        return item;
-      });
-      return { lessons: modified, updated: true };
-    }
-
-    if (!assessment.dateISO) {
-      return { lessons, updated: false };
-    }
-
-    // Le bloc existe déjà dans le cahier : mettre à jour sa date
-    let updated = false;
-    const modified = lessons.map(item => {
-      if (item.type === notebookType) {
-        const trailingNum = (item.title ?? '').trim().match(/(\d+)\s*$/);
-        const itemNum = trailingNum ? parseInt(trailingNum[1], 10) : match.num;
-        if (itemNum === assessment.num) {
-          updated = true;
-          return { ...item, date: assessment.dateISO };
-        }
-      }
-      return item;
+export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
+  id: string; type: DevoirType; num: number; dateISO: string; label?: string; clearIfEmpty?: boolean; entryKey?: string; updatedTitle?: string;
+}, locale: AppLocale = 'fr'): { lessons: LessonsData; updated: boolean } {
+  // Oral activities belong to the dated remark, never to a written-test block.
+  if (assessment.type !== 'controle' && assessment.type !== 'maison') return { lessons, updated: false };
+  const row = assessmentRow(lessons, assessment.id, assessment.type, assessment.num, assessment.entryKey);
+  const date = assessment.dateISO || undefined;
+  if (row) {
+    const id = 'dev-block-' + assessment.id;
+    if (row.data.date === date && row.data._tempId === id && !assessment.updatedTitle) return { lessons, updated: false };
+    const next = produce(lessons, draft => {
+      const { item } = findItem(draft, row.indices);
+      if (item) { item.date = date; item._tempId = id; if (assessment.updatedTitle && 'title' in item) item.title = assessment.updatedTitle; }
     });
-
-    if (updated) {
-      // Repositionner le bloc mis à jour à sa place chronologique
-      const targetBlock = modified.find(
-        item => item.type === notebookType && item.date === assessment.dateISO
-      );
-      if (targetBlock) {
-        const { lessons: reordered } = placeBlockChronologically(modified, targetBlock);
-        return { lessons: reordered, updated: true };
-      }
-      return { lessons: modified, updated: true };
-    }
+    // Nested assessments retain their chapter and its contents.
+    return { lessons: next, updated: true };
   }
-
-  if (!assessment.dateISO) {
-    return { lessons, updated: false };
-  }
-
-  // Aucun bloc n'existait : créer le bloc de devoir et l'insérer chronologiquement
-  const newBlock: TopLevelItem = {
-    type: notebookType,
-    title: defaultTitle,
-    date: assessment.dateISO,
-    sections: [],
-    items: [],
-    _tempId: `dev-block-${assessment.id}`,
-  };
-
-  const { lessons: nextLessons } = placeBlockChronologically(lessons, newBlock);
-  return { lessons: nextLessons, updated: true };
-}
-
-/**
- * Sens inverse complet et ultra-dynamique : Répercute l'état intégral du tableau de l'éditeur
- * vers les réglages des évaluations et activités (config.assessmentDates et config.pedagogicalEvents).
- * Traite les ajouts, modifications de dates et suppressions.
- */
-export function syncNotebookToEvaluations(
-  classId: string,
-  config: AppConfig,
-  lessons: LessonsData
-): { patch: Partial<AppConfig>; updated: boolean } {
-  let updated = false;
-  const patch: Partial<AppConfig> = {};
-
-  // 1. Devoirs (contrôle continu / devoir maison)
-  const notebookAssessments = findNotebookAssessments(lessons);
-  const currentDates = { ...(config.assessmentDates?.[classId] ?? {}) };
-  const nextDates = { ...currentDates };
-  const manualList = config.manualAssessments?.[classId] ?? [];
-
-  for (const entry of notebookAssessments) {
-    if (entry.date?.trim()) {
-      const isoDate = extractEarliestDate(entry.date);
-      if (isoDate) {
-        const year = schoolYearLabelFromDate(isoDate);
-        const month = parseInt(isoDate.split('-')[1], 10);
-        const semesterNum = (month >= 2 && month <= 7) ? 2 : 1;
-        const targetId = `${year}:s${semesterNum}-${entry.type}${entry.num}`;
-        const legacyId = `s${semesterNum}-${entry.type}${entry.num}`;
-
-        if (nextDates[targetId] !== isoDate || nextDates[legacyId] !== isoDate) {
-          nextDates[targetId] = isoDate;
-          nextDates[legacyId] = isoDate;
-          updated = true;
-        }
-
-        const manualMatch = manualList.find(m => m.type === entry.type && m.num === entry.num);
-        if (manualMatch && nextDates[manualMatch.id] !== isoDate) {
-          nextDates[manualMatch.id] = isoDate;
-          updated = true;
-        }
-      }
-    }
-  }
-
-  if (updated || JSON.stringify(currentDates) !== JSON.stringify(nextDates)) {
-    patch.assessmentDates = {
-      ...config.assessmentDates,
-      [classId]: nextDates,
-    };
-    updated = true;
-  }
-
-  // 2. Événements pédagogiques
-  const currentEvents = [...(config.pedagogicalEvents?.[classId] ?? [])];
-  let eventsChanged = false;
-  const nextEvents = [...currentEvents];
-
-  const syncableTypes = new Set([
-    'evaluation_diagnostic',
-    'correction_controle_continu',
-    'soutien',
-    'olympiade',
-  ]);
-
-  for (const item of lessons) {
-    const isSyncableType = syncableTypes.has(item.type) || item._tempId?.startsWith('event-');
-    if (isSyncableType && item.date?.trim()) {
-      const { startDate: isoDate, endDate: isoEndDate } = extractDateRange(item.date);
-      if (isoDate) {
-        const eventId = item._tempId?.replace(/^event-/, '');
-        const existingIdx = nextEvents.findIndex(
-          e => (eventId && e.id === eventId) || (e.type === item.type && (e.title === item.title || item.type === 'evaluation_diagnostic'))
-        );
-
-        if (existingIdx >= 0) {
-          const existing = nextEvents[existingIdx];
-          const titleChanged = item.title && existing.title !== item.title.trim();
-          const dateChanged = existing.date !== isoDate || existing.endDate !== isoEndDate;
-          const noteChanged = item.remark?.trim() && existing.note !== item.remark.trim();
-          if (dateChanged || titleChanged || noteChanged) {
-            nextEvents[existingIdx] = {
-              ...existing,
-              date: isoDate,
-              endDate: isoEndDate,
-              title: item.title?.trim() || existing.title,
-              note: item.remark?.trim() || existing.note,
-            };
-            eventsChanged = true;
-          }
-        } else {
-          const newEvent: PedagogicalEvent = {
-            id: eventId || `evt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            type: (item.type as PedagogicalEvent['type']) || 'autre',
-            title: item.title?.trim() || 'Activité pédagogique',
-            date: isoDate,
-            endDate: isoEndDate,
-            note: item.remark?.trim() || undefined,
-            status: 'planned',
-            createdAt: new Date().toISOString(),
-          };
-          nextEvents.push(newEvent);
-          eventsChanged = true;
-        }
-      }
-    }
-  }
-
-  if (eventsChanged) {
-    patch.pedagogicalEvents = {
-      ...config.pedagogicalEvents,
-      [classId]: nextEvents,
-    };
-    updated = true;
-  }
-
-  return { patch, updated };
-}
-
-/**
- * Sens inverse : Répercute une modification effectuée dans le tableau de l'éditeur
- * vers les réglages des évaluations et activités (config.assessmentDates et config.pedagogicalEvents).
- * Fournit une compatibilité totale avec l'API existante tout en bénéficiant de la synchronisation globale.
- */
-export function syncNotebookSessionToEvaluations(
-  classId: string,
-  config: AppConfig,
-  item: { type?: string; title?: string; date?: string; _tempId?: string },
-  lessons: LessonsData
-): { patch: Partial<AppConfig>; updated: boolean } {
-  return syncNotebookToEvaluations(classId, config, lessons);
+  if (!date) return { lessons, updated: false };
+  const type = assessment.type === 'maison' ? 'devoir_maison' : 'controle_continu';
+  const title = assessment.label || (locale === 'ar' ? (type === 'devoir_maison' ? 'فرض منزلي ' : 'مراقبة مستمرة ') : (type === 'devoir_maison' ? 'Devoir maison ' : 'Contrôle continu ')) + assessment.num;
+  const block: TopLevelItem = { type, title, date, _tempId: 'dev-block-' + assessment.id };
+  return { lessons: placeBlockChronologically(lessons, block).lessons, updated: true };
 }

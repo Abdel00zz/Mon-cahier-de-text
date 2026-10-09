@@ -485,7 +485,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       const value = item as Partial<NonNullable<AppConfig['manualAssessments']>[string][number]>;
       if (!value || typeof value !== 'object' || typeof value.id !== 'string' || !value.id || value.id.length > 180) throw new HttpError(400, 'Identifiant de devoir manuel invalide.');
       if (!VALID_ASSESSMENT_TYPES.has(value.type as string) || !Number.isInteger(value.num) || Number(value.num) < 1 || Number(value.num) > 50) throw new HttpError(400, 'Type ou numéro de devoir manuel invalide.');
-      if (typeof value.dateISO !== 'string' || !ISO_DATE.test(value.dateISO) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
+      if (typeof value.dateISO !== 'string' || (value.dateISO === '' ? !value.schoolYear : !ISO_DATE.test(value.dateISO)) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
       if (value.schoolYear !== undefined && (typeof value.schoolYear !== 'string' || !/^\d{4}-\d{4}$/.test(value.schoolYear))) throw new HttpError(400, 'Année scolaire de devoir manuel invalide.');
       assertContentDocument(value.document, 'le devoir manuel');
     }
@@ -497,7 +497,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     for (const item of raw) {
       const value = item as Record<string, unknown>;
       if (!value || typeof value.id !== 'string' || !value.id || !VALID_PEDAGOGICAL_TYPES.has(value.type as string)) throw new HttpError(400, 'Activité pédagogique invalide.');
-      if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || !ISO_DATE.test(value.date)) throw new HttpError(400, 'Titre ou date d’activité invalide.');
+      if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || (value.date !== '' && !ISO_DATE.test(value.date))) throw new HttpError(400, 'Titre ou date d’activité invalide.');
       if (value.status !== 'planned' && value.status !== 'done') throw new HttpError(400, 'Statut d’activité invalide.');
       assertStudentNames(value.students, 'les élèves consignés', value.type === 'controle_cahiers');
       assertContentDocument(value.document, 'l’activité pédagogique');

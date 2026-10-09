@@ -183,7 +183,7 @@
   padding: 0;
   text-align: center;
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 3rem;
+  font-size: 3.15rem;
   font-weight: 800;
   font-style: normal;
   line-height: 1;
@@ -191,7 +191,7 @@
   pointer-events: none;
   color: var(--class-accent);
   opacity: 1;
-  letter-spacing: -.03em;
+  letter-spacing: -.04em;
   background: none;
   border: 0;
   border-radius: 0;
@@ -262,7 +262,7 @@
   .class-card__body { padding: 10px 14px 14px; gap: 8px; }
   .class-card__identity { gap: 10px; min-height: 60px; }
   .class-card__title { font-size: 18px; }
-  .class-card .class-card__group { font-size: 2.5rem; }
+  .class-card .class-card__group { font-size: 2.625rem; }
   .class-card__footer { padding: 9px 14px; gap: 7px; }
   .class-card__status { font-size: 12px; line-height: 1.6; }
   .class-card__status-full { display: none; }
@@ -272,7 +272,7 @@
   .class-card__body { padding-inline: 12px; }
   .class-card__identity { gap: 8px; }
   .class-card__title { font-size: 16px; }
-  .class-card .class-card__group { font-size: 2rem; }
+  .class-card .class-card__group { font-size: 2.1rem; }
 }
 @media (max-width: 639px) {
   .class-card { min-height: 172px; border-radius: 12px; }
