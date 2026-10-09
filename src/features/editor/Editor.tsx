@@ -1461,7 +1461,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         isOpen={openDocument !== null}
         onClose={closeDocumentPreview}
         title={openDocument?.title ?? ''}
-        subtitle={classInfo.name}
         source={openDocument?.document.source}
         updatedLabel={documentUpdatedLabel}
       />

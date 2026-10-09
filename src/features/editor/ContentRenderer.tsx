@@ -246,7 +246,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 <button
                   type="button"
                   data-document-title-link="true"
-                  className="inline-flex cursor-pointer items-center text-start font-bold text-blue-600 underline underline-offset-4 decoration-blue-500/50 transition-colors hover:text-blue-700 hover:decoration-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm dark:text-blue-400 dark:hover:text-blue-300"
+                  data-document-highlight="true"
+                  className="editor-document-highlight group max-w-full"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDocumentPreview?.(documentPreview);
@@ -254,6 +255,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   title={t('documentPreview.openAria', { title: documentPreview.title })}
                   aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
                 >
+                  <FileText className="h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-200 group-hover:scale-110 group-hover:opacity-100" aria-hidden="true" />
                   <span dir={textDirectionAttribute(item.title)}>
                     <HighlightedText text={item.title} query={highlight} />
                   </span>
@@ -262,22 +264,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 <span dir={textDirectionAttribute(item.title)}>
                   <HighlightedText text={item.title} query={highlight} />
                 </span>
-              )}
-              {documentPreview && (
-                <button
-                  type="button"
-                  data-document-chip="true"
-                  className="editor-doc-chip"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpenDocumentPreview?.(documentPreview);
-                  }}
-                  title={t('documentPreview.openAria', { title: documentPreview.title })}
-                  aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
-                >
-                  <FileText className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span>{t('documentPreview.chip')}</span>
-                </button>
               )}
             </span>
         </div>
@@ -408,7 +394,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               <button
                 type="button"
                 data-document-title-link="true"
-                className="inline-flex cursor-pointer items-center text-start font-bold text-blue-600 underline underline-offset-4 decoration-blue-500/50 transition-colors hover:text-blue-700 hover:decoration-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm dark:text-blue-400 dark:hover:text-blue-300"
+                data-document-highlight="true"
+                className="editor-document-highlight group max-w-full"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenDocumentPreview?.(itemDocumentPreview);
@@ -416,6 +403,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 title={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
                 aria-label={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
               >
+                <FileText className="h-3 w-3 shrink-0 opacity-75 transition-transform duration-200 group-hover:scale-110 group-hover:opacity-100" aria-hidden="true" />
                 <HighlightedText text={item.title} query={highlight} />
               </button>
             ) : item.title ? (
@@ -425,8 +413,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             )}
           </div>
 
-          {/* Description : encadré sobre sous le titre façon Google Keep */}
-          {allowDescription && (
+          {/* Description : encadré sobre sous le titre façon Google Keep (masqué si un document dédié existe pour éliminer tout sous-titre redondant) */}
+          {allowDescription && !itemDocumentPreview && (
             <div className="col-start-2 editor-item-description editor-type-description text-start mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
               {renderDescriptionWithBold(item.description)}
             </div>

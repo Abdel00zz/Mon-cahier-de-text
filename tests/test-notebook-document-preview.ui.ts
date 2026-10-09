@@ -36,19 +36,19 @@ const row = (options: { preview?: NotebookDocumentPreview; isPrint?: boolean } =
     }),
 );
 
-test('un devoir rédigé affiche la pastille, un devoir sans sujet non', () => {
+test('un devoir rédigé affiche le highlight de document sans pastille séparée', () => {
     const withDocument = row({ preview });
-    assert.match(withDocument, /data-document-chip="true"/, 'la pastille est là');
-    assert.match(withDocument, /editor-doc-chip/, 'elle porte son style dédié');
-    assert.match(withDocument, />Document</, 'son libellé est traduit, court et ciblé');
+    assert.match(withDocument, /data-document-highlight="true"/, 'le highlight moderne est là');
+    assert.match(withDocument, /editor-document-highlight/, 'il porte son style dédié');
+    assert.doesNotMatch(withDocument, /data-document-chip="true"/, 'aucun bouton séparé de document');
     assert.match(withDocument, /aria-label="Ouvrir le document — Devoir maison 1"/, 'le libellé accessible nomme le devoir');
 
-    assert.doesNotMatch(row({ preview: undefined }), /data-document-chip/, 'aucun document = aucune pastille');
-    assert.doesNotMatch(row(), /data-document-chip/, 'la table sans lecteur de sujet reste intacte');
+    assert.doesNotMatch(row({ preview: undefined }), /data-document-highlight/, 'aucun document = aucun highlight');
+    assert.doesNotMatch(row(), /data-document-highlight/, 'la table sans lecteur de sujet reste intacte');
 });
 
-test('la pastille ne part jamais à l’impression', () => {
-    assert.doesNotMatch(row({ preview, isPrint: true }), /data-document-chip/, 'le cahier imprimé se passe de la pastille');
+test('le highlight ne part jamais à l’impression', () => {
+    assert.doesNotMatch(row({ preview, isPrint: true }), /data-document-highlight/, 'le cahier imprimé se passe du lien/highlight');
 });
 
 test('la table passe la lecture du sujet jusqu’aux rangées mémoïsées', () => {

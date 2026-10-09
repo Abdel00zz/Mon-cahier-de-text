@@ -179,8 +179,9 @@ test('titre cliquable en bleu si un contenu/document est associé dans la table'
   );
 
   assert.match(markupWithDoc, /data-document-title-link="true"/, 'Le titre porte le lien de document cliquable');
-  assert.match(markupWithDoc, /text-blue-600/, 'Le titre est rendu en bleu');
-  assert.match(markupWithDoc, /data-document-chip="true"/, 'La puce Document est également présente');
+  assert.match(markupWithDoc, /data-document-highlight="true"/, 'Le titre porte le highlight moderne');
+  assert.match(markupWithDoc, /editor-document-highlight/, 'La classe de style moderne est appliquée');
+  assert.doesNotMatch(markupWithDoc, /data-document-chip="true"/, 'Le bouton séparé de document/contenu est éliminé');
 
   // Sans document
   const markupWithoutDoc = renderToStaticMarkup(
@@ -197,7 +198,7 @@ test('titre cliquable en bleu si un contenu/document est associé dans la table'
   );
 
   assert.doesNotMatch(markupWithoutDoc, /data-document-title-link="true"/);
-  assert.doesNotMatch(markupWithoutDoc, /text-blue-600/);
+  assert.doesNotMatch(markupWithoutDoc, /data-document-highlight="true"/);
 });
 
 test('formatage de la cellule Date selon les règles pédagogiques (1 jour, 2 jours "et", >2 jours "Du...au")', () => {
