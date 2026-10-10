@@ -118,9 +118,11 @@ export function applyContentEdit(
 export function buildSessionTargetsGrouped(renderRows: readonly RenderRow[]): ContentEditTargets {
   const targets = new Map<string, readonly Indices[]>();
   for (const row of renderRows) {
+    if ((row as { kind: string }).kind === 'absence') continue;
     const items = row.kind === 'session' ? row.items : [row.item];
-    const group = items.map(item => item.indices);
-    for (const item of items) targets.set(item.key, group);
+    const validItems = items.filter(Boolean);
+    const group = validItems.map(item => item.indices);
+    for (const item of validItems) targets.set(item.key, group);
   }
   return targets;
 }

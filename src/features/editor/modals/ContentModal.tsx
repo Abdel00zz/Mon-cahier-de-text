@@ -197,16 +197,17 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     let initialData: ContentDraft = {};
 
     if (config) {
-      // Types récurrents : titre auto-suggéré « Contrôle continu N » (N =
-      // occurrences existantes dans le cahier + 1). Simple suggestion, le
-      // champ reste librement modifiable par le professeur.
-      const localizedName = tc(`manageLessons.type.${type}`);
-      initialData.title = config.autoNumber
-        ? `${localizedName} ${countOccurrencesOfType(lessonsData, type) + 1}`
-        : localizedName;
+      const count = countOccurrencesOfType(lessonsData, type);
+      const nextNum = count + 1;
       if (type === 'devoir_maison') {
         const lastDate = lastCourseSessionDate(lessonsData) || todayInMorocco();
         initialData.date = lastDate;
+        initialData.title = tc('remark.devoirMaisonGiven', { num: nextNum });
+      } else {
+        const localizedName = tc(`manageLessons.type.${type}`);
+        initialData.title = config.autoNumber
+          ? `${localizedName} ${nextNum}`
+          : localizedName;
       }
     } else if (type === 'item') {
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.

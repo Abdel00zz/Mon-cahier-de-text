@@ -324,17 +324,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             {sameRemark ? (
                 <div
                     data-session-cell="remark"
-                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
-                    onClick={event => event.stopPropagation()}
+                    onClick={() => onOpenRemark?.(items[0].indices)}
                 >
                     <button
                         type="button"
-                        onClick={() => onOpenRemark?.(items[0].indices)}
+                        onClick={(e) => { e.stopPropagation(); onOpenRemark?.(items[0].indices); }}
                         title={t('remark.editTitle')}
                         aria-label={t('remark.editTitle')}
                         data-remark-cell="true"
-                        className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark}</span>
                         {sessionAnnotations.filter(annotation => !sharedRemark || !sharedRemark.includes(annotation)).map(annotation => (
@@ -356,17 +356,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                     key={`remark-${item.key}`}
                     data-session-cell="remark"
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
-                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 cursor-pointer hover:bg-primary/[0.03] transition-colors ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: index + 1 }}
-                    onClick={event => event.stopPropagation()}
+                    onClick={() => onOpenRemark?.(item.indices)}
                 >
                     <button
                         type="button"
-                        onClick={() => onOpenRemark?.(item.indices)}
+                        onClick={(e) => { e.stopPropagation(); onOpenRemark?.(item.indices); }}
                         title={t('remark.editTitle')}
                         aria-label={t('remark.editTitle')}
                         data-remark-cell="true"
-                        className="min-h-11 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="min-h-11 h-full flex-1 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
                         {(() => {

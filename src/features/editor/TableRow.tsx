@@ -226,18 +226,20 @@ const RemarkCell: FC<{
   const editable = typeof onOpenRemark === 'function';
   const cellTitle = editable ? t('remark.editTitle') : undefined;
   const body = (isMergedCell: boolean) => (
-    <div className="flex w-full flex-col justify-center">
+    <div className="flex w-full h-full flex-col justify-center">
     <button
       type="button"
-      onClick={onOpenRemark}
+      onClick={(e) => { e.stopPropagation(); onOpenRemark?.(); }}
       disabled={!editable}
       title={cellTitle}
       aria-label={cellTitle}
       data-remark-cell="true"
-      className={`flex min-h-[44px] w-full flex-col justify-center items-center text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+      className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-center text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
-        <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">{merge?.sharedRemark ?? value}</div>
+        <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark min-h-[22px] h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">
+          {(merge?.sharedRemark ?? value) || <span className="opacity-0 select-none">·</span>}
+        </div>
       )}
       {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation) && <span data-session-annotation="true" dir={textDirectionAttribute(sessionAnnotation)} title={sessionAnnotation} className="mt-0.5 w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary">{sessionAnnotation}</span>}
     </button>
@@ -247,7 +249,7 @@ const RemarkCell: FC<{
 
   if (shouldMerge) {
     return (
-      <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
+      <div className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
         <div className="relative z-10 h-full flex flex-col justify-center w-full">
           {body(true)}
         </div>
@@ -256,7 +258,7 @@ const RemarkCell: FC<{
   }
 
   return (
-    <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
+    <div className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
       {body(false)}
     </div>
   );

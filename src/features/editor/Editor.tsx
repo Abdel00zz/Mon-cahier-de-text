@@ -19,7 +19,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/features/editor/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
-import { indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
+import { buildLessonRows, indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
 import { useNotebookOpeningFocus } from './hooks/useNotebookOpeningFocus';
 import { buildContentDateOrder } from '@/domain/calendar/dateOrder';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';
@@ -487,8 +487,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   });
   const { open: openSession, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
   const handleOpenRemark = useCallback((indices: Indices) => {
-    const targets = sessionTargets.get(indicesKey(indices));
-    if (targets) openSession(targets, 'remark');
+    const targets = sessionTargets.get(indicesKey(indices)) ?? [indices];
+    openSession(targets, 'remark');
   }, [sessionTargets, openSession]);
 
   /*
@@ -934,7 +934,37 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
-          prepare(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
+          prepare(draft => {
+              addTopLevelItem(draft, newItem, insertAfterIndex);
+              if (type === 'devoir_maison') {
+                  const targetDate = formattedDate || todayInMorocco();
+                  const dmText = data.title?.trim() || t('remark.devoirMaisonGivenSimple');
+                  const rows = buildLessonRows(draft);
+                  let targetItem: any = null;
+                  for (let i = rows.length - 1; i >= 0; i--) {
+                      const r = rows[i];
+                      if (draft[r.indices.chapterIndex]?.type !== 'chapter') continue;
+                      if (r.data.date && r.data.date.includes(targetDate)) {
+                          targetItem = r.data;
+                          break;
+                      }
+                  }
+                  if (!targetItem) {
+                      for (let i = rows.length - 1; i >= 0; i--) {
+                          const r = rows[i];
+                          if (draft[r.indices.chapterIndex]?.type === 'chapter' && r.data.date) {
+                              targetItem = r.data;
+                              break;
+                          }
+                      }
+                  }
+                  if (targetItem) {
+                      const cur = (targetItem.remark || '').trim();
+                      if (!cur) targetItem.remark = dmText;
+                      else if (!cur.includes(dmText)) targetItem.remark = `${dmText}\n${cur}`;
+                  }
+              }
+          }, 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
       } else if (type === 'section' && anchor) {
           const parentIndices = { chapterIndex: anchor.chapterIndex };
@@ -1158,8 +1188,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
 
   const handleOpenDateModal = useCallback((indices: Indices) => {
-    const targets = sessionTargets.get(indicesKey(indices));
-    if (targets) openSession(targets);
+    const targets = sessionTargets.get(indicesKey(indices)) ?? [indices];
+    openSession(targets);
   }, [sessionTargets, openSession]);
 
 
