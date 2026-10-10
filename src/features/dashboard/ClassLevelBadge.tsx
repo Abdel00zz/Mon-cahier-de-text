@@ -149,7 +149,7 @@ export const ClassGroupWatermark = memo(({
         <span
             data-variant={variant}
             className={cn(
-                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-serif tracking-tight tabular-nums leading-none',
+                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-mono font-bold tracking-tight tabular-nums leading-none',
                 variant === 'end' && 'ms-1.5 sm:ms-2 text-[1.8em] sm:text-[2.2em] -translate-y-[2px] sm:-translate-y-[3px]',
                 variant === 'inline' && 'ms-1.5 text-[1.25em] sm:text-[1.35em]',
                 className
