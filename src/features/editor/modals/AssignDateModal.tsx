@@ -10,7 +10,25 @@ import {
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye, FileText, Check, RefreshCw, CheckSquare, BookOpen, History, Home } from '@/components/ui/icons';
+import {
+  CalendarDays,
+  CalendarPlus,
+  CalendarX,
+  FileText,
+  Home,
+  ClipboardCheck,
+  RefreshCw,
+  BookOpen,
+  History,
+  Check,
+  X,
+  Trash2,
+  Plus,
+  Minus,
+  Eye,
+  AlertTriangle,
+  ChevronDown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
@@ -51,34 +69,64 @@ const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
 interface PedagogicalRemarkActivity {
   key: 'controle_cahiers' | 'remediation' | 'soutien' | 'rattrapage';
   labelKey: string;
+  getShortLabel: (locale: string) => string;
   Icon: React.ComponentType<{ className?: string }>;
   synonyms: string[];
+  theme: {
+    active: string;
+    inactive: string;
+    icon: string;
+  };
 }
 
 const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
   {
     key: 'controle_cahiers',
     labelKey: 'evaluations.event.controle_cahiers',
-    Icon: CheckSquare,
+    getShortLabel: (locale) => locale === 'ar' ? 'مراقبة الدفاتر' : locale === 'en' ? 'Notebook check' : 'Contrôle des cahiers',
+    Icon: ClipboardCheck,
     synonyms: ['مراقبة دفاتر التلاميذ', 'مراقبة الدفاتر', 'Contrôle des cahiers des élèves', 'Contrôle des cahiers', 'Cahiers vérifiés'],
+    theme: {
+      active: 'border-indigo-500/50 bg-indigo-500/15 text-indigo-900 dark:text-indigo-200',
+      inactive: 'border-indigo-500/25 bg-indigo-500/5 hover:bg-indigo-500/15 text-indigo-900 dark:text-indigo-200',
+      icon: 'text-indigo-600 dark:text-indigo-400',
+    },
   },
   {
     key: 'remediation',
     labelKey: 'evaluations.event.remediation',
+    getShortLabel: (locale) => locale === 'ar' ? 'معالجة التعثرات' : locale === 'en' ? 'Remediation' : 'Remédiation',
     Icon: RefreshCw,
     synonyms: ['معالجة التعثرات', 'معالجة', 'Remédiation', 'Remediation'],
+    theme: {
+      active: 'border-cyan-500/50 bg-cyan-500/15 text-cyan-900 dark:text-cyan-200',
+      inactive: 'border-cyan-500/25 bg-cyan-500/5 hover:bg-cyan-500/15 text-cyan-900 dark:text-cyan-200',
+      icon: 'text-cyan-600 dark:text-cyan-400',
+    },
   },
   {
     key: 'soutien',
     labelKey: 'evaluations.event.soutien',
+    getShortLabel: (locale) => locale === 'ar' ? 'دعم تربوي' : locale === 'en' ? 'Support' : 'Soutien',
     Icon: BookOpen,
     synonyms: ['دعم تربوي', 'دعم', 'Soutien'],
+    theme: {
+      active: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-900 dark:text-emerald-200',
+      inactive: 'border-emerald-500/25 bg-emerald-500/5 hover:bg-emerald-500/15 text-emerald-900 dark:text-emerald-200',
+      icon: 'text-emerald-600 dark:text-emerald-400',
+    },
   },
   {
     key: 'rattrapage',
     labelKey: 'evaluations.event.rattrapage',
+    getShortLabel: (locale) => locale === 'ar' ? 'حصة استدراك' : locale === 'en' ? 'Make-up' : 'Rattrapage',
     Icon: History,
     synonyms: ['استدراك', 'حصّة استدراك', 'حصة استدراك', 'Rattrapage'],
+    theme: {
+      active: 'border-purple-500/50 bg-purple-500/15 text-purple-900 dark:text-purple-200',
+      inactive: 'border-purple-500/25 bg-purple-500/5 hover:bg-purple-500/15 text-purple-900 dark:text-purple-200',
+      icon: 'text-purple-600 dark:text-purple-400',
+    },
   },
 ];
 
@@ -289,49 +337,47 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
   const remarkInputSection = (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <label htmlFor="assign-date-remark" className="block text-sm font-bold text-foreground text-start font-sans">
-            {t('remark.title')} :
-          </label>
-          {resolvedDocs && resolvedDocs.length > 0 && onOpenDocumentPreview && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {resolvedDocs.map(preview => (
-                <button
-                  key={preview.assessmentId}
-                  type="button"
-                  onClick={() => onOpenDocumentPreview(preview)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
-                  title={t('documentPreview.openAria', { title: preview.title })}
-                >
-                  <Eye className="size-3.5 shrink-0" />
-                  <span dir="auto" className="truncate max-w-[160px]">{preview.title}</span>
-                  <span className="text-[10px] font-medium opacity-80 underline underline-offset-2">
-                    ({isRtl ? 'معاينة' : 'Aperçu'})
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+      {/* Barre d'activités pédagogiques & prévisualisation */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5 ps-0.5 font-sans">
+            {t('remark.pedagogicalActivities')}
+          </span>
+          <div className="flex items-center gap-2">
+            {resolvedDocs && resolvedDocs.length > 0 && onOpenDocumentPreview && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {resolvedDocs.map(preview => (
+                  <button
+                    key={preview.assessmentId}
+                    type="button"
+                    onClick={() => onOpenDocumentPreview(preview)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
+                    title={t('documentPreview.openAria', { title: preview.title })}
+                  >
+                    <Eye className="size-3.5 shrink-0" />
+                    <span dir="auto" className="truncate max-w-[140px]">{preview.title}</span>
+                    <span className="text-[10px] font-medium opacity-80">
+                      ({isRtl ? 'معاينة' : 'Aperçu'})
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {remark ? (
+              <button
+                type="button"
+                onClick={() => { setRemark(''); setRemarkChanged(true); }}
+                className="text-xs font-semibold text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                title={t('common.delete')}
+              >
+                <Trash2 className="size-3.5" />
+                <span>{t('remark.clearRemark')}</span>
+              </button>
+            ) : null}
+          </div>
         </div>
-        {remark ? (
-          <button
-            type="button"
-            onClick={() => { setRemark(''); setRemarkChanged(true); }}
-            className="text-xs font-semibold text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-            title={t('common.delete')}
-          >
-            <X className="size-3" />
-            <span>{t('remark.clearRemark')}</span>
-          </button>
-        ) : null}
-      </div>
 
-      {/* Activités pédagogiques & annotations de séance à choisir directement */}
-      <div className="space-y-2 rounded-2xl border border-border/70 bg-muted/20 p-2.5 sm:p-3">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5 ps-0.5">
-          <span>{t('remark.pedagogicalActivities')}</span>
-        </div>
+        {/* Action Dock : puces tactiles réactives */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Devoir maison avec numérotation chronologique et stepper */}
           {!hasHomework ? (
@@ -342,19 +388,19 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                 setRemarkChanged(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/60 hover:border-primary/40 active:scale-95 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/15 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer shadow-2xs active:scale-95"
               title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
             >
-              <Plus className="size-3 stroke-[2.5] text-primary shrink-0" />
-              <Home className="size-3.5 stroke-[2] opacity-75 shrink-0" />
+              <Plus className="size-3 stroke-[2.5] text-amber-600 dark:text-amber-400 shrink-0" />
+              <Home className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
             </button>
           ) : (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60">
-              <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
-              <Home className="size-3.5 stroke-[2] shrink-0 opacity-90" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/50 bg-amber-500/15 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-2xs">
+              <Check className="size-3.5 stroke-[2.5] text-amber-600 dark:text-amber-400 shrink-0" />
+              <Home className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-              <div className="flex items-center gap-1 ms-1.5 border-s border-primary/30 ps-1.5">
+              <div className="flex items-center gap-0.5 ms-1 border-s border-amber-500/30 ps-1">
                 <button
                   type="button"
                   title="-1"
@@ -365,9 +411,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                     setRemarkChanged(true);
                   }}
-                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                  className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
                 >
-                  -
+                  <Minus className="size-2.5 stroke-[2.5]" />
                 </button>
                 <button
                   type="button"
@@ -379,9 +425,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                     setRemarkChanged(true);
                   }}
-                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                  className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
                 >
-                  +
+                  <Plus className="size-2.5 stroke-[2.5]" />
                 </button>
                 {detectedHomeworkNum !== null && detectedHomeworkNum !== chronologicalNumForDate && (
                   <button
@@ -393,7 +439,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                       setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                       setRemarkChanged(true);
                     }}
-                    className="size-5 flex items-center justify-center rounded hover:bg-primary/25 text-primary active:scale-90 cursor-pointer transition-colors"
+                    className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 active:scale-90 cursor-pointer transition-colors"
                   >
                     <RefreshCw className="size-3" />
                   </button>
@@ -416,25 +462,29 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
           {/* Les activités pédagogiques : Contrôle des cahiers, Remédiation, Soutien, Rattrapage */}
           {PEDAGOGICAL_ACTIVITIES.map(act => {
-            const label = t(act.labelKey);
-            const active = isActivityInRemark(remark, label, act.synonyms);
+            const fullText = t(act.labelKey);
+            const chipLabel = act.getShortLabel(locale);
+            const active = isActivityInRemark(remark, fullText, act.synonyms);
             const Icon = act.Icon;
 
             if (active) {
               return (
                 <div
                   key={act.key}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-2xs transition-all",
+                    act.theme.active
+                  )}
                 >
-                  <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
+                  <Check className="size-3.5 stroke-[2.5] shrink-0" />
                   <Icon className="size-3.5 stroke-[2] shrink-0 opacity-90" />
-                  <span>{label}</span>
+                  <span>{chipLabel}</span>
                   <button
                     type="button"
                     title={t('common.delete')}
-                    aria-label={`${t('common.delete')} ${label}`}
+                    aria-label={`${t('common.delete')} ${chipLabel}`}
                     onClick={() => {
-                      setRemark(current => removeActivityFromRemark(current, label, act.synonyms));
+                      setRemark(current => removeActivityFromRemark(current, fullText, act.synonyms));
                       setRemarkChanged(true);
                     }}
                     className="ms-1 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
@@ -450,15 +500,18 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 key={act.key}
                 type="button"
                 onClick={() => {
-                  setRemark(current => addActivityToRemark(current, label));
+                  setRemark(current => addActivityToRemark(current, fullText));
                   setRemarkChanged(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/60 hover:border-primary/40 active:scale-95 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
-                title={label}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95",
+                  act.theme.inactive
+                )}
+                title={fullText}
               >
-                <Plus className="size-3 stroke-[2.5] text-primary shrink-0" />
-                <Icon className="size-3.5 stroke-[2] opacity-75 shrink-0" />
-                <span>{label}</span>
+                <Plus className="size-3 stroke-[2.5] shrink-0 opacity-80" />
+                <Icon className={cn("size-3.5 stroke-[2] shrink-0", act.theme.icon)} />
+                <span>{chipLabel}</span>
               </button>
             );
           })}
@@ -473,14 +526,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         dir={fieldDir}
         rows={intent === 'remark' ? 4 : 3}
         placeholder={t(selection.mixedRemarks ? 'assignDate.keepRemarks' : 'remark.placeholder')}
-        className="min-h-[105px] w-full resize-y rounded-xl border border-border bg-background p-3 text-sm font-medium leading-relaxed text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
+        className="min-h-[120px] w-full resize-y rounded-2xl border border-border/80 bg-background/90 p-3.5 text-sm font-medium leading-relaxed text-foreground shadow-2xs outline-none transition-all placeholder:text-muted-foreground/60 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
       />
-
-      {selectedCount > 1 && (
-        <p className="text-[12px] font-medium leading-snug text-muted-foreground font-sans">
-          {t('remark.groupHint', { count: number.format(selectedCount) })}
-        </p>
-      )}
     </div>
   );
 
@@ -490,43 +537,59 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-2xs">
             {intent === 'remark' ? (
               <FileText className="h-5 w-5 stroke-[2.2]" />
             ) : (
               <CalendarPlus className="h-5 w-5 stroke-[2.2]" />
             )}
           </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground font-sans">
-            {intent === 'remark' ? t('remark.title') : t('assignDate.title')}
-          </span>
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate font-sans">
+              {intent === 'remark' ? t('remark.title') : t('assignDate.title')}
+            </h3>
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground font-sans">
+              <span>
+                {t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', {
+                  count: number.format(selectedCount),
+                })}
+              </span>
+              {selectedDate && (
+                <>
+                  <span className="opacity-30">•</span>
+                  <div className="relative inline-flex items-center">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 font-semibold text-foreground/90 hover:text-primary transition-colors cursor-pointer"
+                      dir="ltr"
+                    >
+                      <CalendarDays className="size-3.5 text-primary shrink-0" />
+                      <span>
+                        {(() => {
+                          const [y, m, d] = selectedDate.split('-');
+                          return y && m && d ? `${d}/${m}/${y}` : selectedDate;
+                        })()}
+                      </span>
+                      <ChevronDown className="size-2.5 opacity-60 shrink-0" />
+                    </button>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={event => chooseDate(event.target.value)}
+                      onClick={e => {
+                        try {
+                          if (typeof e.currentTarget.showPicker === 'function') e.currentTarget.showPicker();
+                        } catch {}
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      aria-label={t('remark.sessionDate')}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      }
-      description={
-        intent === 'remark' ? (
-          <span className="flex items-center gap-2 flex-wrap text-xs sm:text-sm text-muted-foreground font-sans">
-            <span>
-              {t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', {
-                count: number.format(selectedCount),
-              })}
-            </span>
-            {selectedDate && (
-              <>
-                <span className="opacity-40">•</span>
-                <span className="font-semibold text-foreground/80" dir="ltr">
-                  {(() => {
-                    const [y, m, d] = selectedDate.split('-');
-                    return y && m && d ? `${d}/${m}/${y}` : selectedDate;
-                  })()}
-                </span>
-              </>
-            )}
-          </span>
-        ) : (
-          t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', {
-            count: number.format(selectedCount),
-          })
-        )
       }
       maxWidth="lg"
       className="sm:max-w-xl sm:rounded-2xl"
@@ -566,61 +629,17 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         <div className="space-y-4 animate-fade-in duration-200">
           {remarkInputSection}
 
-          {/* Compact session date row */}
-          <div className="pt-2 border-t border-border/60">
-            <div className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-muted/25 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <CalendarDays className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="text-[11px] font-semibold text-muted-foreground font-sans">
-                    {t('remark.sessionDate')}
-                  </div>
-                  <div className="text-sm font-bold text-foreground font-sans" dir="ltr">
-                    {selectedDate ? (() => {
-                      const [y, m, d] = selectedDate.split('-');
-                      return y && m && d ? `${d}/${m}/${y}` : selectedDate;
-                    })() : t('assignDate.unassign')}
-                  </div>
-                </div>
-              </div>
-              <div className="relative">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 rounded-lg text-xs font-semibold gap-1.5 border-border hover:bg-muted cursor-pointer"
-                >
-                  <CalendarDays className="size-3.5" />
-                  <span>{t('common.edit')}</span>
-                </Button>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={event => chooseDate(event.target.value)}
-                  onClick={e => {
-                    try {
-                      if (typeof e.currentTarget.showPicker === 'function') e.currentTarget.showPicker();
-                    } catch {}
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
-              </div>
+          {/* Warnings if any */}
+          {dateWarnings.length > 0 && (
+            <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] p-3 text-start animate-fade-in duration-200" role="status">
+              {dateWarnings.map((warning, i) => (
+                <p key={i} className="flex items-start gap-2 text-[12px] font-medium leading-snug text-amber-800 dark:text-amber-300 font-sans">
+                  <AlertTriangle aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>{warning.message}</span>
+                </p>
+              ))}
             </div>
-
-            {/* Warnings if any */}
-            {dateWarnings.length > 0 && (
-              <div className="mt-3 space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] p-3 text-start animate-fade-in duration-200" role="status">
-                {dateWarnings.map((warning, i) => (
-                  <p key={i} className="flex items-start gap-2 text-[12px] font-medium leading-snug text-amber-800 dark:text-amber-300 font-sans">
-                    <TriangleAlert aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                    <span>{warning.message}</span>
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       ) : (
         <div className="space-y-6">
@@ -813,7 +832,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] p-4 text-start animate-fade-in duration-200" role="status">
                   {dateWarnings.map((warning, i) => (
                     <p key={i} className="flex items-start gap-2.5 text-[13px] font-medium leading-snug text-amber-800 dark:text-amber-300 font-sans">
-                      <TriangleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <AlertTriangle aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                       <span>{warning.message}</span>
                     </p>
                   ))}
