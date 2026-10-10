@@ -31,6 +31,12 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
     } else if (event.type === 'remediation') {
       const title = event.title.trim() || translate('evaluations.event.remediation');
       coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
+    } else if (event.type === 'soutien') {
+      const title = event.title.trim() || translate('evaluations.event.soutien');
+      coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
+    } else if (event.type === 'rattrapage') {
+      const title = event.title.trim() || translate('evaluations.event.rattrapage');
+      coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
     }
   }
   const removed = new Set(config.removedAssessments?.[classId] ?? []);

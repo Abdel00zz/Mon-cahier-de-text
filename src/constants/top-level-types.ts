@@ -11,4 +11,7 @@ export const TOP_LEVEL_CONTENT_META: Record<TopLevelType, { name: string; autoNu
   oral: { name: 'Évaluation orale', autoNumber: true },
   correction_devoir_maison: { name: 'Correction Devoir maison', autoNumber: true },
   correction_controle_continu: { name: 'Correction du devoir surveillé', autoNumber: true },
+  examen_blanc: { name: 'Examen blanc', autoNumber: true },
+  olympiade: { name: 'Olympiade', autoNumber: true },
+  concours: { name: 'Concours', autoNumber: true },
 };

@@ -374,7 +374,10 @@ export type TopLevelType =
     | 'controle_global'
     | 'oral'
     | 'correction_devoir_maison'
-    | 'correction_controle_continu';
+    | 'correction_controle_continu'
+    | 'examen_blanc'
+    | 'olympiade'
+    | 'concours';
 
 export type EmbeddableTopLevelType = Exclude<TopLevelType, 'chapter'>;
 

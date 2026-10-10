@@ -14,7 +14,7 @@ export {
 /* ── Config du niveau de contenu ─────────────────────────────────────────── */
 
 import type { ComponentType } from 'react';
-import { Book, TestTube, Home, FileSignature, CheckCheck, CheckSquare, Clock, FileText, Users } from '../components/ui/icons';
+import { Book, TestTube, Home, FileSignature, CheckCheck, CheckSquare, Clock, FileText, Users, AwardIcon, GraduationCap } from '../components/ui/icons';
 import type { TopLevelType } from '../types';
 import { TOP_LEVEL_CONTENT_META } from './top-level-types';
 
@@ -35,4 +35,7 @@ export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelType, {
   'oral': { ...TOP_LEVEL_CONTENT_META.oral, icon: Users, color: 'text-pink-600 dark:text-pink-400', badgeColor: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-800', rowColor: 'bg-pink-50/40' },
   'correction_devoir_maison': { ...TOP_LEVEL_CONTENT_META.correction_devoir_maison, icon: CheckCheck, color: 'text-cyan-600 dark:text-cyan-400', badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800', rowColor: 'bg-cyan-50/40' },
   'correction_controle_continu': { ...TOP_LEVEL_CONTENT_META.correction_controle_continu, icon: CheckSquare, color: 'text-emerald-600 dark:text-emerald-400', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800', rowColor: 'bg-emerald-50/40' },
+  'examen_blanc': { ...TOP_LEVEL_CONTENT_META.examen_blanc, icon: FileSignature, color: 'text-rose-600 dark:text-rose-400', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800', rowColor: 'bg-rose-50/40' },
+  'olympiade': { ...TOP_LEVEL_CONTENT_META.olympiade, icon: AwardIcon, color: 'text-amber-600 dark:text-amber-400', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800', rowColor: 'bg-amber-50/40' },
+  'concours': { ...TOP_LEVEL_CONTENT_META.concours, icon: GraduationCap, color: 'text-violet-600 dark:text-violet-400', badgeColor: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800', rowColor: 'bg-violet-50/40' },
 };

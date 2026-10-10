@@ -14,7 +14,7 @@ import { hasMathSyntax } from '@/lib/text/math';
 import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
   TestTube, Home, FileSignature, CheckCheck, CheckSquare, Sigma, CircleAlert,
-  Clock, FileText, Users,
+  Clock, FileText, Users, AwardIcon, GraduationCap,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
@@ -383,6 +383,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           selectedElementType.startsWith('devoir_') ||
           selectedElementType.startsWith('controle_') ||
           selectedElementType === 'oral' ||
+          selectedElementType === 'examen_blanc' ||
+          selectedElementType === 'olympiade' ||
+          selectedElementType === 'concours' ||
           selectedElementType.startsWith('correction_')));
   }, [selectedElementType]);
 
@@ -591,6 +594,33 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
                 colorClass="text-emerald-600 dark:text-emerald-400"
                 onClick={() => handleSelectType('correction_controle_continu')}
+              />
+            </div>
+          </div>
+
+          {/* Group 5: Épreuves & Concours */}
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {t('addContent.groupContests')}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              <CategoryCard
+                icon={FileSignature}
+                label={tc('manageLessons.type.examen_blanc')}
+                colorClass="text-rose-600 dark:text-rose-400"
+                onClick={() => handleSelectType('examen_blanc')}
+              />
+              <CategoryCard
+                icon={AwardIcon}
+                label={tc('manageLessons.type.olympiade')}
+                colorClass="text-amber-600 dark:text-amber-400"
+                onClick={() => handleSelectType('olympiade')}
+              />
+              <CategoryCard
+                icon={GraduationCap}
+                label={tc('manageLessons.type.concours')}
+                colorClass="text-violet-600 dark:text-violet-400"
+                onClick={() => handleSelectType('concours')}
               />
             </div>
           </div>

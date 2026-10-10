@@ -109,3 +109,26 @@ test('clearing free text preserves the homework owner and its pedagogical conten
   assert.equal(draft[0].items[0].remark, undefined);
   assert.equal(draft.some((it: any) => it.type === 'devoir_maison'), true);
 });
+
+test('soutien and rattrapage pedagogical events reach the session remark', () => {
+  const settings: Partial<AppConfig> = {
+    pedagogicalEvents: {
+      A: [
+        { id: 's1', type: 'soutien', title: 'دعم تربوي', date: '2026-10-18', status: 'planned', createdAt: '2026-09-01T00:00:00.000Z' },
+        { id: 'r1', type: 'rattrapage', title: 'استدراك', date: '2026-10-25', status: 'planned', createdAt: '2026-09-01T00:00:00.000Z' },
+      ],
+    },
+  };
+  assert.equal(translated(settings).get('2026-10-18'), 'دعم تربوي');
+  assert.equal(translated(settings).get('2026-10-25'), 'استدراك');
+});
+
+test('examen_blanc, olympiade, and concours are valid top-level cell content blocks', async () => {
+  const { TOP_LEVEL_TYPE_CONFIG } = await import('../src/constants/type-maps');
+  assert.ok('examen_blanc' in TOP_LEVEL_TYPE_CONFIG, 'examen_blanc in TOP_LEVEL_TYPE_CONFIG');
+  assert.ok('olympiade' in TOP_LEVEL_TYPE_CONFIG, 'olympiade in TOP_LEVEL_TYPE_CONFIG');
+  assert.ok('concours' in TOP_LEVEL_TYPE_CONFIG, 'concours in TOP_LEVEL_TYPE_CONFIG');
+  assert.equal(TOP_LEVEL_TYPE_CONFIG.examen_blanc.autoNumber, true);
+  assert.equal(TOP_LEVEL_TYPE_CONFIG.olympiade.autoNumber, true);
+  assert.equal(TOP_LEVEL_TYPE_CONFIG.concours.autoNumber, true);
+});

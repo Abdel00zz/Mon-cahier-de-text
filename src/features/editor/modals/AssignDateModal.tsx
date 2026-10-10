@@ -10,7 +10,7 @@ import {
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye, FileText, Check, RefreshCw } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye, FileText, Check, RefreshCw, CheckSquare, BookOpen, History, Home } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
@@ -47,6 +47,71 @@ interface AssignDateModalProps {
 }
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
+
+interface PedagogicalRemarkActivity {
+  key: 'controle_cahiers' | 'remediation' | 'soutien' | 'rattrapage';
+  labelKey: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  synonyms: string[];
+}
+
+const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
+  {
+    key: 'controle_cahiers',
+    labelKey: 'evaluations.event.controle_cahiers',
+    Icon: CheckSquare,
+    synonyms: ['مراقبة دفاتر التلاميذ', 'مراقبة الدفاتر', 'Contrôle des cahiers des élèves', 'Contrôle des cahiers', 'Cahiers vérifiés'],
+  },
+  {
+    key: 'remediation',
+    labelKey: 'evaluations.event.remediation',
+    Icon: RefreshCw,
+    synonyms: ['معالجة التعثرات', 'معالجة', 'Remédiation', 'Remediation'],
+  },
+  {
+    key: 'soutien',
+    labelKey: 'evaluations.event.soutien',
+    Icon: BookOpen,
+    synonyms: ['دعم تربوي', 'دعم', 'Soutien'],
+  },
+  {
+    key: 'rattrapage',
+    labelKey: 'evaluations.event.rattrapage',
+    Icon: History,
+    synonyms: ['استدراك', 'حصّة استدراك', 'حصة استدراك', 'Rattrapage'],
+  },
+];
+
+const isActivityInRemark = (currentRemark: string, label: string, synonyms: string[]): boolean => {
+  if (!currentRemark) return false;
+  const candidates = [label, ...synonyms].filter(Boolean);
+  const lines = currentRemark.split('\n').map(l => l.trim());
+  return candidates.some(cand => {
+    const cLower = cand.toLowerCase();
+    return lines.some(line => {
+      const lLower = line.toLowerCase();
+      return lLower === cLower || lLower.startsWith(cLower) || line.includes(cand);
+    });
+  });
+};
+
+const addActivityToRemark = (currentRemark: string, label: string): string => {
+  const trimmed = currentRemark.trim();
+  if (!trimmed) return label;
+  return `${trimmed}\n${label}`;
+};
+
+const removeActivityFromRemark = (currentRemark: string, label: string, synonyms: string[]): string => {
+  const candidates = [label, ...synonyms].filter(Boolean).map(c => c.toLowerCase());
+  const lines = currentRemark.split('\n');
+  const remaining = lines.filter(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    const tLower = trimmed.toLowerCase();
+    return !candidates.some(c => tLower === c || tLower.startsWith(c) || trimmed.includes(c));
+  });
+  return remaining.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+};
 
 export const AssignDateModal: FC<AssignDateModalProps> = ({
   isOpen,
@@ -262,102 +327,142 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         ) : null}
       </div>
 
-      {/* Quick insert chips avec numérotation synchronisée avancée */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {!hasHomework ? (
-          <button
-            type="button"
-            onClick={() => {
-              const dmText = t('remark.devoirMaisonGiven', { num: activeHomeworkNum });
-              setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
-              setRemarkChanged(true);
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
-            title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
-          >
-            <Plus className="size-3 stroke-[2.5]" />
-            <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-          </button>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60">
-            <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
-            <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-            <div className="flex items-center gap-1 ms-1.5 border-s border-primary/30 ps-1.5">
-              <button
-                type="button"
-                title="-1"
-                aria-label="-1"
-                onClick={() => {
-                  const nextVal = Math.max(1, activeHomeworkNum - 1);
-                  const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
-                  setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
-                  setRemarkChanged(true);
-                }}
-                className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
-              >
-                -
-              </button>
-              <button
-                type="button"
-                title="+1"
-                aria-label="+1"
-                onClick={() => {
-                  const nextVal = activeHomeworkNum + 1;
-                  const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
-                  setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
-                  setRemarkChanged(true);
-                }}
-                className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
-              >
-                +
-              </button>
-              {detectedHomeworkNum !== null && detectedHomeworkNum !== chronologicalNumForDate && (
+      {/* Activités pédagogiques & annotations de séance à choisir directement */}
+      <div className="space-y-2 rounded-2xl border border-border/70 bg-muted/20 p-2.5 sm:p-3">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5 ps-0.5">
+          <span>{t('remark.pedagogicalActivities')}</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Devoir maison avec numérotation chronologique et stepper */}
+          {!hasHomework ? (
+            <button
+              type="button"
+              onClick={() => {
+                const dmText = t('remark.devoirMaisonGiven', { num: activeHomeworkNum });
+                setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                setRemarkChanged(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/60 hover:border-primary/40 active:scale-95 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
+              title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
+            >
+              <Plus className="size-3 stroke-[2.5] text-primary shrink-0" />
+              <Home className="size-3.5 stroke-[2] opacity-75 shrink-0" />
+              <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60">
+              <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
+              <Home className="size-3.5 stroke-[2] shrink-0 opacity-90" />
+              <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
+              <div className="flex items-center gap-1 ms-1.5 border-s border-primary/30 ps-1.5">
                 <button
                   type="button"
-                  title={`Synchroniser avec la date (${chronologicalNumForDate})`}
-                  aria-label="Synchroniser avec la date"
+                  title="-1"
+                  aria-label="-1"
                   onClick={() => {
-                    const dmText = t('remark.devoirMaisonGiven', { num: chronologicalNumForDate });
+                    const nextVal = Math.max(1, activeHomeworkNum - 1);
+                    const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
                     setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                     setRemarkChanged(true);
                   }}
-                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 text-primary active:scale-90 cursor-pointer transition-colors"
+                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
                 >
-                  <RefreshCw className="size-3" />
+                  -
                 </button>
-              )}
+                <button
+                  type="button"
+                  title="+1"
+                  aria-label="+1"
+                  onClick={() => {
+                    const nextVal = activeHomeworkNum + 1;
+                    const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
+                    setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                    setRemarkChanged(true);
+                  }}
+                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                >
+                  +
+                </button>
+                {detectedHomeworkNum !== null && detectedHomeworkNum !== chronologicalNumForDate && (
+                  <button
+                    type="button"
+                    title={`Synchroniser avec la date (${chronologicalNumForDate})`}
+                    aria-label="Synchroniser avec la date"
+                    onClick={() => {
+                      const dmText = t('remark.devoirMaisonGiven', { num: chronologicalNumForDate });
+                      setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                      setRemarkChanged(true);
+                    }}
+                    className="size-5 flex items-center justify-center rounded hover:bg-primary/25 text-primary active:scale-90 cursor-pointer transition-colors"
+                  >
+                    <RefreshCw className="size-3" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  title={t('common.delete')}
+                  aria-label={t('common.delete')}
+                  onClick={() => {
+                    setRemark(current => removeHomeworkFromRemark(current));
+                    setRemarkChanged(true);
+                  }}
+                  className="ms-0.5 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Les activités pédagogiques : Contrôle des cahiers, Remédiation, Soutien, Rattrapage */}
+          {PEDAGOGICAL_ACTIVITIES.map(act => {
+            const label = t(act.labelKey);
+            const active = isActivityInRemark(remark, label, act.synonyms);
+            const Icon = act.Icon;
+
+            if (active) {
+              return (
+                <div
+                  key={act.key}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60"
+                >
+                  <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
+                  <Icon className="size-3.5 stroke-[2] shrink-0 opacity-90" />
+                  <span>{label}</span>
+                  <button
+                    type="button"
+                    title={t('common.delete')}
+                    aria-label={`${t('common.delete')} ${label}`}
+                    onClick={() => {
+                      setRemark(current => removeActivityFromRemark(current, label, act.synonyms));
+                      setRemarkChanged(true);
+                    }}
+                    className="ms-1 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              );
+            }
+
+            return (
               <button
+                key={act.key}
                 type="button"
-                title={t('common.delete')}
-                aria-label={t('common.delete')}
                 onClick={() => {
-                  setRemark(current => removeHomeworkFromRemark(current));
+                  setRemark(current => addActivityToRemark(current, label));
                   setRemarkChanged(true);
                 }}
-                className="ms-0.5 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/60 hover:border-primary/40 active:scale-95 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
+                title={label}
               >
-                <X className="size-3" />
+                <Plus className="size-3 stroke-[2.5] text-primary shrink-0" />
+                <Icon className="size-3.5 stroke-[2] opacity-75 shrink-0" />
+                <span>{label}</span>
               </button>
-            </div>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={() => {
-            const cc = t('evaluations.event.controle_cahiers');
-            setRemark(current => {
-              const trimmed = current.trim();
-              if (!trimmed) return cc;
-              if (trimmed.includes(cc)) return current;
-              return `${trimmed}\n${cc}`;
-            });
-            setRemarkChanged(true);
-          }}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-primary/25 bg-primary/5 hover:bg-primary/10 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
-        >
-          <Plus className="size-3 stroke-[2.5]" />
-          <span>{t('evaluations.event.controle_cahiers')}</span>
-        </button>
+            );
+          })}
+        </div>
       </div>
 
       <textarea
