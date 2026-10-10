@@ -207,7 +207,7 @@
   margin-bottom: -6px;
   padding: 0;
   text-align: center;
-  font-family: var(--font-mono), 'JetBrains Mono', 'Fira Code', 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
+  font-family: 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', var(--font-display), system-ui, sans-serif;
   font-size: 3.75rem;
   font-size: clamp(4.5rem, 5.8vw, 5.25rem);
   font-weight: 800;

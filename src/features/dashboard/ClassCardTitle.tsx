@@ -29,7 +29,7 @@ export function ClassCardTitle({ name, compact = false, intro }: { name: string;
         <span dir={titleDirection(match[1])} className={compact ? 'block truncate text-start' : 'line-clamp-2 break-words text-balance text-start'}>
             <span className="sr-only">{name}</span>
             <span aria-hidden="true">
-                {renderLabel(match[1])}{'\u00a0'}<bdi dir="ltr" className="keep-group-number font-mono font-bold tracking-tight">{match[2]}</bdi>
+                {renderLabel(match[1])}{'\u00a0'}<bdi dir="ltr" className="keep-group-number font-sans font-bold tracking-tight">{match[2]}</bdi>
             </span>
         </span>
     );
