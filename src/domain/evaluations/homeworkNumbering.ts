@@ -165,6 +165,82 @@ export function replaceOrInsertHomeworkInRemark(currentRemark: string, newHomewo
 }
 
 /**
+ * Décompose une remarque en sa mention de devoir maison (si présente)
+ * et le reste des notes libres de l'enseignant.
+ */
+export function splitRemarkContent(remark: string | undefined): {
+  homeworkLine: string | null;
+  homeworkNum: number | null;
+  otherRemark: string | null;
+} {
+  if (!remark || !remark.trim()) {
+    return { homeworkLine: null, homeworkNum: null, otherRemark: null };
+  }
+
+  const lines = remark.split('\n');
+  const hwIndex = lines.findIndex(line => hasHomeworkMention(line));
+
+  if (hwIndex === -1) {
+    return { homeworkLine: null, homeworkNum: null, otherRemark: remark.trim() };
+  }
+
+  const homeworkLine = lines[hwIndex].trim();
+  const homeworkNum = extractHomeworkNumber(homeworkLine);
+  const otherLines = lines.filter((_, idx) => idx !== hwIndex).map(l => l.trim()).filter(Boolean);
+  const otherRemark = otherLines.length > 0 ? otherLines.join('\n') : null;
+
+  return { homeworkLine, homeworkNum, otherRemark };
+}
+
+/**
+ * Calcule intelligemment le numéro chronologique d'un devoir maison
+ * en fonction de la date de la séance cible par rapport aux autres devoirs du cahier.
+ */
+export function getChronologicalHomeworkNumber(options: HomeworkScanOptions & { targetDate?: string; currentRemark?: string }): number {
+  if (options.currentRemark) {
+    const existing = extractHomeworkNumber(options.currentRemark);
+    if (existing !== null && existing > 0) return existing;
+  }
+
+  const targetDate = options.targetDate?.trim();
+  const lessons = Array.isArray(options.lessons) ? (options.lessons as LessonsData) : undefined;
+
+  if (targetDate && lessons && lessons.length > 0) {
+    const homeworkDates: string[] = [];
+    try {
+      const rows = buildLessonRows(lessons);
+      const seenDates = new Set<string>();
+
+      for (const row of rows) {
+        const rawRemark = (row.data as { remark?: string }).remark;
+        const type = String(('type' in row.data ? row.data.type : row.elementType) ?? '');
+        const isHw = (rawRemark && hasHomeworkMention(rawRemark)) || type === 'devoir_maison' || type === 'maison';
+
+        if (isHw) {
+          const rawDate = typeof row.data.date === 'string' ? row.data.date : '';
+          const match = rawDate.match(/\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}[/.-]\d{4}/);
+          if (match) {
+            const dateStr = match[0];
+            if (!seenDates.has(dateStr)) {
+              seenDates.add(dateStr);
+              homeworkDates.push(dateStr);
+            }
+          }
+        }
+      }
+    } catch {
+      // repli en cas d'erreur de parsing
+    }
+
+    // Nombre de devoirs placés chronologiquement avant la date cible
+    const priorCount = homeworkDates.filter(d => d < targetDate).length;
+    return priorCount + 1;
+  }
+
+  return getNextHomeworkNumber(options);
+}
+
+/**
  * Supprime la mention du devoir maison dans une remarque existante.
  */
 export function removeHomeworkFromRemark(currentRemark: string): string {
@@ -172,3 +248,4 @@ export function removeHomeworkFromRemark(currentRemark: string): string {
   const filtered = lines.filter(line => !hasHomeworkMention(line));
   return filtered.join('\n').trim();
 }
+

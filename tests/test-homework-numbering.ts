@@ -5,6 +5,8 @@ import {
   hasHomeworkMention,
   collectKnownHomeworkNumbers,
   getNextHomeworkNumber,
+  getChronologicalHomeworkNumber,
+  splitRemarkContent,
   replaceOrInsertHomeworkInRemark,
   removeHomeworkFromRemark,
   normalizeDigits,
@@ -115,3 +117,44 @@ test('removeHomeworkFromRemark removes homework line leaving other text intact',
   const onlyHomework = 'تم إعطاء الفرض المنزلي رقم 1';
   assert.equal(removeHomeworkFromRemark(onlyHomework), '');
 });
+
+test('splitRemarkContent extracts homework line and leaves extra teacher notes separate', () => {
+  const mixed = 'تم إعطاء الفرض المنزلي رقم 1\nإحضار الأدوات الهندسية';
+  const split = splitRemarkContent(mixed);
+  assert.equal(split.homeworkLine, 'تم إعطاء الفرض المنزلي رقم 1');
+  assert.equal(split.homeworkNum, 1);
+  assert.equal(split.otherRemark, 'إحضار الأدوات الهندسية');
+
+  const onlyHw = splitRemarkContent('Devoir maison 2 donné');
+  assert.equal(onlyHw.homeworkLine, 'Devoir maison 2 donné');
+  assert.equal(onlyHw.homeworkNum, 2);
+  assert.equal(onlyHw.otherRemark, null);
+
+  const noHw = splitRemarkContent('Séance de soutien');
+  assert.equal(noHw.homeworkLine, null);
+  assert.equal(noHw.homeworkNum, null);
+  assert.equal(noHw.otherRemark, 'Séance de soutien');
+});
+
+test('getChronologicalHomeworkNumber respects chronological order of sessions by date', () => {
+  const lessons: LessonsData = [
+    {
+      type: 'chapter',
+      title: 'Ch 1',
+      items: [
+        { type: 'cours', title: 'L1', date: '2026-10-01', remark: 'تم إعطاء الفرض المنزلي رقم 1' },
+        { type: 'cours', title: 'L2', date: '2026-11-01', remark: 'تم إعطاء الفرض المنزلي رقم 2' },
+      ],
+    },
+  ];
+
+  // Session avant le 1er octobre -> doit être #1
+  assert.equal(getChronologicalHomeworkNumber({ lessons, targetDate: '2026-09-15' }), 1);
+
+  // Session entre le 1er octobre et le 1er novembre -> doit être #2
+  assert.equal(getChronologicalHomeworkNumber({ lessons, targetDate: '2026-10-15' }), 2);
+
+  // Session après le 1er novembre -> doit être #3
+  assert.equal(getChronologicalHomeworkNumber({ lessons, targetDate: '2026-11-15' }), 3);
+});
+

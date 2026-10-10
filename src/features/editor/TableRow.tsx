@@ -9,6 +9,8 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { Home } from '@/components/ui/icons';
+import { splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import './editorRowStates.css';
 
@@ -236,11 +238,33 @@ const RemarkCell: FC<{
       data-remark-cell="true"
       className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-center text-center ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
-      {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
-        <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark min-h-[22px] h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">
-          {(merge?.sharedRemark ?? value) || <span className="opacity-0 select-none">·</span>}
-        </div>
-      )}
+      {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (() => {
+        const fullRemark = merge?.sharedRemark ?? value;
+        const { homeworkLine, otherRemark } = splitRemarkContent(fullRemark);
+        return (
+          <>
+            {homeworkLine && (
+              <span
+                data-session-homework="true"
+                dir={textDirectionAttribute(homeworkLine)}
+                title={homeworkLine}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1 my-0.5 rounded-xl border border-primary/30 bg-primary/10 text-primary font-bold text-xs sm:text-sm shadow-2xs transition-all hover:border-primary/50 hover:bg-primary/15"
+              >
+                <Home className="size-3.5 shrink-0 stroke-[2.2]" />
+                <span>{homeworkLine}</span>
+              </span>
+            )}
+            {otherRemark && (
+              <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
+                {otherRemark}
+              </div>
+            )}
+            {!homeworkLine && !otherRemark && (
+              <span className="opacity-0 select-none">·</span>
+            )}
+          </>
+        );
+      })()}
       {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation) && (
         <span
           data-session-annotation="true"

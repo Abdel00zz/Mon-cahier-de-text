@@ -3,13 +3,14 @@ import {
   extractHomeworkNumber,
   hasHomeworkMention,
   getNextHomeworkNumber,
+  getChronologicalHomeworkNumber,
   replaceOrInsertHomeworkInRemark,
   removeHomeworkFromRemark,
 } from '@/domain/evaluations/homeworkNumbering';
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye, FileText, Check } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye, FileText, Check, RefreshCw } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
@@ -210,13 +211,16 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   // Détection et synchronisation avancée du numéro de devoir maison (إعطاء الفرض المنزلي)
   const detectedHomeworkNum = useMemo(() => extractHomeworkNumber(remark), [remark]);
   const hasHomework = useMemo(() => Boolean(detectedHomeworkNum !== null || hasHomeworkMention(remark)), [detectedHomeworkNum, remark]);
+  const chronologicalNumForDate = useMemo(() => {
+    return getChronologicalHomeworkNumber({
+      lessons: lessonsData as LessonsData,
+      targetDate: selectedDate,
+    });
+  }, [lessonsData, selectedDate]);
   const activeHomeworkNum = useMemo(() => {
     if (detectedHomeworkNum !== null && detectedHomeworkNum > 0) return detectedHomeworkNum;
-    return getNextHomeworkNumber({
-      lessons: lessonsData as LessonsData,
-      currentRemark: remark,
-    });
-  }, [detectedHomeworkNum, lessonsData, remark]);
+    return chronologicalNumForDate;
+  }, [detectedHomeworkNum, chronologicalNumForDate]);
 
   const remarkInputSection = (
     <div className="space-y-3">
@@ -268,17 +272,17 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
               setRemarkChanged(true);
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/25 bg-primary/5 hover:bg-primary/10 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
             title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
           >
             <Plus className="size-3 stroke-[2.5]" />
             <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
           </button>
         ) : (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/40 bg-primary/10 text-xs font-bold text-primary shadow-2xs">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/40 bg-primary/15 text-xs font-bold text-primary shadow-2xs transition-all hover:border-primary/60">
             <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
             <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-            <div className="flex items-center gap-0.5 ms-1 border-s border-primary/25 ps-1">
+            <div className="flex items-center gap-1 ms-1.5 border-s border-primary/30 ps-1.5">
               <button
                 type="button"
                 title="-1"
@@ -289,7 +293,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                   setRemarkChanged(true);
                 }}
-                className="size-5 flex items-center justify-center rounded hover:bg-primary/20 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
               >
                 -
               </button>
@@ -303,10 +307,25 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                   setRemarkChanged(true);
                 }}
-                className="size-5 flex items-center justify-center rounded hover:bg-primary/20 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                className="size-5 flex items-center justify-center rounded hover:bg-primary/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
               >
                 +
               </button>
+              {detectedHomeworkNum !== null && detectedHomeworkNum !== chronologicalNumForDate && (
+                <button
+                  type="button"
+                  title={`Synchroniser avec la date (${chronologicalNumForDate})`}
+                  aria-label="Synchroniser avec la date"
+                  onClick={() => {
+                    const dmText = t('remark.devoirMaisonGiven', { num: chronologicalNumForDate });
+                    setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                    setRemarkChanged(true);
+                  }}
+                  className="size-5 flex items-center justify-center rounded hover:bg-primary/25 text-primary active:scale-90 cursor-pointer transition-colors"
+                >
+                  <RefreshCw className="size-3" />
+                </button>
+              )}
               <button
                 type="button"
                 title={t('common.delete')}

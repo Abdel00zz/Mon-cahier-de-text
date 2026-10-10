@@ -17,6 +17,8 @@ import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagn
 import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
 import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
+import { Home } from '@/components/ui/icons';
+import { splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { SessionDocuments } from './SessionDocuments';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
@@ -336,16 +338,35 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                     data-remark-cell="true"
                     className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-center justify-center text-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
-                    {displayRemark ? (
-                      <span
-                        dir={textDirectionAttribute(displayRemark)}
-                        className="editor-type-remark w-full whitespace-pre-wrap break-words text-center font-semibold leading-snug text-foreground/80"
-                      >
-                        {displayRemark}
-                      </span>
-                    ) : (
-                      <span className="opacity-0 select-none text-xs">·</span>
-                    )}
+                    {(() => {
+                      const { homeworkLine, otherRemark } = splitRemarkContent(displayRemark);
+                      return (
+                        <>
+                          {homeworkLine && (
+                            <span
+                              data-session-homework="true"
+                              dir={textDirectionAttribute(homeworkLine)}
+                              title={homeworkLine}
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1 my-0.5 rounded-xl border border-primary/30 bg-primary/10 text-primary font-bold text-xs sm:text-sm shadow-2xs transition-all hover:border-primary/50 hover:bg-primary/15"
+                            >
+                              <Home className="size-3.5 shrink-0 stroke-[2.2]" />
+                              <span>{homeworkLine}</span>
+                            </span>
+                          )}
+                          {otherRemark && (
+                            <span
+                              dir={textDirectionAttribute(otherRemark)}
+                              className="editor-type-remark w-full whitespace-pre-wrap break-words text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm"
+                            >
+                              {otherRemark}
+                            </span>
+                          )}
+                          {!homeworkLine && !otherRemark && (
+                            <span className="opacity-0 select-none text-xs">·</span>
+                          )}
+                        </>
+                      );
+                    })()}
                     {sessionAnnotations.filter(annotation => !displayRemark || !displayRemark.includes(annotation)).map(annotation => (
                       <span
                         key={annotation}
