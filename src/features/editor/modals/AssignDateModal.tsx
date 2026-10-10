@@ -10,6 +10,8 @@ import {
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   CalendarDays,
   CalendarPlus,
@@ -66,17 +68,18 @@ interface AssignDateModalProps {
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
 
+const triggerHaptic = () => {
+  try {
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+  } catch {}
+};
+
 interface PedagogicalRemarkActivity {
   key: 'controle_cahiers' | 'remediation' | 'soutien' | 'rattrapage';
   labelKey: string;
   getShortLabel: (locale: string) => string;
   Icon: React.ComponentType<{ className?: string }>;
   synonyms: string[];
-  theme: {
-    active: string;
-    inactive: string;
-    icon: string;
-  };
 }
 
 const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
@@ -86,11 +89,6 @@ const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
     getShortLabel: (locale) => locale === 'ar' ? 'مراقبة الدفاتر' : locale === 'en' ? 'Notebook check' : 'Contrôle des cahiers',
     Icon: ClipboardCheck,
     synonyms: ['مراقبة دفاتر التلاميذ', 'مراقبة الدفاتر', 'Contrôle des cahiers des élèves', 'Contrôle des cahiers', 'Cahiers vérifiés'],
-    theme: {
-      active: 'border-indigo-500/50 bg-indigo-500/15 text-indigo-900 dark:text-indigo-200',
-      inactive: 'border-indigo-500/25 bg-indigo-500/5 hover:bg-indigo-500/15 text-indigo-900 dark:text-indigo-200',
-      icon: 'text-indigo-600 dark:text-indigo-400',
-    },
   },
   {
     key: 'remediation',
@@ -98,11 +96,6 @@ const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
     getShortLabel: (locale) => locale === 'ar' ? 'معالجة التعثرات' : locale === 'en' ? 'Remediation' : 'Remédiation',
     Icon: RefreshCw,
     synonyms: ['معالجة التعثرات', 'معالجة', 'Remédiation', 'Remediation'],
-    theme: {
-      active: 'border-cyan-500/50 bg-cyan-500/15 text-cyan-900 dark:text-cyan-200',
-      inactive: 'border-cyan-500/25 bg-cyan-500/5 hover:bg-cyan-500/15 text-cyan-900 dark:text-cyan-200',
-      icon: 'text-cyan-600 dark:text-cyan-400',
-    },
   },
   {
     key: 'soutien',
@@ -110,11 +103,6 @@ const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
     getShortLabel: (locale) => locale === 'ar' ? 'دعم تربوي' : locale === 'en' ? 'Support' : 'Soutien',
     Icon: BookOpen,
     synonyms: ['دعم تربوي', 'دعم', 'Soutien'],
-    theme: {
-      active: 'border-emerald-500/50 bg-emerald-500/15 text-emerald-900 dark:text-emerald-200',
-      inactive: 'border-emerald-500/25 bg-emerald-500/5 hover:bg-emerald-500/15 text-emerald-900 dark:text-emerald-200',
-      icon: 'text-emerald-600 dark:text-emerald-400',
-    },
   },
   {
     key: 'rattrapage',
@@ -122,11 +110,6 @@ const PEDAGOGICAL_ACTIVITIES: readonly PedagogicalRemarkActivity[] = [
     getShortLabel: (locale) => locale === 'ar' ? 'حصة استدراك' : locale === 'en' ? 'Make-up' : 'Rattrapage',
     Icon: History,
     synonyms: ['استدراك', 'حصّة استدراك', 'حصة استدراك', 'Rattrapage'],
-    theme: {
-      active: 'border-purple-500/50 bg-purple-500/15 text-purple-900 dark:text-purple-200',
-      inactive: 'border-purple-500/25 bg-purple-500/5 hover:bg-purple-500/15 text-purple-900 dark:text-purple-200',
-      icon: 'text-purple-600 dark:text-purple-400',
-    },
   },
 ];
 
@@ -336,82 +319,100 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   }, [detectedHomeworkNum, chronologicalNumForDate]);
 
   const remarkInputSection = (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {/* Barre d'activités pédagogiques & prévisualisation */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5 ps-0.5 font-sans">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/75 ps-0.5 font-sans">
             {t('remark.pedagogicalActivities')}
           </span>
           <div className="flex items-center gap-2">
             {resolvedDocs && resolvedDocs.length > 0 && onOpenDocumentPreview && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {resolvedDocs.map(preview => (
-                  <button
+                  <motion.button
                     key={preview.assessmentId}
                     type="button"
-                    onClick={() => onOpenDocumentPreview(preview)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { triggerHaptic(); onOpenDocumentPreview(preview); }}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-border/80 bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs"
                     title={t('documentPreview.openAria', { title: preview.title })}
                   >
-                    <Eye className="size-3.5 shrink-0" />
-                    <span dir="auto" className="truncate max-w-[140px]">{preview.title}</span>
-                    <span className="text-[10px] font-medium opacity-80">
+                    <Eye className="size-3 text-muted-foreground" />
+                    <span dir="auto" className="truncate max-w-[130px]">{preview.title}</span>
+                    <span className="text-[10px] text-muted-foreground">
                       ({isRtl ? 'معاينة' : 'Aperçu'})
                     </span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
-            {remark ? (
-              <button
-                type="button"
-                onClick={() => { setRemark(''); setRemarkChanged(true); }}
-                className="text-xs font-semibold text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-                title={t('common.delete')}
-              >
-                <Trash2 className="size-3.5" />
-                <span>{t('remark.clearRemark')}</span>
-              </button>
-            ) : null}
+            <AnimatePresence>
+              {remark ? (
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => {
+                    triggerHaptic();
+                    setRemark('');
+                    setRemarkChanged(true);
+                  }}
+                  className="text-xs font-medium text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                  title={t('common.delete')}
+                >
+                  <Trash2 className="size-3" />
+                  <span>{t('remark.clearRemark')}</span>
+                </motion.button>
+              ) : null}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Action Dock : puces tactiles réactives */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Action Dock neutre et réactif */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           {/* Devoir maison avec numérotation chronologique et stepper */}
           {!hasHomework ? (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               onClick={() => {
+                triggerHaptic();
                 const dmText = t('remark.devoirMaisonGiven', { num: activeHomeworkNum });
                 setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                 setRemarkChanged(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/15 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border/80 bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
               title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
             >
-              <Plus className="size-3 stroke-[2.5] text-amber-600 dark:text-amber-400 shrink-0" />
-              <Home className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <Plus className="size-3 stroke-[2.5] text-muted-foreground shrink-0" />
+              <Home className="size-3.5 text-muted-foreground shrink-0" />
               <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-            </button>
+            </motion.button>
           ) : (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/50 bg-amber-500/15 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-2xs">
-              <Check className="size-3.5 stroke-[2.5] text-amber-600 dark:text-amber-400 shrink-0" />
-              <Home className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <motion.div
+              layout
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-foreground/30 bg-muted text-xs font-bold text-foreground shadow-2xs ring-1 ring-border/40"
+            >
+              <Check className="size-3.5 stroke-[2.5] text-foreground shrink-0" />
+              <Home className="size-3.5 text-foreground shrink-0" />
               <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
-              <div className="flex items-center gap-0.5 ms-1 border-s border-amber-500/30 ps-1">
+              <div className="flex items-center gap-0.5 ms-1 border-s border-border/80 ps-1">
                 <button
                   type="button"
                   title="-1"
                   aria-label="-1"
                   onClick={() => {
+                    triggerHaptic();
                     const nextVal = Math.max(1, activeHomeworkNum - 1);
                     const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
                     setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                     setRemarkChanged(true);
                   }}
-                  className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                  className="size-5 flex items-center justify-center rounded hover:bg-foreground/10 active:scale-90 text-[11px] font-bold text-foreground cursor-pointer transition-colors"
                 >
                   <Minus className="size-2.5 stroke-[2.5]" />
                 </button>
@@ -420,12 +421,13 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   title="+1"
                   aria-label="+1"
                   onClick={() => {
+                    triggerHaptic();
                     const nextVal = activeHomeworkNum + 1;
                     const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
                     setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                     setRemarkChanged(true);
                   }}
-                  className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+                  className="size-5 flex items-center justify-center rounded hover:bg-foreground/10 active:scale-90 text-[11px] font-bold text-foreground cursor-pointer transition-colors"
                 >
                   <Plus className="size-2.5 stroke-[2.5]" />
                 </button>
@@ -435,11 +437,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     title={`Synchroniser avec la date (${chronologicalNumForDate})`}
                     aria-label="Synchroniser avec la date"
                     onClick={() => {
+                      triggerHaptic();
                       const dmText = t('remark.devoirMaisonGiven', { num: chronologicalNumForDate });
                       setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
                       setRemarkChanged(true);
                     }}
-                    className="size-5 flex items-center justify-center rounded hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 active:scale-90 cursor-pointer transition-colors"
+                    className="size-5 flex items-center justify-center rounded hover:bg-foreground/10 text-muted-foreground hover:text-foreground active:scale-90 cursor-pointer transition-colors"
                   >
                     <RefreshCw className="size-3" />
                   </button>
@@ -449,6 +452,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   title={t('common.delete')}
                   aria-label={t('common.delete')}
                   onClick={() => {
+                    triggerHaptic();
                     setRemark(current => removeHomeworkFromRemark(current));
                     setRemarkChanged(true);
                   }}
@@ -457,7 +461,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   <X className="size-3" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Les activités pédagogiques : Contrôle des cahiers, Remédiation, Soutien, Rattrapage */}
@@ -469,50 +473,49 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
             if (active) {
               return (
-                <div
+                <motion.div
                   key={act.key}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-2xs transition-all",
-                    act.theme.active
-                  )}
+                  layout
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-foreground/30 bg-muted text-xs font-bold text-foreground shadow-2xs ring-1 ring-border/40 transition-all"
                 >
-                  <Check className="size-3.5 stroke-[2.5] shrink-0" />
-                  <Icon className="size-3.5 stroke-[2] shrink-0 opacity-90" />
+                  <Check className="size-3.5 stroke-[2.5] text-foreground shrink-0" />
+                  <Icon className="size-3.5 stroke-[2] text-foreground shrink-0" />
                   <span>{chipLabel}</span>
                   <button
                     type="button"
                     title={t('common.delete')}
                     aria-label={`${t('common.delete')} ${chipLabel}`}
                     onClick={() => {
+                      triggerHaptic();
                       setRemark(current => removeActivityFromRemark(current, fullText, act.synonyms));
                       setRemarkChanged(true);
                     }}
-                    className="ms-1 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
+                    className="ms-0.5 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
                   >
                     <X className="size-3" />
                   </button>
-                </div>
+                </motion.div>
               );
             }
 
             return (
-              <button
+              <motion.button
                 key={act.key}
                 type="button"
+                whileTap={{ scale: 0.94 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => {
+                  triggerHaptic();
                   setRemark(current => addActivityToRemark(current, fullText));
                   setRemarkChanged(true);
                 }}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95",
-                  act.theme.inactive
-                )}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border/80 bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer shadow-2xs"
                 title={fullText}
               >
-                <Plus className="size-3 stroke-[2.5] shrink-0 opacity-80" />
-                <Icon className={cn("size-3.5 stroke-[2] shrink-0", act.theme.icon)} />
+                <Plus className="size-3 stroke-[2.5] text-muted-foreground shrink-0" />
+                <Icon className="size-3.5 stroke-[2] text-muted-foreground shrink-0" />
                 <span>{chipLabel}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -526,7 +529,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         dir={fieldDir}
         rows={intent === 'remark' ? 4 : 3}
         placeholder={t(selection.mixedRemarks ? 'assignDate.keepRemarks' : 'remark.placeholder')}
-        className="min-h-[120px] w-full resize-y rounded-2xl border border-border/80 bg-background/90 p-3.5 text-sm font-medium leading-relaxed text-foreground shadow-2xs outline-none transition-all placeholder:text-muted-foreground/60 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
+        className="min-h-[110px] w-full resize-y rounded-xl border border-border/80 bg-background/90 p-3 text-sm font-medium leading-relaxed text-foreground shadow-2xs outline-none transition-all placeholder:text-muted-foreground/60 focus-visible:border-foreground/40 focus-visible:ring-2 focus-visible:ring-foreground/15"
       />
     </div>
   );
@@ -536,76 +539,73 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-2xs">
-            {intent === 'remark' ? (
-              <FileText className="h-5 w-5 stroke-[2.2]" />
-            ) : (
-              <CalendarPlus className="h-5 w-5 stroke-[2.2]" />
-            )}
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate font-sans">
-              {intent === 'remark' ? t('remark.title') : t('assignDate.title')}
-            </h3>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground font-sans">
-              <span>
-                {t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', {
-                  count: number.format(selectedCount),
-                })}
-              </span>
-              {selectedDate && (
-                <>
-                  <span className="opacity-30">•</span>
-                  <div className="relative inline-flex items-center">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 font-semibold text-foreground/90 hover:text-primary transition-colors cursor-pointer"
-                      dir="ltr"
-                    >
-                      <CalendarDays className="size-3.5 text-primary shrink-0" />
-                      <span>
-                        {(() => {
-                          const [y, m, d] = selectedDate.split('-');
-                          return y && m && d ? `${d}/${m}/${y}` : selectedDate;
-                        })()}
-                      </span>
-                      <ChevronDown className="size-2.5 opacity-60 shrink-0" />
-                    </button>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={event => chooseDate(event.target.value)}
-                      onClick={e => {
-                        try {
-                          if (typeof e.currentTarget.showPicker === 'function') e.currentTarget.showPicker();
-                        } catch {}
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      aria-label={t('remark.sessionDate')}
-                    />
-                  </div>
-                </>
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground shadow-2xs">
+              {intent === 'remark' ? (
+                <FileText className="h-4 w-4" />
+              ) : (
+                <CalendarPlus className="h-4 w-4" />
               )}
-            </div>
+            </span>
+            <span className="text-sm sm:text-base font-bold text-foreground truncate font-sans">
+              {intent === 'remark' ? t('remark.title') : t('assignDate.title')}
+            </span>
+            {selectedCount > 1 && (
+              <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md font-sans">
+                {number.format(selectedCount)}
+              </span>
+            )}
           </div>
+
+          {selectedDate && (
+            <div className="relative inline-flex items-center shrink-0">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.94 }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border/80 bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs hover:border-foreground/30 active:scale-95"
+                dir="ltr"
+              >
+                <CalendarDays className="size-3 text-muted-foreground" />
+                <span>
+                  {(() => {
+                    const [y, m, d] = selectedDate.split('-');
+                    return y && m && d ? `${d}/${m}/${y}` : selectedDate;
+                  })()}
+                </span>
+                <ChevronDown className="size-2.5 text-muted-foreground opacity-60" />
+              </motion.button>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={event => chooseDate(event.target.value)}
+                onClick={e => {
+                  try {
+                    if (typeof e.currentTarget.showPicker === 'function') e.currentTarget.showPicker();
+                  } catch {}
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                aria-label={t('remark.sessionDate')}
+              />
+            </div>
+          )}
         </div>
       }
       maxWidth="lg"
       className="sm:max-w-xl sm:rounded-2xl"
-      headerClassName="border-b-0 bg-background"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t-0 bg-background"
+      headerClassName="py-2.5 sm:py-3 px-4 sm:px-6 min-h-0 border-b border-border/40 bg-background/95 backdrop-blur-md"
+      bodyClassName="px-4 py-3.5 sm:px-6 sm:py-4"
+      footerClassName="py-2.5 sm:py-3 px-4 sm:px-6 border-t border-border/40 bg-background/95 backdrop-blur-md"
       footer={
         <div className="flex items-center w-full gap-3">
-          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-11 w-1/3 text-sm font-semibold bg-muted hover:bg-muted/80 text-foreground">
+          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 w-1/3 text-xs sm:text-sm font-semibold bg-muted hover:bg-muted/80 text-foreground cursor-pointer">
             {t('common.cancel')}
           </Button>
           <Button
             type="button"
             onClick={handleApply}
             disabled={intent !== 'remark' && invalidDate}
-            className={`rounded-xl h-11 flex-1 text-sm font-bold shadow-sm transition-all duration-150 ${
+            className={`rounded-xl h-10 flex-1 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 cursor-pointer ${
               intent === 'remark' || actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
