@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { readFileSync } from 'node:fs';
+import test from 'node:test';
 import { bundledCurricula, chapterAssociations, computeOfficialProgression, findCurricula, findMatchingCurriculum, validateCurriculumCatalog } from '../src/domain/curriculum/officialCurriculum';
 import { assertValidClasses, assertValidSyncSettings } from '../api/_lib/validate';
 import { withCurriculumSettings } from '../src/domain/classes/classCurriculumSettings';
@@ -17,6 +17,14 @@ const plan: OfficialCurriculumPlan = { ...bundledCurricula.plans.find(item => it
 const lessons: LessonsData = [{ type: 'evaluation_diagnostic', title: 'Diagnostic', date: '2026-09-07' }, { type: 'chapter', title: 'A', date: '2026-09-14', items: [{ type: 'définition', date: '2026-09-14' }, { type: 'exercice', date: '2026-12-07' }] }, { type: 'chapter', title: 'B', items: [{ type: 'définition' }] }];
 const analyse = (info = classInfo, data = lessons, overrides = {}) => computeOfficialProgression(info, data, { curriculum: plan, config, calendar, today: '2026-09-15', ...overrides });
 const detect = (time: string, patch: Partial<AppConfig> = {}, dated = false) => detectSessionAlerts({ ...config, ...patch }, [classInfo], calendar, new Date(`2026-09-14T${time}+01:00`), () => dated);
+
+test('offline workspace reads its saved timetable for the current session, independently of push and cloud', () => {
+  const restored: AppConfig = JSON.parse(JSON.stringify({ ...config, notificationSettings: { ...config.notificationSettings, enabled: false } }));
+  assert.equal(detectSessionAlerts(restored, [classInfo], calendar, new Date('2026-09-14T08:30:00+01:00'), () => false).current[0]?.classId, 'c1');
+  assert.match(readFileSync('src/app/App.tsx', 'utf8'), /useSessionAlerts\([^;]+authStatus === 'offline' && !!authUser/);
+  const hook = readFileSync('src/hooks/useSessionAlerts.ts', 'utf8');
+  assert.ok(hook.indexOf('setCurrent(previous => previous.key === initialKey') < hook.indexOf('await loadHolidayCalendar()'), 'the indicator does not wait for the cloud calendar');
+});
 
 test('all reviewed plans validate; invalid hours/order and dates reject the update', () => {
   assert.equal(validateCurriculumCatalog(bundledCurricula).plans.length, 9);

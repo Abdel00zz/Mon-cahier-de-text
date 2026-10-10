@@ -239,7 +239,7 @@ const RemarkCell: FC<{
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
         <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">{merge?.sharedRemark ?? value}</div>
       )}
-      {sessionAnnotation && <span data-session-annotation="true" dir={textDirectionAttribute(sessionAnnotation)} title={sessionAnnotation} className="mt-0.5 w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary">{sessionAnnotation}</span>}
+      {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation) && <span data-session-annotation="true" dir={textDirectionAttribute(sessionAnnotation)} title={sessionAnnotation} className="mt-0.5 w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary">{sessionAnnotation}</span>}
     </button>
     <SessionDocuments documents={sessionDocuments} onOpen={onOpenDocumentPreview}/>
     </div>

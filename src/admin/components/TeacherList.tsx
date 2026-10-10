@@ -3,6 +3,7 @@ import type { AdminTeacherSummary } from '../api';
 import { getBundledCalendar } from '../../domain/calendar/calendar';
 import { LatenessSeverity, computeLateness, worstSeverity } from '../../domain/calendar/lateness';
 import { completionColor, globalCompletion, timeAgo } from '../utils';
+import { establishmentKey, establishmentLabel, listEstablishments } from '../establishments';
 
 interface TeacherListProps {
     teachers: AdminTeacherSummary[];
@@ -64,13 +65,15 @@ const isInactive = (teacher: AdminTeacherSummary): boolean => {
     return Number.isNaN(then) || Date.now() - then > INACTIVE_DAYS * 24 * 3600 * 1000;
 };
 
-type SortKey = 'severity' | 'completion' | 'activity' | 'name';
+type SortKey = 'severity' | 'completion' | 'activity' | 'name' | 'establishment';
 type PriorityFilter = LatenessSeverity | 'all' | 'inactive' | 'messages' | 'blocked';
 
 export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp, isLoading, onRefresh, onSelect, onLogout }) => {
     // tolère une liste absente/mal formée : la console ne doit jamais écran-blanchir
     const teachers = Array.isArray(teachersProp) ? teachersProp : [];
     const [query, setQuery] = useState('');
+    const [schoolFilter, setSchoolFilter] = useState<string | null>(null);
+    const schools = useMemo(() => listEstablishments(teachers), [teachers]);
     const [cycleFilter, setCycleFilter] = useState<string>('all');
     const [severityFilter, setSeverityFilter] = useState<PriorityFilter>('all');
     const [sortKey, setSortKey] = useState<SortKey>('severity');
@@ -134,6 +137,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
         const list = enriched.filter(({ teacher, severity, inactive }) => {
             const matchesQuery =
                 !q ||
+                establishmentKey(teacher.establishmentName).includes(establishmentKey(q)) ||
                 teacherNameOf(teacher).toLowerCase().includes(q) ||
                 `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
                 (teacher.email ?? '').toLowerCase().includes(q) || (teacher.contactPhone ?? teacher.phone).includes(q);
@@ -145,10 +149,15 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     severityFilter === 'messages' ? teacher.pendingMessages > 0 :
                         severityFilter === 'blocked' ? teacher.blocked :
                             severity === severityFilter);
-            return matchesQuery && matchesCycle && matchesSubject && matchesSeverity;
+            return matchesQuery && matchesCycle && matchesSubject && matchesSeverity
+                && (schoolFilter === null || establishmentKey(teacher.establishmentName) === schoolFilter);
         });
         const sorted = [...list];
         switch (sortKey) {
+            case 'establishment':
+                sorted.sort((a, b) => establishmentKey(a.teacher.establishmentName).localeCompare(establishmentKey(b.teacher.establishmentName), 'fr')
+                    || teacherNameOf(a.teacher).localeCompare(teacherNameOf(b.teacher), 'fr'));
+                break;
             case 'severity':
                 sorted.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] || a.completion - b.completion);
                 break;
@@ -166,7 +175,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 break;
         }
         return sorted;
-    }, [enriched, query, cycleFilter, subjectFilter, severityFilter, sortKey]);
+    }, [enriched, query, schoolFilter, cycleFilter, subjectFilter, severityFilter, sortKey]);
 
     const toggleSeverityFilter = (value: Exclude<PriorityFilter, 'all'>) =>
         setSeverityFilter(current => (current === value ? 'all' : value));
@@ -323,9 +332,19 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 <input
                     value={query}
                     onChange={e => setQuery(e.target.value)}
-                    placeholder="Rechercher par nom ou téléphone…"
+                    aria-label="Rechercher un enseignant ou un établissement"
+                    placeholder="Nom, établissement, téléphone…"
                     className="h-10 min-w-[12rem] flex-1 rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
+                <select
+                    aria-label="Établissement"
+                    value={schoolFilter === null ? 'all' : `school:${schoolFilter}`}
+                    onChange={e => setSchoolFilter(e.target.value === 'all' ? null : e.target.value.slice(6))}
+                    className="h-11 min-w-0 max-w-full rounded-md border border-border bg-background px-3 text-sm"
+                >
+                    <option value="all">Tous les établissements</option>
+                    {schools.map(([key, label]) => <option key={key} value={`school:${key}`}>{label}</option>)}
+                </select>
                 <select
                     value={cycleFilter}
                     onChange={e => setCycleFilter(e.target.value)}
@@ -356,6 +375,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     <option value="completion">Tri : complétion croissante</option>
                     <option value="activity">Tri : activité récente</option>
                     <option value="name">Tri : nom A→Z</option>
+                    <option value="establishment">Regrouper par établissement</option>
                 </select>
             </div>
 
@@ -375,7 +395,10 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {filtered.map(({ teacher, severity, inactive, completion }) => (
+                    {filtered.map(({ teacher, severity, inactive, completion }, index) => (
+                        <React.Fragment key={teacher.phone}>
+                        {sortKey === 'establishment' && (index === 0 || establishmentKey(filtered[index - 1].teacher.establishmentName) !== establishmentKey(teacher.establishmentName)) &&
+                            <h3 dir="auto" className="col-span-full mt-3 text-sm font-semibold text-muted-foreground">{establishmentLabel(teacher.establishmentName)}</h3>}
                         <button
                             key={teacher.phone}
                             onClick={() => onSelect(teacher.phone)}
@@ -388,6 +411,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                         <span className="truncate">{teacherNameOf(teacher)}</span>
                                     </div>
                                     <div dir="auto" className="text-xs text-muted-foreground truncate">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
+                                    <div dir="auto" className="mt-1 text-xs text-muted-foreground break-words">{establishmentLabel(teacher.establishmentName)}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-lg font-black text-primary">{completion}%</div>
@@ -420,6 +444,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                 <span className="ml-auto text-[10px] font-bold text-primary">Ouvrir la fiche →</span>
                             </div>
                         </button>
+                        </React.Fragment>
                     ))}
                 </div>
             )}

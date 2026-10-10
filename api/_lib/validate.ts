@@ -415,6 +415,19 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
   if (settings === undefined) return undefined;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) throw new HttpError(400, 'Réglages synchronisés invalides.');
   const result = { ...(settings as Record<string, unknown>) };
+  if (result.contentNumbering !== undefined) {
+    const numbering = result.contentNumbering;
+    if (!isPlainObject(numbering) || typeof numbering.enabled !== 'boolean'
+      || (numbering.structureStyle !== undefined && !['legacy', 'decimal', 'roman'].includes(String(numbering.structureStyle)))
+      || (numbering.badgeStyle !== undefined && !['decimal', 'roman', 'hierarchical'].includes(String(numbering.badgeStyle)))
+      || (numbering.scope !== undefined && !['chapter', 'section', 'document'].includes(String(numbering.scope)))) {
+      throw new HttpError(400, 'Numérotation des contenus invalide.');
+    }
+    result.contentNumbering = { enabled: numbering.enabled,
+      ...(numbering.structureStyle !== undefined ? { structureStyle: numbering.structureStyle } : {}),
+      ...(numbering.badgeStyle !== undefined ? { badgeStyle: numbering.badgeStyle } : {}),
+      ...(numbering.scope !== undefined ? { scope: numbering.scope } : {}) };
+  }
   // Published class lists are administrative data, never writable by a teacher.
   delete result.classRosters;
   const classRecord = (key: string): Record<string, unknown> | undefined => {
@@ -436,6 +449,16 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       for (const [id, date] of entries) {
         if (!id || id.length > 180 || typeof date !== 'string' || !ISO_DATE.test(date)) throw new HttpError(400, `Date d'évaluation invalide pour ${classId}.`);
       }
+    }
+  }
+
+  for (const [classId, raw] of Object.entries(classRecord('sessionRemarkOverrides') ?? {})) {
+    if (!isPlainObject(raw) || Object.keys(raw).length > 600) throw new HttpError(400, `sessionRemarkOverrides.${classId} invalide.`);
+    for (const [id, value] of Object.entries(raw)) {
+      if (!id || id.length > 220 || !isPlainObject(value)
+        || Object.keys(value).some(key => key !== 'text' && key !== 'hidden')
+        || (value.text !== undefined && (typeof value.text !== 'string' || value.text.length > 1000))
+        || (value.hidden !== undefined && typeof value.hidden !== 'boolean')) throw new HttpError(400, 'Remarque d’activité invalide.');
     }
   }
 

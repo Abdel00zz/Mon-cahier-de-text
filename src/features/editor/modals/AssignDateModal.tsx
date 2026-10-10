@@ -1,11 +1,15 @@
+import { sessionDateKeys } from '@/domain/evaluations/homeworkPlacement';
+import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert, Plus, X, Eye } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
 import type { TimetableEntry, TimetableClockPolicy, LessonsData } from '@/types';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
+import type { SessionRemarkEntry } from '@/domain/evaluations/sessionActivityRemarks';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
 import { extractDateRange, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
@@ -24,6 +28,14 @@ interface AssignDateModalProps {
   timetable?: TimetableEntry[];
   timetableClock?: TimetableClockPolicy;
   lessonsData?: LessonsData | unknown;
+  /** Annotations de la séance (ex: Devoir maison 1 donné, Contrôle des cahiers...) */
+  sessionAnnotation?: string;
+  getSessionAnnotation?: (date?: string) => string | undefined;
+  getSessionRemarkEntries?: (date?: string) => readonly SessionRemarkEntry[];
+  /** Sujets et documents associés à cette séance pour aperçu */
+  sessionDocuments?: readonly NotebookDocumentPreview[];
+  getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
 const isoFromOffset = (offset: number) => addDaysIso(todayInMorocco(), offset);
@@ -38,6 +50,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   timetable,
   timetableClock,
   lessonsData,
+  sessionAnnotation,
+  getSessionAnnotation,
+  getSessionRemarkEntries,
+  sessionDocuments,
+  getSessionDocuments,
+  onOpenDocumentPreview,
 }) => {
   const { t, locale, isRtl } = useLocale();
   const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
@@ -49,6 +67,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const [remark, setRemark] = useState('');
   const [dateChanged, setDateChanged] = useState(false);
   const [remarkChanged, setRemarkChanged] = useState(false);
+  const [activityRemarks, setActivityRemarks] = useState<Record<string, string | null>>({});
   /*
    * Sens de saisie de la remarque : elle suit SON écriture, jamais celle du
    * cahier — un texte arabe commence à droite même dans un cahier latin, et un
@@ -59,6 +78,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const fieldDir = remark ? 'auto' : isRtl ? 'rtl' : 'ltr';
   const { selection, intent, patch } = session;
   const selectedCount = selection.targets.length;
+  const activityEntries = useMemo(() => [...new Map(selection.targets.flatMap(indices =>
+    sessionDateKeys(findItem(session.source, indices).item?.date).flatMap(date => getSessionRemarkEntries?.(date) ?? []),
+  ).map(entry => [entry.id, entry])).values()], [selection, session.source, getSessionRemarkEntries]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,13 +91,62 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     setSelectedDate(initialStart);
     setEndDate(extractedEnd || '');
     setIsRangeOpen(Boolean(extractedEnd));
-    setRemark(patch?.remark ?? selection.remark);
+
+    // Initialisation intelligente : intégrer directement le devoir maison et les annotations
+    // de la séance dans la zone remarque pour une édition unifiée, sans blocs redondants en bas.
+    const rawRemark = (patch?.remark ?? selection.remark ?? '').trim();
+    const activeAnnotation = ((initialStart ? getSessionAnnotation?.(initialStart) : undefined)
+      ?? sessionAnnotation
+      ?? activityEntries.filter(entry => !entry.hidden).map(entry => entry.text).join('\n')
+    ).trim();
+
+    let computedRemark = rawRemark;
+    if (activeAnnotation) {
+      if (!rawRemark) {
+        computedRemark = activeAnnotation;
+      } else if (!rawRemark.includes(activeAnnotation)) {
+        computedRemark = `${activeAnnotation}\n${rawRemark}`;
+      }
+    }
+
+    setRemark(computedRemark);
+    setActivityRemarks(patch?.activityRemarks ?? {});
     setDateChanged(patch?.date !== undefined);
-    setRemarkChanged(patch?.remark !== undefined);
-  }, [selection, patch, isOpen]);
+    setRemarkChanged(patch?.remark !== undefined || computedRemark !== rawRemark);
+  }, [selection, patch, isOpen, sessionAnnotation, getSessionAnnotation, activityEntries]);
+
+  const activeDate = selectedDate || (selection.date ? extractDateRange(selection.date).startDate : '');
+  const resolvedDocs = sessionDocuments ?? (activeDate ? getSessionDocuments?.(activeDate) : undefined);
 
   const appliesDate = dateChanged || (intent === 'date' && !selection.mixedDates);
-  const chooseDate = (date: string) => { setSelectedDate(date); setDateChanged(true); };
+  const chooseDate = (newDate: string) => {
+    const prevDate = selectedDate;
+    setSelectedDate(newDate);
+    setDateChanged(true);
+
+    // Adaptation contextuelle ultra avancée : réactualiser l'annotation de séance dans la remarque
+    const prevAnnotation = ((prevDate ? getSessionAnnotation?.(prevDate) : undefined) ?? sessionAnnotation ?? '').trim();
+    const nextAnnotation = ((newDate ? getSessionAnnotation?.(newDate) : undefined) ?? '').trim();
+
+    if (prevAnnotation !== nextAnnotation) {
+      setRemark(current => {
+        const trimmed = current.trim();
+        if (!trimmed || trimmed === prevAnnotation) {
+          return nextAnnotation;
+        }
+        if (prevAnnotation && trimmed.includes(prevAnnotation)) {
+          return nextAnnotation
+            ? trimmed.replace(prevAnnotation, nextAnnotation)
+            : trimmed.replace(prevAnnotation, '').trim();
+        }
+        if (nextAnnotation && !trimmed.includes(nextAnnotation)) {
+          return `${nextAnnotation}\n${trimmed}`;
+        }
+        return current;
+      });
+      setRemarkChanged(true);
+    }
+  };
   const invalidDate = appliesDate && actionType === 'associate' && !selectedDate;
 
   // Alertes live : recalculées à chaque changement de date choisie.
@@ -92,9 +163,26 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       const intersecting = resolveClassSessionDatesInRange(selectedDate, endDate, classId, timetable, timetableClock, lessonsData ?? session.source);
       finalDate = formatPedagogicalDateCell(selectedDate, endDate, effectiveLocale, intersecting);
     }
+
+    // Synchronisation intelligente : si l'annotation d'activité a été effacée ou modifiée,
+    // refléter fidèlement le choix de l'enseignant pour éviter toute réapparition fantôme.
+    const targetDate = actionType === 'associate' ? selectedDate : '';
+    const relevantEntries = (targetDate ? getSessionRemarkEntries?.(targetDate) : undefined) ?? activityEntries;
+    const syncedActivityRemarks = { ...activityRemarks };
+
+    if (relevantEntries && relevantEntries.length > 0) {
+      for (const entry of relevantEntries) {
+        const hasText = remark.includes(entry.text) || remark.includes(entry.originalText);
+        if (!hasText && (remark.trim() === '' || !Object.hasOwn(activityRemarks, entry.id))) {
+          syncedActivityRemarks[entry.id] = null;
+        }
+      }
+    }
+
     onApply({
       ...(appliesDate ? { date: actionType === 'associate' ? finalDate : '' } : {}),
-      ...(remarkChanged ? { remark } : {}),
+      ...(remarkChanged || remark !== (selection.remark ?? '') ? { remark } : {}),
+      ...(Object.keys(syncedActivityRemarks).length ? { activityRemarks: syncedActivityRemarks } : {}),
     });
   };
 
@@ -356,13 +444,47 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           </div>
         )}
 
-        {/* 4. Remarque de la séance — hors du choix de date : une séance peut
-            porter une remarque sans date, et une séance fusionnée est UNE
-            ligne : la remarque s'écrit partout d'un seul coup. */}
+        {/* 4. Remarque de la séance — méthode ultra avancée avec affichage direct et commande spéciale d'aperçu */}
         <div className="space-y-2.5 border-t border-border/60 pt-5">
-          <label htmlFor="assign-date-remark" className="block text-sm font-medium text-foreground text-start font-sans">
-            {t('remark.title')} :
-          </label>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <label htmlFor="assign-date-remark" className="block text-sm font-semibold text-foreground text-start font-sans">
+                {t('remark.title')} :
+              </label>
+              {/* Commande spéciale pour l'aperçu du sujet associé */}
+              {resolvedDocs && resolvedDocs.length > 0 && onOpenDocumentPreview && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {resolvedDocs.map(preview => (
+                    <button
+                      key={preview.assessmentId}
+                      type="button"
+                      onClick={() => onOpenDocumentPreview(preview)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
+                      title={t('documentPreview.openAria', { title: preview.title })}
+                    >
+                      <Eye className="size-3.5 shrink-0" />
+                      <span dir="auto" className="truncate max-w-[160px]">{preview.title}</span>
+                      <span className="text-[10px] font-medium opacity-80 underline underline-offset-2">
+                        ({isRtl ? 'معاينة' : 'Aperçu'})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {remark ? (
+              <button
+                type="button"
+                onClick={() => { setRemark(''); setRemarkChanged(true); }}
+                className="text-xs font-semibold text-muted-foreground hover:text-destructive inline-flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                title={t('common.delete')}
+              >
+                <X className="size-3" />
+                <span>{t('remark.clearRemark')}</span>
+              </button>
+            ) : null}
+          </div>
+
           <textarea
             id="assign-date-remark"
             value={remark}
@@ -370,8 +492,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             dir={fieldDir}
             rows={3}
             placeholder={t(selection.mixedRemarks ? 'assignDate.keepRemarks' : 'remark.placeholder')}
-            className="min-h-[88px] w-full resize-y rounded-xl border border-border bg-background p-3 text-sm font-medium leading-relaxed text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="min-h-[96px] w-full resize-y rounded-xl border border-border bg-background p-3 text-sm font-medium leading-relaxed text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
           />
+
           {selectedCount > 1 && (
             <p className="text-[12px] font-medium leading-snug text-muted-foreground font-sans">
               {t('remark.groupHint', { count: number.format(selectedCount) })}

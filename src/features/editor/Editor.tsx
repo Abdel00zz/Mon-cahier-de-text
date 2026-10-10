@@ -1,3 +1,5 @@
+import { restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
+import type { AppConfig } from '@/types';
 import { buildAbsenceSessions, groupRowsWithAbsences } from '@/domain/notebook/absenceSessions';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
@@ -26,12 +28,14 @@ import { applyContentEdit, buildContentEditTargetsGrouped, buildSessionTargetsGr
 import type { ContentDraft } from '@/domain/notebook/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData, addDaysIso } from '@/domain/notebook/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { listExportableChapters, selectExportableChapters } from '@/domain/notebook/chapterExport';
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/domain/notebook/contentDirection';
-import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
+import { sessionRemarkTextMap, buildSessionRemarkEntries, remarksForSessionDates } from '@/domain/evaluations/sessionActivityRemarks';
+import { documentsForSessionDates } from '@/domain/evaluations/activityDocumentPreviews';
+import { sessionDateKey } from '@/domain/evaluations/homeworkPlacement';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { produce, type Draft } from 'immer';
 import { applySessionEdit } from '@/domain/notebook/sessionEditing';
@@ -187,8 +191,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // Numérotation par chapitre : « définition 1 », « exemple 2 »… Un numéro
   // saisi à la main reste prioritaire sur le calcul (activé par défaut).
   const contentNumbers = useMemo(
-    () => buildContentNumbers(lessonsData, config.contentNumbering?.enabled !== false),
-    [lessonsData, config.contentNumbering?.enabled],
+    () => buildContentNumbers(lessonsData, config.contentNumbering ?? true),
+    [lessonsData, config.contentNumbering],
   );
   const getContentNumber = useCallback(
     (indices: Indices) => contentNumbers.get(indicesKey(indices)),
@@ -225,14 +229,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * et mémoïsée. Le contrôle des cahiers, la remédiation et les évaluations
    * orales datées alimentent cette annotation sans modifier le plan du cours.
    */
-  const sessionAnnotationTexts = useMemo(() => {
-    const separator = locale === 'ar' ? '، ' : ', ';
-    return buildSessionActivityRemarks(config, classInfo.id, t, separator);
-  }, [config, classInfo.id, locale, t]);
+  const sessionRemarkEntries = useMemo(() => buildSessionRemarkEntries(config, classInfo.id, t, locale === 'ar' ? '، ' : ', ', lessonsData), [config, classInfo.id, t, locale, lessonsData]);
+  const sessionAnnotationTexts = useMemo(() => sessionRemarkTextMap(sessionRemarkEntries), [sessionRemarkEntries]);
   const getSessionAnnotation = useCallback(
-    (date?: string) => (date ? sessionAnnotationTexts.get(addDaysIso(date, 0)) : undefined),
+    (date?: string) => remarksForSessionDates(sessionAnnotationTexts, date),
     [sessionAnnotationTexts],
   );
+  const getSessionRemarkEntries = useCallback((date?: string) => sessionRemarkEntries.get(sessionDateKey(date)) ?? [], [sessionRemarkEntries]);
 
   /*
    * Sujets de devoirs : le cahier affiche « Devoir maison 2 », les évaluations
@@ -248,7 +251,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     [documentPreviews],
   );
   const getSessionDocuments = useCallback(
-    (date: string) => documentPreviews.sessions.get(date),
+    (date: string) => documentsForSessionDates(documentPreviews.sessions, date),
     [documentPreviews],
   );
   const handleOpenDocumentPreview = useCallback(
@@ -404,6 +407,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   } = useSelectionEngine({
     lessonsData,
     moveTargets: sessionTargets,
+    contentMoveTargets: contentEditTargets,
     freeKeys,
     setState,
     setEditorState
@@ -449,6 +453,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     [getDateWarnings, today]
   );
 
+  const recordSessionSettings = useCallback((patch: Partial<AppConfig>) => {
+    const before = Object.fromEntries(Object.keys(patch).map(key => [key, config[key as keyof AppConfig]])) as Partial<AppConfig>;
+    if (JSON.stringify(before) === JSON.stringify(patch)) return undefined;
+    updateConfig(patch);
+    const restore = (from: Partial<AppConfig>, to: Partial<AppConfig>) => {
+      if (!workspaceIsActive()) return;
+      const restored = restoreSessionRemarkSettings(evaluationContext.current.config, classInfo.id, from, to);
+      if (Object.keys(restored).length) updateConfig(restored);
+    };
+    return { undo: () => restore(patch, before), redo: () => restore(before, patch) };
+  }, [config, classInfo.id, updateConfig, workspaceIsActive]);
+
   const sessionAssignment = useSessionAssignment({
     lessonsData, locale, setState, getDateWarnings, revision: config, isActive: workspaceIsActive,
     getSelectionWarnings: (source, targets, patch) => {
@@ -464,6 +480,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
     },
     onStale: () => showNotification(t('editorNotice.selectionUnavailable'), 'info'),
+    onActivityRemarks: (patch, session) => {
+      const result = sessionRemarkSettingsPatch(config, classInfo.id, session.source, session.selection.targets, patch, sessionRemarkEntries);
+      return recordSessionSettings(result);
+    },
   });
   const { open: openSession, assignDate: assignSessionDate, cancel: cancelSession } = sessionAssignment;
   const handleOpenRemark = useCallback((indices: Indices) => {
@@ -1040,7 +1060,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               showNotification(t('editorNotice.noNewSession'), 'info');
               return;
           }
-          selection = createPrintSelection(lessonsData, newDates, config.contentNumbering?.enabled !== false);
+          selection = createPrintSelection(lessonsData, newDates, config.contentNumbering ?? true);
           datesToRecord = newDates;
       } else if (mode === 'custom') {
           if (!selectedDates || selectedDates.length === 0) {
@@ -1055,7 +1075,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               showNotification(t('editorNotice.selectionUnavailable'), 'info');
               return;
           }
-          selection = createPrintSelection(lessonsData, validSelectedDates, config.contentNumbering?.enabled !== false);
+          selection = createPrintSelection(lessonsData, validSelectedDates, config.contentNumbering ?? true);
           datesToRecord = validSelectedDates;
       }
 
@@ -1077,7 +1097,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
       // Commit the frozen document before preparing fonts and formula layout.
       flushSync(() => {
-          setPrintSnapshot({ lessonsData: selection ?? lessonsData, absenceSessions: absenceSessions.filter(session => datesToRecord.includes(session.date)), classInfo, config, contentDirection, newlyAddedIds: [], ...options });
+          setPrintSnapshot({ lessonsData: selection ?? lessonsData, sessionAnnotations: sessionAnnotationTexts, absenceSessions: absenceSessions.filter(session => datesToRecord.includes(session.date)), classInfo, config, contentDirection, newlyAddedIds: [], ...options });
           setEditorState(draft => { draft.activeModal = null; });
       });
 
@@ -1146,22 +1166,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const handleClearSelectedDates = useCallback(() => {
       if (selectedIndices.length === 0) return;
-      setState(draft => {
-          selectedIndices.forEach(idx => {
-              const { item } = findItem(draft, idx);
-              if (item && typeof (item as any).date === 'string') {
-                  (item as any).date = '';
-              }
-          });
-      }, 'clear-date');
-      setSelectionState(createSelectionState());
-      setEditorState(draft => {
-        draft.saveStatus = 'unsaved';
-      });
-      showNotification(t('editorNotice.dateUnassigned'), "success");
-  }, [selectedIndices, setState, setEditorState, showNotification, t]);
-
-
+      assignSessionDate(selectedIndices, '');
+  }, [selectedIndices, assignSessionDate]);
 
   const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: ContentDraft) => {
       const targets = contentEditTargets.get(indicesKey(indices));
@@ -1182,7 +1188,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           });
       });
       reviewNotebookChange(source, next, () => {
-        setState(() => next, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
+        const effects = finalItem.date !== undefined ? recordSessionSettings(
+          sessionRemarkSettingsPatch(config, classInfo.id, source, targets, { date: finalItem.date }, sessionRemarkEntries),
+        ) : undefined;
+        setState(() => next, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item', effects);
         showNotification(t('editorNotice.contentUpdated'), "success");
         setEditorState(draft => {
           draft.saveStatus = 'unsaved';
@@ -1190,7 +1199,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           draft.activeModal = null;
         });
       });
-  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t, classInfo.id, config, reviewNotebookChange]);
+  }, [setState, showNotification, setEditorState, contentEditTargets, contentDirection, locale, t, classInfo.id, config, reviewNotebookChange, sessionRemarkEntries, recordSessionSettings]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       if (!workspaceIsActive()) return false;
@@ -1492,6 +1501,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         handleConfirmContentEdit={value => {
           if (editingIndices) handleConfirmContentEdit(editingIndices, value);
         }}
+        getSessionAnnotation={getSessionAnnotation}
+        getSessionRemarkEntries={getSessionRemarkEntries}
+        getSessionDocuments={getSessionDocuments}
+        onOpenDocumentPreview={handleOpenDocumentPreview}
       />
 
       <ConfirmDialog open={!!pendingEvaluationEdit} onOpenChange={open => { if (!open) setPendingEvaluationEdit(null); }}

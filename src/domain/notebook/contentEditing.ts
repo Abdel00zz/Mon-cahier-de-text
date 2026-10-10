@@ -92,6 +92,7 @@ export function applyContentEdit(
             item.date = formatted;
           } else if (patch.date === '') {
             delete (item as any).date;
+            delete item.remark;
           }
         } else {
           Object.assign(item, { [field]: patch[field] });
@@ -141,9 +142,9 @@ export function applyRemarkEdit(draft: Draft<LessonsData>, targets: readonly Ind
     return findItem(draft, indices).item;
   });
   if (items.length === 0 || keys.size !== items.length || items.some(item => !item)) return false;
-  for (const item of items) {
+  for (const [index, item] of items.entries()) {
     const holder = item as { remark?: string };
-    if (remark.trim()) holder.remark = remark;
+    if (remark.trim() && index === items.length - 1) holder.remark = remark;
     else delete holder.remark;
   }
   return true;

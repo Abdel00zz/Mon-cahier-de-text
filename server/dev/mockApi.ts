@@ -260,6 +260,7 @@ export function setupMockApi(app: express.Express) {
                         timetable: (body.timetable ?? (existingBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
                         settings: (() => {
                             const settings = { ...(body.settings ?? (existingBlob?.settings as any) ?? {}) };
+                            if (settings.sessionRemarkOverrides === undefined) settings.sessionRemarkOverrides = (existingBlob?.settings as any)?.sessionRemarkOverrides;
                             settings.classRosters = { ...((existingBlob?.settings as any)?.classRosters ?? {}) };
                             for (const id of deletedIds) delete settings.classRosters[id];
                             if (body.settings) {
@@ -453,7 +454,7 @@ export function setupMockApi(app: express.Express) {
                         delete adminClassOverrides[classId];
                         const deletedClasses = { ...((classesBlob?.deletedClasses as Record<string, unknown>) ?? {}), [classId]: { deletedAt: now } };
                         const settings = { ...((classesBlob?.settings as Record<string, any>) ?? {}) };
-                        for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents']) {
+                        for (const key of ['sessionRemarkOverrides', 'assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents']) {
                             if (settings[key]) {
                                 settings[key] = { ...settings[key] };
                                 delete settings[key][classId];

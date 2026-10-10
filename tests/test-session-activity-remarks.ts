@@ -4,6 +4,8 @@ import { buildSessionActivityRemarks } from '../src/domain/evaluations/sessionAc
 import { translateLocaleMessage } from '../src/i18n/messages';
 import { assertValidSyncSettings } from '../api/_lib/validate';
 import { sessionPrintSignatures } from '../src/infrastructure/printing/printMeta';
+import { getLastNotebookDate } from '../src/domain/evaluations/homeworkPlacement';
+import { applySessionEdit } from '../src/domain/notebook/sessionEditing';
 import type { AppConfig, LessonsData, PedagogicalEvent } from '../src/types';
 
 const event = (id: string, type: PedagogicalEvent['type'], date = '2026-10-01'): PedagogicalEvent => ({
@@ -86,3 +88,24 @@ test('homework assessments (devoir maison) add "تم إعطاء الفرض ال�
   assert.equal(translated(settings).get('2026-12-05'), 'تم إعطاء الفرض المنزلي 3');
 });
 
+test('getLastNotebookDate extracts the date of the last content in the editor table', () => {
+  const empty: LessonsData = [];
+  assert.equal(getLastNotebookDate(empty), undefined);
+
+  const lessons: LessonsData = [
+    { type: 'chapter', title: 'Ch 1', items: [{ type: 'cours', title: 'L1', date: '2026-10-01' }, { type: 'exercice', title: 'Ex 1', date: '2026-10-05' }] },
+    { type: 'chapter', title: 'Ch 2', items: [{ type: 'cours', title: 'L2', date: '2026-10-12' }] },
+  ];
+  assert.equal(getLastNotebookDate(lessons), '2026-10-12');
+});
+
+test('clearing free text preserves the homework owner and its pedagogical content', () => {
+  const lessons: LessonsData = [
+    { type: 'chapter', title: 'Ch 1', items: [{ type: 'cours', title: 'L1', date: '2026-10-10', remark: 'Initial' }] },
+    { type: 'devoir_maison', title: 'Devoir maison 1', date: '2026-10-10' },
+  ];
+  const draft = JSON.parse(JSON.stringify(lessons));
+  applySessionEdit(draft, [{ chapterIndex: 0, itemIndex: 0 }], { remark: '' });
+  assert.equal(draft[0].items[0].remark, undefined);
+  assert.equal(draft.some((it: any) => it.type === 'devoir_maison'), true);
+});

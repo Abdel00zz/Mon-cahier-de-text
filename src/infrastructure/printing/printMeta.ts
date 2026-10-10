@@ -1,6 +1,7 @@
 import type { AbsenceSession } from '../../domain/notebook/absenceSessions';
 import { LessonsData } from '../../types.js';
-import { addDaysIso, flattenLessons } from '../../domain/notebook/dataUtils.js';
+import { addDaysIso } from '../../domain/notebook/dataUtils.js';
+import { visibleNotebookRows } from '../../domain/evaluations/homeworkPlacement.js';
 import { buildContentNumbers } from '../../domain/notebook/contentNumbering.js';
 import { buildLessonRows } from '../../domain/notebook/lessonRows.js';
 
@@ -102,7 +103,7 @@ export const savePrintPrefs = (classId: string, prefs: PrintPrefs): void => {
 /** Toutes les dates de séances distinctes présentes dans le cahier. */
 export const collectSessionDates = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = []): string[] => {
     const dates = new Set<string>(absences.map(session => session.date));
-    for (const entry of flattenLessons(lessonsData)) {
+    for (const entry of visibleNotebookRows(lessonsData)) {
         const date = (entry.data as any)?.date;
         if (typeof date === 'string' && date.trim()) dates.add(addDaysIso(date, 0));
     }
@@ -113,7 +114,7 @@ export const collectSessionDates = (lessonsData: LessonsData, absences: readonly
 export const sessionPrintSignatures = (lessonsData: LessonsData, absences: readonly AbsenceSession[] = [], annotations?: ReadonlyMap<string, string>): Record<string, string> => {
     const contextByKey = new Map<string, string>();
     const contentByDate = new Map<string, string[]>();
-    for (const row of buildLessonRows(lessonsData)) {
+    for (const row of visibleNotebookRows(lessonsData)) {
         const scalarFields = Object.entries(row.data)
             .filter(([key, value]) => !key.startsWith('_') && key !== 'id' && key !== 'separatorAfter' && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'))
             .sort(([a], [b]) => a.localeCompare(b));
@@ -195,7 +196,7 @@ export const filterLessonsByDates = (lessonsData: LessonsData, dates: string[]):
 };
 
 /** Freeze displayed numbers before filtering/reindexing, without modifying the notebook. */
-export const createPrintSelection = (lessons: LessonsData, dates: string[], numberingEnabled = true): LessonsData => {
+export const createPrintSelection = (lessons: LessonsData, dates: string[], numberingEnabled: boolean | import('../../types').ContentNumbering = true): LessonsData => {
     const numbers = buildContentNumbers(lessons, numberingEnabled);
     const byNode = new Map<object, string>();
     for (const row of buildLessonRows(lessons)) {

@@ -131,7 +131,7 @@ const App: React.FC = () => {
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authOwner, config.applicationLocale ?? 'ar');
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
-  const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
+  const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && !!authUser));
   /*
    * Réclamation de la séance courante : elle n'est consommée que par le cahier
    * de la séance ELLE-MÊME (`markSessionHandledFor`). Consommer la séance d'une

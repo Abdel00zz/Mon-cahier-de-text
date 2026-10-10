@@ -52,7 +52,7 @@ test('séance : date et remarque forment une seule mutation, les cibles invalide
   const targets = [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }];
   const result = produce(source, draft => { assert.equal(applySessionEdit(draft, targets, { date: '2026-09-22', remark: 'Après' }), true); });
   assert.deepEqual(result[0].items?.map(item => [item.date, item.remark]), [
-    ['2026-09-22', 'Après'], ['2026-09-22', 'Après'],
+    ['2026-09-22', undefined], ['2026-09-22', 'Après'],
   ]);
   assert.equal(source[0].items?.[0].remark, 'Avant');
   const refused = produce(source, draft => {
@@ -74,7 +74,7 @@ test('séance : modifier uniquement la remarque conserve les dates multiples et 
   const remarkOnly = produce(source, draft => { applySessionEdit(draft, targets, { remark: 'Commun' }); });
   assert.deepEqual(remarkOnly.map(item => item.date), ['2026-09-21', '2026-09-22']);
   const dateOnly = produce(source, draft => { applySessionEdit(draft, targets, { date: '' }); });
-  assert.deepEqual(dateOnly.map(item => item.remark), ['A', 'B']);
+  assert.deepEqual(dateOnly.map(item => item.remark), [undefined, undefined]);
   assert.equal(produce(source, draft => { applySessionEdit(draft, targets, {}); }), source);
 });
 
@@ -625,8 +625,8 @@ test('exercice : paragraphe vide sans liste, éléments du chapitre, sous-paragr
     { type: 'chapter', title: 'C2', items: [{ type: 'exercice', title: 'Y' }] },
   ];
   const chapterTargets = buildSessionTargets(buildLessonRows(twoChapters));
-  assert.equal(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'down'), null);
-  assert.equal(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 1, itemIndex: 0 })]), 'up'), null);
+  assert.ok(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 0, itemIndex: 0 })]), 'down'));
+  assert.ok(planContentTransfer(twoChapters, chapterTargets, new Set([indicesKey({ chapterIndex: 1, itemIndex: 0 })]), 'up'));
   const twoSections: LessonsData = [{ type: 'chapter', title: 'C', sections: [
     { name: 'P1', items: [{ type: 'exercice', title: 'A' }] }, { name: 'P2', items: [{ type: 'exercice', title: 'B' }] },
   ] }];
@@ -729,7 +729,7 @@ test('diagnostic et séance fusionnée : une seule ligne, déplaçable dans tous
   const withRemark = produce(session, draft => {
     assert.equal(applyRemarkEdit(draft, group, 'Absence de Yassine'), true);
   });
-  assert.equal(withRemark[0].items![1].remark, 'Absence de Yassine');
+  assert.equal(withRemark[0].items![1].remark, undefined);
   assert.equal(withRemark[0].items![2].remark, 'Absence de Yassine');
   const cleared = produce(withRemark, draft => { applyRemarkEdit(draft, group, '   '); });
   assert.equal(Object.hasOwn(cleared[0].items![1] as object, 'remark'), false);
@@ -1134,7 +1134,7 @@ test('mise en page : les commandes LaTeX de document sont traitées par la mise 
   // Les marqueurs de structure (A. / 1. / i.) sont des cellules FLEX : sans
   // `shrink-0`, le repli d'un titre long les comprimait jusqu'à couper le point.
   const contentRendererSource = readFileSync('src/features/editor/ContentRenderer.tsx', 'utf8');
-  const structureMarkers = contentRendererSource.match(/<span className="shrink-0 whitespace-nowrap">/g) ?? [];
+  const structureMarkers = contentRendererSource.match(/<bdi dir="ltr" className="shrink-0 whitespace-nowrap">/g) ?? [];
   assert.equal(structureMarkers.length, 3, 'Section, sous-section et sous-sous-section : marqueurs insécables');
 });
 

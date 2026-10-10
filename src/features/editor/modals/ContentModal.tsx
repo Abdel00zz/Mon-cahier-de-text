@@ -17,6 +17,8 @@ import { ContentFields } from './ContentFields';
 import { createContentDraft, contentDraftChanged, type ContentDraft, type EditableContent } from '@/domain/notebook/contentDraft';
 import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
+import { lastCourseSessionDate } from '@/domain/evaluations/homeworkPlacement';
+import { todayInMorocco } from '@/domain/calendar/calendar';
 import type { TimetableEntry, TimetableClockPolicy } from '@/types';
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -202,6 +204,10 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
       initialData.title = config.autoNumber
         ? `${localizedName} ${countOccurrencesOfType(lessonsData, type) + 1}`
         : localizedName;
+      if (type === 'devoir_maison') {
+        const lastDate = lastCourseSessionDate(lessonsData) || todayInMorocco();
+        initialData.date = lastDate;
+      }
     } else if (type === 'item') {
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.
       const anchorType = selectedElementType === 'item' && selectedItem && (selectedItem as any).type;

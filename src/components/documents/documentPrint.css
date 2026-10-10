@@ -1,0 +1,75 @@
+.pedagogical-print-root {
+  position: fixed; inset-inline-start: -10000px; top: 0;
+  width: 132mm; color: #24231f; background: #fff;
+  font-size: 10pt; line-height: 1.38;
+}
+body[data-document-print] .pedagogical-print-root .devoir-document {
+  --doc-title-ink: #831f35; --doc-fs-title: 14pt; --doc-fs-heading: 10pt; --doc-fs-bareme: 9.5pt;
+  color: #24231f; font-size: 10pt; line-height: 1.38; max-width: none; overflow-wrap: anywhere;
+}
+.pedagogical-print-root .devoir-document > :first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+.pedagogical-print-root .doc-title {
+  margin: 0 0 2.5mm !important;
+  padding-block: 0 1.2mm !important;
+  font-size: 14pt !important;
+  line-height: 1.25 !important;
+}
+.pedagogical-print-root .doc-heading {
+  margin: 2.5mm 0 1.2mm !important;
+  padding: 0.8mm 2.2mm !important;
+  font-size: 10pt !important;
+  line-height: 1.25 !important;
+}
+.pedagogical-print-root .doc-subheading {
+  margin: 1.8mm 0 0.8mm !important;
+  font-size: 9.5pt !important;
+  line-height: 1.25 !important;
+}
+.pedagogical-print-root .doc-line {
+  margin-block: 0.6mm !important;
+  break-inside: auto;
+}
+.pedagogical-print-root .editor-list {
+  row-gap: 0.8mm !important;
+  margin-block: 0.8mm !important;
+  break-inside: auto;
+}
+.pedagogical-print-root .katex-display {
+  max-width: 100%;
+  overflow: visible;
+  margin: 1.5mm 0 !important;
+  break-inside: avoid;
+}
+@media print {
+  @page {
+    size: A5 portrait;
+    margin: 6mm 8mm;
+  }
+  html:has(body[data-document-print]), body[data-document-print] {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  body[data-document-print] > :not(.pedagogical-print-root) { display: none !important; }
+  body[data-document-print] > .pedagogical-print-root {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    visibility: visible !important;
+    overflow: visible !important;
+  }
+  .pedagogical-print-root * { visibility: visible !important; box-sizing: border-box; }
+  .pedagogical-print-root :is(h1, h2, h3, h4, .doc-title, .doc-heading, .doc-subheading) { break-after: avoid; }
+  .pedagogical-print-root :is(p, li, .editor-item-body, .doc-line) { orphans: 2; widows: 2; }
+  .pedagogical-print-root :is(table, pre, .katex-display) { max-width: 100%; overflow: visible; }
+  .pedagogical-print-root :is(tr, .katex-display, pre) { break-inside: avoid; }
+  .pedagogical-print-root a { color: inherit; text-decoration: none; }
+}
+

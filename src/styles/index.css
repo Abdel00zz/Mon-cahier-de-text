@@ -891,58 +891,77 @@ html[lang="ar"] .modal-header h2,
   }
 
   /*
-   * Highlight architectural moderne aux couleurs du thème pour les éléments avec document.
-   * Zéro arrondi (border-radius: 0), liseré d'accent, texte agrandi et micro-interactions attractives.
+   * Surlignage manuscrit de haute qualité sans cadre pour les éléments avec document.
+   * Effet coup de surligneur feutre/encre naturel, typographie éditoriale manuscrite
+   * (Newsreader Italic en latin, Maghribi Font 3 en arabe), zéro cadre/bordure.
    */
   .editor-document-highlight {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.85rem;
-    min-height: 34px;
-    border: 1px solid color-mix(in srgb, hsl(var(--primary)) 28%, transparent);
-    border-inline-start: 4px solid hsl(var(--primary));
-    border-radius: 0 !important;
-    background: color-mix(in srgb, hsl(var(--primary)) 12%, transparent);
+    gap: 0.35rem;
+    padding: 0.18rem 0.55rem;
+    min-height: 28px;
+    border: none !important;
+    border-radius: 3px 5px 3px 6px;
+    background: linear-gradient(
+      104deg,
+      color-mix(in srgb, hsl(var(--primary)) 14%, transparent) 0%,
+      color-mix(in srgb, hsl(var(--primary)) 24%, transparent) 18%,
+      color-mix(in srgb, hsl(var(--primary)) 26%, transparent) 82%,
+      color-mix(in srgb, hsl(var(--primary)) 15%, transparent) 100%
+    );
     color: hsl(var(--primary));
-    font-size: 0.95rem;
-    font-weight: 750;
+    font-family: 'Newsreader', var(--font-display), Georgia, serif;
+    font-style: italic;
+    font-size: 1rem;
+    font-weight: 700;
     line-height: 1.3;
     letter-spacing: -0.01em;
     text-align: start;
+    text-decoration: none;
     cursor: pointer;
     touch-action: manipulation;
-    box-shadow: 0 2px 8px -2px color-mix(in srgb, hsl(var(--primary)) 20%, transparent), inset 0 1px 0 0 color-mix(in srgb, hsl(var(--primary)) 25%, transparent);
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 180ms ease;
+    box-shadow: 0 1px 3px -1px color-mix(in srgb, hsl(var(--primary)) 18%, transparent);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background 180ms ease, box-shadow 180ms ease, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 180ms ease;
   }
   @media (min-width: 640px) {
     .editor-document-highlight {
-      font-size: 1.05rem;
-      padding: 0.38rem 0.95rem;
+      font-size: 1.1rem;
+      padding: 0.22rem 0.65rem;
     }
   }
   .editor-document-highlight:hover {
-    background: color-mix(in srgb, hsl(var(--primary)) 22%, transparent);
-    border-color: color-mix(in srgb, hsl(var(--primary)) 55%, transparent);
-    border-inline-start-color: hsl(var(--primary));
-    box-shadow: 0 4px 16px -2px color-mix(in srgb, hsl(var(--primary)) 32%, transparent), inset 0 1px 0 0 color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
-    filter: brightness(1.06);
+    background: linear-gradient(
+      104deg,
+      color-mix(in srgb, hsl(var(--primary)) 22%, transparent) 0%,
+      color-mix(in srgb, hsl(var(--primary)) 34%, transparent) 20%,
+      color-mix(in srgb, hsl(var(--primary)) 36%, transparent) 80%,
+      color-mix(in srgb, hsl(var(--primary)) 24%, transparent) 100%
+    );
+    box-shadow: 0 3px 10px -2px color-mix(in srgb, hsl(var(--primary)) 28%, transparent);
+    filter: brightness(1.05);
     transform: translateY(-1px);
   }
   .editor-document-highlight:active {
     filter: brightness(0.92);
-    transform: translateY(0) scale(0.99);
+    transform: translateY(0) scale(0.985);
   }
   .editor-document-highlight:focus-visible {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: 2px;
+    outline: 2px dashed hsl(var(--primary));
+    outline-offset: 3px;
   }
   html[lang='ar'] .editor-document-highlight {
-    font-size: 1rem;
+    font-family: 'Maghribi Font 3', 'Arabswell 3', var(--font-arabic-display), 'Amiri', serif;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0;
   }
   @media (min-width: 640px) {
     html[lang='ar'] .editor-document-highlight {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {

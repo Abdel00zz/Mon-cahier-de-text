@@ -12,6 +12,7 @@ import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { indicesKey } from '@/domain/notebook/lessonRows';
+import { romanNumber } from '@/domain/notebook/contentNumbering';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 
 interface ContentRendererProps {
@@ -225,6 +226,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
+              {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
               ) : (
@@ -280,7 +282,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                     `overflow-wrap: anywhere` ([data-row-content]), donc sans
                     cela le repli d'un titre long comprime « A. » jusqu'à ce
                     que le point passe seul à la ligne suivante. */}
-                <span className="shrink-0 whitespace-nowrap">{sectionLetter}.</span>
+                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? sectionLetter}.</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -291,7 +293,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div dir={textDirectionAttribute(data.name)} className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
-                <span className="shrink-0 whitespace-nowrap">{indices.subsectionIndex! + 1}.</span>
+                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? indices.subsectionIndex! + 1}.</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -299,11 +301,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         </MaybeKaTeX>
       );
     case 'subsubsection':
-      const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div dir={textDirectionAttribute(data.name)} className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
-                <span className="shrink-0 whitespace-nowrap">{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
+                <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? romanNumber(indices.subsubsectionIndex! + 1).toLowerCase()}.</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
@@ -348,7 +349,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         return (
           <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div dir={textDirectionAttribute(item.title || item.description)} className={`print-lesson-item ${lessonIndentClass} text-start`}>
-              <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
+              <span className="print-item-kind">{badgeText}{displayNumber ? <> <bdi dir="ltr">{displayNumber}</bdi></> : null}</span>
               {/* Même composition que l'écran : un titre « Limite $x^2$ » ne
                   doit jamais partir en TeX brut sur le papier. */}
               <span dir={textDirectionAttribute(item.title)} className="print-item-title"><HighlightedText text={item.title} /></span>
@@ -381,7 +382,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             title={fullTooltip}
           >
             <span>{badgeText}</span>
-            {displayNumber ? <span className="ms-px font-bold lg:ms-0.5">{displayNumber}</span> : null}
+            {displayNumber ? <bdi dir="ltr" className="ms-px font-bold lg:ms-0.5">{displayNumber}</bdi> : null}
           </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div

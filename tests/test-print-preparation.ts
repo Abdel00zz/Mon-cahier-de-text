@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { preparePrintContent } from '../src/infrastructure/printing/printUtils';
+import { fitDocumentMath } from '../src/infrastructure/printing/documentMathLayout';
 
 function fixture(context: test.TestContext, options: { rawMath?: boolean; invalidMath?: boolean; fonts?: Promise<void> } = {}) {
   const timers = new Map<number, () => void>();
@@ -58,4 +59,15 @@ test('impression : syntaxe non composée bloquée, sans attente d’un moteur ab
   const document = fixture(context, { rawMath: true });
   await assert.rejects(preparePrintContent(document.root), /Unrendered print formula/);
   assert.equal(document.timers.size, 0);
+});
+
+test('A5 layout fits wide formulae without enlarging normal ones or changing surrounding text', context => {
+  fixture(context);
+  Object.assign(window, { getComputedStyle: () => ({ fontSize: '16px' }) });
+  const formula = (width: number) => ({ clientWidth: 480, style: { fontSize: '' },
+    querySelector: () => ({ scrollWidth: width, getBoundingClientRect: () => ({ width }) }) });
+  const wide = formula(960), normal = formula(200);
+  fitDocumentMath({ querySelectorAll: () => [wide, normal] } as unknown as HTMLElement);
+  assert.equal(wide.style.fontSize, '7.92px');
+  assert.equal(normal.style.fontSize, '');
 });

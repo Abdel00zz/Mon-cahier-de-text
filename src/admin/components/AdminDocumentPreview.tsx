@@ -3,6 +3,7 @@ import { Modal } from '../../components/ui/modal';
 import { Button } from '../../components/ui/button';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { renderDescriptionWithBold } from '../../components/typography/textFormat';
+import { DocumentPrintButton } from '../../components/documents/DocumentPrintButton';
 
 /*
  * Relecture d'un document du professeur par la direction.
@@ -47,7 +48,7 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
             maxWidth="3xl"
             className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            title={t('documentPreview.heading')}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">

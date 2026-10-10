@@ -65,7 +65,7 @@ public class NativePrintPlugin extends Plugin {
                 if (manager == null) { call.reject("Service d'impression indisponible.", "PRINT_UNAVAILABLE"); return; }
                 String name = call.getString("name", "cahier-de-textes");
                 PrintAttributes attributes = new PrintAttributes.Builder()
-                    .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                    .setMediaSize("A5".equals(call.getString("paperSize")) ? PrintAttributes.MediaSize.ISO_A5 : PrintAttributes.MediaSize.ISO_A4)
                     .setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
                 PrintDocumentAdapter document = getBridge().getWebView().createPrintDocumentAdapter(name);
                 adapterFinishedAt = 0;

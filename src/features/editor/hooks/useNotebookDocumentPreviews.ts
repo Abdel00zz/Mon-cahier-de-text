@@ -42,7 +42,7 @@ export const useNotebookDocumentPreviews = (
         const entries = findNotebookAssessments(lessonsData);
         const links = linkAssessments(assessments, entries, today);
         const previews = activityDocumentPreviews(config, classInfo.id, lessonsData, links, t);
-        notebookDocumentPreviews(links, documents).forEach((preview, key) => previews.rows.set(key, preview));
+        notebookDocumentPreviews(links.filter(link => link.planned.type !== 'maison'), documents).forEach((preview, key) => previews.rows.set(key, preview));
         return previews;
     }, [hasDocuments, documents, assessments, lessonsData, today, config, classInfo.id, t]);
 };

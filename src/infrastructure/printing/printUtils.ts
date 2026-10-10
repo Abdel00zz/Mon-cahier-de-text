@@ -3,14 +3,14 @@ import { WebviewPrint } from 'capacitor-webview-print';
 import { hasMathSyntax } from '../../lib/text/math';
 
 export type PrintOutcome = 'completed' | 'confirmation-required' | 'cancelled' | 'failed';
-const NativePrint = registerPlugin<{ print(options: { name: string }): Promise<{ status: PrintOutcome }> }>('NativePrint');
+const NativePrint = registerPlugin<{ print(options: { name: string; paperSize: 'A4' | 'A5' }): Promise<{ status: PrintOutcome }> }>('NativePrint');
 
 /** Opening a preview is not proof of printing. Android waits for the job. */
-export const printDocument = async (fileName: string = 'cahier-de-textes'): Promise<PrintOutcome> => {
+export const printDocument = async (fileName: string = 'cahier-de-textes', paperSize: 'A4' | 'A5' = 'A4'): Promise<PrintOutcome> => {
   const platform = Capacitor.getPlatform();
   try {
     if (platform === 'android') {
-      const result = await NativePrint.print({ name: fileName });
+      const result = await NativePrint.print({ name: fileName, paperSize });
       return ['completed', 'confirmation-required', 'cancelled'].includes(result.status) ? result.status : 'failed';
     } else if (platform !== 'web') {
       if (!WebviewPrint?.print) {

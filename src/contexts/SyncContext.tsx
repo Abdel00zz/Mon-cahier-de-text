@@ -86,7 +86,7 @@ const removeDeletedClassReferences = (
         }
     }
 
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
+    for (const key of ['sessionRemarkOverrides', 'assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
         const records = next[key];
         if (!records) continue;
         const filtered = { ...records };

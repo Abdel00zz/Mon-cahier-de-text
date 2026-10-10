@@ -102,7 +102,7 @@ const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: s
     next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
     next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
     next.dashboardClassOrder = next.dashboardClassOrder?.filter(id => id !== classId);
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
+    for (const key of ['sessionRemarkOverrides', 'assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
         if (!next[key]) continue;
         const records = { ...next[key] };
         delete records[classId];
@@ -165,17 +165,31 @@ const handleOverview = async (res: ApiResponse) => {
     }
 
     const pipeline = redis.pipeline();
+    const legacySchoolSlots = new Map<number, number>();
+    let recordCount = entries.length * 2;
     for (const [phone] of entries) {
         pipeline.get(KEYS.user(phone));
         pipeline.get(KEYS.adminMessages(phone));
     }
-    const records = await pipeline.exec() as Array<StoredUser | AdminMessage[] | null>;
+    // New snapshots contain this small field. Only legacy accounts require the
+    // settings blob, avoiding downloads of every teacher's documents on refresh.
+    entries.forEach(([phone, snapshot], index) => {
+        if (snapshot.establishmentName === undefined) {
+            legacySchoolSlots.set(index, recordCount++);
+            pipeline.get(KEYS.classes(phone));
+        }
+    });
+    const records = await pipeline.exec() as Array<StoredUser | AdminMessage[] | ClassesBlob | null>;
     const teachers = entries.flatMap(([, snapshot], index) => {
         const user = records[index * 2] as StoredUser | null;
         if (!user) return [];
         const messages = normalizeAdminMessages(records[index * 2 + 1]);
+        const schoolSlot = legacySchoolSlots.get(index);
+        const school = schoolSlot === undefined ? snapshot.establishmentName
+            : (records[schoolSlot] as ClassesBlob | null)?.settings?.establishmentName;
         return [{
             ...snapshot,
+            establishmentName: typeof school === 'string' ? school.trim().slice(0, 200) : '',
             contactPhone: user.phone,
             email: user.email,
             blocked: user?.blocked === true,
@@ -352,6 +366,11 @@ const pickPrintSettings = (settings: Partial<AppConfig> | undefined, displayName
         schoolYearStart: settings.schoolYearStart,
         printDescriptionMode: settings.printDescriptionMode,
         printDescriptionTypes: settings.printDescriptionTypes,
+        contentNumbering: settings.contentNumbering,
+        sessionRemarkOverrides: settings.sessionRemarkOverrides,
+        assessmentDates: settings.assessmentDates,
+        manualAssessments: settings.manualAssessments,
+        removedAssessments: settings.removedAssessments,
         absences: settings.absences,
         timetable: settings.timetable,
         timetableClock: settings.timetableClock,

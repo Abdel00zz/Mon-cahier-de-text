@@ -28,7 +28,7 @@ export interface TeacherDetail {
  */
 export type { AdminActivityDocument };
 
-export interface TeacherPrintSettings extends Pick<AppConfig, 'absences' | 'timetable' | 'timetableClock'> {
+export interface TeacherPrintSettings extends Pick<AppConfig, 'absences' | 'timetable' | 'timetableClock' | 'contentNumbering' | 'sessionRemarkOverrides' | 'assessmentDates' | 'manualAssessments' | 'removedAssessments'> {
     establishmentName?: string;
     defaultTeacherName?: string;
     academyRegion?: string;

@@ -108,6 +108,11 @@ const buildPrintConfig = (settings: TeacherPrintSettings | null | undefined, cla
     schoolYearStart: settings?.schoolYearStart,
     printDescriptionMode: settings?.printDescriptionMode ?? 'all',
     printDescriptionTypes: settings?.printDescriptionTypes ?? [],
+    contentNumbering: settings?.contentNumbering,
+    sessionRemarkOverrides: settings?.sessionRemarkOverrides,
+    assessmentDates: settings?.assessmentDates,
+    manualAssessments: settings?.manualAssessments,
+    removedAssessments: settings?.removedAssessments,
     absences: settings?.absences,
     timetable: settings?.timetable,
     timetableClock: settings?.timetableClock,
@@ -319,11 +324,12 @@ const AssessmentDateEditor: React.FC<{
     classes: ClassInfo[];
     initial: Record<string, Record<string, string>>;
     schoolYearStart?: string;
+    assessmentConfig?: Pick<AppConfig, 'manualAssessments' | 'removedAssessments'>;
     documents: Record<string, Record<string, ContentDocument>>;
     activities: Record<string, AdminActivityDocument[]>;
     teacherName: string;
     onPreview: (target: DocumentPreviewTarget) => void;
-}> = ({ phone, classes, initial, schoolYearStart, documents, activities, teacherName, onPreview }) => {
+}> = ({ phone, classes, initial, schoolYearStart, assessmentConfig, documents, activities, teacherName, onPreview }) => {
     const [dates, setDates] = useState(initial);
     const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
     const [message, setMessage] = useState('');
@@ -332,14 +338,15 @@ const AssessmentDateEditor: React.FC<{
     useEffect(() => {
         let cancelled = false;
         setPlanningLoaded(false);
+        setDates(initial);
         setRows([]);
         Promise.all([loadPlanning(), loadHolidayCalendar()]).then(([planning, calendar]) => {
-            if (!planning || cancelled) return;
+            if (cancelled) return;
             const today = todayInMorocco(new Date(), calendar);
             const next = classes.flatMap(classInfo => resolveClassAssessments(
                 classInfo,
-                planning,
-                { assessmentDates: initial, schoolYearStart },
+                planning ?? { version: 1, plans: [] },
+                { ...assessmentConfig, assessmentDates: initial, schoolYearStart },
                 calendar,
                 today,
             ).map(item => ({ ...item, classId: classInfo.id, className: classInfo.name })));
@@ -350,7 +357,7 @@ const AssessmentDateEditor: React.FC<{
             if (!cancelled) setPlanningLoaded(true);
         });
         return () => { cancelled = true; };
-    }, [classes, initial, schoolYearStart]);
+    }, [classes, initial, schoolYearStart, assessmentConfig]);
 
     const change = async (row: PlannedAssessment & { classId: string }, date: string) => {
         setDates(current => ({ ...current, [row.classId]: { ...(current[row.classId] ?? {}), [row.id]: date } }));
@@ -366,16 +373,9 @@ const AssessmentDateEditor: React.FC<{
     if (!isPlanningLoaded) {
         return <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground">Chargement du calendrier des devoirs…</div>;
     }
-    if (rows.length === 0) {
-        return (
-            <div className="rounded-2xl border border-dashed bg-card p-10 text-center">
-                <p className="text-sm font-black text-foreground">Aucun devoir planifié</p>
-                <p className="mt-1 text-xs text-muted-foreground">Aucune date ministérielle ne correspond encore aux classes de ce professeur.</p>
-            </div>
-        );
-    }
     return (
         <>
+        {rows.length === 0 && <p className="mb-4 rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Aucun devoir enregistré pour ces classes.</p>}
         <section className="mb-5 rounded-2xl bg-accent/50 p-4">
             <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquées au planning du professeur et synchronisées sur son téléphone. Chaque carte ouvre le sujet rédigé.</p></div>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -491,6 +491,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const [printSnapshot, setPrintSnapshot] = useState<{
         classInfo: ClassInfo;
         lessonsData: LessonsData;
+        annotationLessons: LessonsData;
         contentDirection: ContentDirection;
         options: PrintOptions;
         absenceSessions: AbsenceSession[];
@@ -713,7 +714,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
             }
             // Les numéros visibles sont figés avant le filtrage : un tirage
             // partiel garde la numérotation du cahier complet.
-            lessonsData = createPrintSelection(target.lessonsData, chosen, true);
+            lessonsData = createPrintSelection(target.lessonsData, chosen, target.config.contentNumbering ?? true);
             absenceSessions = absenceSessions.filter(session => chosen.includes(session.date));
         }
 
@@ -722,7 +723,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         // Le document est figé avant la composition : une synchronisation reçue
         // pendant l'aperçu ne peut pas modifier ce qui part sur le papier.
         flushSync(() => {
-            setPrintSnapshot({ classInfo: target.classInfo, lessonsData, contentDirection: target.contentDirection, options, absenceSessions, config: { ...target.config, ...printPrefs } });
+            setPrintSnapshot({ classInfo: target.classInfo, lessonsData, annotationLessons: target.lessonsData, contentDirection: target.contentDirection, options, absenceSessions, config: { ...target.config, ...printPrefs } });
             setPrintTarget(null);
         });
 
@@ -933,6 +934,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             phone={phone}
                             classes={data.classes}
                             initial={data.assessmentDates ?? {}}
+                            assessmentConfig={data.printSettings ?? undefined}
                             schoolYearStart={data.snapshot?.schoolYearStart}
                             documents={data.documents ?? {}}
                             activities={data.activities ?? {}}
@@ -1095,6 +1097,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
             {printSnapshot && createPortal(
                 <PrintView
                     lessonsData={printSnapshot.lessonsData}
+                    annotationLessons={printSnapshot.annotationLessons}
                     classInfo={printSnapshot.classInfo}
                     config={printSnapshot.config}
                     absenceSessions={printSnapshot.absenceSessions}

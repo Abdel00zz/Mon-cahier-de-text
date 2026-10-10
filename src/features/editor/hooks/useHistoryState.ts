@@ -8,7 +8,10 @@ interface HistoryOptions {
 interface HistoryEntry<T> {
   data: T;
   operationType: string;
+  effects?: HistoryEffects;
 }
+
+export interface HistoryEffects { undo: () => void; redo: () => void; }
 
 type HistoryAction = 'edit' | 'reset' | 'undo' | 'redo';
 
@@ -29,7 +32,7 @@ export const useHistoryState = <T,>(
   const { history, currentIndex } = historyState;
   const state = useMemo(() => history[currentIndex]?.data, [history, currentIndex]);
 
-  const setState = useCallback((updater: (draft: Draft<T>) => void | T, operationType: string) => {
+  const setState = useCallback((updater: (draft: Draft<T>) => void | T, operationType: string, effects?: HistoryEffects) => {
     setHistoryState(currentHistoryState => {
       const currentState = currentHistoryState.history[currentHistoryState.currentIndex].data;
 
@@ -37,7 +40,7 @@ export const useHistoryState = <T,>(
 
       // Immer returns the original state if no changes are made.
       // This is much more performant than a deep stringify comparison.
-      if (newState === currentState) {
+      if (newState === currentState && !effects) {
         return currentHistoryState;
       }
 
@@ -46,7 +49,7 @@ export const useHistoryState = <T,>(
         newHistory.shift();
       }
       
-      const finalHistory = [...newHistory, { data: newState, operationType }];
+      const finalHistory = [...newHistory, { data: newState, operationType, effects }];
       return {
         history: finalHistory,
         currentIndex: finalHistory.length - 1,
@@ -69,20 +72,24 @@ export const useHistoryState = <T,>(
   }, []);
 
   const undo = useCallback(() => {
+    if (currentIndex === 0) return;
+    history[currentIndex].effects?.undo();
     setHistoryState(prev => ({
       ...prev,
       currentIndex: Math.max(0, prev.currentIndex - 1),
       lastAction: 'undo',
     }));
-  }, []);
+  }, [currentIndex, history]);
 
   const redo = useCallback(() => {
+    if (currentIndex >= history.length - 1) return;
+    history[currentIndex + 1].effects?.redo();
     setHistoryState(prev => ({
       ...prev,
       currentIndex: Math.min(prev.history.length - 1, prev.currentIndex + 1),
       lastAction: 'redo',
     }));
-  }, []);
+  }, [currentIndex, history]);
 
   return {
     state,

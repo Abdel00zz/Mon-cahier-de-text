@@ -80,7 +80,7 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
             );
         }
     }
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
+    for (const key of ['sessionRemarkOverrides', 'assessmentDates', 'assessmentAbsences', 'assessmentDocuments', 'assessmentParticipants', 'classRosters', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
         if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
             const records = { ...(cleaned[key] as Record<string, unknown>) };
             for (const classId of deletedIds) delete records[classId];
@@ -173,6 +173,9 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             submittedSettingsAt,
         );
         acceptedSettings = { ...submittedSettings!, assessmentDates: mergedDates.assessmentDates };
+        if (submittedSettings!.sessionRemarkOverrides === undefined && existing.settings?.sessionRemarkOverrides !== undefined) {
+            acceptedSettings.sessionRemarkOverrides = existing.settings.sessionRemarkOverrides;
+        }
         acceptedSettings = mergePedagogicalDocuments(acceptedSettings, existing.settings ?? {});
         adminAssessmentDatesUpdatedAt = mergedDates.watermarks;
     }
@@ -253,6 +256,9 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             validClassIds: requestedClassIds,
         });
         const storedSnapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone);
+        // Taken from accepted cloud settings, never an untrusted/stale snapshot.
+        snapshot.establishmentName = typeof nextBlob.settings?.establishmentName === 'string'
+            ? nextBlob.settings.establishmentName.trim().slice(0, 200) : '';
         const previousById = new Map((storedSnapshot?.classes ?? []).map(item => [item.id, item]));
         const incomingById = new Map(snapshot.classes.map(item => [item.id, item]));
         snapshot.classes = classes.flatMap(classInfo => {
@@ -262,6 +268,12 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             return entry ? [{ ...entry, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle }] : [];
         });
         pipeline.hset(KEYS.adminSnapshots, { [phone]: snapshot });
+    } else if (acceptSettings) {
+        const snapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone);
+        if (snapshot) pipeline.hset(KEYS.adminSnapshots, { [phone]: { ...snapshot,
+            establishmentName: typeof nextBlob.settings?.establishmentName === 'string'
+                ? nextBlob.settings.establishmentName.trim().slice(0, 200) : '',
+        } });
     }
     await pipeline.exec();
 

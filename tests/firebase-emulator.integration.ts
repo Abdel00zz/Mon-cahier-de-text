@@ -56,16 +56,32 @@ test('pedagogical text survives two devices, legacy clients, deletion and accoun
     return result.body as { settings: Partial<AppConfig> };
   };
   const source = '## فرض 🧮\n**Exercice** $x^2$\nأجب عن السؤال دون تغيير النص.';
-  const a: Partial<AppConfig> = { assessmentDocuments: { [classInfo.id]: { a: docText(source, 1) } },
+  const a: Partial<AppConfig> = { establishmentName: 'ثانوية الأمل · Lycée Al Amal', contentNumbering: { enabled: true, structureStyle: 'roman', badgeStyle: 'hierarchical' }, assessmentDocuments: { [classInfo.id]: { a: docText(source, 1) } },
+    sessionRemarkOverrides: { [classInfo.id]: { 'assessment:a': { text: 'ملاحظة معدلة', hidden: false }, 'event:removed': { hidden: true } } },
     pedagogicalEvents: { [classInfo.id]: [{ id: 'diagnostic', type: 'evaluation_diagnostic', title: 'تشخيص', date: '2026-10-09', status: 'planned', createdAt: at(1), document: docText(source, 1) }] } };
   assert.equal((await post(extractSyncableSettings(a), 2)).status, 200);
   const restored = mergeSyncableSettings({}, (await pull()).settings as unknown as SyncableSettings);
   assert.deepEqual(restored.assessmentDocuments, a.assessmentDocuments);
   assert.deepEqual(restored.pedagogicalEvents, a.pedagogicalEvents);
+  assert.deepEqual(restored.sessionRemarkOverrides, a.sessionRemarkOverrides);
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  // A legacy snapshot recovers its school from settings until the next sync.
+  await store.hset(KEYS.adminSnapshots, { [owner]: { phone: owner, nom: 'Documents', prenom: 'QA', classes: [], lastSyncAt: at(2) } });
+  const overview = () => call(adminHandler, { method: 'GET', headers: adminHeaders, query: { action: 'overview' } });
+  const school = async () => ((await overview()).body as { teachers: { phone: string; establishmentName: string }[] }).teachers.find(teacher => teacher.phone === owner)?.establishmentName;
+  assert.equal(await school(), a.establishmentName);
+  const detail = await call(adminHandler, { method: 'GET', headers: adminHeaders, query: { action: 'teacher', phone: owner } });
+  assert.equal(detail.status, 200);
+  assert.equal((detail.body as any).documents[classInfo.id].a.source, source);
+  assert.deepEqual((detail.body as any).printSettings.contentNumbering, a.contentNumbering);
+  assert.deepEqual((detail.body as any).printSettings.sessionRemarkOverrides, a.sessionRemarkOverrides);
+  assert.equal((await call(adminHandler, { method: 'GET', headers, query: { action: 'teacher', phone: owner } })).status, 401);
   const secondDevice = { ...a, assessmentDocuments: { [classInfo.id]: { b: docText('Devoir maison\nسؤال ثان', 3) } } };
   assert.equal((await post(extractSyncableSettings(secondDevice), 4)).status, 200);
   assert.deepEqual(Object.keys((await pull()).settings.assessmentDocuments![classInfo.id]).sort(), ['a', 'b']);
   assert.equal((await post({ establishmentName: 'Older APK' }, 5)).status, 200);
+  assert.equal(await school(), 'Older APK', 'school grouping follows accepted settings, including clients without a snapshot');
+  assert.deepEqual((await pull()).settings.sessionRemarkOverrides, a.sessionRemarkOverrides, 'an older APK omitting remark overrides cannot resurrect deleted badges');
   assert.equal((await pull()).settings.assessmentDocuments![classInfo.id].a.source, source);
   assert.equal((await post({ assessmentDocuments: { [classInfo.id]: { a: docText('', 6) } } }, 7)).status, 200);
   assert.equal((await post(extractSyncableSettings(a), 8)).status, 200);
@@ -76,6 +92,7 @@ test('pedagogical text survives two devices, legacy clients, deletion and accoun
   assert.equal((await call(syncHandler, { method: 'GET', headers: {} })).status, 401);
   assert.equal((await post(undefined, 9, { deletedClassIds: [classInfo.id] })).status, 200);
   assert.equal((await pull()).settings.assessmentDocuments?.[classInfo.id], undefined);
+  assert.equal((await pull()).settings.sessionRemarkOverrides?.[classInfo.id], undefined);
 });
 
 test('native notification bindings survive transfer, token rotation and late unsubscribe', async () => {

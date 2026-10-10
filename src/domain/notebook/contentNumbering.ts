@@ -1,4 +1,4 @@
-import type { LessonsData } from '../../types.js';
+import type { ContentNumbering, LessonsData } from '../../types.js';
 import { buildLessonRows, type LessonRow } from './lessonRows.js';
 import { isFreeContent } from './freeLineType.js';
 
@@ -31,7 +31,8 @@ const typeKey = (value: unknown): string => String(value ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[\s-]+/g, '_');
+    .replace(/[\s-]+/g, '_')
+    .replace(/^(?:exo|exercise)$/, 'exercice');
 
 const isNumberableRow = (row: LessonRow): boolean =>
     !isFreeContent(row.data) && !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
@@ -49,31 +50,50 @@ const explicitNumber = (row: LessonRow): string | undefined => {
  * Un numéro saisi à la main n'apparaît pas dans la carte : l'appelant garde la
  * priorité sur la saisie.
  */
-export const buildContentNumbers = (lessons: LessonsData, enabled = true): Map<string, string> => {
+export function romanNumber(value: number): string {
+    if (!Number.isInteger(value) || value < 1 || value > 3999) return String(value);
+    let result = '';
+    for (const [number, symbol] of [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']] as const) {
+        while (value >= number) { result += symbol; value -= number; }
+    }
+    return result;
+}
+
+export const buildContentNumbers = (lessons: LessonsData, options: boolean | ContentNumbering = true): Map<string, string> => {
+    const settings = typeof options === 'boolean' ? { enabled: options } : options;
     const numbers = new Map<string, string>();
-    if (!enabled) return numbers;
+    if (!settings.enabled) return numbers;
     const counters = new Map<string, number>();
-    let chapterIndex = -1;
+    const chapterOrdinals = new Map<number, number>();
+    let chapter = 0;
+    lessons.forEach((item, index) => { if (item.type === 'chapter') chapterOrdinals.set(index, ++chapter); });
     for (const row of buildLessonRows(lessons)) {
-        if (!isNumberableRow(row)) continue;
-        if (row.indices.chapterIndex !== chapterIndex) {
-            chapterIndex = row.indices.chapterIndex ?? -1;
-            counters.clear();
+        const indices = row.indices;
+        const chapterNumber = chapterOrdinals.get(indices.chapterIndex) ?? 1;
+        const path = [chapterNumber, indices.sectionIndex, indices.subsectionIndex, indices.subsubsectionIndex]
+            .filter((value): value is number => value !== undefined).map((value, index) => index === 0 ? value : value + 1);
+        if (STRUCTURAL_TYPES.has(row.elementType) && settings.structureStyle && settings.structureStyle !== 'legacy') {
+            numbers.set(row.key, explicitNumber(row) ?? path.map((value, index) => index === 0 && settings.structureStyle === 'roman' ? romanNumber(value) : String(value)).join('.'));
         }
-        const type = rowType(row);
+        if (!isNumberableRow(row)) continue;
+        const scope = settings.scope === 'document' ? 'document' : settings.scope === 'section'
+            ? `${indices.chapterIndex}:${indices.sectionIndex ?? 'root'}` : String(indices.chapterIndex);
+        const type = `${scope}:${typeKey(rowType(row))}`;
         let counter = counters.get(type) ?? 0;
         const declared = explicitNumber(row);
         if (declared) {
             // Le numéro écrit à la main prime ET fait avancer le compteur, sinon
             // la suite automatique contredirait la saisie.
             numbers.set(row.key, declared);
-            const parsed = Number.parseInt(declared, 10);
+            const parsed = Number.parseInt(declared.split('.').at(-1) ?? '', 10);
             if (Number.isFinite(parsed) && parsed > counter) counters.set(type, parsed);
             continue;
         }
         counter += 1;
         counters.set(type, counter);
-        numbers.set(row.key, String(counter));
+        const prefix = settings.scope === 'document' ? [] : settings.scope === 'section' ? path.slice(0, 2) : [chapterNumber];
+        numbers.set(row.key, settings.badgeStyle === 'roman' ? romanNumber(counter)
+            : settings.badgeStyle === 'hierarchical' ? [...prefix, counter].join('.') : String(counter));
     }
     return numbers;
 };

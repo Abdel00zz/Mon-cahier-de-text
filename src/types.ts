@@ -143,6 +143,8 @@ export interface AppConfig {
     removedAssessments?: Record<string, string[]>;
     /** ordre personnalisé des devoirs (ids) par classe */
     assessmentOrder?: Record<string, string[]>;
+    /** Editable presentation of an activity in the session remark, keyed by stable activity ID. */
+    sessionRemarkOverrides?: Record<string, Record<string, { text?: string; hidden?: boolean }>>;
 }
 
 /** Devoir surveillé ou maison ajouté manuellement, sans planning officiel imposé. */
@@ -322,6 +324,7 @@ export interface ClassSnapshot {
 
 export interface TeacherSnapshot {
     phone: string;
+    establishmentName?: string;
     nom: string;
     prenom: string;
     /**
@@ -460,7 +463,10 @@ export type LessonsData = TopLevelItem[];
  * Portée du compteur de contenus (voir `utils/contentNumbering.ts`).
  * `chapter` : « définition 1 » repart de 1 dans chaque chapitre.
  */
-interface ContentNumbering {
+export interface ContentNumbering {
     /** Affiche « Définition 1 », « Exemple 2 »… (compteur par chapitre). */
     enabled: boolean;
+    structureStyle?: 'legacy' | 'decimal' | 'roman';
+    badgeStyle?: 'decimal' | 'roman' | 'hierarchical';
+    scope?: 'chapter' | 'section' | 'document';
 }

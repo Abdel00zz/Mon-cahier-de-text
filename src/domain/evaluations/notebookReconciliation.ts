@@ -45,8 +45,13 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     const id = identity(entry)?.id;
     if (id) identityCounts.set(id, (identityCounts.get(id) ?? 0) + 1);
   }
-  const update = (entry: NotebookAssessmentEntry, target: { id: string; legacyId?: string }) => {
+  const update = (entry: NotebookAssessmentEntry, target: { id: string; legacyId?: string }, previous?: NotebookAssessmentEntry) => {
     if ((identityCounts.get(target.id) ?? 0) > 1) return;
+    // Homework is now edited through the session remark/activity, while old
+    // hidden rows remain for compatibility. An unchanged historical row must
+    // never overwrite the chosen activity date during automatic saving.
+    if (entry.type === 'maison' && (previous ? previous.date === entry.date : !options.previousLessons)
+      && (dates[target.id] || manual.some(item => item.id === target.id))) return;
     const date = extractDateRange(entry.date).startDate;
     if (validDate(date)) dates[target.id] = date;
     else delete dates[target.id];
@@ -73,7 +78,7 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     const target = identity(old);
     if (current) {
       consumed.add(current);
-      if (target) update(current, target);
+      if (target) update(current, target, old);
     } else if (options.previousLessons && candidates.length === 0 && target) {
       removed.add(target.id);
       delete dates[target.id];

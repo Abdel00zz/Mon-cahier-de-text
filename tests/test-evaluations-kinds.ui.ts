@@ -181,7 +181,7 @@ test('un devoir programmé s’ouvre depuis la liste, la création libre reste e
 
 test('les devoirs passent par leur LISTE programmée, pas par un formulaire vide', () => {
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-    assert.match(view, /manualFormOpen \? \([\s\S]{0,400}<ProgrammedList/, 'la liste programmée précède le formulaire');
+    assert.match(view, /manualFormOpen \? \(\s*<ManualAssessmentEditor[\s\S]*?\) : \(\s*<ProgrammedList/, 'la liste programmée précède le formulaire');
     assert.match(view, /items=\{programmedFor\(chosenKind\.type\)\}/, 'la liste suit la nature choisie');
     assert.match(view, /onOpen=\{openProgrammedAssessment\}/, 'un devoir programmé s’ouvre');
     assert.match(view, /onCreate=\{\(\) => setManualFormOpen\(true\)\}/, 'la création libre est demandée explicitement');

@@ -6,7 +6,9 @@ import {
   planContentMove, applyContentMove,
   planContentRelocation, applyContentRelocation,
   planContentTransfer, applyContentTransfer,
+  isExercise,
 } from '@/domain/notebook/contentReorder';
+import { findItem } from '@/domain/notebook/dataUtils';
 import type { ContentEditTargets } from '@/domain/notebook/contentEditing';
 
 export interface SelectionState {
@@ -32,6 +34,7 @@ export const createSelectionState = (indices?: Indices | Indices[]): SelectionSt
 export function useSelectionEngine({
   lessonsData,
   moveTargets,
+  contentMoveTargets,
   freeKeys,
   setState,
   setEditorState,
@@ -39,6 +42,8 @@ export function useSelectionEngine({
   lessonsData: LessonsData;
   /** cibles du déplacement : la séance fusionnée bouge d'un seul lot */
   moveTargets: ContentEditTargets;
+  /** Exercises can move independently of other contents dated the same day. */
+  contentMoveTargets?: ContentEditTargets;
   /** clés des lignes libres : seule une sélection qui en contient une peut
    *  prétendre à la relocalisation (sinon on évite un parcours complet). */
   freeKeys: ReadonlySet<string>;
@@ -52,6 +57,8 @@ export function useSelectionEngine({
   const selectedCount = selectionState.keys.size;
 
   const moveOptions = useMemo(() => {
+    const groups = contentMoveTargets && selectedIndices.length && selectedIndices.every(indices => isExercise(findItem(lessonsData, indices).item))
+      ? contentMoveTargets : moveTargets;
     const build = (direction: 'up' | 'down') => {
       // 1. Ligne libre : elle glisse le long de la structure, y compris sous un
       //    titre — donc dans un autre parent — pour se poser sous un paragraphe,
@@ -62,15 +69,15 @@ export function useSelectionEngine({
         : null;
       if (relocation) return { kind: 'relocation' as const, relocation };
       // 2. Contenu typé ou séance fusionnée : permutation avec le voisin de la même liste.
-      const swap = planContentMove(lessonsData, moveTargets, selectionState.keys, direction);
+      const swap = planContentMove(lessonsData, groups, selectionState.keys, direction);
       if (swap) return { kind: 'swap' as const, swap };
-      // 3. Au bord de la liste : le bloc passe au paragraphe voisin du même chapitre
+      // 3. Au bord de la liste : le bloc passe au conteneur voisin du cahier
       //    (fin du précédent en montant, début du suivant en descendant).
-      const transfer = planContentTransfer(lessonsData, moveTargets, selectionState.keys, direction);
+      const transfer = planContentTransfer(lessonsData, groups, selectionState.keys, direction);
       return transfer ? { kind: 'transfer' as const, transfer } : null;
     };
     return { up: build('up'), down: build('down') };
-  }, [lessonsData, moveTargets, freeKeys, selectionState.keys]);
+  }, [lessonsData, moveTargets, contentMoveTargets, freeKeys, selectionState.keys, selectedIndices]);
 
   const canMoveUp = moveOptions.up !== null;
   const canMoveDown = moveOptions.down !== null;

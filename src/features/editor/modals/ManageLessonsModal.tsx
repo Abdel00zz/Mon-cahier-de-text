@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppConfig, TopLevelItem } from '@/types';
+import { AppConfig, type ContentNumbering, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { ArrowDown, ArrowUp, ChevronDown, FolderOpen, Trash2, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const { t } = useLocale();
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
   const [localDesc, setLocalDesc] = useState<{ mode: DescriptionMode; types: string[] }>({ mode: 'all', types: [] });
-  const [localNumbering, setLocalNumbering] = useState(true);
+  const [localNumbering, setLocalNumbering] = useState<ContentNumbering>({ enabled: true });
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const stableKeys = useRef(new WeakMap<TopLevelItem, string>());
 
@@ -57,7 +57,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       mode: config.screenDescriptionMode ?? 'all',
       types: config.screenDescriptionTypes ?? [],
     });
-    setLocalNumbering(config.contentNumbering?.enabled !== false);
+    setLocalNumbering(config.contentNumbering ?? { enabled: true });
     setPendingDelete(null);
   }, [isOpen, lessons, config.screenDescriptionMode, config.screenDescriptionTypes, config.contentNumbering]);
 
@@ -66,7 +66,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const descriptionsChanged = localDesc.mode !== (config.screenDescriptionMode ?? 'all')
     || localDesc.types.length !== (config.screenDescriptionTypes ?? []).length
     || localDesc.types.some(type => !(config.screenDescriptionTypes ?? []).includes(type));
-  const numberingChanged = localNumbering !== (config.contentNumbering?.enabled !== false);
+  const numberingChanged = JSON.stringify(localNumbering) !== JSON.stringify(config.contentNumbering ?? { enabled: true });
   const hasChanges = lessonsChanged || descriptionsChanged || numberingChanged;
 
   const itemKey = (item: TopLevelItem): string => {
@@ -113,7 +113,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       onConfigChange({ screenDescriptionMode: localDesc.mode, screenDescriptionTypes: localDesc.types });
     }
     if (numberingChanged) {
-      onConfigChange({ contentNumbering: { enabled: localNumbering } });
+      onConfigChange({ contentNumbering: localNumbering });
     }
     if (lessonsChanged) {
       onUpdate(localLessons);
@@ -169,11 +169,28 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
               </div>
               <Switch
                 id="contentNumberingSwitch"
-                checked={localNumbering}
-                onCheckedChange={setLocalNumbering}
+                checked={localNumbering.enabled}
+                onCheckedChange={enabled => setLocalNumbering(current => ({ ...current, enabled }))}
                 aria-label={t('manageLessons.numbering.title')}
               />
             </div>
+            {localNumbering.enabled && <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
+              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.structure')}
+                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.structureStyle ?? 'legacy'} onChange={event => setLocalNumbering(current => ({ ...current, structureStyle: event.target.value as ContentNumbering['structureStyle'] }))}>
+                  <option value="legacy">A · 1 · i</option><option value="decimal">1 · 1.1 · 1.1.1</option><option value="roman">I · I.1 · I.1.1</option>
+                </select>
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.badges')}
+                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.badgeStyle ?? 'decimal'} onChange={event => setLocalNumbering(current => ({ ...current, badgeStyle: event.target.value as ContentNumbering['badgeStyle'] }))}>
+                  <option value="decimal">1, 2, 3…</option><option value="roman">I, II, III…</option><option value="hierarchical">1.1, 1.2, 2.1…</option>
+                </select>
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.scope')}
+                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.scope ?? 'chapter'} onChange={event => setLocalNumbering(current => ({ ...current, scope: event.target.value as ContentNumbering['scope'] }))}>
+                  <option value="chapter">{t('manageLessons.numbering.chapter')}</option><option value="section">{t('manageLessons.numbering.section')}</option><option value="document">{t('manageLessons.numbering.document')}</option>
+                </select>
+              </label>
+            </div>}
           </section>
 
           <details open className="group overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">

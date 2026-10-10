@@ -6,7 +6,7 @@ import './print.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
 import { collectSessionDates } from '@/infrastructure/printing/printMeta';
 import { MathText } from '@/components/ui/math-text';
-import { buildLessonRows } from '@/domain/notebook/lessonRows';
+import { visibleNotebookRows } from '@/domain/evaluations/homeworkPlacement';
 import { ContentRenderer } from './ContentRenderer';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';
 import { indicesKey } from '@/domain/notebook/lessonRows';
@@ -23,8 +23,8 @@ import {
     AppConfig,
     ContentDirection
 } from '@/types';
-import { formatDateDDMMYYYY, addDaysIso } from '@/domain/notebook/dataUtils';
-import { buildSessionActivityRemarks } from '@/domain/evaluations/sessionActivityRemarks';
+import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
+import { buildSessionActivityRemarks, remarksForSessionDates } from '@/domain/evaluations/sessionActivityRemarks';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { getAcademyById } from '@/domain/classes/moroccoEducation';
@@ -35,6 +35,8 @@ import type { PrintHeaderMode } from './modals/PrintModal';
 // Props interfaces
 interface PrintViewProps {
     lessonsData: LessonsData;
+    annotationLessons?: LessonsData;
+    sessionAnnotations?: ReadonlyMap<string, string>;
     absenceSessions?: readonly AbsenceSession[];
     classInfo: ClassInfo;
     config: AppConfig;
@@ -106,12 +108,12 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, annotationLessons, sessionAnnotations, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
     const lessonsData = useMemo(() => hasOnlyPristineStarterDiagnostic(sourceLessons) ? [] : sourceLessons, [sourceLessons]);
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
 
-    const flatData = useMemo(() => buildLessonRows(lessonsData), [lessonsData]);
+    const flatData = useMemo(() => visibleNotebookRows(lessonsData), [lessonsData]);
 
     const absenceSessions = useMemo(() => suppliedAbsences ?? buildAbsenceSessions(config, classInfo.id, lessonsData),
         [suppliedAbsences, config.absences, config.timetable, config.timetableClock, classInfo.id, lessonsData]);
@@ -179,8 +181,8 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
     // Le papier porte la même numérotation que l'écran.
     const contentNumbers = React.useMemo(
-        () => buildContentNumbers(lessonsData, config.contentNumbering?.enabled !== false),
-        [lessonsData, config.contentNumbering?.enabled],
+        () => buildContentNumbers(lessonsData, config.contentNumbering ?? true),
+        [lessonsData, config.contentNumbering],
     );
 
     const renderPrintContent = (item: FlatDataItem) => (
@@ -261,9 +263,9 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
     const sessionActivities = useMemo(() => {
         const printLocale = isRtlPrint ? 'ar' : 'fr';
         const separator = isRtlPrint ? '، ' : ', ';
-        return buildSessionActivityRemarks(config, classInfo.id,
-            (key, values) => translateLocaleMessage(printLocale, key, values), separator);
-    }, [config, classInfo.id, isRtlPrint]);
+        return sessionAnnotations ?? buildSessionActivityRemarks(config, classInfo.id,
+            (key, values) => translateLocaleMessage(printLocale, key, values), separator, annotationLessons ?? lessonsData);
+    }, [sessionAnnotations, config, classInfo.id, isRtlPrint, lessonsData, annotationLessons]);
 
     const collectSessionRemarks = (items: FlatDataItem[], sessionDate?: string): string[] => {        const seen = new Set<string>();
         const remarks: string[] = [];
@@ -293,7 +295,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
         // Les activités partagent la remarque de leur séance, sans toucher
         // au contenu du cours ni répéter une note déjà saisie par l'enseignant.
-        const activityRemark = sessionActivities.get(sessionDate ? addDaysIso(sessionDate, 0) : '');
+        const activityRemark = remarksForSessionDates(sessionActivities, sessionDate);
         for (const annotation of activityRemark?.split('\n') ?? []) {
             if (!remarks.some(remark => remark.includes(annotation))) remarks.push(annotation);
         }

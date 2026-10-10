@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from './hooks/useSessionAssignment';
 import type { ExportableChapterOption } from './modals/DataTransferModal';
+import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
+import type { SessionRemarkEntry } from '@/domain/evaluations/sessionActivityRemarks';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
@@ -44,6 +46,10 @@ interface EditorModalsProps {
   editingCount: number;
   handleConfirmContentEdit: (value: Partial<LessonItem> & { name?: string }) => void;
   /** remarque de la séance : valeur courante, nombre de lignes combinées, écriture */
+  getSessionAnnotation?: (date?: string) => string | undefined;
+  getSessionRemarkEntries?: (date?: string) => readonly SessionRemarkEntry[];
+  getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
+  onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
 }
 
 /**
@@ -99,6 +105,10 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   editingTitleField,
   editingCount,
   handleConfirmContentEdit,
+  getSessionAnnotation,
+  getSessionRemarkEntries,
+  getSessionDocuments,
+  onOpenDocumentPreview,
 }) => {
   // Garde la dernière modale montée (isOpen=false) le temps de l'animation de
   // sortie : Radix démonte alors son contenu après la transition. Les props
@@ -138,6 +148,12 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             timetable={config.timetable}
             timetableClock={config.timetableClock}
             lessonsData={lessonsData}
+            sessionAnnotation={getSessionAnnotation?.(sessionEditor.selection.date)}
+            getSessionAnnotation={getSessionAnnotation}
+            getSessionRemarkEntries={getSessionRemarkEntries}
+            sessionDocuments={sessionEditor.selection.date ? getSessionDocuments?.(sessionEditor.selection.date) : undefined}
+            getSessionDocuments={getSessionDocuments}
+            onOpenDocumentPreview={onOpenDocumentPreview}
           />
         );
       case 'addContent':

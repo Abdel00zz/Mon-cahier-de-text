@@ -187,7 +187,7 @@ test('le document est figé, composé, puis imprimé par le circuit de l’édit
   const start = teacherDetail.indexOf('const handleExecutePrint');
   const execute = teacherDetail.slice(start, teacherDetail.indexOf('useEffect(', start));
   assert.ok(execute.length > 400, 'bloc d’exécution trouvé');
-  assert.match(execute, /createPrintSelection\(target\.lessonsData, chosen, true\)/, 'numérotation figée avant filtrage');
+  assert.match(execute, /createPrintSelection\(target\.lessonsData, chosen, target\.config\.contentNumbering \?\? true\)/, 'numérotation personnalisée figée avant filtrage');
   assert.match(execute, /flushSync\(\(\) => \{/, 'le document est figé avant la composition');
   assert.ok(
     execute.indexOf('preparePrintContent(root)') < execute.indexOf("printDocument('cahier-de-textes')"),

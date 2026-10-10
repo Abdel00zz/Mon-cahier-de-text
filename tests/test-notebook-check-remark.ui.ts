@@ -58,6 +58,7 @@ test('la remarque de la séance affiche le tracé du contrôle des cahiers', () 
     const html = renderTable(mergedData, date => (date === '2026-09-14' ? ANNOTATION : undefined));
     assert.match(html, /data-session-annotation="true"/);
     assert.match(html, /Contrôle des cahiers : Amin, Salma/);
+    assert.doesNotMatch(html, /editor-type-remark[^>]*>—</, 'a populated activity cell has no empty dash');
     // La règle en amont fournit bien le texte attendu, dans la langue demandée.
     const marks = buildNotebookCheckRemarks([
         { id: 'c1', type: 'controle_cahiers', title: 'مراقبة الدفاتر', date: '2026-09-14', status: 'planned', createdAt: '2026-09-01T00:00:00.000Z' },
@@ -98,7 +99,7 @@ test('l’annotation suit la direction de son texte et porte son contenu en info
 test('l’éditeur et l’impression passent la même règle aux cellules', () => {
     const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8');
     const print = readFileSync('src/features/editor/PrintView.tsx', 'utf8');
-    assert.match(editor, /buildSessionActivityRemarks\(config, classInfo\.id, t, separator\)/);
+    assert.match(editor, /sessionRemarkTextMap\(sessionRemarkEntries\)/);
     assert.match(editor, /getSessionAnnotation=\{getSessionAnnotation\}/);
     assert.match(print, /buildSessionActivityRemarks\(config, classInfo\.id,/);
 });

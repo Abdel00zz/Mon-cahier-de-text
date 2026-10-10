@@ -336,14 +336,14 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         data-remark-cell="true"
                         className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                        <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark || '—'}</span>
-                        {sessionAnnotations.map(annotation => (
+                        <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark}</span>
+                        {sessionAnnotations.filter(annotation => !sharedRemark || !sharedRemark.includes(annotation)).map(annotation => (
                           <span
                             key={annotation}
                             data-session-annotation="true"
                             dir={textDirectionAttribute(annotation)}
                             title={annotation}
-                            className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                            className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
                           >
                             {annotation}
                           </span>
@@ -374,12 +374,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                           const annotation = date && annotationOwners.get(date) === item.key
                             ? annotationsByDate.get(date)
                             : undefined;
-                          return annotation ? (
+                          const itemRemark = getMergeableRemark(item);
+                          return annotation && (!itemRemark || !itemRemark.includes(annotation)) ? (
                             <span
                               data-session-annotation="true"
                               dir={textDirectionAttribute(annotation)}
                               title={annotation}
-                              className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-bold leading-tight text-primary"
+                              className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
                             >
                               {annotation}
                             </span>

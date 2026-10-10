@@ -46,6 +46,7 @@ import { KindChooser, KindHeader, ProgrammedList, StepTrail, type ProgrammedItem
 import { KindGroupHeader } from './components/KindGroupHeader';
 import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
+import { lastCourseSessionDate } from '@/domain/evaluations/homeworkPlacement';
 
 interface DevoirsViewProps {
   classInfo: ClassInfo;
@@ -115,11 +116,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const links = useMemo(() => {
     if (!selectedClass) return [];
     const notebookEntries = findNotebookAssessments(activeLessons);
-    if (notebookEntries.length === 0) return [];
 
     const allLinks = linkAssessments(assessments, notebookEntries, today);
     // Afficher STRICTEMENT les devoirs qui existent sur le table editor (saisis par l'utilisateur)
-    const linked = allLinks.filter(link => link.entry !== undefined);
+    const manualIds = new Set(config.manualAssessments?.[classInfo.id]?.map(item => item.id));
+    const assigned = config.assessmentDates?.[classInfo.id] ?? {};
+    const linked = allLinks.filter(link => link.entry !== undefined || manualIds.has(link.planned.id)
+      || !!assigned[link.planned.id] || !!(link.planned.legacyId && assigned[link.planned.legacyId]));
 
     const matchedEntries = new Set(linked.map(l => l.entry));
     const extraEntries = notebookEntries.filter(entry => !matchedEntries.has(entry));
@@ -142,7 +145,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     }));
 
     return [...linked, ...syntheticLinks];
-  }, [assessments, selectedClass, today, activeLessons, t, number]);
+  }, [assessments, selectedClass, today, activeLessons, t, number, config.manualAssessments, config.assessmentDates, classInfo.id]);
 
   const pedagogicalEvents = useMemo(
     () =>
@@ -695,6 +698,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 ) : manualFormOpen ? (
                   <ManualAssessmentEditor
                     today={today}
+                    homeworkDate={lastCourseSessionDate(activeLessons)}
                     initial={null}
                     initialType={chosenKind.type}
                     assessments={assessments}
@@ -741,6 +745,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       >
         <ManualAssessmentEditor
           today={today}
+          homeworkDate={lastCourseSessionDate(activeLessons)}
           initial={editingAssessment}
           assessments={assessments}
           onCancel={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
@@ -937,11 +942,6 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 
   const formatDateBadge = (date: string | undefined, endDate: string | undefined): string => {
     if (!date) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
-    const formatDayMonth = (iso: string) => {
-      const parts = iso.split('-');
-      if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
-      return iso;
-    };
     const formatFull = (iso: string) => {
       const parts = iso.split('-');
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -1278,6 +1278,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
 };
 
 interface ManualAssessmentEditorProps {
+  homeworkDate?: string;
   today: string;
   initial?: ManualAssessment | null;
   initialType?: DevoirType;
@@ -1286,12 +1287,12 @@ interface ManualAssessmentEditorProps {
   onSave: (manual: ManualAssessment) => void;
 }
 
-const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, initial, initialType, assessments = [], onCancel, onSave }) => {
+const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, homeworkDate, initial, initialType, assessments = [], onCancel, onSave }) => {
   const { t } = useLocale();
   const initialKind: DevoirType = initial?.type ?? initialType ?? 'controle';
   const [type, setType] = useState<DevoirType>(initialKind);
   const [num, setNum] = useState(String(initial?.num ?? (assessments.filter(a => a.type === initialKind).length + 1)));
-  const [date, setDate] = useState(initial?.dateISO ?? today);
+  const [date, setDate] = useState(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today));
   const [duree, setDuree] = useState(initial?.duree ?? '');
   const [semestre, setSemestre] = useState<1 | 2>(initial?.semestre ?? 1);
   const [error, setError] = useState('');
@@ -1301,6 +1302,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
 
   const changeType = (nextType: DevoirType) => {
     setType(nextType);
+    if (!initial && nextType === 'maison' && homeworkDate) setDate(homeworkDate);
     setNum(String(nextNumFor(nextType)));
   };
 

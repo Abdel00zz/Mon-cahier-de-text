@@ -292,16 +292,16 @@ export function applyContentMove(draft: Draft<LessonsData>, plan: ContentMovePla
 /* ── Transfert d'exercices entre conteneurs ───────────────────────────────────
  * Le mécanisme de base reste la permutation avec le voisin de la même liste (haut / bas).
  * Il est renforcé pour les SEULS exercices : au bord de sa liste (premier ou dernier élément),
- * un exercice passe au conteneur voisin dans l'ordre de lecture du chapitre : la fin du
+ * un exercice passe au conteneur voisin dans l'ordre de lecture du cahier : la fin du
  * paragraphe précédent en montant, le début du suivant en descendant. Répété, le geste le
  * fait traverser autant de paragraphes qu'on veut, dans les deux sens. Un paragraphe vide,
  * même sans liste `items`, l'accueille. Les autres types gardent la permutation stricte.
- * Le chapitre reste la limite : en changer bouscule numérotation et progression. */
+ * Le transfert conserve le nœud complet ; les numéros sont recalculés dans le chapitre d’arrivée. */
 
 const EXERCISE_TYPE = 'exercice';
 
-const isExercise = (item: unknown): boolean =>
-  typeof item === 'object' && item !== null && (item as { type?: unknown }).type === EXERCISE_TYPE;
+export const isExercise = (item: unknown): boolean =>
+  typeof item === 'object' && item !== null && [EXERCISE_TYPE, 'exercise', 'exo', 'exercice corrigé'].includes(String((item as { type?: unknown }).type).toLowerCase());
 export interface ContentTransferPlan {
   source: { anchor: Indices; parent: unknown; start: number; count: number };
   /** Conteneur d'arrivée (chemin sans itemIndex) et position d'insertion dans sa liste `items`. */
@@ -362,7 +362,7 @@ export function planContentTransfer(
   if (!chapter || chapter.type !== 'chapter') return null;
   if (!block.parent.slice(block.start, block.start + block.count).every(isExercise)) return null;
 
-  const containers = collectItemContainers(chapter, block.anchor.chapterIndex);
+  const containers = data.flatMap((node, chapterIndex) => node.type === 'chapter' ? collectItemContainers(node, chapterIndex) : []);
   const sourceKey = indicesKey(withoutDeepestIndex(block.anchor));
   const at = containers.findIndex(path => indicesKey(path) === sourceKey);
   if (at < 0) return null;

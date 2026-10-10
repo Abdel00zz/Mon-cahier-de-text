@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DocumentPrintButton } from '@/components/documents/DocumentPrintButton';
 import { Textarea } from '@/components/ui/textarea';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
@@ -110,7 +111,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="2xl"
+      maxWidth="3xl"
       className="document-modal-frame evaluation-modal"
       headerClassName="border-b border-border/70"
       title={t('documentPreview.heading')}
@@ -121,7 +122,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
-        <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-muted/40 p-1">
+        <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-muted/50 p-1">
           {(['preview', 'source'] as const).map((value) => {
             const isActive = tab === value;
             return (
@@ -131,7 +132,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
                 onClick={() => { setTab(value); if (value === 'source') textareaRef.current?.focus(); }}
                 aria-pressed={isActive}
                 className={cn(
-                  'inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
+                  'inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
                   isActive
                     ? 'bg-card text-foreground shadow-xs ring-1 ring-border/70'
                     : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
@@ -145,23 +146,23 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
         </div>
 
         {tab === 'source' ? (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <Textarea
               ref={textareaRef}
               value={source}
               onChange={(event) => setSource(event.target.value)}
-              rows={10}
+              rows={12}
               dir="auto"
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
               aria-label={t('evaluations.doc.source')}
-              className="min-h-[9rem] resize-y font-mono text-[12.5px] leading-relaxed"
+              className="min-h-[16rem] max-h-[58vh] h-[46vh] resize-y rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
             />
             <div className="flex items-center justify-between gap-2 px-1">
               <button
                 type="button"
                 onClick={() => setShowHelp(open => !open)}
-                className="min-h-11 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                className="min-h-10 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                 aria-expanded={showHelp}
               >
                 {t('evaluations.doc.helpToggle')}
@@ -171,7 +172,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               </span>
             </div>
             {showHelp && (
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3.5">
                 <p className="mb-2 text-[11px] font-bold text-foreground">{t('evaluations.doc.helpTitle')}</p>
                 <dl className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   {SYNTAX_SAMPLES.map(([sample, labelKey]) => (
@@ -191,13 +192,13 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         ) : (
-          <div className="document-preview-paper max-h-[24rem] overflow-y-auto border border-border/80 bg-card p-4 sm:max-h-[30rem] sm:p-7">
+          <div className="document-preview-paper min-h-[18rem] max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-4 sm:p-7 shadow-xs">
             {preview ? (
               /* La feuille est une PAGE : colonne de lecture bornée, jamais
                  étirée sur toute la largeur d'un grand écran. */
               <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{preview}</div>
             ) : (
-              <div className="space-y-3 py-8 text-center text-xs text-muted-foreground">
+              <div className="space-y-3 py-12 text-center text-xs text-muted-foreground">
                 <p>{t('evaluations.doc.empty')}</p>
                 <button
                   type="button"
@@ -212,22 +213,27 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-11 w-full sm:w-auto rounded-md bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isTooLong}
-            className="h-11 w-full sm:w-auto rounded-md bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {t('common.save')}
-          </button>
+        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+          <div className="flex items-center">
+            <DocumentPrintButton source={source} showLabel />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 rounded-lg bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isTooLong}
+              className="h-11 rounded-lg bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {t('common.save')}
+            </button>
+          </div>
         </div>
       </div>
     </Modal>

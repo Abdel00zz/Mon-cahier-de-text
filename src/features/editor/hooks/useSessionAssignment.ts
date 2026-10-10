@@ -4,6 +4,7 @@ import type { AppLocale, Indices, LessonsData } from '@/types';
 import { applySessionEdit, readSessionSelection, type SessionPatch } from '@/domain/notebook/sessionEditing';
 import { dateOrderWarnings, selectionDateOrder } from '@/domain/calendar/dateOrder';
 import type { DateWarning } from '@/domain/calendar/dateValidation';
+import type { HistoryEffects } from './useHistoryState';
 
 export interface SessionEditorState {
   selection: NonNullable<ReturnType<typeof readSessionSelection>>;
@@ -15,7 +16,7 @@ export interface SessionEditorState {
 interface Options {
   lessonsData: LessonsData;
   locale: AppLocale;
-  setState: (recipe: (draft: Draft<LessonsData>) => void, action: string) => void;
+  setState: (recipe: (draft: Draft<LessonsData>) => void, action: string, effects?: HistoryEffects) => void;
   getDateWarnings: (date: string) => DateWarning[];
   getSelectionWarnings?: (source: LessonsData, targets: readonly Indices[], patch: SessionPatch) => DateWarning[];
   revision?: unknown;
@@ -23,6 +24,7 @@ interface Options {
   onOpen: () => void;
   onClose: () => void;
   onSaved: () => void;
+  onActivityRemarks?: (patch: SessionPatch, session: SessionEditorState) => HistoryEffects | undefined;
   onStale: () => void;
 }
 
@@ -55,7 +57,8 @@ export function useSessionAssignment(options: Options) {
         current.onStale();
         return;
       }
-      current.setState(draft => { applySessionEdit(draft, session.selection.targets, patch); }, 'assign-date');
+      const effects = current.onActivityRemarks?.(patch, session);
+      current.setState(draft => { applySessionEdit(draft, session.selection.targets, patch); }, 'assign-date', effects);
       cancel();
       current.onSaved();
       current.onClose();

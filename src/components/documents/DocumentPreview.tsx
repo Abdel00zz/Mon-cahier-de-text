@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { FileText } from '../ui/icons';
 import { renderDescriptionWithBold } from '../typography/textFormat';
 import { useLocale } from '../../i18n/LocaleProvider';
+import { DocumentPrintButton } from './DocumentPrintButton';
 
 /*
  * Aperçu d'un document pédagogique du professeur : le sujet d'un devoir, un
@@ -58,7 +59,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 <Button type="button" variant="outline" onClick={onClose} className="rounded-md">{t('common.close')}</Button>
             }
             /* Le document commence directement : aucun contexte ajouté. */
-            title={t('documentPreview.heading')}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper border border-border/80 bg-card p-5 sm:p-7">

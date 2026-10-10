@@ -84,6 +84,12 @@ export function useSessionAlerts(enabled = true) {
     const config = readCachedConfig();
     let classes: ClassInfo[] = [];
     try { const value = JSON.parse(localStorage.getItem('classManager_v1') ?? '[]'); if (Array.isArray(value)) classes = value; } catch { /* No class means no target. */ }
+    // The timetable is local data: display the current class immediately even
+    // when the calendar endpoint is unreachable or the session is offline.
+    const initial = detectSessionAlerts(config, classes, getBundledCalendar(), new Date(), () => false);
+    const initialClassIds = [...new Set(initial.current.map(block => block.classId))].sort();
+    const initialKey = `${initial.today}:${initial.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;
+    setCurrent(previous => previous.key === initialKey ? previous : { key: initialKey, classIds: initialClassIds });
     void (async () => {
       const calendar = await loadHolidayCalendar().catch(() => getBundledCalendar());
       if (!fresh()) return;
