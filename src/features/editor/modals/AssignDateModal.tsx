@@ -1,4 +1,11 @@
 import { sessionDateKeys } from '@/domain/evaluations/homeworkPlacement';
+import {
+  extractHomeworkNumber,
+  hasHomeworkMention,
+  getNextHomeworkNumber,
+  replaceOrInsertHomeworkInRemark,
+  removeHomeworkFromRemark,
+} from '@/domain/evaluations/homeworkNumbering';
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
@@ -200,6 +207,17 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     });
   };
 
+  // Détection et synchronisation avancée du numéro de devoir maison (إعطاء الفرض المنزلي)
+  const detectedHomeworkNum = useMemo(() => extractHomeworkNumber(remark), [remark]);
+  const hasHomework = useMemo(() => Boolean(detectedHomeworkNum !== null || hasHomeworkMention(remark)), [detectedHomeworkNum, remark]);
+  const activeHomeworkNum = useMemo(() => {
+    if (detectedHomeworkNum !== null && detectedHomeworkNum > 0) return detectedHomeworkNum;
+    return getNextHomeworkNumber({
+      lessons: lessonsData as LessonsData,
+      currentRemark: remark,
+    });
+  }, [detectedHomeworkNum, lessonsData, remark]);
+
   const remarkInputSection = (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -240,25 +258,70 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         ) : null}
       </div>
 
-      {/* Quick insert chips */}
+      {/* Quick insert chips avec numérotation synchronisée avancée */}
       <div className="flex items-center gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={() => {
-            const dm = t('remark.devoirMaisonGivenSimple');
-            setRemark(current => {
-              const trimmed = current.trim();
-              if (!trimmed) return dm;
-              if (trimmed.includes(dm)) return current;
-              return `${trimmed}\n${dm}`;
-            });
-            setRemarkChanged(true);
-          }}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-primary/25 bg-primary/5 hover:bg-primary/10 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
-        >
-          <Plus className="size-3 stroke-[2.5]" />
-          <span>{t('remark.devoirMaisonGivenSimple')}</span>
-        </button>
+        {!hasHomework ? (
+          <button
+            type="button"
+            onClick={() => {
+              const dmText = t('remark.devoirMaisonGiven', { num: activeHomeworkNum });
+              setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+              setRemarkChanged(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/25 bg-primary/5 hover:bg-primary/10 active:scale-95 text-xs font-bold text-primary transition-all cursor-pointer shadow-2xs"
+            title={t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}
+          >
+            <Plus className="size-3 stroke-[2.5]" />
+            <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
+          </button>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/40 bg-primary/10 text-xs font-bold text-primary shadow-2xs">
+            <Check className="size-3.5 stroke-[2.5] text-primary shrink-0" />
+            <span>{t('remark.devoirMaisonGiven', { num: activeHomeworkNum })}</span>
+            <div className="flex items-center gap-0.5 ms-1 border-s border-primary/25 ps-1">
+              <button
+                type="button"
+                title="-1"
+                aria-label="-1"
+                onClick={() => {
+                  const nextVal = Math.max(1, activeHomeworkNum - 1);
+                  const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
+                  setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                  setRemarkChanged(true);
+                }}
+                className="size-5 flex items-center justify-center rounded hover:bg-primary/20 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+              >
+                -
+              </button>
+              <button
+                type="button"
+                title="+1"
+                aria-label="+1"
+                onClick={() => {
+                  const nextVal = activeHomeworkNum + 1;
+                  const dmText = t('remark.devoirMaisonGiven', { num: nextVal });
+                  setRemark(current => replaceOrInsertHomeworkInRemark(current, dmText));
+                  setRemarkChanged(true);
+                }}
+                className="size-5 flex items-center justify-center rounded hover:bg-primary/20 active:scale-90 text-[11px] font-bold cursor-pointer transition-colors"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                title={t('common.delete')}
+                aria-label={t('common.delete')}
+                onClick={() => {
+                  setRemark(current => removeHomeworkFromRemark(current));
+                  setRemarkChanged(true);
+                }}
+                className="ms-0.5 size-5 flex items-center justify-center rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive active:scale-90 cursor-pointer transition-colors"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          </div>
+        )}
         <button
           type="button"
           onClick={() => {

@@ -36,6 +36,7 @@ import { contentLocaleFromDirection, defaultContentDirection, detectContentDirec
 import { sessionRemarkTextMap, buildSessionRemarkEntries, remarksForSessionDates } from '@/domain/evaluations/sessionActivityRemarks';
 import { documentsForSessionDates } from '@/domain/evaluations/activityDocumentPreviews';
 import { sessionDateKey } from '@/domain/evaluations/homeworkPlacement';
+import { replaceOrInsertHomeworkInRemark } from '@/domain/evaluations/homeworkNumbering';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { produce, type Draft } from 'immer';
 import { applySessionEdit } from '@/domain/notebook/sessionEditing';
@@ -960,8 +961,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   }
                   if (targetItem) {
                       const cur = (targetItem.remark || '').trim();
-                      if (!cur) targetItem.remark = dmText;
-                      else if (!cur.includes(dmText)) targetItem.remark = `${dmText}\n${cur}`;
+                      targetItem.remark = replaceOrInsertHomeworkInRemark(cur, dmText);
                   }
               }
           }, 'add-top-level');

@@ -2436,7 +2436,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'remark.groupHint': '{count} أسطر مدمجة تشترك في ملاحظة واحدة.',
     'remark.checkNames': 'مراقبة الدفاتر: {names}',
     'remark.checkNamesMore': 'مراقبة الدفاتر: {names} +{more}',
-    'remark.devoirMaisonGiven': 'تم إعطاء الفرض المنزلي {num}',
+    'remark.devoirMaisonGiven': 'تم إعطاء الفرض المنزلي رقم {num}',
     'remark.devoirMaisonGivenSimple': 'تم إعطاء الفرض المنزلي',
     'remark.sessionDate': 'تاريخ الحصة',
     'editor.type': 'النوع',

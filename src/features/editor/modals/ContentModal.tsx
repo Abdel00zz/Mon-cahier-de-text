@@ -18,6 +18,7 @@ import { createContentDraft, contentDraftChanged, type ContentDraft, type Editab
 import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import { lastCourseSessionDate } from '@/domain/evaluations/homeworkPlacement';
+import { getNextHomeworkNumber } from '@/domain/evaluations/homeworkNumbering';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import type { TimetableEntry, TimetableClockPolicy } from '@/types';
 
@@ -197,13 +198,14 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     let initialData: ContentDraft = {};
 
     if (config) {
-      const count = countOccurrencesOfType(lessonsData, type);
-      const nextNum = count + 1;
       if (type === 'devoir_maison') {
+        const nextNum = getNextHomeworkNumber({ lessons: lessonsData });
         const lastDate = lastCourseSessionDate(lessonsData) || todayInMorocco();
         initialData.date = lastDate;
         initialData.title = tc('remark.devoirMaisonGiven', { num: nextNum });
       } else {
+        const count = countOccurrencesOfType(lessonsData, type);
+        const nextNum = count + 1;
         const localizedName = tc(`manageLessons.type.${type}`);
         initialData.title = config.autoNumber
           ? `${localizedName} ${nextNum}`

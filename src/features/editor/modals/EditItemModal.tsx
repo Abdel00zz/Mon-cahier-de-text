@@ -9,6 +9,7 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { ContentDirection, Indices, LessonsData, TopLevelType } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, contentBadgeClass, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/domain/notebook/dataUtils';
+import { getNextHomeworkNumber } from '@/domain/evaluations/homeworkNumbering';
 import { hasMathSyntax } from '@/lib/text/math';
 import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
@@ -178,11 +179,12 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     let initialData: any = {};
 
     if (config) {
-      const count = countOccurrencesOfType(lessonsData, type);
-      const nextNum = count + 1;
       if (type === 'devoir_maison') {
+        const nextNum = getNextHomeworkNumber({ lessons: lessonsData });
         initialData.title = tc('remark.devoirMaisonGiven', { num: nextNum });
       } else {
+        const count = countOccurrencesOfType(lessonsData, type);
+        const nextNum = count + 1;
         const localizedName = tc(`manageLessons.type.${type}`);
         initialData.title = config.autoNumber
           ? `${localizedName} ${nextNum}`

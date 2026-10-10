@@ -43,7 +43,9 @@ const NOTEBOOK_TYPE_MAP: Record<string, DevoirType> = {
 const parseTrailingNumber = (title: string | undefined): number | null => {
     const normalized = (title ?? '').replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) - (digit >= '۰' ? 0x6F0 : 0x660)));
     const match = normalized.trim().match(/(\d+)\s*$/);
-    return match ? parseInt(match[1], 10) : null;
+    if (match) return parseInt(match[1], 10);
+    const middle = normalized.match(/(?:devoir\s+maison|maison|الفرض\s+المنزلي|فرض\s+منزلي|dm)(?:\s*(?:n[°o.]?|رقم|#))?\s*(\d+)/i);
+    return middle ? parseInt(middle[1], 10) : null;
 };
 
 /**
