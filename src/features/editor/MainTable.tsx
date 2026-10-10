@@ -175,12 +175,12 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     const uniqueDates = Array.from(new Set(allDates));
     const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
     const hasWarning = warnings.length > 0;
-    // Une seule source de vérité : le moteur décide si la séance partage sa
-    // remarque (voir `sharedRemark`) — plus de comparaison locale, qui
-    // éclatait la colonne en une cellule par ligne dès qu'un seul contenu
-    // était annoté.
+    // Une seule source de vérité : la séance fusionnée porte sa remarque
+    // unifiée et centrée pour tout le groupe de contenus.
+    const allRemarks = Array.from(new Set(items.map(getMergeableRemark).filter(Boolean)));
     const sameRemark = !!items[0].dateMerge?.shouldMergeRemark;
-    const sharedRemark = items[0].dateMerge?.sharedRemark ?? '';
+    const sharedRemark = items[0].dateMerge?.sharedRemark ?? allRemarks.join('\n');
+    const displayRemark = sharedRemark || allRemarks.join('\n');
     // Contrôle des cahiers : la trace de l'activité vit dans la cellule
     // « remarque » de la séance du même jour, sans ajouter la moindre ligne au
     // cahier. Elle n'est écrite qu'UNE fois par date — la première ligne datée
@@ -200,7 +200,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     // Une grille commune garde les traits de contenu et de remarque sur le
     // même axe, même si une remarque ou une description occupe plusieurs lignes.
-    const visualRowCount = mergeContent && sameRemark ? 1 : items.length;
+    const visualRowCount = mergeContent ? 1 : items.length;
     const firstMerge = items[0].dateMerge;
     const lastMerge = items[items.length - 1].dateMerge;
 
@@ -321,76 +321,45 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 </div>
             ))}
 
-            {sameRemark ? (
-                <div
-                    data-session-cell="remark"
-                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
-                    style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
-                    onClick={() => onOpenRemark?.(items[0].indices)}
+            {/* Colonne 3 : Remarque unique et fusionnée pour toute la séance, parfaitement centrée */}
+            <div
+                data-session-cell="remark"
+                className={`flex flex-col justify-center items-center min-w-0 self-stretch p-1 sm:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
+                onClick={() => onOpenRemark?.(items[0].indices)}
+            >
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onOpenRemark?.(items[0].indices); }}
+                    title={t('remark.editTitle')}
+                    aria-label={t('remark.editTitle')}
+                    data-remark-cell="true"
+                    className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-center justify-center text-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
-                    <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onOpenRemark?.(items[0].indices); }}
-                        title={t('remark.editTitle')}
-                        aria-label={t('remark.editTitle')}
-                        data-remark-cell="true"
-                        className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    >
-                        <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark}</span>
-                        {sessionAnnotations.filter(annotation => !sharedRemark || !sharedRemark.includes(annotation)).map(annotation => (
-                          <span
-                            key={annotation}
-                            data-session-annotation="true"
-                            dir={textDirectionAttribute(annotation)}
-                            title={annotation}
-                            className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
-                          >
-                            {annotation}
-                          </span>
-                        ))}
-                    </button>
-                    <SessionDocuments documents={uniqueDates.flatMap(date => getSessionDocuments?.(date) ?? [])} onOpen={onOpenDocumentPreview}/>
-                </div>
-            ) : items.map((item, index) => (
-                <div
-                    key={`remark-${item.key}`}
-                    data-session-cell="remark"
-                    data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
-                    className={`flex flex-col min-w-0 self-stretch p-0.5 sm:p-1 cursor-pointer hover:bg-primary/[0.03] transition-colors ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
-                    style={{ gridColumn: 3, gridRow: index + 1 }}
-                    onClick={() => onOpenRemark?.(item.indices)}
-                >
-                    <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onOpenRemark?.(item.indices); }}
-                        title={t('remark.editTitle')}
-                        aria-label={t('remark.editTitle')}
-                        data-remark-cell="true"
-                        className="min-h-11 h-full flex-1 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    >
-                        <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
-                        {(() => {
-                          const date = getMergeableDate(item);
-                          const annotation = date && annotationOwners.get(date) === item.key
-                            ? annotationsByDate.get(date)
-                            : undefined;
-                          const itemRemark = getMergeableRemark(item);
-                          return annotation && (!itemRemark || !itemRemark.includes(annotation)) ? (
-                            <span
-                              data-session-annotation="true"
-                              dir={textDirectionAttribute(annotation)}
-                              title={annotation}
-                              className="mt-0.5 block w-full whitespace-pre-line break-words text-start rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
-                            >
-                              {annotation}
-                            </span>
-                          ) : null;
-                        })()}
-                    </button>
-                    <SessionDocuments documents={getMergeableDate(item) && annotationOwners.get(getMergeableDate(item)!) === item.key
-                      ? getSessionDocuments?.(getMergeableDate(item)!) : undefined} onOpen={onOpenDocumentPreview}/>
-                </div>
-            ))}
+                    {displayRemark ? (
+                      <span
+                        dir={textDirectionAttribute(displayRemark)}
+                        className="editor-type-remark w-full whitespace-pre-wrap break-words text-center font-semibold leading-snug text-foreground/80"
+                      >
+                        {displayRemark}
+                      </span>
+                    ) : (
+                      <span className="opacity-0 select-none text-xs">·</span>
+                    )}
+                    {sessionAnnotations.filter(annotation => !displayRemark || !displayRemark.includes(annotation)).map(annotation => (
+                      <span
+                        key={annotation}
+                        data-session-annotation="true"
+                        dir={textDirectionAttribute(annotation)}
+                        title={annotation}
+                        className="mt-0.5 block w-full whitespace-pre-line break-words text-center rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
+                      >
+                        {annotation}
+                      </span>
+                    ))}
+                </button>
+                <SessionDocuments documents={uniqueDates.flatMap(date => getSessionDocuments?.(date) ?? [])} onOpen={onOpenDocumentPreview}/>
+            </div>
         </div>
     );
 }, (previous, next) => {
