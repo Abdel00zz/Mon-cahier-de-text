@@ -398,6 +398,11 @@ const assertStudentNames = (candidate: unknown, label: string, allowNotebookCond
   }
 };
 
+/** Une carte d'états par élève : clé = un élève de la liste, valeur = un état connu. */
+const validOutcomeMap = (names: readonly string[], map: unknown, allowed: readonly string[]): boolean =>
+  map === undefined || (!!map && typeof map === 'object' && !Array.isArray(map)
+    && Object.entries(map).every(([name, value]) => names.includes(name) && allowed.includes(value as string)));
+
 /** Document rédigé : texte borné (voir `src/constants/contentDocument.ts`). */
 const assertContentDocument = (candidate: unknown, label: string): void => {
   if (candidate === undefined) return;
@@ -479,13 +484,19 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     const entries = Object.entries(raw);
     if (entries.length > 300) throw new HttpError(400, 'Trop de suivis oraux.');
     for (const [assessmentId, candidate] of entries) {
-      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant de suivi oral invalide.');
-      assertStudentNames(candidate, 'le suivi oral');
-      const record = candidate as { names: string[]; oralOutcomes?: unknown };
-      const outcomes = record.oralOutcomes;
-      if (!outcomes || typeof outcomes !== 'object' || Array.isArray(outcomes)
-        || Object.entries(outcomes).some(([name, outcome]) => !record.names.includes(name) || !['mastered', 'developing', 'needs_support'].includes(outcome as string))) {
+      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant de suivi d’élèves invalide.');
+      assertStudentNames(candidate, 'le suivi d’élèves');
+      const record = candidate as { names: string[]; oralOutcomes?: unknown; homeworkOutcomes?: unknown };
+      // Deux suivis cohabitent dans le même enregistrement : l'oral et la remise
+      // des devoirs. Un enregistrement sans aucun des deux n'a rien à transporter.
+      if (record.oralOutcomes === undefined && record.homeworkOutcomes === undefined) {
+        throw new HttpError(400, 'Suivi d’élèves vide.');
+      }
+      if (!validOutcomeMap(record.names, record.oralOutcomes, ['mastered', 'developing', 'needs_support'])) {
         throw new HttpError(400, 'Observations orales invalides.');
+      }
+      if (!validOutcomeMap(record.names, record.homeworkOutcomes, ['given', 'missing'])) {
+        throw new HttpError(400, 'Remise de devoir invalide.');
       }
     }
   }
@@ -509,6 +520,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!value || typeof value !== 'object' || typeof value.id !== 'string' || !value.id || value.id.length > 180) throw new HttpError(400, 'Identifiant de devoir manuel invalide.');
       if (!VALID_ASSESSMENT_TYPES.has(value.type as string) || !Number.isInteger(value.num) || Number(value.num) < 1 || Number(value.num) > 50) throw new HttpError(400, 'Type ou numéro de devoir manuel invalide.');
       if (typeof value.dateISO !== 'string' || (value.dateISO === '' ? !value.schoolYear : !ISO_DATE.test(value.dateISO)) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
+      if (value.correctionDateISO !== undefined && value.correctionDateISO !== '' && !ISO_DATE.test(value.correctionDateISO)) throw new HttpError(400, 'Date de correction de devoir manuel invalide.');
       if (value.schoolYear !== undefined && (typeof value.schoolYear !== 'string' || !/^\d{4}-\d{4}$/.test(value.schoolYear))) throw new HttpError(400, 'Année scolaire de devoir manuel invalide.');
       assertContentDocument(value.document, 'le devoir manuel');
     }

@@ -103,26 +103,45 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
       {view === 'overview' && (
         <div className="space-y-4">
           {plan && curriculumProgress ? (
-            <ul className="hub-grid" data-rows aria-label={t('analysis.card.program')}>
-              <li className="contents">
-                <button type="button" data-tone="blue" data-layout="row" className="hub-card" onClick={() => setView('program')}>
-                  <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
-                  <span className="hub-card__body">
-                    <span className="hub-card__title">{t('analysis.card.program')}</span>
+            <>
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-muted/40 p-3.5 sm:p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-foreground">
+                    {t('analysis.card.program')} · {current.name}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {curriculumProgress.completionRate !== null
+                      ? (locale === 'ar' ? `نسبة الإنجاز: ${number.format(curriculumProgress.completionRate)}%` : `${number.format(curriculumProgress.completionRate)}% réalisé`)
+                      : t('analysis.toPlan')}
+                  </p>
+                </div>
+                {curriculumProgress.completionRate !== null && (
+                  <span className="shrink-0 rounded-xl bg-primary/10 px-3 py-1 font-mono text-xs sm:text-sm font-bold text-primary">
+                    {number.format(curriculumProgress.completionRate)}%
                   </span>
-                  <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
-                </button>
-              </li>
-              <li className="contents">
-                <button type="button" data-tone="violet" data-layout="row" className="hub-card" onClick={() => setView('link')}>
-                  <span className="hub-card__icon" aria-hidden="true"><Network /></span>
-                  <span className="hub-card__body">
-                    <span className="hub-card__title">{t('analysis.card.link')}</span>
-                  </span>
-                  <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
-                </button>
-              </li>
-            </ul>
+                )}
+              </div>
+              <ul className="hub-grid" data-rows aria-label={t('analysis.card.program')}>
+                <li className="contents">
+                  <button type="button" data-tone="blue" data-layout="row" className="hub-card" onClick={() => setView('program')}>
+                    <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
+                    <span className="hub-card__body">
+                      <span className="hub-card__title">{t('analysis.card.program')}</span>
+                    </span>
+                    <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
+                  </button>
+                </li>
+                <li className="contents">
+                  <button type="button" data-tone="violet" data-layout="row" className="hub-card" onClick={() => setView('link')}>
+                    <span className="hub-card__icon" aria-hidden="true"><Network /></span>
+                    <span className="hub-card__body">
+                      <span className="hub-card__title">{t('analysis.card.link')}</span>
+                    </span>
+                    <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
+                  </button>
+                </li>
+              </ul>
+            </>
           ) : (
             <p className="rounded-2xl border border-dashed border-border/70 px-3 py-2.5 text-xs text-muted-foreground">{t('analysis.noPlan')}</p>
           )}

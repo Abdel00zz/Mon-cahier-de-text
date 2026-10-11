@@ -38,9 +38,10 @@ const NOTEBOOK_TYPE_MAP: Record<string, DevoirType> = {
     oral: 'oral',
     devoir_maison: 'maison',
     maison: 'maison',
+    colle: 'colle',
 };
 
-const parseTrailingNumber = (title: string | undefined): number | null => {
+export const parseTrailingNumber = (title: string | undefined): number | null => {
     const normalized = (title ?? '').replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) - (digit >= '۰' ? 0x6F0 : 0x660)));
     const match = normalized.trim().match(/(\d+)\s*$/);
     if (match) return parseInt(match[1], 10);
@@ -88,7 +89,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
     /* numérotation finale PAR TYPE : le numéro déclaré dans le titre prime,
        les titres sans numéro prennent le premier ordinal libre (ordre du doc) */
     const result: NotebookAssessmentEntry[] = [];
-    for (const type of ['controle', 'controle_court', 'controle_global', 'oral', 'maison'] as const) {
+    for (const type of ['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle'] as const) {
         const ofType = raw.filter(e => e.type === type);
         const taken = new Set(ofType.map(e => e.declaredNum).filter((n): n is number => n !== null));
         let cursor = 1;

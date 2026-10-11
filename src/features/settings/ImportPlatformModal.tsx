@@ -8,6 +8,7 @@ import { MAX_JSON_FILE_BYTES, parseBoundedJson } from '@/domain/notebook/jsonInp
 import { StatusNotice } from '@/components/ui/status-notice';
 import { ImportSummary } from '@/components/ui/import-summary';
 import { inspectBackup } from '@/infrastructure/storage/backup';
+import { useModalHaptics } from '@/hooks/useModalHaptics';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface ImportPlatformModalProps {
 
 export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen, onClose, onImport }) => {
   const { t } = useLocale();
+  const haptics = useModalHaptics();
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -109,6 +111,8 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         </div>
       }
       maxWidth="xl"
+      elevation="high"
+      glow={isConfirmed ? 'danger' : undefined}
       className="sm:max-w-2xl sm:rounded-2xl"
       headerClassName="border-b-0 bg-background/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
@@ -116,7 +120,16 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       footer={
         <div className="flex w-full items-center justify-end gap-3">
           <Button variant="secondary" onClick={onClose} disabled={isImporting}>{t('common.cancel')}</Button>
-          <Button variant="destructive" onClick={() => void handleImport()} disabled={!preview || !isConfirmed || isReading || isImporting} aria-busy={isImporting}>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              haptics.onDelete();
+              void handleImport();
+            }}
+            disabled={!preview || !isConfirmed || isReading || isImporting}
+            aria-busy={isImporting}
+            className={isConfirmed ? 'glow-pulse-danger' : undefined}
+          >
             {isImporting ? <Loader2 aria-hidden className="animate-spin motion-reduce:animate-none"/> : <HardDriveUpload aria-hidden />}{t(isImporting ? 'common.loading' : 'settings.importModal.importAction')}
           </Button>
         </div>

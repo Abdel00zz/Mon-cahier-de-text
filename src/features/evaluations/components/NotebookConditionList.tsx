@@ -4,8 +4,9 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { NOTEBOOK_CONDITIONS } from '@/domain/evaluations/notebookConditions';
+import { HOMEWORK_OUTCOMES } from '@/domain/evaluations/homeworkSubmissions';
 import { studentSearchKey } from '@/domain/evaluations/studentRoster';
-import type { OralOutcome } from '@/types';
+import type { HomeworkOutcome, OralOutcome } from '@/types';
 import { StudentSearchBar } from './StudentSearchBar';
 
 const ICONS = { good: CircleCheck, average: CircleMinus, needs_work: BookOpenCheck, missing: BookX };
@@ -15,8 +16,11 @@ export const ORAL_REVIEW_CHOICES: { value: OralOutcome; labelKey: string; Icon: 
     { value: 'developing', labelKey: 'evaluations.oral.developing', Icon: CircleMinus },
     { value: 'needs_support', labelKey: 'evaluations.oral.needs_support', Icon: BookOpenCheck },
 ];
+/** Deux états seulement : ce que l'enseignant constate. L'absence se consigne à part. */
+export const HOMEWORK_REVIEW_CHOICES: { value: HomeworkOutcome; labelKey: string; Icon: LucideIcon }[] =
+    HOMEWORK_OUTCOMES.map(value => ({ value, labelKey: `evaluations.homework.${value}`, Icon: value === 'given' ? CircleCheck : BookX }));
 
-export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook' }: {
+export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, toolbarAction, inlineAddZone, isAddOpen }: {
     names: string[];
     conditions: Record<string, T>;
     onChange: (conditions: Record<string, T>) => void;
@@ -24,7 +28,13 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     entry?: ReactNode;
     footer?: ReactNode;
     choices: readonly { value: T; labelKey: string; Icon: LucideIcon }[];
-    mode?: 'notebook' | 'oral';
+    mode?: 'notebook' | 'oral' | 'homework';
+    /** Note /20 par élève (oral, colle) : saisie libre, jamais bloquante. */
+    grades?: Record<string, string>;
+    onGradesChange?: (grades: Record<string, string>) => void;
+    toolbarAction?: ReactNode;
+    inlineAddZone?: ReactNode;
+    isAddOpen?: boolean;
 }) {
     const { t, locale } = useLocale();
     const id = useId();
@@ -42,44 +52,89 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
 
     return <div className="notebook-tracker" data-review-mode={mode} data-notebook-check-list={mode === 'notebook' ? '' : undefined}>
         <div className="notebook-tracker__scroll modern-scrollbar" data-swipe-scroll-region>
-            {entry}
             <p className="sr-only" id={`${id}-hint`}>{t(`${copy}.hint`)}</p>
-            <StudentSearchBar query={query} onQueryChange={setQuery} count={shownNames.length}>
-                <select value={filter ?? ''} onChange={event => setFilter(event.target.value ? event.target.value as T | 'pending' : null)} aria-label={t(`${copy}.filterLabel`)}>
-                    <option value="">{t('evaluations.notebook.showAll')}</option>
-                    <option value="pending">{t(`${copy}.pending`)}</option>
-                    {choices.map(choice => <option key={choice.value} value={choice.value}>{t(choice.labelKey)}</option>)}
-                </select>
-            </StudentSearchBar>
-            {(filter || query) && <div className="notebook-filter-info">
-                <span>{filter ? t(`${copy}.${filter}`) : t('evaluations.notebook.search')} · {number.format(shownNames.length)}</span>
-                <button type="button" onClick={() => { setFilter(null); setQuery(''); }}>{t('evaluations.notebook.showAll')}</button>
-            </div>}
-            {names.length === 0 ? <p className="notebook-empty">{t(`${copy}.empty`)}</p>
-                : shownNames.length === 0 && <p className="notebook-empty">{t(query ? 'evaluations.notebook.noResult' : filter === 'pending' && reviewed === names.length ? `${copy}.allReviewed` : 'evaluations.notebook.emptyFilter')}</p>}
-            <div className="notebook-students">
-                {shownStudents.map(({ name, index }) => <fieldset key={name} className="notebook-student" aria-describedby={`${id}-hint`}>
+
+            {names.length === 0 ? (
+                <>
+                    {entry}
+                    <p className="notebook-empty empty-state-text">{t(`${copy}.empty`)}</p>
+                </>
+            ) : (
+                <>
+                    <StudentSearchBar query={query} onQueryChange={setQuery} count={shownNames.length} isCompact={isAddOpen}>
+                        {isAddOpen ? inlineAddZone : (
+                            <div className="student-toolbar-actions">
+                                <div className="filter-dropdown">
+                                    <span id="selected-filter">
+                                        {filter ? (filter === 'pending' ? t(`${copy}.pending`) : choices.find(c => c.value === filter) ? t(choices.find(c => c.value === filter)!.labelKey) : t('evaluations.notebook.showAll')) : t('evaluations.notebook.showAll')}
+                                    </span>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                    <select value={filter ?? ''} onChange={event => setFilter(event.target.value ? event.target.value as T | 'pending' : null)} aria-label={t(`${copy}.filterLabel`)}>
+                                        <option value="">{t('evaluations.notebook.showAll')}</option>
+                                        <option value="pending">{t(`${copy}.pending`)}</option>
+                                        {choices.map(choice => <option key={choice.value} value={choice.value}>{t(choice.labelKey)}</option>)}
+                                    </select>
+                                </div>
+                                {toolbarAction}
+                            </div>
+                        )}
+                    </StudentSearchBar>
+                    {entry}
+                    {(filter || query) && <div className="notebook-filter-info">
+                        <span>{filter ? t(`${copy}.${filter}`) : t('evaluations.notebook.search')} · {number.format(shownNames.length)}</span>
+                        <button type="button" onClick={() => { setFilter(null); setQuery(''); }}>{t('evaluations.notebook.showAll')}</button>
+                    </div>}
+                    {shownNames.length === 0 && <p className="notebook-empty empty-state-text">{t(query ? 'evaluations.notebook.noResult' : filter === 'pending' && reviewed === names.length ? `${copy}.allReviewed` : 'evaluations.notebook.emptyFilter')}</p>}
+                </>
+            )}
+            <div className="notebook-students students-list">
+                {shownStudents.map(({ name, index }) => <fieldset key={name} className="notebook-student student-card" aria-describedby={`${id}-hint`}>
                     <legend className="sr-only">{name}</legend>
-                    <div className="notebook-student__identity">
-                        <span className="notebook-avatar" aria-hidden="true">{Array.from(name)[0]}</span>
-                        <div className="min-w-0">
-                            <span dir={textDirectionAttribute(name)} className="notebook-student__name">{name}</span>
-                            {!Object.hasOwn(conditions, name) && <span className="notebook-student__pending">{t(`${copy}.pending`)}</span>}
+                    <div className="card-main-line">
+                        <div className="notebook-student__identity student-text-group">
+                            <span dir={textDirectionAttribute(name)} className="notebook-student__name student-name">{name}</span>
+                            <span className="notebook-student__status student-status">
+                                {Object.hasOwn(conditions, name) && choices.some(c => c.value === conditions[name]) ? (
+                                    t(choices.find(c => c.value === conditions[name])!.labelKey)
+                                ) : (
+                                    <span className="notebook-student__pending">{t(`${copy}.pending`)}</span>
+                                )}
+                            </span>
                         </div>
+                        <div className="notebook-segments eval-pill-group">
+                            {choices.map(({ value: condition, labelKey, Icon }) => {
+                                const selected = Object.hasOwn(conditions, name) && conditions[name] === condition;
+                                return <label key={condition} className={`notebook-segment eval-pill ${selected ? `is-selected selected-${condition}` : ''}`} data-condition={condition} data-selected={selected ? 'true' : undefined}>
+                                    <input type="radio" name={`${id}-${index}`} value={condition} checked={selected}
+                                        onChange={() => onChange({ ...conditions, [name]: condition })} className="sr-only"/>
+                                    <span><Icon className="h-4 w-4 shrink-0" aria-hidden="true"/>{t(labelKey)}</span>
+                                </label>;
+                            })}
+                        </div>
+                        <button type="button" onClick={() => onRemove(name)} aria-label={t('evaluations.students.remove', { name })} className="notebook-student__remove btn-delete-row">
+                            <X className="h-4 w-4" aria-hidden="true"/>
+                        </button>
                     </div>
-                    <div className="notebook-segments">
-                        {choices.map(({ value: condition, labelKey, Icon }) => {
-                            const selected = Object.hasOwn(conditions, name) && conditions[name] === condition;
-                            return <label key={condition} className="notebook-segment" data-condition={condition} data-selected={selected ? 'true' : undefined}>
-                                <input type="radio" name={`${id}-${index}`} value={condition} checked={selected}
-                                    onChange={() => onChange({ ...conditions, [name]: condition })} className="sr-only"/>
-                                <span><Icon className="h-4 w-4 shrink-0" aria-hidden="true"/>{t(labelKey)}</span>
-                            </label>;
-                        })}
-                    </div>
-                    <button type="button" onClick={() => onRemove(name)} aria-label={t('evaluations.students.remove', { name })} className="notebook-student__remove">
-                        <X className="h-4 w-4" aria-hidden="true"/>
-                    </button>
+                    {mode === 'oral' && onGradesChange && (
+                        <div className="card-sub-line notebook-student__sub-line">
+                            <label className="grade-chip notebook-grade">
+                                <span className="sr-only">{t('evaluations.oral.gradeLabel', { name })}</span>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    dir="ltr"
+                                    value={grades?.[name] ?? ''}
+                                    onChange={event => onGradesChange({ ...(grades ?? {}), [name]: event.target.value })}
+                                    placeholder={t('evaluations.oral.gradePlaceholder')}
+                                    aria-label={t('evaluations.oral.gradeLabel', { name })}
+                                    className="grade-chip__input notebook-grade__input"
+                                    maxLength={5}
+                                />
+                            </label>
+                        </div>
+                    )}
                 </fieldset>)}
             </div>
         </div>

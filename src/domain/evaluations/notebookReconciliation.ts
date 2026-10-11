@@ -1,9 +1,11 @@
 import type { AppConfig, LessonsData, PedagogicalEvent } from '../../types';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
-import { findNotebookAssessments, linkAssessments, type NotebookAssessmentEntry } from './assessmentSync';
+import { findNotebookAssessments, linkAssessments, parseTrailingNumber, type NotebookAssessmentEntry } from './assessmentSync';
+import { withHomeworkCorrection } from './homeworkCycle';
 import type { PlannedAssessment } from './assessments';
 import { extractDateRange } from './notebookSyncBridge';
+import { normalizeActivityText } from './pedagogicalActivities';
 
 interface ReconcileOptions {
   previousLessons?: LessonsData;
@@ -12,7 +14,69 @@ interface ReconcileOptions {
 }
 const changed = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
 const validDate = (value?: string): value is string => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value));
-const eventType = (row: LessonRow) => row.elementType === 'evaluation_diagnostic' || row.elementType === 'correction_controle_continu' || row.data._tempId?.startsWith('event-');
+const eventType = (row: LessonRow) => row.elementType === 'evaluation_diagnostic' || row.elementType === 'correction_controle_continu' || row.elementType === 'examen_blanc' || row.elementType === 'olympiade' || row.elementType === 'concours' || row.data._tempId?.startsWith('event-');
+
+interface RemarkActivityDetector {
+  type: 'controle_cahiers' | 'remediation' | 'soutien' | 'rattrapage';
+  title: string;
+  regex: RegExp;
+}
+
+const REMARK_ACTIVITY_DETECTORS: readonly RemarkActivityDetector[] = [
+  {
+    type: 'controle_cahiers',
+    title: 'Contrôle des cahiers',
+    regex: /controle.*cahiers?|مراقب.*دفاتر|notebook.*check/i,
+  },
+  {
+    type: 'remediation',
+    title: 'Remédiation',
+    regex: /remediation|معالج/i,
+  },
+  {
+    type: 'soutien',
+    title: 'Soutien',
+    regex: /soutien|دعم|support/i,
+  },
+  {
+    type: 'rattrapage',
+    title: 'Rattrapage',
+    regex: /rattrapage|استدراك|make-?up/i,
+  },
+];
+
+/**
+ * Détecte les activités pédagogiques (contrôle des cahiers, remédiation, soutien, rattrapage)
+ * inscrites dans la remarque d'une séance de cours et génère les événements correspondants.
+ */
+export function detectEventsFromRemarks(row: LessonRow, _classId?: string): PedagogicalEvent[] {
+  const remark = row.data.remark?.trim();
+  if (!remark) return [];
+  const { startDate, endDate } = extractDateRange(row.data.date);
+  if (!validDate(startDate)) return [];
+
+  const normalized = normalizeActivityText(remark);
+  const detected: PedagogicalEvent[] = [];
+  const rowId = row.data._tempId ?? row.key;
+
+  for (const detector of REMARK_ACTIVITY_DETECTORS) {
+    if (detector.regex.test(normalized) || detector.regex.test(remark)) {
+      const id = `remark-${detector.type}-${rowId}`;
+      detected.push({
+        id,
+        type: detector.type,
+        title: detector.title,
+        date: startDate,
+        endDate: validDate(endDate) ? endDate : undefined,
+        note: remark,
+        status: 'planned',
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  return detected;
+}
 
 /** Reconcile an explicit notebook edit, not the absence of rows during loading.
  * Deletion needs the previous snapshot; identities never depend on the new date.
@@ -91,6 +155,19 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     if (target) update(entry, target);
   }
   if (changed(dates, config.assessmentDates?.[classId] ?? {})) patch.assessmentDates = { ...config.assessmentDates, [classId]: dates };
+  /*
+   * Bloc « Correction du devoir maison » posé au tableau : il ne crée pas un
+   * devoir de plus, il date le SECOND temps d’un devoir déjà attribué. Le
+   * numéro du titre l’emporte ; sans numéro, c’est le devoir qui attend encore
+   * sa correction qui est servi.
+   */
+  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison')) {
+    const { startDate } = extractDateRange(row.data.date);
+    if (!validDate(startDate)) continue;
+    const declared = parseTrailingNumber('title' in row.data ? row.data.title : undefined);
+    const next = withHomeworkCorrection(manual, startDate, declared ?? undefined);
+    if (next !== manual) manual.splice(0, manual.length, ...next);
+  }
   if (changed(manual, config.manualAssessments?.[classId] ?? [])) patch.manualAssessments = { ...config.manualAssessments, [classId]: manual };
   if (changed([...removed], config.removedAssessments?.[classId] ?? [])) patch.removedAssessments = { ...config.removedAssessments, [classId]: [...removed] };
 
@@ -127,6 +204,40 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     if (index >= 0) events[index] = event; else events.push(event);
     matched.add(id);
   }
+
+  // Scan remarks for pedagogical activities (contrôle cahiers, remédiation, etc.)
+  for (const row of rows) {
+    const remarkEvents = detectEventsFromRemarks(row, classId);
+    for (const rev of remarkEvents) {
+      // Deduplicate: if an explicit block exists for this activity on the same row or date, skip
+      if (row.elementType === rev.type) continue;
+      const explicitDuplicate = eventRows.some(er => {
+        const { startDate } = extractDateRange(er.data.date);
+        if (startDate !== rev.date) return false;
+        if (er.elementType === rev.type) return true;
+        const normTitle = 'title' in er.data && typeof er.data.title === 'string'
+          ? normalizeActivityText(er.data.title)
+          : '';
+        return normTitle.includes(normalizeActivityText(rev.title));
+      }) || events.some(e => {
+        if (e.id.startsWith('remark-')) return false;
+        return (e.type === rev.type || normalizeActivityText(e.title).includes(normalizeActivityText(rev.title))) && e.date === rev.date;
+      });
+      if (explicitDuplicate) continue;
+
+      const existing = events.find(event => event.id === rev.id) ?? options.eventArchive?.get(rev.id);
+      const event: PedagogicalEvent = {
+        ...existing,
+        ...rev,
+        createdAt: existing?.createdAt ?? rev.createdAt,
+        status: existing?.status ?? rev.status,
+      };
+      const index = events.findIndex(item => item.id === rev.id);
+      if (index >= 0) events[index] = event; else events.push(event);
+      matched.add(rev.id);
+    }
+  }
+
   if (options.previousLessons) {
     for (const row of previousRows.filter(eventType)) {
       const event = findEvent(row);
@@ -136,6 +247,14 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
       }
     }
   }
+
+  // Remove remark events that are no longer present in current rows
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i].id.startsWith('remark-') && !matched.has(events[i].id)) {
+      events.splice(i, 1);
+    }
+  }
+
   if (changed(events, currentEvents)) patch.pedagogicalEvents = { ...config.pedagogicalEvents, [classId]: events };
   return { patch, updated: Object.keys(patch).length > 0 };
 }

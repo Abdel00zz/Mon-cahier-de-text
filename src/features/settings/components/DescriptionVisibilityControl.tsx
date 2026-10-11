@@ -13,6 +13,7 @@ interface DescriptionVisibilityControlProps {
   types: string[];
   onChange: (next: { mode: DescriptionMode; types: string[] }) => void;
   className?: string;
+  hideTitle?: boolean;
 }
 
 /** types de contenu descriptibles (dédupliqués depuis TYPE_MAP) */
@@ -32,6 +33,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
   types,
   onChange,
   className,
+  hideTitle = false,
 }) => {
   const { t } = useLocale();
   const [showTypes, setShowTypes] = useState(mode === 'custom');
@@ -60,18 +62,20 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
 
   return (
     <div className={cn("space-y-2 rounded-md border border-border bg-secondary/50 p-3", className)}>
-      <span className="text-xs font-semibold text-foreground/80">{t(`descriptionVisibility.${context}.title`)}</span>
+      {!hideTitle && (
+        <span className="text-xs font-semibold text-foreground/80">{t(`descriptionVisibility.${context}.title`)}</span>
+      )}
 
       {/* Segmenté 3 états */}
-      <div className="flex gap-1 rounded-lg border border-border/60 bg-card p-1">
+      <div className="flex gap-1 rounded-xl border border-border/60 bg-card p-1 shadow-2xs">
         {(['all', 'none', 'custom'] as const).map(m => (
           <button
             key={m}
             type="button"
             onClick={() => handleModeChange(m)}
             aria-pressed={mode === m}
-            className={`flex-1 rounded-md py-1.5 text-[11px] font-bold transition-all ${
-              mode === m ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary/40'
+            className={`flex-1 rounded-lg py-1.5 text-[11px] font-bold transition-all active:scale-[0.98] ${
+              mode === m ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:bg-secondary/60'
             }`}
           >
             {t(`descriptionVisibility.mode.${m}`)}

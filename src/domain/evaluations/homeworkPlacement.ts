@@ -3,7 +3,7 @@ import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { addDaysIso, parseDateInput } from '../notebook/dataUtils';
 import { EVALUATION_TYPES } from '../notebook/contentNumbering';
 
-export const isHomeworkRow = (row: LessonRow): boolean =>
+const isHomeworkRow = (row: LessonRow): boolean =>
   'type' in row.data && (row.data.type === 'devoir_maison' || String(row.data.type) === 'maison');
 
 /** Hide historical homework blocks without destroying their identity, date or

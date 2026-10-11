@@ -6,6 +6,8 @@ import type { ContentDirectionDetection } from './contentDirection.js';
 import { normalizeContentType } from '../../constants/type-keys.js';
 import { toDisplayText } from '../../lib/text/textValue.js';
 import { IMPORT_LIMITS } from './importLimits.js';
+import { NOTEBOOK_CONTAINERS, NOTEBOOK_TEXT_FIELDS, isRecord, textFieldLimit } from './notebookSchema.js';
+import { walkNotebook } from './notebookTraversal.js';
 
 export interface ImportReport {
   topLevelCount: number;
@@ -48,8 +50,6 @@ const EMPTY_REPORT: ImportReport = {
 
 const cloneReport = (): ImportReport => ({ ...EMPTY_REPORT });
 
-const isRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const selectImportPayload = (payload: unknown): unknown => {
   if (!isRecord(payload)) return payload;
@@ -156,7 +156,7 @@ const normalizeStringField = (record: JsonRecord, key: string, report: ImportRep
     return;
   }
   const next = toDisplayText(value).trim();
-  const maxLength = key === 'description' || key === 'remark' || key === 'content' ? IMPORT_LIMITS.text : IMPORT_LIMITS.label;
+  const maxLength = textFieldLimit(key);
   if (next.length > maxLength) throw new Error(`Champ « ${key} » trop long (maximum ${maxLength} caractères).`);
   if (next !== value) report.trimmedStrings += 1;
   record[key] = next;
@@ -178,7 +178,7 @@ const normalizeItem = (
   if (!isRecord(value)) return null;
 
   const item: JsonRecord = { ...value };
-  ['title', 'name', 'type', 'number', 'page', 'description', 'remark', 'content'].forEach(key => {
+  NOTEBOOK_TEXT_FIELDS.forEach(key => {
     normalizeStringField(item, key, report);
   });
 
@@ -199,8 +199,7 @@ const normalizeItem = (
     delete item.separatorAfter;
   }
 
-  const nestedKeys = ['sections', 'subsections', 'subsubsections', 'items'] as const;
-  nestedKeys.forEach(key => {
+  NOTEBOOK_CONTAINERS.forEach(key => {
     const nested = item[key];
     if (nested === undefined) return;
     if (!Array.isArray(nested)) {
@@ -250,33 +249,23 @@ interface ImportedProgressionStats {
 
 /** Projection légère et sans dépendance React, utilisable dans les Functions. */
 export const summarizeImportedLessons = (lessonsData: LessonsData): ImportedProgressionStats => {
-  const containerTypes = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
   let totalItems = 0;
   let plannedCount = 0;
   const sessionDates = new Set<string>();
 
-  const visit = (node: unknown, elementType: string): void => {
-    if (!isRecord(node)) return;
-    if (!containerTypes.has(elementType) && !containerTypes.has(String(node.type ?? ''))) {
+  // Un seul parcours : le moteur sait déjà distinguer structure et contenu,
+  // et le niveau se lit dans la liste qui porte le nœud (jamais dans son `type`).
+  walkNotebook(lessonsData, {
+    onNode: ({ node, structural }) => {
+      if (structural) return;
       totalItems += 1;
       if (typeof node.date === 'string' && node.date) {
         plannedCount += 1;
         sessionDates.add(node.date);
       }
-    }
-    for (const [key, type] of [
-      ['sections', 'section'],
-      ['subsections', 'subsection'],
-      ['subsubsections', 'subsubsection'],
-    ] as const) {
-      if (Array.isArray(node[key])) node[key].forEach(child => visit(child, type));
-    }
-    if (Array.isArray(node.items)) {
-      node.items.forEach(child => visit(child, isRecord(child) && child.type === 'chapter' ? 'chapter' : 'item'));
-    }
-  };
+    },
+  });
 
-  lessonsData.forEach(item => visit(item, item.type || 'chapter'));
   const lastDate = Array.from(sessionDates).sort().at(-1) ?? null;
   return {
     totalItems,
@@ -298,16 +287,16 @@ export const prepareImportedLessons = (payload: unknown): ImportPreparationResul
 
   const lessonsData = migrateImportedLessons(normalized).map(ensureTopLevelShape);
   report.topLevelCount = lessonsData.length;
-  report.itemCount = lessonsData.reduce((total, topLevel) => {
-    const walk = (node: any): number => {
-      const ownItems = Array.isArray(node.items) ? node.items.length : 0;
-      const sectionItems = Array.isArray(node.sections) ? node.sections.reduce((sum: number, section: any) => sum + walk(section), 0) : 0;
-      const subsectionItems = Array.isArray(node.subsections) ? node.subsections.reduce((sum: number, section: any) => sum + walk(section), 0) : 0;
-      const subsubsectionItems = Array.isArray(node.subsubsections) ? node.subsubsections.reduce((sum: number, section: any) => sum + walk(section), 0) : 0;
-      return ownItems + sectionItems + subsectionItems + subsubsectionItems;
-    };
-    return total + walk(topLevel);
-  }, 0);
+  // Éléments rangés dans les listes `items` des blocs et des sections — un
+  // « chapitre embarqué » dans une liste d'items ne recompte pas les siens
+  // (même règle qu'avant, désormais portée par le moteur partagé).
+  let itemCount = 0;
+  walkNotebook(lessonsData, {
+    onContainer: (context, key, value, isArray) => {
+      if (key === 'items' && isArray && context.container !== 'items') itemCount += (value as unknown[]).length;
+    },
+  });
+  report.itemCount = itemCount;
 
   const direction = detectContentDirection(lessonsData, savedDirection);
   logger.info('Import preparation completed', { ...report, direction });

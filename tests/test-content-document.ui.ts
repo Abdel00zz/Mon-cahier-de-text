@@ -66,14 +66,14 @@ test('un seul éditeur d’élèves pour les absents et les cahiers contrôlés'
   assert.ok(html.includes('Amine R.'), 'les noms sont listés');
   assert.doesNotMatch(html, /absent/i, 'aucune trace du vocabulaire des absences');
 
-  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8');
   assert.match(view, /<StudentNamesEditor[\s\S]*?variant="absent"/, 'les absents réutilisent le même composant');
   assert.match(view, /variant="checked"/, 'les cahiers contrôlés aussi');
   assert.doesNotMatch(view, /const AbsencesEditor/, 'plus de second mécanisme');
 });
 
 test('documents et élèves sont branchés au devoir comme à l’activité', () => {
-  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8');
   // Le devoir : une carte `assessmentDocuments`, comme les absences.
   assert.match(view, /assessmentDocuments/, 'les documents de devoirs sont rangés par classe et par devoir');
   // L'activité : le document et les élèves vivent DANS l'événement.

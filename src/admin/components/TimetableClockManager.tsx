@@ -155,6 +155,7 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
                     <input
                         id="school-day-start"
                         type="time"
+                        lang="fr-MA"
                         min="06:00"
                         max="10:00"
                         step="300"

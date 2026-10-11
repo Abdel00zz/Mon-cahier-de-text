@@ -16,6 +16,7 @@ import { classLevelPartsFor } from '@/domain/classes/classLevelParts';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
 import type { ClassIdentityDraft } from '@/types';
+import { useModalHaptics } from '@/hooks/useModalHaptics';
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -99,6 +100,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   isOpen, onClose, onCreate, defaultCycle = 'lycee', teacherSubjects = EMPTY_SUBJECTS, teacherCycles = EMPTY_CYCLES, existingClasses = EMPTY_CLASSES, editingClass = null, onUpdate, onDelete,
 }) => {
   const { locale, t, isRtl } = useLocale();
+  const haptics = useModalHaptics();
   /*
    * Sens de saisie des champs libres : ils suivent leur ÉCRITURE — un nom de
    * classe ou une matière écrit en arabe commence à droite, même dans une
@@ -174,14 +176,19 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     if (next.step !== currentStep) setStep(next.step);
   }, [teacherCycles, cycle, currentStep, editingClass, submitting, hasCycleChoice]);
 
-  const chooseCycle = (nextCycle: Cycle) => { setCycle(nextCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); setStep('level'); };
+  const chooseCycle = (nextCycle: Cycle) => {
+    haptics.onSelect();
+    setCycle(nextCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); setStep('level');
+  };
   const chooseLevel = (nextLevel: string) => {
+    haptics.onSelect();
     setLevel(nextLevel);
     setLevelGroupKey(levelGroups.find(item => item.levels.includes(nextLevel))?.key ?? '');
     setGroup(current => nextLevel === level && current ? current : firstAvailableGroup(nextLevel));
     setStep('details');
   };
   const chooseLevelGroup = (nextGroup: ClassLevelGroupKey) => {
+    haptics.onSelect();
     const selected = levelGroups.find(item => item.key === nextGroup);
     setLevelGroupKey(nextGroup); setLevel('');
     if (selected && selected.levels.length > 1) { setStep('branch'); return; }
@@ -190,9 +197,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const continueCustomLevel = () => {
     const nextLevel = customLevel.trim();
     if (!nextLevel) return;
+    haptics.onSelect();
     setGroup(current => current || firstAvailableGroup(nextLevel)); setStep('details');
   };
   const goBack = () => {
+    haptics.onSelect();
     if (step === 'details') { setStep(needsBranchChoice ? 'branch' : 'level'); return; }
     if (step === 'branch') { setStep('level'); return; }
     if (step === 'level' && hasCycleChoice) setStep('cycle');
@@ -225,8 +234,10 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       } else {
         await onCreate(details);
       }
+      haptics.onConfirm();
       onClose();
     } catch {
+      haptics.onError();
       toast.error(locale === 'ar' ? 'تعذّر حفظ القسم. حاول مرة أخرى.' : locale === 'en' ? 'Unable to save the class. Please try again.' : 'Impossible d’enregistrer la classe. Réessayez.');
     } finally {
       submittingRef.current = false;
@@ -304,6 +315,8 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           </span>
         </div>
       } maxWidth="xl" mobileDetents={CLASS_MODAL_DETENTS}
+        elevation="high"
+        glow={isFormValid ? 'success' : undefined}
         className="sm:max-w-2xl sm:rounded-2xl"
         headerClassName="border-b border-border/70 bg-background"
         bodyClassName="bg-muted/20 px-4 py-4 sm:px-7 sm:py-6"

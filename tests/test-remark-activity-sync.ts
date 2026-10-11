@@ -1,0 +1,165 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import type { AppConfig, LessonsData } from '../src/types';
+import { syncNotebookToEvaluations, detectEventsFromRemarks } from '../src/domain/evaluations/notebookReconciliation';
+import { buildLessonRows } from '../src/domain/notebook/lessonRows';
+
+const baseConfig: AppConfig = {
+  establishmentName: 'Test School',
+  defaultTeacherName: 'Teacher',
+  printShowDescriptions: true,
+  pedagogicalEvents: {},
+};
+
+test('detectEventsFromRemarks detects pedagogical activities across FR, AR, EN', () => {
+  const variations = [
+    { text: 'Contrôle des cahiers des élèves', type: 'controle_cahiers', title: 'Contrôle des cahiers' },
+    { text: 'controle cahiers', type: 'controle_cahiers', title: 'Contrôle des cahiers' },
+    { text: 'مراقبة دفاتر التلاميذ', type: 'controle_cahiers', title: 'Contrôle des cahiers' },
+    { text: 'Notebook check', type: 'controle_cahiers', title: 'Contrôle des cahiers' },
+    { text: 'Remédiation sur les fractions', type: 'remediation', title: 'Remédiation' },
+    { text: 'معالجة التعثرات في الهندسة', type: 'remediation', title: 'Remédiation' },
+    { text: 'Soutien aux élèves en difficulté', type: 'soutien', title: 'Soutien' },
+    { text: 'دعم تربوي', type: 'soutien', title: 'Soutien' },
+    { text: 'Rattrapage séance 2', type: 'rattrapage', title: 'Rattrapage' },
+    { text: 'حصة استدراك', type: 'rattrapage', title: 'Rattrapage' },
+    { text: 'حصّة استدراك', type: 'rattrapage', title: 'Rattrapage' },
+    { text: 'make-up session', type: 'rattrapage', title: 'Rattrapage' },
+  ];
+
+  for (const v of variations) {
+    const lessons: LessonsData = [{
+      type: 'chapter',
+      title: 'Chapitre 1',
+      items: [{ type: 'cours', title: 'Séance', date: '2026-10-15', remark: v.text, _tempId: 'test-row' }],
+    }];
+    const rows = buildLessonRows(lessons);
+    const events = detectEventsFromRemarks(rows[1], 'c1');
+    assert.equal(events.length, 1, `Failed to detect activity for "${v.text}"`);
+    assert.equal(events[0].type, v.type);
+    assert.equal(events[0].title, v.title);
+    assert.equal(events[0].date, '2026-10-15');
+    assert.equal(events[0].id, `remark-${v.type}-test-row`);
+  }
+});
+
+test('multiple activities in a single remark generate multiple pedagogical events', () => {
+  const lessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Chapitre 1',
+    items: [{
+      type: 'cours',
+      title: 'Séance double',
+      date: '2026-10-20',
+      remark: 'Contrôle des cahiers\nSoutien aux élèves',
+      _tempId: 'row-multi',
+    }],
+  }];
+  const rows = buildLessonRows(lessons);
+  const detected = detectEventsFromRemarks(rows[1], 'c1');
+  assert.equal(detected.length, 2);
+  assert.deepEqual(detected.map(e => e.type), ['controle_cahiers', 'soutien']);
+
+  const { patch } = syncNotebookToEvaluations('c1', baseConfig, lessons);
+  const events = patch.pedagogicalEvents?.c1 ?? [];
+  assert.equal(events.length, 2);
+  assert.ok(events.some(e => e.type === 'controle_cahiers' && e.date === '2026-10-20'));
+  assert.ok(events.some(e => e.type === 'soutien' && e.date === '2026-10-20'));
+});
+
+test('removing an activity from remarks automatically removes the synced event from evaluations', () => {
+  const initialLessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Chapitre 1',
+    items: [{
+      type: 'cours',
+      title: 'Séance',
+      date: '2026-10-20',
+      remark: 'Remédiation',
+      _tempId: 'row-rem',
+    }],
+  }];
+  const { patch: patch1 } = syncNotebookToEvaluations('c1', baseConfig, initialLessons);
+  const updatedConfig: AppConfig = {
+    ...baseConfig,
+    pedagogicalEvents: { c1: patch1.pedagogicalEvents!.c1 },
+  };
+  assert.equal(updatedConfig.pedagogicalEvents!.c1.length, 1);
+
+  // User clears or removes the remark
+  const modifiedLessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Chapitre 1',
+    items: [{
+      type: 'cours',
+      title: 'Séance',
+      date: '2026-10-20',
+      remark: '',
+      _tempId: 'row-rem',
+    }],
+  }];
+  const { patch: patch2 } = syncNotebookToEvaluations('c1', updatedConfig, modifiedLessons, {
+    previousLessons: initialLessons,
+  });
+  assert.deepEqual(patch2.pedagogicalEvents?.c1, [], 'Event should be removed when remark is cleared');
+});
+
+test('explicit evaluation blocks are not duplicated by remarks on the same date', () => {
+  const lessons: LessonsData = [
+    {
+      type: 'chapter',
+      title: 'Chapitre 1',
+      items: [{
+        type: 'cours',
+        title: 'Séance',
+        date: '2026-10-22',
+        remark: 'Contrôle des cahiers',
+        _tempId: 'course-row',
+      }],
+    },
+    {
+      type: 'controle_continu',
+      title: 'Contrôle des cahiers',
+      date: '2026-10-22',
+      _tempId: 'event-explicit-cahiers',
+    },
+  ];
+  // Even if remark mentions it, the explicit block already represents the date
+  const { patch } = syncNotebookToEvaluations('c1', baseConfig, lessons);
+  const events = patch.pedagogicalEvents?.c1 ?? [];
+  const cahierEvents = events.filter(e => e.date === '2026-10-22');
+  assert.equal(cahierEvents.length, 1, 'Should not create duplicate event for same date/activity');
+});
+
+test('manual events in evaluations tab are preserved when syncing remarks', () => {
+  const manualEvent = {
+    id: 'manual-event-uuid',
+    type: 'soutien' as const,
+    title: 'Soutien personnalisé',
+    date: '2026-11-01',
+    status: 'planned' as const,
+    createdAt: '2026-10-01T00:00:00Z',
+  };
+  const configWithManual: AppConfig = {
+    ...baseConfig,
+    pedagogicalEvents: { c1: [manualEvent] },
+  };
+
+  const lessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Chapitre 1',
+    items: [{
+      type: 'cours',
+      title: 'Séance',
+      date: '2026-10-25',
+      remark: 'Rattrapage',
+      _tempId: 'row-rattrapage',
+    }],
+  }];
+
+  const { patch } = syncNotebookToEvaluations('c1', configWithManual, lessons);
+  const events = patch.pedagogicalEvents?.c1 ?? [];
+  assert.equal(events.length, 2);
+  assert.ok(events.some(e => e.id === 'manual-event-uuid'), 'Manual event must be preserved');
+  assert.ok(events.some(e => e.id === 'remark-rattrapage-row-rattrapage'), 'Remark event must be added');
+});

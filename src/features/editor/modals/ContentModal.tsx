@@ -2,14 +2,15 @@ import React, { useState, useMemo, useEffect, useRef, useId } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { MathText } from '@/components/ui/math-text';
-import { ContentDirection, Indices, LessonsData, TopLevelType } from '@/types';
+import { ContentDirection, Cycle, Indices, LessonsData, TopLevelType } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/domain/notebook/dataUtils';
 import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
-  TestTube, Home, FileSignature, CheckCheck, CheckSquare, CircleAlert,
+  ListChecks, CalendarCheck, FileSignature, CheckCheck, CircleAlert,
   Clock, FileText, Users, AwardIcon, GraduationCap,
 } from '@/components/ui/icons';
+import { ClipboardCheck, Mic } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
 
@@ -17,9 +18,6 @@ import { ContentFields } from './ContentFields';
 import { createContentDraft, contentDraftChanged, type ContentDraft, type EditableContent } from '@/domain/notebook/contentDraft';
 import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
-import { lastCourseSessionDate } from '@/domain/evaluations/homeworkPlacement';
-import { getNextHomeworkNumber } from '@/domain/evaluations/homeworkNumbering';
-import { todayInMorocco } from '@/domain/calendar/calendar';
 import type { TimetableEntry, TimetableClockPolicy } from '@/types';
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -38,6 +36,7 @@ export interface EditContentModalProps {
   timetable?: TimetableEntry[];
   timetableClock?: TimetableClockPolicy;
   lessonsData?: LessonsData;
+  cycle?: Cycle;
 }
 const EMPTY_LESSONS: LessonsData = [];
 
@@ -54,6 +53,8 @@ export interface AddContentModalProps {
   classId?: string;
   timetable?: TimetableEntry[];
   timetableClock?: TimetableClockPolicy;
+  /** cycle d'enseignement : restreint les natures spécifiques (ex: la colle en prépa). */
+  cycle?: Cycle;
 }
 
 const getElementTypeFromIndices = (data: LessonsData, indices: Indices): string | null => {
@@ -119,7 +120,7 @@ type ContentModalProps = AddContentModalProps | (EditContentModalProps & { mode:
 
 /** Une seule modale et un seul formulaire, avec deux intentions explicites. */
 export const ContentModal: React.FC<ContentModalProps> = (props) => {
-  const { isOpen, onClose, subject, contentDirection } = props;
+  const { isOpen, onClose, subject, contentDirection, cycle } = props;
   const edit = 'mode' in props ? props : null;
   const lessonsData = ('lessonsData' in props && props.lessonsData) ? props.lessonsData : EMPTY_LESSONS;
   const selectedIndices = 'selectedIndices' in props ? props.selectedIndices : null;
@@ -198,19 +199,12 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     let initialData: ContentDraft = {};
 
     if (config) {
-      if (type === 'devoir_maison') {
-        const nextNum = getNextHomeworkNumber({ lessons: lessonsData });
-        const lastDate = lastCourseSessionDate(lessonsData) || todayInMorocco();
-        initialData.date = lastDate;
-        initialData.title = tc('remark.devoirMaisonGiven', { num: nextNum });
-      } else {
-        const count = countOccurrencesOfType(lessonsData, type);
-        const nextNum = count + 1;
-        const localizedName = tc(`manageLessons.type.${type}`);
-        initialData.title = config.autoNumber
-          ? `${localizedName} ${nextNum}`
-          : localizedName;
-      }
+      const count = countOccurrencesOfType(lessonsData, type);
+      const nextNum = count + 1;
+      const localizedName = tc(`manageLessons.type.${type}`);
+      initialData.title = config.autoNumber
+        ? `${localizedName} ${nextNum}`
+        : localizedName;
     } else if (type === 'item') {
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.
       const anchorType = selectedElementType === 'item' && selectedItem && (selectedItem as any).type;
@@ -280,20 +274,20 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
   }, [selectedItem, selectedElementType, selectedIndices]);
 
   const titleNode = (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-3">
       {stage === 'form' && !edit && (
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={() => setStage('select')}
-          className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-muted flex-shrink-0 cursor-pointer"
+          className="btn-back flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
           aria-label={t('addContent.back')}
         >
-          <ArrowLeft className="h-4 w-4 stroke-[2.2] text-muted-foreground rtl:rotate-180" />
-        </Button>
+          <ArrowLeft className="h-4.5 w-4.5 stroke-[2.2] rtl:rotate-180" />
+        </button>
       )}
-      <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate" title={modalTitle}>{modalTitle}</span>
+      <span className="text-lg sm:text-[19px] font-semibold tracking-tight text-foreground truncate" title={modalTitle}>
+        {modalTitle}
+      </span>
     </div>
   );
 
@@ -307,30 +301,50 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
         : t('addContent.subtitle')}
       maxWidth={stage === 'select' ? "3xl" : "2xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-3xl sm:rounded-2xl"}
-      headerClassName="border-b-0 bg-background/85 backdrop-blur-md"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t-0 bg-background/85 backdrop-blur-md"
+      headerClassName="border-b border-[#e7e5df] dark:border-stone-800 bg-background/95 px-6 pt-5 pb-4"
+      bodyClassName="px-6 py-5 sm:px-7 sm:py-6"
+      footerClassName="border-t border-[#e7e5df] dark:border-stone-800 bg-background/95 px-6 py-4"
       footer={
         stage === 'form' ? (
-          <div className="flex w-full flex-wrap items-center justify-end gap-2.5">
-            {edit && <Button type="button" variant="ghost" className="me-auto max-w-full px-2 text-xs" disabled={!isDirty}
-              onClick={() => setFormData(original ?? {})}>{t('editContent.reset')}</Button>}
-            <div className="flex shrink-0 items-center gap-2.5">
-            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
-              {t('common.cancel')}
-            </Button>
-            <Button 
-              type="submit" 
-              form={formId} disabled={isEditing && !isDirty}
-              className="rounded-xl bg-primary hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm text-primary-foreground"
-            >
-              {t(edit ? 'common.save' : 'addContent.insert')}
-            </Button>
+          <div className="modal-footer flex w-full flex-wrap items-center justify-end gap-3">
+            {edit && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="me-auto max-w-full px-2 text-xs"
+                disabled={!isDirty}
+                onClick={() => setFormData(original ?? {})}
+              >
+                {t('editContent.reset')}
+              </Button>
+            )}
+            <div className="flex w-full sm:w-auto items-center justify-end gap-3">
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="secondary"
+                className="btn-cancel rounded-[14px] h-11 px-6 text-sm font-medium transition-all active:scale-95 bg-[#f5f4ef] dark:bg-stone-800 hover:bg-[#eae8e1] dark:hover:bg-stone-700 text-[#3f403b] dark:text-stone-200 border-0 flex-1 sm:flex-initial"
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button 
+                type="submit" 
+                form={formId}
+                disabled={isEditing && !isDirty}
+                className="btn-submit rounded-[14px] bg-primary hover:bg-primary/90 font-semibold px-7 h-11 text-sm shadow-sm text-primary-foreground active:scale-95 transition-all flex-1 sm:flex-initial"
+              >
+                {t(edit ? 'common.save' : 'addContent.insert')}
+              </Button>
             </div>
           </div>
         ) : (
           <div className="flex w-full items-center justify-end">
-            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-5 text-xs font-semibold sm:text-sm">
+            <Button
+              type="button"
+              onClick={onClose}
+              variant="secondary"
+              className="rounded-[14px] h-11 px-6 text-sm font-medium bg-[#f5f4ef] dark:bg-stone-800 hover:bg-[#eae8e1] text-[#3f403b] dark:text-stone-200 border-0"
+            >
               {t('common.close')}
             </Button>
           </div>
@@ -338,20 +352,24 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
       }
     >
       {/* Context Target Banner */}
-      {!edit && <div className="mb-4 p-3 bg-muted/60 border border-border/70 rounded-2xl text-xs text-muted-foreground flex items-center gap-3 shrink-0">
-        <div className="flex h-8 w-8 items-center justify-center bg-background border border-border text-foreground rounded-xl shrink-0 shadow-2xs">
-          <MapPin className="h-4 w-4 stroke-[2.2]" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="font-bold text-foreground text-xs">{t('addContent.insertionPoint')}</div>
-          <div className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words text-muted-foreground font-medium text-[11px]" dir={contentDirection}>
-            <MathText source={targetLocationLabel}>{targetLocationLabel}</MathText>
+      {!edit && (
+        <div className="insertion-point-box mb-5 flex items-center gap-3.5 rounded-[18px] bg-[#f5f4ef] dark:bg-stone-900/60 border border-[#e7e5df] dark:border-stone-800 p-3 sm:px-4.5 sm:py-3.5 text-xs shadow-2xs">
+          <div className="icon-pin-wrap flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eae8e1] dark:bg-stone-800 text-[#52544e] dark:text-stone-300 shadow-2xs">
+            <MapPin className="h-4.5 w-4.5 stroke-[2.2]" />
+          </div>
+          <div className="insertion-point-text min-w-0 flex-1">
+            <strong className="block text-[13.5px] font-semibold text-foreground leading-tight">
+              {t('addContent.insertionPoint')}
+            </strong>
+            <span className="mt-0.5 block text-[12.5px] text-muted-foreground leading-snug" dir={contentDirection}>
+              <MathText source={targetLocationLabel}>{targetLocationLabel}</MathText>
+            </span>
           </div>
         </div>
-      </div>}
+      )}
 
       {stage === 'select' ? (
-        <div className="space-y-5 py-1 pe-1">
+        <div className="space-y-5 py-1 pe-1 pb-6 sm:pb-8">
           {/* Group 1: Cours & Structures */}
           <div className="space-y-2.5">
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -415,6 +433,18 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             </div>
           </div>
 
+          {/*
+           * LES ÉPREUVES ET LEURS CORRECTIONS se créent ici : elles traversent
+           * l'année et ne dépendent d'AUCUN chapitre — le bloc se pose à sa
+           * date, jamais dans un plan de cours. Le tableau les CAPTE et la
+           * feuille « Contrôle continu et activités » les reçoit alors : bloc
+           * daté pour les épreuves écrites et l'oral, activité pour le
+           * diagnostic, date de correction pour le devoir maison — contrat
+           * dans docs/architecture/workflow-evaluations.md.
+           * Le devoir à la maison, lui, ne se crée pas ici : il s'énonce dans
+           * la REMARQUE de sa séance d'attribution, et la feuille le reçoit.
+           */}
+
           {/* Group 3: Évaluations & Devoirs */}
           <div className="space-y-2.5">
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -422,15 +452,15 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
-                icon={TestTube}
+                icon={ListChecks}
                 label={tc('manageLessons.type.evaluation_diagnostic')}
-                colorClass="text-amber-600 dark:text-amber-400"
+                colorClass="text-blue-600 dark:text-blue-400"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
-                icon={FileSignature}
+                icon={CalendarCheck}
                 label={tc('manageLessons.type.controle_continu')}
-                colorClass="text-rose-600 dark:text-rose-400"
+                colorClass="text-blue-600 dark:text-blue-400"
                 onClick={() => handleSelectType('controle_continu')}
               />
               <CategoryCard
@@ -451,44 +481,14 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
                 colorClass="text-pink-600 dark:text-pink-400"
                 onClick={() => handleSelectType('oral')}
               />
-              <CategoryCard
-                icon={Home}
-                label={tc('manageLessons.type.devoir_maison')}
-                colorClass="text-orange-600 dark:text-orange-400"
-                onClick={() => handleSelectType('devoir_maison')}
-              />
-            </div>
-          </div>
-
-          {/* Group 3: Corrections */}
-          <div className="space-y-2.5">
-            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              {t('addContent.groupCorrections')}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-              <CategoryCard
-                icon={CheckCheck}
-                label={tc('manageLessons.type.correction_devoir_maison')}
-
-                colorClass="text-emerald-700 dark:text-emerald-400"
-                onClick={() => handleSelectType('correction_devoir_maison')}
-              />
-              <CategoryCard
-                icon={CheckSquare}
-                label={tc('manageLessons.type.correction_controle_continu')}
-
-                colorClass="text-emerald-600 dark:text-emerald-400"
-                onClick={() => handleSelectType('correction_controle_continu')}
-              />
-            </div>
-          </div>
-
-          {/* Group 5: Épreuves & Concours */}
-          <div className="space-y-2.5">
-            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              {t('addContent.groupContests')}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              {cycle === 'prepa' && (
+                <CategoryCard
+                  icon={Mic}
+                  label={tc('manageLessons.type.colle')}
+                  colorClass="text-rose-600 dark:text-rose-400"
+                  onClick={() => handleSelectType('colle')}
+                />
+              )}
               <CategoryCard
                 icon={FileSignature}
                 label={tc('manageLessons.type.examen_blanc')}
@@ -506,6 +506,27 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
                 label={tc('manageLessons.type.concours')}
                 colorClass="text-violet-600 dark:text-violet-400"
                 onClick={() => handleSelectType('concours')}
+              />
+            </div>
+          </div>
+
+          {/* Group 4: Corrections */}
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {t('addContent.groupCorrections')}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              <CategoryCard
+                icon={CheckCheck}
+                label={tc('manageLessons.type.correction_devoir_maison')}
+                colorClass="text-emerald-700 dark:text-emerald-400"
+                onClick={() => handleSelectType('correction_devoir_maison')}
+              />
+              <CategoryCard
+                icon={ClipboardCheck}
+                label={tc('manageLessons.type.correction_controle_continu')}
+                colorClass="text-slate-600 dark:text-slate-400"
+                onClick={() => handleSelectType('correction_controle_continu')}
               />
             </div>
           </div>

@@ -211,7 +211,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 pb-8 sm:pb-12">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
                     <label htmlFor={yearStartId} className="text-xs lg:text-sm font-bold text-foreground/80">{t('schedule.startYear')}</label>

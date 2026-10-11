@@ -38,6 +38,11 @@ export const retainOralOutcomes = (names: readonly string[], values?: Record<str
     Object.fromEntries(names.filter(name => values && Object.hasOwn(values, name) && ORAL_OUTCOMES.includes(values[name]))
         .map(name => [name, values![name]]));
 
+/** Notes orales (/20) : une chaîne saisie librement, retenue par élève nommé. */
+export const retainOralGrades = (names: readonly string[], values?: Record<string, string>): Record<string, string> =>
+    Object.fromEntries(names.filter(name => values && Object.hasOwn(values, name) && String(values[name]).trim() !== '')
+        .map(name => [name, String(values![name]).trim()]));
+
 /** Only lists belonging to the current classes may cross the account boundary. */
 export const rostersForClasses = (rosters: Record<string, ClassRoster> | undefined, classIds: readonly string[]): Record<string, ClassRoster> =>
     Object.fromEntries(classIds.filter(id => rosters && Object.hasOwn(rosters, id)).map(id => [id, rosters![id]]));

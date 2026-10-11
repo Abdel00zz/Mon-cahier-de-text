@@ -18,7 +18,7 @@ import type { AppConfig, ClassInfo, PedagogicalEvent } from '../src/types';
  */
 
 const css = readFileSync('src/features/evaluations/evaluationsBoard.css', 'utf8');
-const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
 
 const classInfo = {
   id: 'c1', name: '2Bac PC 1', subject: 'Mathématiques', cycle: 'lycee',

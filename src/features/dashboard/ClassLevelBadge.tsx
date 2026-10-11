@@ -5,6 +5,9 @@ import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 interface ClassLevelBadgeProps {
     /** Libellé localisé du palier : « 2e Bac », « Tronc commun », « 2e Collège »… */
     label: string;
+    /** Libellé localisé de la filière / sous-niveau pour étendre le badge */
+    subLevel?: React.ReactNode;
+    accessibleSubLevel?: string;
     tierKey?: string | null;
     themeTone?: string;
     compact?: boolean;
@@ -82,8 +85,11 @@ function getTierBadgeClasses(tierKey?: string | null, label?: string): string {
  * Badge de palier au format standardisé, sans coupure de texte en bas (préservant les jambages arabes).
  * Coins sobres et moins arrondis (rounded-[3px]).
  */
-export const ClassLevelBadge = memo(({ label, tierKey, themeTone, compact = false, className, style, textStyle }: ClassLevelBadgeProps) => {
+export const ClassLevelBadge = memo(({ label, subLevel, accessibleSubLevel, tierKey, themeTone, compact = false, className, style, textStyle }: ClassLevelBadgeProps) => {
     const badgeColorClasses = themeTone ? getToneBadgeClasses(themeTone) : getTierBadgeClasses(tierKey, label);
+    const fullAccessibleLabel = accessibleSubLevel
+        ? `${label} · ${accessibleSubLevel}`
+        : (typeof subLevel === 'string' ? `${label} · ${subLevel}` : label);
 
     return (
         <span
@@ -99,8 +105,16 @@ export const ClassLevelBadge = memo(({ label, tierKey, themeTone, compact = fals
             data-level-badge=""
         >
             <span style={textStyle} className="inline-block whitespace-nowrap overflow-visible leading-normal">
-                <span className="sr-only">{label}</span>
-                <span aria-hidden="true">{formatWithOrdinals(label)}</span>
+                <span className="sr-only">{fullAccessibleLabel}</span>
+                <span aria-hidden="true" className="inline-flex items-center gap-1.5">
+                    <span>{formatWithOrdinals(label)}</span>
+                    {subLevel && (
+                        <>
+                            <span className="opacity-40 font-normal select-none" aria-hidden="true">·</span>
+                            <span className="font-medium opacity-90">{subLevel}</span>
+                        </>
+                    )}
+                </span>
             </span>
         </span>
     );

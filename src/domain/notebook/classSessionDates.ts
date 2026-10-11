@@ -1,4 +1,4 @@
-import type { AppLocale, LessonsData, TimetableClockPolicy, TimetableEntry } from '@/types';
+import type { LessonsData, TimetableClockPolicy, TimetableEntry } from '@/types';
 import { classSessionsDuring, notebookSessionDates } from './absenceInjection';
 
 /**
@@ -50,30 +50,6 @@ export function resolveClassSessionDatesInRange(
 
   // 3. Fallback : les deux bornes [debut, fin]
   return [debut, fin];
-}
-
-/**
- * Formate les dates de séance résolues pour l'affichage pédagogique.
- * Ne produit JAMAIS de texte brut « Du XX au YY » ou « من XX إلى YY ».
- */
-export function formatSessionDatesDisplay(
-  dates: readonly string[],
-  locale: AppLocale = 'fr',
-): string {
-  if (dates.length === 0) return '';
-  if (dates.length === 1) return dates[0];
-
-  const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
-
-  if (dates.length === 2) {
-    return `${dates[0]} ${conjunction} ${dates[1]}`;
-  }
-
-  // 3+ dates
-  if (locale === 'ar') {
-    return dates.join(' و ');
-  }
-  return `${dates.slice(0, -1).join(', ')} ${conjunction} ${dates[dates.length - 1]}`;
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { AppConfig, ManualAssessment, NotebookCondition, OralOutcome, PedagogicalEvent } from '@/types';
+import type { AppConfig, HomeworkOutcome, ManualAssessment, NotebookCondition, OralOutcome, PedagogicalEvent } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 
@@ -33,9 +33,20 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             saveEvents(events.map(event => event.id === id ? { ...event, students: names.length ? { names, updatedAt: new Date().toISOString(),
                 ...(event.type === REMARK_EVENT_TYPE && conditions ? { notebookConditions: conditions } : {}) } : undefined } : event));
         },
-        saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>) {
+        saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>, oralGrades?: Record<string, string>) {
+            const existing = config.assessmentParticipants?.[classId]?.[id];
             onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: { ...config.assessmentParticipants?.[classId],
-                [id]: { names, oralOutcomes, updatedAt: new Date().toISOString() } } } });
+                [id]: { names, oralOutcomes, ...(oralGrades && Object.keys(oralGrades).length ? { oralGrades } : {}), ...(existing?.homeworkOutcomes ? { homeworkOutcomes: existing.homeworkOutcomes } : {}), updatedAt: new Date().toISOString() } } } });
+        },
+        /** Remise d'un devoir maison : rendu ou non rendu, élève par élève. */
+        saveHomework(id: string, names: string[], homeworkOutcomes: Record<string, HomeworkOutcome>) {
+            const records = { ...config.assessmentParticipants?.[classId] };
+            if (!names.length) delete records[id];
+            else {
+                const existing = records[id];
+                records[id] = { names, ...(existing?.oralOutcomes ? { oralOutcomes: existing.oralOutcomes } : {}), homeworkOutcomes, updatedAt: new Date().toISOString() };
+            }
+            onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: records } });
         },
         saveAbsences(id: string, names: string[], legacyId?: string) {
             const records = { ...config.assessmentAbsences?.[classId] };

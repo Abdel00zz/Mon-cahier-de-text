@@ -1,6 +1,7 @@
 import { separateAbsenceContent } from './separateAbsenceContent.js';
 import { produce, Draft } from 'immer';
 import { buildLessonRows } from './lessonRows';
+import { walkNotebook } from './notebookTraversal.js';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, EmbeddableTopLevelItem } from '../../types.js';
 import { logger } from '../../lib/logger.js';
 import { memoize } from '../../lib/memoize.js';
@@ -16,24 +17,9 @@ type DataItem = TopLevelItem | Section | SubSection | SubSubSection | LessonItem
  */
 export const countOccurrencesOfType = (data: LessonsData, type: string): number => {
     let count = 0;
-    const countItems = (items?: (LessonItem | EmbeddableTopLevelItem)[]): void => {
-        for (const item of items ?? []) {
-            if (item.type === type) count += 1;
-        }
-    };
-    for (const block of data) {
-        if (block.type === type) count += 1;
-        countItems(block.items);
-        for (const section of block.sections ?? []) {
-            countItems(section.items);
-            for (const subsection of section.subsections ?? []) {
-                countItems(subsection.items);
-                for (const subsubsection of subsection.subsubsections ?? []) {
-                    countItems(subsubsection.items);
-                }
-            }
-        }
-    }
+    // Un seul parcours, celui du moteur : les sections n'ont pas de `type`,
+    // donc seuls les blocs et les items peuvent correspondre.
+    walkNotebook(data, { onNode: ({ node }) => { if (node.type === type) count += 1; } });
     return count;
 };
 
@@ -89,6 +75,43 @@ export const addTopLevelItem = (draft: Draft<LessonsData>, newItem: TopLevelItem
     }
     const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : draft.length;
     draft.splice(index, 0, newItem);
+};
+
+/**
+ * Pose un bloc d'épreuve (diagnostic, devoir surveillé, écrit court/global,
+ * oral, correction) DIRECTEMENT APRÈS l'élément cliqué — jamais renvoyé en fin
+ * de cahier :
+ *  - ancre absente → fin du cahier (premier niveau) ;
+ *  - ancre = chapitre → juste après ce chapitre (premier niveau) ;
+ *  - ancre = ligne de contenu → juste après elle, dans la même liste ;
+ *  - ancre = titre de section/sous-section → premier enfant, sous le titre.
+ *
+ * Le bloc reste « hors plan » : reconnu par son TYPE (`dev-block-<id>` /
+ * `event-<id>`), jamais par sa position. Imbriqué, il n'entre pas dans la
+ * numérotation du chapitre ; la feuille d'évaluations le reçoit quand même.
+ * Le JSON reste souple : on insère dans la liste exacte de l'ancre, sans
+ * réinventer la hiérarchie.
+ */
+export const insertAssessmentBlock = (
+  draft: Draft<LessonsData>,
+  anchor: Indices | undefined,
+  block: TopLevelItem,
+): void => {
+  if (!anchor) { addTopLevelItem(draft, block); return; }
+  const isChapterAnchor = anchor.sectionIndex === undefined && anchor.itemIndex === undefined;
+  if (isChapterAnchor) { addTopLevelItem(draft, block, anchor.chapterIndex); return; }
+  const located = findItem(draft, anchor);
+  if (!located.item || !Array.isArray(located.parent) || typeof located.targetIndex !== 'number') {
+    addTopLevelItem(draft, block, anchor.chapterIndex);
+    return;
+  }
+  if (anchor.itemIndex !== undefined) {
+    located.parent.splice(located.targetIndex + 1, 0, block as EmbeddableTopLevelItem);
+    return;
+  }
+  const container = located.item as { items?: (LessonItem | EmbeddableTopLevelItem)[] };
+  if (!Array.isArray(container.items)) container.items = [];
+  container.items.unshift(block as EmbeddableTopLevelItem);
 };
 
 export const addSection = (draft: Draft<LessonsData>, chapterIndices: Indices, newSection: Section, insertAfterIndex?: number): void => {
@@ -200,6 +223,87 @@ export const canMoveWithinParent = (
     return direction === 'up' ? targetIndex > 0 : targetIndex < parent.length - 1;
 };
 
+/** `descendant` prolonge-t-il `ancestor` dans la hiérarchie des indices ? */
+const extendsIndices = (ancestor: Indices, descendant: Indices): boolean => {
+    if (descendant.chapterIndex !== ancestor.chapterIndex) return false;
+    if (ancestor.sectionIndex === undefined) return true; // le chapitre contient tout ce qui suit
+    if (descendant.sectionIndex !== ancestor.sectionIndex) return false;
+    if (ancestor.itemIndex !== undefined) return descendant.itemIndex === ancestor.itemIndex; // une feuille n'a pas de descendants
+    if (ancestor.subsectionIndex === undefined) return true; // la section contient tout ce qui suit
+    if (descendant.subsectionIndex !== ancestor.subsectionIndex) return false;
+    if (ancestor.subsubsectionIndex === undefined) return true; // la sous-section contient tout ce qui suit
+    if (descendant.subsubsectionIndex !== ancestor.subsubsectionIndex) return false;
+    return true; // la sous-sous-section contient ses items
+};
+
+/** Indices d'un élément devenu FRÈRE de `to`, inséré à `insertAt`. */
+const siblingIndices = (to: Indices, insertAt: number): Indices => {
+    if (to.itemIndex !== undefined) return { ...to, itemIndex: insertAt };
+    if (to.subsubsectionIndex !== undefined) return { ...to, subsubsectionIndex: insertAt };
+    if (to.subsectionIndex !== undefined) return { ...to, subsectionIndex: insertAt };
+    if (to.sectionIndex !== undefined) return { ...to, sectionIndex: insertAt };
+    return { ...to, chapterIndex: insertAt };
+};
+
+/**
+ * CAPTEUR DE DÉPLACEMENT — retire un élément de sa liste puis l'insère juste
+ * APRÈS l'élément `to`, dans le conteneur de `to`. C'est le cœur du
+ * glisser-déposer entre sections et chapitres : la CIBLE décide du parent, la
+ * position suit la cible PAR IDENTITÉ (jamais par indice, qui se décale si la
+ * source et la cible partagent la même liste). Interdit de déposer dans sa
+ * propre descendance (boucle). Renvoie les indices à la nouvelle place, ou
+ * `null` quand le déplacement est impossible.
+ */
+export const moveItemAfter = (
+    draft: Draft<LessonsData>,
+    from: Indices,
+    to: Indices,
+): Indices | null => {
+    const src = findItem(draft, from);
+    if (!src.item || !Array.isArray(src.parent) || typeof src.targetIndex !== 'number') return null;
+    if (extendsIndices(from, to)) return null; // jamais dans sa propre descendance
+
+    // La cible est capturée par RÉFÉRENCE avant la suppression : les indices
+    // changent, l'objet, lui, reste le même.
+    const dst = findItem(draft, to);
+    if (!dst.item || !Array.isArray(dst.parent) || typeof dst.targetIndex !== 'number') return null;
+    const targetItem = dst.item;
+    const targetParent = dst.parent;
+
+    const [moved] = src.parent.splice(src.targetIndex as number, 1);
+    const insertAt = targetParent.indexOf(targetItem) + 1;
+    targetParent.splice(insertAt, 0, moved);
+    return siblingIndices(to, insertAt);
+};
+
+/**
+ * Dépose un élément À L'INTÉRIEUR d'un conteneur (chapitre, section,
+ * sous-section ou sous-sous-section), en dernière position. Interdit de
+ * déposer dans sa propre descendance.
+ */
+export const moveItemInto = (
+    draft: Draft<LessonsData>,
+    from: Indices,
+    container: Indices,
+): Indices | null => {
+    const src = findItem(draft, from);
+    if (!src.item || !Array.isArray(src.parent) || typeof src.targetIndex !== 'number') return null;
+    if (extendsIndices(from, container)) return null;
+
+    const target = findItem(draft, container);
+    if (!target.item) return null;
+    const isItemsContainer = container.itemIndex === undefined && (
+        'name' in target.item || (target.item as { type?: unknown }).type === 'chapter' || 'sections' in target.item
+    );
+    if (!isItemsContainer) return null;
+    const holder = target.item as unknown as { items?: (LessonItem | EmbeddableTopLevelItem)[] };
+    if (!Array.isArray(holder.items)) holder.items = [];
+
+    const [moved] = src.parent.splice(src.targetIndex as number, 1);
+    holder.items.push(moved as LessonItem | EmbeddableTopLevelItem);
+    return { ...container, itemIndex: holder.items.length - 1 };
+};
+
 /**
  * Supprime un titre structurel (section, sous-section ou sous-sous-section) en
  * remontant son contenu au niveau supérieur : ses éléments sont rattachés au
@@ -299,13 +403,6 @@ export const parseDateInput = (value: unknown): Date | null => {
     }
     const parsed = new Date(text);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
-};
-
-/** Date longue localisée (« lundi 5 octobre 2026 »), sinon le libellé de repli. */
-export const formatDateLong = (value: unknown, localeCode: string, emptyLabel = ''): string => {
-    const date = parseDateInput(value);
-    if (!date) return emptyLabel;
-    return date.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 /** Ajout (ou retrait) de jours sur une date, sans dépendre du fuseau local. */

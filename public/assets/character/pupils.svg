@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <!-- Dégradé cyan/indigo de l'iris -->
+    <radialGradient id="irisGradientLeft" cx="94" cy="138" r="11" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="55%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </radialGradient>
+    <radialGradient id="irisGradientRight" cx="146" cy="138" r="11" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="55%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </radialGradient>
+  </defs>
+
+  <!-- Groupe global des pupilles mobiles calculées en temps réel -->
+  <g id="directional-pupils">
+    <!-- Pupille Gauche (Origine neutre cx: 94, cy: 138) -->
+    <g id="pupil-left" data-center-x="94" data-center-y="138">
+      <!-- Iris cyan lumineux -->
+      <circle cx="94" cy="138" r="10" fill="url(#irisGradientLeft)" stroke="#38bdf8" stroke-width="1.2" />
+      <!-- Cœur de la pupille noir profond -->
+      <circle cx="94" cy="138" r="6" fill="#020617" />
+      <!-- Anneau énergétique de focalisation -->
+      <circle cx="94" cy="138" r="4.2" stroke="#38bdf8" stroke-width="0.8" opacity="0.6" fill="none" />
+      <!-- Reflet spéculaire principal (brillance vive) -->
+      <circle cx="97" cy="135" r="2.8" fill="#ffffff" />
+      <!-- Micro-reflet secondaire (effet d'optique vivant) -->
+      <circle cx="92" cy="141" r="1.2" fill="#ffffff" opacity="0.85" />
+    </g>
+
+    <!-- Pupille Droite (Origine neutre cx: 146, cy: 138) -->
+    <g id="pupil-right" data-center-x="146" data-center-y="138">
+      <!-- Iris cyan lumineux -->
+      <circle cx="146" cy="138" r="10" fill="url(#irisGradientRight)" stroke="#38bdf8" stroke-width="1.2" />
+      <!-- Cœur de la pupille noir profond -->
+      <circle cx="146" cy="138" r="6" fill="#020617" />
+      <!-- Anneau énergétique de focalisation -->
+      <circle cx="146" cy="138" r="4.2" stroke="#38bdf8" stroke-width="0.8" opacity="0.6" fill="none" />
+      <!-- Reflet spéculaire principal (brillance vive) -->
+      <circle cx="149" cy="135" r="2.8" fill="#ffffff" />
+      <!-- Micro-reflet secondaire (effet d'optique vivant) -->
+      <circle cx="144" cy="141" r="1.2" fill="#ffffff" opacity="0.85" />
+    </g>
+  </g>
+</svg>

@@ -7,6 +7,7 @@ import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { normalizeSheetDetents } from '@/platform/sheetGesture';
 import { acquireModalLayer } from '@/platform/modalStack';
+import { useModalHaptics } from '@/hooks/useModalHaptics';
 
 export interface ModalBottomSheetProps {
   isOpen?: boolean;
@@ -34,6 +35,14 @@ export interface ModalBottomSheetProps {
   initialMobileDetent?: number;
   /** Short confirmations stay content-sized and centered, including on phones. */
   mobilePresentation?: 'sheet' | 'dialog';
+  /** Élévation et ombrage Z (low, mid, high). Par défaut 'mid'. */
+  elevation?: 'low' | 'mid' | 'high';
+  /** Glow contextuel subtil (primaire, succès, avertissement, danger). */
+  glow?: 'primary' | 'success' | 'warning' | 'danger';
+  /** Aura respirante ambiante subtile (Concept 4 : Breath & Pulse Ambient). Par défaut true. */
+  ambient?: boolean;
+  /** Snap magnétique tactile lors du glissement (Concept 1 : Magnetic Snap Cards). Par défaut true. */
+  magneticSnap?: boolean;
 }
 
 const DEFAULT_MOBILE_DETENTS = [0.9, 0.96];
@@ -78,19 +87,31 @@ export function ModalBottomSheet({
   mobileDetents = DEFAULT_MOBILE_DETENTS,
   initialMobileDetent,
   mobilePresentation = 'sheet',
+  elevation = 'mid',
+  glow,
+  ambient = true,
+  magneticSnap = true,
 }: ModalBottomSheetProps) {
   const { isRtl, t } = useLocale();
+  const haptics = useModalHaptics();
   const effectiveDir = dir ?? (isRtl ? 'rtl' : 'ltr');
   const effectiveIsRtl = effectiveDir === 'rtl';
   const dismissCallback = useCallback(() => {
+    haptics.onClose();
     if (onDismissRequest) {
       onDismissRequest();
     } else if (onClose) {
       onClose();
     }
-  }, [onDismissRequest, onClose]);
+  }, [onDismissRequest, onClose, haptics]);
 
   const effectiveOpen = Boolean(isOpen);
+
+  useEffect(() => {
+    if (effectiveOpen) {
+      haptics.onOpen();
+    }
+  }, [effectiveOpen, haptics]);
   const [layer, setLayer] = useState(0);
   useLayoutEffect(() => {
     if (!effectiveOpen) return;
@@ -156,11 +177,13 @@ export function ModalBottomSheet({
   const canExpand = isCompactSheet && activeDetentIndex < detents.length - 1;
   const canCollapse = isCompactSheet && activeDetentIndex > 0;
   const expandSheet = useCallback(() => {
+    haptics.onExpand();
     setActiveDetentIndex(index => Math.min(index + 1, detents.length - 1));
-  }, [detents.length]);
+  }, [detents.length, haptics]);
   const collapseSheet = useCallback(() => {
+    haptics.onCollapse();
     setActiveDetentIndex(index => Math.max(index - 1, 0));
-  }, []);
+  }, [haptics]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -181,6 +204,7 @@ export function ModalBottomSheet({
     canCollapse,
     onExpand: expandSheet,
     onCollapse: collapseSheet,
+    onSnapFeedback: magneticSnap ? haptics.onSelect : undefined,
   });
 
   const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md;
@@ -227,6 +251,10 @@ export function ModalBottomSheet({
             '--sheet-detent': activeDetent,
             zIndex: 110 + layer * 20,
           } as React.CSSProperties}
+          data-elevation={elevation}
+          data-glow={glow}
+          data-ambient={ambient ? 'true' : undefined}
+          data-magnetic={magneticSnap ? 'true' : undefined}
           data-mobile-presentation={mobilePresentation}
           data-has-handle={Boolean(dragHandle && isCompactSheet)}
           data-swipe-enabled={isCompactSheet && swipeToDismiss && !blockDismiss ? 'true' : undefined}

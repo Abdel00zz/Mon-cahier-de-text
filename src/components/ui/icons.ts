@@ -143,3 +143,16 @@ export const FolderArchive = createIcon('FolderArchive', [["path",{"d":"M3.75 7.
 export const HardDriveDownload = createIcon('HardDriveDownload', [["path",{"d":"M6 13H4.5L2.5 18V20Q2.5 21 4 21H20Q21.5 21 21.5 20V18L19.5 13H18M3 17H21"}],["path",{"d":"M12 3V12M8.5 8.5L12 12L15.5 8.5"}],["circle",{"cx":18,"cy":19,"r":0.55,"fill":"currentColor","stroke":"none"}]]);
 export const HardDriveUpload = createIcon('HardDriveUpload', [["path",{"d":"M6 13H4.5L2.5 18V20Q2.5 21 4 21H20Q21.5 21 21.5 20V18L19.5 13H18M3 17H21"}],["path",{"d":"M12 12V3M8.5 6.5L12 3L15.5 6.5"}],["circle",{"cx":18,"cy":19,"r":0.55,"fill":"currentColor","stroke":"none"}]]);
 export const Globe = createIcon('Globe', [["circle",{"cx":12,"cy":12,"r":9.25}],["path",{"d":"M2.75 12h18.5M12 2.75c2.3 2.55 3.5 5.65 3.5 9.25s-1.2 6.7-3.5 9.25c-2.3-2.55-3.5-5.65-3.5-9.25S9.7 5.3 12 2.75Z"}]]);
+export const Layers = createIcon('Layers', [
+  ['path', { d: 'M12 2L2 7l10 5 10-5-10-5Z', className: 'icon-wash', stroke: 'none' }],
+  ['path', { d: 'm12 2 10 5-10 5L2 7l10-5ZM2 17l10 5 10-5M2 12l10 5 10-5' }],
+]);
+export const Hash = createIcon('Hash', [
+  ['path', { d: 'M4 9h16M4 15h16M10 3L8 21M16 3l-2 18' }],
+]);
+export const FolderTree = createIcon('FolderTree', [
+  ['path', { d: 'M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z' }],
+  ['path', { d: 'M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 14h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z' }],
+  ['path', { d: 'M3 5v14a2 2 0 0 0 2 2h3M3 12h5' }],
+]);
+

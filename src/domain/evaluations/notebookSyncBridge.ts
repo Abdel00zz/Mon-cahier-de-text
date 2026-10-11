@@ -5,11 +5,23 @@ import { findItem } from '../notebook/dataUtils';
 import { produce } from 'immer';
 export { syncNotebookToEvaluations, syncNotebookSessionToEvaluations } from './notebookReconciliation';
 
+/*
+ * LE CONTRAT TABLEAU ↔ ÉVALUATIONS.
+ *
+ * Une seule porte de CRÉATION : la modale « Contrôle continu et activités ».
+ * Le tableau garde la CAPTURE quotidienne (contenu, date, remarque) et reçoit
+ * en retour ce que la modale matérialise : un bloc daté pour les épreuves
+ * écrites, une annotation de séance pour l’oral, le devoir maison et les
+ * activités. Le contrat complet (nœuds, états, propriété des champs,
+ * invariants) vit dans « docs/architecture/workflow-evaluations.md » — il
+ * évolue dans le même lot que ce code.
+ */
+
 /**
  * Extrait la date d'un bloc de premier niveau : sa propre date si renseignée,
  * sinon la date la plus ancienne trouvée parmi ses sous-sections ou items.
  */
-export function getTopLevelBlockDate(block: TopLevelItem): string | undefined {
+function getTopLevelBlockDate(block: TopLevelItem): string | undefined {
   if (block.date?.trim()) {
     const extracted = extractEarliestDate(block.date.trim());
     if (extracted) return extracted;
@@ -197,7 +209,10 @@ export function syncEventToNotebook(
   // Types qui doivent générer ou mettre à jour un bloc visible dans le cahier
   const isNotebookSyncable =
     event.type === 'evaluation_diagnostic' ||
-    event.type === 'correction_controle_continu';
+    event.type === 'correction_controle_continu' ||
+    event.type === 'examen_blanc' ||
+    event.type === 'olympiade' ||
+    event.type === 'concours';
 
   if (!isNotebookSyncable) {
     return { lessons, updated: false };
@@ -210,9 +225,24 @@ export function syncEventToNotebook(
       ar: 'التقويم التشخيصي',
     },
     correction_controle_continu: {
-      fr: 'Correction du contrôle continu',
-      en: 'Continuous assessment review',
-      ar: 'تصحيح المراقبة المستمرة',
+      fr: 'Correction du devoir surveillé',
+      en: 'Supervised test correction',
+      ar: 'تصحيح الفرض المحروس',
+    },
+    examen_blanc: {
+      fr: 'Examen blanc',
+      en: 'Mock exam',
+      ar: 'امتحان تجريبي',
+    },
+    olympiade: {
+      fr: 'Olympiade',
+      en: 'Olympiad',
+      ar: 'أولمبياد',
+    },
+    concours: {
+      fr: 'Concours',
+      en: 'Competition',
+      ar: 'مباراة',
     },
   };
 
@@ -275,18 +305,37 @@ export function removeEventFromNotebook(lessons: LessonsData, eventId: string, e
   return deleteRows(lessons, exact.length ? exact : legacy.length === 1 ? legacy : []);
 }
 
+/**
+ * Devoirs ÉCRITS — les seuls qui matérialisent un bloc « épreuve » daté dans
+ * le cahier. L’oral et le devoir maison vivent dans la REMARQUE de leur séance
+ * (annotation datée), jamais dans un bloc : le cahier reste le document du
+ * cours, la feuille d’évaluations garde la gestion.
+ */
+const WRITTEN_TEST_BLOCK: Partial<Record<DevoirType, TopLevelItem['type']>> = {
+  controle: 'controle_continu',
+  controle_court: 'controle_court',
+  controle_global: 'controle_global',
+};
+
+/** Titres de repli d’un bloc matérialisé (quand l’appelant ne fournit pas de libellé). */
+const WRITTEN_TEST_TITLES: Record<string, Record<AppLocale, string>> = {
+  controle: { fr: 'Devoir surveillé', en: 'Supervised test', ar: 'فرض محروس' },
+  controle_court: { fr: 'Devoir écrit court', en: 'Short written test', ar: 'فرض كتابي قصير محروس' },
+  controle_global: { fr: 'Devoir écrit global', en: 'Global written test', ar: 'فرض كتابي إجمالي محروس' },
+};
+
 function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
   const rows = buildLessonRows(lessons);
   const exact = rows.find(row => row.data._tempId === 'dev-block-' + id);
   if (exact) return exact;
-  if (type !== 'controle' && type !== 'maison') return undefined;
+  if (type !== 'maison' && !WRITTEN_TEST_BLOCK[type]) return undefined;
   if (entryKey) return rows.find(row => row.key === entryKey && !row.data._tempId?.startsWith('dev-block-'));
   const candidates = findNotebookAssessments(lessons).filter(entry => !entry.assessmentId && entry.type === type && entry.num === num);
   return candidates.length === 1 ? rows.find(row => row.key === candidates[0].key) : undefined;
 }
 
 export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
-  if (type !== 'controle' && type !== 'maison') return { lessons, updated: false };
+  if (type !== 'maison' && !WRITTEN_TEST_BLOCK[type]) return { lessons, updated: false };
   const exact = buildLessonRows(lessons).filter(row => row.data._tempId === 'dev-block-' + id);
   const legacy = exact.length ? undefined : assessmentRow(lessons, id, type, num, entryKey);
   return deleteRows(lessons, exact.length ? exact : legacy ? [legacy] : []);
@@ -295,8 +344,11 @@ export function removeAssessmentFromNotebook(lessons: LessonsData, id: string, t
 export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
   id: string; type: DevoirType; num: number; dateISO: string; label?: string; clearIfEmpty?: boolean; entryKey?: string; updatedTitle?: string;
 }, locale: AppLocale = 'fr'): { lessons: LessonsData; updated: boolean } {
-  // Oral and homework activities belong to the dated remark, never to a written-test block.
-  if (assessment.type !== 'controle' && assessment.type !== 'maison') return { lessons, updated: false };
+  // Deux familles de capture : les épreuves écrites ouvrent un BLOC daté dans
+  // le cahier ; l’oral et le devoir maison s’écrivent dans la REMARQUE de leur
+  // séance — jamais en bloc.
+  const blockType = WRITTEN_TEST_BLOCK[assessment.type];
+  if (!blockType && assessment.type !== 'maison') return { lessons, updated: false };
   const row = assessmentRow(lessons, assessment.id, assessment.type, assessment.num, assessment.entryKey);
   const date = assessment.dateISO || undefined;
   if (row) {
@@ -311,8 +363,7 @@ export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
   }
   // Homework belongs to the dated remark; it does not insert a new course block.
   if (!date || assessment.type === 'maison') return { lessons, updated: false };
-  const type = 'controle_continu';
-  const title = assessment.label || (locale === 'ar' ? 'مراقبة مستمرة ' : 'Contrôle continu ') + assessment.num;
-  const block: TopLevelItem = { type, title, date, _tempId: 'dev-block-' + assessment.id };
+  const title = assessment.label || `${WRITTEN_TEST_TITLES[assessment.type]?.[locale] ?? WRITTEN_TEST_TITLES.controle[locale]} ${assessment.num}`;
+  const block: TopLevelItem = { type: WRITTEN_TEST_BLOCK[assessment.type] ?? 'controle_continu', title, date, _tempId: 'dev-block-' + assessment.id };
   return { lessons: placeBlockChronologically(lessons, block).lessons, updated: true };
 }

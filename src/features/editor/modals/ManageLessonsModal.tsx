@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppConfig, type ContentNumbering, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
-import { ArrowDown, ArrowUp, ChevronDown, FolderOpen, Trash2, TriangleAlert } from '@/components/ui/icons';
+import { ChevronDown, ChevronUp, Eye, FolderTree, Hash, Layers, Trash2, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { MathText } from '@/components/ui/math-text';
@@ -129,8 +129,8 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         onClose={onClose}
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
-              <FolderOpen className="h-5 w-5 stroke-[2.2]" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+              <Layers className="h-5 w-5 stroke-[2.2]" />
             </span>
             <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
               {t('manageLessons.title')}
@@ -144,14 +144,19 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         footerClassName="border-t-0 bg-background"
         footer={(
           <div className="flex w-full items-center justify-end gap-2.5">
-            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
+            <Button
+              type="button"
+              onClick={onClose}
+              variant="secondary"
+              className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm transition-transform active:scale-95"
+            >
               {t('common.cancel')}
             </Button>
             <Button
               type="button"
               onClick={handleSubmit}
               disabled={!hasChanges}
-              className="rounded-xl bg-primary px-5 h-10 text-xs sm:text-sm font-bold shadow-sm hover:bg-primary/90 text-primary-foreground"
+              className="rounded-xl bg-primary px-5 h-10 text-xs sm:text-sm font-bold shadow-sm hover:bg-primary/90 text-primary-foreground transition-transform active:scale-95 disabled:opacity-50"
             >
               {t('common.save')}
             </Button>
@@ -159,13 +164,20 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         )}
       >
         <div className="space-y-4">
-          <section className="overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
-            <div className="flex items-start justify-between gap-4 p-4">
-              <div className="min-w-0">
-                <label htmlFor="contentNumberingSwitch" className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.numbering.title')}</label>
-              <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
-                {t('manageLessons.numbering.hint')}
-              </p>
+          <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/60 shadow-xs">
+            <div className="flex items-center justify-between gap-4 p-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
+                  <Hash className="h-4.5 w-4.5 stroke-[2.2]" />
+                </span>
+                <div className="min-w-0">
+                  <label htmlFor="contentNumberingSwitch" className="text-xs font-bold text-foreground sm:text-sm cursor-pointer select-none">
+                    {t('manageLessons.numbering.title')}
+                  </label>
+                  <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
+                    {t('manageLessons.numbering.hint')}
+                  </p>
+                </div>
               </div>
               <Switch
                 id="contentNumberingSwitch"
@@ -174,60 +186,110 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                 aria-label={t('manageLessons.numbering.title')}
               />
             </div>
-            {localNumbering.enabled && <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
-              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.structure')}
-                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.structureStyle ?? 'legacy'} onChange={event => setLocalNumbering(current => ({ ...current, structureStyle: event.target.value as ContentNumbering['structureStyle'] }))}>
-                  <option value="legacy">A · 1 · i</option><option value="decimal">1 · 1.1 · 1.1.1</option><option value="roman">I · I.1 · I.1.1</option>
-                </select>
-              </label>
-              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.badges')}
-                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.badgeStyle ?? 'decimal'} onChange={event => setLocalNumbering(current => ({ ...current, badgeStyle: event.target.value as ContentNumbering['badgeStyle'] }))}>
-                  <option value="decimal">1, 2, 3…</option><option value="roman">I, II, III…</option><option value="hierarchical">1.1, 1.2, 2.1…</option>
-                </select>
-              </label>
-              <label className="grid gap-1.5 text-xs font-medium">{t('manageLessons.numbering.scope')}
-                <select className="h-11 min-w-0 rounded-md border border-border bg-card px-2" value={localNumbering.scope ?? 'chapter'} onChange={event => setLocalNumbering(current => ({ ...current, scope: event.target.value as ContentNumbering['scope'] }))}>
-                  <option value="chapter">{t('manageLessons.numbering.chapter')}</option><option value="section">{t('manageLessons.numbering.section')}</option><option value="document">{t('manageLessons.numbering.document')}</option>
-                </select>
-              </label>
-            </div>}
+            {localNumbering.enabled && (
+              <div className="grid gap-3.5 border-t border-border/60 bg-muted/20 px-4 py-4 sm:grid-cols-3">
+                <label className="grid gap-1.5 text-xs font-semibold text-foreground/90">
+                  <span>{t('manageLessons.numbering.structure')}</span>
+                  <div className="relative">
+                    <select
+                      className="h-10 w-full appearance-none rounded-xl border border-border/80 bg-background hover:bg-muted/30 pl-3 pr-8 text-xs font-medium text-foreground transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
+                      value={localNumbering.structureStyle ?? 'legacy'}
+                      onChange={event => setLocalNumbering(current => ({ ...current, structureStyle: event.target.value as ContentNumbering['structureStyle'] }))}
+                    >
+                      <option value="legacy">A · 1 · i</option>
+                      <option value="decimal">1 · 1.1 · 1.1.1</option>
+                      <option value="roman">I · I.1 · I.1.1</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                  </div>
+                </label>
+
+                <label className="grid gap-1.5 text-xs font-semibold text-foreground/90">
+                  <span>{t('manageLessons.numbering.badges')}</span>
+                  <div className="relative">
+                    <select
+                      className="h-10 w-full appearance-none rounded-xl border border-border/80 bg-background hover:bg-muted/30 pl-3 pr-8 text-xs font-medium text-foreground transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
+                      value={localNumbering.badgeStyle ?? 'decimal'}
+                      onChange={event => setLocalNumbering(current => ({ ...current, badgeStyle: event.target.value as ContentNumbering['badgeStyle'] }))}
+                    >
+                      <option value="decimal">1, 2, 3…</option>
+                      <option value="roman">I, II, III…</option>
+                      <option value="hierarchical">1.1, 1.2, 2.1…</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                  </div>
+                </label>
+
+                <label className="grid gap-1.5 text-xs font-semibold text-foreground/90">
+                  <span>{t('manageLessons.numbering.scope')}</span>
+                  <div className="relative">
+                    <select
+                      className="h-10 w-full appearance-none rounded-xl border border-border/80 bg-background hover:bg-muted/30 pl-3 pr-8 text-xs font-medium text-foreground transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
+                      value={localNumbering.scope ?? 'chapter'}
+                      onChange={event => setLocalNumbering(current => ({ ...current, scope: event.target.value as ContentNumbering['scope'] }))}
+                    >
+                      <option value="chapter">{t('manageLessons.numbering.chapter')}</option>
+                      <option value="section">{t('manageLessons.numbering.section')}</option>
+                      <option value="document">{t('manageLessons.numbering.document')}</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" aria-hidden />
+                  </div>
+                </label>
+              </div>
+            )}
           </section>
 
-          <details open className="group overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-muted/40 px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
-              <span className="flex items-center gap-2.5">
-                <span className="h-2 w-2 rounded-full bg-blue-600" />
-                {t('descriptionVisibility.screen.title')}
+          <details open className="group overflow-hidden rounded-2xl border border-border/70 bg-card/60 shadow-xs">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-muted/30 px-4 py-3.5 text-xs font-bold text-foreground transition-colors hover:bg-muted/50 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shadow-2xs">
+                  <Eye className="h-4.5 w-4.5 stroke-[2.2]" />
+                </span>
+                <span className="text-xs font-bold text-foreground sm:text-sm">
+                  {t('descriptionVisibility.screen.title')}
+                </span>
               </span>
-              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 stroke-[2.2]" aria-hidden />
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-transform duration-200 group-open:rotate-180">
+                <ChevronDown className="h-4 w-4 stroke-[2.2]" aria-hidden />
+              </span>
             </summary>
             <DescriptionVisibilityControl
               context="screen"
               mode={localDesc.mode}
               types={localDesc.types}
               onChange={setLocalDesc}
+              hideTitle
               className="border-0 border-t border-border/60 bg-transparent p-4 shadow-none"
             />
           </details>
 
-          <section className="overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
-            <div className="flex items-center justify-between gap-4 border-b border-border/60 bg-muted/40 px-4 py-3">
-              <div className="min-w-0">
-                <h3 className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.contents')}</h3>
-                <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
-                  {t('manageLessons.orderHint')}
-                </p>
+          <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/60 shadow-xs">
+            <div className="flex items-center justify-between gap-4 border-b border-border/60 bg-muted/30 px-4 py-3.5">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+                  <FolderTree className="h-4.5 w-4.5 stroke-[2.2]" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.contents')}</h3>
+                  <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
+                    {t('manageLessons.orderHint')}
+                  </p>
+                </div>
               </div>
-              <span className="shrink-0 rounded-md bg-muted px-2.5 py-1 font-mono text-[10px] font-bold text-muted-foreground">
-                {t('manageLessons.itemsCount', { count: localLessons.length })}
+              <span className="shrink-0 rounded-full border border-border/70 bg-muted/70 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-2xs">
+                {localLessons.length === 1
+                  ? t('manageLessons.itemsCountOne', { count: 1 })
+                  : localLessons.length === 2
+                    ? t('manageLessons.itemsCountTwo', { count: 2 })
+                    : t('manageLessons.itemsCount', { count: localLessons.length })}
               </span>
             </div>
 
             {localLessons.length > 0 ? (
-              <ul className="space-y-2 p-3">
+              <ul className="space-y-2 p-3 sm:p-4">
                 {localLessons.map((item, index) => {
                   const itemConfig = item.type === 'free'
-                    ? { icon: FolderOpen, color: 'text-muted-foreground' }
+                    ? { icon: Layers, color: 'text-primary' }
                     : TOP_LEVEL_TYPE_CONFIG[item.type];
                   const nestedCount = countNestedContents(item);
 
@@ -248,41 +310,63 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   return (
                     <li
                       key={itemKey(item)}
-                      className="flex flex-wrap items-center gap-3 rounded-xl border border-border/80 bg-background px-3.5 py-3 shadow-2xs transition-colors hover:border-border"
+                      className="group/item flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-background/90 p-3 shadow-2xs transition-all hover:border-border hover:shadow-xs"
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/60">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/40 shadow-2xs">
                         <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5 stroke-[2.2]`} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span dir="auto" className="block break-words text-start text-sm font-semibold text-foreground">
+                        <span dir="auto" className="block break-words text-start text-xs sm:text-sm font-semibold text-foreground">
                           <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
                         </span>
-                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                        <span className="mt-0.5 block text-[11px] font-medium leading-relaxed text-muted-foreground">
                           {t(item.type === 'free' ? 'addContent.free' : `manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
                         </span>
                       </span>
-                      <span className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-border/50 pt-2 sm:w-auto sm:border-0 sm:pt-0">
-                        <span className="flex overflow-hidden rounded-xl border border-border/80 bg-muted/30">
-                          <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-9 w-9 rounded-none border-0 p-0 hover:bg-muted disabled:opacity-25" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
-                            <ArrowUp className="h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" />
-                          </Button>
-                          <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-9 w-9 rounded-none border-0 border-s border-border/80 p-0 hover:bg-muted disabled:opacity-25" title={t('manageLessons.moveDown')} aria-label={t('manageLessons.moveDown')}>
-                            <ArrowDown className="h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" />
-                          </Button>
-                        </span>
-                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-9 w-9 rounded-xl border border-border/80 bg-background p-0 text-muted-foreground hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30" title={t('manageLessons.delete')} aria-label={t('manageLessons.delete')}>
-                          <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
-                        </Button>
+                      <span className="flex w-full shrink-0 items-center justify-end gap-1.5 border-t border-border/50 pt-2 sm:w-auto sm:border-0 sm:pt-0">
+                        <div className="flex items-center rounded-xl border border-border/70 bg-muted/40 p-0.5 shadow-2xs">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => moveUp(index)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-background hover:text-foreground hover:shadow-2xs active:scale-90 disabled:pointer-events-none disabled:opacity-25"
+                            title={t('manageLessons.moveUp')}
+                            aria-label={t('manageLessons.moveUp')}
+                          >
+                            <ChevronUp className="h-4 w-4 stroke-[2.4]" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === localLessons.length - 1}
+                            onClick={() => moveDown(index)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-background hover:text-foreground hover:shadow-2xs active:scale-90 disabled:pointer-events-none disabled:opacity-25"
+                            title={t('manageLessons.moveDown')}
+                            aria-label={t('manageLessons.moveDown')}
+                          >
+                            <ChevronDown className="h-4 w-4 stroke-[2.4]" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => requestDelete(index)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background text-muted-foreground transition-all hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-800 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 active:scale-90 shadow-2xs"
+                          title={t('manageLessons.delete')}
+                          aria-label={t('manageLessons.delete')}
+                        >
+                          <Trash2 className="h-4 w-4 stroke-[2.2]" />
+                        </button>
                       </span>
                     </li>
                   );
                 })}
               </ul>
             ) : (
-              <div className="m-3 rounded-lg border border-dashed border-border bg-background px-4 py-8 text-center">
-                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground stroke-[2.2]" />
-                <p className="text-xs font-bold text-foreground">{t('manageLessons.emptyTitle')}</p>
-                <p className="mt-1 text-[10px] font-medium text-muted-foreground">{t('manageLessons.emptyHint')}</p>
+              <div className="m-4 rounded-2xl border border-dashed border-border/80 bg-muted/20 px-4 py-8 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground/80 shadow-2xs">
+                  <Layers className="h-6 w-6 stroke-[1.8]" />
+                </div>
+                <p className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.emptyTitle')}</p>
+                <p className="mt-1 text-[11px] font-medium text-muted-foreground">{t('manageLessons.emptyHint')}</p>
               </div>
             )}
           </section>

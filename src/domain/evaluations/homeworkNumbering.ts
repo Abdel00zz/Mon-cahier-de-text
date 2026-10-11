@@ -1,5 +1,6 @@
 import type { LessonsData } from '../../types';
 import { buildLessonRows } from '../notebook/lessonRows';
+import { normalizeActivityText } from './pedagogicalActivities';
 
 /**
  * Normalise les chiffres arabes orientaux (٠-٩ / ۰-۹) en chiffres latins standards (0-9).
@@ -17,6 +18,64 @@ export function hasHomeworkMention(text: string | undefined): boolean {
   if (!text) return false;
   const normalized = normalizeDigits(text);
   return /(?:تم\s+إعطاء\s+الفرض\s+المنزلي|الفرض\s+المنزلي|فرض\s+منزلي|devoir\s+maison|\bdm\b|homework)/i.test(normalized);
+}
+
+/*
+ * DEUX TEMPS D'UN DEVOIR MAISON.
+ *
+ * La séance où le devoir est DONNÉ (les élèves l'emportent chez eux) et la
+ * séance où il est CORRIGÉ sont deux moments distincts du cahier. La ligne
+ * « Correction devoir maison 2 » parle du même devoir que « Devoir maison 2
+ * donné » : tout ce qui classe une ligne de remarque — attribution, numéro,
+ * retrait — doit savoir les distinguer, sinon la correction serait prise pour
+ * une seconde attribution et fausserait la numérotation chronologique.
+ */
+
+/** Préfixes de correction reconnus en tête de ligne ; `normalizeActivityText`
+ * a déjà aplati les accents et les diacritiques (« Corrigée » → « corrigee »). */
+const CORRECTION_LINE_PREFIX = /^(?:corrections?|corrigee?s?|تصحيح|حل)(?:\s|$)/;
+
+/**
+ * Vrai pour une ligne de correction : elle COMMENCE par un marqueur de
+ * correction ET cite le devoir maison. La détection est stricte (début de
+ * ligne) : « nous corrigeons le devoir maison » au fil d'une phrase reste une
+ * note libre, pas une séance de correction.
+ */
+export function isHomeworkCorrectionLine(text: string | undefined): boolean {
+  if (!text) return false;
+  const normalized = normalizeActivityText(text);
+  return CORRECTION_LINE_PREFIX.test(normalized) && hasHomeworkMention(normalized);
+}
+
+/** Vrai si AU MOINS une ligne annonce l'ATTRIBUTION du devoir (correction exclue). */
+export function hasHomeworkAssignmentMention(text: string | undefined): boolean {
+  if (!text) return false;
+  return text.split('\n').some(line => hasHomeworkMention(line) && !isHomeworkCorrectionLine(line));
+}
+
+/** Numéro du devoir ANNONCÉ dans la remarque : première ligne d'attribution
+ *  numérotée, en ignorant les lignes de correction. */
+export function extractHomeworkAssignmentNumber(text: string | undefined): number | null {
+  if (!text) return null;
+  for (const line of text.split('\n')) {
+    if (hasHomeworkMention(line) && !isHomeworkCorrectionLine(line)) {
+      const num = extractHomeworkNumber(line);
+      if (num !== null) return num;
+    }
+  }
+  return null;
+}
+
+/** Numéro du devoir CORRIGÉ dans la remarque (première ligne de correction numérotée). */
+export function extractCorrectionNumber(text: string | undefined): number | null {
+  if (!text) return null;
+  for (const line of text.split('\n')) {
+    if (isHomeworkCorrectionLine(line)) {
+      const num = extractHomeworkNumber(line);
+      if (num !== null) return num;
+    }
+  }
+  return null;
 }
 
 /**
@@ -60,7 +119,7 @@ export function extractHomeworkNumber(text: string | undefined): number | null {
 
 export interface HomeworkScanOptions {
   lessons?: LessonsData | unknown;
-  manualAssessments?: Array<{ id: string; type: string; num?: number }>;
+  manualAssessments?: Array<{ id: string; type: string; num?: number; dateISO?: string }>;
   assessmentDates?: Record<string, string>;
 }
 
@@ -152,7 +211,9 @@ export function getNextHomeworkNumber(options: HomeworkScanOptions & { currentRe
  */
 export function replaceOrInsertHomeworkInRemark(currentRemark: string, newHomeworkText: string): string {
   const lines = (currentRemark ?? '').split('\n');
-  const homeworkLineIndex = lines.findIndex(line => hasHomeworkMention(line));
+  // La ligne de CORRECTION cite aussi « devoir maison » : seule une ligne
+  // d'ATTRIBUTION peut être remplacée par la pastille « donné ».
+  const homeworkLineIndex = lines.findIndex(line => hasHomeworkMention(line) && !isHomeworkCorrectionLine(line));
 
   if (homeworkLineIndex >= 0) {
     lines[homeworkLineIndex] = newHomeworkText;
@@ -162,6 +223,33 @@ export function replaceOrInsertHomeworkInRemark(currentRemark: string, newHomewo
   const trimmed = currentRemark.trim();
   if (!trimmed) return newHomeworkText;
   return `${newHomeworkText}\n${trimmed}`;
+}
+
+/**
+ * Insère ou met à jour la ligne de CORRECTION du devoir maison. La correction
+ * est le SECOND temps d'un même devoir : elle se pose juste après la ligne
+ * d'attribution quand elle existe, jamais avant elle.
+ */
+export function replaceOrInsertCorrectionInRemark(currentRemark: string, newCorrectionText: string): string {
+  const lines = (currentRemark ?? '').split('\n');
+  const correctionIndex = lines.findIndex(line => isHomeworkCorrectionLine(line));
+  if (correctionIndex >= 0) {
+    lines[correctionIndex] = newCorrectionText;
+    return lines.filter(line => line.trim().length > 0).join('\n');
+  }
+  const assignmentIndex = lines.findIndex(line => hasHomeworkMention(line) && !isHomeworkCorrectionLine(line));
+  if (assignmentIndex >= 0) {
+    lines.splice(assignmentIndex + 1, 0, newCorrectionText);
+    return lines.filter(line => line.trim().length > 0).join('\n');
+  }
+  const trimmed = currentRemark.trim();
+  return trimmed ? `${newCorrectionText}\n${trimmed}` : newCorrectionText;
+}
+
+/** Supprime la ligne de correction ; l'attribution et les notes libres restent. */
+export function removeCorrectionFromRemark(currentRemark: string): string {
+  const lines = (currentRemark ?? '').split('\n');
+  return lines.filter(line => !isHomeworkCorrectionLine(line)).join('\n').trim();
 }
 
 /**
@@ -178,7 +266,7 @@ export function splitRemarkContent(remark: string | undefined): {
   }
 
   const lines = remark.split('\n');
-  const hwIndex = lines.findIndex(line => hasHomeworkMention(line));
+  const hwIndex = lines.findIndex(line => hasHomeworkMention(line) && !isHomeworkCorrectionLine(line));
 
   if (hwIndex === -1) {
     return { homeworkLine: null, homeworkNum: null, otherRemark: remark.trim() };
@@ -207,29 +295,40 @@ export function getChronologicalHomeworkNumber(options: HomeworkScanOptions & { 
 
   if (targetDate && lessons && lessons.length > 0) {
     const homeworkDates: string[] = [];
+    const seenDates = new Set<string>();
+    const addDate = (raw?: string) => {
+      const match = String(raw ?? '').match(/\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}[/.-]\d{4}/);
+      if (!match || seenDates.has(match[0])) return;
+      seenDates.add(match[0]);
+      homeworkDates.push(match[0]);
+    };
     try {
       const rows = buildLessonRows(lessons);
-      const seenDates = new Set<string>();
 
       for (const row of rows) {
         const rawRemark = (row.data as { remark?: string }).remark;
         const type = String(('type' in row.data ? row.data.type : row.elementType) ?? '');
-        const isHw = (rawRemark && hasHomeworkMention(rawRemark)) || type === 'devoir_maison' || type === 'maison';
+        // Seule une ATTRIBUTION compte comme jalon de numérotation : la
+        // séance de correction parle du même devoir et ne crée pas un rang.
+        const isHw = (rawRemark && hasHomeworkAssignmentMention(rawRemark)) || type === 'devoir_maison' || type === 'maison';
 
-        if (isHw) {
-          const rawDate = typeof row.data.date === 'string' ? row.data.date : '';
-          const match = rawDate.match(/\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}[/.-]\d{4}/);
-          if (match) {
-            const dateStr = match[0];
-            if (!seenDates.has(dateStr)) {
-              seenDates.add(dateStr);
-              homeworkDates.push(dateStr);
-            }
-          }
-        }
+        if (isHw) addDate(typeof row.data.date === 'string' ? row.data.date : '');
       }
     } catch {
       // repli en cas d'erreur de parsing
+    }
+
+    /*
+     * La feuille d'évaluations est l'AUTRE source des devoirs : depuis que la
+     * mention de séance est un badge (et non plus une ligne de texte dans la
+     * remarque), le cahier peut ne plus porter le jalon du tout. Sans ces
+     * sources, chaque nouveau devoir recevrait le numéro 1.
+     */
+    for (const assessment of options.manualAssessments ?? []) {
+      if (assessment.type === 'maison') addDate(assessment.dateISO);
+    }
+    for (const [key, date] of Object.entries(options.assessmentDates ?? {})) {
+      if (/maison-?\d+/i.test(key)) addDate(date);
     }
 
     // Nombre de devoirs placés chronologiquement avant la date cible
@@ -245,7 +344,9 @@ export function getChronologicalHomeworkNumber(options: HomeworkScanOptions & { 
  */
 export function removeHomeworkFromRemark(currentRemark: string): string {
   const lines = (currentRemark ?? '').split('\n');
-  const filtered = lines.filter(line => !hasHomeworkMention(line));
+  // La ligne de correction est un autre moment du devoir : elle survit au
+  // retrait de l'attribution, comme le devoir lui-même reste dans la feuille.
+  const filtered = lines.filter(line => !(hasHomeworkMention(line) && !isHomeworkCorrectionLine(line)));
   return filtered.join('\n').trim();
 }
 

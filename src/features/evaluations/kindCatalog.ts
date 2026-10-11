@@ -35,6 +35,7 @@ import {
   RefreshCw,
   ClipboardCheck,
   Users,
+  Mic,
 } from 'lucide-react';
 import type { DevoirType, PedagogicalEventType } from '@/types';
 
@@ -50,8 +51,10 @@ export interface KindStyle {
 /** Activités pédagogiques : hors bulletin, mais dans la vie de la classe. */
 export const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, KindStyle> = {
   evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', tone: 'blue', Icon: ListChecks },
-  // Le contrôle des cahiers : une vérification administrative, pas une épreuve —
-  // la teinte ardoise le dit et le distingue du diagnostic, qui est bleu.
+  // Le contrôle des cahiers des élèves : un fait du CONTRÔLE CONTINU, pas une
+  // épreuve écrite — il se note dans la REMARQUE de la séance. La teinte ardoise
+  // le distingue des épreuves bleues ; sa carte vit dans la famille « Devoirs et
+  // évaluations » (KIND_GROUPS), pas dans les activités libres.
   controle_cahiers: { labelKey: 'evaluations.event.controle_cahiers', tone: 'slate', Icon: CheckSquare },
   correction_controle_continu: { labelKey: 'evaluations.event.correction_controle_continu', tone: 'slate', Icon: ClipboardCheck },
   examen_blanc: { labelKey: 'evaluations.event.examen_blanc', tone: 'rose', Icon: FileSignature },
@@ -75,6 +78,8 @@ export const DEVOIR_KIND_CONFIG: Record<DevoirType, KindStyle> = {
   oral: { labelKey: 'evaluations.type.oral', tone: 'rose', Icon: Users },
   // Le travail à la maison.
   maison: { labelKey: 'evaluations.type.maison', tone: 'teal', Icon: Home },
+  // La « colle » : l'interrogation orale hebdomadaire des classes préparatoires.
+  colle: { labelKey: 'evaluations.type.colle', tone: 'rose', Icon: Mic },
 };
 
 /** Une nature proposée au professeur, avec la famille qui décide de ses champs. */
@@ -98,10 +103,13 @@ export const KIND_GROUPS: Array<{
     id: 'devoir',
     titleKey: 'evaluations.assessments',
     tone: 'blue',
-    // L'évaluation diagnostique et la correction appartiennent logiquement à la catégorie Devoirs et évaluations
+    // Le diagnostic, le contrôle des cahiers et la correction appartiennent au
+    // CONTRÔLE CONTINU : ils vivent ici, à côté des devoirs, même s'ils restent
+    // des faits de séance (annotations) et non des épreuves écrites.
     kinds: [
       { family: 'event', type: 'evaluation_diagnostic', style: PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic },
       ...(Object.keys(DEVOIR_KIND_CONFIG) as DevoirType[]).map(type => ({ family: 'devoir' as const, type, style: DEVOIR_KIND_CONFIG[type] })),
+      { family: 'event', type: 'controle_cahiers', style: PEDAGOGICAL_EVENT_CONFIG.controle_cahiers },
       { family: 'event', type: 'correction_controle_continu', style: PEDAGOGICAL_EVENT_CONFIG.correction_controle_continu },
     ],
   },
@@ -110,7 +118,7 @@ export const KIND_GROUPS: Array<{
     titleKey: 'evaluations.pedagogicalEvents',
     tone: 'violet',
     kinds: (Object.keys(PEDAGOGICAL_EVENT_CONFIG) as PedagogicalEventType[])
-      .filter(type => type !== 'evaluation_diagnostic' && type !== 'correction_controle_continu')
+      .filter(type => type !== 'evaluation_diagnostic' && type !== 'correction_controle_continu' && type !== 'controle_cahiers')
       .map(type => ({ family: 'event' as const, type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
   },
 ];

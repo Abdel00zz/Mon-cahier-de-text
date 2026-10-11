@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 240" fill="none">
+  <defs>
+    <!-- Dégradé aluminium brossé pour le corps du stylet -->
+    <linearGradient id="stylusBodyGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cbd5e1" />
+      <stop offset="35%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+    <!-- Accent indigo de marque scolaire -->
+    <linearGradient id="stylusAccent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+    <!-- Lueur de la pointe active tactile -->
+    <radialGradient id="stylusTipGlow" cx="50" cy="226" r="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#0284c7" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <g id="precision-stylus">
+    <!-- Halo lumineux de contact actif (interactivité) -->
+    <circle cx="50" cy="226" r="10" fill="url(#stylusTipGlow)" />
+
+    <!-- 1. Capuchon supérieur biseauté / Bouton raccourci -->
+    <path d="M43 14 C43 10 57 10 57 14 L56 26 L44 26 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Anneau chrome supérieur -->
+    <rect x="42" y="26" width="16" height="5" rx="1.5" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5" />
+
+    <!-- 2. Corps cylindrique principal en aluminium épuré -->
+    <rect x="43" y="31" width="14" height="142" rx="3" 
+          fill="url(#stylusBodyGradient)" stroke="#1e293b" stroke-width="1.5" />
+
+    <!-- Ligne de reflet spéculaire tout le long du corps -->
+    <line x1="47" y1="34" x2="47" y2="170" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.9" />
+
+    <!-- 3. Anneau signature Indigo (#4f46e5) avec témoin LED -->
+    <rect x="42" y="100" width="16" height="12" rx="2" fill="url(#stylusAccent)" stroke="#1e293b" stroke-width="1.5" />
+    <circle cx="50" cy="106" r="2" fill="#38bdf8" />
+
+    <!-- 4. Cône de transition vers la pointe fine -->
+    <path d="M44 173 L56 173 L53 214 L47 214 Z" 
+          fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+
+    <!-- 5. Bague de serrage métallique -->
+    <rect x="46" y="214" width="8" height="4" rx="1" fill="#cbd5e1" stroke="#1e293b" stroke-width="1" />
+
+    <!-- 6. Pointe fine tactile haute précision (Ultra-fine nib) -->
+    <path d="M48 218 L52 218 L50.5 226 L49.5 226 Z" fill="#0f172a" stroke="#1e293b" stroke-width="1" />
+    <circle cx="50" cy="226" r="1.5" fill="#38bdf8" />
+  </g>
+</svg>

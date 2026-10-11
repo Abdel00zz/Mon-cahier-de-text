@@ -379,7 +379,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
             data-content-number={displayNumber ?? ''}
             data-tippy-content={fullTooltip}
-            title={fullTooltip}
           >
             <span>{badgeText}</span>
             {displayNumber ? <bdi dir="ltr" className="ms-px font-bold lg:ms-0.5">{displayNumber}</bdi> : null}

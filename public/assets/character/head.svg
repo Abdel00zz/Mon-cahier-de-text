@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- Définitions de gradients & filtres -->
+  <defs>
+    <linearGradient id="plumeGradient" x1="120" y1="8" x2="135" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="60%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#3730a3" />
+    </linearGradient>
+    <linearGradient id="headShellGradient" x1="120" y1="46" x2="120" y2="204" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="65%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <linearGradient id="visorGlassGradient" x1="120" y1="100" x2="120" y2="182" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
+    <linearGradient id="podAccentGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
+
+  <!-- 1. Plume / Antenne supérieure stylisée (indigo scolaire #4f46e5) -->
+  <g id="quill-antenna">
+    <!-- Embase de la plume sur le casque -->
+    <path d="M114 54 C114 50 126 50 126 54 L124 59 L116 59 Z" fill="#475569" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+    <!-- Tige flexible -->
+    <path d="M120 50 Q119 32 124 22" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <!-- Foliole / Ailette de la plume stylisée -->
+    <path d="M124 22 Q136 10 138 6 C138 6 128 16 124 22 Q121 28 120 38 C116 34 112 36 114 42 C118 43 121 44 122 47" 
+          fill="url(#plumeGradient)" stroke="#312e81" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Nervure centrale plume -->
+    <path d="M122 46 C124 36 128 22 136 8" stroke="#c7d2fe" stroke-width="1.2" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- 2. Écouteurs latéraux technologiques (Ear pods) -->
+  <g id="ear-pods">
+    <!-- Pod gauche -->
+    <g id="pod-left">
+      <rect x="22" y="112" width="16" height="48" rx="8" fill="#e2e8f0" stroke="#334155" stroke-width="1.5" />
+      <rect x="25" y="116" width="10" height="40" rx="5" fill="#f1f5f9" stroke="#4f46e5" stroke-width="1.2" />
+      <circle cx="30" cy="136" r="3" fill="url(#podAccentGradient)" />
+      <!-- Support arqué vers le crâne -->
+      <path d="M38 126 C46 126 50 130 54 134" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" />
+    </g>
+    <!-- Pod droit -->
+    <g id="pod-right">
+      <rect x="202" y="112" width="16" height="48" rx="8" fill="#e2e8f0" stroke="#334155" stroke-width="1.5" />
+      <rect x="205" y="116" width="10" height="40" rx="5" fill="#f1f5f9" stroke="#4f46e5" stroke-width="1.2" />
+      <circle cx="210" cy="136" r="3" fill="url(#podAccentGradient)" />
+      <!-- Support arqué vers le crâne -->
+      <path d="M202 126 C194 126 190 130 186 134" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- 3. Coque principale de la tête (casque géométrique épuré) -->
+  <g id="head-shell">
+    <rect x="44" y="52" width="152" height="152" rx="42" 
+          fill="url(#headShellGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Liseré spéculaire supérieur subtil -->
+    <path d="M68 62 Q120 54 172 62" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.9" />
+  </g>
+
+  <!-- 4. Visière technologique / Hublot d'affichage -->
+  <g id="visor-frame">
+    <!-- Contour de l'orbite / cadre de la visière -->
+    <rect x="56" y="94" width="128" height="92" rx="28" 
+          fill="url(#visorGlassGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Reflet spéculaire oblique de verre (Liquid glass refraction) -->
+    <path d="M68 106 Q120 98 160 106 L150 120 Q116 114 74 122 Z" 
+          fill="#38bdf8" opacity="0.12" />
+    <path d="M72 172 Q120 178 164 172" stroke="#4338ca" stroke-width="1" stroke-linecap="round" opacity="0.4" fill="none" />
+  </g>
+</svg>

@@ -1,5 +1,7 @@
 import type { LessonsData } from '../../types.js';
 import { toDisplayText } from '../../lib/text/textValue.js';
+import { isRecord } from './notebookSchema.js';
+import { walkNotebook } from './notebookTraversal.js';
 
 /*
  * EXPORT PAR CHAPITRE — découper un cahier pour l'archiver ou l'échanger.
@@ -14,38 +16,12 @@ import { toDisplayText } from '../../lib/text/textValue.js';
  * réimportable tel quel (mêmes formes, mêmes dates, même direction d'écriture).
  */
 
-/** Types de STRUCTURE : un chapitre n'est pas un contenu, ses éléments le sont. */
-const STRUCTURE_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
-const CHILD_LISTS = ['items', 'sections', 'subsections', 'subsubsections'] as const;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-/** Contenus d'un bloc, récursivement : ce que le professeur compte vraiment. */
-const countContents = (node: Record<string, unknown>): number => {
-  let total = 0;
-  /*
-   * Le niveau se lit dans la LISTE qui porte le nœud, pas dans son `type` :
-   * dans un cahier réel, une section n'a pas de champ `type` (elle n'est
-   * reconnaissable que par la clé `sections` de son parent). La compter par son
-   * type gonflerait chaque chapitre du nombre de ses sections.
-   */
-  const visit = (element: unknown, elementType: string): void => {
-    if (!isRecord(element)) return;
-    if (!STRUCTURE_TYPES.has(elementType) && !STRUCTURE_TYPES.has(String(element.type ?? ''))) total += 1;
-    CHILD_LISTS.forEach(key => {
-      if (key === 'items') return;
-      const list = element[key];
-      if (Array.isArray(list)) list.forEach(child => visit(child, key.replace(/s$/, '')));
-    });
-    const items = element.items;
-    if (Array.isArray(items)) {
-      items.forEach(child => visit(child, String((child as Record<string, unknown> | null)?.type ?? '') === 'chapter' ? 'chapter' : 'item'));
-    }
-  };
-  visit(node, String(node.type ?? 'chapter'));
-  return total;
-};
+/**
+ * Contenus d'un bloc, récursivement : ce que le professeur compte vraiment.
+ * Un nœud de structure (chapitre, section, sous-section) n'est pas un contenu.
+ * Le parcours et la définition du niveau vivent dans le moteur partagé.
+ */
+const countContents = (node: Record<string, unknown>): number => walkNotebook([node]).contents;
 
 /** Octets UTF-8 réels du bloc : l'aperçu de taille ne ment pas. */
 const byteLength = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value) ?? '').byteLength;

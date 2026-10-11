@@ -9,6 +9,19 @@ export interface SessionPatch {
   date?: string;
   remark?: string;
   activityRemarks?: Record<string, string | null>;
+  /**
+   * Numéro du devoir maison marqué « donné » dans cette séance. Ce n'est pas une
+   * décoration : la feuille d'évaluations doit voir le même devoir, à la même
+   * date — c'est ce qui relie la remarque de séance au contrôle continu.
+   */
+  homeworkGiven?: number;
+  /**
+   * Numéro du devoir maison CORRIGÉ dans cette séance. Un devoir maison a deux
+   * temps : la séance où il est donné (travail à la maison) et une séance
+   * ultérieure où il est corrigé. Ce patch pose la date de correction sur le
+   * devoir existant — il ne le crée pas et ne le redate pas.
+   */
+  homeworkCorrection?: number;
 }
 
 export function readSessionSelection(lessons: LessonsData, targets: readonly Indices[]) {

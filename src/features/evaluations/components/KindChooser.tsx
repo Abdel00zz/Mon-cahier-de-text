@@ -1,7 +1,9 @@
 import React from 'react';
+import { CalendarDays, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { dateTimeFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { ModalEmptyState } from '@/components/ui/ModalEmptyState';
 import { KIND_GROUPS, kindLabelKey, type EvaluationKind } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
 
@@ -190,13 +192,22 @@ export const ProgrammedList: React.FC<{
 }> = ({ items, onOpen, onCreate }) => {
   const { t, locale } = useLocale();
   const dateLabel = dateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  // Aucune surface vide passive (charte) : quand rien n’est programmé, l’état
+  // vide premium porte lui-même l’action de création libre.
+  if (items.length === 0) {
+    return (
+      <ModalEmptyState
+        icon={<CalendarDays className="size-6" strokeWidth={2} aria-hidden="true" />}
+        title={t('evaluations.programmedEmptyTitle')}
+        description={t('evaluations.programmedEmpty')}
+        primaryAction={{ label: t('evaluations.manualCreate'), onClick: onCreate, icon: <Plus className="size-4" strokeWidth={2.4} aria-hidden="true" /> }}
+      />
+    );
+  }
   return (
     <div className="space-y-3">
-      <p className="text-xs leading-relaxed text-muted-foreground text-pretty">
-        {items.length > 0 ? t('evaluations.programmedHint') : t('evaluations.programmedEmpty')}
-      </p>
-      {items.length > 0 && (
-        <ul className="hub-grid" data-rows>
+      <p className="text-xs leading-relaxed text-muted-foreground text-pretty">{t('evaluations.programmedHint')}</p>
+      <ul className="hub-grid" data-rows>
           {items.map(item => (
             <li key={item.id} className="min-w-0">
               <button
@@ -218,8 +229,7 @@ export const ProgrammedList: React.FC<{
               </button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
       {/* La création hors programmation est le repli : trait discontinu, jamais
           la couleur de l'action principale. */}
       <button

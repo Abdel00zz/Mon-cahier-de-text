@@ -335,4 +335,6 @@
 }
 @media (max-width: 639px) {
   .class-card { min-height: 172px; border-radius: 12px; }
+  .class-card .class-card__status-full { display: none; }
+  .class-card .class-card__status-compact { display: inline; }
 }

@@ -28,7 +28,7 @@ import { applyContentEdit, buildContentEditTargetsGrouped, buildSessionTargetsGr
 import type { ContentDraft } from '@/domain/notebook/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
+import { findItem, insertAssessmentBlock, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { listExportableChapters, selectExportableChapters } from '@/domain/notebook/chapterExport';
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
@@ -63,7 +63,7 @@ import {
 } from '@/infrastructure/notifications/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
-import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, ContentDirection } from '@/types';
+import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
@@ -906,11 +906,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       };
       const newId = crypto.randomUUID();
       const anchor = selectedIndices[selectedIndices.length - 1];
-      const anchorCanReceiveEmbeddedBlock =
-          !!anchor &&
-          (anchor.sectionIndex !== undefined ||
-           anchor.subsectionIndex !== undefined ||
-           anchor.subsubsectionIndex !== undefined);
 
       const effectiveLocale = contentDirection === 'rtl' ? 'ar' : (locale === 'ar' || locale === 'en' ? locale : 'fr');
       const rawStart = typeof data.date === 'string' ? data.date.trim() : undefined;
@@ -923,20 +918,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (type === 'free') {
           prepare(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
           notificationMessage = t('editorNotice.itemAdded');
-      } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchorCanReceiveEmbeddedBlock) {
-          let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
-          if (anchor.sectionIndex !== undefined) parentLevelIndices.sectionIndex = anchor.sectionIndex;
-          if (anchor.subsectionIndex !== undefined) parentLevelIndices.subsectionIndex = anchor.subsectionIndex;
-          if (anchor.subsubsectionIndex !== undefined) parentLevelIndices.subsubsectionIndex = anchor.subsubsectionIndex;
-          const insertAfterIndex = anchor.itemIndex;
-          const newItem: EmbeddableTopLevelItem = { type: type as EmbeddableTopLevelType, title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
-          prepare(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-embedded-item');
-          notificationMessage = t('editorNotice.blockInserted');
-      } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
-          const insertAfterIndex = anchor?.chapterIndex;
+      } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter') {
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           prepare(draft => {
-              addTopLevelItem(draft, newItem, insertAfterIndex);
+              insertAssessmentBlock(draft, anchor, newItem);
               if (type === 'devoir_maison') {
                   const targetDate = formattedDate || todayInMorocco();
                   const dmText = data.title?.trim() || t('remark.devoirMaisonGivenSimple');

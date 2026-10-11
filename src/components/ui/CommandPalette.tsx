@@ -253,7 +253,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Results list */}
         <div
           ref={listRef}
-          className="max-h-[380px] overflow-y-auto p-2 modern-scrollbar"
+          className="max-h-[440px] overflow-y-auto p-2 pb-3 modern-scrollbar overscroll-contain"
         >
           {filtered.length === 0 ? (
             <div className="py-10 text-center text-muted-foreground text-sm">

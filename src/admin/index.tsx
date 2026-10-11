@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { LocaleProvider } from '../i18n/LocaleProvider';
 import { AdminApp } from './AdminApp';
+import { GlobalTooltip } from '../components/ui/GlobalTooltip';
 import '../styles/index.css';
 
 const rootElement = document.getElementById('admin-root');
@@ -14,6 +15,7 @@ ReactDOM.createRoot(rootElement).render(
     <LocaleProvider locale="fr" manageDocument={false}>
       <Suspense fallback={null}>
         <AdminApp />
+        <GlobalTooltip />
       </Suspense>
     </LocaleProvider>
   </React.StrictMode>

@@ -290,7 +290,7 @@ test("date réelle, état jamais ouvert et invalides sans date inventée", () =>
     classOpeningLabel("2026-08-31T09:30:00.000Z", "fr"),
     /Dernière ouverture/,
   );
-  assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /فتح اخر مرة/);
+  assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /آخر فتح/);
 });
 test("préparation terminée : cahier et checklist, pas de deuxième onboarding", () => {
   const values = new Map<string, string>();

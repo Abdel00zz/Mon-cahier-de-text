@@ -152,6 +152,8 @@ Les projections de séance consommées par les cartes et les notifications parte
 
 Les alertes, le modal d’évaluations et les rappels d’absences consomment la même liste résolue. `src/domain/evaluations/assessmentSync.ts` rapproche ensuite chaque devoir avec un bloc du cahier par type, numéro et proximité de date, sans réutiliser le même bloc. L’API valide les structures d’évaluation avant de les enregistrer dans le stockage cloud configuré.
 
+Le **contrat de flux** entre le tableau et la modale « Contrôle continu et activités » — porte de création unique dans la modale, capture du tableau, matérialisation des blocs et des annotations — est décrit dans [`workflow-evaluations.md`](./workflow-evaluations.md) : document vivant, mis à jour dans le même lot que le code.
+
 ### Date
 
 Toutes les entrées convergent vers `validateSessionDate`. Le dialogue de vérification reçoit une liste structurée de raisons, puis confirme ou renvoie vers la planification.

@@ -129,10 +129,12 @@ test('les titres disent ce que la fenêtre contient, sans répétition', () => {
   }
 });
 
-test('sans activité, la zone invite à en créer une', () => {
-  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  // Plus d'onglet : la zone des activités est toujours là, pour la classe ouverte.
-  assert.match(view, /<ActivitiesEmptyState onCreate=\{\(\) => openKindChooser\(\)\} \/>/);
+test('sans activité, la zone oriente vers le tableau, sans bouton de création', () => {
+  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/ActivitiesEmptyState.tsx', 'utf8');
+  // Plus de bouton « + » : la modale capture et affiche, elle ne crée plus.
+  assert.match(view, /<ActivitiesEmptyState \/>/);
+  assert.doesNotMatch(view, /onCreate=\{\(\) => openKindChooser/, 'plus de porte de création ici');
+  assert.match(view, /onCreate\?/, 'l’action de création est facultative, jamais imposée');
   assert.doesNotMatch(view, /activeTab/, 'plus aucun onglet de filtrage');
   assert.match(view, /SchedulePlanningIllustration size=\{120\}/);
   assert.match(view, /evaluations\.activitiesEmptyTitle/);
@@ -140,7 +142,7 @@ test('sans activité, la zone invite à en créer une', () => {
 });
 
 test('une icône et une teinte par nature, aucune couleur inventée', () => {
-  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
   // Les natures vivent désormais dans le catalogue partagé : c'est lui qui porte
   // les icônes et les teintes, la page ne fait que les lire.
   const catalog = readFileSync('src/features/evaluations/kindCatalog.ts', 'utf8');

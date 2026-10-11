@@ -1,6 +1,7 @@
 import type { ContentNumbering, LessonsData } from '../../types.js';
 import { buildLessonRows, type LessonRow } from './lessonRows.js';
 import { isFreeContent } from './freeLineType.js';
+import { STRUCTURAL_TYPES } from './notebookSchema.js';
 
 /**
  * Numérotation des contenus pédagogiques : « Définition 1 », « Exemple 2 »,
@@ -21,11 +22,8 @@ import { isFreeContent } from './freeLineType.js';
  */
 
 
-/** Structures : elles organisent le plan, elles ne reçoivent pas de numéro. */
-const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
-
 /** Évaluations : leur numéro est déjà porté par le titre (« Contrôle continu 2 »). */
-export const EVALUATION_TYPES = /^(?:evaluation|devoir|controle|correction|examen|diagnostic|assessment|homework|test|exam|dm|ds|cc)(?:_|$)/;
+export const EVALUATION_TYPES = /^(?:evaluation|devoir|controle|correction|examen|diagnostic|assessment|homework|test|exam|dm|ds|cc|oral|colle|olympiade|concours)(?:_|$)/;
 
 const typeKey = (value: unknown): string => String(value ?? '')
     .normalize('NFD')

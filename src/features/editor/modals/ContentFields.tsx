@@ -51,8 +51,8 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   const fieldDir = (text: string) => (text ? 'auto' : uiDir);
   const [showRange, setShowRange] = useState(Boolean(value.endDate || value.type === 'evaluation_diagnostic'));
   const isRange = Boolean(showRange || value.endDate || value.type === 'evaluation_diagnostic');
-  const labelClass = 'mb-2 block text-sm font-medium text-foreground';
-  const fieldClass = 'h-11 rounded-xl border-border';
+  const labelClass = 'mb-2 block text-[14px] font-medium text-foreground/90';
+  const fieldClass = 'h-11 rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 text-[14.5px] text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs';
   return <div className="space-y-4">
     {!titleOnly && !free && <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_.45fr_.45fr]">
@@ -75,16 +75,26 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
       </div>
       <p id={`${id}-number-hint`} className="text-xs leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
     </>}
-    <div><label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ? `${titleLabel} :` : `${t('editor.title')} :`}</label>
-      <Input id={`${id}-title`} ref={titleRef} value={title} dir={fieldDir(title)} onChange={event => update(titleField, event.target.value)}
-        required={titleRequired} className={fieldClass} placeholder={titleRequired ? undefined : t('addContent.optionalTitlePlaceholder')} /></div>
+    <div className="form-group">
+      <label htmlFor={`${id}-title`} className={labelClass}>{titleLabel ? `${titleLabel} :` : `${t('editor.title')} :`}</label>
+      <Input
+        id={`${id}-title`}
+        ref={titleRef}
+        value={title}
+        dir={fieldDir(title)}
+        onChange={event => update(titleField, event.target.value)}
+        required={titleRequired}
+        className={fieldClass}
+        placeholder={titleRequired ? undefined : t('addContent.optionalTitlePlaceholder')}
+      />
+    </div>
     {canEditDate && (
-      <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <CalendarDays className="size-4 text-primary" />
+      <div className="date-card rounded-[18px] border border-[#e7e5df] dark:border-stone-800 bg-[#fcfbf9] dark:bg-stone-900/40 p-4.5 sm:p-5 space-y-3.5 shadow-2xs">
+        <div className="date-card-header flex flex-wrap items-center justify-between gap-2 border-b border-[#e7e5df]/70 dark:border-stone-800/70 pb-3">
+          <div className="date-header-left flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+            <CalendarDays className="h-4 w-4 text-primary stroke-[2.2]" />
             <span>{isRange ? t('editor.dateRange') : t('editor.startDate')}</span>
-          </label>
+          </div>
           {!isRange ? (
             <button
               type="button"
@@ -94,10 +104,10 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                   onChange({ ...value, endDate: value.date });
                 }
               }}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+              className="btn-link-action inline-flex items-center gap-1 text-[13.5px] font-medium text-primary hover:text-primary/90 hover:underline cursor-pointer transition-colors"
             >
-              <Plus className="size-3.5" />
-              <span>{t('editor.defineRange')}</span>
+              <Plus className="h-3.5 w-3.5 stroke-[2.4]" />
+              <span>+ {t('editor.defineRange')}</span>
             </button>
           ) : (
             <button
@@ -108,50 +118,56 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                 delete next.endDate;
                 onChange(next);
               }}
-              className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer"
+              className="inline-flex items-center gap-1 text-[13.5px] font-medium text-muted-foreground hover:text-destructive cursor-pointer transition-colors"
               title={t('editor.removeRange')}
               aria-label={t('editor.removeRange')}
             >
-              <X className="size-3.5" />
+              <X className="h-3.5 w-3.5 stroke-[2.4]" />
               <span>{t('editor.removeRange')}</span>
             </button>
           )}
         </div>
 
-        <div className={cn("grid gap-3", isRange ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+        <div className={cn("grid gap-3.5", isRange ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
           <div className="space-y-1.5">
-            <label htmlFor={`${id}-date`} className="block text-xs font-medium text-foreground">
-              {isRange ? t('editor.startDate') : t('assignDate.chooseDate')} :
+            <label htmlFor={`${id}-date`} className="date-card-label block text-[13.5px] font-medium text-foreground/80">
+              {isRange ? `${t('editor.startDate')} :` : `${t('assignDate.chooseDate')} :`}
             </label>
-            <Input
-              id={`${id}-date`}
-              type="date"
-              value={value.date ?? ''}
-              onChange={event => onChange({ ...value, date: event.target.value })}
-              className={fieldClass}
-            />
+            <div className="date-input-wrap relative">
+              <Input
+                id={`${id}-date`}
+                type="date"
+                value={value.date ?? ''}
+                onChange={event => onChange({ ...value, date: event.target.value })}
+                className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
+              />
+              <CalendarDays className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 stroke-[1.8]" aria-hidden />
+            </div>
           </div>
 
           {isRange && (
             <div className="space-y-1.5">
-              <label htmlFor={`${id}-end-date`} className="block text-xs font-medium text-foreground">
+              <label htmlFor={`${id}-end-date`} className="date-card-label block text-[13.5px] font-medium text-foreground/80">
                 {t('editor.endDate')} :
               </label>
-              <Input
-                id={`${id}-end-date`}
-                type="date"
-                min={value.date || undefined}
-                value={value.endDate ?? ''}
-                onChange={event => onChange({ ...value, endDate: event.target.value })}
-                className={fieldClass}
-              />
+              <div className="date-input-wrap relative">
+                <Input
+                  id={`${id}-end-date`}
+                  type="date"
+                  min={value.date || undefined}
+                  value={value.endDate ?? ''}
+                  onChange={event => onChange({ ...value, endDate: event.target.value })}
+                  className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
+                />
+                <CalendarDays className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 stroke-[1.8]" aria-hidden />
+              </div>
             </div>
           )}
         </div>
 
         {value.date && (
           <div className="flex items-center gap-2 pt-0.5">
-            <span className="font-semibold text-foreground px-2.5 py-1 rounded-lg bg-background border border-border/80 shadow-2xs text-xs">
+            <span className="font-semibold text-foreground px-3 py-1 rounded-xl bg-background border border-[#e0ded7] dark:border-stone-700 shadow-2xs text-xs">
               {formatPedagogicalDateCell(value.date, value.endDate, contentLocale)}
             </span>
           </div>

@@ -35,7 +35,7 @@ test('la grille propose TOUTES les natures, en deux familles', () => {
     for (const expected of ['maison', 'controle_cahiers', 'olympiade', 'oral', 'correction_controle_continu']) {
         assert.ok(kinds.some(kind => kind.type === expected), `${expected} dans le catalogue`);
     }
-    for (const type of ['evaluation_diagnostic', 'correction_controle_continu']) {
+    for (const type of ['evaluation_diagnostic', 'controle_cahiers', 'correction_controle_continu']) {
         assert.ok(KIND_GROUPS.find(group => group.titleKey === 'evaluations.assessments')!.kinds
             .some(kind => kind.type === type && kind.family === 'event'), `${type} figure avec les évaluations et conserve son circuit`);
         assert.ok(!KIND_GROUPS.find(group => group.id === 'event')!.kinds.some(kind => kind.type === type), `${type} ne se répète pas dans les activités`);
@@ -115,16 +115,13 @@ test('le rappel de nature nomme le choix et permet d’y revenir — sans icône
     assert.ok(html.includes(kindLabelKey(kind) === 'evaluations.type.controle' ? 'Devoir surveillé' : ''), 'la nature est nommée en toutes lettres');
 });
 
-test('l’assistant commence par la NATURE : la classe n’est pas redemandée', () => {
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-    const chooser = readFileSync('src/features/evaluations/components/KindChooser.tsx', 'utf8');
-    // Une classe déjà ouverte sur l'écran : reposer la question serait une
-    // seconde décision pour la même réponse.
-    assert.doesNotMatch(view, /ClassChooser|classChoices|chooseClass/, 'plus aucune étape de classe dans l’assistant');
-    assert.doesNotMatch(chooser, /ClassChooser|class-disclosure/, 'le composant de choix de classe est retiré');
-    assert.match(view, /useEvaluationModals\(\)/, 'le parcours est géré par le hook commun');
-    assert.match(view, /<StepTrail[\s\S]{0,160}step=\{wizardStep\}/, 'le fil d’étapes suit ces deux crans');
-    // La classe reste celle de l'écran : la fenêtre rappelle son nom en en-tête.
+test('la modale capture et affiche : plus d’assistant de création, la classe n’est jamais redemandée', () => {
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8');
+    // Plus d'assistant : les devoirs et activités naissent au tableau, la modale
+    // les CAPTE et les AFFICHE. Aucune étape de classe, aucune étape de nature.
+    assert.doesNotMatch(view, /ClassChooser|classChoices|chooseClass/, 'aucune étape de classe');
+    assert.doesNotMatch(view, /<StepTrail|<KindChooser|<KindHeader|<ProgrammedList/, 'plus d’assistant de nature');
+    assert.match(view, /useEvaluationModals\(\)/, 'les fenêtres restent gérées par le hook commun');
     assert.match(view, /\{selectedClass && \(\s*<p[\s\S]{0,120}\{selectedClassDisplayName\}/, 'le nom de la classe coiffe la fenêtre');
 });
 
@@ -179,43 +176,29 @@ test('un devoir programmé s’ouvre depuis la liste, la création libre reste e
     assert.match(empty, /Aucun devoir de ce type/, 'état vide expliqué');
 });
 
-test('les devoirs passent par leur LISTE programmée, pas par un formulaire vide', () => {
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-    assert.match(view, /manualFormOpen \? \(\s*<ManualAssessmentEditor[\s\S]*?\) : \(\s*<ProgrammedList/, 'la liste programmée précède le formulaire');
-    assert.match(view, /items=\{programmedFor\(chosenKind\.type\)\}/, 'la liste suit la nature choisie');
-    assert.match(view, /onOpen=\{openProgrammedAssessment\}/, 'un devoir programmé s’ouvre');
-    assert.match(view, /onCreate=\{\(\) => setManualFormOpen\(true\)\}/, 'la création libre est demandée explicitement');
-    assert.match(view, /const openProgrammedAssessment = \(assessmentId: string\) => \{[\s\S]{0,300}setDocumentFor\(\{ kind: 'assessment', link \}\)/, 'on accède au sujet du devoir');
-    // L'état manuel ne survit pas à la fermeture du parcours.
+test('les devoirs viennent du tableau ; seule la MODIFICATION manuelle reste ouverte', () => {
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8');
+    assert.doesNotMatch(view, /manualFormOpen \? |<ProgrammedList|programmedFor\(chosenKind/, 'plus de liste programmée ni de création libre');
+    assert.match(view, /initial=\{editingAssessment\}/, 'l’éditeur manuel ne s’ouvre qu’en MODIFICATION');
     const modals = readFileSync('src/features/evaluations/hooks/useEvaluationModals.ts', 'utf8');
-    assert.match(modals, /closeKindChooser: \(\) => close\('create'\)/, 'fermer libère le parcours de création');
+    assert.doesNotMatch(modals, /openKindChooser|close\('create'\)/, 'aucun état de création dans le hook');
 });
 
-test('le catalogue est la SOURCE des natures pour la page et pour le choix', () => {
+test('le catalogue est la SOURCE des natures pour la page', () => {
     const catalog = readFileSync('src/features/evaluations/kindCatalog.ts', 'utf8');
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8') + readFileSync('src/features/evaluations/components/ManualAssessmentEditor.tsx', 'utf8');
     // Une seule déclaration des natures : la vue l'importe.
     assert.equal((catalog.match(/export const PEDAGOGICAL_EVENT_CONFIG/g) ?? []).length, 1);
     assert.match(view, /import \{ DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue');
-    assert.match(view, /kindLabelKey\(chosenKind\)/, 'le fil d’étapes nomme la nature via sa clé traduite');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
-    // Le parcours en DEUX étapes : la nature, puis ses zones. La classe vient de
-    // l'écran, donc elle n'est jamais redemandée.
-    assert.match(view, /useEvaluationModals\(\)/, 'étapes centralisées dans le hook');
-    assert.match(view, /<KindChooser onSelect=\{\(kind\) => \{ setChosenKind\(kind\); setWizardStep\(2\); \}\} \/>/, 'étape 1 : la nature');
-    assert.match(view, /<KindHeader[\s\S]{0,220}setWizardStep\(1\)/, 'étape 2 : retour au choix de la nature');
-    assert.doesNotMatch(view, /ClassChooser|chooseClass|classChoices/, 'aucune étape de classe');
-    // Le type n'est plus redemandé par le formulaire d'activité.
-    assert.match(view, /const \[type\] = useState<PedagogicalEventType>\(initialType\)/, 'type fixé par l’étape 1');
-    assert.doesNotMatch(view, /evaluations\.activityType/, 'plus de sélecteur de type dans la fiche');
-    // Le devoir : sélecteur conservé UNIQUEMENT en modification.
+    // Le devoir : sélecteur de type conservé UNIQUEMENT en modification.
     assert.match(view, /initial \? \([\s\S]{0,900}<Select value=\{type\}/, 'type modifiable seulement en édition');
 });
 
 test('l’écran reçoit une classe précise et expose directement ses activités', () => {
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-    // Une seule entrée de création : « Ajouter » ouvre le parcours de nature.
-    assert.match(view, /onClick=\{\(\) => openKindChooser\(\)\}/, 'le bouton Ajouter ouvre le parcours');
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/ActivitiesEmptyState.tsx', 'utf8');
+    // Plus d'entrée de création : la modale capture et affiche, elle ne crée plus.
+    assert.doesNotMatch(view, /onClick=\{\(\) => openKindChooser\(\)\}/, 'plus de bouton Ajouter');
     assert.doesNotMatch(view, /evaluations\.addActivity\}<\/span>/, 'plus de bouton « activité » séparé dans la barre');
     // VUE 1 : les classes. VUE 2 : la classe ouverte, ses devoirs puis ses activités.
     assert.match(view, /classInfo: ClassInfo/);
@@ -229,8 +212,8 @@ test('l’écran reçoit une classe précise et expose directement ses activité
     assert.match(view, /renderAssessmentRows\(linksOfKind\(kind\)\)/, 'les devoirs du tiroir');
     assert.match(view, /<PedagogicalEventsSection[\s\S]{0,120}events=\{eventsOfKind\(kind\)\}/, 'les séances du tiroir');
     assert.match(view, /kind\.family === 'event' \? \(/, 'une seule famille à la fois dans un tiroir');
-    // Les comptes de la vue des classes : ce que la classe porte déjà.
-    assert.match(view, /const ActivitiesEmptyState: React\.FC<\{ onCreate: \(\) => void; compact\?: boolean \}>/, 'variante compacte de l’état vide conservée');
+    // L'état vide est PASSIF : l'action de création est facultative, jamais imposée.
+    assert.match(view, /const ActivitiesEmptyState: React\.FC<\{ onCreate\?: \(\) => void; compact\?: boolean \}>/, 'état vide passif, sans action imposée');
 });
 
 test('les deux familles se lisent de la même façon dans la page et dans la fenêtre', () => {
@@ -239,7 +222,7 @@ test('les deux familles se lisent de la même façon dans la page et dans la fen
     // laissé `evaluation-tone` sans couleur du côté de la fenêtre.
     const header = readFileSync('src/features/evaluations/components/KindGroupHeader.tsx', 'utf8');
     const chooser = readFileSync('src/features/evaluations/components/KindChooser.tsx', 'utf8');
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
     assert.equal((chooser.match(/kind-group__badge/g) ?? []).length, 0, 'la fenêtre ne redéfinit plus l’en-tête');
     assert.match(chooser, /import \{ KindGroupHeader \} from '\.\/KindGroupHeader'/);
     assert.match(header, /className=\{cn\('kind-group evaluation-tone', className\)\} data-tone=\{tone\}/, 'le ton est posé sur la ligne entière');

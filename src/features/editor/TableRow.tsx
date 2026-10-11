@@ -9,8 +9,7 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
-import { Home } from '@/components/ui/icons';
-import { splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
+import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import './editorRowStates.css';
 
@@ -247,11 +246,9 @@ const RemarkCell: FC<{
               <span
                 data-session-homework="true"
                 dir={textDirectionAttribute(homeworkLine)}
-                title={homeworkLine}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1 my-0.5 rounded-xl border border-primary/30 bg-primary/10 text-primary font-bold text-xs sm:text-sm shadow-2xs transition-all hover:border-primary/50 hover:bg-primary/15"
+                className="editor-session-note block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
               >
-                <Home className="size-3.5 shrink-0 stroke-[2.2]" />
-                <span>{homeworkLine}</span>
+                {homeworkLine}
               </span>
             )}
             {otherRemark && (
@@ -265,12 +262,12 @@ const RemarkCell: FC<{
           </>
         );
       })()}
-      {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation) && (
+      {sessionAnnotation && !(merge?.sharedRemark ?? value ?? '').includes(sessionAnnotation)
+        && !(splitRemarkContent(merge?.sharedRemark ?? value ?? '').homeworkLine && hasHomeworkMention(sessionAnnotation)) && (
         <span
           data-session-annotation="true"
           dir={textDirectionAttribute(sessionAnnotation)}
-          title={sessionAnnotation}
-          className="mt-0.5 w-full whitespace-pre-line break-words text-center rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
+          className="editor-session-note mt-0.5 w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
         >
           {sessionAnnotation}
         </span>

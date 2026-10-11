@@ -21,7 +21,8 @@ import { LocaleProvider } from '../../src/i18n/LocaleProvider';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { MainTable } from '../../src/features/editor/MainTable';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
-import { BookOpen, CalendarDays, LayoutGrid } from '../../src/components/ui/icons';
+import { BookOpen, CalendarDays, LayoutGrid, Sparkles } from '../../src/components/ui/icons';
+import { MotionFilmCanvas } from '../../src/components/MotionFilmCanvas';
 import { assignClassColors } from '../../src/domain/classes/classColors';
 import { buildLessonRows } from '../../src/domain/notebook/lessonRows';
 import type { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '../../src/types';
@@ -79,7 +80,7 @@ function PreviewTable() {
  useNotebookOpeningFocus('showcase', rows, params.has('resume'), priorityFocus, setFocusKey);
  return <MainTable lessonsData={lessons} visibleRows={rows} absenceSessions={buildAbsenceSessions(config, classes[0].id, lessons)} contentDirection={ar?'rtl':'ltr'} onClearSearch={noop} onOpenAddContentModal={noop} showDescriptions={false} selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} focusKey={focusKey} getSessionAnnotation={date => annotations.get(date ?? '')}/>;
 }
-const tabs = [{ id: 'classes', label: ar ? 'أقسامي' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }];
+const tabs = [{ id: 'classes', label: ar ? 'أقسامي' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }, { id: 'motion', label: ar ? 'شريط الحركة' : 'Film & Motion', icon: Sparkles }];
 function Capture() {
  const [search, setSearch] = useState('');
  const [opening, setOpening] = useState(0);
@@ -103,11 +104,11 @@ function Capture() {
   }).catch(() => {});
   return () => { cancelled = true; };
  }, []);
- return <LocaleProvider locale={locale}><div dir={ar?'rtl':'ltr'} className="showcase-capture" style={{minHeight:'100vh',padding:mobile?20:32}}>
-  <style>{`* { animation:none !important; transition:none !important; } html, body, #root { margin:0; background:#fbfaf7 !important; } html { overflow-y:auto; } body { overflow:visible; } .showcase-capture { background:#fbfaf7; color:#282d2b; } .capture-page { max-width:1040px; margin:auto; }`}</style>
+ return <LocaleProvider locale={locale}><div dir={ar?'rtl':'ltr'} className="showcase-capture" style={{minHeight:'100vh',padding:mobile?12:32}}>
+  <style>{`* { animation:none !important; transition:none !important; box-sizing:border-box; } html, body, #root { margin:0; background:#fbfaf7 !important; max-width:100%; overflow-x:hidden; } html { overflow-y:auto; } body { overflow-x:hidden; } .showcase-capture { background:#fbfaf7; color:#282d2b; max-width:100vw; overflow-x:hidden; box-sizing:border-box; } .capture-page { max-width:1040px; margin:auto; width:100%; box-sizing:border-box; }`}</style>
   <div className="capture-page"><header className="flex items-center justify-between gap-4 pb-5 border-b border-stone-400/15"><div className="flex items-center gap-3"><img src="/icons/icon-192.png" width="40" height="40" alt="" className="rounded-xl"/><div><p className="font-semibold text-lg">{ar?'دفتر نصوصي':'Mon cahier de textes'}</p><p className="text-xs text-muted-foreground mt-1">{ar?'مساحة واضحة ليوم دراسي منظم':'Un espace clair pour votre journée'}</p></div></div><span className="text-xs text-muted-foreground"><bdi dir="ltr">2026 · 2027</bdi></span></header>
-  <nav className="flex gap-2 mt-5 mb-6">{tabs.map(({id,label,icon:Icon})=><a key={id} href={`?lang=${locale}&screen=${id}${mobile?'&portrait':''}`} className={`min-h-11 flex flex-1 items-center justify-center gap-2 rounded-xl border text-sm font-medium ${screen===id?'border-stone-700 bg-stone-800 text-stone-50 shadow-sm':'border-stone-200 text-stone-700 bg-white'}`}><Icon className="h-4 w-4"/>{label}</a>)}</nav>
-  {screen==='classes'&&<><div className="flex items-center justify-between mb-4"><h1 className="text-xl font-medium">{ar?'أقسامي الدراسية :':'Mes classes :'}</h1><span className="text-xs text-muted-foreground">{ar?'كل شيء في مكانه':'Tout à portée de main'}</span></div><div className={mobile?'grid gap-4':'grid grid-cols-2 gap-5'}>{(params.has('palette') ? classes : classes.slice(0,mobile?3:4)).map((c,i)=><ClassCard key={c.id} classInfo={c} index={i} onSelect={noop} onConfigure={noop} onDelete={noop}/>)}</div></>}
+  <nav className={`flex gap-1.5 mt-4 mb-5 ${mobile ? 'overflow-x-auto no-scrollbar py-0.5' : ''}`}>{tabs.map(({id,label,icon:Icon})=><a key={id} href={`?lang=${locale}&screen=${id}${mobile?'&portrait':''}`} className={`min-h-11 flex items-center justify-center gap-1.5 rounded-xl border font-medium ${mobile ? 'flex-1 text-xs px-2 whitespace-nowrap min-w-0' : 'flex-1 text-sm px-3'} ${screen===id?'border-stone-700 bg-stone-800 text-stone-50 shadow-sm':'border-stone-200 text-stone-700 bg-white'}`}><Icon className="h-4 w-4 shrink-0"/><span className="truncate">{label}</span></a>)}</nav>
+  {screen==='classes'&&<><div className="flex items-center justify-between mb-4"><h1 className="text-xl font-medium">{ar?'أقسامي الدراسية':'Mes classes'}</h1><span className="text-xs text-muted-foreground">{ar?'كل شيء في مكانه':'Tout à portée de main'}</span></div><div className={mobile?'grid gap-4':'grid grid-cols-2 gap-5'}>{(params.has('palette') ? classes : classes.slice(0,mobile?3:4)).map((c,i)=><ClassCard key={c.id} classInfo={c} index={i} onSelect={noop} onConfigure={noop} onDelete={noop}/>)}</div></>}
   {screen==='editor'&&<div data-editor-root className="rounded-2xl bg-white border border-stone-200 p-4 shadow-sm"><h1 className="text-lg font-medium mb-5">{ar?'الثانية بكالوريا علوم فيزيائية 1':'2ème Bac Sciences Physiques 1'}</h1>{params.has('resume')&&<button type="button" onClick={()=>setOpening(value=>value+1)} className="min-h-11 mb-3">{ar?'فتح القسم مجدداً':'Rouvrir la classe'}</button>}{params.has('toolbar')&&<div className="editor-toolbar-row flex items-center"><div className="min-w-0 flex-1"><Toolbar searchQuery={search} setSearchQuery={setSearch} canUndo canRedo saveStatus="saved" onUndo={noop} onRedo={noop} onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop} onOpenEvaluations={noop} onPrint={noop}/></div></div>}<PreviewTable key={opening}/></div>}
   {screen==='print'&&<PrintView lessonsData={lessons} classInfo={classes[0]} config={config} contentDirection={ar?'rtl':'ltr'} newlyAddedIds={[]} preview/>}
   {screen==='activities'&&<KindChooser onSelect={noop}/>}
@@ -118,6 +119,7 @@ function Capture() {
   {screen==='admin-roster'&&<TeacherDetail phone="0600000000" onBack={noop} onManageTimetable={noop}/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
   {screen==='gallery'&&<UiGallery page={params.get('page') ?? 'landing'} config={config} classes={evaluationClasses} lessons={lessons}/>}
+  {screen==='motion'&&<div className="w-full flex justify-center py-2"><MotionFilmCanvas initialFrame={Number(params.get('frame') ?? 0)} autoPlay={params.has('play')}/></div>}
   </div>
  </div></LocaleProvider>;
 }
@@ -131,6 +133,8 @@ if (import.meta.env.DEV) {
   const width = device === 'phone' ? 390 : 820;
   const height = device === 'phone' ? 844 : 1180;
   root.render(<div style={{ padding: 16, background: '#f4f1eb', minHeight: height + 32 }}><iframe title={`${device} UI preview`} src={framedUrl.href} style={{ display: 'block', margin: 'auto', width, height, border: 0, background: '#fbfaf7' }}/></div>);
+ } else if (screen === 'motion-raw') {
+  root.render(<div style={{ width: 1920, height: 1080, margin: 0, padding: 0, overflow: 'hidden' }}><MotionFilmCanvas initialFrame={Number(params.get('frame') ?? 0)} autoPlay={false} /></div>);
  } else if (screen === 'application') {
   initAppViewport();
   root.render(<AuthProvider><SyncProvider><App /></SyncProvider></AuthProvider>);

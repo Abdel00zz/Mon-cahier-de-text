@@ -21,7 +21,7 @@ import { SelectionBar } from '../../src/features/editor/SelectionBar';
 import { Header } from '../../src/features/editor/Header';
 import { EditorBackButton } from '../../src/features/editor/EditorBackButton';
 import { Toolbar } from '../../src/features/editor/Toolbar';
-import { AddContentModal } from '../../src/features/editor/modals/EditItemModal';
+import { ContentModal } from '../../src/features/editor/modals/ContentModal';
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
 import { FeedbackPreview } from './FeedbackPreview';
 import { ModalGallery } from './ModalGallery';
@@ -138,7 +138,7 @@ function Preview() {
         </div>
         {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
           onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />}
-        <AddContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
+        <ContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
           selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />
       </>}
     </main>}

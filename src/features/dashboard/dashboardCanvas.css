@@ -11,9 +11,10 @@
         radial-gradient(ellipse 85% 45% at 80% 0%, rgb(188 120 85 / .055), transparent 75%),
         radial-gradient(ellipse 65% 50% at 0% 75%, rgb(123 143 120 / .04), transparent 80%),
         linear-gradient(180deg, #faf8f3 0%, #f5f3ec 100%);
-    background-repeat: no-repeat, no-repeat;
-    background-size: 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0;
+    background-attachment: fixed;
 }
 
 /* Mode sombre : nuit d'argile profonde et apaisante (style Claude dark) */
@@ -25,9 +26,10 @@
         radial-gradient(ellipse 85% 45% at 80% 0%, rgb(199 143 112 / .055), transparent 75%),
         radial-gradient(ellipse 65% 50% at 0% 75%, rgb(139 159 133 / .035), transparent 80%),
         linear-gradient(180deg, #22221f 0%, #1c1d1a 100%);
-    background-repeat: no-repeat, no-repeat;
-    background-size: 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0;
+    background-attachment: fixed;
 }
 
 [data-dashboard-root] [data-slot="class-display-toggle"] {

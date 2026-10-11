@@ -17,8 +17,7 @@ import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagn
 import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
 import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Home } from '@/components/ui/icons';
-import { splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
+import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { SessionDocuments } from './SessionDocuments';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
@@ -180,9 +179,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     // Une seule source de vérité : la séance fusionnée porte sa remarque
     // unifiée et centrée pour tout le groupe de contenus.
     const allRemarks = Array.from(new Set(items.map(getMergeableRemark).filter(Boolean)));
-    const sameRemark = !!items[0].dateMerge?.shouldMergeRemark;
     const sharedRemark = items[0].dateMerge?.sharedRemark ?? allRemarks.join('\n');
     const displayRemark = sharedRemark || allRemarks.join('\n');
+    const homeworkNote = splitRemarkContent(displayRemark).homeworkLine;
     // Contrôle des cahiers : la trace de l'activité vit dans la cellule
     // « remarque » de la séance du même jour, sans ajouter la moindre ligne au
     // cahier. Elle n'est écrite qu'UNE fois par date — la première ligne datée
@@ -199,6 +198,16 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
       annotationOwners.set(date, item.key);
     }
     const sessionAnnotations = [...annotationsByDate.values()];
+    /*
+     * La déduplication se fait sur le SENS, pas sur la chaîne exacte : la
+     * ligne d'attribution du cahier (« Devoir maison 1 donné ») et l'annotation
+     * projetée peuvent différer d'un numéro, et se répétaient alors à l'écran.
+     * Dès que la ligne d'attribution est affichée, aucune annotation qui parle
+     * de devoir maison n'est répétée sous elle.
+     */
+    const visibleAnnotations = sessionAnnotations.filter(annotation =>
+      !(displayRemark && displayRemark.includes(annotation))
+      && !(homeworkNote && hasHomeworkMention(annotation)));
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     // Une grille commune garde les traits de contenu et de remarque sur le
     // même axe, même si une remarque ou une description occupe plusieurs lignes.
@@ -346,11 +355,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                             <span
                               data-session-homework="true"
                               dir={textDirectionAttribute(homeworkLine)}
-                              title={homeworkLine}
-                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1 my-0.5 rounded-xl border border-primary/30 bg-primary/10 text-primary font-bold text-xs sm:text-sm shadow-2xs transition-all hover:border-primary/50 hover:bg-primary/15"
+                              className="editor-session-note block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
                             >
-                              <Home className="size-3.5 shrink-0 stroke-[2.2]" />
-                              <span>{homeworkLine}</span>
+                              {homeworkLine}
                             </span>
                           )}
                           {otherRemark && (
@@ -367,13 +374,12 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         </>
                       );
                     })()}
-                    {sessionAnnotations.filter(annotation => !displayRemark || !displayRemark.includes(annotation)).map(annotation => (
+                    {visibleAnnotations.map(annotation => (
                       <span
                         key={annotation}
                         data-session-annotation="true"
                         dir={textDirectionAttribute(annotation)}
-                        title={annotation}
-                        className="mt-0.5 block w-full whitespace-pre-line break-words text-center rounded-md bg-primary/10 px-2 py-1 text-xs sm:text-sm font-medium leading-snug text-primary"
+                        className="editor-session-note mt-0.5 block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
                       >
                         {annotation}
                       </span>

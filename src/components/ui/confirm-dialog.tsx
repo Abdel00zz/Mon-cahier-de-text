@@ -5,6 +5,8 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { TriangleAlert, CircleHelp } from '@/components/ui/icons';
 import { Input } from './input';
 import { StatusNotice } from './status-notice';
+import { useModalHaptics } from '@/hooks/useModalHaptics';
+import { cn } from '@/lib/utils';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -33,6 +35,7 @@ export function ConfirmDialog({
     confirmationHint,
 }: ConfirmDialogProps) {
     const { t } = useLocale();
+    const haptics = useModalHaptics();
     const [confirmationValue, setConfirmationValue] = React.useState('');
     const [pending, setPending] = React.useState(false);
     const [failure, setFailure] = React.useState(false);
@@ -52,9 +55,15 @@ export function ConfirmDialog({
         setPending(true);
         setFailure(false);
         try {
+            if (variant === 'destructive') {
+                haptics.onDelete();
+            } else {
+                haptics.onConfirm();
+            }
             await onConfirm();
             onOpenChange(false);
         } catch {
+            haptics.onError();
             setFailure(true);
         } finally {
             pendingRef.current = false;
@@ -64,6 +73,7 @@ export function ConfirmDialog({
 
     const handleCancel = (e: React.MouseEvent) => {
         e.stopPropagation();
+        haptics.onCancel();
         if (!pendingRef.current) onOpenChange(false);
     };
 
@@ -75,6 +85,8 @@ export function ConfirmDialog({
             mobilePresentation="dialog"
             dragHandle={false}
             swipeToDismiss={false}
+            elevation="high"
+            glow={variant === 'destructive' ? 'danger' : 'primary'}
             blockDismiss={requiresTypedConfirmation || pending}
             closeDisabled={pending}
             description={description}
@@ -115,7 +127,10 @@ export function ConfirmDialog({
                         onClick={handleConfirm}
                         disabled={!confirmationIsValid || pending}
                         aria-busy={pending}
-                        className="min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm"
+                        className={cn(
+                            "min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm",
+                            variant === 'destructive' ? 'glow-pulse-danger' : 'glow-pulse-primary'
+                        )}
                     >
                         {pending ? t('common.loading') : confirmLabel ?? (variant === 'destructive' ? t('common.delete') : t('common.confirm'))}
                     </Button>

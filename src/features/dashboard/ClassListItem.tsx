@@ -88,10 +88,18 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         <span className="sr-only">{displayName}</span>
                             <span aria-hidden="true" className="inline-flex min-w-0 max-w-full flex-nowrap items-center gap-x-2">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
-                                {label.tier && <ClassLevelBadge label={label.tier} tierKey={identity.tierKey} />}
+                                {label.tier ? (
+                                    <ClassLevelBadge
+                                        label={label.tier}
+                                        subLevel={formatWithOrdinals(label.title)}
+                                        accessibleSubLevel={label.title}
+                                        tierKey={identity.tierKey}
+                                    />
+                                ) : (
                                     <span className="min-w-0 truncate" title={label.fullName}>
-                                        {label.tier ? formatWithOrdinals(label.title) : <ClassCardTitle name={label.title} compact />}
+                                        <ClassCardTitle name={label.title} compact />
                                     </span>
+                                )}
                                 {label.group && (
                                      <ClassGroupWatermark
                                          group={label.group}

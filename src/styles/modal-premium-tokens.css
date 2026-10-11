@@ -1,0 +1,56 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Modal Premium Tokens & Liquid Glass Architecture
+   Tokens de design pour modales ultra-modernes, spring physics et glows GPU
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Spring Physics Curves ──────────────────────────────────────────────── */
+  --modal-spring-bounce: cubic-bezier(0.16, 1.12, 0.3, 1);
+  --modal-spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --modal-spring-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Glass Blur Levels ─────────────────────────────────────────────────── */
+  --modal-blur-subtle: 8px;
+  --modal-blur-medium: 16px;
+  --modal-blur-intense: 24px;
+
+  /* ── Contextual Glow Shadows ───────────────────────────────────────────── */
+  --glow-success: 0 0 32px -8px hsla(142, 70%, 45%, 0.35);
+  --glow-warning: 0 0 32px -8px hsla(38, 92%, 50%, 0.35);
+  --glow-danger: 0 0 32px -8px hsla(352, 70%, 50%, 0.40);
+  --glow-primary: 0 0 28px -10px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
+
+  /* ── Elevation Shadows (Z-Depth) ───────────────────────────────────────── */
+  --modal-shadow-low: 0 4px 14px -4px rgb(0 0 0 / 0.08);
+  --modal-shadow-mid: 0 12px 32px -12px rgb(0 0 0 / 0.18);
+  --modal-shadow-high: 0 24px 56px -16px rgb(0 0 0 / 0.28);
+
+  /* ── Timing Orchestration ──────────────────────────────────────────────── */
+  --modal-timing-backdrop: 200ms;
+  --modal-timing-surface: 320ms;
+  --modal-timing-content: 240ms;
+  --modal-timing-stagger: 60ms;
+
+  /* ── Magnetic & Ambient Breath Tokens ──────────────────────────────────── */
+  --modal-magnetic-glow: 0 0 34px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
+  --modal-ambient-glow: 0 0 24px -8px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
+  --modal-ambient-glow-peak: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+}
+
+.dark {
+  /* Glows désaturés et adoucis pour limiter l'éblouissement sur fond sombre */
+  --glow-success: 0 0 36px -8px hsla(142, 55%, 52%, 0.26);
+  --glow-warning: 0 0 36px -8px hsla(38, 85%, 55%, 0.26);
+  --glow-danger: 0 0 36px -8px hsla(352, 65%, 58%, 0.30);
+  --glow-primary: 0 0 32px -10px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+
+  /* Profondeur Z renforcée sur fond sombre */
+  --modal-shadow-low: 0 6px 16px -4px rgb(0 0 0 / 0.40);
+  --modal-shadow-mid: 0 16px 40px -10px rgb(0 0 0 / 0.60);
+  --modal-shadow-high: 0 28px 68px -20px rgb(0 0 0 / 0.72);
+
+  /* Magnetic & Ambient Sombre */
+  --modal-magnetic-glow: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
+  --modal-ambient-glow: 0 0 26px -8px color-mix(in srgb, hsl(var(--primary)) 16%, transparent);
+  --modal-ambient-glow-peak: 0 0 42px -4px color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+}

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <!-- Teinte gant/main technologique blanche & nuances ardoise -->
+    <linearGradient id="gloveGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="80%" stop-color="#f1f5f9" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <linearGradient id="cuffGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#3730a3" />
+    </linearGradient>
+  </defs>
+
+  <!-- 1. MAIN AU REPOS (IDLE) : Doigts repliés en douceur -->
+  <g id="hand-idle">
+    <!-- Manchette indigo -->
+    <rect x="20" y="70" width="22" height="14" rx="4" fill="url(#cuffGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Paume & doigts au repos -->
+    <path d="M38 72 C48 70 60 74 62 84 C64 92 56 102 46 102 C36 102 32 92 34 82 Z" 
+          fill="url(#gloveGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <path d="M48 80 C52 82 54 86 52 92" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" fill="none" />
+    <path d="M42 82 C46 84 48 88 46 94" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- 2. MAIN D'ACCOMPAGNEMENT GESTUEL (CALENDRIER / BIENVENUE) : Paume ouverte accueillante -->
+  <g id="hand-gesture" transform="translate(70, 0)">
+    <!-- Manchette -->
+    <rect x="20" y="70" width="20" height="14" rx="4" fill="url(#cuffGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Paume ouverte paume vers le haut -->
+    <path d="M36 72 Q50 64 68 70 Q76 74 80 82 Q74 94 60 96 L40 92 Q32 82 36 72 Z" 
+          fill="url(#gloveGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Phalanges déployées -->
+    <path d="M64 71 Q74 72 82 78" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" fill="none" />
+    <path d="M60 76 Q70 78 78 84" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" fill="none" />
+    <path d="M56 82 Q64 84 72 90" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- 3. MAIN AVEC INDEX POINTÉ (POINTING) : Pour cibler le cours du mardi -->
+  <g id="hand-pointing" transform="translate(140, 0)">
+    <!-- Manchette -->
+    <rect x="18" y="72" width="20" height="14" rx="4" fill="url(#cuffGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Index tendu chirurgicalement vers la droite/composant -->
+    <path d="M34 74 L68 74 C74 74 78 78 78 82 C78 86 74 90 68 90 L52 90 Q54 98 46 100 Q32 100 32 86 Z" 
+          fill="url(#gloveGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Phalange index -->
+    <path d="M52 74 L52 90" stroke="#cbd5e1" stroke-width="1.2" stroke-linecap="round" />
+    <path d="M62 74 L62 90" stroke="#cbd5e1" stroke-width="1.2" stroke-linecap="round" />
+    <!-- Pouce replié -->
+    <path d="M38 74 Q46 66 52 72" stroke="#1e293b" stroke-width="1.5" fill="#f8fafc" />
+  </g>
+
+  <!-- 4. MAIN EN PRISE STYLET (GRIP) : Pouce et index tenant le stylet tactile -->
+  <g id="hand-stylus-grip" transform="translate(60, 110)">
+    <!-- Manchette -->
+    <rect x="20" y="30" width="22" height="14" rx="4" fill="url(#cuffGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Base de la main -->
+    <path d="M36 32 C48 30 62 36 64 48 C66 60 54 68 42 66 Z" 
+          fill="url(#gloveGradient)" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Pouce incurvé en appui sur le stylet -->
+    <path d="M42 36 Q54 36 60 44 Q56 50 48 48 Z" fill="#ffffff" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Index replié guidant la pointe -->
+    <path d="M50 42 Q66 44 72 52 Q68 58 56 54 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Majeur soutenant le corps -->
+    <path d="M46 50 Q58 52 64 60 Q56 64 46 60 Z" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5" />
+  </g>
+</svg>

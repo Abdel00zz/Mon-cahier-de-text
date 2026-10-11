@@ -61,6 +61,11 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
         ? translate('remark.devoirMaisonGiven', { num })
         : translate('remark.devoirMaisonGivenSimple');
       add(homeworkSession(date, true), text, `assessment:${id}`);
+      // Second temps du même devoir : la séance de correction s'annote aussi,
+      // mais sur SA date, à partir de la date de correction stockée.
+      if (num && assessment.correctionDateISO) {
+        add(homeworkSession(assessment.correctionDateISO, true), translate('remark.devoirMaisonCorrection', { num }), `assessment:${id}:correction`);
+      }
     }
   }
   // Official oral and homework assessments enter here only after the teacher chooses a

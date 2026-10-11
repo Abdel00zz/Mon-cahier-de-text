@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "title": "Mon cahier de textes — UI Motion & Mascotte Plume",
+    "bpm": 120,
+    "fps": 60,
+    "framesPerBeat": 30,
+    "totalBeats": 32,
+    "totalFrames": 960,
+    "durationSeconds": 16.0
+  },
+  "keyMoments": [
+    {
+      "key": "entrance_perspective_mascot",
+      "beat": 2,
+      "frame": 60,
+      "timestamp": "00:01:00",
+      "name": "Perspective 2.5D et entrée de la mascotte",
+      "sound": "glide",
+      "criteria": "Grille inclinée rotateX: -4°, rotateY: +6°, entrée vectorielle de Plume avec respiration continue"
+    },
+    {
+      "key": "select_and_pointing",
+      "beat": 6,
+      "frame": 180,
+      "timestamp": "00:03:00",
+      "name": "Sélection du cours et pointage gestuel",
+      "sound": "glide",
+      "criteria": "Index de Plume pointé vers Mardi 14 Octobre 10h00, surbrillance de la carte de Français"
+    },
+    {
+      "key": "full_expansion_container",
+      "beat": 11,
+      "frame": 330,
+      "timestamp": "00:05:30",
+      "name": "Pleine expansion One Container",
+      "sound": "card_open",
+      "criteria": "Panneau de cours central déployé sans coupure caméra, affichage séance n°14, PDFs et devoir"
+    },
+    {
+      "key": "validation_click_sharp",
+      "beat": 18,
+      "frame": 540,
+      "timestamp": "00:09:00",
+      "name": "Bruit sec et validation sans confetti",
+      "sound": "validate_click",
+      "criteria": "Frappe terminée, clic chirurgical sans confetti, tracé continu du checkmark vert émeraude"
+    },
+    {
+      "key": "retract_and_wink",
+      "beat": 26,
+      "frame": 780,
+      "timestamp": "00:13:00",
+      "name": "Repli dans la grille et clin d'œil de la mascotte",
+      "sound": "sync_chime",
+      "criteria": "Carte repliée dans l'emploi du temps, Plume fait face caméra avec clin d'œil franc complice"
+    }
+  ],
+  "beats": [
+    {
+      "index": 1,
+      "frameStart": 0,
+      "frameEnd": 29,
+      "timestampSec": 0.0,
+      "action": "scene_init",
+      "description": "Fond feutré et affichage du tableau de bord scolaire neutre",
+      "sound": null
+    },
+    {
+      "index": 2,
+      "frameStart": 30,
+      "frameEnd": 59,
+      "timestampSec": 0.5,
+      "action": "perspective_tilt",
+      "description": "Bascule fluide en perspective 2.5D (rotateX: -4°, rotateY: +6°)",
+      "sound": "glide"
+    },
+    {
+      "index": 3,
+      "frameStart": 60,
+      "frameEnd": 89,
+      "timestampSec": 1.0,
+      "action": "mascot_entrance",
+      "description": "Entrée de Plume en translation sous-amortie (overshoot + stabilisation en 30 frames)",
+      "sound": "glide"
+    },
+    {
+      "index": 4,
+      "frameStart": 90,
+      "frameEnd": 119,
+      "timestampSec": 1.5,
+      "action": "gesture_calendar",
+      "description": "Main d'accueil déployée de Plume vers l'emploi du temps hebdomadaire",
+      "sound": null
+    },
+    {
+      "index": 5,
+      "frameStart": 120,
+      "frameEnd": 149,
+      "timestampSec": 2.0,
+      "action": "pupils_scan",
+      "description": "Pupilles mobiles orientées vers les jours de la semaine (scan visuel)",
+      "sound": null
+    },
+    {
+      "index": 6,
+      "frameStart": 150,
+      "frameEnd": 179,
+      "timestampSec": 2.5,
+      "action": "blink_and_focus",
+      "description": "Clignement réaliste à frame 165, focus sur la colonne Mardi",
+      "sound": null
+    },
+    {
+      "index": 7,
+      "frameStart": 180,
+      "frameEnd": 209,
+      "timestampSec": 3.0,
+      "action": "pointing_tuesday_slot",
+      "description": "Pointage de l'index vers le cours Mardi 14 Octobre 10h00 (Français 3AC 1)",
+      "sound": "glide"
+    },
+    {
+      "index": 8,
+      "frameStart": 210,
+      "frameEnd": 239,
+      "timestampSec": 3.5,
+      "action": "morph_start",
+      "description": "Amorçage du One Container : la carte de cours s'étire en continu",
+      "sound": "card_open"
+    },
+    {
+      "index": 9,
+      "frameStart": 240,
+      "frameEnd": 269,
+      "timestampSec": 4.0,
+      "action": "morph_expansion_flow",
+      "description": "Trajectoire continue des coordonnées vectorielles sans aucun cut de caméra",
+      "sound": null
+    },
+    {
+      "index": 10,
+      "frameStart": 270,
+      "frameEnd": 299,
+      "timestampSec": 4.5,
+      "action": "morph_overshoot",
+      "description": "Dépassement physique dynamique (+5.5%) du conteneur en transition spring",
+      "sound": null
+    },
+    {
+      "index": 11,
+      "frameStart": 300,
+      "frameEnd": 329,
+      "timestampSec": 5.0,
+      "action": "morph_settle",
+      "description": "Stabilisation chirurgicale du grand panneau central (1200x780px)",
+      "sound": null
+    },
+    {
+      "index": 12,
+      "frameStart": 330,
+      "frameEnd": 359,
+      "timestampSec": 5.5,
+      "action": "expansion_details_reveal",
+      "description": "Pleine expansion atteinte : plan de séance n°14, PDFs et zone devoir affichés",
+      "sound": null
+    },
+    {
+      "index": 13,
+      "frameStart": 360,
+      "frameEnd": 389,
+      "timestampSec": 6.0,
+      "action": "stylus_drawn",
+      "description": "Plume sort son stylet tactile haute précision, pointe allumée",
+      "sound": "glide"
+    },
+    {
+      "index": 14,
+      "frameStart": 390,
+      "frameEnd": 419,
+      "timestampSec": 6.5,
+      "action": "typing_chunk_1",
+      "description": "Frappe lettre par lettre : 'Exercice 4 p. 52'",
+      "sound": "key_tap"
+    },
+    {
+      "index": 15,
+      "frameStart": 420,
+      "frameEnd": 449,
+      "timestampSec": 7.0,
+      "action": "typing_chunk_2",
+      "description": "Frappe lettre par lettre : ' : Analyse de texte &'",
+      "sound": "key_tap"
+    },
+    {
+      "index": 16,
+      "frameStart": 450,
+      "frameEnd": 479,
+      "timestampSec": 7.5,
+      "action": "typing_chunk_3",
+      "description": "Frappe lettre par lettre : ' questions 1 à 3'",
+      "sound": "key_tap"
+    },
+    {
+      "index": 17,
+      "frameStart": 480,
+      "frameEnd": 509,
+      "timestampSec": 8.0,
+      "action": "typing_chunk_4",
+      "description": "Frappe lettre par lettre : ' pour jeudi.'",
+      "sound": "key_tap"
+    },
+    {
+      "index": 18,
+      "frameStart": 510,
+      "frameEnd": 539,
+      "timestampSec": 8.5,
+      "action": "cursor_blink_and_approach",
+      "description": "Curseur battant, approche de la pointe du stylet vers le bouton Valider",
+      "sound": null
+    },
+    {
+      "index": 19,
+      "frameStart": 540,
+      "frameEnd": 569,
+      "timestampSec": 9.0,
+      "action": "validate_click",
+      "description": "Validation chirurgicale : bruit sec 1400Hz->110Hz, coche verte tracée",
+      "sound": "validate_click"
+    },
+    {
+      "index": 20,
+      "frameStart": 570,
+      "frameEnd": 599,
+      "timestampSec": 9.5,
+      "action": "sync_chime_feedback",
+      "description": "Accord harmonique double onde (440Hz & 659Hz), coche stabilisée",
+      "sound": "sync_chime"
+    },
+    {
+      "index": 21,
+      "frameStart": 600,
+      "frameEnd": 629,
+      "timestampSec": 10.0,
+      "action": "stylus_rest",
+      "description": "Stylet remis en position repos, satisfaction gestuelle",
+      "sound": null
+    },
+    {
+      "index": 22,
+      "frameStart": 630,
+      "frameEnd": 659,
+      "timestampSec": 10.5,
+      "action": "fold_anticipation",
+      "description": "Amorce du repli continu du conteneur",
+      "sound": "glide"
+    },
+    {
+      "index": 23,
+      "frameStart": 660,
+      "frameEnd": 689,
+      "timestampSec": 11.0,
+      "action": "fold_motion",
+      "description": "Morphing inverse One Container vers sa case initiale dans l'emploi du temps",
+      "sound": null
+    },
+    {
+      "index": 24,
+      "frameStart": 690,
+      "frameEnd": 719,
+      "timestampSec": 11.5,
+      "action": "fold_settle_in_grid",
+      "description": "La carte réintègre sa grille avec amortissement spring précis",
+      "sound": null
+    },
+    {
+      "index": 25,
+      "frameStart": 720,
+      "frameEnd": 749,
+      "timestampSec": 12.0,
+      "action": "card_badge_display",
+      "description": "Affichage de la pastille verte de séance validée dans l'emploi du temps",
+      "sound": null
+    },
+    {
+      "index": 26,
+      "frameStart": 750,
+      "frameEnd": 779,
+      "timestampSec": 12.5,
+      "action": "mascot_head_turn",
+      "description": "Plume tourne la tête et oriente ses pupilles vers la caméra",
+      "sound": null
+    },
+    {
+      "index": 27,
+      "frameStart": 780,
+      "frameEnd": 809,
+      "timestampSec": 13.0,
+      "action": "retract_and_wink",
+      "description": "Clin d'œil franc complice (state-wink) et main en salut amical",
+      "sound": "sync_chime"
+    },
+    {
+      "index": 28,
+      "frameStart": 810,
+      "frameEnd": 839,
+      "timestampSec": 13.5,
+      "action": "banner_signature",
+      "description": "Apparition du titre signature 'Mon cahier de textes — Conçu pour l'enseignant'",
+      "sound": null
+    },
+    {
+      "index": 29,
+      "frameStart": 840,
+      "frameEnd": 869,
+      "timestampSec": 14.0,
+      "action": "brand_glow",
+      "description": "Lueur spéculaire sur le logo et l'écusson",
+      "sound": null
+    },
+    {
+      "index": 30,
+      "frameStart": 870,
+      "frameEnd": 899,
+      "timestampSec": 14.5,
+      "action": "wink_reopen_smile",
+      "description": "Réouverture douce de l'œil droit, sourire bienveillant au repos",
+      "sound": null
+    },
+    {
+      "index": 31,
+      "frameStart": 900,
+      "frameEnd": 929,
+      "timestampSec": 15.0,
+      "action": "subtle_breathing_loop",
+      "description": "Micro-oscillation continue de respiration naturelle sin(frame * 0.08) * 3.5px",
+      "sound": null
+    },
+    {
+      "index": 32,
+      "frameStart": 930,
+      "frameEnd": 959,
+      "timestampSec": 15.5,
+      "action": "loop_end",
+      "description": "Alignement parfait pour bouclage ou pause de présentation",
+      "sound": null
+    }
+  ]
+}

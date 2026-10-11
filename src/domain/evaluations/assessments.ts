@@ -347,6 +347,7 @@ const TYPE_LABEL: Record<DevoirType, string> = {
     controle_global: 'Devoir écrit global surveillé',
     oral: 'Compétences orales',
     maison: 'Devoir maison',
+    colle: 'Colle (interrogation orale)',
 };
 
 /** Vaut par défaut dans la note officielle (le professeur peut l'ajuster). */
@@ -356,6 +357,7 @@ const DEVOIR_NOTE_DEFAULT: Record<DevoirType, boolean> = {
     controle_global: true,
     oral: true,
     maison: false,
+    colle: true,
 };
 
 /** Convertit un devoir saisi manuellement en évaluation planifiée (sans planning officiel). */
@@ -453,6 +455,23 @@ type AssessmentConfig = Pick<
     AppConfig,
     'assessmentDates' | 'schoolYearStart' | 'manualAssessments' | 'removedAssessments' | 'assessmentOrder'
 >;
+
+/**
+ * Numéro SUIVANT d'une famille de devoirs : le PLUS GRAND existant + 1.
+ *
+ * Compter les existants (`length + 1`) paraît équivalent et ne l'est pas :
+ * après une suppression (DM1 et DM3 restants), le compte propose 3 — un
+ * DOUBLON avec le devoir déjà là. Le maximum, lui, reste juste quels que
+ * soient les trous et les suppressions.
+ */
+export const nextAssessmentNumber = (
+    assessments: readonly { id: string; type: string; num?: number }[],
+    type: string,
+    excludeId?: string,
+): number => assessments.reduce(
+    (max, item) => (item.type === type && item.id !== excludeId && typeof item.num === 'number' && item.num > max ? item.num : max),
+    0,
+) + 1;
 
 /** Source unique des évaluations visibles d'une classe, utilisée par la vue et les notifications. */
 export const resolveClassAssessments = (

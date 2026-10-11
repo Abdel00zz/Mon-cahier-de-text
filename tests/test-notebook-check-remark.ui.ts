@@ -90,10 +90,15 @@ test('sans contrôle des cahiers, la cellule de remarque reste nue', () => {
     assert.match(html, /data-remark-cell="true"/);
 });
 
-test('l’annotation suit la direction de son texte et porte son contenu en infobulle', () => {
+test('l’annotation suit la direction de son texte, en texte simple sans infobulle', () => {
     const html = renderTable(mergedData, () => 'مراقبة الدفاتر: أمين، سلمى');
     assert.match(html, /data-session-annotation="true"[^>]*dir="rtl"/);
-    assert.match(html, /title="مراقبة الدفاتر: أمين، سلمى"/);
+    // Une seule famille d'infobulles (data-tippy-content) : ces lignes
+    // automatiques se lisent d'elles-mêmes, sans bulle ni cadre.
+    assert.doesNotMatch(html, /title="مراقبة الدفاتر: أمين، سلمى"/);
+    assert.match(html, /editor-session-note/);
+    assert.doesNotMatch(html, /data-session-annotation="true"[^>]*bg-primary/,
+        'plus de pastille : le texte porte le sens, pas un cadre');
 });
 
 test('l’éditeur et l’impression passent la même règle aux cellules', () => {
@@ -105,7 +110,7 @@ test('l’éditeur et l’impression passent la même règle aux cellules', () =
 });
 
 test('le contrôle des cahiers ne propose pas de bouton Contenu', () => {
-    const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+    const view = readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
     // Le garde-fou entoure le bouton « Contenu » et lui seul : la liste des
     // élèves reste accessible, c'est elle qui alimente la remarque de séance.
     assert.match(view, /event\.type !== REMARK_EVENT_TYPE && \(\s*<button\s+type="button"\s+onClick=\{\(\) => onOpenDocument\(event\)\}/);

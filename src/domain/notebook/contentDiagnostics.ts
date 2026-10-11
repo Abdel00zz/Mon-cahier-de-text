@@ -6,6 +6,9 @@ import { IMPORT_LIMITS } from './importLimits';
 import { normalizeContentType } from '../../constants/type-keys';
 import { toDisplayText } from '../../lib/text/textValue';
 import type { LessonsData } from '../../types';
+import { STRUCTURAL_TYPES, textFieldLimit } from './notebookSchema.js';
+import { hasControlCharacters, hasUnclosedFormula } from './textSignals.js';
+import { walkNotebook } from './notebookTraversal.js';
 
 /**
  * Analyse AVANT IMPORT d'un contenu JSON (cahier, sauvegarde, contenu poussé
@@ -52,21 +55,12 @@ export interface ContentAnalysis {
 /** Budget de synchronisation du dépôt : au-delà, la donnée ne circule plus. */
 const MAX_CONTENT_BYTES = IMPORT_LIMITS.bytes;
 /** Mêmes seuils que le pipeline d'import, pour prévenir AVANT qu'il ne jette. */
-const MAX_TEXT_CHARS = IMPORT_LIMITS.text;
 const MAX_DEPTH = IMPORT_LIMITS.depth;
 const MAX_NODES = IMPORT_LIMITS.nodes;
 /** Texte long : signalé sans bloquer (lisibilité, poids, impression). */
 const LONG_TEXT_CHARS = 5_000;
 
-const TEXT_FIELDS = ['title', 'name', 'type', 'number', 'page', 'description', 'remark', 'content'] as const;
-const CHILD_FIELDS = ['sections', 'subsections', 'subsubsections', 'items'] as const;
-/** Nœuds du plan uniquement : la ligne libre n'en fait pas partie (voir `isFreeContent`). */
-const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
-const CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 const KEY_FOR_IDENTITY = ['type', 'title', 'name', 'date'] as const;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const typeIsKnown = (type: string): boolean =>
   STRUCTURAL_TYPES.has(type) || type === FREE_TYPE || Object.hasOwn(TYPE_MAP, type)
@@ -138,91 +132,78 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
   const identities = new Map<string, string>();
   let stopped = false;
 
-  const inspectText = (record: Record<string, unknown>, field: string, path: string, owner: string): void => {
-    const value = record[field];
-    if (value === undefined || value === null) return;
-    const text = toDisplayText(value);
-    if (typeof value !== 'string') {
-      issues.push({ severity: 'repair', code: 'textNotText', params: { field, kind: Array.isArray(value) ? 'array' : typeof value, owner }, path });
-      return;
-    }
-    const fieldPath = path ? `${path} › ${field}` : field;
-    const max = ['description', 'remark', 'content'].includes(field) ? MAX_TEXT_CHARS : IMPORT_LIMITS.label;
-    if (text.trim().length > max) {
-      issues.push({ severity: 'error', code: 'textTooLong', params: { field, chars: text.trim().length, max, owner }, path: fieldPath });
-      return;
-    }
-    if (text.length > LONG_TEXT_CHARS) {
-      issues.push({ severity: 'warning', code: 'textLong', params: { field, chars: text.length, max: LONG_TEXT_CHARS, owner }, path: fieldPath });
-    }
-    if (!stats.longestText || text.length > stats.longestText.chars) stats.longestText = { path: fieldPath, chars: text.length };
-    // Une formule non fermée laisse le texte brut à l'écran : c'est LE défaut
-    // invisible des contenus collés depuis un traitement de texte.
-    const singleDollars = text.replace(/\$\$/g, '').split('$').length - 1;
-    if (singleDollars % 2 === 1) {
-      issues.push({ severity: 'warning', code: 'formulaUnclosed', params: { field, owner }, path: fieldPath });
-    }
-    if (CONTROL_CHARACTERS.test(text)) {
-      issues.push({ severity: 'warning', code: 'controlCharacters', params: { field, owner }, path: fieldPath });
-    }
-  };
+  const ownerOf = (node: Record<string, unknown>, path: string): string =>
+    toDisplayText(node.title) || toDisplayText(node.name) || path;
 
-  const walk = (node: unknown, path: string, depth: number, parent: string): void => {
-    if (stopped) return;
-    stats.nodes += 1;
-    if (stats.nodes > MAX_NODES) {
-      issues.push({ severity: 'error', code: 'tooManyNodes', params: { max: MAX_NODES }, path });
+  /*
+   * Un seul parcours, celui du moteur partagé. L'ordre des hooks reproduit
+   * exactement l'ancienne marche : textes, puis type et doublons, puis enfants.
+   * Le diagnostic ne jette jamais : un budget dépassé devient une erreur
+   * présentée, jamais une exception.
+   */
+  const walkStats = walkNotebook(lessons, {
+    onText: (context, field) => {
+      const value = context.node[field];
+      if (value === undefined || value === null) return;
+      const text = toDisplayText(value);
+      const owner = ownerOf(context.node, context.path);
+      if (typeof value !== 'string') {
+        issues.push({ severity: 'repair', code: 'textNotText', params: { field, kind: Array.isArray(value) ? 'array' : typeof value, owner }, path: context.path });
+        return;
+      }
+      const fieldPath = context.path ? `${context.path} › ${field}` : field;
+      const max = textFieldLimit(field);
+      if (text.trim().length > max) {
+        issues.push({ severity: 'error', code: 'textTooLong', params: { field, chars: text.trim().length, max, owner }, path: fieldPath });
+        return;
+      }
+      if (text.length > LONG_TEXT_CHARS) {
+        issues.push({ severity: 'warning', code: 'textLong', params: { field, chars: text.length, max: LONG_TEXT_CHARS, owner }, path: fieldPath });
+      }
+      if (!stats.longestText || text.length > stats.longestText.chars) stats.longestText = { path: fieldPath, chars: text.length };
+      // Une formule non fermée laisse le texte brut à l'écran : c'est LE défaut
+      // invisible des contenus collés depuis un traitement de texte.
+      if (hasUnclosedFormula(text)) {
+        issues.push({ severity: 'warning', code: 'formulaUnclosed', params: { field, owner }, path: fieldPath });
+      }
+      if (hasControlCharacters(text)) {
+        issues.push({ severity: 'warning', code: 'controlCharacters', params: { field, owner }, path: fieldPath });
+      }
+    },
+    onNode: context => {
+      const owner = ownerOf(context.node, context.path);
+      if (context.node.type !== undefined) {
+        const type = normalizeContentType(toDisplayText(context.node.type));
+        if (type && !typeIsKnown(type)) {
+          issues.push({ severity: 'warning', code: 'unknownType', params: { type, owner }, path: `${context.path} › type` });
+        }
+      }
+      // Doublons stricts : même type, même titre, même date dans le même parent.
+      const identity = KEY_FOR_IDENTITY.map(field => toDisplayText(context.node[field]).trim().toLowerCase());
+      const key = JSON.stringify([context.parentPath, ...identity]);
+      if (identity.some(Boolean)) {
+        const previous = identities.get(key);
+        if (previous && previous !== context.path) {
+          issues.push({ severity: 'warning', code: 'duplicate', params: { owner }, path: context.path });
+        } else if (!previous) {
+          identities.set(key, context.path);
+        }
+      }
+    },
+    onContainer: (context, key, _value, isArray) => {
+      if (!isArray) {
+        issues.push({ severity: 'repair', code: 'containerRepaired', params: { field: key, owner: ownerOf(context.node, context.path) }, path: `${context.path} › ${key}` });
+      }
+    },
+    onBudgetExceeded: (reason, context) => {
       stopped = true;
-      return;
-    }
-    if (depth > MAX_DEPTH) {
-      issues.push({ severity: 'error', code: 'tooDeep', params: { max: MAX_DEPTH }, path });
-      stopped = true;
-      return;
-    }
-    stats.depth = Math.max(stats.depth, depth);
-
-    if (!isRecord(node)) return;
-
-    const owner = toDisplayText(node.title) || toDisplayText(node.name) || path;
-    for (const field of TEXT_FIELDS) inspectText(node, field, path, owner);
-
-    if (node.type !== undefined) {
-      const type = normalizeContentType(toDisplayText(node.type));
-      if (type && !typeIsKnown(type)) {
-        issues.push({ severity: 'warning', code: 'unknownType', params: { type, owner }, path: `${path} › type` });
-      }
-    }
-
-    // Doublons stricts : même type, même titre, même date dans le même parent.
-    const identity = KEY_FOR_IDENTITY.map(field => toDisplayText(node[field]).trim().toLowerCase());
-    const key = JSON.stringify([parent, ...identity]);
-    if (identity.some(Boolean)) {
-      const previous = identities.get(key);
-      if (previous && previous !== path) {
-        issues.push({ severity: 'warning', code: 'duplicate', params: { owner }, path });
-      } else if (!previous) {
-        identities.set(key, path);
-      }
-    }
-
-    for (const field of CHILD_FIELDS) {
-      const children = node[field];
-      if (children === undefined) continue;
-      const childPath = path ? `${path} › ${field}` : field;
-      if (!Array.isArray(children)) {
-        issues.push({ severity: 'repair', code: 'containerRepaired', params: { field, owner }, path: childPath });
-        continue;
-      }
-      for (let index = 0; index < children.length && !stopped; index++) {
-        walk(children[index], `${childPath}[${index}]`, depth + 1, childPath);
-      }
-    }
-  };
-
-  for (let index = 0; index < lessons.length && !stopped; index++) {
-    walk(lessons[index], `lessons[${index}]`, 0, 'lessons');
-  }
+      issues.push(reason === 'depth'
+        ? { severity: 'error', code: 'tooDeep', params: { max: MAX_DEPTH }, path: context.path }
+        : { severity: 'error', code: 'tooManyNodes', params: { max: MAX_NODES }, path: context.path });
+    },
+  });
+  stats.nodes = walkStats.nodes;
+  stats.depth = walkStats.depth;
 
   let report: ImportReport | null = null;
   let lessonsData: LessonsData | null = null;

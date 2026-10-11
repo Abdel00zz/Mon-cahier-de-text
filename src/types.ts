@@ -157,6 +157,8 @@ export interface ManualAssessment {
     dateISO: string;
     duree?: string;
     semestre: 1 | 2;
+    /** Séance de CORRECTION du devoir (second temps, distinct de l'attribution `dateISO`). */
+    correctionDateISO?: string;
     /** compte dans la note officielle */
     note?: boolean;
     /** document pédagogique rédigé par le professeur (hors cahier) */
@@ -164,7 +166,7 @@ export interface ManualAssessment {
 }
 
 /** Types officiels d'évaluation (nomenclature ministérielle AR/FR). */
-export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison';
+export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison' | 'colle';
 
 /** Élèves consignés sur un devoir ou une activité : absents, cahiers contrôlés, participants. */
 export type NotebookCondition = 'good' | 'average' | 'needs_work' | 'missing';
@@ -176,11 +178,17 @@ export interface ClassRoster {
 }
 
 export type OralOutcome = 'mastered' | 'developing' | 'needs_support';
+/** Remise d'un devoir maison : rendu, ou non rendu (l'absence se consigne à part). */
+export type HomeworkOutcome = 'given' | 'missing';
 export type ClassEvaluationEntry = 'all' | 'oral' | 'controle_cahiers';
 export interface OralStudentsRecord {
     names: string[];
     updatedAt: string;
-    oralOutcomes: Record<string, OralOutcome>;
+    oralOutcomes?: Record<string, OralOutcome>;
+    /** Note chiffrée (/20) par élève, saisie librement (« 15.5 », « 12/20 »). */
+    oralGrades?: Record<string, string>;
+    /** Remise d'un devoir : un état par élève. Un élève sans état reste à vérifier. */
+    homeworkOutcomes?: Record<string, HomeworkOutcome>;
 }
 
 interface StudentNamesRecord {
@@ -377,7 +385,9 @@ export type TopLevelType =
     | 'correction_controle_continu'
     | 'examen_blanc'
     | 'olympiade'
-    | 'concours';
+    | 'concours'
+    /** La « colle » : interrogation orale hebdomadaire des classes préparatoires. */
+    | 'colle';
 
 export type EmbeddableTopLevelType = Exclude<TopLevelType, 'chapter'>;
 

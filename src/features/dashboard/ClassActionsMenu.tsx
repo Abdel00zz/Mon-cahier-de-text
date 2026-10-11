@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useId, useState } from 'react';
 import { MoreVertical, Settings, Trash2, CalendarCheck } from 'lucide-react';
 import {
     DropdownMenu,
@@ -10,15 +11,55 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
 
+/** Registre global assurant qu'un seul menu de classe ne peut être ouvert à la fois */
+let activeMenuId: string | null = null;
+const menuListeners = new Set<(id: string | null) => void>();
+
+function setActiveMenu(id: string | null) {
+    if (activeMenuId === id) return;
+    activeMenuId = id;
+    menuListeners.forEach(listener => listener(id));
+}
+
 export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete, onOpenEvaluations }: {
     name: string; triggerClassName: string; onConfigure: () => void; onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
 }) {
     const { t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
-    const open = (entry: ClassEvaluationEntry) => { impact('light'); onOpenEvaluations?.(entry); };
+    const generatedId = useId();
+    const menuId = `${name}-${generatedId}`;
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const listener = (currentId: string | null) => {
+            setIsOpen(currentId === menuId);
+        };
+        menuListeners.add(listener);
+        return () => {
+            menuListeners.delete(listener);
+            if (activeMenuId === menuId) {
+                activeMenuId = null;
+            }
+        };
+    }, [menuId]);
+
+    const handleOpenChange = useCallback((open: boolean) => {
+        if (open) {
+            setActiveMenu(menuId);
+        } else if (activeMenuId === menuId) {
+            setActiveMenu(null);
+        }
+    }, [menuId]);
+
+    const open = (entry: ClassEvaluationEntry) => {
+        impact('light');
+        setActiveMenu(null);
+        onOpenEvaluations?.(entry);
+    };
+
     return (
-        <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'}>
+        <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'} open={isOpen} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
                 <button
                     type="button"
@@ -47,7 +88,11 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
-                    onSelect={() => { impact('light'); onConfigure(); }}
+                    onSelect={() => {
+                        impact('light');
+                        setActiveMenu(null);
+                        onConfigure();
+                    }}
                     className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-accent/70 focus:bg-accent/70 cursor-pointer"
                 >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary transition-transform duration-180 group-hover/item:scale-105">
@@ -60,7 +105,11 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
                         <DropdownMenuSeparator className="my-1 border-t border-border/50" />
                         <DropdownMenuItem
                             destructive
-                            onSelect={() => { impact('medium'); onDelete(); }}
+                            onSelect={() => {
+                                impact('medium');
+                                setActiveMenu(null);
+                                onDelete();
+                            }}
                             className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
                         >
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/12 text-destructive dark:bg-destructive/18 dark:text-destructive transition-transform duration-180 group-hover/item:scale-105">

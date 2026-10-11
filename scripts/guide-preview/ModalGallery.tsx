@@ -14,7 +14,6 @@ import { AssignDateModal } from '../../src/features/editor/modals/AssignDateModa
 import { DateReviewModal } from '../../src/features/editor/modals/DateReviewModal';
 import { TimetableNudgeModal } from '../../src/features/editor/modals/TimetableNudgeModal';
 import { ContentModal } from '../../src/features/editor/modals/ContentModal';
-import { AddContentModal } from '../../src/features/editor/modals/EditItemModal';
 import { ManageLessonsModal } from '../../src/features/editor/modals/ManageLessonsModal';
 import { AnalysisModal } from '../../src/features/editor/modals/AnalysisModal';
 import { PrintModal } from '../../src/features/editor/modals/PrintModal';
@@ -68,7 +67,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'dates' && <AssignDateModal {...common} onApply={close} session={{ source: lessons, intent: 'date', selection: { targets: [{ chapterIndex: 0, itemIndex: 0 }], date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false } }} />}
     {current === 'date-review' && <DateReviewModal isOpen={open} date="2026-09-14" warnings={[{ message: l('Aucun créneau prévu pour cette classe ce jour-là.', 'لا توجد حصة مبرمجة لهذا القسم في هذا اليوم.', 'No lesson is scheduled for this class on that day.') }]} onModify={close} onConfirm={close} onIgnore={close} />}
     {current === 'timetable' && <TimetableNudgeModal isOpen={open} className={classInfo.name} onSkip={close} onFill={close} />}
-    {current === 'add' && <AddContentModal {...common} onConfirm={close} lessonsData={lessons} selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />}
+    {current === 'add' && <ContentModal {...common} onConfirm={close} lessonsData={lessons} selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />}
     {current === 'content' && <ContentModal {...common} mode="edit" item={{ type: 'définition', title: 'Nombre rationnel', description: '$a/b, b \\ne 0$' }} onSave={close} subject="Mathématiques" contentDirection="ltr" />}
     {current === 'manage' && <ManageLessonsModal {...common} lessons={lessons} onUpdate={close} config={config} onConfigChange={onChange} />}
     {current === 'analysis' && <AnalysisModal {...common} lessonsData={lessons} classInfo={classInfo} config={config} />}

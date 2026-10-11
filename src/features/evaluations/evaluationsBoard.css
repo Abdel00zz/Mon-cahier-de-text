@@ -43,7 +43,9 @@
        abscisses différentes pour la même colonne avant ce correctif. */
     --ev-id: minmax(0, 1fr);
     --ev-state: 8.5rem;
-    --ev-date: 13.5rem;
+    /* La date est la donnée qu'on vient lire et régler : sa colonne est la
+       plus large des fixes, assez pour « 14/09/2026 » et son bouton d'action. */
+    --ev-date: 17rem;
     --ev-actions: 21rem;
 }
 /* Ligne d'en-tête : le vocabulaire des colonnes, en capitales discrètes. */
@@ -264,11 +266,14 @@
 /* Date ajustée par le professeur : elle est écrite en accent, comme partout. */
 .ev-row__date input[type='date'][data-custom='true'] { color: hsl(var(--primary)); font-weight: 800; }
 
-/* Pastille interactive de date (activité / période) */
+/* Pastille interactive de date (activité / période) : toute la colonne est
+   cliquable, le texte s'aligne sur l'en-tête (« DATE ») — aucune icône, la
+   date parle d'elle-même. */
 .ev-date-trigger {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    width: 100%;
     height: 2.125rem;
     padding-inline: .625rem;
     font-size: 11.5px;

@@ -75,7 +75,11 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 }) => {
   const { t, locale } = useLocale();
   const number = React.useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
-  const sessionCountLabel = (count: number) => t(count === 1 ? 'print.sessionOne' : 'print.sessionMany', { count: number.format(count) });
+  const sessionCountLabel = (count: number) => {
+    if (count === 1) return t('print.sessionOne', { count: number.format(count) });
+    if (count === 2) return t('print.sessionTwo', { count: number.format(count) });
+    return t('print.sessionMany', { count: number.format(count) });
+  };
   const hasHistory = lastPrintedAt !== null;
   // sans historique consultable, « nouveauté » n'a aucun sens : on ne
   // recommande jamais un mode qui prétendrait savoir ce qui a déjà été tiré.

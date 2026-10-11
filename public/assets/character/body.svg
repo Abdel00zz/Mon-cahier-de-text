@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <!-- Dégradé du buste / veste indigo -->
+    <linearGradient id="bodyJacketGradient" x1="120" y1="160" x2="120" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#4338ca" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+    <!-- Plastron / Chemise intérieure blanc pur -->
+    <linearGradient id="shirtGradient" x1="120" y1="170" x2="120" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <!-- Reflet lumière spéculaire épaule -->
+    <linearGradient id="shoulderHighlight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Torse articulé recevant l'oscillation sin(frame * 0.08) * 3.5px -->
+  <g id="articulated-torso">
+    <!-- Cou / Pivot d'articulation sous le casque -->
+    <rect x="106" y="156" width="28" height="20" rx="6" fill="#334155" stroke="#1e293b" stroke-width="1.5" />
+    <!-- Anneau du col technologique -->
+    <path d="M102 170 Q120 176 138 170" stroke="#6366f1" stroke-width="2" stroke-linecap="round" fill="none" />
+
+    <!-- Corps / Épaules / Veste principale -->
+    <path d="M46 240 C44 208 64 178 94 172 L106 170 Q120 174 134 170 L146 172 C176 178 196 208 194 240 Z" 
+          fill="url(#bodyJacketGradient)" stroke="#1e293b" stroke-width="1.5" stroke-linejoin="round" />
+
+    <!-- Liserés d'épaules et reflets spéculaires -->
+    <path d="M60 215 C62 195 76 182 96 176" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.75" />
+    <path d="M180 215 C178 195 164 182 144 176" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.75" />
+
+    <!-- Plastron central / Col en V stylisé -->
+    <path d="M104 174 L120 208 L136 174 Q120 177 104 174 Z" 
+          fill="url(#shirtGradient)" stroke="#1e293b" stroke-width="1.5" />
+
+    <!-- Cravate ou ruban d'académie indigo -->
+    <path d="M117 190 L123 190 L125 214 L120 220 L115 214 Z" fill="#6366f1" stroke="#3730a3" stroke-width="1" />
+
+    <!-- Écusson brodé de l'école (Mon cahier de textes) sur la poitrine gauche -->
+    <g id="school-crest">
+      <circle cx="82" cy="204" r="9" fill="#1e1b4b" stroke="#fbbf24" stroke-width="1.2" />
+      <!-- Mini plume d'or stylisée dans l'écusson -->
+      <path d="M80 209 Q84 202 85 198 Q81 201 80 209 Z" fill="#fbbf24" />
+      <circle cx="82" cy="204" r="11" stroke="#fbbf24" stroke-width="0.6" stroke-dasharray="2 1.5" fill="none" />
+    </g>
+
+    <!-- Rebord inférieur de veste structuré -->
+    <path d="M50 238 Q120 244 190 238" stroke="#1e1b4b" stroke-width="2" fill="none" />
+  </g>
+</svg>

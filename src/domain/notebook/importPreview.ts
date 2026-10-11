@@ -1,10 +1,11 @@
 import { parseBoundedJson } from './jsonInput.js';
 import { prepareImportedLessons } from './importPipeline.js';
+import { analyseNotebook } from '../intelligence/notebookAdvisor.js';
 
 /** Inspect with the same normalizer as the editor, without writing any data. */
 export function inspectNotebookImport(text: string) {
     const parsed: unknown = parseBoundedJson(text);
-    const { report } = prepareImportedLessons(parsed);
+    const { report, lessonsData } = prepareImportedLessons(parsed);
     const envelope = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
         ? parsed as Record<string, unknown> : {};
     return {
@@ -13,5 +14,7 @@ export function inspectNotebookImport(text: string) {
         version: typeof envelope.version === 'number' || typeof envelope.version === 'string' ? envelope.version : undefined,
         date: typeof envelope.exportedAt === 'string' ? envelope.exportedAt : null,
         blocks: report.topLevelCount,
+        // Conseil embarqué : ce que le professeur gagnera à corriger AVANT de confirmer.
+        advice: analyseNotebook(lessonsData),
     };
 }

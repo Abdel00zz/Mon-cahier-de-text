@@ -9,6 +9,8 @@ interface SwipeToDismissOptions {
   onCollapse?: () => void;
   canExpand?: boolean;
   canCollapse?: boolean;
+  /** Déclenché lors du passage dans la zone de snap magnétique */
+  onSnapFeedback?: () => void;
 }
 interface DragState {
   pointerId: number;
@@ -30,6 +32,7 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
   const timer = useRef<number | null>(null);
   const offset = useRef(0);
   const suppressClick = useRef(false);
+  const lastSnapState = useRef(false);
 
   const clearWork = useCallback(() => {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
@@ -42,8 +45,10 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
     const node = surface.current;
     if (!node) return;
     delete node.dataset.dragState;
+    delete node.dataset.magneticSnap;
     node.style.removeProperty('--sheet-drag-y');
     node.style.removeProperty('--sheet-release-y');
+    node.style.removeProperty('--drag-progress');
   }, []);
 
   const releasePointer = useCallback(() => {
@@ -73,6 +78,7 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
     frame.current = requestAnimationFrame(() => {
       frame.current = null;
       node.style.setProperty('--sheet-drag-y', '0px');
+      node.style.setProperty('--drag-progress', '0');
       offset.current = 0;
       timer.current = window.setTimeout(() => { clearVisuals(); timer.current = null; }, 240);
     });
@@ -94,6 +100,7 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
     }
     clearWork();
     clearVisuals();
+    lastSnapState.current = false;
     surface.current = event.currentTarget;
     offset.current = 0;
     drag.current = {
@@ -124,10 +131,26 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
     offset.current = deltaY < 0
       ? -Math.min(Math.abs(deltaY) * .24, 48)
       : Math.min(deltaY, current.height * .8);
+    const progress = Math.min(Math.max(offset.current / (current.height * 0.4 || 200), 0), 1);
+
+    // Détection de snap magnétique prédictif avec micro-retour haptique
+    const dismissThreshold = Math.min(112, current.height * 0.24);
+    const isSnapping = offset.current >= dismissThreshold;
+    if (isSnapping !== lastSnapState.current) {
+      lastSnapState.current = isSnapping;
+      if (isSnapping) {
+        surface.current?.setAttribute('data-magnetic-snap', 'true');
+      } else {
+        surface.current?.removeAttribute('data-magnetic-snap');
+      }
+      latest.current.onSnapFeedback?.();
+    }
+
     if (frame.current !== null) return;
     frame.current = requestAnimationFrame(() => {
       frame.current = null;
       surface.current?.style.setProperty('--sheet-drag-y', `${offset.current}px`);
+      surface.current?.style.setProperty('--drag-progress', progress.toFixed(3));
     });
   }, [reset]);
 

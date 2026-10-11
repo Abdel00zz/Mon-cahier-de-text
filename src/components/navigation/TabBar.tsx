@@ -188,7 +188,7 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
-            <Menu className="size-[20.5px] stroke-[2]" />
+            <Menu className="size-[20.5px] max-xl:size-[22.5px] stroke-[2]" />
           </motion.button>
 
           <AnimatePresence>
@@ -264,7 +264,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon
                     className={cn(
                       'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      'size-[20.5px] aspect-square',
+                      'size-[20.5px] max-xl:size-[22.5px] aspect-square',
                       isActive
                         ? 'text-foreground stroke-[2]'
                         : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
@@ -334,7 +334,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
             <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
-                'size-[20.5px] aspect-square shrink-0 transition-colors duration-200',
+                'size-[20.5px] max-xl:size-[22.5px] aspect-square shrink-0 transition-colors duration-200',
                 activeTab === 'help'
                   ? 'text-foreground stroke-[2]'
                   : 'stroke-[2] text-muted-foreground group-hover:text-foreground'
@@ -398,12 +398,12 @@ export const TabBar = React.memo<TabBarProps>(({
                 <motion.div
                   animate={{ y: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
+                  className="relative z-10 flex h-6.5 w-6.5 items-center justify-center shrink-0"
                 >
                   <Icon
                     className={cn(
                       "transition-colors duration-200 ease-out",
-                      "size-[20px] aspect-square",
+                      "size-[22px] aspect-square",
                       isActive ? "text-primary stroke-[2]" : "text-muted-foreground stroke-[2]"
                     )}
                   />
@@ -450,12 +450,12 @@ export const TabBar = React.memo<TabBarProps>(({
             <motion.div
               animate={{ y: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
+              className="relative z-10 flex h-6.5 w-6.5 items-center justify-center shrink-0"
             >
               <Settings
                 className={cn(
                   "transition-colors duration-200 ease-out",
-                      "size-[20px] aspect-square",
+                  "size-[22px] aspect-square",
                   activeTab === 'settings' ? "text-primary stroke-[2]" : "text-muted-foreground stroke-[2]"
                 )}
               />

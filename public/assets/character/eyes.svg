@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <defs>
+    <!-- Lueur interne des orbites -->
+    <radialGradient id="eyeGlowLeft" cx="94" cy="138" r="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35" />
+      <stop offset="70%" stop-color="#0284c7" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="eyeGlowRight" cx="146" cy="138" r="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35" />
+      <stop offset="70%" stop-color="#0284c7" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- 1. État STANDARD : Deux yeux ouverts avec orbites lumineuses -->
+  <g id="state-open">
+    <!-- Orbite Gauche -->
+    <g id="eye-orbit-left">
+      <ellipse cx="94" cy="138" rx="20" ry="24" fill="url(#eyeGlowLeft)" />
+      <ellipse cx="94" cy="138" rx="17" ry="21" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+      <!-- Cerclage lumineux d'ambiance -->
+      <ellipse cx="94" cy="138" rx="15" ry="19" fill="#0c4a6e" opacity="0.6" />
+    </g>
+    <!-- Orbite Droite -->
+    <g id="eye-orbit-right">
+      <ellipse cx="146" cy="138" rx="20" ry="24" fill="url(#eyeGlowRight)" />
+      <ellipse cx="146" cy="138" rx="17" ry="21" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+      <!-- Cerclage lumineux d'ambiance -->
+      <ellipse cx="146" cy="138" rx="15" ry="19" fill="#0c4a6e" opacity="0.6" />
+    </g>
+  </g>
+
+  <!-- 2. État CLIGNEMENT COMPLET (Frames 45, 165, 345, 530) : Paupières fermées en arcs souples -->
+  <g id="state-blink" opacity="0">
+    <!-- Arc œil gauche fermé -->
+    <path d="M78 140 Q94 148 110 140" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <path d="M84 143 Q94 149 104 143" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.8" />
+    <!-- Arc œil droit fermé -->
+    <path d="M130 140 Q146 148 162 140" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <path d="M136 143 Q146 149 156 143" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.8" />
+  </g>
+
+  <!-- 3. État CLIN D'ŒIL FRANC (Salut final - Frame 780+) : Oeil gauche ouvert, Oeil droit fermé complice -->
+  <g id="state-wink" opacity="0">
+    <!-- Œil gauche ouvert bienveillant -->
+    <ellipse cx="94" cy="138" rx="17" ry="21" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+    <ellipse cx="94" cy="138" rx="15" ry="19" fill="#0c4a6e" opacity="0.6" />
+    <!-- Œil droit en clin d'œil expressif courbé vers le haut -->
+    <path d="M130 137 Q146 148 162 137" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" fill="none" />
+    <path d="M135 139 Q146 149 157 139" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" fill="none" />
+    <!-- Micro-étoile d'éclat au coin du clin d'œil -->
+    <path d="M165 132 L167 136 L171 138 L167 140 L165 144 L163 140 L159 138 L163 136 Z" fill="#fbbf24" opacity="0.9" />
+  </g>
+
+  <!-- 4. Paupières supérieures programmables pour interpolation douce (0% à 100%) -->
+  <g id="eyelids-top">
+    <!-- Masque / Volet supérieur gauche -->
+    <path id="eyelid-left-shutter" d="M76 117 Q94 115 112 117 L112 117 Q94 117 76 117 Z" fill="#0f172a" />
+    <!-- Masque / Volet supérieur droit -->
+    <path id="eyelid-right-shutter" d="M128 117 Q146 115 164 117 L164 117 Q146 117 128 117 Z" fill="#0f172a" />
+  </g>
+</svg>

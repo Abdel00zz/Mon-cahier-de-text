@@ -83,9 +83,9 @@ test('homework assessments (devoir maison) add "تم إعطاء الفرض ال�
     assessmentDates: { A: { '2026-2027:s1-maison1': '2026-10-15', 's1-maison2': '2026-11-20' } },
     manualAssessments: { A: [{ id: 'manual-dm', type: 'maison', num: 3, dateISO: '2026-12-05', semestre: 1 }] },
   };
-  assert.equal(translated(settings).get('2026-10-15'), 'تم إعطاء الفرض المنزلي رقم 1');
-  assert.equal(translated(settings).get('2026-11-20'), 'تم إعطاء الفرض المنزلي رقم 2');
-  assert.equal(translated(settings).get('2026-12-05'), 'تم إعطاء الفرض المنزلي رقم 3');
+  assert.equal(translated(settings).get('2026-10-15'), 'تم إعطاء الفرض المنزلي رقم 1 للتلاميذ');
+  assert.equal(translated(settings).get('2026-11-20'), 'تم إعطاء الفرض المنزلي رقم 2 للتلاميذ');
+  assert.equal(translated(settings).get('2026-12-05'), 'تم إعطاء الفرض المنزلي رقم 3 للتلاميذ');
 });
 
 test('getLastNotebookDate extracts the date of the last content in the editor table', () => {

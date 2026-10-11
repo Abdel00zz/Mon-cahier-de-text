@@ -18,33 +18,212 @@
 .modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 .modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 200ms cubic-bezier(0.4, 0, 1, 1) both; }
 
-/* Surface modale avec ombres premium */
+@import "../../styles/modal-premium-tokens.css";
+
+/* Surface modale avec architecture Liquid Glass et ombres GPU */
 .modal-motion-surface {
   --modal-visible-height: var(--app-viewport-height, 100dvh);
   --modal-visible-top: var(--app-viewport-offset-top, 0px);
   --modal-keyboard-inset: max(0px, calc(100dvh - var(--modal-visible-height) - var(--modal-visible-top)));
   border-color: hsl(var(--border) / .85);
-  background: hsl(var(--card));
+  background: hsl(var(--card) / .92);
+  -webkit-backdrop-filter: blur(var(--modal-blur-medium)) saturate(150%);
+  backdrop-filter: blur(var(--modal-blur-medium)) saturate(150%);
   font-family: var(--font-sans);
   isolation: isolate;
   box-shadow: 
-    inset 0 1px 0 rgb(255 255 255 / .65),
-    0 8px 16px -8px rgb(38 47 39 / .1),
-    0 24px 64px -20px rgb(38 47 39 / .22);
+    inset 0 1px 0.5px 0 rgb(255 255 255 / .65),
+    var(--modal-elevation-shadow, var(--modal-shadow-mid)),
+    var(--modal-glow, 0 0 0 0 transparent);
   transform: translate3d(0, var(--sheet-drag-y, 0px), 0);
+  transition: backdrop-filter 320ms var(--modal-spring-smooth), box-shadow 280ms ease;
 }
+
+/* Élévation Z dynamique */
+.modal-motion-surface[data-elevation="low"] {
+  --modal-elevation-shadow: var(--modal-shadow-low);
+}
+.modal-motion-surface[data-elevation="high"] {
+  --modal-elevation-shadow: var(--modal-shadow-high);
+  -webkit-backdrop-filter: blur(var(--modal-blur-intense)) saturate(175%);
+  backdrop-filter: blur(var(--modal-blur-intense)) saturate(175%);
+}
+
+/* Glows contextuels */
+.modal-motion-surface[data-glow="primary"] { --modal-glow: var(--glow-primary); }
+.modal-motion-surface[data-glow="success"] { --modal-glow: var(--glow-success); }
+.modal-motion-surface[data-glow="warning"] { --modal-glow: var(--glow-warning); }
+.modal-motion-surface[data-glow="danger"] { --modal-glow: var(--glow-danger); }
+
 .dark .modal-motion-surface { 
+  background: hsl(var(--card) / .86);
   box-shadow: 
-    inset 0 1px 0 rgb(240 245 255 / .08),
-    0 8px 16px -6px rgb(4 9 16 / .3),
-    0 20px 48px -12px rgb(4 9 16 / .5),
-    0 32px 80px -24px rgb(4 9 16 / .7); 
+    inset 0 1px 0.5px 0 rgb(240 245 255 / .12),
+    var(--modal-elevation-shadow, var(--modal-shadow-high)),
+    var(--modal-glow, 0 0 0 0 transparent); 
+}
+
+/* GPU Compositing optimization */
+.modal-motion-surface[data-state="open"] {
+  will-change: transform, opacity;
+}
+.modal-motion-surface[data-state="closed"] {
+  will-change: auto;
+}
+
+/* Liseré spéculaire supérieur (réfraction optique verre liquide) */
+.modal-motion-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.75) 25%, 
+    rgba(255, 255, 255, 0.95) 50%, 
+    rgba(255, 255, 255, 0.75) 75%, 
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 30;
+}
+.dark .modal-motion-surface::before {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.12) 25%, 
+    rgba(255, 255, 255, 0.25) 50%, 
+    rgba(255, 255, 255, 0.12) 75%, 
+    transparent 100%
+  );
+}
+
+/* Morphing tactile 3D au drag (mobile) */
+.modal-motion-surface[data-drag-state="dragging"] {
+  transform: 
+    translate3d(0, var(--sheet-drag-y, 0px), 0)
+    scale(calc(1 - var(--drag-progress, 0) * 0.04))
+    rotateX(calc(var(--drag-progress, 0) * 2.8deg));
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  will-change: transform;
+  transition: none !important;
+}
+
+/* Feedback magnétique lors du drag : le halo pulse et prévient du snap */
+.modal-motion-surface[data-magnetic-snap="true"] {
+  border-color: color-mix(in srgb, hsl(var(--primary)) 65%, hsl(var(--border))) !important;
+  box-shadow: 
+    inset 0 1px 0.5px 0 rgb(255 255 255 / .95),
+    var(--modal-elevation-shadow, var(--modal-shadow-high)),
+    var(--modal-magnetic-glow) !important;
+  transform: 
+    translate3d(0, var(--sheet-drag-y, 0px), 0)
+    scale(0.97)
+    rotateX(calc(var(--drag-progress, 0) * 3deg)) !important;
+  transition: border-color 150ms ease, box-shadow 180ms ease !important;
+}
+.dark .modal-motion-surface[data-magnetic-snap="true"] {
+  border-color: color-mix(in srgb, hsl(var(--primary)) 70%, hsl(var(--border))) !important;
+  box-shadow: 
+    inset 0 1px 0.5px 0 rgb(240 245 255 / .25),
+    var(--modal-elevation-shadow, var(--modal-shadow-high)),
+    var(--modal-magnetic-glow) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-motion-surface[data-drag-state="dragging"],
+  .modal-motion-surface[data-magnetic-snap="true"] {
+    transform: translate3d(0, var(--sheet-drag-y, 0px), 0) !important;
+    transform-style: flat;
+  }
+}
+
+/* Micro-interaction : Glow Pulse pour boutons d'action */
+@keyframes modal-glow-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 0 var(--pulse-color, hsla(var(--primary), 0.55)),
+      var(--button-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  }
+  50% {
+    box-shadow: 
+      0 0 0 10px var(--pulse-color, hsla(var(--primary), 0)),
+      var(--button-shadow, 0 4px 16px rgba(0, 0, 0, 0.15));
+  }
+}
+
+.glow-pulse-primary {
+  --pulse-color: color-mix(in srgb, hsl(var(--primary)) 50%, transparent);
+  animation: modal-glow-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.glow-pulse-danger {
+  --pulse-color: hsla(352, 70%, 50%, 0.45);
+  animation: modal-glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.glow-pulse-success {
+  --pulse-color: hsla(142, 65%, 45%, 0.45);
+  animation: modal-glow-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success {
+    animation: none !important;
+  }
 }
 
 /* Animations entrée/sortie avec spring physics */
 .modal-motion-surface[data-state="open"] { 
   animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
+
+/* ── Concept 4 : Breath & Pulse Ambient (Halo Ambiant Vivant) ─────────── */
+@keyframes modal-ambient-breathe-light {
+  0%, 100% {
+    box-shadow: 
+      inset 0 1px 0.5px 0 rgb(255 255 255 / .7),
+      var(--modal-elevation-shadow, var(--modal-shadow-mid)),
+      var(--modal-glow, var(--modal-ambient-glow));
+  }
+  50% {
+    box-shadow: 
+      inset 0 1px 0.5px 0 rgb(255 255 255 / .95),
+      var(--modal-elevation-shadow, var(--modal-shadow-high)),
+      var(--modal-glow, var(--modal-ambient-glow-peak));
+  }
+}
+
+@keyframes modal-ambient-breathe-dark {
+  0%, 100% {
+    box-shadow: 
+      inset 0 1px 0.5px 0 rgb(240 245 255 / .12),
+      var(--modal-elevation-shadow, var(--modal-shadow-high)),
+      var(--modal-glow, var(--modal-ambient-glow));
+  }
+  50% {
+    box-shadow: 
+      inset 0 1px 0.5px 0 rgb(240 245 255 / .22),
+      var(--modal-elevation-shadow, var(--modal-shadow-high)),
+      var(--modal-glow, var(--modal-ambient-glow-peak));
+  }
+}
+
+.modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
+  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+             modal-ambient-breathe-light 4.2s 280ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.dark .modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
+  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+             modal-ambient-breathe-dark 4.2s 280ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-motion-surface[data-state="open"][data-ambient="true"] {
+    animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards !important;
+  }
+}
+
 .modal-motion-surface[data-state="closed"] { 
   animation: modal-dialog-out 220ms cubic-bezier(0.4, 0, 1, 1) both; 
   pointer-events: none; 

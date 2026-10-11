@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData, Indices, ContentDirection, LessonItem, TopLevelItem, Section, SubSection, SubSubSection } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 import type { ContentDraft } from '@/domain/notebook/contentDraft';
@@ -8,6 +8,7 @@ import type { SessionEditorState } from './hooks/useSessionAssignment';
 import type { ExportableChapterOption } from './modals/DataTransferModal';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import type { SessionRemarkEntry } from '@/domain/evaluations/sessionActivityRemarks';
+import { homeworkMoments } from '@/domain/evaluations/homeworkCycle';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
@@ -116,6 +117,9 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   const [lastType, setLastType] = useState<string | null>(null);
   const lastTypeRef = useRef<string | null>(null);
   lastTypeRef.current = lastType;
+  // État du cycle donné → corrigé de chaque devoir maison de la classe :
+  // la modale de séance n'offre la correction que des devoirs qui l'attendent.
+  const homeworkMomentList = useMemo(() => homeworkMoments(config, classInfo.id), [config, classInfo.id]);
 
   useEffect(() => {
     if (activeModal) {
@@ -151,6 +155,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             sessionAnnotation={getSessionAnnotation?.(sessionEditor.selection.date)}
             getSessionAnnotation={getSessionAnnotation}
             getSessionRemarkEntries={getSessionRemarkEntries}
+            homeworkMoments={homeworkMomentList}
             sessionDocuments={sessionEditor.selection.date ? getSessionDocuments?.(sessionEditor.selection.date) : undefined}
             getSessionDocuments={getSessionDocuments}
             onOpenDocumentPreview={onOpenDocumentPreview}
@@ -167,6 +172,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             subject={classInfo.subject}
             contentDirection={contentDirection}
             classId={classInfo.id}
+            cycle={classInfo.cycle}
             timetable={config.timetable}
             timetableClock={config.timetableClock}
           />

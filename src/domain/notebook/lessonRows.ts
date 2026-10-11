@@ -31,10 +31,28 @@ export function resolveAddAfterTarget(rows: readonly LessonRow[], selectedKeys: 
   return null;
 }
 
-const blockTypes = new Set<string>(['chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu']);
+const blockTypes = new Set<string>(['chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'controle_court', 'controle_global', 'oral', 'correction_devoir_maison', 'correction_controle_continu', 'examen_blanc', 'olympiade', 'concours', 'colle']);
+
+/*
+ * Le plan est relu par une vingtaine de consommateurs (numérotation, ordre
+ * chronologique, réconciliation, impression, recherche…). Les cahiers sont
+ * immuables — Immer remplace le tableau à chaque écriture — donc l'identité du
+ * tableau est une clé de cache fiable : la projection est calculée une fois par
+ * version du cahier au lieu d'une fois par lecteur. Cache faible : le tableau
+ * et ses lignes partent ensemble au ramasse-miettes.
+ */
+const rowsCache = new WeakMap<LessonsData, LessonRow[]>();
 
 /** Shared screen/print traversal. Coordinates always address the source tree. */
 export function buildLessonRows(data: LessonsData): LessonRow[] {
+  const cached = rowsCache.get(data);
+  if (cached) return cached;
+  const rows = buildRows(data);
+  rowsCache.set(data, rows);
+  return rows;
+}
+
+function buildRows(data: LessonsData): LessonRow[] {
   const rows: LessonRow[] = [];
   const visit = (node: LessonNode, indices: Indices, elementType: ElementType, ancestorKeys: string[]) => {
     const key = indicesKey(indices);
