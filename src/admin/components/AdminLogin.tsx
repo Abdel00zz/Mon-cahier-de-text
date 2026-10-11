@@ -21,10 +21,10 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
     };
 
     return (
-        <div className="flex min-h-dvh items-center justify-center p-4" style={{ backgroundColor: 'var(--clr-bg)' }}>
+        <div className="admin-shell admin-login flex min-h-dvh items-center justify-center p-4" style={{ backgroundColor: 'var(--clr-bg)' }}>
             <form
                 onSubmit={handleSubmit}
-                className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-lg"
+                className="admin-login__card w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-lg"
             >
                 <div className="mb-6 text-center">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-xl font-black text-primary-foreground">

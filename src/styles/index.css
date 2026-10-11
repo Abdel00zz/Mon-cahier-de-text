@@ -2575,3 +2575,304 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   .document-preview-title { color: #831f35; }
   .devoir-document .katex-display { overflow: visible; }
 }
+
+/* Administration: a calm, compact control surface built from the existing
+   navigation and panels. Scoped classes keep the teacher workspace unchanged. */
+.admin-shell {
+  min-height: 100dvh;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(circle at 90% -10%, hsl(var(--primary) / .07), transparent 31rem),
+    linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted) / .34));
+}
+.admin-loading { background: hsl(var(--background)); }
+.admin-commandbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 4.25rem;
+  align-items: center;
+  background: hsl(var(--background) / .82);
+  border-bottom: 1px solid hsl(var(--border) / .72);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+.admin-commandbar__action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: .75rem;
+  border-color: hsl(var(--border) / .9);
+  background: hsl(var(--card) / .88);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04);
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.admin-commandbar__icon {
+  width: 1.08rem;
+  height: 1.08rem;
+  margin-inline-end: .15rem;
+}
+.admin-commandbar__action:hover {
+  border-color: hsl(var(--primary) / .34);
+  background: hsl(var(--primary) / .07);
+  box-shadow: 0 5px 14px hsl(var(--foreground) / .07);
+}
+.admin-commandbar__action:active { transform: scale(.98); }
+.admin-commandbar__action:focus-visible,
+.admin-filter-bar :is(input, select):focus-visible,
+.admin-filter-chips button:focus-visible,
+.admin-metric-card:focus-visible,
+.admin-teacher-card:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+.admin-commandbar__action--primary {
+  border-color: hsl(var(--primary) / .86);
+  box-shadow: 0 4px 12px hsl(var(--primary) / .18);
+}
+.admin-commandbar__action--ink { box-shadow: 0 3px 10px hsl(var(--foreground) / .15); }
+.admin-commandbar__action--schedule {
+  border-color: hsl(209 68% 46% / .28);
+  background: hsl(209 70% 96% / .92);
+  color: hsl(209 58% 34%);
+}
+.admin-commandbar__action--schedule:hover {
+  border-color: hsl(209 68% 46% / .52);
+  background: hsl(209 70% 92%);
+}
+.admin-commandbar__action--bulletin {
+  background: hsl(15 55% 45%);
+  color: hsl(45 40% 98%);
+}
+.admin-commandbar__action--bulletin:hover { background: hsl(15 56% 39%); }
+.admin-commandbar__action--calendar {
+  background: hsl(38 55% 28%);
+  color: hsl(45 55% 96%);
+}
+.admin-commandbar__action--calendar:hover { background: hsl(38 55% 23%); }
+
+.admin-overview { padding-top: 1.4rem; }
+.admin-overview__header {
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid hsl(var(--border) / .72);
+}
+.admin-overview__header h1,
+.admin-detail__header h1 {
+  letter-spacing: -.035em;
+}
+.admin-overview__header-actions button {
+  min-height: 2.75rem;
+  border-radius: .7rem;
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .035);
+}
+.admin-metric-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 8.6rem;
+  border-radius: .9rem;
+  border-color: hsl(var(--border) / .86);
+  background: hsl(var(--card) / .9);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+}
+.admin-metric-card::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: hsl(var(--primary) / .55);
+  content: '';
+}
+.admin-metric-card:nth-child(2)::after { background: hsl(var(--destructive) / .68); }
+.admin-metric-card:nth-child(3)::after { background: hsl(var(--warning) / .76); }
+.admin-metric-card:nth-child(4)::after { background: hsl(var(--foreground) / .48); }
+.admin-metric-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 9px 20px hsl(var(--foreground) / .075) !important;
+}
+.admin-priority-panel {
+  border-radius: .9rem;
+  border-color: hsl(var(--warning) / .24);
+  background: color-mix(in srgb, hsl(var(--card)) 92%, hsl(var(--warning)));
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .025);
+}
+.admin-priority-panel > div > div > button { text-underline-offset: 3px; }
+.admin-filter-chips { gap: .45rem; }
+.admin-filter-chips button {
+  min-height: 2.4rem;
+  border-radius: .65rem;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+}
+.admin-filter-chips button:hover { transform: translateY(-1px); }
+.admin-filter-bar {
+  padding: .5rem;
+  border: 1px solid hsl(var(--border) / .76);
+  border-radius: .9rem;
+  background: hsl(var(--card) / .72);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .025);
+}
+.admin-filter-bar :is(input, select) {
+  min-height: 2.75rem;
+  border-radius: .65rem;
+  border-color: hsl(var(--border) / .9);
+  background: hsl(var(--background) / .92);
+  color: hsl(var(--foreground));
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+.admin-filter-bar :is(input, select):hover { border-color: hsl(var(--primary) / .35); }
+.admin-filter-bar :is(input, select):focus {
+  border-color: hsl(var(--primary) / .68);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / .12);
+}
+.admin-empty-state {
+  border-radius: .9rem;
+  border-style: dashed;
+  background: hsl(var(--card) / .55);
+}
+.admin-teacher-grid { gap: .85rem; }
+.admin-teacher-card {
+  min-height: 100%;
+  border-radius: .9rem;
+  border-color: hsl(var(--border) / .85);
+  background: hsl(var(--card) / .9);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+}
+.admin-teacher-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: hsl(var(--primary) / .38);
+  background: hsl(var(--primary) / .035);
+  box-shadow: 0 10px 20px hsl(var(--foreground) / .075) !important;
+}
+
+.admin-detail { padding-top: 1.4rem; }
+.admin-detail__header {
+  border-radius: .95rem;
+  border-color: hsl(var(--border) / .82);
+  background: hsl(var(--card) / .9);
+  box-shadow: 0 3px 12px hsl(var(--foreground) / .04);
+}
+.admin-detail__tabs {
+  top: .35rem;
+  z-index: 20;
+  border-radius: .85rem;
+  border-color: hsl(var(--border) / .8);
+  background: hsl(var(--background) / .86);
+  box-shadow: 0 3px 12px hsl(var(--foreground) / .045);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.admin-login__card {
+  border-radius: 1rem;
+  border-color: hsl(var(--border) / .86);
+  box-shadow: 0 16px 38px hsl(var(--foreground) / .09);
+}
+.dark .admin-shell {
+  background:
+    radial-gradient(circle at 90% -10%, hsl(var(--primary) / .11), transparent 30rem),
+    linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted) / .18));
+}
+.dark .admin-commandbar { background: hsl(var(--background) / .78); }
+.dark .admin-commandbar__action--schedule {
+  border-color: hsl(209 62% 65% / .32);
+  background: hsl(209 36% 19% / .86);
+  color: hsl(209 75% 80%);
+}
+.dark .admin-commandbar__action--schedule:hover { background: hsl(209 38% 24%); }
+.dark .admin-commandbar__action--bulletin { background: hsl(15 48% 54%); color: hsl(30 18% 13%); }
+.dark .admin-commandbar__action--calendar { background: hsl(38 54% 55%); color: hsl(35 24% 13%); }
+.dark .admin-filter-bar,
+.dark .admin-detail__tabs { background: hsl(var(--card) / .72); }
+
+@media (max-width: 639px) {
+  .admin-commandbar {
+    position: static;
+    min-height: auto;
+    justify-content: stretch;
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+  }
+  .admin-commandbar__action { flex: 1 1 9.5rem; }
+  .admin-overview,
+  .admin-detail { padding-top: 1rem; }
+  .admin-overview__header { padding-bottom: .85rem; }
+  .admin-overview__header-actions { width: 100%; }
+  .admin-overview__header-actions button { flex: 1 1 0; }
+  .admin-metric-card { min-height: 7.6rem; }
+  .admin-filter-bar { gap: .45rem; }
+  .admin-filter-bar :is(input, select) { flex: 1 1 100%; width: 100%; }
+  .admin-detail__tabs { top: .2rem; }
+}
+@media (max-width: 390px) {
+  .admin-commandbar__action { flex-basis: 100%; }
+  .admin-filter-chips button { flex: 1 1 calc(50% - .3rem); justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-commandbar__action,
+  .admin-metric-card,
+  .admin-filter-chips button,
+  .admin-teacher-card { transition: none !important; }
+  .admin-commandbar__action:active,
+  .admin-metric-card:hover,
+  .admin-filter-chips button:hover,
+  .admin-teacher-card:hover { transform: none !important; }
+}
+
+/* Shared settings toggle treatment. Notification rows use state text and an
+   icon so the chosen reminder remains legible without relying on color alone. */
+.settings-toggle-row {
+  transition: background-color 180ms ease, opacity 180ms ease;
+}
+.settings-toggle-row__label {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+}
+.settings-toggle-row__icon {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--border) / .78);
+  border-radius: .65rem;
+  background: hsl(var(--muted) / .58);
+  color: hsl(var(--muted-foreground));
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.settings-toggle-row__copy {
+  display: grid;
+  gap: .08rem;
+  min-width: 0;
+}
+.settings-toggle-row__state {
+  color: hsl(var(--muted-foreground));
+  font-size: .72rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.settings-toggle-row.is-on .settings-toggle-row__icon {
+  border-color: hsl(var(--primary) / .3);
+  background: hsl(var(--primary) / .1);
+  color: hsl(var(--primary));
+}
+.settings-toggle-row.is-on .settings-toggle-row__state {
+  color: hsl(var(--primary));
+  font-weight: 650;
+}
+.settings-toggle-row.is-on .settings-toggle-row__icon .app-icon {
+  animation: settings-notification-buzz 250ms cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes settings-notification-buzz {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7%); }
+  40% { transform: translateX(7%); }
+  60% { transform: translateX(-5%); }
+  80% { transform: translateX(5%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-toggle-row,
+  .settings-toggle-row__icon { transition: none; }
+  .settings-toggle-row.is-on .settings-toggle-row__icon .app-icon { animation: none; }
+}

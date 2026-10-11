@@ -803,7 +803,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const snapshotsByClassId = new Map((data?.snapshot?.classes ?? []).map(classSnapshot => [classSnapshot.id, classSnapshot]));
 
     return (
-        <div className="mx-auto max-w-5xl p-4 sm:p-8">
+        <div className="admin-detail mx-auto max-w-5xl p-4 sm:p-8">
             <button
                 onClick={onBack}
                 className="mb-4 inline-flex h-9 items-center gap-1 rounded-md border border-border bg-card px-3 text-sm font-semibold text-foreground hover:bg-muted"
@@ -816,7 +816,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
 
             {data && (
                 <>
-                    <header className="mb-5 rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
+                    <header className="admin-detail__header mb-5 rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
                         <h1 className="text-2xl font-bold text-foreground tracking-tight">
                             {data.snapshot?.displayName?.trim()
                                 || `${data.user?.prenom ?? data.snapshot?.prenom ?? ''} ${data.user?.nom ?? data.snapshot?.nom ?? ''}`.trim()}
@@ -881,7 +881,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         )}
                     </header>
 
-                    <div className="sticky top-0 z-20 mb-5 overflow-x-auto rounded-2xl border bg-background/90 p-1.5 shadow-sm backdrop-blur">
+                    <div className="admin-detail__tabs sticky top-0 z-20 mb-5 overflow-x-auto rounded-2xl border bg-background/90 p-1.5 shadow-sm backdrop-blur">
                         <div role="tablist" aria-label="Sections de la fiche professeur" aria-orientation="horizontal" className="flex min-w-max gap-1 sm:min-w-0">
                             {([
                                 { id: 'classes', label: 'Classes & cahiers', count: classes.length },

@@ -9,6 +9,7 @@ import { TeacherDetail } from './components/TeacherDetail';
 import { CalendarManager } from './components/CalendarManager';
 import { OfficialBulletinManager } from './components/OfficialBulletinManager';
 import { TimetableClockManager } from './components/TimetableClockManager';
+import { CalendarDays, Clock, FileText } from '../components/ui/icons';
 
 type View =
     | { name: 'locked' }
@@ -90,7 +91,7 @@ export const AdminApp: React.FC = () => {
 
     if (!bootChecked) {
         return (
-            <div className="flex min-h-dvh items-center justify-center text-muted-foreground" style={{ backgroundColor: 'var(--clr-bg)' }}>
+            <div className="admin-shell admin-loading flex min-h-dvh items-center justify-center text-muted-foreground" style={{ backgroundColor: 'var(--clr-bg)' }}>
                 Chargement…
             </div>
         );
@@ -120,18 +121,21 @@ export const AdminApp: React.FC = () => {
     if (view.name === 'bulletin') return <OfficialBulletinManager onBack={() => setView({ name: 'overview' })} />;
 
     return (
-        <div className="min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
-            <div className="mx-auto flex max-w-6xl flex-wrap justify-end gap-2 px-4 pt-4 sm:px-8">
-                <button onClick={() => setView({ name: 'timetableClock' })} className="min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+        <div className="admin-shell min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
+            <nav aria-label="Outils administratifs" className="admin-commandbar mx-auto flex max-w-6xl flex-wrap justify-end gap-2 px-4 pt-4 sm:px-8">
+                <button onClick={() => setView({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    <Clock className="admin-commandbar__icon" aria-hidden />
                     Horaires des séances
                 </button>
-                <button onClick={() => setView({ name: 'bulletin' })} className="min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                <button onClick={() => setView({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                    <FileText className="admin-commandbar__icon" aria-hidden />
                     Bulletin officiel JSON
                 </button>
-                <button onClick={() => setView({ name: 'calendar' })} className="min-h-11 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                <button onClick={() => setView({ name: 'calendar' })} className="admin-commandbar__action admin-commandbar__action--ink admin-commandbar__action--calendar min-h-11 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                    <CalendarDays className="admin-commandbar__icon" aria-hidden />
                     Gérer les vacances
                 </button>
-            </div>
+            </nav>
             {overviewError && <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-8"><StatusNotice tone="warning" title={overviewError} announce /></div>}
             <TeacherList
                 teachers={teachers}

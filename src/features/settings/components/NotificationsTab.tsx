@@ -12,7 +12,7 @@ import {
     unsubscribeFromPush,
     type PushNotificationState,
 } from '@/infrastructure/push/push';
-import { Bell, CalendarCheck, Clock, TriangleAlert } from '@/components/ui/icons';
+import { Bell, CalendarCheck, CalendarDays, Clock, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { StatusNotice, type NoticeTone } from '@/components/ui/status-notice';
 import { Switch } from '@/components/ui/switch';
@@ -116,16 +116,41 @@ interface NotificationsTabProps {
     onChange: (patch: Partial<AppConfig>) => void;
 }
 
-const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label: string; hint?: string; disabled?: boolean }> = ({
+const Toggle: React.FC<{
+    checked: boolean;
+    onChange: (v: boolean) => void;
+    label: string;
+    hint?: string;
+    disabled?: boolean;
+    icon?: React.ComponentType<{ className?: string }>;
+}> = ({
     checked,
     onChange,
     label,
     hint,
     disabled,
+    icon: Icon = Bell,
 }) => {
     const id = React.useId();
+    const { locale } = useLocale();
+    const stateLabel = checked
+        ? (locale === 'ar' ? 'مفعّل' : locale === 'en' ? 'On' : 'Activé')
+        : (locale === 'ar' ? 'غير مفعّل' : locale === 'en' ? 'Off' : 'Désactivé');
     return (
-        <SettingsRow label={label} hint={hint} htmlFor={id} className={disabled ? 'opacity-60' : undefined}>
+        <SettingsRow
+            label={
+                <span className="settings-toggle-row__label">
+                    <span className="settings-toggle-row__icon" aria-hidden><Icon className="h-[18px] w-[18px]" /></span>
+                    <span className="settings-toggle-row__copy">
+                        <span>{label}</span>
+                        <span className="settings-toggle-row__state">{stateLabel}</span>
+                    </span>
+                </span>
+            }
+            hint={hint}
+            htmlFor={id}
+            className={`settings-toggle-row ${checked ? 'is-on' : 'is-off'}${disabled ? ' opacity-60' : ''}`}
+        >
             <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled} />
         </SettingsRow>
     );
@@ -364,12 +389,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             </SettingsSection>
 
             <SettingsSection title={l('Rappels', 'التذكيرات', 'Reminders')}>
-                <Toggle label={t('notifications.inApp')} checked={settings.enabled} onChange={v => patch({ enabled: v })} />
+                <Toggle label={t('notifications.inApp')} checked={settings.enabled} onChange={v => patch({ enabled: v })} icon={Bell} />
                 <Toggle
                     label={t('notifications.vibration')}
                     hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Rappels de cet appareil uniquement.', 'لتذكيرات هذا الجهاز فقط.', 'Reminders on this device only.')}
                     checked={settings.sessionVibration ?? false}
                     disabled={!vibrationSupported}
+                    icon={Bell}
                     onChange={v => {
                         patch({ sessionVibration: v });
                         if (v && vibrationSupported) {
@@ -379,7 +405,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 />
                 <Toggle label={l('Rappel avant la fin', 'تذكير قبل النهاية', 'Reminder before the end')}
                     checked={settings.sessionEndReminderEnabled}
-                    onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} />
+                    onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} icon={Clock} />
                 <SelectRow label={l('Minutes avant la fin', 'الدقائق قبل النهاية', 'Minutes before the end')}
                     value={settings.sessionReminderMinutes ?? 1} options={minuteOptions([1, 2, 5, 10])}
                     disabled={!settings.enabled || !settings.sessionEndReminderEnabled}
@@ -387,12 +413,12 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 <Toggle label={l('Rappel si aucune date', 'تذكير إن لم يُسجَّل تاريخ', 'Reminder if no date')}
                     hint={l('Une date ne confirme pas chaque séance du jour.', 'التاريخ الواحد لا يؤكد كل حصص اليوم.', 'One date does not confirm every session that day.')}
                     checked={settings.missingDateReminderEnabled}
-                    onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} />
+                    onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} icon={CalendarCheck} />
                 <SelectRow label={l('Minutes après la séance', 'الدقائق بعد الحصة', 'Minutes after the session')}
                     value={settings.missingDateReminderMinutes ?? 5} options={minuteOptions([1, 5, 10, 15, 30])}
                     disabled={!settings.enabled || !settings.missingDateReminderEnabled}
                     onChange={value => patch({ missingDateReminderMinutes: value })} />
-                <Toggle label={t('notifications.quiet')} checked={settings.quietDuringVacations} onChange={v => patch({ quietDuringVacations: v })} />
+                <Toggle label={t('notifications.quiet')} checked={settings.quietDuringVacations} onChange={v => patch({ quietDuringVacations: v })} icon={CalendarDays} />
             </SettingsSection>
 
             <SettingsSection title={l('Seuils d’alerte', 'عتبات التنبيه', 'Alert thresholds')}>

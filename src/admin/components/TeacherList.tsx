@@ -181,8 +181,8 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
         setSeverityFilter(current => (current === value ? 'all' : value));
 
     return (
-        <div className="mx-auto max-w-6xl p-4 sm:p-8">
-            <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="admin-overview mx-auto max-w-6xl p-4 sm:p-8">
+            <header className="admin-overview__header mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">
                         Direction administrative
@@ -194,7 +194,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                         {teachers.length} enseignant(s) · données issues de la dernière synchronisation
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="admin-overview__header-actions flex gap-2">
                     <button
                         onClick={onRefresh}
                         disabled={isLoading}
@@ -211,11 +211,11 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 </div>
             </header>
 
-            <section aria-label="Indicateurs de pilotage" className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <section aria-label="Indicateurs de pilotage" className="admin-metric-grid mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <button
                     type="button"
                     onClick={() => setSeverityFilter('all')}
-                    className={`rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'all' ? 'border-primary bg-primary/5 ring-2 ring-primary/15' : 'border-border bg-card'}`}
+                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'all' ? 'border-primary bg-primary/5 ring-2 ring-primary/15' : 'border-border bg-card'}`}
                 >
                     <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Enseignants suivis</span>
                     <span className="mt-1 block text-3xl font-black text-foreground">{teachers.length}</span>
@@ -224,7 +224,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 <button
                     type="button"
                     onClick={() => setSeverityFilter('critical')}
-                    className={`rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'critical' ? 'border-destructive bg-destructive/5 ring-2 ring-destructive/15' : 'border-border bg-card'}`}
+                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'critical' ? 'border-destructive bg-destructive/5 ring-2 ring-destructive/15' : 'border-border bg-card'}`}
                 >
                     <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">À traiter</span>
                     <span className="mt-1 block text-3xl font-black text-destructive">{distribution.needsFollowUp}</span>
@@ -233,7 +233,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 <button
                     type="button"
                     onClick={() => setSeverityFilter('messages')}
-                    className={`rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}
+                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}
                 >
                     <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Lectures attendues</span>
                     <span className="mt-1 block text-3xl font-black text-warning">{distribution.pendingMessages}</span>
@@ -242,7 +242,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 <button
                     type="button"
                     onClick={() => setSeverityFilter('blocked')}
-                    className={`rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'blocked' ? 'border-foreground bg-foreground/5 ring-2 ring-foreground/10' : 'border-border bg-card'}`}
+                    className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'blocked' ? 'border-foreground bg-foreground/5 ring-2 ring-foreground/10' : 'border-border bg-card'}`}
                 >
                     <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Comptes bloqués</span>
                     <span className="mt-1 block text-3xl font-black text-foreground">{distribution.blocked}</span>
@@ -251,7 +251,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             </section>
 
             {priorities.length > 0 && (
-                <section className="mb-5 rounded-2xl border border-warning/25 bg-warning/5 p-4">
+                <section className="admin-priority-panel mb-5 rounded-2xl border border-warning/25 bg-warning/5 p-4">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <h2 className="text-sm font-black text-foreground">File de priorités</h2>
@@ -281,7 +281,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             )}
 
             {/* Vue d'ensemble agrégée : distribution des sévérités (cliquable = filtre) */}
-            <div className="mb-4 flex flex-wrap gap-2" aria-label="Filtres de suivi">
+            <div className="admin-filter-chips mb-4 flex flex-wrap gap-2" aria-label="Filtres de suivi">
                 {(Object.keys(SEVERITY_META) as LatenessSeverity[]).map(sev => (
                     <button
                         key={sev}
@@ -328,7 +328,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 </button>
             </div>
 
-            <div className="mb-5 flex flex-wrap gap-2">
+            <div className="admin-filter-bar mb-5 flex flex-wrap gap-2">
                 <input
                     value={query}
                     onChange={e => setQuery(e.target.value)}
@@ -390,11 +390,11 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             </div>
 
             {filtered.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
+                <div className="admin-empty-state rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
                     {isLoading ? 'Chargement…' : 'Aucun enseignant à afficher.'}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="admin-teacher-grid grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {filtered.map(({ teacher, severity, inactive, completion }, index) => (
                         <React.Fragment key={teacher.phone}>
                         {sortKey === 'establishment' && (index === 0 || establishmentKey(filtered[index - 1].teacher.establishmentName) !== establishmentKey(teacher.establishmentName)) &&
@@ -402,7 +402,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                         <button
                             key={teacher.phone}
                             onClick={() => onSelect(teacher.phone)}
-                            className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+                            className="admin-teacher-card rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
                         >
                             <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
