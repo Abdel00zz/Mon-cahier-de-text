@@ -1,5 +1,6 @@
 import { type FC, useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Trash2, Check, Sparkles } from 'lucide-react';
+import { CalendarDays, Check, Sparkles } from 'lucide-react';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -434,16 +435,13 @@ export const EventDateModal: FC<EventDateModalProps> = ({
         {/* Pied de modal avec actions */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
           {(startDate || event?.date) ? (
-            <Button
-              type="button"
+            <AnimatedTrashButton
+              label={copy.clearDate}
               variant="ghost"
               size="sm"
               onClick={handleClearDate}
               className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-9"
-            >
-              <Trash2 className="h-3.5 w-3.5 me-1.5" />
-              {copy.clearDate}
-            </Button>
+            />
           ) : <div />}
 
           <div className="flex items-center gap-2">

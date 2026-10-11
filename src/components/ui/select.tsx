@@ -23,14 +23,16 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       formFieldVariants({ size, variant }),
-      "cursor-pointer justify-between data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
+      "group cursor-pointer justify-between data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
+      "data-[state=open]:border-primary data-[state=open]:ring-2 data-[state=open]:ring-primary/25",
+      "transition-all duration-200 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground/70" />
+      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground/70 transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-data-[state=open]:rotate-180" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -75,8 +77,8 @@ const SelectContent = React.forwardRef<
         ref={ref}
         dir={dir ?? (isRtl ? 'rtl' : 'ltr')}
         className={cn(
-          "paper-menu modern-scrollbar relative z-[200] max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-1rem)] min-w-[8.5rem] overflow-y-auto overflow-x-hidden rounded-lg border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-popover/90 p-1.5 text-popover-foreground shadow-[0_16px_36px_-12px_rgba(0,0,0,0.18),0_4px_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_50px_-16px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 text-start motion-reduce:animate-none",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-150 ease-out",
+          "paper-menu modern-scrollbar relative z-[200] max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-1rem)] min-w-[8.5rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-border/80 dark:border-white/10 bg-popover/98 dark:bg-popover/95 p-1.5 text-popover-foreground shadow-[0_16px_36px_-12px_rgba(0,0,0,0.18),0_4px_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_50px_-16px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 text-start motion-reduce:animate-none",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
           "origin-[--radix-select-content-transform-origin]",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1.5 data-[side=left]:-translate-x-1.5 data-[side=right]:translate-x-1.5 data-[side=top]:-translate-y-1.5",
@@ -111,10 +113,10 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-md py-2 ps-8 pe-3 text-[13px] font-medium outline-none",
-      "text-popover-foreground hover:bg-muted/70 hover:text-foreground focus:bg-muted/80 focus:text-foreground",
+      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-xl py-2 ps-8 pe-3 text-[13px] font-medium outline-none",
+      "text-popover-foreground hover:bg-primary/10 hover:text-foreground focus:bg-primary/10 focus:text-foreground data-[highlighted]:bg-primary/10 data-[highlighted]:text-foreground dark:hover:bg-primary/20 dark:focus:bg-primary/20 dark:data-[highlighted]:bg-primary/20",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
-      "transition-colors duration-150 motion-reduce:transition-none",
+      "transition-all duration-150 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] active:scale-[0.98] motion-reduce:transition-none",
       className
     )}
     {...props}
@@ -136,3 +138,4 @@ export {
   SelectContent,
   SelectItem,
 };
+export { AnimatedDropdown, type AnimatedDropdownProps, type AnimatedDropdownItem } from "./AnimatedDropdown";

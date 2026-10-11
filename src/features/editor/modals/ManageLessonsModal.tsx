@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppConfig, type ContentNumbering, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
-import { ChevronDown, ChevronUp, Eye, FolderTree, Hash, Layers, Trash2, TriangleAlert } from '@/components/ui/icons';
+import { ChevronDown, ChevronUp, Eye, FolderTree, Hash, Layers, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { DescriptionVisibilityControl, DescriptionMode } from '@/features/settings/components/DescriptionVisibilityControl';
 import { Switch } from '@/components/ui/switch';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ManageLessonsModalProps {
@@ -300,9 +301,15 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                         <span className="min-w-0 flex-1 truncate text-xs font-semibold text-rose-800 dark:text-rose-200">
                           {t('manageLessons.corrupted', { title: item.title })}
                         </span>
-                        <Button type="button" variant="destructive" onClick={() => requestDelete(index)} className="h-9 w-9 rounded-xl p-0" title={t('manageLessons.delete')}>
-                          <Trash2 className="h-4 w-4 stroke-[2.2]" />
-                        </Button>
+                        <AnimatedTrashButton
+                          iconOnly
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => requestDelete(index)}
+                          className="h-9 w-9 rounded-xl p-0"
+                          title={t('manageLessons.delete')}
+                          aria-label={t('manageLessons.delete')}
+                        />
                       </li>
                     );
                   }
@@ -346,15 +353,15 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                             <ChevronDown className="h-4 w-4 stroke-[2.4]" />
                           </button>
                         </div>
-                        <button
-                          type="button"
+                        <AnimatedTrashButton
+                          iconOnly
+                          size="sm"
+                          variant="icon"
                           onClick={() => requestDelete(index)}
                           className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background text-muted-foreground transition-all hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-800 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 active:scale-90 shadow-2xs"
                           title={t('manageLessons.delete')}
                           aria-label={t('manageLessons.delete')}
-                        >
-                          <Trash2 className="h-4 w-4 stroke-[2.2]" />
-                        </button>
+                        />
                       </span>
                     </li>
                   );

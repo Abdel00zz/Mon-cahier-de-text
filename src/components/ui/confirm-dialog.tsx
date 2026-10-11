@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { ModalBottomSheet } from './modal-bottom-sheet';
 import { Button } from './button';
+import { AnimatedTrashButton } from './AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { TriangleAlert, CircleHelp } from '@/components/ui/icons';
 import { Input } from './input';
 import { StatusNotice } from './status-notice';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
-import { cn } from '@/lib/utils';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -121,19 +121,28 @@ export function ConfirmDialog({
                     >
                         {cancelLabel ?? t('common.cancel')}
                     </Button>
-                    <Button
-                        type="button"
-                        variant={variant === 'destructive' ? 'destructive' : 'default'}
-                        onClick={handleConfirm}
-                        disabled={!confirmationIsValid || pending}
-                        aria-busy={pending}
-                        className={cn(
-                            "min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm",
-                            variant === 'destructive' ? 'glow-pulse-danger' : 'glow-pulse-primary'
-                        )}
-                    >
-                        {pending ? t('common.loading') : confirmLabel ?? (variant === 'destructive' ? t('common.delete') : t('common.confirm'))}
-                    </Button>
+                    {variant === 'destructive' ? (
+                        <AnimatedTrashButton
+                            label={pending ? t('common.loading') : confirmLabel ?? t('common.delete')}
+                            variant="destructive"
+                            size="md"
+                            onAction={() => handleConfirm({ stopPropagation: () => {} } as React.MouseEvent)}
+                            disabled={!confirmationIsValid || pending}
+                            aria-busy={pending}
+                            className="min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm glow-pulse-danger w-full"
+                        />
+                    ) : (
+                        <Button
+                            type="button"
+                            variant="default"
+                            onClick={handleConfirm}
+                            disabled={!confirmationIsValid || pending}
+                            aria-busy={pending}
+                            className="min-h-11 h-auto rounded-xl px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm glow-pulse-primary"
+                        >
+                            {pending ? t('common.loading') : confirmLabel ?? t('common.confirm')}
+                        </Button>
+                    )}
                 </div>
             }
         >

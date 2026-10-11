@@ -9,7 +9,8 @@ import {
     listArchives,
 } from '@/infrastructure/storage/archives';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Download, Trash2, CalendarCheck, FolderArchive } from '@/components/ui/icons';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
+import { Download, CalendarCheck, FolderArchive } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { AppConfig } from '@/types';
@@ -90,18 +91,17 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                         >
                             <Download className="h-[18px] w-[18px] stroke-[1.5]" />
                         </button>
-                        <button
-                            type="button"
+                        <AnimatedTrashButton
+                            iconOnly
+                            size="md"
+                            variant="icon"
                             onClick={() => {
-                                impact('light');
                                 setPendingDelete(meta);
                             }}
-                            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                            className="h-11 w-11 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                             title={t('archives.delete')}
                             aria-label={t('archives.delete')}
-                        >
-                            <Trash2 className="h-[18px] w-[18px] stroke-[1.5]" />
-                        </button>
+                        />
                     </SettingsRow>
                 )) : (
                     <div className="flex flex-col items-center gap-2 py-8 text-center">

@@ -5,7 +5,8 @@ import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { FileText, Users, Trash2 } from 'lucide-react';
+import { FileText, Users } from 'lucide-react';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
 import { EventDateModal } from './EventDateModal';
@@ -213,16 +214,16 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     <span className="sr-only">{t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}</span>
                   </button>
 
-                  <button
-                    type="button"
+                  <AnimatedTrashButton
+                    iconOnly
+                    size="sm"
+                    variant="icon"
+                    data-danger="true"
                     onClick={() => onDelete(event)}
                     className="ev-icon-btn shrink-0"
-                    data-danger="true"
                     aria-label={t('evaluations.deleteEventAria', { title: event.title })}
-                    data-tippy-content={deleteTooltip}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive shrink-0" />
-                  </button>
+                    title={deleteTooltip}
+                  />
                 </div>
               </li>
             );

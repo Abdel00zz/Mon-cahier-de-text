@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { AppConfig, ClassInfo, ClassEvaluationEntry, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
@@ -11,7 +12,6 @@ import './evaluationReference.css';
 import {
   CalendarCheck,
   RefreshCw,
-  Trash2,
   FileText,
   UserX,
   Users,
@@ -468,16 +468,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 </button>
               )}
 
-              <button
-                type="button"
+              <AnimatedTrashButton
+                iconOnly
+                size="sm"
+                variant="icon"
+                data-danger="true"
                 onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
                 className="ev-icon-btn shrink-0"
-                data-danger="true"
-                data-tippy-content={locale === 'ar' ? `حذف ${displayName} نهائياً` : `Supprimer définitivement ${displayName}`}
+                title={locale === 'ar' ? `حذف ${displayName} نهائياً` : `Supprimer définitivement ${displayName}`}
                 aria-label={t('evaluations.manualDelete')}
-              >
-                <Trash2 className="h-4 w-4 text-destructive shrink-0" />
-              </button>
+              />
             </div>
           </div>
         );

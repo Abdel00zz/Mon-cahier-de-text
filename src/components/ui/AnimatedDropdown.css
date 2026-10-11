@@ -1,0 +1,281 @@
+/* ── Animated Dropdown (Inspiré du patron interactif fluide) ─────────────────── */
+
+.animated-dropdown-container {
+  --dropdown-transition-time: 0.35s;
+  --dropdown-transition-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dropdown-radius: 1.1rem;
+  --dropdown-item-height: 44px;
+  --translate-value: 0px;
+  --floating-icon-size: 26px;
+  --floating-icon-top: 0px;
+  --floating-icon-left: 0px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Bouton principal (Trigger) */
+.animated-dropdown-main-btn {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 0 1.1rem;
+  border-radius: var(--dropdown-radius);
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color var(--dropdown-transition-time) var(--dropdown-transition-timing),
+    box-shadow var(--dropdown-transition-time) var(--dropdown-transition-timing),
+    background-color var(--dropdown-transition-time) var(--dropdown-transition-timing);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.animated-dropdown-main-btn:hover {
+  border-color: color-mix(in srgb, hsl(var(--primary)) 40%, hsl(var(--border)));
+  background-color: color-mix(in srgb, hsl(var(--primary)) 4%, hsl(var(--card)));
+}
+
+.animated-dropdown-main-btn:focus-visible,
+.animated-dropdown-main-btn[data-state="open"] {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--primary)) 25%, transparent);
+}
+
+.animated-dropdown-main-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.animated-dropdown-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.animated-dropdown-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: hsl(var(--primary));
+}
+
+.animated-dropdown-title-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.animated-dropdown-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Flèche avec rotation douce 180° */
+.animated-dropdown-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-inline-start: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  transition: transform var(--dropdown-transition-time) var(--dropdown-transition-timing),
+              color var(--dropdown-transition-time) var(--dropdown-transition-timing);
+  transform: rotate(0deg);
+}
+
+.animated-dropdown-arrow[data-open="true"] {
+  transform: rotate(180deg);
+  color: hsl(var(--primary));
+}
+
+/* Enveloppe de la liste */
+.animated-dropdown-list-wrapper {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  z-index: 220;
+  padding: 0.4rem;
+  background-color: hsl(var(--popover) / 0.98);
+  border-radius: var(--dropdown-radius);
+  border: 1px solid hsl(var(--border) / 0.85);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.18), 0 4px 12px -4px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transform-origin: top center;
+  transition:
+    opacity var(--dropdown-transition-time) var(--dropdown-transition-timing),
+    transform var(--dropdown-transition-time) var(--dropdown-transition-timing),
+    max-height var(--dropdown-transition-time) var(--dropdown-transition-timing);
+}
+
+.dark .animated-dropdown-list-wrapper {
+  background-color: hsl(var(--popover) / 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 50px -16px rgba(0, 0, 0, 0.65);
+}
+
+/* Liste avec pilule coulissante (sliding pill) */
+ul.animated-dropdown-list {
+  position: relative;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.animated-dropdown-list::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  opacity: 0;
+  height: var(--dropdown-item-height);
+  background-color: color-mix(in srgb, hsl(var(--primary)) 12%, hsl(var(--muted)));
+  border-radius: calc(var(--dropdown-radius) - 4px);
+  transform: translateY(var(--translate-value));
+  transition:
+    transform var(--dropdown-transition-time) var(--dropdown-transition-timing),
+    opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.dark ul.animated-dropdown-list::before {
+  background-color: color-mix(in srgb, hsl(var(--primary)) 22%, hsl(var(--muted)));
+}
+
+ul.animated-dropdown-list.is-hovering::before {
+  opacity: 1;
+}
+
+/* Élément de liste */
+li.animated-dropdown-list-item {
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.animated-dropdown-item-btn {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.875rem;
+  width: 100%;
+  min-height: var(--dropdown-item-height);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.85rem;
+  border-radius: calc(var(--dropdown-radius) - 4px);
+  border: none;
+  background: transparent;
+  color: hsl(var(--popover-foreground));
+  cursor: pointer;
+  text-align: start;
+  transition: color var(--dropdown-transition-time) var(--dropdown-transition-timing);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.animated-dropdown-item-btn:hover,
+.animated-dropdown-item-btn:focus-visible {
+  color: hsl(var(--foreground));
+  outline: none;
+}
+
+.animated-dropdown-item-btn.is-selected {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.animated-dropdown-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.animated-dropdown-item-btn:hover .animated-dropdown-item-icon,
+.animated-dropdown-item-btn.is-selected .animated-dropdown-item-icon {
+  color: hsl(var(--primary));
+  transform: scale(1.08);
+}
+
+.animated-dropdown-item-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.animated-dropdown-item-check {
+  margin-inline-start: auto;
+  color: hsl(var(--primary));
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Badge / Icône magnétique flottante */
+.animated-dropdown-floating-icon {
+  position: absolute;
+  top: var(--floating-icon-top);
+  left: var(--floating-icon-left);
+  width: var(--floating-icon-size);
+  height: var(--floating-icon-size);
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--dropdown-transition-time) var(--dropdown-transition-timing);
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+}
+
+.animated-dropdown-floating-icon.is-active {
+  opacity: 1;
+}
+
+.animated-dropdown-floating-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke-width: 2.5;
+}
+
+/* Masquage de l'icône flottante sur tactile pour ne pas gêner */
+@media (hover: none) or (pointer: coarse) {
+  .animated-dropdown-floating-icon {
+    display: none !important;
+  }
+}
+
+/* Accessibilité reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animated-dropdown-container,
+  .animated-dropdown-main-btn,
+  .animated-dropdown-arrow,
+  .animated-dropdown-list-wrapper,
+  ul.animated-dropdown-list::before,
+  .animated-dropdown-item-btn,
+  .animated-dropdown-floating-icon {
+    transition: none !important;
+  }
+}

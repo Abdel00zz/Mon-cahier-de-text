@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
-import { Check, Copy, Info, RotateCcw, Trash2, X } from 'lucide-react';
+import { Check, Copy, Info, RotateCcw, X } from 'lucide-react';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import type { ClassRoster, HomeworkOutcome, NotebookCondition, OralOutcome } from '@/types';
@@ -318,9 +319,16 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         </div>}
         <div className="notebook-footer modal-footer">
           <div className="notebook-footer__tools footer-actions-left">
-            <button type="button" onClick={() => { setRemoved({ names, conditions }); setNames([]); setConditions({}); }} disabled={!names.length} aria-label={t(copy.clear)} title={t(copy.clear)} className="action-link danger notebook-text-action notebook-text-action--danger">
-              <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true"/><span>{t(copy.clear)}</span>
-            </button>
+            <AnimatedTrashButton
+              label={t(copy.clear)}
+              variant="ghost"
+              size="sm"
+              onClick={() => { setRemoved({ names, conditions }); setNames([]); setConditions({}); }}
+              disabled={!names.length}
+              aria-label={t(copy.clear)}
+              title={t(copy.clear)}
+              className="action-link danger notebook-text-action notebook-text-action--danger"
+            />
             <button type="button" onClick={handleCopy} disabled={!names.length} aria-label={t('evaluations.notebook.copyReport')} title={t('evaluations.notebook.copyReport')} className="action-link neutral notebook-text-action">
               {copied ? <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true"/> : <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden="true"/>}
               <span>{copied ? t(copy.copied) : t('evaluations.notebook.copyReport')}</span>
@@ -363,15 +371,14 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   {copied ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   <span>{copied ? t(copy.copied) : t(copy.copy)}</span>
                 </button>
-                <button
-                  type="button"
+                <AnimatedTrashButton
+                  label={t(copy.clear)}
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setNames([]); setConditions({}); }}
                   className="action-link danger"
                   title={t(copy.clear)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>{t(copy.clear)}</span>
-                </button>
+                />
               </div>
             </div>
             <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border-subtle)] max-h-36 overflow-y-auto">

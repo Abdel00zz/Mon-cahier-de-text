@@ -5,6 +5,8 @@
 @import "../components/ui/paper-controls.css";
 @import "../components/ui/action-tile.css";
 @import "../components/ui/icons.css";
+@import "../components/ui/AnimatedTrashButton.css";
+@import "../components/ui/AnimatedDropdown.css";
 @import "../features/dashboard/classCards.css";
 @import "../features/dashboard/dashboardCanvas.css";
 @import "../features/evaluations/evaluationsBoard.css";

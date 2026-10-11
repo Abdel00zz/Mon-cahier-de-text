@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Users, Trash2 } from '@/components/ui/icons';
+import { Check, Users } from '@/components/ui/icons';
 import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
+import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -323,7 +324,15 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         footerClassName="border-t border-border/70 bg-background"
         footer={<fieldset disabled={submitting} className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-11 items-center gap-2">
-            {editingClass && onDelete && <Button type="button" variant="ghost" onClick={() => setConfirmDelete(true)} className="h-11 w-full rounded-xl px-4 text-destructive hover:bg-destructive/5 hover:text-destructive sm:w-auto"><Trash2 aria-hidden />{t('dashboard.delete')}</Button>}
+            {editingClass && onDelete && (
+              <AnimatedTrashButton
+                label={t('dashboard.delete')}
+                variant="ghost"
+                size="md"
+                onClick={() => setConfirmDelete(true)}
+                className="h-11 w-full rounded-xl px-4 text-destructive hover:bg-destructive/5 hover:text-destructive sm:w-auto"
+              />
+            )}
             {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-11 w-full rounded-[12px] px-4 text-xs font-semibold sm:w-auto sm:text-sm">
               {copy.back}
             </Button>}
