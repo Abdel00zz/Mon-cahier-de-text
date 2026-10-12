@@ -8,6 +8,7 @@ import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
 import type { PedagogicalEvent } from '@/types';
 import { cn } from '@/lib/utils';
+import './dateCalendar.css';
 
 export interface EventDateModalProps {
   isOpen: boolean;
@@ -239,7 +240,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
         </div>
       }
     >
-      <div className="space-y-3.5 font-sans">
+      <div className="date-cal-theme space-y-3.5 font-sans">
         {/* Aperçu dynamique de la date sélectionnée */}
         <div className="flex items-center justify-between rounded-lg bg-muted/40 border border-border/60 px-3.5 py-2.5">
           <div className="flex items-center gap-2 min-w-0">
@@ -340,10 +341,12 @@ export const EventDateModal: FC<EventDateModalProps> = ({
                   key={year}
                   type="button"
                   onClick={() => setViewYear(year)}
+                  aria-pressed={viewYear === year}
+                  data-active={viewYear === year ? '' : undefined}
                   className={cn(
-                    "px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer",
+                    "date-cal-chip px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer",
                     viewYear === year
-                      ? "bg-primary text-primary-foreground shadow-xs"
+                      ? "shadow-xs"
                       : "text-muted-foreground hover:text-foreground bg-muted/40"
                   )}
                 >
@@ -362,10 +365,12 @@ export const EventDateModal: FC<EventDateModalProps> = ({
                   key={m}
                   type="button"
                   onClick={() => setViewMonth(m)}
+                  aria-pressed={isActive}
+                  data-active={isActive ? '' : undefined}
                   className={cn(
-                    "px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
+                    "date-cal-chip px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
                     isActive
-                      ? "bg-zinc-800 text-zinc-100 dark:bg-zinc-700 dark:text-white font-bold shadow-xs"
+                      ? "shadow-xs"
                       : "bg-muted/30 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   )}
                 >
@@ -377,27 +382,21 @@ export const EventDateModal: FC<EventDateModalProps> = ({
         </div>
 
         {/* Grille calendrier interactive */}
-        <div className="rounded-lg border border-border/60 bg-card p-3 shadow-2xs">
+        <div className="date-cal">
           {/* En-tête des jours de la semaine */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
+          <div className="grid grid-cols-7 text-center" dir="ltr" aria-hidden="true">
             {weekdaysHeader.map((d, idx) => (
-              <span
-                key={idx}
-                className={cn(
-                  "text-[10.5px] font-bold uppercase tracking-wider py-0.5",
-                  idx === 6 ? "text-destructive/70" : "text-muted-foreground"
-                )}
-              >
+              <span key={idx} className="date-cal__weekday">
                 {d}
               </span>
             ))}
           </div>
 
-          {/* Grille des jours du mois */}
-          <div className="grid grid-cols-7 gap-1" dir="ltr">
+          {/* Grille des jours du mois : bande continue pour une période */}
+          <div className="date-cal__grid grid grid-cols-7 gap-y-1" dir="ltr">
             {/* Cases vides pour le décalage */}
             {Array.from({ length: emptyPrefixCount }).map((_, idx) => (
-              <div key={`empty-${idx}`} className="h-8 w-full" />
+              <div key={`empty-${idx}`} className="h-11 w-full" aria-hidden="true" />
             ))}
 
             {/* Jours du mois */}
@@ -407,25 +406,29 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               const isSelectedStart = iso === startDate;
               const isSelectedEnd = isRange && iso === endDate;
               const isInRange = isRange && startDate && endDate && iso > startDate && iso < endDate;
+              const hasSpan = isRange && Boolean(startDate) && Boolean(endDate) && endDate > startDate;
+              const range = !hasSpan ? undefined
+                : isSelectedStart ? 'start'
+                : isSelectedEnd ? 'end'
+                : isInRange ? 'middle'
+                : undefined;
               const isToday = iso === today;
+              const isSunday = (emptyPrefixCount + idx) % 7 === 6;
 
               return (
                 <button
                   key={day}
                   type="button"
                   onClick={() => selectDay(day)}
-                  className={cn(
-                    "h-8 w-full rounded-md text-xs font-semibold flex items-center justify-center transition-all cursor-pointer select-none",
-                    isSelectedStart || isSelectedEnd
-                      ? "bg-primary text-primary-foreground font-bold shadow-xs scale-102"
-                      : isInRange
-                      ? "bg-primary/15 text-primary font-semibold rounded-none"
-                      : isToday
-                      ? "ring-1.5 ring-primary/60 font-bold text-foreground bg-primary/5 hover:bg-primary/10"
-                      : "text-foreground hover:bg-muted/70 active:scale-95"
-                  )}
+                  aria-pressed={isSelectedStart || isSelectedEnd}
+                  aria-current={isToday ? 'date' : undefined}
+                  data-selected={isSelectedStart || isSelectedEnd ? '' : undefined}
+                  data-range={range}
+                  data-today={isToday ? '' : undefined}
+                  data-inactive={isSunday ? '' : undefined}
+                  className="date-cal__day"
                 >
-                  {day}
+                  <span className="date-cal__num">{day}</span>
                 </button>
               );
             })}

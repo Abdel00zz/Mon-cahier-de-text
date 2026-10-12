@@ -8,11 +8,12 @@ import { countOccurrencesOfType, findItem } from '@/domain/notebook/dataUtils';
 import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
   ListChecks, CalendarCheck, FileSignature, CheckCheck, CircleAlert,
-  Clock, FileText, Users, AwardIcon, GraduationCap,
+  Clock, FileText, Users, AwardIcon, GraduationCap, Home,
 } from '@/components/ui/icons';
-import { ClipboardCheck, Mic } from 'lucide-react';
+import { ClipboardCheck, Presentation } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
+import { isKindOffered } from '@/domain/evaluations/kindAvailability';
 
 import { ContentFields } from './ContentFields';
 import { createContentDraft, contentDraftChanged, type ContentDraft, type EditableContent } from '@/domain/notebook/contentDraft';
@@ -55,6 +56,8 @@ export interface AddContentModalProps {
   timetableClock?: TimetableClockPolicy;
   /** cycle d'enseignement : restreint les natures spécifiques (ex: la colle en prépa). */
   cycle?: Cycle;
+  /** niveau officiel ou nom de la classe : l'examen blanc n'est offert qu'aux années d'examen. */
+  classLevel?: string;
 }
 
 const getElementTypeFromIndices = (data: LessonsData, indices: Indices): string | null => {
@@ -121,6 +124,9 @@ type ContentModalProps = AddContentModalProps | (EditContentModalProps & { mode:
 /** Une seule modale et un seul formulaire, avec deux intentions explicites. */
 export const ContentModal: React.FC<ContentModalProps> = (props) => {
   const { isOpen, onClose, subject, contentDirection, cycle } = props;
+  const classLevel = 'classLevel' in props ? props.classLevel : undefined;
+  /** Une seule règle pour toutes les portes : la nature est-elle proposée à cette classe ? */
+  const offered = (type: string) => isKindOffered(type, { cycle, level: classLevel });
   const edit = 'mode' in props ? props : null;
   const lessonsData = ('lessonsData' in props && props.lessonsData) ? props.lessonsData : EMPTY_LESSONS;
   const selectedIndices = 'selectedIndices' in props ? props.selectedIndices : null;
@@ -175,11 +181,14 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     }
   }, [selectedIndices, lessonsData, isOpen, t, contentDirection]);
 
+  // Le devoir maison se nomme simplement « Devoir maison » dans l'ajout de contenu.
+  const typeName = (type: string) => tc(type === 'devoir_maison' ? 'addContent.homework' : `manageLessons.type.${type}`);
+
   let modalTitle = t('addContent.title');
   if (stage !== 'select' && selectedType) {
     const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType];
     if (config) {
-      modalTitle = t('addContent.addType', { type: tc(`manageLessons.type.${selectedType}`) });
+      modalTitle = t('addContent.addType', { type: typeName(selectedType) });
     } else if (selectedType === 'section') {
       modalTitle = t('addContent.addType', { type: t('addContent.section') });
     } else if (selectedType === 'subsection') {
@@ -201,8 +210,8 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
     if (config) {
       const count = countOccurrencesOfType(lessonsData, type);
       const nextNum = count + 1;
-      const localizedName = tc(`manageLessons.type.${type}`);
-      initialData.title = config.autoNumber
+      const localizedName = typeName(type);
+      initialData.title = config.autoNumber && type !== 'devoir_maison'
         ? `${localizedName} ${nextNum}`
         : localizedName;
     } else if (type === 'item') {
@@ -253,6 +262,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
           selectedElementType.startsWith('devoir_') ||
           selectedElementType.startsWith('controle_') ||
           selectedElementType === 'oral' ||
+          selectedElementType === 'colle' ||
           selectedElementType === 'examen_blanc' ||
           selectedElementType === 'olympiade' ||
           selectedElementType === 'concours' ||
@@ -476,31 +486,42 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
                 onClick={() => handleSelectType('controle_global')}
               />
               <CategoryCard
+                icon={Home}
+                label={typeName('devoir_maison')}
+                description={t('addContent.homeworkHelp')}
+                colorClass="text-teal-600 dark:text-teal-400"
+                onClick={() => handleSelectType('devoir_maison')}
+              />
+              <CategoryCard
                 icon={Users}
                 label={tc('manageLessons.type.oral')}
                 colorClass="text-pink-600 dark:text-pink-400"
                 onClick={() => handleSelectType('oral')}
               />
-              {cycle === 'prepa' && (
+              {offered('colle') && (
                 <CategoryCard
-                  icon={Mic}
+                  icon={Presentation}
                   label={tc('manageLessons.type.colle')}
                   colorClass="text-rose-600 dark:text-rose-400"
                   onClick={() => handleSelectType('colle')}
                 />
               )}
-              <CategoryCard
-                icon={FileSignature}
-                label={tc('manageLessons.type.examen_blanc')}
-                colorClass="text-rose-600 dark:text-rose-400"
-                onClick={() => handleSelectType('examen_blanc')}
-              />
-              <CategoryCard
-                icon={AwardIcon}
-                label={tc('manageLessons.type.olympiade')}
-                colorClass="text-amber-600 dark:text-amber-400"
-                onClick={() => handleSelectType('olympiade')}
-              />
+              {offered('examen_blanc') && (
+                <CategoryCard
+                  icon={FileSignature}
+                  label={tc('manageLessons.type.examen_blanc')}
+                  colorClass="text-rose-600 dark:text-rose-400"
+                  onClick={() => handleSelectType('examen_blanc')}
+                />
+              )}
+              {offered('olympiade') && (
+                <CategoryCard
+                  icon={AwardIcon}
+                  label={tc('manageLessons.type.olympiade')}
+                  colorClass="text-amber-600 dark:text-amber-400"
+                  onClick={() => handleSelectType('olympiade')}
+                />
+              )}
               <CategoryCard
                 icon={GraduationCap}
                 label={tc('manageLessons.type.concours')}

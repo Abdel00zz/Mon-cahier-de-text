@@ -141,14 +141,10 @@ test('l’inscription conserve classe, matière et titre dans le nouvel espace',
   const classes = JSON.parse(storage.getItem('classManager_v1')!);
   assert.equal(classes[0].id, id);
   assert.equal(classes[0].name, '1AC 1');
-  assert.equal(
-    JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData[0].title,
-    'Évaluation diagnostique 1',
-  );
-  assert.equal(
-    JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData[1].title,
-    'Les fonctions',
-  );
+  // Contenu PERSONNEL saisi à l'inscription : il commence par le chapitre du professeur.
+  const lessons = JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData;
+  assert.equal(lessons[0].title, 'Les fonctions');
+  assert.equal(lessons.some((item: { type: string }) => item.type === 'evaluation_diagnostic'), false);
   assert.equal(storage.getItem('app_first_launch_v1'), 'true');
 });
 test('aucune préparation n’est appliquée au mauvais propriétaire', () => {
@@ -192,10 +188,9 @@ test('titre arabe conservé tel quel, même dans une interface française', () =
   )!;
   const notebook = JSON.parse(storage.getItem('classData_v1_' + id)!);
   assert.equal(notebook.contentDirection, 'rtl');
-  assert.equal(notebook.lessonsData[0].title, 'Évaluation diagnostique 1');
-  assert.equal(notebook.lessonsData[1].title, 'الدوال العددية');
+  assert.equal(notebook.lessonsData[0].title, 'الدوال العددية');
 });
-test('sans titre saisi, seul le diagnostic initial obligatoire est injecté', () => {
+test('sans titre saisi, le cahier reste vierge : le choix de démarrage reste ouvert', () => {
   const storage = fresh();
   const id = applyRegistrationSetup(
     { ...setup, firstTitle: '' },
@@ -203,9 +198,7 @@ test('sans titre saisi, seul le diagnostic initial obligatoire est injecté', ()
     storage,
   )!;
   const lessons = JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData;
-  assert.equal(lessons.length, 1);
-  assert.equal(lessons[0].type, 'evaluation_diagnostic');
-  assert.equal(lessons[0].title, 'Évaluation diagnostique 1');
+  assert.equal(lessons.length, 0);
 });
 test('checklist progressive : vraie classe, ouverture et créneau valide', () => {
   assert.equal(gettingStartedState({}, [classroom]).visible, false);

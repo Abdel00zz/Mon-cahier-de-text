@@ -143,9 +143,14 @@ test('deux portes, un seul enregistrement : les épreuves se créent au tableau,
     'la règle de placement est écrite noir sur blanc');
   assert.match(placement, /located\.parent\.splice\(located\.targetIndex \+ 1, 0, block/,
     'l’insertion suit la liste exacte de l’ancre');
-  // Le devoir à la maison, lui, s'énonce dans la REMARQUE : aucune carte ici.
-  assert.ok(!addModal.includes("handleSelectType('devoir_maison')"),
-    'le devoir à la maison ne se crée pas comme un contenu : il s’énonce dans la remarque de sa séance');
+  // Le devoir à la maison a DEUX portes (la pastille de la remarque, la carte
+  // « Devoir maison ») et UNE écriture : il rejoint la feuille d'évaluations, jamais
+  // le cahier sous forme de bloc caché.
+  assert.ok(addModal.includes("handleSelectType('devoir_maison')"), 'la carte Devoir maison est proposée');
+  assert.match(editor, /if \(type === 'devoir_maison'\) \{[\s\S]{0,1600}assignHomeworkPatch\(config, classInfo\.id, date, num\)[\s\S]{0,600}return;/,
+    'la carte écrit le devoir dans la feuille, sans toucher au cahier');
+  const remark = readFileSync('src/domain/evaluations/sessionRemarkChanges.ts', 'utf8');
+  assert.match(remark, /assignHomeworkPatch\(config, classId, date, patch\.homeworkGiven, result\)/, 'la pastille passe par la même écriture');
   assert.ok(!existsSync('src/features/editor/modals/EditItemModal.tsx'),
     'une seule modale d’ajout : pas de porte parallèle');
   const editorModals = readFileSync('src/features/editor/EditorModals.tsx', 'utf8');
@@ -164,11 +169,35 @@ test('un bloc de correction du devoir maison date le SECOND temps, sans créer d
   assert.equal(manual.length, 1, 'la correction ne crée pas un devoir de plus');
   assert.equal(manual[0].correctionDateISO, '2026-10-05', 'la correction date le devoir donné');
   assert.equal(manual[0].dateISO, '2026-09-20', 'l’attribution ne bouge pas');
-  // Sans attribution correspondante : aucun devoir fantôme.
+  // Devoir du planning officiel daté par le professeur : il rejoint la feuille avec sa correction.
+  const official = syncNotebookToEvaluations('c1', { manualAssessments: { c1: [] }, assessmentDates: { c1: { '2026-2027:s1-maison2': '2026-09-28' } } } as unknown as AppConfig,
+    [{ type: 'correction_devoir_maison', title: 'Correction du devoir maison 2', date: '2026-10-05' }]);
+  assert.deepEqual(official.patch.manualAssessments?.c1, [{ id: '2026-2027:s1-maison2', schoolYear: '2026-2027', type: 'maison', num: 2,
+    dateISO: '2026-09-28', semestre: 1, correctionDateISO: '2026-10-05' }], 'le devoir officiel donné reçoit sa correction');
+  // Devoir jamais saisi : la séance de correction le transmet, attribution à compléter.
   const orphan = syncNotebookToEvaluations('c1', { manualAssessments: { c1: [] } } as unknown as AppConfig,
     [{ type: 'correction_devoir_maison', title: 'Correction du devoir maison 3', date: '2026-10-05' }]);
-  assert.equal(orphan.patch.manualAssessments, undefined,
-    'c’est l’attribution qui crée, la correction qui date');
+  assert.deepEqual(orphan.patch.manualAssessments?.c1, [{ id: '2026-2027:s1-maison3', schoolYear: '2026-2027', type: 'maison', num: 3,
+    dateISO: '', semestre: 1, correctionDateISO: '2026-10-05' }], 'la correction transmet le devoir à la feuille');
+  // Supprimé de la feuille : la correction ne le fait pas renaître.
+  const removed = syncNotebookToEvaluations('c1', { manualAssessments: { c1: [] }, removedAssessments: { c1: ['2026-2027:s1-maison3'] } } as unknown as AppConfig,
+    [{ type: 'correction_devoir_maison', title: 'Correction du devoir maison 3', date: '2026-10-05' }]);
+  assert.equal(removed.patch.manualAssessments, undefined, 'un devoir supprimé reste supprimé');
+});
+
+test('une évaluation posée au cahier rejoint la feuille avant même d’être datée', () => {
+  const lessons: LessonsData = [
+    { type: 'evaluation_diagnostic', title: 'Évaluation diagnostique 1', _tempId: 'diag-1' },
+    { type: 'examen_blanc', title: 'Examen blanc 1', _tempId: 'blanc-1' },
+    // Ligne ancienne sans identité stable : elle attend sa date pour être reliée.
+    { type: 'olympiade', title: 'Olympiade' },
+  ];
+  const { patch } = syncNotebookToEvaluations('c1', {} as AppConfig, lessons, { previousLessons: [] });
+  const events = patch.pedagogicalEvents?.c1 ?? [];
+  assert.deepEqual(events.map(event => [event.id, event.type, event.date]), [
+    ['notebook-diag-1', 'evaluation_diagnostic', ''],
+    ['notebook-blanc-1', 'examen_blanc', ''],
+  ], 'les évaluations du cahier sont transmises, « + Définir une date »');
 });
 
 test('le contrat de workflow est documenté et référencé — document vivant', () => {

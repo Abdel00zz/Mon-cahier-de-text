@@ -18,11 +18,11 @@ test('cahier initial : le contenu stocké est lu de façon synchrone, avec sa di
   assert.equal(notebook.repaired, false);
 });
 
-test('cahier initial : un cahier vierge reçoit son diagnostic de départ', () => {
+test('cahier initial : un cahier vierge reste vierge — le choix de démarrage appartient au professeur', () => {
   const notebook = readInitialNotebook({ classId: 'c2', locale: 'fr', storage: storage() });
   assert.ok(notebook);
-  assert.equal(notebook.lessons.length, 1);
-  assert.equal(notebook.repaired, true);
+  assert.equal(notebook.lessons.length, 0, 'aucun diagnostic imposé avant le choix programme / contenu personnel');
+  assert.equal(notebook.repaired, true, 'seule la direction déduite est à persister');
   // La direction par défaut suit la langue demandée.
   assert.equal(notebook.direction, 'ltr');
   assert.equal(readInitialNotebook({ classId: 'c2', locale: 'ar', storage: storage() })!.direction, 'rtl');
@@ -50,10 +50,10 @@ test('cahier initial : une direction enregistrée n’est jamais écrasée par l
 
 test('cahier initial : la clé d’une classe ne peut pas servir une autre classe', () => {
   const entries = { [notebookStorageKey('c4')]: JSON.stringify([item('Classe 4')]) };
-  assert.equal(readInitialNotebook({ classId: 'c5', locale: 'fr', storage: storage(entries) })!.lessons.length, 1);
+  assert.equal(readInitialNotebook({ classId: 'c5', locale: 'fr', storage: storage(entries) })!.lessons.length, 0);
   const other = readInitialNotebook({ classId: 'c5', locale: 'fr', storage: storage(entries) })!;
-  // La classe sans cahier reçoit un diagnostic, jamais le contenu de la classe voisine.
-  assert.equal((other.lessons[0] as { title?: string }).title !== 'Classe 4', true);
+  // La classe sans cahier reste vierge, et ne reçoit jamais le contenu de la classe voisine.
+  assert.equal(other.lessons.length, 0);
 });
 
 test('cahier initial : un ancien cahier en tableau simple reste lisible', () => {

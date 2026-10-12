@@ -73,6 +73,8 @@ interface StudentNamesEditorProps {
   initialOralOutcomes?: Record<string, OralOutcome>;
   /** Note /20 par élève, saisie depuis la modale élèves (oral, colle). */
   initialOralGrades?: Record<string, string>;
+  /** Titre du rapport copié (« Suivi de la colle », « Suivi de l'oral »…). */
+  reportTitle?: string;
   /** Remise d'un devoir : rendu ou non rendu, un état par élève. */
   trackHomework?: boolean;
   initialHomeworkOutcomes?: Record<string, HomeworkOutcome>;
@@ -90,6 +92,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   reportContext,
   roster,
   initialOralGrades,
+  reportTitle,
   trackOral = false,
   initialOralOutcomes,
   trackHomework = false,
@@ -153,7 +156,12 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
     try {
       const reviewPrefix = trackOral ? 'evaluations.oral' : 'evaluations.homework';
       const report = trackOral || trackHomework
-        ? [t(`${reviewPrefix}.title`), reportContext, ...names.map(name => `- ${name} : ${t(`${reviewPrefix}.${Object.hasOwn(conditions, name) ? conditions[name] : 'pending'}`)}`)].filter(Boolean).join('\n')
+        ? [reportTitle ?? t(`${reviewPrefix}.title`), reportContext, ...names.map(name => {
+            const outcome = t(`${reviewPrefix}.${Object.hasOwn(conditions, name) ? conditions[name] : 'pending'}`);
+            // La note /20 (oral, colle) fait partie du constat : elle part avec le rapport.
+            const grade = trackOral ? grades[name]?.trim() : '';
+            return `- ${name} : ${outcome}${grade ? ` · ${grade}/20` : ''}`;
+          })].filter(Boolean).join('\n')
         : trackNotebookCondition ? notebookConditionReport(names, retainNotebookConditions(names, conditions as Record<string, NotebookCondition>),
         condition => t(`evaluations.notebook.${condition}`), t('evaluations.notebook.title'), reportContext) : names.join('\n');
       await navigator.clipboard.writeText(report);

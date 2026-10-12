@@ -410,3 +410,86 @@
     animation: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ICÔNE SEULE — « jeter » en un geste court (~360 ms)
+   ──────────────────────────────────────────────────────────────
+   Survol : le couvercle se soulève d'un ressort (on comprend ce qui va
+   arriver). Pression : le bac s'écrase. Clic : le couvercle bascule, une
+   feuille tombe dedans, le bac encaisse et une onde rouge se dissipe.
+   Transformations et opacité seulement (GPU), ressorts 150–360 ms.
+   ══════════════════════════════════════════════════════════════ */
+.del-btn--icon { --del-duration: 0.36s; overflow: visible; }
+
+.del-btn__icon { overflow: visible; }
+.del-btn__icon-lid { transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.del-btn__icon-can { transition: transform 140ms ease-out; }
+.del-btn__icon-paper { opacity: 0; transform-box: fill-box; transform-origin: center; }
+
+.del-btn--icon:not(:disabled):hover .del-btn__icon-lid,
+.del-btn--icon:not(:disabled):focus-visible .del-btn__icon-lid {
+  transform: translate(-0.5px, -2px) rotate(-16deg);
+}
+.del-btn--icon:not(:disabled):active .del-btn__icon-can { transform: scale(0.94, 0.9); }
+
+.del-btn--icon[data-running="true"] .del-btn__icon-lid {
+  animation: trashLidFlip var(--del-duration) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.del-btn--icon[data-running="true"] .del-btn__icon-can {
+  animation: trashCanBump var(--del-duration) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.del-btn--icon[data-running="true"] .del-btn__icon-can-fill {
+  animation: trashCanFillQuick var(--del-duration) ease-out forwards;
+}
+.del-btn--icon[data-running="true"] .del-btn__icon-paper {
+  animation: trashPaperDrop var(--del-duration) cubic-bezier(0.55, 0, 0.75, 0.6) forwards;
+}
+
+/* Onde de confirmation : rouge sémantique, jamais la couleur de marque. */
+.del-btn--icon::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid var(--del-danger);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+.del-btn--icon[data-running="true"]::after { animation: trashRipple var(--del-duration) ease-out forwards; }
+
+@keyframes trashLidFlip {
+  0% { transform: translate(0, 0) rotate(0); }
+  30% { transform: translate(-1.5px, -4px) rotate(-38deg); }
+  62% { transform: translate(-1.5px, -4px) rotate(-38deg); }
+  82% { transform: translate(0, 0.6px) rotate(4deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@keyframes trashCanBump {
+  0%, 55% { transform: scale(1, 1); }
+  70% { transform: scale(1.06, 0.9); }
+  86% { transform: scale(0.98, 1.03); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes trashCanFillQuick {
+  0%, 55% { y: 24px; }
+  80%, 100% { y: 17px; }
+}
+@keyframes trashPaperDrop {
+  0% { opacity: 0; transform: translateY(0) rotate(0); }
+  18% { opacity: 1; transform: translateY(2px) rotate(-8deg); }
+  65% { opacity: 1; transform: translateY(15px) rotate(12deg) scale(0.85); }
+  72%, 100% { opacity: 0; transform: translateY(17px) rotate(12deg) scale(0.6); }
+}
+@keyframes trashRipple {
+  0% { opacity: 0.45; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .del-btn__icon-lid, .del-btn__icon-can { transition: none; }
+  .del-btn--icon:not(:disabled):hover .del-btn__icon-lid,
+  .del-btn--icon:not(:disabled):active .del-btn__icon-can { transform: none; }
+  .del-btn--icon[data-running="true"] .del-btn__icon-paper,
+  .del-btn--icon[data-running="true"]::after { animation: none !important; opacity: 0; }
+}

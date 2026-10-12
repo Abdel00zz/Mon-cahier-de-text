@@ -9,7 +9,6 @@ import {
   classNameForLevelAndGroup,
   normalizeGroupNumber,
 } from "@/domain/classes/classGroup";
-import { createStarterDiagnostic } from "@/domain/notebook/starterDiagnostic";
 
 export interface RegistrationDraft {
   cycle: Cycle | "";
@@ -145,8 +144,8 @@ export function applyRegistrationSetup(
     classManager_v1: JSON.stringify([classInfo]),
     app_first_launch_v1: "true",
     ["classData_v1_" + id]: JSON.stringify({
+      // Contenu personnel saisi à l'inscription : aucun diagnostic imposé.
       lessonsData: [
-        createStarterDiagnostic(setup.applicationLocale),
         ...(setup.firstTitle
           ? [
             {

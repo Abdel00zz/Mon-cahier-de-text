@@ -1,7 +1,6 @@
 import type { AppLocale, ContentDirection, LessonsData } from '../../types';
 import { migrateLessonsData } from '../../domain/notebook/dataUtils';
-import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '../../domain/notebook/contentDirection';
-import { withStarterDiagnostic } from '../../domain/notebook/starterDiagnostic';
+import { defaultContentDirection, detectContentDirection, readStoredContentDirection } from '../../domain/notebook/contentDirection';
 
 export interface InitialNotebook {
     lessons: LessonsData;
@@ -42,11 +41,10 @@ export const readInitialNotebook = (options: {
         const fallback = defaultContentDirection(options.locale);
         const storedDirection = readStoredContentDirection(savedData);
         const direction = storedDirection ?? detectContentDirection(lessons, fallback).direction;
-        // Un cahier VIERGE reçoit son diagnostic de départ ; un cahier qui a du
-        // contenu est pris tel quel : supprimer le diagnostic doit tenir.
-        const normalizedLessons = migratedLessons.length === 0
-            ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(direction))
-            : migratedLessons;
+        // Un cahier vierge RESTE vierge : le choix de démarrage (programme officiel
+        // ou contenu personnel) appartient au professeur. Le diagnostic n'arrive
+        // qu'avec un programme existant (voir `withStarterDiagnostic`).
+        const normalizedLessons = migratedLessons;
         // Un cahier sans direction enregistrée est DÉDUIT de son contenu (et non de
         // la langue de l'interface) : un cahier latin s'ouvre ainsi de gauche à
         // droite même dans une interface arabe. La déduction est persistée, comme

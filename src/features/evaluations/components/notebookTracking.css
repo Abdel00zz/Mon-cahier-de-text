@@ -1462,3 +1462,192 @@
     color: var(--text-sub, #767771);
     font-weight: 500;
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Filtre des retours (Tous · En attente · Acquis…) : sélecteur
+   popover à défilement aimanté, en amélioration progressive.
+   Sans `appearance: base-select`, la pastille actuelle et le
+   <select> natif invisible restent tels quels. Les choix par élève
+   restent des boutons à un seul geste (loi de Fitts).
+   ────────────────────────────────────────────────────────────── */
+@supports (appearance: base-select) {
+    .filter-dropdown {
+        padding: 0;
+    }
+
+    .filter-dropdown > #selected-filter,
+    .filter-dropdown > svg {
+        display: none;
+    }
+
+    .filter-dropdown select,
+    .filter-dropdown select::picker(select) {
+        appearance: base-select;
+    }
+
+    .filter-dropdown select {
+        position: relative;
+        inset: auto;
+        opacity: 1;
+        width: auto;
+        height: auto;
+        min-height: 44px;
+        padding-inline: 14px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-radius: inherit;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+    }
+
+    .filter-dropdown select:focus-visible {
+        outline: 2px solid var(--border-focus);
+        outline-offset: 2px;
+    }
+
+    /* Même chevron que la pastille actuelle. */
+    .filter-dropdown select::picker-icon {
+        content: '';
+        width: 13px;
+        height: 13px;
+        background-color: var(--text-sub);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+        transition: rotate 200ms cubic-bezier(0.2, 0.9, 0.4, 1);
+    }
+
+    .filter-dropdown select:open::picker-icon {
+        rotate: 180deg;
+    }
+
+    /* Le panneau : la carte de la barre d'outils, liste aimantée au centre. */
+    .filter-dropdown select::picker(select) {
+        --picker-pad: 6px;
+        margin-block: 6px;
+        padding: var(--picker-pad);
+        min-width: anchor-size(width);
+        max-height: min(calc(44px * 5 + 12px), 60dvh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scroll-snap-type: y mandatory;
+        scroll-padding-block: var(--picker-pad);
+        scrollbar-width: none;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-btn);
+        background: var(--card-bg);
+        color: var(--text-dark);
+        box-shadow: 0 12px 32px -12px rgba(31, 32, 29, 0.28), 0 2px 6px rgba(31, 32, 29, 0.06);
+        opacity: 1;
+        translate: 0 0;
+        transition: opacity 180ms ease, translate 220ms cubic-bezier(0.2, 0.9, 0.4, 1),
+            display 220ms allow-discrete, overlay 220ms allow-discrete;
+    }
+
+    .filter-dropdown select:not(:open)::picker(select) {
+        opacity: 0;
+        translate: 0 -4px;
+    }
+
+    @starting-style {
+        .filter-dropdown select:open::picker(select) {
+            opacity: 0;
+            translate: 0 -4px;
+        }
+    }
+
+    .filter-dropdown option {
+        min-height: 44px;
+        padding-inline: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        /* Rayons imbriqués : rayon du panneau moins son espacement. */
+        border-radius: calc(var(--radius-btn) - var(--picker-pad));
+        scroll-snap-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-regular);
+        cursor: pointer;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .filter-dropdown option:hover,
+    .filter-dropdown option:focus-visible {
+        background: var(--surface-subtle);
+        color: var(--text-dark);
+        outline: none;
+    }
+
+    .filter-dropdown option:checked {
+        background: var(--surface-subtle-hover);
+        color: var(--text-dark);
+        font-weight: 650;
+    }
+
+    /* Le retour choisi garde la teinte de sa pastille. */
+    .filter-dropdown option:is([value='mastered'], [value='good'], [value='given']):checked {
+        background: var(--acquis-bg);
+        color: var(--acquis-text);
+    }
+
+    .filter-dropdown option:is([value='developing'], [value='average']):checked {
+        background: var(--cours-bg);
+        color: var(--cours-text);
+    }
+
+    .filter-dropdown option:is([value='needs_support'], [value='needs_work']):checked {
+        background: var(--accompagner-bg);
+        color: var(--accompagner-text);
+    }
+
+    .filter-dropdown option[value='missing']:checked {
+        background: var(--non-rendu-active-bg);
+        color: var(--non-rendu-active-text);
+    }
+
+    .filter-dropdown option::checkmark {
+        order: 1;
+        margin-inline-start: auto;
+    }
+
+    .dark .filter-dropdown select::picker(select) {
+        box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark .filter-dropdown option[value='missing']:checked {
+        background: rgba(180, 59, 53, 0.28);
+        color: #fca5a5;
+    }
+
+    /* Proximité : les choix qui sortent du panneau s'estompent pendant le défilement. */
+    @supports (animation-timeline: view()) {
+        @media (prefers-reduced-motion: no-preference) {
+            .filter-dropdown option {
+                /* Entrée puis sortie du panneau : la sortie ne s'applique qu'une fois commencée. */
+                animation: feedback-option-enter linear both, feedback-option-leave linear forwards;
+                animation-timeline: view(), view();
+                animation-range: entry, exit;
+            }
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .filter-dropdown select::picker(select),
+        .filter-dropdown select::picker-icon,
+        .filter-dropdown option {
+            transition: none;
+        }
+    }
+}
+
+@keyframes feedback-option-enter {
+    from { opacity: 0.45; scale: 0.96; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes feedback-option-leave {
+    from { opacity: 1; scale: 1; }
+    to { opacity: 0.45; scale: 0.96; }
+}

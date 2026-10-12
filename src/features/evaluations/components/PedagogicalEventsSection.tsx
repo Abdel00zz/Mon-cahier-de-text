@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PedagogicalEvent } from '@/types';
-import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
+import { documentIndicator, documentRequirementForEvent } from '@/domain/evaluations/documentRequirement';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { FileText, Users } from 'lucide-react';
+import { FileCheck, FilePlus, FileText, Users } from 'lucide-react';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
@@ -80,7 +80,6 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
       <div className="ev-board">
         <div className="ev-board__head" aria-hidden="true">
           <span>{t('evaluations.titleLabel')}</span>
-          <span>{t('evaluations.colState')}</span>
           <span>{t('evaluations.manualDate')}</span>
           <span>{t('evaluations.colActions')}</span>
         </div>
@@ -95,40 +94,11 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
             const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
             const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
 
-            const eventStatus = (() => {
-              if (done) {
-                return {
-                  label: t('evaluations.completed'),
-                  chip: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
-                };
-              }
-              if (!event.date) {
-                return {
-                  label: locale === 'ar' ? 'غير مؤرخ' : 'À planifier',
-                  chip: 'bg-muted text-muted-foreground ring-border',
-                };
-              }
-              const todayISO = todayInMorocco(new Date(), getBundledCalendar());
-              if (event.date < todayISO) {
-                return {
-                  label: locale === 'ar' ? 'منجز' : 'Effectué',
-                  chip: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
-                };
-              }
-              if (event.date === todayISO) {
-                return {
-                  label: locale === 'ar' ? 'اليوم' : 'Aujourd\'hui',
-                  chip: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
-                };
-              }
-              return {
-                label: locale === 'ar' ? 'مبرمج' : 'Planifié',
-                chip: 'bg-primary/8 text-primary ring-primary/20',
-              };
-            })();
+            const docIndicator = documentIndicator(documentRequirementForEvent(event.type), event.document);
             const eventDocTooltip = locale === 'ar'
-              ? (event.document ? 'عرض وتعديل وثيقة أو موضوع هذا النشاط' : 'إرفاق وثيقة أو نص أو رابط لهذا النشاط التربوي')
-              : (event.document ? 'Consulter ou modifier le document/sujet associé' : 'Associer un document, sujet ou lien à cette activité');
+              ? (docIndicator === 'attached' ? 'عرض وتعديل وثيقة أو موضوع هذا النشاط' : docIndicator === 'missing' ? 'الوثيقة مطلوبة ولم تُرفق بعد — انقر لكتابتها' : 'إرفاق وثيقة أو نص أو رابط لهذا النشاط التربوي')
+              : (docIndicator === 'attached' ? 'Consulter ou modifier le document/sujet associé' : docIndicator === 'missing' ? 'Document requis, pas encore associé — Cliquer pour le rédiger' : 'Associer un document, sujet ou lien à cette activité');
+            const docStateSuffix = docIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : docIndicator === 'missing' ? ` — ${t('evaluations.doc.stateMissing')}` : '';
 
             const eventStudentsTooltip = event.type === REMARK_EVENT_TYPE
               ? (locale === 'ar'
@@ -159,11 +129,6 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                   )}
                 </div>
 
-                <div className="ev-row__state">
-                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', eventStatus.chip)}>
-                    {eventStatus.label}
-                  </span>
-                </div>
 
                 <div className="ev-row__date">
                   <button
@@ -184,16 +149,21 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                 </div>
 
                 <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
-                  {event.type !== REMARK_EVENT_TYPE && (
+                  {docIndicator !== 'none' && (
                     <button
                       type="button"
                       onClick={() => onOpenDocument(event)}
                       className="ev-action shrink-0"
-                      data-filled={event.document?.source.trim() ? 'tone' : undefined}
-                      aria-label={t('evaluations.doc.title', { activity: event.title })}
+                      data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
+                      data-doc-state={docIndicator}
+                      aria-label={`${t('evaluations.doc.title', { activity: event.title })}${docStateSuffix}`}
                       data-tippy-content={eventDocTooltip}
                     >
-                      <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                      {docIndicator === 'attached'
+                        ? <FileCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        : docIndicator === 'missing'
+                          ? <FilePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+                          : <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
                       <span className="sr-only">{t('evaluations.doc.open')}</span>
                     </button>
                   )}

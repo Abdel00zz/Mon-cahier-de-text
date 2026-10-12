@@ -71,9 +71,61 @@ html[lang='ar'] .calendar-day-card__eyebrow {
   text-transform: none;
 }
 
+/* ── Changement de mois : le nouveau mois glisse depuis le côté où l'on va
+   (miroir en arabe), en 240 ms, sans décaler la grille. */
+.calendar-month[data-slide='next'] { animation: calendar-month-from-end 240ms cubic-bezier(0.2, 0.9, 0.4, 1) both; }
+.calendar-month[data-slide='prev'] { animation: calendar-month-from-start 240ms cubic-bezier(0.2, 0.9, 0.4, 1) both; }
+[dir='rtl'] .calendar-month[data-slide='next'] { animation-name: calendar-month-from-start; }
+[dir='rtl'] .calendar-month[data-slide='prev'] { animation-name: calendar-month-from-end; }
+
+@keyframes calendar-month-from-end {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes calendar-month-from-start {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Détail du jour : un panneau accroché à la grille. Sa flèche pointe la
+   colonne du jour choisi (`--calendar-column`, 0 = lundi), au même retrait
+   que la grille (px-2 / sm:px-5). */
+.calendar-details {
+  --calendar-grid-pad: 0.5rem;
+  position: relative;
+  border: 1px solid hsl(var(--border) / 0.6);
+  border-radius: 28px;
+  background: hsl(var(--card));
+  padding: 1rem;
+}
+
+.calendar-details::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  inset-inline-start: calc(var(--calendar-grid-pad) + (var(--calendar-column, 0) + 0.5) * (100% - 2 * var(--calendar-grid-pad)) / 7 - 6px);
+  width: 12px;
+  height: 12px;
+  /* Le filet des deux côtés supérieurs suit celui du panneau. */
+  box-shadow: -1px -1px 0 0 hsl(var(--border) / 0.6);
+  border-top-left-radius: 3px;
+  background: hsl(var(--card));
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .calendar-details {
+    --calendar-grid-pad: 1.25rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .calendar-day-card,
   .calendar-day-card:hover {
     transition: none;
   }
+  .calendar-month[data-slide] { animation: none; }
 }

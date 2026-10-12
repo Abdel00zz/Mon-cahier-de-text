@@ -9,6 +9,12 @@ import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspac
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
+/** Types dont la description reste visible par défaut : une seule liste pour l'écran et le PDF. */
+const DEFAULT_DESCRIPTION_TYPES = [
+    'définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'conséquence', 'propriété', 'règle', 'méthode',
+    'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application',
+] as const;
+
 const normalizeApplicationLocale = (value: unknown): AppLocale =>
     value === 'fr' || value === 'en' || value === 'ar' ? value : 'ar';
 
@@ -47,9 +53,9 @@ const defaultConfig: AppConfig = {
     printShowDescriptions: true,
     screenDescriptionMode: 'all',
     contentNumbering: { enabled: true },
-    screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+    screenDescriptionTypes: [...DEFAULT_DESCRIPTION_TYPES],
     printDescriptionMode: 'all',
-    printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+    printDescriptionTypes: [...DEFAULT_DESCRIPTION_TYPES],
     selectedCycles: [], // Choix explicite pendant l'onboarding
     selectedSubjects: [], // Aucune matière par défaut (toutes affichées)
     showAllCycles: false, // false car on a une sélection spécifique
@@ -76,9 +82,9 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             ...defaultConfig,
             printShowDescriptions: true,
             screenDescriptionMode: 'all',
-            screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            screenDescriptionTypes: [...DEFAULT_DESCRIPTION_TYPES],
             printDescriptionMode: 'all',
-            printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            printDescriptionTypes: [...DEFAULT_DESCRIPTION_TYPES],
             selectedCycles: [],
             selectedSubjects: [],
             showAllCycles: false,
@@ -109,11 +115,11 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             contentNumbering: loadedConfig.contentNumbering ?? { enabled: true },
             screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
                 ? loadedConfig.screenDescriptionTypes
-                : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+                : [...DEFAULT_DESCRIPTION_TYPES],
             printDescriptionMode: loadedPrintDescriptionMode,
             printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
                 ? loadedConfig.printDescriptionTypes
-                : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+                : [...DEFAULT_DESCRIPTION_TYPES],
             selectedCycles: loadedConfig.selectedCycles ?? [],
             selectedSubjects: loadedConfig.selectedSubjects ?? [],
             showAllCycles: loadedConfig.showAllCycles ?? true,

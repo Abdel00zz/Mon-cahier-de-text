@@ -8,6 +8,7 @@ import { buildLessonRows } from '../src/domain/notebook/lessonRows';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { MainTable } from '../src/features/editor/MainTable';
 import { buildNotebookCheckRemarks, notebookCheckRemarkText } from '../src/domain/evaluations/notebookCheckRemarks';
+import { documentRequirementForEvent } from '../src/domain/evaluations/documentRequirement';
 import { translateLocaleMessage } from '../src/i18n/messages';
 
 /*
@@ -113,7 +114,9 @@ test('le contrôle des cahiers ne propose pas de bouton Contenu', () => {
     const view = readFileSync('src/features/evaluations/components/PedagogicalEventsSection.tsx', 'utf8');
     // Le garde-fou entoure le bouton « Contenu » et lui seul : la liste des
     // élèves reste accessible, c'est elle qui alimente la remarque de séance.
-    assert.match(view, /event\.type !== REMARK_EVENT_TYPE && \(\s*<button\s+type="button"\s+onClick=\{\(\) => onOpenDocument\(event\)\}/);
+    // La règle vit dans le domaine (une seule réponse pour l'enseignant ET la direction).
+    assert.equal(documentRequirementForEvent('controle_cahiers'), 'none');
+    assert.match(view, /docIndicator !== 'none' && \(\s*<button\s+type="button"\s+onClick=\{\(\) => onOpenDocument\(event\)\}/);
     assert.match(view, /import \{ REMARK_EVENT_TYPE \} from '@\/domain\/evaluations\/notebookCheckRemarks'/);
     assert.equal(occurrences(view, 'REMARK_EVENT_TYPE') >= 2, true);
 });

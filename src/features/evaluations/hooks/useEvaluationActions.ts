@@ -34,9 +34,12 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                 ...(event.type === REMARK_EVENT_TYPE && conditions ? { notebookConditions: conditions } : {}) } : undefined } : event));
         },
         saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>, oralGrades?: Record<string, string>) {
-            const existing = config.assessmentParticipants?.[classId]?.[id];
-            onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: { ...config.assessmentParticipants?.[classId],
-                [id]: { names, oralOutcomes, ...(oralGrades && Object.keys(oralGrades).length ? { oralGrades } : {}), ...(existing?.homeworkOutcomes ? { homeworkOutcomes: existing.homeworkOutcomes } : {}), updatedAt: new Date().toISOString() } } } });
+            const records = { ...config.assessmentParticipants?.[classId] };
+            const existing = records[id];
+            // Même règle que la remise d'un devoir : une liste vidée efface le suivi.
+            if (!names.length) delete records[id];
+            else records[id] = { names, oralOutcomes, ...(oralGrades && Object.keys(oralGrades).length ? { oralGrades } : {}), ...(existing?.homeworkOutcomes ? { homeworkOutcomes: existing.homeworkOutcomes } : {}), updatedAt: new Date().toISOString() };
+            onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: records } });
         },
         /** Remise d'un devoir maison : rendu ou non rendu, élève par élève. */
         saveHomework(id: string, names: string[], homeworkOutcomes: Record<string, HomeworkOutcome>) {

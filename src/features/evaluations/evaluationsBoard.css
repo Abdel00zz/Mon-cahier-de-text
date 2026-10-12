@@ -2,7 +2,7 @@
    Les DEVOIRS et les ACTIVITÉS d'une classe, écrits comme un tableau de bord
    d'application de gestion : une seule surface, des filets d'un demi-pixel
    entre les lignes, et surtout DES COLONNES QUI NE BOUGENT PAS d'une ligne à
-   l'autre (identité, état, date, actions). C'est la structure qui porte
+   l'autre (identité, date, actions). C'est la structure qui porte
    l'information, pas les cadres.
 
    AUCUNE ICÔNE DANS LES ZONES : la nature est ÉCRITE — « Devoir surveillé 3 »,
@@ -16,8 +16,8 @@
    selon les WebView) ni largeurs écrites deux fois : une valeur change, tout
    le tableau suit.
 
-   SOUS 1024 px, le tableau se replie en DEUX LIGNES par entrée — identité et
-   état en haut, date et actions en dessous — au lieu de comprimer des
+   SOUS 1024 px, le tableau se replie en DEUX LIGNES par entrée — l'identité
+   en haut, date et actions en dessous — au lieu de comprimer des
    colonnes illisibles. L'en-tête de colonnes disparaît alors (les libellés
    de champs restent, eux, sur chaque contrôle).
 
@@ -39,10 +39,9 @@
        et ses libellés ne tombaient plus au-dessus des bonnes colonnes (mesuré).
        Les commandes ont une largeur FIXE, elles aussi : laissée « auto », une
        ligne dont les libellés sont plus longs (« Absents au contrôle »)
-       élargissait sa propre colonne et décalait son état et sa date — quatre
+       élargissait sa propre colonne et décalait sa date — plusieurs
        abscisses différentes pour la même colonne avant ce correctif. */
     --ev-id: minmax(0, 1fr);
-    --ev-state: 8.5rem;
     /* La date est la donnée qu'on vient lire et régler : sa colonne est la
        plus large des fixes, assez pour « 14/09/2026 » et son bouton d'action. */
     --ev-date: 17rem;
@@ -51,8 +50,8 @@
 /* Ligne d'en-tête : le vocabulaire des colonnes, en capitales discrètes. */
 .ev-board__head {
     display: grid;
-    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
-    grid-template-areas: 'id state date actions';
+    grid-template-columns: var(--ev-id) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'id date actions';
     align-items: center;
     gap: .75rem;
     padding: .5rem 1rem;
@@ -67,8 +66,8 @@
 
 .ev-board__rows > .ev-row {
     display: grid;
-    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-date) var(--ev-actions);
-    grid-template-areas: 'id state date actions';
+    grid-template-columns: var(--ev-id) var(--ev-date) var(--ev-actions);
+    grid-template-areas: 'id date actions';
     align-items: center;
     gap: .25rem .75rem;
     min-height: 56px;
@@ -94,17 +93,18 @@
    l'espacement appartient au tableau, pas au balisage. */
 .ev-row__id .tone-chip { margin-top: .15rem; }
 .ev-row__id p { margin: .15rem 0 0; }
-.ev-row__state { grid-area: state; justify-self: start; }
 .ev-row__date { grid-area: date; }
 .ev-row__actions { grid-area: actions; justify-self: end; }
 .ev-board__head > :nth-child(1) { grid-area: id; }
-.ev-board__head > :nth-child(2) { grid-area: state; }
-.ev-board__head > :nth-child(3) { grid-area: date; }
-.ev-board__head > :nth-child(4) { grid-area: actions; justify-self: end; }
+.ev-board__head > :nth-child(2) { grid-area: date; }
+.ev-board__head > :nth-child(3) { grid-area: actions; justify-self: end; }
 
-/* L'état peut s'écrire sur deux lignes (« Écart de date avec le cahier ») :
-   la colonne est étroite, le sens passe avant l'alignement optique. */
-.ev-row__state > * { white-space: normal; text-align: start; }
+/* Sous le titre : l'écart de date à aligner et, pour un devoir maison, ses
+   deux dates (donné, corrigé). Une ligne discrète qui se replie au besoin. */
+.ev-row__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin-top: .2rem; }
+/* « Aligner sur le cahier » est une commande : 44 px au doigt, discrète à la souris. */
+.ev-row__align { min-height: 1.75rem; }
+@media (pointer: coarse) { .ev-row__align { min-height: 2.75rem; padding-inline: .75rem; } }
 
 /* Repère de groupe (semestre) : discret, en capitales, il range sans
    concurrencer le titre de la zone — la hiérarchie se lit d'un coup. */
@@ -154,7 +154,28 @@
     border-color: hsl(var(--destructive) / .3);
     background: hsl(var(--destructive) / .08);
 }
-
+/* Document de l'activité — deux états sémantiques, jamais la marque :
+   vert = un sujet est associé, rouge = il est requis et manque. Le dessin de
+   l'icône change aussi (coche / plus) : l'état ne repose pas sur la seule
+   couleur. Le survol éclaircit d'un cran, sans changer de teinte. */
+.ev-action[data-filled='missing'] {
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / .3);
+    background: hsl(var(--destructive) / .08);
+}
+.ev-action[data-filled='missing']:hover { background: hsl(var(--destructive) / .14); color: hsl(var(--destructive)); }
+.ev-action[data-filled='ok'] {
+    color: #15803d;
+    border-color: color-mix(in srgb, #15803d 32%, transparent);
+    background: color-mix(in srgb, #15803d 9%, transparent);
+}
+.ev-action[data-filled='ok']:hover { background: color-mix(in srgb, #15803d 15%, transparent); color: #15803d; }
+.dark .ev-action[data-filled='ok'] {
+    color: #76d59a;
+    border-color: color-mix(in srgb, #76d59a 34%, transparent);
+    background: color-mix(in srgb, #76d59a 11%, transparent);
+}
+.dark .ev-action[data-filled='ok']:hover { background: color-mix(in srgb, #76d59a 18%, transparent); color: #76d59a; }
 /* Bouton-icône de ligne (restaurer une date, supprimer) : 36 px sur grand
    écran, 44 px au doigt. */
 .ev-icon-btn {
@@ -306,7 +327,7 @@
     .ev-board__rows > .ev-row {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
-            'id state'
+            'id id'
             'date actions';
         gap: .4rem .5rem;
         padding: .65rem .75rem;
@@ -315,8 +336,6 @@
     .ev-row__id { align-self: center; min-height: 2rem; }
     .ev-row__date { align-self: center; }
     .ev-row__actions { align-self: center; }
-    /* Les deux lignes se touchent : on annule l'étirement hérité du tableau. */
-    .ev-row__state { align-self: start; }
     /* Cibles tactiles : jamais moins de 44 px pour la date ni pour agir. */
     .ev-row__date input[type='date'] { height: 2.75rem; border-color: color-mix(in srgb, hsl(var(--border)) 84%, transparent); background: hsl(var(--background) / .65); }
     .ev-date-trigger { height: 2.75rem; }
@@ -326,20 +345,17 @@
 
 /* Repli en trois lignes SOUS 640 px — date et commandes ne tiennent plus côte
    à côte (mesuré : à 480 px, l'action la plus large laissait 62 px à la date,
-   soit un champ illisible). L'état monte à côté du titre, où il se replie au
-   besoin au lieu d'affamer le titre. */
+   soit un champ illisible). */
 @media (max-width: 639px) {
     .ev-board__rows > .ev-row {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
-            'id state'
+            'id id'
             'date date'
             'actions actions';
         gap: .35rem .5rem;
         padding: .6rem .7rem;
     }
-    .ev-row__state { justify-self: end; max-width: 100%; align-self: center; }
-    .ev-row__state > * { text-align: end; }
     .ev-row__date { justify-self: stretch; }
     .ev-row__actions { justify-self: stretch; }
 }
@@ -360,8 +376,8 @@
 }
 .ev-accordion__toggle {
     display: grid;
-    grid-template-columns: var(--ev-id) var(--ev-state) var(--ev-actions);
-    grid-template-areas: 'id state actions';
+    grid-template-columns: var(--ev-id) var(--ev-actions);
+    grid-template-areas: 'id actions';
     align-items: center;
     gap: .25rem .75rem;
     width: 100%;
@@ -393,31 +409,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.ev-accordion__kind-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.85rem;
-    height: 1.85rem;
-    border-radius: 8px;
-    background: color-mix(in srgb, hsl(var(--muted)) 65%, transparent);
-    color: hsl(var(--muted-foreground));
-    border: 1px solid color-mix(in srgb, hsl(var(--border)) 75%, transparent);
-    flex-shrink: 0;
-    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-}
-.ev-accordion__toggle:hover .ev-accordion__kind-icon {
-    background: color-mix(in srgb, var(--tone, hsl(var(--primary))) 14%, transparent);
-    color: var(--tone, hsl(var(--primary)));
-    border-color: color-mix(in srgb, var(--tone, hsl(var(--primary))) 32%, transparent);
-    transform: scale(1.05);
-}
-.ev-accordion[data-open='true'] .ev-accordion__kind-icon {
-    background: color-mix(in srgb, var(--tone, hsl(var(--primary))) 16%, transparent);
-    color: var(--tone, hsl(var(--primary)));
-    border-color: color-mix(in srgb, var(--tone, hsl(var(--primary))) 38%, transparent);
-}
-.ev-accordion__count { grid-area: state; justify-self: start; }
 .ev-accordion__toggle-word {
     grid-area: actions;
     justify-self: end;
@@ -468,7 +459,6 @@
         gap: .3rem .5rem;
         padding: .75rem .85rem;
     }
-    .ev-accordion__count { justify-self: end; }
     .ev-accordion__toggle-word,
     .ev-accordion__toggle-icon { justify-self: end; }
     .ev-accordion__body .ev-row { padding-inline: .6rem; }
@@ -476,4 +466,4 @@
 
 .ev-accordion__body { animation: evaluation-reveal 180ms ease-out; }
 @keyframes evaluation-reveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle, .ev-accordion__kind-icon { transition: none; transform: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle { transition: none; transform: none !important; } }

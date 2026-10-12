@@ -1,0 +1,127 @@
+/* ══════════════════════════════════════════════════════════════
+   Calendrier d'affectation de date — palette calme
+   Encre #222741 · gris #99A4AE (assombri pour le contraste AA) ·
+   bleu #66DCEC (texte encre, jamais blanc : contraste 9:1) ·
+   fond #F8FAFA · jour du jour #F2F6F8 + ombre douce.
+   ══════════════════════════════════════════════════════════════ */
+
+.date-cal-theme {
+    --cal-ink: #222741;
+    --cal-muted: #6e7883;
+    --cal-line: #dcdce3;
+    --cal-soft: #f2f6f8;
+    --cal-surface: #f8fafa;
+    --cal-item: #424588;
+    --cal-accent: #66dcec;
+    --cal-accent-ink: #222741;
+    --cal-band: rgb(102 220 236 / 0.24);
+    --cal-radius: 14px;
+    --cal-pad: 10px;
+}
+
+/* Mode sombre : gris profonds étagés, bleu désaturé, texte adouci. */
+.dark .date-cal-theme {
+    --cal-ink: #e4e6f0;
+    --cal-muted: #9aa3ad;
+    --cal-line: rgb(255 255 255 / 0.08);
+    --cal-soft: rgb(255 255 255 / 0.07);
+    --cal-surface: rgb(255 255 255 / 0.03);
+    --cal-item: #c5c8f0;
+    --cal-accent: #56bfcd;
+    --cal-accent-ink: #10202a;
+    --cal-band: rgb(86 191 205 / 0.2);
+}
+
+.date-cal {
+    background: var(--cal-surface);
+    border: 1px solid var(--cal-line);
+    border-radius: var(--cal-radius);
+    padding: var(--cal-pad);
+}
+
+.date-cal__weekday {
+    padding-block: 2px 6px;
+    text-align: center;
+    color: var(--cal-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.date-cal__day {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Période : une bande continue, arrondie à ses deux bouts. */
+.date-cal__day[data-range='middle'] { background: var(--cal-band); }
+.date-cal__day[data-range='start'] { background: linear-gradient(to right, transparent 50%, var(--cal-band) 50%); }
+.date-cal__day[data-range='end'] { background: linear-gradient(to left, transparent 50%, var(--cal-band) 50%); }
+.date-cal__grid > .date-cal__day[data-range='middle']:nth-child(7n + 1) { border-start-start-radius: 999px; border-end-start-radius: 999px; }
+.date-cal__grid > .date-cal__day[data-range='middle']:nth-child(7n) { border-start-end-radius: 999px; border-end-end-radius: 999px; }
+
+.date-cal__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    color: var(--cal-item);
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, filter 150ms ease,
+        transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.date-cal__day:hover .date-cal__num { background: var(--cal-soft); }
+.date-cal__day:active .date-cal__num { transform: scale(0.9); }
+.date-cal__day:focus-visible { outline: none; }
+.date-cal__day:focus-visible .date-cal__num { box-shadow: 0 0 0 2px var(--cal-surface), 0 0 0 4px var(--cal-ink); }
+
+/* Dimanche : jour sans classe, gris de la palette. */
+.date-cal__day[data-inactive] .date-cal__num { color: var(--cal-muted); font-weight: 500; }
+
+.date-cal__day[data-today] .date-cal__num {
+    background: var(--cal-soft);
+    color: var(--cal-ink);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgb(34 39 65 / 0.08), 0 4px 10px -4px rgb(34 39 65 / 0.22);
+}
+
+.date-cal__day[data-range='middle'] .date-cal__num { color: var(--cal-ink); }
+
+.date-cal__day[data-selected] .date-cal__num {
+    background: var(--cal-accent);
+    color: var(--cal-accent-ink);
+    font-weight: 700;
+    box-shadow: 0 4px 12px -4px rgb(102 220 236 / 0.75);
+}
+
+.date-cal__day[data-selected]:hover .date-cal__num { filter: brightness(1.06); }
+.date-cal__day[data-selected]:active .date-cal__num { filter: brightness(0.92); }
+
+/* Sélecteurs de mois et d'année : l'encre de la palette marque le choix. */
+.date-cal-chip[data-active] {
+    background: var(--cal-ink);
+    color: var(--cal-surface);
+    font-weight: 700;
+}
+
+.dark .date-cal-chip[data-active] { color: #1b1d27; }
+
+@media (prefers-reduced-motion: reduce) {
+    .date-cal__num { transition: none; }
+    .date-cal__day:active .date-cal__num { transform: none; }
+}

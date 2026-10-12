@@ -173,6 +173,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             contentDirection={contentDirection}
             classId={classInfo.id}
             cycle={classInfo.cycle}
+            classLevel={classInfo.level || classInfo.name}
             timetable={config.timetable}
             timetableClock={config.timetableClock}
           />

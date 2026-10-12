@@ -156,16 +156,17 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
   }
   if (changed(dates, config.assessmentDates?.[classId] ?? {})) patch.assessmentDates = { ...config.assessmentDates, [classId]: dates };
   /*
-   * Bloc « Correction du devoir maison » posé au tableau : il ne crée pas un
-   * devoir de plus, il date le SECOND temps d’un devoir déjà attribué. Le
-   * numéro du titre l’emporte ; sans numéro, c’est le devoir qui attend encore
-   * sa correction qui est servi.
+   * Bloc « Correction du devoir maison » posé au tableau : il date le SECOND
+   * temps du devoir, jamais un doublon. Le numéro du titre l’emporte ; sans
+   * numéro, c’est le devoir qui attend encore sa correction qui est servi. Un
+   * devoir du planning officiel daté par le professeur, ou un devoir jamais
+   * saisi, est transmis à la feuille « Contrôle continu et activités ».
    */
   for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison')) {
     const { startDate } = extractDateRange(row.data.date);
     if (!validDate(startDate)) continue;
     const declared = parseTrailingNumber('title' in row.data ? row.data.title : undefined);
-    const next = withHomeworkCorrection(manual, startDate, declared ?? undefined);
+    const next = withHomeworkCorrection(manual, startDate, declared ?? undefined, { dates, removed: [...removed] });
     if (next !== manual) manual.splice(0, manual.length, ...next);
   }
   if (changed(manual, config.manualAssessments?.[classId] ?? [])) patch.manualAssessments = { ...config.manualAssessments, [classId]: manual };
@@ -194,7 +195,10 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
       continue;
     }
     const { startDate, endDate } = extractDateRange(row.data.date);
-    if (!existing && !validDate(startDate)) continue;
+    // Une évaluation posée au cahier rejoint la feuille dès sa création, même
+    // avant d'être datée (« + Définir une date ») ; seules les lignes sans
+    // identité stable (cahiers anciens) attendent leur date pour être reliées.
+    if (!existing && !validDate(startDate) && !row.data._tempId) continue;
     const id = existing?.id ?? (row.data._tempId?.startsWith('event-') ? row.data._tempId.slice(6) : `notebook-${row.data._tempId ?? row.key}`);
     const event: PedagogicalEvent = { ...existing, id, type: existing?.type ?? row.elementType as PedagogicalEvent['type'],
       title: ('title' in row.data ? row.data.title : '')?.trim() || existing?.title || 'Évaluation',

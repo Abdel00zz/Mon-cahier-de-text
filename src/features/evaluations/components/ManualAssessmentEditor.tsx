@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { DevoirType, ManualAssessment } from '@/types';
+import type { Cycle, DevoirType, ManualAssessment } from '@/types';
+import { isKindOffered } from '@/domain/evaluations/kindAvailability';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { nextAssessmentNumber } from '@/domain/evaluations/assessments';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -18,26 +19,40 @@ interface ManualAssessmentEditorProps {
   today: string;
   initial?: ManualAssessment | null;
   initialType?: DevoirType;
-  assessments?: { id: string; type: DevoirType; num?: number }[];
+  assessments?: { id: string; type: DevoirType; num?: number; semestre?: 1 | 2 }[];
+  /** Cycle de la classe : la colle n'est proposée qu'en prépa (une colle existante reste modifiable). */
+  cycle?: Cycle;
   onCancel: () => void;
   onSave: (manual: ManualAssessment) => void;
 }
 
-export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, homeworkDate, initial, initialType, assessments = [], onCancel, onSave }) => {
+/** Semestre d'une date : février à juillet = semestre 2 (même règle que l'identité annuelle des devoirs). */
+const semesterOfDate = (iso: string): 1 | 2 | null => {
+  const month = Number(iso.slice(5, 7));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || !month) return null;
+  return month >= 2 && month <= 7 ? 2 : 1;
+};
+
+export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, homeworkDate, initial, initialType, assessments = [], cycle, onCancel, onSave }) => {
   const { t } = useLocale();
   const initialKind: DevoirType = initial?.type ?? initialType ?? 'controle';
-  const nextNumFor = (nextType: DevoirType): number => nextAssessmentNumber(assessments, nextType, initial?.id);
+  // La numérotation officielle repart à 1 à chaque semestre : le suivant se calcule DANS le semestre.
+  const inSemester = (semester: 1 | 2) => assessments.filter(item => item.semestre === undefined || item.semestre === semester);
+  const nextNumFor = (nextType: DevoirType, semester: 1 | 2): number => nextAssessmentNumber(inSemester(semester), nextType, initial?.id);
   const [type, setType] = useState<DevoirType>(initialKind);
-  const [num, setNum] = useState(String(initial?.num ?? nextAssessmentNumber(assessments, initialKind, initial?.id)));
+  const initialSemester: 1 | 2 = initial?.semestre ?? semesterOfDate(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today)) ?? 1;
+  const [num, setNum] = useState(String(initial?.num ?? nextNumFor(initialKind, initialSemester)));
   const [date, setDate] = useState(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today));
   const [duree, setDuree] = useState(initial?.duree ?? '');
-  const [semestre, setSemestre] = useState<1 | 2>(initial?.semestre ?? 1);
+  const [semestre, setSemestre] = useState<1 | 2>(initialSemester);
+  /** Un semestre choisi à la main n'est plus recalculé depuis la date. */
+  const [semesterTouched, setSemesterTouched] = useState(false);
   const [error, setError] = useState('');
 
   const changeType = (nextType: DevoirType) => {
     setType(nextType);
     if (!initial && nextType === 'maison' && homeworkDate) setDate(homeworkDate);
-    setNum(String(nextNumFor(nextType)));
+    setNum(String(nextNumFor(nextType, semestre)));
   };
 
   const submit = () => {
@@ -48,6 +63,11 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
     }
     if (!date) {
       setError(t('evaluations.startDateRequired'));
+      return;
+    }
+    // Deux « Devoir surveillé 2 » au même semestre se confondraient avec leur bloc du cahier.
+    if (assessments.some(item => item.id !== initial?.id && item.type === type && item.num === numValue && item.semestre === semestre)) {
+      setError(t('evaluations.manualNumTaken', { type: t(`evaluations.type.${type}`), num: numValue, semester: semestre }));
       return;
     }
     onSave({
@@ -71,7 +91,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
               <Select value={type} onValueChange={(value) => changeType(value as DevoirType)}>
                 <SelectTrigger aria-label={t('evaluations.manualType')} className="min-h-11 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {(['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle'] as const).map(value => (
+                  {(['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle'] as const)
+                    .filter(value => value === initialKind || isKindOffered(value, { cycle })).map(value => (
                     <SelectItem key={value} value={value}>{t(`evaluations.type.${value}`)}</SelectItem>
                   ))}
                 </SelectContent>
@@ -85,7 +106,7 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
           )}
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualSemester')}</span>
-            <Select value={String(semestre)} onValueChange={(value) => setSemestre(Number(value) as 1 | 2)}>
+            <Select value={String(semestre)} onValueChange={(value) => { setSemestre(Number(value) as 1 | 2); setSemesterTouched(true); setError(''); }}>
               <SelectTrigger aria-label={t('evaluations.manualSemester')} className="min-h-11 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">{t('evaluations.semester', { number: 1 })}</SelectItem>
@@ -117,6 +138,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
               value={date}
               onChange={(event) => {
                 setDate(event.target.value);
+                const derived = semesterOfDate(event.target.value);
+                if (derived && !semesterTouched) setSemestre(derived);
                 setError('');
               }}
               className="h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"

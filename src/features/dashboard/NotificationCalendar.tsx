@@ -181,6 +181,8 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return new Date(value.getFullYear(), value.getMonth(), 1);
   });
   const [selectedDate, setSelectedDate] = useState(today);
+  // Sens du changement de mois : le nouveau mois glisse depuis le côté où l'on va.
+  const [slide, setSlide] = useState<'next' | 'prev' | null>(null);
   const [layer, setLayer] = useState<CalendarLayer>('all');
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
@@ -383,6 +385,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     const next = addDays(fromISO(selectedDate), delta);
     setSelectedDate(toISO(next));
     if (next.getMonth() !== month.getMonth() || next.getFullYear() !== month.getFullYear()) {
+      setSlide(delta > 0 ? 'next' : 'prev');
       setMonth(new Date(next.getFullYear(), next.getMonth(), 1));
     }
   };
@@ -409,13 +412,16 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
 
   const moveMonth = (amount: number) => {
     const next = new Date(month.getFullYear(), month.getMonth() + amount, 1);
+    setSlide(amount > 0 ? 'next' : 'prev');
     setMonth(next);
     setSelectedDate(toISO(next));
   };
 
   const goToday = () => {
     const current = fromISO(today);
-    setMonth(new Date(current.getFullYear(), current.getMonth(), 1));
+    const target = new Date(current.getFullYear(), current.getMonth(), 1);
+    if (target.getTime() !== month.getTime()) setSlide(target > month ? 'next' : 'prev');
+    setMonth(target);
     setSelectedDate(today);
   };
 
@@ -577,7 +583,8 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         {/* Grille : un numéro et au plus trois pastilles par jour, le détail s'ouvre au toucher */}
         <div
           key={`${month.getFullYear()}-${month.getMonth()}`}
-          className="animate-fade-in touch-pan-y px-2 pb-4 motion-reduce:animate-none sm:px-5 sm:pb-6"
+          data-slide={slide ?? undefined}
+          className={cn('calendar-month touch-pan-y px-2 pb-4 sm:px-5 sm:pb-6', !slide && 'animate-fade-in motion-reduce:animate-none')}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -654,23 +661,11 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         </div>
       </div>
 
-      {/* ── LÉGENDE : une ligne discrète, défilable sur téléphone ── */}
-      <ul
-        className="-mx-1 flex items-center gap-x-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        aria-label={t('calendar.layers')}
-      >
-        {legendItems.map(item => (
-          <li key={item.key} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-            <span className={item.swatch} aria-hidden />
-            <span className="text-[11px] font-medium text-muted-foreground">{item.label}</span>
-          </li>
-        ))}
-      </ul>
-
-      {/* ── DÉTAIL DU JOUR : s'ouvre au toucher d'une case ── */}
+      {/* ── DÉTAIL DU JOUR : un panneau accroché à la grille, sa flèche pointe la colonne du jour ── */}
       <section
         key={selectedDate}
-        className="animate-fade-in motion-reduce:animate-none"
+        className="calendar-details animate-fade-in motion-reduce:animate-none"
+        style={{ '--calendar-column': (selectedDay.getDay() + 6) % 7 } as React.CSSProperties}
         aria-label={selectedDateLabel}
         aria-live="polite"
       >
@@ -688,7 +683,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         </div>
 
         {selectedEvents.length === 0 ? (
-          <div className="mt-4 flex flex-col items-center justify-center gap-2 rounded-3xl bg-muted/40 px-6 py-9 text-center">
+          <div className="mt-4 flex flex-col items-center justify-center gap-2 rounded-xl bg-muted/40 px-6 py-9 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-card text-primary ring-1 ring-border/60">
               <CalendarDays className="h-6 w-6" />
             </span>
@@ -729,6 +724,19 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
           </ul>
         )}
       </section>
+
+      {/* ── LÉGENDE : une ligne discrète au pied du calendrier, défilable sur téléphone ── */}
+      <ul
+        className="-mx-1 flex items-center gap-x-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={t('calendar.layers')}
+      >
+        {legendItems.map(item => (
+          <li key={item.key} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+            <span className={item.swatch} aria-hidden />
+            <span className="text-[11px] font-medium text-muted-foreground">{item.label}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

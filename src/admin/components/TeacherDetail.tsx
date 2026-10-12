@@ -7,6 +7,7 @@ import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fet
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { computeLateness } from '../../domain/calendar/lateness';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../domain/evaluations/assessments';
+import { documentIndicator, documentRequirementForAssessment, documentRequirementForEvent, type DocumentIndicator } from '../../domain/evaluations/documentRequirement';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Clock, Bell, LockKeyhole, Trash2 } from '../../components/ui/icons';
@@ -258,6 +259,13 @@ const ACTIVITY_LABELS: Record<string, string> = {
     autre: 'Autre activité',
 };
 
+/** Teinte du bouton « document » : vert = associé, rouge = requis et manquant, neutre = facultatif. */
+const DOCUMENT_TONE: Record<Exclude<DocumentIndicator, 'none'>, string> = {
+    attached: 'border-success/30 text-success hover:bg-success/10',
+    missing: 'border-destructive/30 text-destructive hover:bg-destructive/10',
+    idle: 'border-border text-muted-foreground hover:bg-secondary',
+};
+
 /** Cible de la relecture : un document, son titre et son contexte. */
 interface DocumentPreviewTarget {
     title: string;
@@ -294,7 +302,7 @@ const AdminActivities: React.FC<{
             <div className="grid gap-2 sm:grid-cols-2">
                 {rows.map(({ classInfo, activity }) => {
                     const label = ACTIVITY_LABELS[activity.type] ?? 'Activité';
-                    const hasDocument = Boolean(activity.document?.source);
+                    const indicator = documentIndicator(documentRequirementForEvent(activity.type), activity.document);
                     return (
                         <article key={`${classInfo.id}-${activity.id}`} className="flex items-center gap-3 rounded-xl bg-secondary/45 p-3">
                             <span className="min-w-0 flex-1">
@@ -304,13 +312,16 @@ const AdminActivities: React.FC<{
                                     {activity.students > 0 && ` · ${activity.students} élève${activity.students > 1 ? 's' : ''} consigné${activity.students > 1 ? 's' : ''}`}
                                 </span>
                             </span>
-                            <button
-                                type="button"
-                                onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`))}
-                                className={`h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-semibold ${hasDocument ? 'border-primary/30 text-primary hover:bg-primary/10' : 'border-border text-muted-foreground hover:bg-secondary'}`}
-                            >
-                                {hasDocument ? 'Aperçu' : 'Aucun document'}
-                            </button>
+                            {/* Un contrôle des cahiers ne porte jamais de document : pas de bouton. */}
+                            {indicator !== 'none' && (
+                                <button
+                                    type="button"
+                                    onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`))}
+                                    className={`h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-semibold ${DOCUMENT_TONE[indicator]}`}
+                                >
+                                    {indicator === 'attached' ? 'Aperçu' : indicator === 'missing' ? 'Document manquant' : 'Aucun document'}
+                                </button>
+                            )}
                         </article>
                     );
                 })}
@@ -382,7 +393,7 @@ const AssessmentDateEditor: React.FC<{
                 {rows.map(row => {
                     const document = documents[row.classId]?.[row.id]
                         ?? (row.legacyId ? documents[row.classId]?.[row.legacyId] : undefined);
-                    const hasDocument = Boolean(document?.source);
+                    const indicator = documentIndicator(documentRequirementForAssessment(row.type), document);
                     const title = `${row.label} — ${row.className}`;
                     return (
                         <div key={`${row.classId}-${row.id}`} className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
@@ -393,8 +404,8 @@ const AssessmentDateEditor: React.FC<{
                                 aria-label={`Aperçu du sujet : ${title}`}
                             >
                                 <span className="block truncate text-xs font-bold text-foreground">{row.className}</span>
-                                <span className="block truncate text-[10px] text-muted-foreground">
-                                    {row.label} · {hasDocument ? 'sujet rédigé' : 'sans sujet'}
+                                <span className={`block truncate text-[10px] ${indicator === 'attached' ? 'text-success' : indicator === 'missing' ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                    {row.label} · {indicator === 'attached' ? 'sujet rédigé' : indicator === 'missing' ? 'sujet manquant' : 'sans sujet'}
                                 </span>
                             </button>
                             <input

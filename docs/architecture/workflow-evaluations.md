@@ -53,7 +53,7 @@ surveillé, date de correction du devoir pour la correction du devoir maison.
 | Annotation de séance | Projection — jamais stockée dans le cahier | `event:<id>` (activité), `assessment:<id>` (évaluation), `assessment:<id>:correction` (correction) |
 | Bloc « épreuve » | Cahier | `_tempId = dev-block-<assessmentId>` |
 | Bloc « devoir maison » | Historique du cahier | masqué à l’affichage, conservé pour compatibilité |
-| Bloc « correction du devoir maison » | Cahier | position + numéro déclaré — il DATE un devoir attribué, il n’en crée pas |
+| Bloc « correction du devoir maison » | Cahier | position + numéro déclaré — il DATE le devoir de ce numéro, sans jamais le dupliquer |
 | Évaluation manuelle | `manualAssessments[classId]` | `<année>:s<semestre>-<type><num>` |
 | Évaluation planifiée | Planning ministériel + surcharges | même forme, millésime inclus |
 | Activité pédagogique | `pedagogicalEvents[classId]` | `event-<id>` côté cahier |
@@ -92,12 +92,17 @@ annotée (projections ci-dessus).
 1. **Capture — tableau → modale.** À chaque sauvegarde du cahier,
    `syncNotebookToEvaluations` (`notebookReconciliation.ts`) compare
    l’avant/après : un bloc d’épreuve daté devient une évaluation, un bloc
-   d’événement (diagnostic, correction CC) devient une activité, une ligne
-   supprimée marque l’évaluation supprimée. Idempotent : une seconde
-   synchronisation sans changement n’écrit rien. Un bloc « correction du devoir
-   maison » ne crée rien non plus : il pose `correctionDateISO` sur le devoir
-   déjà attribué (`withHomeworkCorrection`, `homeworkCycle.ts`) — sans
-   attribution correspondante, aucun devoir fantôme.
+   d’événement (diagnostic, correction CC, examen blanc, olympiade, concours)
+   devient une activité — dès sa création, même avant d’être daté (« + Définir
+   une date ») quand la ligne porte un `_tempId` —, une ligne supprimée marque
+   l’évaluation supprimée. Idempotent : une seconde synchronisation sans
+   changement n’écrit rien. Un bloc « correction du devoir maison » date le
+   SECOND temps du devoir (`withHomeworkCorrection`, `homeworkCycle.ts`) :
+   devoir de la feuille, devoir du planning officiel daté par le professeur
+   (il rejoint alors les entrées de la feuille), ou — aucun devoir de ce
+   numéro dans le semestre — devoir transmis à la feuille avec sa correction,
+   attribution à compléter. Jamais de doublon ; un devoir supprimé ne renaît
+   pas.
 2. **Matérialisation — modale → tableau.** À la création ou au changement de
    date dans la modale :
    - épreuves écrites (contrôle continu, court, global) :
@@ -137,13 +142,17 @@ annotée (projections ci-dessus).
 
 - **Une seule porte par famille** : la famille A (faits de séance) s’énonce
   dans la REMARQUE, famille B (épreuves et corrections) se crée dans
-  `ContentModal`. Aucune des deux n’a de porte parallèle, et le devoir à la
-  maison ne se crée pas comme un contenu.
+  `ContentModal`. Le devoir à la maison a deux entrées — la pastille de la
+  remarque et la carte « Devoir maison » de `ContentModal` — mais UNE seule
+  écriture (`assignHomeworkPatch`, `sessionRemarkChanges.ts`) : il rejoint la
+  feuille, jamais le cahier sous forme de bloc.
 - **Position = l'élément cliqué** : une épreuve se pose juste après l'élément
   sur lequel le professeur a cliqué (`insertAssessmentBlock`) — jamais en fin
   de cahier — et reste reçue par la feuille, même imbriquée dans une section.
-- **Correction qui date, jamais qui crée** : un bloc de correction du devoir
-  maison n’écrit que s’il retrouve un devoir attribué ; sinon rien n’est écrit.
+- **Correction transmise, jamais dupliquée** : un bloc de correction du devoir
+  maison date le devoir de son numéro (feuille ou planning daté) ; sans devoir
+  de ce numéro dans le semestre, il le transmet à la feuille (attribution à
+  compléter). Un devoir supprimé de la feuille ne renaît pas.
 - **Idempotence** : deux synchronisations identiques → aucune écriture.
 - **Pas de doublon** : une identité donnée n’existe qu’une fois, des deux
   côtés (bloc ↔ évaluation).

@@ -244,8 +244,15 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             updatedAt: entry.updatedAt || now,
         } satisfies LessonsBlob);
     }
+    // Seules les suppressions NOUVELLES (ou une classe tombée qui avait encore un
+    // cahier connu) effacent le cahier : rejouer chaque tombstone historique à
+    // chaque envoi faisait grandir le coût sans fin et finissait par dépasser la
+    // limite d'opérations d'une transaction Firestore (≈ 450), bloquant TOUS les envois.
+    const knownDeletedIds = new Set(Object.keys(existing.deletedClasses ?? {}));
     for (const id of deletedClassIds) {
-        pipeline.del(KEYS.lessons(phone, id));
+        if (!knownDeletedIds.has(id) || existing.classMeta?.[id] || existingById.has(id)) {
+            pipeline.del(KEYS.lessons(phone, id));
+        }
     }
     if (body.snapshot && typeof body.snapshot === 'object') {
         // Le snapshot est une projection consultée par le cron : on valide la

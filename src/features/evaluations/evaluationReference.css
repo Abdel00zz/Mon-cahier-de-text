@@ -189,46 +189,6 @@
   color: var(--text-dark);
 }
 
-/* Icônes de catégorie */
-.evaluation-reference .ev-accordion__kind-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-item);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  flex-shrink: 0;
-  background: var(--icon-gray-bg);
-  color: var(--icon-gray-fg);
-  transition: transform 0.2s ease;
-}
-
-.evaluation-reference .ev-accordion__kind-icon[data-tone='blue'] {
-  background: var(--icon-blue-bg);
-  color: var(--icon-blue-fg);
-}
-
-.evaluation-reference .ev-accordion__kind-icon[data-tone='amber'] {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.evaluation-reference .ev-accordion__kind-icon[data-tone='emerald'],
-.evaluation-reference .ev-accordion__kind-icon[data-tone='green'] {
-  background: var(--badge-green-bg);
-  color: var(--badge-green-text);
-}
-
-.evaluation-reference .ev-accordion__kind-icon[data-tone='violet'] {
-  background: #f3e8ff;
-  color: #7e22ce;
-}
-
-.evaluation-reference .ev-accordion__toggle:hover .ev-accordion__kind-icon {
-  transform: scale(1.04);
-}
-
 /* Bouton toggle flèche doux */
 .evaluation-reference .ev-accordion__toggle-icon {
   width: 32px;
@@ -281,8 +241,8 @@
 /* En-tête du tableau */
 .evaluation-reference .ev-board__head {
   display: grid;
-  grid-template-columns: 2.2fr 1.3fr 1.2fr 140px;
-  grid-template-areas: 'id state date actions';
+  grid-template-columns: 2.4fr 1.2fr 140px;
+  grid-template-areas: 'id date actions';
   align-items: center;
   padding: 10px 20px;
   background: var(--header-row-bg);
@@ -297,8 +257,8 @@
 /* Lignes du tableau */
 .evaluation-reference .ev-board__rows > .ev-row {
   display: grid;
-  grid-template-columns: 2.2fr 1.3fr 1.2fr 140px;
-  grid-template-areas: 'id state date actions';
+  grid-template-columns: 2.4fr 1.2fr 140px;
+  grid-template-areas: 'id date actions';
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-subtle);
@@ -321,22 +281,6 @@
   font-size: 14.5px;
   font-weight: 700;
   color: var(--text-dark);
-}
-
-/* Badge d'état */
-.evaluation-reference .ev-row__state [data-tippy-content],
-.evaluation-reference .ev-row__state > span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  background: var(--badge-green-bg);
-  color: var(--badge-green-text);
-  font-size: 12.5px;
-  font-weight: 500;
-  width: fit-content;
-  box-shadow: none;
 }
 
 /* Date de l'élément */
@@ -405,6 +349,23 @@
   border-color: hsl(var(--border));
   color: hsl(var(--foreground));
   transform: translateY(-1px);
+}
+
+/* Bouton Document : vert = sujet associé, rouge = sujet requis manquant */
+.evaluation-reference .ev-action[data-filled='ok'] {
+  color: #15803d;
+  border-color: color-mix(in srgb, #15803d 32%, transparent);
+  background: color-mix(in srgb, #15803d 9%, transparent);
+}
+.dark .evaluation-reference .ev-action[data-filled='ok'] {
+  color: #76d59a;
+  border-color: color-mix(in srgb, #76d59a 34%, transparent);
+  background: color-mix(in srgb, #76d59a 11%, transparent);
+}
+.evaluation-reference .ev-action[data-filled='missing'] {
+  color: var(--danger-text);
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
 }
 
 /* Bouton Supprimer */

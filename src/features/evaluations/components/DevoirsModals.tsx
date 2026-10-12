@@ -47,7 +47,7 @@ interface DevoirsModalsProps {
   classDisplayName: string;
   config: AppConfig;
   today: string;
-  assessments: { id: string; type: DevoirType; num?: number }[];
+  assessments: { id: string; type: DevoirType; num?: number; semestre?: 1 | 2 }[];
   modals: ReturnType<typeof useEvaluationModals>;
   actions: ReturnType<typeof useEvaluationActions>;
   saveAssessment: (manual: ManualAssessment) => void;
@@ -101,6 +101,13 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
   })();
 
+  /** La colle et l'oral partagent la fenêtre de suivi, pas son nom. */
+  const oralTitle = t(oralFor?.planned.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title');
+  /** « Devoir maison 2 » : la remise se rattache toujours à SON devoir. */
+  const submissionsLabel = submissionsFor
+    ? `${t(`evaluations.type.${submissionsFor.planned.type}`)} ${number.format(submissionsFor.planned.num)}`
+    : '';
+
   const documentTitle = documentFor === null
     ? ''
     : documentFor.kind === 'event'
@@ -135,6 +142,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         }
       >
         <ManualAssessmentEditor
+          cycle={classInfo.cycle}
           today={today}
           initial={editingAssessment}
           assessments={assessments}
@@ -185,7 +193,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         isOpen={oralFor !== null}
         onClose={() => setOralFor(null)}
         tracking
-        title={t('evaluations.oral.title')}
+        title={oralTitle}
         context={oralFor ? `${selectedClassDisplayName} · ${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)}` : undefined}
       >
         {oralFor && selectedClass && (
@@ -197,13 +205,14 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             initialOralOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralOutcomes}
             initialOralGrades={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralGrades}
             roster={config.classRosters?.[selectedClass.id]}
+            reportTitle={oralTitle}
             reportContext={`${selectedClassDisplayName} · ${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}`}
             onCancel={() => setOralFor(null)}
             onSave={(names, _notebook, oralOutcomes, _hw, oralGrades) => {
               actions.saveOral(oralFor.planned.id, names, oralOutcomes ?? {}, oralGrades ?? {});
               setOralFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
-                count: number.format(names.length), activity: t('evaluations.oral.title'),
+                count: number.format(names.length), activity: oralTitle,
               }));
             }}
           />
@@ -216,7 +225,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         onClose={() => setSubmissionsFor(null)}
         tracking
         title={t('evaluations.homework.title')}
-        context={submissionsFor ? `${selectedClassDisplayName} · ${t('evaluations.homework.title')}` : undefined}
+        context={submissionsFor ? `${selectedClassDisplayName} · ${submissionsLabel}` : undefined}
       >
         {submissionsFor && selectedClass && (
           <StudentNamesEditor
@@ -226,13 +235,13 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             initialNames={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.names ?? []}
             initialHomeworkOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.homeworkOutcomes}
             roster={config.classRosters?.[selectedClass.id]}
-            reportContext={`${selectedClassDisplayName} · ${t('evaluations.homework.title')} · ${formatLongDate(submissionsFor.planned.dateISO, locale)}`}
+            reportContext={`${selectedClassDisplayName} · ${submissionsLabel} · ${formatLongDate(submissionsFor.planned.dateISO, locale)}`}
             onCancel={() => setSubmissionsFor(null)}
             onSave={(names, _notebook, _oral, homeworkOutcomes) => {
               actions.saveHomework(submissionsFor.planned.id, names, homeworkOutcomes ?? {});
               setSubmissionsFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
-                count: number.format(names.length), activity: t('evaluations.homework.title'),
+                count: number.format(names.length), activity: `${t('evaluations.homework.title')} · ${submissionsLabel}`,
               }));
             }}
           />

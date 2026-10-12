@@ -141,10 +141,22 @@ test('la correction date le devoir existant sans toucher à son attribution', ()
   assert.equal(item?.schoolYear, '2026-2027', 'l’identité annuelle ne bouge pas');
 });
 
-test('la correction ne fabrique jamais un devoir fantôme', () => {
+test('la correction d’un devoir jamais saisi le transmet à la feuille, attribution à compléter', () => {
   const patch = sessionRemarkSettingsPatch({} as AppConfig, classId, lessons, targets,
     { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
-  assert.equal(patch.manualAssessments, undefined, 'sans devoir donné, la correction n’existe pas');
+  assert.deepEqual(patch.manualAssessments?.[classId], [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison', num: 1,
+    dateISO: '', semestre: 1, correctionDateISO: '2026-10-12' }], 'le devoir rejoint le contrôle continu');
+  assert.equal(patch.assessmentDates, undefined, 'aucune date d’attribution inventée');
+});
+
+test('la correction d’un devoir du planning officiel daté par le professeur le rejoint', () => {
+  const config = { assessmentDates: { [classId]: { '2026-2027:s1-maison1': '2026-10-05' } } } as unknown as AppConfig;
+  const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
+    { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
+  const item = patch.manualAssessments?.[classId]?.[0];
+  assert.equal(item?.id, '2026-2027:s1-maison1', 'même identité que le planning');
+  assert.equal(item?.dateISO, '2026-10-05', 'l’attribution choisie par le professeur reste');
+  assert.equal(item?.correctionDateISO, '2026-10-12', 'la séance de correction date le devoir');
 });
 
 test('donné sans déplacer la séance : la remarque crée quand même le devoir daté', () => {
@@ -314,10 +326,20 @@ test('sans numéro déclaré, c’est le devoir en attente le plus récent qui e
   assert.equal(next[0].correctionDateISO, '2026-09-28', 'la première correction est conservée');
 });
 
-test('sans devoir attribué, la correction ne fabrique rien — et ne réécrit rien', () => {
+test('la correction ne duplique rien — et ne réécrit rien', () => {
   const manual = [{ id: 'a', type: 'controle' as const, num: 1, dateISO: '2026-09-20', semestre: 1 as const }];
-  assert.equal(withHomeworkCorrection(manual, '2026-10-05', 1), manual,
-    'même référence : c’est l’attribution qui crée, la correction qui date');
+  assert.equal(withHomeworkCorrection(manual, '2026-10-05'), manual,
+    'sans numéro ni devoir en attente, on ne devine pas le devoir corrigé');
+  assert.equal(withHomeworkCorrection(manual, '2026-10-05', 1, { removed: ['2026-2027:s1-maison1'] }), manual,
+    'un devoir supprimé de la feuille ne renaît pas');
+  const created = withHomeworkCorrection(manual, '2026-10-05', 1);
+  assert.equal(created.length, 2, 'devoir jamais saisi : transmis une seule fois');
+  assert.equal(withHomeworkCorrection(created, '2026-10-05', 1), created, 'idempotent après transmission');
+  // Un devoir corrigé au premier semestre est clos : le devoir 1 du second semestre est un autre devoir.
+  const closed = [{ id: 's1', type: 'maison' as const, num: 1, dateISO: '2026-10-01', semestre: 1 as const, correctionDateISO: '2026-10-08', schoolYear: '2026-2027' }];
+  const second = withHomeworkCorrection(closed, '2027-03-10', 1);
+  assert.equal(second[0].correctionDateISO, '2026-10-08', 'la correction du premier semestre ne bouge pas');
+  assert.equal(second[1]?.id, '2026-2027:s2-maison1', 'le second semestre a son propre devoir');
   const already = [{ id: 'a', type: 'maison' as const, num: 1, dateISO: '2026-09-20', semestre: 1 as const, correctionDateISO: '2026-10-05' }];
   assert.equal(withHomeworkCorrection(already, '2026-10-05', 1), already, 'idempotent : rien à réécrire');
   // Un devoir postérieur à la séance de correction n’est pas encore entre les mains des élèves.

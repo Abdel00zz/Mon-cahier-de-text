@@ -15,7 +15,7 @@ export {
 
 import type { ComponentType } from 'react';
 import { Book, TestTube, Home, FileSignature, CheckCheck, CheckSquare, Clock, FileText, Users, AwardIcon, GraduationCap } from '../components/ui/icons';
-import { Mic } from 'lucide-react';
+import { Presentation } from 'lucide-react';
 import type { TopLevelType } from '../types';
 import { TOP_LEVEL_CONTENT_META } from './top-level-types';
 
@@ -39,5 +39,5 @@ export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelType, {
   'examen_blanc': { ...TOP_LEVEL_CONTENT_META.examen_blanc, icon: FileSignature, color: 'text-rose-600 dark:text-rose-400', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800', rowColor: 'bg-rose-50/40' },
   'olympiade': { ...TOP_LEVEL_CONTENT_META.olympiade, icon: AwardIcon, color: 'text-amber-600 dark:text-amber-400', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800', rowColor: 'bg-amber-50/40' },
   'concours': { ...TOP_LEVEL_CONTENT_META.concours, icon: GraduationCap, color: 'text-violet-600 dark:text-violet-400', badgeColor: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800', rowColor: 'bg-violet-50/40' },
-  'colle': { ...TOP_LEVEL_CONTENT_META.colle, icon: Mic, color: 'text-rose-600 dark:text-rose-400', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800', rowColor: 'bg-rose-50/40' },
+  'colle': { ...TOP_LEVEL_CONTENT_META.colle, icon: Presentation, color: 'text-rose-600 dark:text-rose-400', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800', rowColor: 'bg-rose-50/40' },
 };

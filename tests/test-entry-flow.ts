@@ -325,12 +325,13 @@ test("préparation terminée : cahier et checklist, pas de deuxième onboarding"
   const config = JSON.parse(storage.getItem("appConfig_v1")!);
   assert.equal(config.hasCompletedWelcome, true);
   assert.equal(config.showGettingStarted, true);
+  // Contenu PERSONNEL saisi à l'inscription : aucun diagnostic imposé, le chapitre ouvre le cahier.
   assert.equal(
-    JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData[0].title,
-    "التقويم التشخيصي 1",
+    JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData.some((item: { type: string }) => item.type === "evaluation_diagnostic"),
+    false,
   );
   assert.equal(
-    JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData[1].title,
+    JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData[0].title,
     "الدوال",
   );
 });

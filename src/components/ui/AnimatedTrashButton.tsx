@@ -88,20 +88,21 @@ export const AnimatedTrashButton = React.forwardRef<
       isRunningRef.current = true
       setIsRunning(true)
 
-      // Fallback timer au cas où animationend n'est pas déclenché (1.45s)
+      // Filet de sécurité si `animationend` n'arrive pas : le geste court de
+      // l'icône seule dure ~360 ms, l'aspiration des lettres ~1,4 s.
       timerRef.current = setTimeout(() => {
         handleReset()
         if (onAction) {
           void onAction()
         }
-      }, 1450)
+      }, iconOnly ? 520 : 1450)
 
       onClick?.(e)
     }
 
     const handleAnimationEnd = (e: React.AnimationEvent) => {
       // On déclenche le reset lorsque l'animation du couvercle se termine
-      if (e.animationName === "trashLid") {
+      if (e.animationName === "trashLid" || e.animationName === "trashLidFlip") {
         handleReset()
         if (onAction) {
           void onAction()
@@ -154,6 +155,18 @@ export const AnimatedTrashButton = React.forwardRef<
             strokeWidth="2"
             transform="translate(12,12)"
           >
+            {/* Feuille jetée : tombe dans le bac pendant le geste (icône seule) */}
+            <rect
+              className="del-btn__icon-paper"
+              x="9.5"
+              y="-5"
+              width="5"
+              height="6"
+              rx="1"
+              fill="currentColor"
+              stroke="none"
+            />
+
             {/* Couvercle animé */}
             <g
               className="del-btn__icon-lid"

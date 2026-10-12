@@ -7,16 +7,20 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
+import { documentIndicator, documentRequirementForAssessment } from '@/domain/evaluations/documentRequirement';
 import './evaluationsResponsive.css';
 import './evaluationReference.css';
 import {
   CalendarCheck,
   RefreshCw,
   FileText,
+  FileCheck,
+  FilePlus,
   UserX,
   Users,
   CheckCheck,
   Mic,
+  Presentation,
   ChevronDown,
 } from 'lucide-react';
 import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
@@ -48,20 +52,6 @@ interface DevoirsViewProps {
   lessonsData?: LessonsData;
   onLessonsChange?: (newLessons: LessonsData) => void;
 }
-
-const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: 'green' | 'amber' | 'blue' | 'zinc' }> = {
-  done: { labelKey: 'evaluations.status.done', tone: 'green' },
-  mismatch: { labelKey: 'evaluations.status.mismatch', tone: 'amber' },
-  upcoming: { labelKey: 'evaluations.status.upcoming', tone: 'blue' },
-  missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
-};
-
-const STATUS_CHIP: Record<AssessmentLink['status'], string> = {
-  done: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
-  mismatch: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
-  upcoming: 'bg-primary/8 text-primary ring-primary/20',
-  missing: 'bg-muted text-muted-foreground ring-border',
-};
 
 export const DevoirsView: React.FC<DevoirsViewProps> = ({
   classInfo,
@@ -290,20 +280,22 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
-    const status = STATUS_STYLE[link.status];
     const isSupervised = ['controle', 'controle_court', 'controle_global'].includes(a.type);
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
     const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
-    const statusExplanation = link.status === 'done'
-      ? (locale === 'ar' ? 'متزامن تماماً: التاريخ يطابق تماماً الحصة المسجلة في دفتر النصوص' : 'Parfaitement synchronisé : la date correspond exactement à la séance dans le cahier')
-      : link.status === 'mismatch'
-        ? (locale === 'ar' ? `اختلاف تاريخ التخطيط (${link.planned.dateISO}) مع دفتر النصوص (${link.entry?.date ?? ''})` : `Écart de date entre la programmation (${link.planned.dateISO}) et le cahier (${link.entry?.date ?? ''})`)
-        : (locale === 'ar' ? 'مراقبة مبرمجة في التقويم' : 'Évaluation planifiée');
+    // Seul l'écart de date reste signalé sous le titre : c'est lui qui appelle une action.
+    const mismatchExplanation = locale === 'ar'
+      ? `اختلاف تاريخ التخطيط (${link.planned.dateISO}) مع دفتر النصوص (${link.entry?.date ?? ''})`
+      : `Écart de date entre la programmation (${link.planned.dateISO}) et le cahier (${link.entry?.date ?? ''})`;
 
-    const docTooltip = assessmentDocument
+    const docIndicator = documentIndicator(documentRequirementForAssessment(a.type), assessmentDocument);
+    const docTooltip = docIndicator === 'attached'
       ? (locale === 'ar' ? 'المحتوى محرر — انقر للاطلاع أو تعديل نص الموضوع، التمارين وعناصر الإجابة' : 'Sujet et corrigé rédigés — Cliquer pour consulter ou modifier')
-      : (locale === 'ar' ? 'لم يتم تحرير أي محتوى — انقر لكتابة نص الفرض، التمارين وسلّم التنقيط' : 'Aucun document rédigé — Cliquer pour rédiger le sujet ou le corrigé');
+      : docIndicator === 'missing'
+        ? (locale === 'ar' ? 'الموضوع مطلوب ولم يُحرَّر بعد — انقر لكتابته' : 'Sujet requis, pas encore rédigé — Cliquer pour le rédiger')
+        : (locale === 'ar' ? 'لم يتم تحرير أي محتوى — انقر لكتابة نص الفرض، التمارين وسلّم التنقيط' : 'Aucun document rédigé — Cliquer pour rédiger le sujet ou le corrigé');
+    const docStateSuffix = docIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : docIndicator === 'missing' ? ` — ${t('evaluations.doc.stateMissing')}` : '';
 
     const absentsTooltip = absents.length > 0
       ? (locale === 'ar' ? `${absents.length} تلميذ(ة) متغيب(ة) — إدارة لائحة الغياب وبرمجة الاستدراك` : `${absents.length} élève(s) absent(s) — Gérer la liste des absents et le rattrapage`)
@@ -334,48 +326,39 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 onClick={() => openEditAssessment(a)}
                 className="-ms-1 inline-flex max-w-full cursor-pointer items-center truncate rounded-md px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
               >
-                {displayName}
+                              {displayName}
               </button>
-            </div>
-
-            <div className="ev-row__state flex flex-col items-center gap-1">
-              <span
-                className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1', STATUS_CHIP[link.status])}
-                data-tippy-content={statusExplanation}
-              >
-                {t(status.labelKey)}
-              </span>
-              {link.status === 'mismatch' && link.entry?.date && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const targetDate = link.entry?.date;
-                    if (!targetDate) return;
-                    setAssessmentDate(a.id, targetDate);
-                    toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
-                  }}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
-                  aria-label={locale === 'ar' ? `ضبط مع دفتر النصوص (${link.entry?.date})` : `Aligner sur le cahier (${link.entry?.date})`}
-                >
-                  <RefreshCw className="h-3 w-3" />
-                  <span>{locale === 'ar' ? 'مزامنة' : 'Aligner'}</span>
-                </button>
-              )}
-              {a.type === 'maison' && rawDate && (custom || link.entry) && (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground"
-                >
-                  <CalendarCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span>{t('evaluations.homework.givenOn', { date: formatSingleDate(rawDate) })}</span>
-                </span>
-              )}
-              {a.type === 'maison' && correctionDateISO && (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground"
-                >
-                  <CheckCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span>{t('evaluations.homework.correctedOn', { date: formatSingleDate(correctionDateISO) })}</span>
-                </span>
+              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && ((rawDate && (custom || link.entry)) || correctionDateISO))) && (
+                <div className="ev-row__meta">
+                  {link.status === 'mismatch' && link.entry?.date && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetDate = link.entry?.date;
+                        if (!targetDate) return;
+                        setAssessmentDate(a.id, targetDate);
+                        toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
+                      }}
+                      className="ev-row__align inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
+                      data-tippy-content={mismatchExplanation}
+                    >
+                      <RefreshCw className="h-3 w-3" aria-hidden="true" />
+                      <span>{locale === 'ar' ? `مزامنة مع الدفتر (${formatSingleDate(link.entry.date)})` : `Aligner sur le cahier (${formatSingleDate(link.entry.date)})`}</span>
+                    </button>
+                  )}
+                  {a.type === 'maison' && rawDate && (custom || link.entry) && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                      <CalendarCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      <span>{t('evaluations.homework.givenOn', { date: formatSingleDate(rawDate) })}</span>
+                    </span>
+                  )}
+                  {a.type === 'maison' && correctionDateISO && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                      <CheckCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      <span>{t('evaluations.homework.correctedOn', { date: formatSingleDate(correctionDateISO) })}</span>
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 
@@ -399,17 +382,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </div>
 
             <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
-              <button
-                type="button"
-                onClick={() => setDocumentFor({ kind: 'assessment', link })}
-                className="ev-action shrink-0"
-                data-filled={assessmentDocument ? 'tone' : undefined}
-                data-tippy-content={docTooltip}
-                aria-label={t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}
-              >
-                <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
-                <span className="sr-only">{t('evaluations.doc.open')}</span>
-              </button>
+              {docIndicator !== 'none' && (
+                <button
+                  type="button"
+                  onClick={() => setDocumentFor({ kind: 'assessment', link })}
+                  className="ev-action shrink-0"
+                  data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
+                  data-doc-state={docIndicator}
+                  data-tippy-content={docTooltip}
+                  aria-label={`${t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}${docStateSuffix}`}
+                >
+                  {docIndicator === 'attached'
+                    ? <FileCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    : docIndicator === 'missing'
+                      ? <FilePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      : <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
+                  <span className="sr-only">{t('evaluations.doc.open')}</span>
+                </button>
+              )}
 
               {isSupervised && (
                 <button
@@ -442,10 +432,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   onClick={() => setOralFor(link)}
                   className="ev-action shrink-0"
                   data-tippy-content={oralTooltip}
-                  aria-label={`${t('evaluations.oral.title')} — ${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`}
+                  aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title')} — ${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`}
                 >
-                  <Mic className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
-                  <span className="sr-only">{t('evaluations.oral.title')}</span>
+                  {a.type === 'colle'
+                    ? <Presentation className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                    : <Mic className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
+                  <span className="sr-only">{t(a.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title')}</span>
                 </button>
               )}
 
@@ -511,7 +503,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 {entries.map(({ kind, count }) => {
                   const isOpen = openKeys.includes(activityKey(kind));
                   const label = t(kindLabelKey(kind));
-                  const KindIcon = kind.style.Icon;
                   const countLabel = `${number.format(count)} ${kind.family === 'devoir'
                     ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
                     : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
@@ -525,9 +516,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                         className="ev-accordion__toggle"
                       >
                         <span className="ev-accordion__label">
-                          <span className="ev-accordion__kind-icon evaluation-tone" data-tone={kind.style.tone} aria-hidden="true">
-                            <KindIcon className="h-4 w-4 shrink-0" />
-                          </span>
                           <span className="ev-accordion__label-text">{label}</span>
                         </span>
                         <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
@@ -553,7 +541,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             <div className="ev-board__rows">
                               <div className="ev-board__head" aria-hidden="true">
                                 <span>{t('evaluations.titleLabel')}</span>
-                                <span>{t('evaluations.colState')}</span>
                                 <span>{t('evaluations.manualDate')}</span>
                                 <span>{t('evaluations.colActions')}</span>
                               </div>

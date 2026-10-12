@@ -71,12 +71,15 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.match(olympiade, /class="ev-accordion__toggle"/, 'l’activité s’ouvre en tiroir');
   assert.equal(occurrences(olympiade, 'class="ev-row evaluation-tone"'), 1);
   assert.equal(occurrences(olympiade, 'data-activity-card="true"'), 1);
-  // Les QUATRE colonnes d'une ligne : identité, état, période, actions. Aucune
-  // colonne d'icône : « ne pas utiliser des icônes dans les zones ».
-  for (const cell of ['ev-row__id', 'ev-row__state', 'ev-row__date', 'ev-row__actions']) {
+  // Les TROIS colonnes d'une ligne : identité, période, actions. Ni colonne d'état
+  // (la date la dit), ni colonne d'icône : « ne pas utiliser des icônes dans les zones ».
+  for (const cell of ['ev-row__id', 'ev-row__date', 'ev-row__actions']) {
     assert.equal(occurrences(olympiade, cell), 1, `colonne ${cell} sur la ligne`);
   }
-  assert.doesNotMatch(olympiade, /ev-row__kind|hub-card__icon/, 'aucune pastille d’icône de nature dans la zone');
+  assert.doesNotMatch(olympiade, /ev-row__kind|hub-card__icon|ev-row__state/, 'aucune pastille d’icône de nature ni colonne d’état dans la zone');
+  // Document : facultatif pour une olympiade (neutre), inexistant pour un contrôle des cahiers.
+  assert.match(olympiade, /data-doc-state="idle"/, 'olympiade : document facultatif, absent = neutre');
+  assert.doesNotMatch(cahiers, /data-doc-state/, 'contrôle des cahiers : jamais de bouton document');
   // Une teinte par nature : ambre pour l'olympiade, ardoise pour le contrôle des
   // cahiers (une vérification administrative, pas une épreuve). On vise la ligne
   // (`data-activity-type`), pas le document : la teinte de l'en-tête de famille

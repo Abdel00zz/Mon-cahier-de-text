@@ -35,7 +35,7 @@ import {
   RefreshCw,
   ClipboardCheck,
   Users,
-  Mic,
+  Presentation,
 } from 'lucide-react';
 import type { DevoirType, PedagogicalEventType } from '@/types';
 
@@ -66,7 +66,7 @@ export const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, KindStyle> =
   autre: { labelKey: 'evaluations.event.autre', tone: 'slate', Icon: PenLine },
 };
 
-/** Devoirs et évaluations : les cinq natures qui alimentent le bulletin. */
+/** Devoirs et évaluations : les six natures qui alimentent le bulletin (la colle, en prépa seulement). */
 export const DEVOIR_KIND_CONFIG: Record<DevoirType, KindStyle> = {
   // L'épreuve écrite en classe : le calendrier des évaluations.
   controle: { labelKey: 'evaluations.type.controle', tone: 'blue', Icon: CalendarCheck },
@@ -78,8 +78,8 @@ export const DEVOIR_KIND_CONFIG: Record<DevoirType, KindStyle> = {
   oral: { labelKey: 'evaluations.type.oral', tone: 'rose', Icon: Users },
   // Le travail à la maison.
   maison: { labelKey: 'evaluations.type.maison', tone: 'teal', Icon: Home },
-  // La « colle » : l'interrogation orale hebdomadaire des classes préparatoires.
-  colle: { labelKey: 'evaluations.type.colle', tone: 'rose', Icon: Mic },
+  // La « colle » : l'interrogation au tableau des classes préparatoires.
+  colle: { labelKey: 'evaluations.type.colle', tone: 'rose', Icon: Presentation },
 };
 
 /** Une nature proposée au professeur, avec la famille qui décide de ses champs. */

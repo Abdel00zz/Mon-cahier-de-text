@@ -313,7 +313,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
             <div className="print-academy">{academyLine}</div>
             <div className="print-province">{provinceLine}</div>
             <div className="print-header-title">
-                {isRtlPrint ? 'دفتر النصوص · مستخرج رسمي' : 'Cahier de textes · Extrait imprimé'}
+                {isRtlPrint ? 'دفتر النصوص' : 'Cahier de textes'}
             </div>
             <div className="print-institution-grid">
                 <div className="print-institution-field">

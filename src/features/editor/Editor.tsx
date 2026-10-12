@@ -1,4 +1,5 @@
-import { restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
+import { assignHomeworkPatch, restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
+import { homeworkMoments } from '@/domain/evaluations/homeworkCycle';
 import type { AppConfig } from '@/types';
 import { buildAbsenceSessions, groupRowsWithAbsences } from '@/domain/notebook/absenceSessions';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -19,7 +20,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/features/editor/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
-import { buildLessonRows, indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
+import { indicesKey, resolveAddAfterTarget } from '@/domain/notebook/lessonRows';
 import { useNotebookOpeningFocus } from './hooks/useNotebookOpeningFocus';
 import { buildContentDateOrder } from '@/domain/calendar/dateOrder';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';
@@ -28,7 +29,7 @@ import { applyContentEdit, buildContentEditTargetsGrouped, buildSessionTargetsGr
 import type { ContentDraft } from '@/domain/notebook/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/features/editor/hooks/useSelectionData';
-import { findItem, insertAssessmentBlock, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
+import { findItem, addTopLevelItem, insertAssessmentBlock, addSection, addSubSection, addSubSubSection, addItem, migrateLessonsData } from '@/domain/notebook/dataUtils';
 import { prepareImportedLessons } from '@/domain/notebook/importPipeline';
 import { listExportableChapters, selectExportableChapters } from '@/domain/notebook/chapterExport';
 import { MAX_JSON_FILE_BYTES } from '@/domain/notebook/jsonInput';
@@ -36,7 +37,7 @@ import { contentLocaleFromDirection, defaultContentDirection, detectContentDirec
 import { sessionRemarkTextMap, buildSessionRemarkEntries, remarksForSessionDates } from '@/domain/evaluations/sessionActivityRemarks';
 import { documentsForSessionDates } from '@/domain/evaluations/activityDocumentPreviews';
 import { sessionDateKey } from '@/domain/evaluations/homeworkPlacement';
-import { replaceOrInsertHomeworkInRemark } from '@/domain/evaluations/homeworkNumbering';
+import { extractHomeworkNumber, getChronologicalHomeworkNumber } from '@/domain/evaluations/homeworkNumbering';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { produce, type Draft } from 'immer';
 import { applySessionEdit } from '@/domain/notebook/sessionEditing';
@@ -72,7 +73,7 @@ import { insertFreeContent } from '@/domain/notebook/freeContent';
 import { isFreeContent } from '@/domain/notebook/freeLineType';
 import { logger } from '@/lib/logger';
 import { todayInMorocco } from '@/domain/calendar/calendar';
-import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
+import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic, withoutPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease, registerWorkspaceWriter } from '@/infrastructure/storage/accountWorkspace';
 import { hasMathContent } from '@/lib/text/math';
@@ -145,8 +146,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     newlyAddedIds: [] as string[],
   });
 
-  // Un cahier vierge reçoit son diagnostic de départ : la version corrigée est
-  // persistée dès l'ouverture, comme avant la lecture synchrone, pour qu'elle
+  // Une direction déduite du contenu est persistée dès l'ouverture, pour qu'elle
   // survive au retour au tableau de bord et parte vers les autres appareils.
   useEffect(() => {
     if (!initialNotebook?.repaired || !workspaceIsActive()) return;
@@ -530,11 +530,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const storedDirection = readStoredContentDirection(savedData);
       const detectedDirection = detectContentDirection(lessons, fallback).direction;
       const nextDirection = storedDirection ?? detectedDirection;
-      // Un cahier VIERGE reçoit son diagnostic de départ ; un cahier qui a du
-      // contenu est pris tel quel : supprimer le diagnostic doit tenir.
-      const normalizedLessons = migratedLessons.length === 0
-        ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(nextDirection))
-        : migratedLessons;
+      // Un cahier vierge reste vierge : le choix de démarrage appartient au professeur.
+      const normalizedLessons = migratedLessons;
       resetState(normalizedLessons, 'initial-load');
       evaluationsBaseline.current = normalizedLessons;
       setEditorState(draft => { draft.contentDirection = nextDirection; });
@@ -915,6 +912,29 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         : undefined;
       const formattedDate = rawStart ? (rawEnd && rawEnd > rawStart ? formatPedagogicalDateCell(rawStart, rawEnd, effectiveLocale, intersecting) : rawStart) : undefined;
 
+      if (type === 'devoir_maison') {
+          // Le devoir maison n'est PAS un contenu du cahier : il rejoint la feuille
+          // « Contrôle continu et activités » (sujet, remise élève par élève) et sa
+          // séance porte l'annotation. Même écriture que la pastille de la remarque.
+          const date = rawStart && /^\d{4}-\d{2}-\d{2}$/.test(rawStart) ? rawStart : todayInMorocco();
+          const moments = homeworkMoments(config, classInfo.id);
+          const declared = extractHomeworkNumber(typeof data.title === 'string' ? data.title : '');
+          // Numéro explicite s'il est saisi, sinon le rang chronologique de la date choisie.
+          const num = declared && declared > 0 ? declared : getChronologicalHomeworkNumber({
+            lessons: lessonsData,
+            targetDate: date,
+            manualAssessments: moments.map(moment => ({ id: moment.id, type: 'maison', num: moment.num, dateISO: moment.givenDateISO })),
+            assessmentDates: Object.fromEntries(moments.map(moment => [moment.id, moment.givenDateISO ?? ''])),
+          });
+          const effects = recordSessionSettings(assignHomeworkPatch(config, classInfo.id, date, num));
+          // L'attribution s'annule comme une édition (Ctrl+Z), sans toucher au cahier.
+          if (effects) setState(() => lessonsData, 'assign-homework', effects);
+          showNotification(t('editorNotice.homeworkAssigned', { num, date: date.split('-').reverse().join('/') }), 'success');
+          setSelectionState(createSelectionState());
+          handleModalClose();
+          return;
+      }
+
       if (type === 'free') {
           prepare(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
           notificationMessage = t('editorNotice.itemAdded');
@@ -922,34 +942,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
           prepare(draft => {
               insertAssessmentBlock(draft, anchor, newItem);
-              if (type === 'devoir_maison') {
-                  const targetDate = formattedDate || todayInMorocco();
-                  const dmText = data.title?.trim() || t('remark.devoirMaisonGivenSimple');
-                  const rows = buildLessonRows(draft);
-                  let targetItem: any = null;
-                  for (let i = rows.length - 1; i >= 0; i--) {
-                      const r = rows[i];
-                      if (draft[r.indices.chapterIndex]?.type !== 'chapter') continue;
-                      if (r.data.date && r.data.date.includes(targetDate)) {
-                          targetItem = r.data;
-                          break;
-                      }
-                  }
-                  if (!targetItem) {
-                      for (let i = rows.length - 1; i >= 0; i--) {
-                          const r = rows[i];
-                          if (draft[r.indices.chapterIndex]?.type === 'chapter' && r.data.date) {
-                              targetItem = r.data;
-                              break;
-                          }
-                      }
-                  }
-                  if (targetItem) {
-                      const cur = (targetItem.remark || '').trim();
-                      targetItem.remark = replaceOrInsertHomeworkInRemark(cur, dmText);
-                  }
-              }
           }, 'add-top-level');
+          notificationMessage = t('editorNotice.topLevelAdded');
+      } else if (type === 'chapter') {
+          // Un chapitre est toujours un bloc de premier niveau : posé après le chapitre
+          // de l'ancre, ou en fin de cahier quand rien n'est sélectionné (premier chapitre).
+          const newChapter: TopLevelItem = { type: 'chapter', title: data.title, ...(formattedDate ? { date: formattedDate } : {}), _tempId: newId };
+          prepare(draft => addTopLevelItem(draft, newChapter, anchor?.chapterIndex), 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
       } else if (type === 'section' && anchor) {
           const parentIndices = { chapterIndex: anchor.chapterIndex };
@@ -982,6 +981,17 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           notificationMessage = t('editorNotice.itemAdded');
       }
 
+      if (isNotebookAwaitingContent && type !== 'evaluation_diagnostic' && nextLessons !== lessonsData) {
+        nextLessons = withoutPristineStarterDiagnostic(nextLessons);
+      }
+
+      // Aucune branche n'a reconnu la demande : on le dit et on garde la modale ouverte,
+      // au lieu de la fermer en silence sur un cahier inchangé.
+      if (nextLessons === lessonsData) {
+        showNotification(t('editorNotice.contentNotAdded'), 'error');
+        return;
+      }
+
       reviewNotebookChange(lessonsData, nextLessons, () => {
         setState(() => nextLessons, action);
         if (notificationMessage) {
@@ -992,7 +1002,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         setSelectionState(createSelectionState());
         handleModalClose();
       });
-  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange]);
+  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange, recordSessionSettings, isNotebookAwaitingContent]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -1271,14 +1281,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setSelectionState(createSelectionState());
-      setState(() => newLessons.length > 0
-        ? withStarterDiagnostic(newLessons, contentLocaleFromDirection(contentDirection))
-        : newLessons, 'manage-lessons');
+      setState(() => newLessons, 'manage-lessons');
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
 
-  }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection, classInfo.id, config, updateConfig]);
+  }, [setState, showNotification, handleModalClose, setEditorState, t]);
 
   const handleEvaluationsLessonsChange = useCallback((newLessons: LessonsData) => {
       if (!workspaceIsActive()) return;

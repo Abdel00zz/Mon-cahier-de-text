@@ -5,12 +5,48 @@ import { applySessionEdit, type SessionPatch } from '../notebook/sessionEditing'
 import { sessionDateKey, sessionDateKeys } from './homeworkPlacement';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import type { SessionRemarkEntry } from './sessionActivityRemarks';
+import { homeworkAssessmentId, withHomeworkCorrection } from './homeworkCycle';
+
+export { homeworkAssessmentId };
 
 /** Old automatic labels sometimes lived in free text. Keep the teacher's own
  * lines while migrating exact activity labels to their editable badges. */
 export function withoutActivityCopies(text: string, entries: readonly SessionRemarkEntry[]): string {
   const automatic = new Set(entries.flatMap(entry => [entry.originalText, entry.text]).map(value => value.trim()));
   return text.split('\n').filter(line => !automatic.has(line.trim())).join('\n').trim();
+}
+
+/**
+ * ATTRIBUER UN DEVOIR MAISON — une seule écriture, quelle que soit la porte :
+ * la pastille « Devoir maison N donné » de la remarque, ou la carte « Devoir
+ * maison » de l'ajout de contenu. Le devoir rejoint la feuille « Contrôle
+ * continu et activités » (document, remise élève par élève), sa séance porte
+ * l'annotation, et une attribution supprimée puis reposée renaît.
+ *
+ * `base` permet d'enchaîner sur un patch déjà calculé (même transaction).
+ */
+export function assignHomeworkPatch(config: AppConfig, classId: string, dateISO: string, num: number,
+  base: Partial<AppConfig> = {}): Partial<AppConfig> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || !Number.isInteger(num) || num < 1) return base;
+  const result: Partial<AppConfig> = { ...base };
+  const id = homeworkAssessmentId(dateISO, num);
+  const schoolYear = schoolYearLabelFromDate(dateISO);
+  const semester = id.includes(':s2-') ? 2 : 1;
+  const manual = [...(result.manualAssessments?.[classId] ?? config.manualAssessments?.[classId] ?? [])];
+  const dates = { ...(result.assessmentDates?.[classId] ?? config.assessmentDates?.[classId]) };
+  const index = manual.findIndex(item => item.id === id);
+  const entry = { id, schoolYear, type: 'maison' as const, num, dateISO, semestre: semester as 1 | 2 };
+  if (index >= 0) manual[index] = { ...manual[index], ...entry };
+  else manual.push(entry);
+  dates[id] = dateISO;
+  result.manualAssessments = { ...config.manualAssessments, ...result.manualAssessments, [classId]: manual };
+  result.assessmentDates = { ...config.assessmentDates, ...result.assessmentDates, [classId]: dates };
+  // On ne réécrit la liste des supprimés que s'il y avait vraiment à la purger.
+  const currentRemoved = result.removedAssessments?.[classId] ?? config.removedAssessments?.[classId] ?? [];
+  if (currentRemoved.includes(id)) {
+    result.removedAssessments = { ...config.removedAssessments, [classId]: currentRemoved.filter(entryId => entryId !== id) };
+  }
+  return result;
 }
 
 /** Synchronize activity references after a session edit. Clearing some rows of
@@ -95,34 +131,16 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
     // Sans déplacement de date (saisie de la remarque), c'est la séance ciblée
     // qui fournit la date d'attribution.
     const date = sessionDateKeys(patch.date ?? '')[0] ?? [...sourceDates][0] ?? '';
-    if (date) {
-      const schoolYear = schoolYearLabelFromDate(date);
-      const semester = Number(date.slice(5, 7)) >= 2 && Number(date.slice(5, 7)) <= 7 ? 2 : 1;
-      const id = `${schoolYear}:s${semester}-maison${patch.homeworkGiven}`;
-      const manual = [...(result.manualAssessments?.[classId] ?? config.manualAssessments?.[classId] ?? [])];
-      const dates = { ...(result.assessmentDates?.[classId] ?? config.assessmentDates?.[classId]) };
-      const index = manual.findIndex(item => item.id === id);
-      const entry = { id, schoolYear, type: 'maison' as const, num: patch.homeworkGiven, dateISO: date, semestre: semester as 1 | 2 };
-      if (index >= 0) manual[index] = { ...manual[index], ...entry };
-      else manual.push(entry);
-      dates[id] = date;
-      result.manualAssessments = { ...config.manualAssessments, [classId]: manual };
-      result.assessmentDates = { ...config.assessmentDates, [classId]: dates };
-      // On ne réécrit la liste des supprimés que s'il y avait vraiment à la purger.
-      const currentRemoved = result.removedAssessments?.[classId] ?? config.removedAssessments?.[classId] ?? [];
-      if (currentRemoved.includes(id)) {
-        result.removedAssessments = { ...config.removedAssessments, [classId]: currentRemoved.filter(entryId => entryId !== id) };
-      }
-    }
+    if (date) Object.assign(result, assignHomeworkPatch(config, classId, date, patch.homeworkGiven, result));
   }
 
   /*
-   * Correction du devoir pendant la séance : le devoir a déjà été DONNÉ (c'est
-   * la séance d'attribution qui l'a créé). La correction est le SECOND temps du
-   * même devoir : on pose seulement sa date de correction, sans toucher à la
-   * date d'attribution. S'il n'existe pas encore — cahier historique sans
-   * attribution saisie — on ne fabrique pas un devoir fantôme : c'est
-   * l'attribution qui crée, la correction qui date.
+   * Correction du devoir pendant la séance : le SECOND temps du même devoir.
+   * On pose seulement sa date de correction, sans toucher à la date
+   * d'attribution — même règle que le bloc « Correction du devoir maison » du
+   * cahier (`withHomeworkCorrection`) : un devoir du planning officiel daté par
+   * le professeur est servi, et un devoir jamais saisi est transmis à la feuille
+   * par sa séance de correction.
    */
   if (patch.homeworkCorrection && patch.homeworkCorrection > 0) {
     // Même repli que l'attribution : la séance de correction porte elle-même
@@ -130,23 +148,17 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
     const date = sessionDateKeys(patch.date ?? '')[0] ?? [...sourceDates][0] ?? '';
     if (date) {
       const manual = result.manualAssessments?.[classId] ?? config.manualAssessments?.[classId] ?? [];
-      const candidates = manual
-        .map((item, index) => ({ item, index }))
-        .filter(({ item }) => item.type === 'maison' && item.num === patch.homeworkCorrection
-          && (!item.dateISO || item.dateISO <= date));
-      // Un devoir de ce numéro déjà corrigé ne masque pas celui encore en
-      // attente ; à égalité, la correction suit le devoir donné le plus récent.
-      const target = candidates.sort((a, b) => {
-        const corrected = Number(Boolean(a.item.correctionDateISO)) - Number(Boolean(b.item.correctionDateISO));
-        return corrected || (b.item.dateISO || '').localeCompare(a.item.dateISO || '');
-      })[0];
-      if (target && target.item.correctionDateISO !== date) {
-        const next = [...manual];
-        next[target.index] = { ...target.item, correctionDateISO: date };
-        result.manualAssessments = { ...config.manualAssessments, [classId]: next };
-        const currentRemoved = result.removedAssessments?.[classId] ?? config.removedAssessments?.[classId] ?? [];
-        if (currentRemoved.includes(target.item.id)) {
-          result.removedAssessments = { ...config.removedAssessments, [classId]: currentRemoved.filter(entryId => entryId !== target.item.id) };
+      const currentRemoved = result.removedAssessments?.[classId] ?? config.removedAssessments?.[classId] ?? [];
+      const next = withHomeworkCorrection(manual, date, patch.homeworkCorrection, {
+        dates: result.assessmentDates?.[classId] ?? config.assessmentDates?.[classId],
+        removed: currentRemoved,
+      });
+      if (next !== manual) {
+        result.manualAssessments = { ...config.manualAssessments, ...result.manualAssessments, [classId]: [...next] };
+        // Le devoir servi est la seule entrée réécrite (ou ajoutée en fin de liste).
+        const target = next.find((item, index) => item !== manual[index]);
+        if (target && currentRemoved.includes(target.id)) {
+          result.removedAssessments = { ...config.removedAssessments, [classId]: currentRemoved.filter(entryId => entryId !== target.id) };
         }
       }
     }
