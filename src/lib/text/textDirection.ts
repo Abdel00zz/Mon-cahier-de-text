@@ -41,3 +41,17 @@ export function detectTextDirection(text?: unknown): TextDirection | null {
  */
 export const textDirectionAttribute = (text?: unknown): TextDirection | undefined =>
   detectTextDirection(text) ?? undefined;
+
+/**
+ * Fragment toujours lu de gauche à droite (date « 12/10/2026 », note « 15/20 »)
+ * glissé dans une phrase qui peut être arabe : isolé par LRI … PDI (U+2066,
+ * U+2069), il ne se retourne pas et ne déplace pas la ponctuation voisine.
+ */
+export const ltrIsolate = (text: string): string => (text ? `\u2066${text}\u2069` : text);
+
+/**
+ * Fragment de direction inconnue (nom d'élève, titre saisi, classe) dans une
+ * phrase composée : isolé par FSI … PDI (U+2068, U+2069), sa direction se décide
+ * sur sa première lettre, sans réordonner ce qui l'entoure.
+ */
+export const bidiIsolate = (text: string): string => (text ? `\u2068${text}\u2069` : text);

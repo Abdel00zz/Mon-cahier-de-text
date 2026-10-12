@@ -100,7 +100,7 @@ test('la fenêtre affiche une phrase et le document sans contexte ajouté', () =
     assert.doesNotMatch(source, /FileText className="h-5 w-5"/, 'plus de grand cartouche d’en-tête');
     for (const path of ['src/components/documents/DocumentPreview.tsx', 'src/features/evaluations/components/ContentDocumentModal.tsx', 'src/admin/components/AdminDocumentPreview.tsx']) {
         const documentModal = readFileSync(path, 'utf8');
-        assert.doesNotMatch(documentModal, /document-preview-meta|\{title\}|\{subtitle\}|\{updatedLabel\}/, 'aucun contexte ajouté autour de la source');
+        assert.doesNotMatch(documentModal, /document-preview-meta|(?<!=)\{title\}|\{subtitle\}|\{updatedLabel\}/, 'aucun contexte ajouté autour de la source (l’en-tête passe par DocumentSheetHeader)');
     }
 
     // Le libellé remplace l’ancienne phrase d’introduction : trois langues, aucune clé morte.

@@ -68,7 +68,7 @@ import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, Su
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatLocalizedClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/domain/notebook/freeContent';
 import { isFreeContent } from '@/domain/notebook/freeLineType';
 import { logger } from '@/lib/logger';
@@ -569,6 +569,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       (latest.config.pedagogicalEvents?.[classInfo.id] ?? []).forEach(event => eventArchive.current.set(event.id, event));
       const { patch, updated } = syncNotebookToEvaluations(classInfo.id, latest.config, lessonsDataRef.current, {
         previousLessons: evaluationsBaseline.current, planned: latest.assessments, eventArchive: eventArchive.current,
+        policy: latest.config.evaluationPolicy,
       });
       if (updated) updateConfig(patch);
       evaluationsBaseline.current = lessonsDataRef.current;
@@ -1569,6 +1570,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         isOpen={openDocument !== null}
         onClose={closeDocumentPreview}
         title={openDocument?.title ?? ''}
+        classLabel={formatLocalizedClassDisplayName(classInfo.name, locale)}
         source={openDocument?.document.source}
         updatedLabel={documentUpdatedLabel}
       />

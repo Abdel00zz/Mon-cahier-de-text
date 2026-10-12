@@ -1127,6 +1127,22 @@
     background: var(--surface-subtle);
 }
 
+/* « Copié » : la confirmation se lit dans le libellé, le vert sémantique la souligne. */
+.action-link[data-copied='true'],
+.action-link[data-copied='true']:hover:not(:disabled) {
+    color: #15803d;
+}
+
+.dark .action-link[data-copied='true'],
+.dark .action-link[data-copied='true']:hover:not(:disabled) {
+    color: #76d59a;
+}
+
+/* Arabe : pas d'approche positive sur les commandes écrites. */
+html[lang='ar'] :is(.action-link, .notebook-text-action) {
+    letter-spacing: normal;
+}
+
 .btn-icon-only {
     background: none;
     border: none;

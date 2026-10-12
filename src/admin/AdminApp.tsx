@@ -9,6 +9,7 @@ import { TeacherDetail } from './components/TeacherDetail';
 import { CalendarManager } from './components/CalendarManager';
 import { OfficialBulletinManager } from './components/OfficialBulletinManager';
 import { TimetableClockManager } from './components/TimetableClockManager';
+import { EvaluationPolicyManager } from './components/EvaluationPolicyManager';
 import { CalendarDays, Clock, FileText } from '../components/ui/icons';
 
 type View =
@@ -17,6 +18,7 @@ type View =
     | { name: 'teacher'; phone: string }
     | { name: 'calendar' }
     | { name: 'timetableClock'; phone?: string }
+    | { name: 'evaluationPolicy'; phone?: string }
     | { name: 'bulletin' };
 
 export const AdminApp: React.FC = () => {
@@ -102,6 +104,7 @@ export const AdminApp: React.FC = () => {
             <TeacherDetail
                 phone={view.phone}
                 onManageTimetable={() => setView({ name: 'timetableClock', phone: view.phone })}
+                onManageEvaluationPolicy={() => setView({ name: 'evaluationPolicy', phone: view.phone })}
                 onBack={() => {
                     setView({ name: 'overview' });
                     void loadOverview();
@@ -118,6 +121,14 @@ export const AdminApp: React.FC = () => {
             />
         );
     }
+    if (view.name === 'evaluationPolicy') {
+        return (
+            <EvaluationPolicyManager
+                phone={view.phone}
+                onBack={() => setView(view.phone ? { name: 'teacher', phone: view.phone } : { name: 'overview' })}
+            />
+        );
+    }
     if (view.name === 'bulletin') return <OfficialBulletinManager onBack={() => setView({ name: 'overview' })} />;
 
     return (
@@ -126,6 +137,9 @@ export const AdminApp: React.FC = () => {
                 <button onClick={() => setView({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
                     <Clock className="admin-commandbar__icon" aria-hidden />
                     Horaires des séances
+                </button>
+                <button onClick={() => setView({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    Contrôle continu
                 </button>
                 <button onClick={() => setView({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
                     <FileText className="admin-commandbar__icon" aria-hidden />

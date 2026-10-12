@@ -467,3 +467,27 @@
 .ev-accordion__body { animation: evaluation-reveal 180ms ease-out; }
 @keyframes evaluation-reveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .ev-accordion__body { animation: none; } .ev-action, .ev-icon-btn, .ev-accordion__toggle { transition: none; transform: none !important; } }
+
+/* Compte porté par une commande écrite (« Absents 2 », « Remises 18/28 ») :
+   une pastille qui prend la teinte de la commande, chiffres alignés. */
+.ev-action__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding-inline: .35rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 13%, transparent);
+    color: inherit;
+    font-size: 10.5px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Sous le titre d'un devoir maison : « Donné le … », « Corrigé le … », écrits sans pictogramme. */
+.ev-row__note {
+    color: hsl(var(--muted-foreground));
+    font-size: 10.5px;
+    font-weight: 650;
+}

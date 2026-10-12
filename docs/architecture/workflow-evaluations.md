@@ -161,3 +161,42 @@ annotée (projections ci-dessus).
   identité.
 - **Suppression à double sens** : retirer d’un côté retire l’autre par
   identité, jamais par position.
+## 7. Politique du contrôle continu (réglée par la direction)
+
+La direction décide, **nature par nature** (16 natures : 6 devoirs, 10 activités),
+ce que le cahier transmet à la feuille et ce que l'enseignant y peut faire.
+Page d'administration « Contrôle continu » (politique générale) et, par compte,
+« Personnaliser le contrôle continu » (écarts propres au compte).
+
+| Réglage | Effet |
+| --- | --- |
+| `transmit` | le cahier (bloc ou remarque) crée l'évaluation / l'activité dans la feuille |
+| `continuous` | famille « Devoirs et évaluations » plutôt que « Activités pédagogiques » (présentation seulement) |
+| `document` | contenu rédigé : `off` / `optional` / `required` (rouge si requis et manquant) |
+| `students` | commande « Élèves » / « Suivi » / « Remises » / « Cahiers » : liste d'élèves |
+| `feedback` | retour par élève : niveau (oral, colle, devoirs, activités), remise (devoir maison), état du cahier |
+| `grades` | note /20 par élève (suppose `feedback`) |
+| `absences` | liste des absents (devoirs seulement) |
+
+Invariants :
+
+- **Parité** : sans politique publiée, le comportement est celui d'avant (table
+  `DEFAULTS` de `evaluationPolicy.ts`, verrouillée par `tests/test-evaluation-policy.ts`).
+- **Écarts, pas copies** : seuls les champs modifiés sont stockés ; les défauts
+  peuvent évoluer sans réécrire ce que la direction a publié.
+- **Cohérence à chaque lecture** : la note suppose le retour, qui suppose la liste ;
+  une capacité que la nature ne porte pas (note d'un devoir maison, absents d'une
+  activité) reste éteinte (`kindSupport`).
+- **Rien ne disparaît** : la politique gouverne la création et l'exposition, jamais
+  la visibilité de ce qui existe. Une nature qui cesse d'être transmise ne retire
+  rien de la feuille ; couper le retour par élève conserve niveaux et notes déjà
+  saisis pour les élèves restants.
+- **Circuit de l'horloge des séances** : document général versionné
+  (`admin:evaluation-policy`) + écarts par compte (`admin:evaluation-policy:<tél>`),
+  résolus par `GET /api/sync` et livrés avec le pull. Jamais dans les réglages de
+  l'enseignant (hors `SYNCABLE_KEYS`, retirée par `assertValidSyncSettings`) : un
+  appareil ancien ne peut ni l'effacer ni la forger. Écriture par comparaison de
+  version (409 en cas de conflit).
+- **Une seule porte par question** : `resolveKindPolicy`, `documentRequirementFor`,
+  `kindTransmits`, `groupKinds` — la feuille, la réconciliation du cahier et la fiche
+  enseignant de la direction lisent la même réponse.

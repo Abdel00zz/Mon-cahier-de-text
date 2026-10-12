@@ -1,0 +1,125 @@
+/* ══════════════════════════════════════════════════════════════
+   LA FEUILLE DE DEVOIR — en-tête, marges et bouton d'impression
+   Une seule mesure pour l'aperçu, la relecture de la direction et
+   l'impression A5 : le titre à l'inline-start, la classe à l'autre bord
+   (à droite en français, à gauche en arabe), un filet fin dessous.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── En-tête : écran ─────────────────────────────────────────── */
+.doc-sheet-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  /* Même colonne de lecture que le corps (`max-w-[44rem]`). */
+  max-width: 44rem;
+  margin: 0 auto 1.1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid hsl(var(--foreground) / 0.2);
+  break-after: avoid;
+}
+.doc-sheet-header__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: 'Newsreader', var(--font-arabic-display), Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.006em;
+  color: hsl(var(--foreground));
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.doc-sheet-header__class {
+  /* Sans titre (déjà dit par le document), la classe garde son bord. */
+  margin: 0;
+  margin-inline-start: auto;
+  flex: 0 1 auto;
+  max-width: 46%;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: hsl(var(--muted-foreground));
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+html[lang='ar'] .doc-sheet-header__title { letter-spacing: normal; line-height: 1.45; }
+html[lang='ar'] .doc-sheet-header__class { line-height: 1.5; }
+
+/* ── Marges : jamais de vide ajouté en haut ni en bas ──────────
+   Une barre d'exercice, un titre ou une formule affichée portent chacun une
+   marge propre ; en bout de page elle ne sépare plus rien, elle ne fait que
+   creuser un vide. Le corps de la feuille commence et finit sur son texte. */
+.devoir-document > :first-child,
+.devoir-document > :first-child > .katex-display:first-child {
+  margin-top: 0 !important;
+}
+.devoir-document > :last-child,
+.devoir-document > :last-child > .katex-display:last-child {
+  margin-bottom: 0 !important;
+}
+.devoir-document > .math-text:first-child > .katex-display:first-child,
+.devoir-document > .math-text:first-child .katex-display:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+.devoir-document > .math-text:last-child .katex-display:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ── Bouton d'impression : même famille que les autres commandes ──
+   Ivoire, filet fin, rayon de 10 px (celui de `Button`), survol argile,
+   pression -10 % — sans libellé : l'icône et l'infobulle suffisent. */
+.doc-icon-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground) / 0.78);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.035);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
+    transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 160ms ease;
+}
+.doc-icon-btn .app-icon { width: 1.25rem; height: 1.25rem; }
+@media (hover: hover) and (pointer: fine) {
+  .doc-icon-btn:hover:not(:disabled) {
+    border-color: hsl(var(--primary) / 0.35);
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+}
+.doc-icon-btn:active:not(:disabled) { transform: scale(0.96); filter: brightness(0.92); }
+.doc-icon-btn:focus-visible { outline: 2px solid hsl(var(--primary) / 0.6); outline-offset: 2px; }
+.doc-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Préparation de l'impression : l'imprimante respire, sans texte à lire. */
+.doc-icon-btn[aria-busy='true'] .app-icon { animation: doc-icon-breathe 900ms ease-in-out infinite; }
+@keyframes doc-icon-breathe { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) {
+  .doc-icon-btn { transition: none; }
+  .doc-icon-btn:active:not(:disabled) { transform: none; }
+  .doc-icon-btn[aria-busy='true'] .app-icon { animation: none; opacity: 0.6; }
+}
+
+/* ── En-tête : impression A5 (132 mm utiles) ───────────────────
+   Hauteur du bloc ≈ 5,5 mm de titre + 1,8 mm sous le texte + 0,3 mm de filet
+   + 3,2 mm avant le corps = 10,8 mm. Le titre prend au moins 58 % de la largeur
+   (≈ 72 mm : 30 caractères par ligne à 12,5 pt), la classe au plus 42 %. */
+.pedagogical-print-root .doc-sheet-header {
+  max-width: none;
+  margin: 0 0 3.2mm;
+  padding-bottom: 1.8mm;
+  border-bottom: 0.3mm solid #24231f;
+  gap: 1mm 4mm;
+}
+.pedagogical-print-root .doc-sheet-header__title { font-size: 12.5pt; line-height: 1.2; color: #24231f; }
+.pedagogical-print-root .doc-sheet-header__class { max-width: 42%; font-size: 8.5pt; line-height: 1.25; color: #5e594e; }
+.pedagogical-print-root .doc-sheet-header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }

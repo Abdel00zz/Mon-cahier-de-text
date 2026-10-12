@@ -1,4 +1,5 @@
-import type { AppConfig, LessonsData, PedagogicalEvent } from '../../types';
+import type { AppConfig, EvaluationPolicy, LessonsData, PedagogicalEvent } from '../../types';
+import { isEvaluationKind, kindTransmits } from './evaluationPolicy';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { findNotebookAssessments, linkAssessments, parseTrailingNumber, type NotebookAssessmentEntry } from './assessmentSync';
@@ -11,6 +12,8 @@ interface ReconcileOptions {
   previousLessons?: LessonsData;
   planned?: PlannedAssessment[];
   eventArchive?: ReadonlyMap<string, PedagogicalEvent>;
+  /** Politique de la direction : une nature non transmise reste dans le cahier, la feuille ne la reçoit pas. */
+  policy?: EvaluationPolicy;
 }
 const changed = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
 const validDate = (value?: string): value is string => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value));
@@ -49,7 +52,7 @@ const REMARK_ACTIVITY_DETECTORS: readonly RemarkActivityDetector[] = [
  * Détecte les activités pédagogiques (contrôle des cahiers, remédiation, soutien, rattrapage)
  * inscrites dans la remarque d'une séance de cours et génère les événements correspondants.
  */
-export function detectEventsFromRemarks(row: LessonRow, _classId?: string): PedagogicalEvent[] {
+export function detectEventsFromRemarks(row: LessonRow, _classId?: string, policy?: EvaluationPolicy): PedagogicalEvent[] {
   const remark = row.data.remark?.trim();
   if (!remark) return [];
   const { startDate, endDate } = extractDateRange(row.data.date);
@@ -60,6 +63,7 @@ export function detectEventsFromRemarks(row: LessonRow, _classId?: string): Peda
   const rowId = row.data._tempId ?? row.key;
 
   for (const detector of REMARK_ACTIVITY_DETECTORS) {
+    if (!kindTransmits(policy, detector.type)) continue;
     if (detector.regex.test(normalized) || detector.regex.test(remark)) {
       const id = `remark-${detector.type}-${rowId}`;
       detected.push({
@@ -85,8 +89,11 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
   const patch: Partial<AppConfig> = {};
   const rows = buildLessonRows(lessons);
   const previousRows = buildLessonRows(options.previousLessons ?? lessons);
-  const entries = findNotebookAssessments(lessons);
-  const oldEntries = findNotebookAssessments(options.previousLessons ?? lessons);
+  // Une nature non transmise n'entre ni dans « avant » ni dans « après » : elle ne crée rien
+  // et ne fait rien disparaître de la feuille (les éléments déjà transmis restent gérables).
+  const transmits = (kind: string) => !isEvaluationKind(kind) || kindTransmits(options.policy, kind);
+  const entries = findNotebookAssessments(lessons).filter(entry => transmits(entry.type));
+  const oldEntries = findNotebookAssessments(options.previousLessons ?? lessons).filter(entry => transmits(entry.type));
   const dates = { ...config.assessmentDates?.[classId] };
   const removed = new Set(config.removedAssessments?.[classId]);
   const manual = [...(config.manualAssessments?.[classId] ?? [])];
@@ -162,7 +169,7 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
    * devoir du planning officiel daté par le professeur, ou un devoir jamais
    * saisi, est transmis à la feuille « Contrôle continu et activités ».
    */
-  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison')) {
+  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison' && transmits('maison'))) {
     const { startDate } = extractDateRange(row.data.date);
     if (!validDate(startDate)) continue;
     const declared = parseTrailingNumber('title' in row.data ? row.data.title : undefined);
@@ -185,7 +192,8 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
       && ('title' in row.data && (event.title === row.data.title || (previous && 'title' in previous.data && event.title === previous.data.title))));
     return candidates.length === 1 ? candidates[0] : undefined;
   };
-  const eventRows = rows.filter(eventType);
+  const transmittedEvent = (row: LessonRow) => eventType(row) && transmits(row.elementType);
+  const eventRows = rows.filter(transmittedEvent);
   const rowIdentityCounts = new Map<string, number>();
   for (const row of eventRows) if (row.data._tempId) rowIdentityCounts.set(row.data._tempId, (rowIdentityCounts.get(row.data._tempId) ?? 0) + 1);
   for (const row of eventRows) {
@@ -211,7 +219,7 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
 
   // Scan remarks for pedagogical activities (contrôle cahiers, remédiation, etc.)
   for (const row of rows) {
-    const remarkEvents = detectEventsFromRemarks(row, classId);
+    const remarkEvents = detectEventsFromRemarks(row, classId, options.policy);
     for (const rev of remarkEvents) {
       // Deduplicate: if an explicit block exists for this activity on the same row or date, skip
       if (row.elementType === rev.type) continue;
@@ -243,7 +251,7 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
   }
 
   if (options.previousLessons) {
-    for (const row of previousRows.filter(eventType)) {
+    for (const row of previousRows.filter(transmittedEvent)) {
       const event = findEvent(row);
       if (event && !matched.has(event.id)) {
         const index = events.findIndex(item => item.id === event.id);
@@ -254,7 +262,8 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
 
   // Remove remark events that are no longer present in current rows
   for (let i = events.length - 1; i >= 0; i--) {
-    if (events[i].id.startsWith('remark-') && !matched.has(events[i].id)) {
+    // Une activité déjà transmise, dont la nature n'est plus transmise, est conservée : elle porte peut-être des élèves ou un document.
+    if (events[i].id.startsWith('remark-') && !matched.has(events[i].id) && transmits(events[i].type)) {
       events.splice(i, 1);
     }
   }

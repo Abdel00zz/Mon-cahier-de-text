@@ -2,11 +2,14 @@ import React, { useMemo } from 'react';
 import { toast } from 'sonner';
 import type { AppConfig, AppLocale, ClassInfo, DevoirType, ManualAssessment } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
+import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
+import { retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
+import { retainOralGrades, retainOralOutcomes } from '@/domain/evaluations/studentRoster';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { CalendarCheck } from 'lucide-react';
+import { bidiIsolate } from '@/lib/text/textDirection';
 import { ContentDocumentModal } from './ContentDocumentModal';
 import { EventDateModal } from './EventDateModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
@@ -101,8 +104,17 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
   })();
 
-  /** La colle et l'oral partagent la fenêtre de suivi, pas son nom. */
-  const oralTitle = t(oralFor?.planned.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title');
+  // La direction décide ce que chaque fenêtre de suivi propose : liste, retour par élève, notes.
+  const policy = config.evaluationPolicy;
+  const oralPolicy = oralFor ? resolveKindPolicy(policy, oralFor.planned.type) : null;
+  const homeworkPolicy = submissionsFor ? resolveKindPolicy(policy, submissionsFor.planned.type) : null;
+  const studentsPolicy = studentsFor ? resolveKindPolicy(policy, studentsFor.type) : null;
+  const notebookCheck = studentsFor?.type === REMARK_EVENT_TYPE;
+  const studentsReview = Boolean(studentsPolicy?.feedback);
+
+  /** La colle et l'oral ont chacun leur nom ; tout autre devoir suivi par élève porte le titre commun. */
+  const oralTitle = t(oralFor?.planned.type === 'colle' ? 'evaluations.colle.title'
+    : oralFor?.planned.type === 'oral' ? 'evaluations.oral.title' : 'evaluations.track.title');
   /** « Devoir maison 2 » : la remise se rattache toujours à SON devoir. */
   const submissionsLabel = submissionsFor
     ? `${t(`evaluations.type.${submissionsFor.planned.type}`)} ${number.format(submissionsFor.planned.num)}`
@@ -112,7 +124,10 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
     ? ''
     : documentFor.kind === 'event'
       ? (documentFor.event.title || t(PEDAGOGICAL_EVENT_CONFIG[documentFor.event.type].labelKey))
-      : `${t(`evaluations.type.${documentFor.link.planned.type}`)} n°${documentFor.link.planned.num}`;
+      : `${t(`evaluations.type.${documentFor.link.planned.type}`)} ${number.format(documentFor.link.planned.num)}`;
+
+  /* « Classe · Devoir 2 » : chaque fragment isolé, l'arabe et le latin ne se réordonnent pas entre eux. */
+  const contextOf = (...parts: string[]) => parts.filter(Boolean).map(bidiIsolate).join(' · ');
 
   return (
     <>
@@ -126,18 +141,13 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
         footerClassName="border-t-0 bg-background"
         title={
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <CalendarCheck className="h-5 w-5" />
+          <div className="min-w-0">
+            <span className="block text-base font-extrabold leading-tight tracking-[-0.015em] text-foreground rtl:tracking-normal sm:text-[17px]">
+              {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
             </span>
-            <div className="min-w-0">
-              <span className="block text-sm font-bold leading-tight tracking-tight text-foreground sm:text-base">
-                {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
-              </span>
-              {selectedClass && (
-                <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground sm:text-xs">{selectedClassDisplayName}</p>
-              )}
-            </div>
+            {selectedClass && (
+              <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground sm:text-xs" dir="auto">{selectedClassDisplayName}</p>
+            )}
           </div>
         }
       >
@@ -156,7 +166,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         isOpen={absencesFor !== null}
         onClose={() => setAbsencesFor(null)}
         title={t('evaluations.absentees')}
-        context={absencesFor ? `${selectedClassDisplayName} · ${t(`evaluations.type.${absencesFor.planned.type}`)} ${number.format(absencesFor.planned.num)}` : undefined}
+        context={absencesFor ? contextOf(selectedClassDisplayName, `${t(`evaluations.type.${absencesFor.planned.type}`)} ${number.format(absencesFor.planned.num)}`) : undefined}
       >
         {absencesFor && selectedClass && (
           <StudentNamesEditor
@@ -178,7 +188,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         key={documentFor?.kind === 'event' ? documentFor.event.id : documentFor?.link.planned.id ?? 'closed'}
         isOpen={documentFor !== null}
         onClose={() => setDocumentFor(null)}
-        title={t('evaluations.doc.title', { activity: documentTitle })}
+        title={documentTitle}
         subtitle={selectedClass ? selectedClassDisplayName : undefined}
         document={documentOf}
         onSave={(source) => {
@@ -192,15 +202,16 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       <StudentReviewDialog
         isOpen={oralFor !== null}
         onClose={() => setOralFor(null)}
-        tracking
+        tracking={Boolean(oralPolicy?.feedback)}
         title={oralTitle}
-        context={oralFor ? `${selectedClassDisplayName} · ${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)}` : undefined}
+        context={oralFor ? contextOf(selectedClassDisplayName, `${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)}`) : undefined}
       >
         {oralFor && selectedClass && (
           <StudentNamesEditor
             key={`oral-${selectedClass.id}-${oralFor.planned.id}`}
             variant="checked"
-            trackOral
+            trackOral={Boolean(oralPolicy?.feedback)}
+            trackGrades={Boolean(oralPolicy?.grades)}
             initialNames={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.names ?? []}
             initialOralOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralOutcomes}
             initialOralGrades={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralGrades}
@@ -209,7 +220,11 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             reportContext={`${selectedClassDisplayName} · ${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}`}
             onCancel={() => setOralFor(null)}
             onSave={(names, _notebook, oralOutcomes, _hw, oralGrades) => {
-              actions.saveOral(oralFor.planned.id, names, oralOutcomes ?? {}, oralGrades ?? {});
+              // Liste simple (retour désactivé) : les niveaux et notes déjà saisis sont conservés pour les élèves restants.
+              const previous = config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id];
+              actions.saveOral(oralFor.planned.id, names,
+                oralOutcomes ?? retainOralOutcomes(names, previous?.oralOutcomes),
+                oralGrades ?? retainOralGrades(names, previous?.oralGrades));
               setOralFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
                 count: number.format(names.length), activity: oralTitle,
@@ -223,22 +238,23 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       <StudentReviewDialog
         isOpen={submissionsFor !== null}
         onClose={() => setSubmissionsFor(null)}
-        tracking
+        tracking={Boolean(homeworkPolicy?.feedback)}
         title={t('evaluations.homework.title')}
-        context={submissionsFor ? `${selectedClassDisplayName} · ${submissionsLabel}` : undefined}
+        context={submissionsFor ? contextOf(selectedClassDisplayName, submissionsLabel) : undefined}
       >
         {submissionsFor && selectedClass && (
           <StudentNamesEditor
             key={`homework-${selectedClass.id}-${submissionsFor.planned.id}`}
             variant="checked"
-            trackHomework
+            trackHomework={Boolean(homeworkPolicy?.feedback)}
             initialNames={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.names ?? []}
             initialHomeworkOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.homeworkOutcomes}
             roster={config.classRosters?.[selectedClass.id]}
             reportContext={`${selectedClassDisplayName} · ${submissionsLabel} · ${formatLongDate(submissionsFor.planned.dateISO, locale)}`}
             onCancel={() => setSubmissionsFor(null)}
             onSave={(names, _notebook, _oral, homeworkOutcomes) => {
-              actions.saveHomework(submissionsFor.planned.id, names, homeworkOutcomes ?? {});
+              const previous = config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id];
+              actions.saveHomework(submissionsFor.planned.id, names, homeworkOutcomes ?? retainHomeworkOutcomes(names, previous?.homeworkOutcomes));
               setSubmissionsFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
                 count: number.format(names.length), activity: `${t('evaluations.homework.title')} · ${submissionsLabel}`,
@@ -252,24 +268,29 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       <StudentReviewDialog
         isOpen={studentsFor !== null}
         onClose={() => setStudentsFor(null)}
-        tracking={studentsFor?.type === REMARK_EVENT_TYPE}
-        title={t(studentsFor?.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}
-        context={studentsFor ? `${selectedClassDisplayName} · ${studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)}` : undefined}
+        tracking={studentsReview}
+        title={t(studentsReview ? (notebookCheck ? 'evaluations.notebook.title' : 'evaluations.track.title') : 'evaluations.students.open')}
+        context={studentsFor ? contextOf(selectedClassDisplayName, studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)) : undefined}
       >
         {studentsFor && (
           <StudentNamesEditor
             key={`students-${studentsFor.id}`}
             variant="checked"
             initialNames={studentsFor.students?.names ?? []}
-            trackNotebookCondition={studentsFor.type === REMARK_EVENT_TYPE}
+            trackNotebookCondition={studentsReview && notebookCheck}
             initialNotebookConditions={studentsFor.students?.notebookConditions}
-            roster={studentsFor.type === REMARK_EVENT_TYPE && selectedClass ? config.classRosters?.[selectedClass.id] : undefined}
+            trackOral={studentsReview && !notebookCheck}
+            trackGrades={Boolean(studentsPolicy?.grades)}
+            initialOralOutcomes={studentsFor.students?.oralOutcomes}
+            initialOralGrades={studentsFor.students?.oralGrades}
+            reportTitle={studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)}
+            roster={studentsReview && notebookCheck && selectedClass ? config.classRosters?.[selectedClass.id] : undefined}
             reportContext={`${selectedClassDisplayName} · ${studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)} · ${formatLongDate(studentsFor.date, locale)}`}
             updatedAt={studentsFor.students?.updatedAt}
             onCancel={() => setStudentsFor(null)}
-            onSave={(names, conditions) => {
+            onSave={(names, conditions, oralOutcomes, _hw, oralGrades) => {
               const activity = studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey);
-              actions.saveEventStudents(studentsFor.id, names, conditions);
+              actions.saveEventStudents(studentsFor.id, names, conditions, { oralOutcomes, oralGrades });
               toast.success(names.length > 0
                 ? t(names.length === 1 ? 'evaluations.students.savedOne' : 'evaluations.students.savedMany', {
                     count: number.format(names.length),

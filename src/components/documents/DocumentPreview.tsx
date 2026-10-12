@@ -5,6 +5,9 @@ import { FileText } from '../ui/icons';
 import { renderDescriptionWithBold } from '../typography/textFormat';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { DocumentPrintButton } from './DocumentPrintButton';
+import { DocumentSheetHeader } from './DocumentSheetHeader';
+import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
  * Aperçu d'un document pédagogique du professeur : le sujet d'un devoir, un
@@ -30,6 +33,8 @@ export interface DocumentPreviewProps {
     title: string;
     /** Contexte : classe, matière, professeur. */
     subtitle?: string;
+    /** Classe, portée à l'autre bord de l'en-tête de la feuille. */
+    classLabel?: string;
     /** Source rédigée (Markdown simplifié + LaTeX + balises). */
     source?: string | null;
     /** « Mise à jour le … », déjà mis en forme par l'appelant. */
@@ -39,6 +44,8 @@ export interface DocumentPreviewProps {
 export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     isOpen,
     onClose,
+    title,
+    classLabel,
     source,
 }) => {
     const { t } = useLocale();
@@ -59,12 +66,15 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 <Button type="button" variant="outline" onClick={onClose} className="rounded-md">{t('common.close')}</Button>
             }
             /* Le document commence directement : aucun contexte ajouté. */
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} /></span>}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={title} classLabel={classLabel} className="ms-auto" /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper border border-border/80 bg-card p-5 sm:p-7">
                     {page ? (
-                        <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{page}</div>
+                        <div dir={textDirectionAttribute(source) ?? 'ltr'}>
+                            <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} />
+                            <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{page}</div>
+                        </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3 py-10 text-center">
                             <FileText className="h-9 w-9 text-muted-foreground" aria-hidden="true" />

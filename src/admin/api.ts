@@ -1,6 +1,6 @@
 import type { AppConfig, AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { AdminActivityDocument } from '../domain/evaluations/adminDocuments';
-import type { ClassRoster } from '../types';
+import type { ClassRoster, EvaluationKindOverrides, EvaluationPolicy, EvaluationPolicyAssignment } from '../types';
 import type { HolidayCalendar } from '../domain/calendar/calendar';
 import type { OfficialStudentEventsFile } from '../domain/evaluations/officialStudentEvents';
 import { requestSyncJson, SyncRequestError } from '../infrastructure/sync/syncTransport';
@@ -19,6 +19,8 @@ export interface TeacherDetail {
     activities: Record<string, AdminActivityDocument[]>;
     /** Sous-ensemble d'AppConfig nécessaire à l'impression d'un cahier par la direction. */
     printSettings: TeacherPrintSettings | null;
+    /** Politique du contrôle continu appliquée à ce compte (générale + écarts propres). */
+    evaluationPolicy?: EvaluationPolicy;
     adminMessages: AdminMessage[];
 }
 
@@ -194,6 +196,29 @@ export const saveAdminTimetableClock = (
         action: 'saveTimetableClock',
         ...(offsetMinutes === null ? { inheritGlobalTimetableClock: true } : { timetableClockOffsetMinutes: offsetMinutes }),
         expectedTimetableClockVersion: expectedVersion,
+        ...(phone ? { phone } : {}),
+    });
+
+export interface AdminEvaluationPolicyState {
+    /** Politique effective : pour un compte, la générale + ses écarts. */
+    evaluationPolicy: EvaluationPolicy;
+    globalEvaluationPolicy: EvaluationPolicy;
+    assignment: EvaluationPolicyAssignment | null;
+}
+
+export const fetchAdminEvaluationPolicy = (phone?: string): Promise<AdminEvaluationPolicyState> =>
+    request(`/api/admin?action=evaluationPolicy${phone ? `&phone=${encodeURIComponent(phone)}` : ''}`);
+
+/** Publie les ÉCARTS aux défauts (général) ou à la politique générale (compte). */
+export const saveAdminEvaluationPolicy = (
+    kinds: EvaluationKindOverrides,
+    expectedVersion: number,
+    phone?: string,
+): Promise<{ ok: boolean } & AdminEvaluationPolicyState> =>
+    postAdmin({
+        action: 'saveEvaluationPolicy',
+        evaluationPolicyKinds: kinds,
+        expectedEvaluationPolicyVersion: expectedVersion,
         ...(phone ? { phone } : {}),
     });
 

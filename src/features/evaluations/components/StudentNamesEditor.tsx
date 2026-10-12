@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
-import { Check, Copy, Info, RotateCcw, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
@@ -75,6 +75,8 @@ interface StudentNamesEditorProps {
   initialOralGrades?: Record<string, string>;
   /** Titre du rapport copié (« Suivi de la colle », « Suivi de l'oral »…). */
   reportTitle?: string;
+  /** Saisie de la note /20 sous chaque élève (suivi par niveaux). Désactivée : les notes déjà saisies sont conservées. */
+  trackGrades?: boolean;
   /** Remise d'un devoir : rendu ou non rendu, un état par élève. */
   trackHomework?: boolean;
   initialHomeworkOutcomes?: Record<string, HomeworkOutcome>;
@@ -93,6 +95,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   roster,
   initialOralGrades,
   reportTitle,
+  trackGrades = true,
   trackOral = false,
   initialOralOutcomes,
   trackHomework = false,
@@ -159,8 +162,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         ? [reportTitle ?? t(`${reviewPrefix}.title`), reportContext, ...names.map(name => {
             const outcome = t(`${reviewPrefix}.${Object.hasOwn(conditions, name) ? conditions[name] : 'pending'}`);
             // La note /20 (oral, colle) fait partie du constat : elle part avec le rapport.
-            const grade = trackOral ? grades[name]?.trim() : '';
-            return `- ${name} : ${outcome}${grade ? ` · ${grade}/20` : ''}`;
+            const grade = trackOral && trackGrades ? grades[name]?.trim() : '';
+            return `- ${name}${t('evaluations.reportSeparator')}${outcome}${grade ? ` · ${grade}/20` : ''}`;
           })].filter(Boolean).join('\n')
         : trackNotebookCondition ? notebookConditionReport(names, retainNotebookConditions(names, conditions as Record<string, NotebookCondition>),
         condition => t(`evaluations.notebook.${condition}`), t('evaluations.notebook.title'), reportContext) : names.join('\n');
@@ -187,8 +190,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
     return <StudentReviewList<ReviewCondition> names={names} conditions={conditions} onChange={setConditions} onRemove={removeName}
       mode={trackOral ? 'oral' : trackHomework ? 'homework' : 'notebook'}
       choices={trackOral ? ORAL_REVIEW_CHOICES : trackHomework ? HOMEWORK_REVIEW_CHOICES : NOTEBOOK_REVIEW_CHOICES}
-      grades={trackOral ? grades : undefined}
-      onGradesChange={trackOral ? setGrades : undefined}
+      grades={trackOral && trackGrades ? grades : undefined}
+      onGradesChange={trackOral && trackGrades ? setGrades : undefined}
       isAddOpen={isAddOpen}
       toolbarAction={
         <button
@@ -229,6 +232,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             }}
             placeholder={t('evaluations.notebook.addPlaceholder')}
             aria-label={t(copy.placeholder)}
+            dir="auto"
             autoFocus
           />
           <button
@@ -305,6 +309,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               }}
               placeholder={t('evaluations.notebook.addPlaceholder')}
               aria-label={t(copy.placeholder)}
+              dir="auto"
               autoFocus
             />
             <button
@@ -337,12 +342,11 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               title={t(copy.clear)}
               className="action-link danger notebook-text-action notebook-text-action--danger"
             />
-            <button type="button" onClick={handleCopy} disabled={!names.length} aria-label={t('evaluations.notebook.copyReport')} title={t('evaluations.notebook.copyReport')} className="action-link neutral notebook-text-action">
-              {copied ? <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true"/> : <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden="true"/>}
+            <button type="button" onClick={handleCopy} disabled={!names.length} title={t('evaluations.notebook.copyReport')} className="action-link neutral notebook-text-action" data-copied={copied ? 'true' : undefined}>
               <span>{copied ? t(copy.copied) : t('evaluations.notebook.copyReport')}</span>
             </button>
-            <button type="button" onClick={() => setConditions({})} disabled={!reviewed} className="btn-icon-only notebook-text-action" aria-label={t('evaluations.notebook.reset')} title={t('evaluations.notebook.reset')}>
-              <RotateCcw className="h-3.5 w-3.5 shrink-0" aria-hidden="true"/>
+            <button type="button" onClick={() => setConditions({})} disabled={!reviewed} className="action-link neutral notebook-text-action">
+              <span>{t('evaluations.notebook.reset')}</span>
             </button>
           </div>
           <div className="notebook-footer__commit footer-actions-right">
@@ -375,8 +379,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   onClick={handleCopy}
                   className="action-link neutral"
                   title={t(copy.copy)}
+                  data-copied={copied ? 'true' : undefined}
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   <span>{copied ? t(copy.copied) : t(copy.copy)}</span>
                 </button>
                 <AnimatedTrashButton
@@ -395,7 +399,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   key={name}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border-subtle)] px-2.5 py-1 text-xs font-semibold text-[var(--text-dark)] shadow-2xs"
                 >
-                  {name}
+                  <bdi>{name}</bdi>
                   <button
                     type="button"
                     onClick={() => removeName(name)}
@@ -431,6 +435,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             onBlur={() => commitDraft(draft)}
             placeholder={t(copy.placeholder)}
             aria-label={t(copy.placeholder)}
+            dir="auto"
           />
           <button
             type="button"
@@ -448,10 +453,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <summary className="min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
             {t(copy.hint)}
           </summary>
-          <p className="flex items-start gap-2 pb-2">
-            <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>{t(copy.directive)}</span>
-          </p>
+          <p className="pb-2">{t(copy.directive)}</p>
         </details>
 
         <div className="modal-footer pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3">

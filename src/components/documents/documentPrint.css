@@ -11,6 +11,12 @@ body[data-document-print] .pedagogical-print-root .devoir-document {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
+/* Le bas de la dernière page n'ajoute rien non plus : pas de marge résiduelle, pas de page vide. */
+.pedagogical-print-root .devoir-document > :last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+.pedagogical-print-root { break-after: avoid; page-break-after: avoid; }
 .pedagogical-print-root .doc-title {
   margin: 0 0 2.5mm !important;
   padding-block: 0 1.2mm !important;
@@ -44,9 +50,11 @@ body[data-document-print] .pedagogical-print-root .devoir-document {
   break-inside: avoid;
 }
 @media print {
+  /* Marges symétriques : 7 mm en haut et en bas, 8 mm sur les côtés. Le haut de la page est
+     ensuite tenu par l'en-tête, jamais par un vide ajouté (voir documentSheet.css). */
   @page {
     size: A5 portrait;
-    margin: 6mm 8mm;
+    margin: 7mm 8mm;
   }
   html:has(body[data-document-print]), body[data-document-print] {
     height: auto !important;

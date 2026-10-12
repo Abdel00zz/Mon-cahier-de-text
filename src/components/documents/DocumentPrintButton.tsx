@@ -1,22 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
-import { Printer } from 'lucide-react';
 import { toast } from 'sonner';
+import { SheetPrinter } from '../ui/icons';
 import { renderDescriptionWithBold } from '../typography/textFormat';
 import { preparePrintContent, printDocument } from '../../infrastructure/printing/printUtils';
 import { fitDocumentMath } from '../../infrastructure/printing/documentMathLayout';
+import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 import { useLocale } from '../../i18n/LocaleProvider';
+import { DocumentSheetHeader } from './DocumentSheetHeader';
 import './documentPrint.css';
+import './documentSheet.css';
 
 export interface DocumentPrintButtonProps {
   source?: string | null;
-  showLabel?: boolean;
+  /** Titre de l'élément, porté en en-tête de la page imprimée. */
+  title?: string;
+  /** Classe, portée à l'autre bord de l'en-tête. */
+  classLabel?: string;
   className?: string;
 }
 
 /** One text/math renderer and one native print circuit for teacher and direction. */
-export function DocumentPrintButton({ source, showLabel = false, className }: DocumentPrintButtonProps) {
-  const { t } = useLocale();
+export function DocumentPrintButton({ source, title, classLabel, className }: DocumentPrintButtonProps) {
+  const { t, isRtl } = useLocale();
   const [printing, setPrinting] = useState(false);
   const [snapshot, setSnapshot] = useState<string | null>(null);
   const paper = useRef<HTMLDivElement>(null);
@@ -49,20 +56,19 @@ export function DocumentPrintButton({ source, showLabel = false, className }: Do
       toast.error(t('documentPreview.printError'));
     }
   };
+  // Même sens que l'aperçu : la première lettre hors formules décide, la langue de l'interface départage.
+  const sheetDir = textDirectionAttribute(snapshot ?? source) ?? (isRtl ? 'rtl' : 'ltr');
   return <>
+    {/* Icône seule : le nom accessible et l'infobulle disent « Imprimer au format A5 ». */}
     <button type="button" onClick={() => void print()} disabled={printing || !source?.trim()} aria-busy={printing}
       title={t('documentPreview.printA5')} aria-label={t('documentPreview.printA5')}
-      className={className ?? (showLabel
-        ? "inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary cursor-pointer"
-        : "ms-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border text-foreground transition-colors hover:bg-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary cursor-pointer"
-      )}>
-      <Printer className={showLabel ? "h-4 w-4 shrink-0" : "h-5 w-5"} aria-hidden="true" />
-      {showLabel && <span>{t('toolbar.print')}</span>}
+      className={className ? `doc-icon-btn ${className}` : 'doc-icon-btn'}>
+      <SheetPrinter aria-hidden="true" />
     </button>
-    {snapshot !== null && createPortal(<div className="pedagogical-print-root" ref={paper}>
-      <style media="print">{'@page { size: A5 portrait; margin: 6mm 8mm; }'}</style>
-      <article className="devoir-document" dir="auto">{renderDescriptionWithBold(snapshot)}</article>
+    {snapshot !== null && createPortal(<div className="pedagogical-print-root" ref={paper} dir={sheetDir}>
+      <style media="print">{'@page { size: A5 portrait; margin: 7mm 8mm; }'}</style>
+      <DocumentSheetHeader title={headerTitleFor(title, snapshot)} classLabel={classLabel} />
+      <article className="devoir-document">{renderDescriptionWithBold(snapshot)}</article>
     </div>, document.body)}
   </>;
 }
-

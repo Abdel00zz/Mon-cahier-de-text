@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
 import { preloadSettingsPage } from '@/app/preload';
 import { useAuth } from '@/contexts/AuthContext';
+import './navSlider.css';
 
 export type TabType = 'dashboard' | 'settings' | 'notifications' | 'help';
 
@@ -57,6 +58,29 @@ const NAV_COPY: Record<AppLocale, {
 
 const countLabel = (count?: number) => count && count > 99 ? '99+' : count;
 
+/** Ordre des colonnes de la barre mobile (le guide n'y figure pas). */
+const MOBILE_ORDER: TabType[] = ['dashboard', 'notifications', 'settings'];
+
+/**
+ * Relance l'animation « jello » de la pastille à chaque changement d'onglet
+ * (jamais au premier rendu). Le retrait de la classe, la lecture de
+ * `offsetWidth` puis son rajout forcent le navigateur à rejouer l'animation.
+ */
+function useJello<T extends HTMLElement>(trigger: unknown) {
+  const ref = useRef<T>(null);
+  const previous = useRef(trigger);
+  useEffect(() => {
+    if (previous.current === trigger) return;
+    previous.current = trigger;
+    const element = ref.current;
+    if (!element) return;
+    element.classList.remove('nav-jello');
+    void element.offsetWidth;
+    element.classList.add('nav-jello');
+  }, [trigger]);
+  return ref;
+}
+
 export const TabBar = React.memo<TabBarProps>(({
   activeTab,
   onTabChange,
@@ -73,6 +97,13 @@ export const TabBar = React.memo<TabBarProps>(({
   const touchStartX = useRef(0);
 
   const isRtl = locale === 'ar';
+
+  // Pastilles coulissantes : l'index fixe la position, le changement relance le jello.
+  const sidebarIndex = sidebarTabs.findIndex(tab => tab.id === activeTab);
+  const mobileIndex = MOBILE_ORDER.indexOf(activeTab);
+  const sidebarJello = useJello<HTMLSpanElement>(activeTab);
+  const helpJello = useJello<HTMLSpanElement>(activeTab === 'help');
+  const mobileJello = useJello<HTMLSpanElement>(activeTab);
 
   // Référence du menu et gestion gestuelle (On Drag / Swipe pour refermer)
   const navRef = useRef<HTMLElement>(null);
@@ -224,8 +255,18 @@ export const TabBar = React.memo<TabBarProps>(({
 
         {/* 4. Apparition en cascade (Staggered Animation) des liens principaux */}
         <div
-          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
+          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
         >
+         <div className="relative flex flex-col gap-2">
+          {/* Une seule pastille qui glisse d'un onglet à l'autre, puis se détend. */}
+          <span
+            aria-hidden="true"
+            className="nav-slider nav-slider--vertical"
+            data-hidden={sidebarIndex === -1 ? 'true' : undefined}
+            style={{ '--tab-index': Math.max(sidebarIndex, 0) } as React.CSSProperties}
+          >
+            <span ref={sidebarJello} className="nav-slider__body sidebar-active-surface" />
+          </span>
           {sidebarTabs.map((tab, idx) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -251,15 +292,6 @@ export const TabBar = React.memo<TabBarProps>(({
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {/* Pastille dynamique animée */}
-                {isActive && (
-                  <motion.div
-                    layoutId="desktop-sidebar-active-pill"
-                    className="sidebar-active-surface absolute inset-0 rounded-xl"
-                    transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
-                  />
-                )}
-
                 <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
                   <Icon
                     className={cn(
@@ -301,6 +333,7 @@ export const TabBar = React.memo<TabBarProps>(({
               </motion.button>
             );
           })}
+         </div>
         </div>
 
         {/* Guide pédagogique accessible en bas du menu. */}
@@ -324,13 +357,10 @@ export const TabBar = React.memo<TabBarProps>(({
             )}
             aria-label={copy.help}
           >
-            {activeTab === 'help' && (
-              <motion.div
-                layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-background/85 border border-border/50 shadow-xs"
-                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
-              />
-            )}
+            {/* Le guide vit hors de la liste : sa surface apparaît en douceur. */}
+            <span aria-hidden="true" className="nav-surface" data-visible={activeTab === 'help' ? 'true' : undefined}>
+              <span ref={helpJello} className="nav-slider__body sidebar-active-surface" />
+            </span>
 
             <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
@@ -370,6 +400,15 @@ export const TabBar = React.memo<TabBarProps>(({
         onTouchEnd={handleTouchEnd}
       >
         <div className="relative mx-auto grid h-16 max-w-md grid-cols-3 items-center px-1">
+          {/* Pastille coulissante : trois colonnes égales, sens inversé en arabe. */}
+          <span
+            aria-hidden="true"
+            className="nav-slider nav-slider--horizontal"
+            data-hidden={mobileIndex === -1 ? 'true' : undefined}
+            style={{ '--tab-index': Math.max(mobileIndex, 0) } as React.CSSProperties}
+          >
+            <span ref={mobileJello} className="nav-slider__body" />
+          </span>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -386,15 +425,6 @@ export const TabBar = React.memo<TabBarProps>(({
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {/* Pastille coulissante dynamique (Spring Pill) */}
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-tab-active-pill"
-                    className="absolute inset-0 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
-                    transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
-                  />
-                )}
-
                 <motion.div
                   animate={{ y: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -438,15 +468,6 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            {/* Pastille coulissante dynamique si settings actif */}
-            {activeTab === 'settings' && (
-              <motion.div
-                layoutId="mobile-tab-active-pill"
-                className="absolute inset-0 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
-                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
-              />
-            )}
-
             <motion.div
               animate={{ y: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}

@@ -4,6 +4,9 @@ import { Button } from '../../components/ui/button';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { renderDescriptionWithBold } from '../../components/typography/textFormat';
 import { DocumentPrintButton } from '../../components/documents/DocumentPrintButton';
+import { DocumentSheetHeader } from '../../components/documents/DocumentSheetHeader';
+import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
  * Relecture d'un document du professeur par la direction.
@@ -25,6 +28,10 @@ interface AdminDocumentPreviewProps {
     title: string;
     /** Contexte : classe et professeur. */
     subtitle?: string;
+    /** Titre porté en en-tête de la feuille (sans la classe). */
+    heading?: string;
+    /** Classe, portée à l'autre bord de l'en-tête. */
+    classLabel?: string;
     /** Source rédigée par le professeur, quand elle existe. */
     source?: string | null;
     /** « mise à jour le … », déjà mis en forme par l'appelant. */
@@ -37,10 +44,14 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
     isOpen,
     onClose,
     source,
+    heading,
+    classLabel,
     emptyLabel = 'Le professeur n’a pas encore rédigé ce document.',
 }) => {
     const { t } = useLocale();
     const hasDocument = Boolean(source && source.trim());
+    // Le sens suit le document (première lettre hors formules), comme sur la feuille du professeur.
+    const sheetDir = textDirectionAttribute(source) ?? 'ltr';
     return (
         <Modal
             isOpen={isOpen}
@@ -48,13 +59,16 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
             maxWidth="3xl"
             className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} /></span>}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={heading} classLabel={classLabel} className="ms-auto" /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">
                     {hasDocument ? (
-                        <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">
-                            {renderDescriptionWithBold(source)}
+                        <div dir={sheetDir}>
+                            <DocumentSheetHeader title={headerTitleFor(heading, source)} classLabel={classLabel} />
+                            <div className="devoir-document mx-auto max-w-[44rem]" dir={sheetDir}>
+                                {renderDescriptionWithBold(source)}
+                            </div>
                         </div>
                     ) : (
                         <p className="py-10 text-center text-xs text-muted-foreground">{emptyLabel}</p>

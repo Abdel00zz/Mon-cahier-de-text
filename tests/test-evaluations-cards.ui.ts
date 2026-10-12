@@ -95,22 +95,26 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.match(cahiers, /class="tone-chip">Contrôle des cahiers des élèves</);
   assert.match(olympiade, /Olympiade de mathématiques/);
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
-  assert.match(cahiers, /Suivi des cahiers · 2/);
+  assert.match(cahiers, /<span>Cahiers<\/span><span class="ev-action__count">2<\/span>/, 'commande écrite, avec son compte');
+  assert.match(cahiers, /aria-label="Suivi des cahiers — [^"]* · 2"/, 'le nom accessible garde le compte');
   // État et suppression restent des commandes, jamais un clic sur la ligne.
   assert.doesNotMatch(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/, 'le bouton marquer comme réalisé est purgé');
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 
-test('les commandes portent un libellé, une icône et une infobulle explicative', () => {
+test('les commandes portent un libellé écrit et une infobulle explicative', () => {
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
   const notebookLabel = translateLocaleMessage('fr', 'evaluations.notebook.title');
   const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
   const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
-  // Les boutons combinent une icône SVG significative, le libellé texte et une infobulle explicative
-  assert.match(olympiade, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${documentLabel}[\\s\\S]*?</button>`));
-  assert.match(olympiade, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${studentsLabel}[\\s\\S]*?</button>`));
-  assert.match(cahiers, new RegExp(`<button[^>]*>[\\s\\S]*?<svg[^>]*>[\\s\\S]*?${notebookLabel}[\\s\\S]*?</button>`));
+  // Les commandes sont des MOTS : libellé court visible, nom accessible complet, infobulle explicative.
+  assert.match(olympiade, /<span>\+ Contenu<\/span>/, 'à rédiger : « + Contenu »');
+  assert.match(olympiade, /<span>Élèves<\/span>/, 'les élèves consignés : un mot');
+  assert.match(cahiers, /<span>Cahiers<\/span>/, 'le suivi des cahiers : un mot');
+  assert.match(olympiade, /data-tippy-content="[^"]+"/, 'chaque commande a son infobulle');
+  assert.doesNotMatch(olympiade, /class="ev-action[^>]*>\s*<svg/, 'aucune commande ne commence par une icône');
+  assert.ok(documentLabel && studentsLabel && notebookLabel, 'libellés complets disponibles pour les lecteurs d’écran');
   // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton document.
   assert.equal(occurrences(cahiers, `<span>${documentLabel}</span>`), 0);
 });

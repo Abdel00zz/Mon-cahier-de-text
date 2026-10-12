@@ -37,7 +37,8 @@ import {
   Users,
   Presentation,
 } from 'lucide-react';
-import type { DevoirType, PedagogicalEventType } from '@/types';
+import type { DevoirType, EvaluationPolicy, PedagogicalEventType } from '@/types';
+import { EVALUATION_KIND_ORDER, isDevoirKind, resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 
 /** Teintes disponibles pour une carte (voir `.hub-card[data-tone]`). */
 type ActivityTone = 'blue' | 'violet' | 'pink' | 'amber' | 'green' | 'teal' | 'rose' | 'slate';
@@ -122,6 +123,23 @@ export const KIND_GROUPS: Array<{
       .map(type => ({ family: 'event' as const, type, style: PEDAGOGICAL_EVENT_CONFIG[type] })),
   },
 ];
+
+const ALL_KINDS: EvaluationKind[] = EVALUATION_KIND_ORDER.map((type): EvaluationKind => isDevoirKind(type)
+  ? { family: 'devoir', type, style: DEVOIR_KIND_CONFIG[type] }
+  : { family: 'event', type: type as PedagogicalEventType, style: PEDAGOGICAL_EVENT_CONFIG[type as PedagogicalEventType] });
+
+/**
+ * Les familles telles que la direction les compose : une nature « traitée comme
+ * contrôle continu » vit sous « Devoirs et évaluations », les autres sous
+ * « Activités pédagogiques ». Sans politique, c'est exactement `KIND_GROUPS`.
+ * Le classement ne change que la présentation : un devoir reste un devoir
+ * (même ligne, mêmes commandes), il n'est jamais déplacé de famille de données.
+ */
+export const groupKinds = (policy?: EvaluationPolicy | null): typeof KIND_GROUPS =>
+  KIND_GROUPS.map(group => ({
+    ...group,
+    kinds: ALL_KINDS.filter(kind => resolveKindPolicy(policy, kind.type).continuous === (group.id === 'devoir')),
+  }));
 
 /** Clé de traduction d'une nature — jamais un libellé en dur. */
 export const kindLabelKey = (kind: EvaluationKind): string => kind.style.labelKey;

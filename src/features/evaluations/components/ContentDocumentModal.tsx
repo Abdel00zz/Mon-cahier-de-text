@@ -4,12 +4,14 @@ import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DocumentPrintButton } from '@/components/documents/DocumentPrintButton';
+import { DocumentSheetHeader } from '@/components/documents/DocumentSheetHeader';
+import { headerTitleFor } from '@/domain/evaluations/documentSheet';
 import { Textarea } from '@/components/ui/textarea';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
 import { SUPPORTED_HTML_TAGS } from '@/lib/text/htmlTags';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Eye, Pencil } from 'lucide-react';
+import { textDirectionAttribute } from '@/lib/text/textDirection';
 import type { ContentDocument } from '@/types';
 
 /*
@@ -29,7 +31,9 @@ import type { ContentDocument } from '@/types';
 interface ContentDocumentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Titre de l'élément (« Devoir surveillé 2 ») : l'en-tête de la feuille, aperçu comme impression. */
   title: string;
+  /** Classe : portée à l'autre bord de l'en-tête. */
   subtitle?: string;
   document?: ContentDocument;
   onSave: (source: string) => void;
@@ -52,10 +56,12 @@ const SYNTAX_SAMPLES: ReadonlyArray<readonly [string, string]> = [  ['# Devoir s
 export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   isOpen,
   onClose,
+  title: sheetTitle,
+  subtitle: sheetClass,
   document: saved,
   onSave,
 }) => {
-  const { t } = useLocale();
+  const { t, isRtl } = useLocale();
   const [tab, setTab] = useState<'source' | 'preview'>('preview');
   const [source, setSource] = useState('');
   const [showHelp, setShowHelp] = useState(false);
@@ -77,6 +83,11 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     setConflictOpen(false);
   }, [isOpen, saved]);
 
+  /* Sens du document d'après sa première lettre hors formules : un sujet arabe
+     qui s'ouvre sur « $f(x)=…$ » ou « Exercice 1 » reste de droite à gauche. */
+  const documentDir = textDirectionAttribute(source) ?? (isRtl ? 'rtl' : 'ltr');
+  // Un document qui s'ouvre par son propre titre le dit déjà : l'en-tête ne le répète pas.
+  const headerTitle = headerTitleFor(sheetTitle, source);
   const length = source.length;
   const isTooLong = length > MAX_CONTENT_DOCUMENT_CHARS;
   const isTight = length > CONTENT_DOCUMENT_WARN_CHARS;
@@ -132,13 +143,12 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
                 onClick={() => { setTab(value); if (value === 'source') textareaRef.current?.focus(); }}
                 aria-pressed={isActive}
                 className={cn(
-                  'inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
+                  'inline-flex h-10 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
                   isActive
                     ? 'bg-card text-foreground shadow-xs ring-1 ring-border/70'
                     : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
                 )}
               >
-                {value === 'preview' ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
                 {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
               </button>
             );
@@ -152,7 +162,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               value={source}
               onChange={(event) => setSource(event.target.value)}
               rows={12}
-              dir="auto"
+              dir={documentDir}
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
               aria-label={t('evaluations.doc.source')}
@@ -192,20 +202,24 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         ) : (
-          <div className="document-preview-paper min-h-[18rem] max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-4 sm:p-7 shadow-xs">
+          /* Le vide est une affaire de contenu : la feuille épouse son texte, sans hauteur
+             minimale qui creuserait un blanc sous un sujet court. Seul l'état vide en garde une. */
+          <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-4 sm:p-7 shadow-xs', !preview && 'min-h-[12rem]')}>
             {preview ? (
-              /* La feuille est une PAGE : colonne de lecture bornée, jamais
-                 étirée sur toute la largeur d'un grand écran. */
-              <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{preview}</div>
+              <div dir={documentDir}>
+                <DocumentSheetHeader title={headerTitle} classLabel={sheetClass} />
+                {/* La feuille est une PAGE : colonne de lecture bornée, jamais
+                    étirée sur toute la largeur d'un grand écran. */}
+                <div className="devoir-document mx-auto max-w-[44rem]" dir={documentDir}>{preview}</div>
+              </div>
             ) : (
               <div className="space-y-3 py-12 text-center text-xs text-muted-foreground">
                 <p>{t('evaluations.doc.empty')}</p>
                 <button
                   type="button"
                   onClick={() => { setTab('source'); textareaRef.current?.focus(); }}
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 cursor-pointer"
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 cursor-pointer"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
                   <span>{t('evaluations.doc.source')}</span>
                 </button>
               </div>
@@ -215,7 +229,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
 
         <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
           <div className="flex items-center">
-            <DocumentPrintButton source={source} showLabel />
+            <DocumentPrintButton source={source} title={sheetTitle} classLabel={sheetClass} />
           </div>
           <div className="flex items-center gap-2">
             <button

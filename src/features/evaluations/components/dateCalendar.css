@@ -67,6 +67,9 @@
 .date-cal__day[data-range='middle'] { background: var(--cal-band); }
 .date-cal__day[data-range='start'] { background: linear-gradient(to right, transparent 50%, var(--cal-band) 50%); }
 .date-cal__day[data-range='end'] { background: linear-gradient(to left, transparent 50%, var(--cal-band) 50%); }
+/* En arabe, la semaine se lit de droite à gauche : la bande part vers la gauche. */
+[dir='rtl'] .date-cal__day[data-range='start'] { background: linear-gradient(to left, transparent 50%, var(--cal-band) 50%); }
+[dir='rtl'] .date-cal__day[data-range='end'] { background: linear-gradient(to right, transparent 50%, var(--cal-band) 50%); }
 .date-cal__grid > .date-cal__day[data-range='middle']:nth-child(7n + 1) { border-start-start-radius: 999px; border-end-start-radius: 999px; }
 .date-cal__grid > .date-cal__day[data-range='middle']:nth-child(7n) { border-start-end-radius: 999px; border-end-end-radius: 999px; }
 

@@ -6,7 +6,8 @@ import { decodeSyncPayload } from './_lib/syncPayload.js';
 import { MAX_SYNC_EXPANDED_BYTES, SYNC_ENCODING } from '../src/infrastructure/sync/syncProtocol.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
-import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../src/types.js';
+import type { ClassInfo, ClassSchedule, ContentDirection, EvaluationPolicy, EvaluationPolicyAssignment, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../src/types.js';
+import { normalizeEvaluationAssignment, normalizeEvaluationPolicy, resolveEvaluationPolicy } from '../src/domain/evaluations/evaluationPolicy.js';
 import { withCurriculumSettings } from '../src/domain/classes/classCurriculumSettings.js';
 import { assignClassColors } from '../src/domain/classes/classColors.js';
 import { mergeAdminAssessmentDates } from '../src/infrastructure/sync/syncSettings.js';
@@ -108,17 +109,21 @@ const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         return res.status(200).json(blob);
     }
 
-    const [globalClock, assignment] = await Promise.all([
+    const [globalClock, assignment, globalPolicy, policyAssignment] = await Promise.all([
         redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock),
         redis.get<TimetableClockAssignment>(KEYS.adminTimetableClockForUser(phone)),
+        redis.get<EvaluationPolicy>(KEYS.adminEvaluationPolicy),
+        redis.get<EvaluationPolicyAssignment>(KEYS.adminEvaluationPolicyForUser(phone)),
     ]);
     const timetableClock = resolveTimetableClock(globalClock ?? DEFAULT_TIMETABLE_CLOCK, assignment);
+    // Politique du contrôle continu : autoritaire, résolue ici, jamais lue dans les réglages du professeur.
+    const evaluationPolicy = resolveEvaluationPolicy(normalizeEvaluationPolicy(globalPolicy), normalizeEvaluationAssignment(policyAssignment));
     if (scope === 'timetableClock') {
         return res.status(200).json({ timetableClock });
     }
 
     const blob = (await redis.get<ClassesBlob>(KEYS.classes(phone))) ?? EMPTY_BLOB;
-    res.status(200).json({ ...blob, timetableClock });
+    res.status(200).json({ ...blob, timetableClock, evaluationPolicy });
 };
 
 const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {

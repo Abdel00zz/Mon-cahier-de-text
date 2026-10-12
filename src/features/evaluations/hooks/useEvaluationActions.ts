@@ -29,9 +29,27 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             if (legacyId) documents[legacyId] = { source: '', updatedAt };
             onChange({ assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents } });
         },
-        saveEventStudents(id: string, names: string[], conditions?: Record<string, NotebookCondition>) {
-            saveEvents(events.map(event => event.id === id ? { ...event, students: names.length ? { names, updatedAt: new Date().toISOString(),
-                ...(event.type === REMARK_EVENT_TYPE && conditions ? { notebookConditions: conditions } : {}) } : undefined } : event));
+        /**
+         * Élèves consignés sur une activité. `conditions` (cahiers) et `review` (niveau, note) valent
+         * « non suivi » quand ils sont absents : ce qui existait déjà est alors conservé pour les
+         * élèves restants, jamais effacé par un simple changement de réglage de la direction.
+         */
+        saveEventStudents(id: string, names: string[], conditions?: Record<string, NotebookCondition>,
+            review?: { oralOutcomes?: Record<string, OralOutcome>; oralGrades?: Record<string, string> }) {
+            saveEvents(events.map(event => {
+                if (event.id !== id) return event;
+                if (!names.length) return { ...event, students: undefined };
+                const kept = <T,>(source?: Record<string, T>) => source
+                    ? Object.fromEntries(Object.entries(source).filter(([name]) => names.includes(name))) as Record<string, T>
+                    : undefined;
+                const notebook = event.type === REMARK_EVENT_TYPE ? (conditions ?? kept(event.students?.notebookConditions)) : undefined;
+                const outcomes = review?.oralOutcomes ?? kept(event.students?.oralOutcomes);
+                const grades = review?.oralGrades ?? kept(event.students?.oralGrades);
+                return { ...event, students: { names, updatedAt: new Date().toISOString(),
+                    ...(notebook ? { notebookConditions: notebook } : {}),
+                    ...(outcomes && Object.keys(outcomes).length ? { oralOutcomes: outcomes } : {}),
+                    ...(grades && Object.keys(grades).length ? { oralGrades: grades } : {}) } };
+            }));
         },
         saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>, oralGrades?: Record<string, string>) {
             const records = { ...config.assessmentParticipants?.[classId] };

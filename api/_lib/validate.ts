@@ -16,7 +16,7 @@ import type {
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);
-const VALID_ASSESSMENT_TYPES = new Set(['controle', 'controle_court', 'controle_global', 'oral', 'maison']);
+const VALID_ASSESSMENT_TYPES = new Set(['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle']);
 const VALID_PEDAGOGICAL_TYPES = new Set(['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'correction_controle_continu', 'autre']);
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -376,9 +376,9 @@ export const assertValidLessonsPayload = (
  * Élèves consignés sur un devoir ou une activité : liste bornée, horodatage
  * obligatoire (c'est lui qui décide, à la fusion, quelle version gagne).
  */
-const assertStudentNames = (candidate: unknown, label: string, allowNotebookConditions = false): void => {
+const assertStudentNames = (candidate: unknown, label: string, allowNotebookConditions = false, allowOutcomes = false): void => {
   if (candidate === undefined) return;
-  const value = candidate as { names?: unknown; updatedAt?: unknown; notebookConditions?: unknown };
+  const value = candidate as { names?: unknown; updatedAt?: unknown; notebookConditions?: unknown; oralOutcomes?: unknown; oralGrades?: unknown };
   if (!value || typeof value !== 'object' || !Array.isArray(value.names) || value.names.length > 200) {
     throw new HttpError(400, `Liste d'élèves invalide (${label}).`);
   }
@@ -394,6 +394,17 @@ const assertStudentNames = (candidate: unknown, label: string, allowNotebookCond
       || Object.entries(conditions).some(([name, condition]) => !(value.names as string[]).includes(name)
         || !['good', 'average', 'needs_work', 'missing'].includes(condition as string))) {
       throw new HttpError(400, `Suivi de cahier invalide (${label}).`);
+    }
+  }
+  // Retour par élève et note /20 d'une activité, quand la direction les active. Les suivis
+  // de devoirs (`assessmentParticipants`) portent les mêmes champs mais les valident à part.
+  if (allowOutcomes && (value.oralOutcomes !== undefined || value.oralGrades !== undefined)) {
+    const names = value.names as string[];
+    const grades = value.oralGrades;
+    if (!validOutcomeMap(names, value.oralOutcomes, ['mastered', 'developing', 'needs_support'])
+      || (grades !== undefined && (!grades || typeof grades !== 'object' || Array.isArray(grades)
+        || Object.entries(grades).some(([name, grade]) => !names.includes(name) || typeof grade !== 'string' || grade.length > 12)))) {
+      throw new HttpError(400, `Retour par élève invalide (${label}).`);
     }
   }
 };
@@ -435,6 +446,8 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
   }
   // Published class lists are administrative data, never writable by a teacher.
   delete result.classRosters;
+  // La politique du contrôle continu aussi : elle est résolue par le serveur à chaque pull.
+  delete result.evaluationPolicy;
   const classRecord = (key: string): Record<string, unknown> | undefined => {
     const value = result[key];
     if (value === undefined) return undefined;
@@ -534,7 +547,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!value || typeof value.id !== 'string' || !value.id || !VALID_PEDAGOGICAL_TYPES.has(value.type as string)) throw new HttpError(400, 'Activité pédagogique invalide.');
       if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || (value.date !== '' && !ISO_DATE.test(value.date))) throw new HttpError(400, 'Titre ou date d’activité invalide.');
       if (value.status !== 'planned' && value.status !== 'done') throw new HttpError(400, 'Statut d’activité invalide.');
-      assertStudentNames(value.students, 'les élèves consignés', value.type === 'controle_cahiers');
+      assertStudentNames(value.students, 'les élèves consignés', value.type === 'controle_cahiers', true);
       assertContentDocument(value.document, 'l’activité pédagogique');
     }
   }

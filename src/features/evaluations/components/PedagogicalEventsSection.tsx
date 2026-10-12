@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { PedagogicalEvent } from '@/types';
+import { EvaluationPolicy, PedagogicalEvent } from '@/types';
+import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { documentIndicator, documentRequirementForEvent } from '@/domain/evaluations/documentRequirement';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { FileCheck, FilePlus, FileText, Users } from 'lucide-react';
+import { ltrIsolate } from '@/lib/text/textDirection';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
@@ -26,6 +27,8 @@ interface PedagogicalEventsSectionProps {
   onDelete: (event: PedagogicalEvent) => void;
   onOpenDocument: (event: PedagogicalEvent) => void;
   onOpenStudents: (event: PedagogicalEvent) => void;
+  /** Politique de la direction : documents et élèves proposés par nature. */
+  policy?: EvaluationPolicy;
 }
 
 export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
@@ -35,6 +38,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
   onDelete,
   onOpenDocument,
   onOpenStudents,
+  policy,
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
@@ -43,7 +47,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
   if (events.length === 0) return null;
 
   const formatDateBadge = (date: string | undefined, endDate: string | undefined): string => {
-    if (!date) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
+    if (!date) return t('evaluations.setDate');
     const formatFull = (iso: string) => {
       const parts = iso.split('-');
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -57,12 +61,10 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
       const d2 = partsEnd[2] || '';
       const m2 = partsEnd[1] || '';
       const y2 = partsEnd[0] || '';
-      if (locale === 'ar') {
-        return `من ${d1}/${m1} إلى ${d2}/${m2}/${y2}`;
-      }
-      return `Du ${d1}/${m1} au ${d2}/${m2}/${y2}`;
+      // Les dates restent de gauche à droite, la phrase suit la langue.
+      return t('evaluations.dateRange', { start: ltrIsolate(`${d1}/${m1}`), end: ltrIsolate(`${d2}/${m2}/${y2}`) });
     }
-    return formatFull(date);
+    return ltrIsolate(formatFull(date));
   };
 
   return (
@@ -72,7 +74,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
           <KindGroupHeader
             title={t('evaluations.pedagogicalEvents')}
             tone={KIND_GROUPS[1].tone}
-            countLabel={`${events.length} ${events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}`}
+            countLabel={`${number.format(events.length)} ${events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}`}
           />
         </div>
       )}
@@ -94,23 +96,17 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
             const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
             const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
 
-            const docIndicator = documentIndicator(documentRequirementForEvent(event.type), event.document);
-            const eventDocTooltip = locale === 'ar'
-              ? (docIndicator === 'attached' ? 'عرض وتعديل وثيقة أو موضوع هذا النشاط' : docIndicator === 'missing' ? 'الوثيقة مطلوبة ولم تُرفق بعد — انقر لكتابتها' : 'إرفاق وثيقة أو نص أو رابط لهذا النشاط التربوي')
-              : (docIndicator === 'attached' ? 'Consulter ou modifier le document/sujet associé' : docIndicator === 'missing' ? 'Document requis, pas encore associé — Cliquer pour le rédiger' : 'Associer un document, sujet ou lien à cette activité');
+            const kindPolicy = resolveKindPolicy(policy, event.type);
+            const docIndicator = documentIndicator(documentRequirementForEvent(event.type, policy), event.document);
+            const eventDocTooltip = t(docIndicator === 'attached' ? 'evaluations.tip.eventDocAttached'
+              : docIndicator === 'missing' ? 'evaluations.tip.eventDocMissing' : 'evaluations.tip.eventDocIdle');
             const docStateSuffix = docIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : docIndicator === 'missing' ? ` — ${t('evaluations.doc.stateMissing')}` : '';
 
-            const eventStudentsTooltip = event.type === REMARK_EVENT_TYPE
-              ? (locale === 'ar'
-                  ? (names > 0 ? `متابعة دفاتر التلاميذ (${names} تلميذ محدد)` : 'تسجيل التلاميذ المعنيين بمراقبة الدفاتر وملاحظات التفتيش')
-                  : (names > 0 ? `Suivi des cahiers (${names} élève(s))` : 'Pointer les élèves dont les cahiers sont contrôlés'))
-              : (locale === 'ar'
-                  ? (names > 0 ? `قائمة التلاميذ المشاركين (${names} مشارك)` : 'تحديد التلاميذ المشاركين أو المستفيدين من النشاط')
-                  : (names > 0 ? `Élèves participants (${names} élève(s))` : 'Désigner les élèves concernés par cette activité'));
-
-            const deleteTooltip = locale === 'ar'
-              ? 'حذف هذا النشاط التربوي نهائياً'
-              : 'Supprimer définitivement cette activité pédagogique';
+            const notebookCheck = event.type === REMARK_EVENT_TYPE;
+            const eventStudentsTooltip = names > 0
+              ? t(notebookCheck ? 'evaluations.tip.notebookSome' : 'evaluations.tip.studentsSome', { count: number.format(names) })
+              : t(notebookCheck ? 'evaluations.tip.notebookNone' : 'evaluations.tip.studentsNone');
+            const deleteTooltip = t('evaluations.tip.deleteEvent');
 
             return (
               <li
@@ -125,7 +121,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                   <h4 className="text-[13px] font-bold leading-tight text-foreground truncate" dir="auto">{title}</h4>
                   {showType && <span className="tone-chip">{typeLabel}</span>}
                   {showNote && (
-                    <p className="line-clamp-1 text-[11px] leading-tight text-muted-foreground text-start mt-0.5">{event.note}</p>
+                    <p className="line-clamp-1 text-[11px] leading-tight text-muted-foreground text-start mt-0.5" dir="auto">{event.note}</p>
                   )}
                 </div>
 
@@ -142,7 +138,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     )}
                     aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
                   >
-                    <span className="whitespace-nowrap tabular-nums text-xs font-bold" dir="ltr">
+                    <span className="whitespace-nowrap tabular-nums text-xs font-bold">
                       {formatDateBadge(event.date, event.endDate)}
                     </span>
                   </button>
@@ -156,33 +152,25 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       className="ev-action shrink-0"
                       data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                       data-doc-state={docIndicator}
-                      aria-label={`${t('evaluations.doc.title', { activity: event.title })}${docStateSuffix}`}
+                      aria-label={`${t('evaluations.doc.title', { activity: title })}${docStateSuffix}`}
                       data-tippy-content={eventDocTooltip}
                     >
-                      {docIndicator === 'attached'
-                        ? <FileCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        : docIndicator === 'missing'
-                          ? <FilePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
-                          : <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
-                      <span className="sr-only">{t('evaluations.doc.open')}</span>
+                      <span>{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
                     </button>
                   )}
+                  {kindPolicy.students && (
                   <button
                     type="button"
                     onClick={() => onOpenStudents(event)}
                     className="ev-action shrink-0"
                     data-filled={names > 0 ? 'tone' : undefined}
-                    aria-label={`${t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${event.title}`}
+                    aria-label={`${t(notebookCheck ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${title}${names > 0 ? ` · ${number.format(names)}` : ''}`}
                     data-tippy-content={eventStudentsTooltip}
                   >
-                    <Users className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
-                    {names > 0 && (
-                      <span className="inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-bold text-primary">
-                        {number.format(names)}
-                      </span>
-                    )}
-                    <span className="sr-only">{t(event.type === REMARK_EVENT_TYPE ? 'evaluations.notebook.title' : 'evaluations.students.open')}{names > 0 ? ` · ${names}` : ''}</span>
+                    <span>{t(notebookCheck ? 'evaluations.action.notebooks' : 'evaluations.action.students')}</span>
+                    {names > 0 && <span className="ev-action__count">{number.format(names)}</span>}
                   </button>
+                  )}
 
                   <AnimatedTrashButton
                     iconOnly

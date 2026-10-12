@@ -120,6 +120,8 @@ export interface AppConfig {
     dashboardClassOrder?: string[];
     /** Horloge globale publiée par la direction ; absente = grille historique sans décalage. */
     timetableClock?: TimetableClockPolicy;
+    /** Politique du contrôle continu publiée par la direction ; absente = comportement historique. */
+    evaluationPolicy?: EvaluationPolicy;
     notificationSettings?: NotificationSettings;
     /** signaux masqués par portée (`classId` ou `_global_`), synchronisés entre appareils */
     notificationDismissals?: Record<string, string[]>;
@@ -197,6 +199,10 @@ interface StudentNamesRecord {
     updatedAt: string;
     /** Suivi des cahiers : un état choisi par nom. Un nom sans état reste à contrôler. */
     notebookConditions?: Record<string, NotebookCondition>;
+    /** Retour par élève sur une activité (niveau atteint), quand la direction l'active. */
+    oralOutcomes?: Record<string, OralOutcome>;
+    /** Note chiffrée (/20) par élève, saisie librement. */
+    oralGrades?: Record<string, string>;
 }
 
 /**
@@ -211,6 +217,45 @@ export interface ContentDocument {
     source: string;
     updatedAt: string;
 }
+
+/** Une nature d'élément du contrôle continu : un devoir (bulletin) ou une activité. */
+export type EvaluationKindKey = DevoirType | PedagogicalEventType;
+
+/** Contenu rédigé (sujet, corrigé) : absent, facultatif ou obligatoire. */
+export type EvaluationDocumentMode = 'off' | 'optional' | 'required';
+
+/**
+ * Ce qu'une nature d'élément propose à l'enseignant, décidé par la direction.
+ * Les valeurs par défaut reproduisent le comportement historique.
+ */
+export interface EvaluationKindPolicy {
+    /** Le cahier transmet cet élément à la feuille « Contrôle continu et activités ». */
+    transmit: boolean;
+    /** Traité comme contrôle continu (« Devoirs et évaluations »), sinon « Activités pédagogiques ». */
+    continuous: boolean;
+    document: EvaluationDocumentMode;
+    /** Liste des élèves concernés. */
+    students: boolean;
+    /** Retour par élève (niveau, remise, état du cahier). Suppose la liste d'élèves. */
+    feedback: boolean;
+    /** Note /20 par élève. Suppose le retour par élève. */
+    grades: boolean;
+    /** Liste des absents. */
+    absences: boolean;
+}
+
+/** Écarts à la valeur par défaut, par nature : seuls les champs modifiés sont stockés. */
+export type EvaluationKindOverrides = Partial<Record<EvaluationKindKey, Partial<EvaluationKindPolicy>>>;
+
+/** Politique publiée par la direction (générale, ou propre à un compte). */
+export interface EvaluationPolicy {
+    kinds: EvaluationKindOverrides;
+    version: number;
+    updatedAt: string | null;
+}
+
+/** Choix administratif par compte ; `kinds` vide = suivre la politique générale. */
+export type EvaluationPolicyAssignment = EvaluationPolicy;
 
 export type PedagogicalEventType =
     | 'evaluation_diagnostic'

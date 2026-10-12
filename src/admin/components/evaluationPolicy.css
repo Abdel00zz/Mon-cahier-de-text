@@ -1,0 +1,225 @@
+/* ══════════════════════════════════════════════════════════════
+   POLITIQUE DU CONTRÔLE CONTINU — page d'administration
+   Cartes par nature d'élément, interrupteurs-pastilles de 44 px,
+   aperçu fidèle de la ligne que verra l'enseignant. Couleurs du
+   thème : l'accent ne marque que ce qui est ACTIVÉ (règle 60-30-10),
+   le rouge reste réservé au « requis mais manquant » de l'aperçu.
+   ══════════════════════════════════════════════════════════════ */
+
+.policy-page { --policy-radius: 1rem; --policy-pad: 0.25rem; }
+
+/* ── Bandeau de synthèse ─────────────────────────────────────── */
+.policy-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+}
+.policy-stat {
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--policy-radius) - var(--policy-pad));
+  background: hsl(var(--card));
+  padding: 0.8rem 1rem;
+}
+.policy-stat__value {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+}
+.policy-stat__label { margin-top: 0.15rem; display: block; font-size: 0.72rem; font-weight: 600; color: hsl(var(--muted-foreground)); }
+
+/* ── Famille (titre + cartes) ────────────────────────────────── */
+.policy-family__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+}
+html[lang='ar'] .policy-family__title { letter-spacing: normal; }
+.policy-family__hint { margin-top: 0.15rem; font-size: 0.75rem; line-height: 1.5; color: hsl(var(--muted-foreground)); }
+
+/* ── Carte d'une nature ──────────────────────────────────────── */
+.policy-card {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--policy-radius);
+  background: hsl(var(--card));
+  padding: 1rem;
+  animation: policy-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.policy-card[data-changed='true'] {
+  border-color: hsl(var(--primary) / 0.45);
+  box-shadow: 0 6px 20px -14px hsl(var(--primary) / 0.55);
+}
+.policy-card__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem 0.75rem; }
+.policy-card__name { font-size: 0.98rem; font-weight: 800; letter-spacing: -0.012em; color: hsl(var(--foreground)); }
+html[lang='ar'] .policy-card__name { letter-spacing: normal; }
+.policy-card__note { font-size: 0.74rem; color: hsl(var(--muted-foreground)); }
+.policy-badge {
+  margin-inline-start: auto;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+.policy-badge[data-tone='muted'] { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+
+/* ── Interrupteurs-pastilles ─────────────────────────────────── */
+.policy-grid {
+  margin-top: 0.85rem;
+  display: grid;
+  /* Six interrupteurs : 3 × 2 sur grand écran, 2 × 3 sur téléphone. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (max-width: 639px) {
+  .policy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.policy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  width: 100%;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--policy-radius) - var(--policy-pad) * 2);
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.policy-toggle:hover:not(:disabled) { border-color: hsl(var(--foreground) / 0.25); color: hsl(var(--foreground)); }
+.policy-toggle:active:not(:disabled) { transform: scale(0.97); }
+.policy-toggle:focus-visible { outline: 2px solid hsl(var(--primary) / 0.6); outline-offset: 2px; }
+.policy-toggle:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Activé : surface neutre, seul le rail porte l'accent — la majorité des interrupteurs
+   est allumée par défaut, un fond teinté ferait de la page une nappe de couleur. */
+.policy-toggle[aria-checked='true'] {
+  border-color: hsl(var(--foreground) / 0.2);
+  background: hsl(var(--muted) / 0.55);
+  color: hsl(var(--foreground));
+}
+/* La pastille de gauche : un petit rail qui se remplit, sans icône. */
+.policy-toggle__rail {
+  position: relative;
+  flex: none;
+  width: 1.7rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  transition: background-color 160ms ease;
+}
+.policy-toggle__rail::after {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  inset-inline-start: 0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.3);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.policy-toggle[aria-checked='true'] .policy-toggle__rail { background: hsl(var(--primary)); }
+.policy-toggle[aria-checked='true'] .policy-toggle__rail::after { transform: translateX(0.7rem); }
+[dir='rtl'] .policy-toggle[aria-checked='true'] .policy-toggle__rail::after { transform: translateX(-0.7rem); }
+.policy-toggle__text { min-width: 0; line-height: 1.25; }
+.policy-toggle__sub { display: block; font-size: 0.66rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
+
+/* ── Contenu : trois états côte à côte ───────────────────────── */
+.policy-document { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; }
+.policy-document__label { font-size: 0.78rem; font-weight: 650; color: hsl(var(--foreground)); }
+.policy-seg {
+  display: inline-flex;
+  padding: var(--policy-pad);
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--policy-radius) - var(--policy-pad));
+  background: hsl(var(--muted) / 0.6);
+}
+.policy-seg button {
+  min-height: 2.25rem;
+  min-width: 5.5rem;
+  padding: 0 0.85rem;
+  /* Rayon intérieur = rayon extérieur − espacement. */
+  border-radius: calc(var(--policy-radius) - var(--policy-pad) * 2);
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.policy-seg button:hover { color: hsl(var(--foreground)); }
+.policy-seg button[aria-checked='true'] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.14);
+}
+.policy-seg button:focus-visible { outline: 2px solid hsl(var(--primary) / 0.6); outline-offset: 1px; }
+@media (max-width: 639px) {
+  .policy-seg { width: 100%; }
+  .policy-seg button { flex: 1; min-height: 2.75rem; min-width: 0; }
+}
+
+/* ── Aperçu de la ligne enseignant ───────────────────────────── */
+.policy-preview {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: calc(var(--policy-radius) - var(--policy-pad));
+  background: hsl(var(--muted) / 0.45);
+}
+.policy-preview__label { font-size: 0.66rem; font-weight: 700; color: hsl(var(--muted-foreground)); margin-inline-end: 0.2rem; }
+.policy-preview .ev-action { pointer-events: none; min-height: 2rem; }
+.policy-preview__empty { font-size: 0.72rem; color: hsl(var(--muted-foreground)); }
+
+/* ── Barre de publication ────────────────────────────────────── */
+.policy-bar {
+  position: sticky;
+  bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--policy-radius);
+  background: hsl(var(--card) / 0.94);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: 0 12px 32px -18px hsl(var(--foreground) / 0.45);
+}
+/* Téléphone : le message sur sa ligne, puis les actions côte à côte (cibles de 44 px). */
+@media (max-width: 639px) {
+  .policy-bar__text { flex-basis: 100%; }
+  .policy-bar > button { flex: 1 1 0; min-width: 0; padding-inline: 0.5rem; font-size: 0.75rem; }
+}
+.policy-bar__text { flex: 1 1 12rem; min-width: 0; font-size: 0.78rem; font-weight: 650; color: hsl(var(--foreground)); }
+.policy-bar__text small { display: block; font-size: 0.68rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
+
+@keyframes policy-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .policy-card { animation: none; }
+  .policy-toggle, .policy-toggle__rail, .policy-toggle__rail::after, .policy-seg button, .policy-card { transition: none; }
+  .policy-toggle:active:not(:disabled) { transform: none; }
+}

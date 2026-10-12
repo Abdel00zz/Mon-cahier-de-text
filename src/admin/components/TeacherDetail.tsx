@@ -16,7 +16,7 @@ import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
 import { MathTitle } from '../../components/ui/math-title';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot } from '../../types';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, EvaluationPolicy, LessonsData, TeacherSnapshot } from '../../types';
 import { PrintView } from '../../features/editor/PrintView';
 import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
 import { collectSessionDates, createPrintSelection } from '../../infrastructure/printing/printMeta';
@@ -270,14 +270,18 @@ const DOCUMENT_TONE: Record<Exclude<DocumentIndicator, 'none'>, string> = {
 interface DocumentPreviewTarget {
     title: string;
     subtitle: string;
+    /** En-tête de la feuille : le titre de l'élément et, à l'autre bord, la classe. */
+    heading?: string;
+    classLabel?: string;
     source?: string | null;
     updatedLabel?: string;
 }
 
 /** Ce qu'un document du professeur devient pour la direction. */
-const previewTarget = (document: ContentDocument | null | undefined, title: string, subtitle: string): DocumentPreviewTarget => ({
+const previewTarget = (document: ContentDocument | null | undefined, title: string, subtitle: string, sheet?: { heading: string; classLabel: string }): DocumentPreviewTarget => ({
     title,
     subtitle,
+    ...sheet,
     source: document?.source,
     updatedLabel: document?.updatedAt ? `mise à jour le ${formatDateTimeFr(document.updatedAt)}` : undefined,
 });
@@ -289,8 +293,10 @@ const previewTarget = (document: ContentDocument | null | undefined, title: stri
 const AdminActivities: React.FC<{
     classes: ClassInfo[];
     activities: Record<string, AdminActivityDocument[]>;
+    /** Politique appliquée à CE compte : l'indicateur de document la respecte. */
+    policy?: EvaluationPolicy;
     onPreview: (target: DocumentPreviewTarget) => void;
-}> = ({ classes, activities, onPreview }) => {
+}> = ({ classes, activities, policy, onPreview }) => {
     const rows = classes.flatMap(classInfo => (activities[classInfo.id] ?? []).map(activity => ({ classInfo, activity })));
     if (rows.length === 0) return null;
     return (
@@ -302,7 +308,7 @@ const AdminActivities: React.FC<{
             <div className="grid gap-2 sm:grid-cols-2">
                 {rows.map(({ classInfo, activity }) => {
                     const label = ACTIVITY_LABELS[activity.type] ?? 'Activité';
-                    const indicator = documentIndicator(documentRequirementForEvent(activity.type), activity.document);
+                    const indicator = documentIndicator(documentRequirementForEvent(activity.type, policy), activity.document);
                     return (
                         <article key={`${classInfo.id}-${activity.id}`} className="flex items-center gap-3 rounded-xl bg-secondary/45 p-3">
                             <span className="min-w-0 flex-1">
@@ -316,7 +322,7 @@ const AdminActivities: React.FC<{
                             {indicator !== 'none' && (
                                 <button
                                     type="button"
-                                    onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`))}
+                                    onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`, { heading: activity.title || label, classLabel: classInfo.name }))}
                                     className={`h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-semibold ${DOCUMENT_TONE[indicator]}`}
                                 >
                                     {indicator === 'attached' ? 'Aperçu' : indicator === 'missing' ? 'Document manquant' : 'Aucun document'}
@@ -338,9 +344,10 @@ const AssessmentDateEditor: React.FC<{
     assessmentConfig?: Pick<AppConfig, 'manualAssessments' | 'removedAssessments'>;
     documents: Record<string, Record<string, ContentDocument>>;
     activities: Record<string, AdminActivityDocument[]>;
+    policy?: EvaluationPolicy;
     teacherName: string;
     onPreview: (target: DocumentPreviewTarget) => void;
-}> = ({ phone, classes, initial, schoolYearStart, assessmentConfig, documents, activities, teacherName, onPreview }) => {
+}> = ({ phone, classes, initial, schoolYearStart, assessmentConfig, documents, activities, policy, teacherName, onPreview }) => {
     const [dates, setDates] = useState(initial);
     const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
     const [message, setMessage] = useState('');
@@ -393,13 +400,13 @@ const AssessmentDateEditor: React.FC<{
                 {rows.map(row => {
                     const document = documents[row.classId]?.[row.id]
                         ?? (row.legacyId ? documents[row.classId]?.[row.legacyId] : undefined);
-                    const indicator = documentIndicator(documentRequirementForAssessment(row.type), document);
+                    const indicator = documentIndicator(documentRequirementForAssessment(row.type, policy), document);
                     const title = `${row.label} — ${row.className}`;
                     return (
                         <div key={`${row.classId}-${row.id}`} className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
                             <button
                                 type="button"
-                                onClick={() => onPreview(previewTarget(document, title, `${row.className} · ${teacherName}`))}
+                                onClick={() => onPreview(previewTarget(document, title, `${row.className} · ${teacherName}`, { heading: row.label, classLabel: row.className }))}
                                 className="min-w-0 flex-1 rounded-lg px-1 py-1 text-start transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                                 aria-label={`Aperçu du sujet : ${title}`}
                             >
@@ -421,7 +428,7 @@ const AssessmentDateEditor: React.FC<{
             </div>
             {message && <p className="mt-2 text-[11px] font-semibold text-primary">{message}</p>}
         </section>
-        <AdminActivities classes={classes} activities={activities} onPreview={onPreview} />
+        <AdminActivities classes={classes} activities={activities} policy={policy} onPreview={onPreview} />
         </>
     );
 };
@@ -464,7 +471,7 @@ const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages
 type TeacherDetailTab = 'classes' | 'assessments' | 'messages';
 const TEACHER_DETAIL_TAB_ORDER: TeacherDetailTab[] = ['classes', 'assessments', 'messages'];
 
-export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onManageTimetable: () => void }> = ({ phone, onBack, onManageTimetable }) => {
+export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onManageTimetable: () => void; onManageEvaluationPolicy: () => void }> = ({ phone, onBack, onManageTimetable, onManageEvaluationPolicy }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -866,6 +873,13 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                 <Clock aria-hidden className="me-2 inline-block h-4 w-4" />Personnaliser l’horaire
                             </button>
                             <button
+                                onClick={onManageEvaluationPolicy}
+                                disabled={busy}
+                                className="min-h-11 rounded-xl border border-primary/25 bg-primary/5 px-3 text-xs font-semibold text-primary hover:bg-primary/10 disabled:opacity-50"
+                            >
+                                Personnaliser le contrôle continu
+                            </button>
+                            <button
                                 onClick={() => setMessageModalOpen(true)}
                                 disabled={busy}
                                 className="min-h-11 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
@@ -949,6 +963,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             schoolYearStart={data.snapshot?.schoolYearStart}
                             documents={data.documents ?? {}}
                             activities={data.activities ?? {}}
+                            policy={data.evaluationPolicy}
                             teacherName={data.snapshot?.displayName || `${data.user?.prenom ?? ''} ${data.user?.nom ?? ''}`.trim() || data.user?.phone || 'Enseignant'}
                             onPreview={setPreview}
                         />
@@ -1162,6 +1177,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 onClose={() => setPreview(null)}
                 title={preview?.title ?? ''}
                 subtitle={preview?.subtitle}
+                heading={preview?.heading}
+                classLabel={preview?.classLabel}
                 source={preview?.source}
                 updatedLabel={preview?.updatedLabel}
             />

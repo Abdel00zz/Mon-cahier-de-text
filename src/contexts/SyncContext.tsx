@@ -1,7 +1,7 @@
 import { apiFetch } from '@/platform/nativeHttp';
 import { accountOwner } from '../domain/auth/accountIdentity';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
+import { AppConfig, ClassInfo, ContentDirection, EvaluationPolicy, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
 import { teacherDeclaredSubjects, teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ import { logger } from '../lib/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
 import { mergePedagogicalDocuments, pedagogicalDocumentsEqual } from '../domain/evaluations/documentSync';
 import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
+import { normalizeEvaluationPolicy } from '../domain/evaluations/evaluationPolicy';
 import { translateLocaleMessage } from '../i18n/messages';
 import { isContentDirection } from '../domain/notebook/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storage/accountWorkspace';
@@ -143,6 +144,8 @@ interface ServerClassesBlob {
     settingsUpdatedAt?: string;
     /** Référentiel global imposé par la direction, indépendant des réglages professeur. */
     timetableClock?: TimetableClockPolicy;
+    /** Politique du contrôle continu résolue pour ce compte ; autoritaire, jamais renvoyée au serveur. */
+    evaluationPolicy?: EvaluationPolicy;
     classMeta: Record<string, { updatedAt: string }>;
     /** Classes administrées : leurs métadonnées restent prioritaires sur une copie locale périmée. */
     adminClassOverrides?: Record<string, ClassInfo>;
@@ -565,12 +568,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const queuedClassIds = new Set(getPendingWork().dirtyClassIds);
                 const needsAssociation = localVisibleClasses.some(classInfo => !queuedClassIds.has(classInfo.id) && !syncMeta[classInfo.id]?.lastSyncedAt);
                 if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && needsAssociation) {
-                    // Refusing notebook association must not disable the admin clock.
-                    if (server.timetableClock !== undefined) {
+                    // Refusing notebook association must not disable the admin clock or policy.
+                    if (server.timetableClock !== undefined || server.evaluationPolicy !== undefined) {
                         const config = localConfig;
-                        const timetableClock = normalizeTimetableClock(server.timetableClock);
-                        if (JSON.stringify(config.timetableClock) !== JSON.stringify(timetableClock)) {
-                            localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock }));
+                        const timetableClock = server.timetableClock !== undefined ? normalizeTimetableClock(server.timetableClock) : config.timetableClock;
+                        const evaluationPolicy = server.evaluationPolicy !== undefined ? normalizeEvaluationPolicy(server.evaluationPolicy) : config.evaluationPolicy;
+                        if (JSON.stringify(config.timetableClock) !== JSON.stringify(timetableClock)
+                            || JSON.stringify(config.evaluationPolicy) !== JSON.stringify(evaluationPolicy)) {
+                            localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock, evaluationPolicy }));
                             notifyPullApplied();
                         }
                     }
@@ -815,6 +820,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const timetableClock = normalizeTimetableClock(server.timetableClock);
                     if (JSON.stringify(nextConfig.timetableClock) !== JSON.stringify(timetableClock)) {
                         nextConfig = { ...nextConfig, timetableClock };
+                        configChanged = true;
+                    }
+                }
+                // La politique du contrôle continu suit le même circuit : autoritaire, hors du LWW
+                // des préférences, et absente de SYNCABLE_KEYS donc jamais renvoyée.
+                if (server.evaluationPolicy !== undefined) {
+                    const evaluationPolicy = normalizeEvaluationPolicy(server.evaluationPolicy);
+                    if (JSON.stringify(nextConfig.evaluationPolicy) !== JSON.stringify(evaluationPolicy)) {
+                        nextConfig = { ...nextConfig, evaluationPolicy };
                         configChanged = true;
                     }
                 }

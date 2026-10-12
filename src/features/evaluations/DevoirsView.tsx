@@ -8,21 +8,11 @@ import { useClassAssessments } from '@/hooks/useAssessments';
 import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
 import { documentIndicator, documentRequirementForAssessment } from '@/domain/evaluations/documentRequirement';
+import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import './evaluationsResponsive.css';
 import './evaluationReference.css';
-import {
-  CalendarCheck,
-  RefreshCw,
-  FileText,
-  FileCheck,
-  FilePlus,
-  UserX,
-  Users,
-  CheckCheck,
-  Mic,
-  Presentation,
-  ChevronDown,
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { ltrIsolate } from '@/lib/text/textDirection';
 import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
 import { useEvaluationConflictGuard } from './hooks/useEvaluationConflictGuard';
 import { assessmentSlot, eventSlot, evaluationSlots } from '@/domain/evaluations/evaluationConflicts';
@@ -40,7 +30,7 @@ import { ActivitiesEmptyState } from './components/ActivitiesEmptyState';
 import { PedagogicalEventsSection } from './components/PedagogicalEventsSection';
 import { DevoirsModals } from './components/DevoirsModals';
 import { KindGroupHeader } from './components/KindGroupHeader';
-import { DEVOIR_KIND_CONFIG, KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG, kindLabelKey, type EvaluationKind } from './kindCatalog';
+import { DEVOIR_KIND_CONFIG, PEDAGOGICAL_EVENT_CONFIG, groupKinds, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 
@@ -124,11 +114,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const conflictRevision = useMemo(() => ({ config, activeLessons }), [config, activeLessons]);
   const conflicts = useEvaluationConflictGuard(conflictSlots, conflictRevision);
 
+  // La direction décide, nature par nature, ce que la feuille propose (voir evaluationPolicy.ts).
+  const policy = config.evaluationPolicy;
+
   const classActivities = useMemo(() => {
     const countFor = (kind: EvaluationKind): number => kind.family === 'devoir'
       ? links.filter((link) => link.planned.type === kind.type).length
       : pedagogicalEvents.filter((event) => event.type === kind.type).length;
-    return KIND_GROUPS
+    return groupKinds(policy)
       .map((group) => ({
         group,
         entries: group.kinds
@@ -136,7 +129,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           .filter((item) => item.count > 0 || item.kind.type === entry),
       }))
       .filter((group) => group.entries.length > 0);
-  }, [links, pedagogicalEvents, entry]);
+  }, [links, pedagogicalEvents, entry, policy]);
 
   const [openActivityKeys, setOpenActivityKeys] = useState<string[] | undefined>(() => entry === 'all' ? undefined : [`${entry === 'oral' ? 'devoir' : 'event'}:${entry}`]);
   const activityKey = (kind: EvaluationKind) => `${kind.family}:${kind.type}`;
@@ -271,7 +264,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : '';
     const rawDate = link.entry ? (link.entry.date ?? '') : a.dateISO;
     const formatSingleDate = (iso: string) => {
-      if (!iso) return locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date';
+      if (!iso) return t('evaluations.setDate');
       const parts = iso.split('-');
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
       return iso;
@@ -280,34 +273,27 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       config.assessmentDocuments?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
-    const isSupervised = ['controle', 'controle_court', 'controle_global'].includes(a.type);
+    const kindPolicy = resolveKindPolicy(policy, a.type);
     const kindStyle = DEVOIR_KIND_CONFIG[a.type] ?? DEVOIR_KIND_CONFIG.controle;
     const displayName = `${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`;
 
     // Seul l'écart de date reste signalé sous le titre : c'est lui qui appelle une action.
-    const mismatchExplanation = locale === 'ar'
-      ? `اختلاف تاريخ التخطيط (${link.planned.dateISO}) مع دفتر النصوص (${link.entry?.date ?? ''})`
-      : `Écart de date entre la programmation (${link.planned.dateISO}) et le cahier (${link.entry?.date ?? ''})`;
+    // Les dates restent de gauche à droite au milieu d'une phrase arabe.
+    const mismatchExplanation = t('evaluations.align.gap', {
+      planned: ltrIsolate(formatSingleDate(link.planned.dateISO)),
+      notebook: link.entry?.date ? ltrIsolate(formatSingleDate(link.entry.date)) : '',
+    });
 
-    const docIndicator = documentIndicator(documentRequirementForAssessment(a.type), assessmentDocument);
-    const docTooltip = docIndicator === 'attached'
-      ? (locale === 'ar' ? 'المحتوى محرر — انقر للاطلاع أو تعديل نص الموضوع، التمارين وعناصر الإجابة' : 'Sujet et corrigé rédigés — Cliquer pour consulter ou modifier')
-      : docIndicator === 'missing'
-        ? (locale === 'ar' ? 'الموضوع مطلوب ولم يُحرَّر بعد — انقر لكتابته' : 'Sujet requis, pas encore rédigé — Cliquer pour le rédiger')
-        : (locale === 'ar' ? 'لم يتم تحرير أي محتوى — انقر لكتابة نص الفرض، التمارين وسلّم التنقيط' : 'Aucun document rédigé — Cliquer pour rédiger le sujet ou le corrigé');
+    const docIndicator = documentIndicator(documentRequirementForAssessment(a.type, policy), assessmentDocument);
+    const docTooltip = t(docIndicator === 'attached' ? 'evaluations.tip.docAttached'
+      : docIndicator === 'missing' ? 'evaluations.tip.docMissing' : 'evaluations.tip.docIdle');
     const docStateSuffix = docIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : docIndicator === 'missing' ? ` — ${t('evaluations.doc.stateMissing')}` : '';
 
     const absentsTooltip = absents.length > 0
-      ? (locale === 'ar' ? `${absents.length} تلميذ(ة) متغيب(ة) — إدارة لائحة الغياب وبرمجة الاستدراك` : `${absents.length} élève(s) absent(s) — Gérer la liste des absents et le rattrapage`)
-      : (locale === 'ar' ? 'تسجيل التلاميذ المتغيبين في هذا الفرض لتنظيم حصة الاستدراك' : 'Consigner les élèves absents pour programmer la séance de rattrapage');
-
-    const oralTooltip = locale === 'ar'
-      ? 'تقييم مهارات التعبير الشفهي وتدوين ملاحظات ومكتسبات التلاميذ'
-      : 'Évaluer les compétences orales et consigner les observations des élèves';
-
-    const homeworkTooltip = locale === 'ar'
-      ? 'متابعة تسليم الفرض المنزلي: مُسلَّم أو غير مُسلَّم لكل تلميذ'
-      : 'Suivre la remise du devoir : rendu ou non rendu, élève par élève';
+      ? t('evaluations.tip.absentSome', { count: number.format(absents.length) })
+      : t('evaluations.tip.absentNone');
+    const oralTooltip = t('evaluations.tip.oral');
+    const homeworkTooltip = t('evaluations.tip.homework');
     const observedSubmissions = submissionSummary ? submissionSummary.given + submissionSummary.missing : 0;
 
     return (
@@ -337,26 +323,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                         const targetDate = link.entry?.date;
                         if (!targetDate) return;
                         setAssessmentDate(a.id, targetDate);
-                        toast.success(locale === 'ar' ? `تمت المزامنة مع دفتر النصوص (${targetDate})` : `Date alignée sur le cahier (${targetDate})`);
+                        toast.success(t('evaluations.align.done', { date: ltrIsolate(formatSingleDate(targetDate)) }));
                       }}
                       className="ev-row__align inline-flex cursor-pointer items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-bold text-amber-700 transition-all hover:bg-amber-500/25 active:scale-95 dark:text-amber-400"
                       data-tippy-content={mismatchExplanation}
                     >
-                      <RefreshCw className="h-3 w-3" aria-hidden="true" />
-                      <span>{locale === 'ar' ? `مزامنة مع الدفتر (${formatSingleDate(link.entry.date)})` : `Aligner sur le cahier (${formatSingleDate(link.entry.date)})`}</span>
+                      <span>{t('evaluations.align.action', { date: ltrIsolate(formatSingleDate(link.entry.date)) })}</span>
                     </button>
                   )}
                   {a.type === 'maison' && rawDate && (custom || link.entry) && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                      <CalendarCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span>{t('evaluations.homework.givenOn', { date: formatSingleDate(rawDate) })}</span>
-                    </span>
+                    <span className="ev-row__note">{t('evaluations.homework.givenOn', { date: ltrIsolate(formatSingleDate(rawDate)) })}</span>
                   )}
                   {a.type === 'maison' && correctionDateISO && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                      <CheckCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span>{t('evaluations.homework.correctedOn', { date: formatSingleDate(correctionDateISO) })}</span>
-                    </span>
+                    <span className="ev-row__note">{t('evaluations.homework.correctedOn', { date: ltrIsolate(formatSingleDate(correctionDateISO)) })}</span>
                   )}
                 </div>
               )}
@@ -375,8 +354,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}
                 aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
               >
-                <span className="whitespace-nowrap tabular-nums text-xs font-bold" dir="ltr">
-                  {rawDate ? formatSingleDate(rawDate) : (locale === 'ar' ? '+ تحديد التاريخ' : '+ Définir une date')}
+                {/* Seule la date est isolée de gauche à droite : « + Définir une date » suit la langue. */}
+                <span className="whitespace-nowrap tabular-nums text-xs font-bold">
+                  {rawDate ? <bdi dir="ltr">{formatSingleDate(rawDate)}</bdi> : t('evaluations.setDate')}
                 </span>
               </button>
             </div>
@@ -390,18 +370,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                   data-doc-state={docIndicator}
                   data-tippy-content={docTooltip}
-                  aria-label={`${t('evaluations.doc.title', { activity: `${t(`evaluations.type.${a.type}`)} n°${a.num}` })}${docStateSuffix}`}
+                  aria-label={`${t('evaluations.doc.title', { activity: displayName })}${docStateSuffix}`}
                 >
-                  {docIndicator === 'attached'
-                    ? <FileCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    : docIndicator === 'missing'
-                      ? <FilePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      : <FileText className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
-                  <span className="sr-only">{t('evaluations.doc.open')}</span>
+                  {/* Rédigé : « Contenu » ; à rédiger : « + Contenu » — l'état se lit, il ne se devine pas. */}
+                  <span>{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
                 </button>
               )}
 
-              {isSupervised && (
+              {kindPolicy.absences && (
                 <button
                   type="button"
                   onClick={() => setAbsencesFor(link)}
@@ -412,36 +388,27 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                     : t('evaluations.absentees')}
                 >
-                  <UserX className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
+                  <span>{t('evaluations.action.absent')}</span>
                   {absents.length > 0 && (
-                    <span className="inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-destructive/15 px-1 text-[10px] font-bold text-destructive dark:text-red-400">
-                      {number.format(absents.length)}
-                    </span>
+                    <span className="ev-action__count">{number.format(absents.length)}</span>
                   )}
-                  <span className="sr-only">
-                    {absents.length > 0
-                      ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
-                      : t('evaluations.absentees')}
-                  </span>
                 </button>
               )}
 
-              {(a.type === 'oral' || a.type === 'colle') && (
+              {/* Élèves : la même commande pour tout devoir, son habillage suit la nature. */}
+              {kindPolicy.students && a.type !== 'maison' && (
                 <button
                   type="button"
                   onClick={() => setOralFor(link)}
                   className="ev-action shrink-0"
                   data-tippy-content={oralTooltip}
-                  aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title')} — ${t(`evaluations.type.${a.type}`)} ${number.format(a.num)}`}
+                  aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : a.type === 'oral' ? 'evaluations.oral.title' : 'evaluations.track.title')} — ${displayName}`}
                 >
-                  {a.type === 'colle'
-                    ? <Presentation className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
-                    : <Mic className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />}
-                  <span className="sr-only">{t(a.type === 'colle' ? 'evaluations.colle.title' : 'evaluations.oral.title')}</span>
+                  <span>{t(a.type === 'oral' || a.type === 'colle' ? 'evaluations.action.track' : 'evaluations.action.students')}</span>
                 </button>
               )}
 
-              {a.type === 'maison' && (
+              {kindPolicy.students && a.type === 'maison' && (
                 <button
                   type="button"
                   onClick={() => setSubmissionsFor(link)}
@@ -450,13 +417,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   data-tippy-content={homeworkTooltip}
                   aria-label={`${t('evaluations.homework.title')} — ${displayName}`}
                 >
-                  <Users className="h-4 w-4 shrink-0 opacity-85" aria-hidden="true" />
-                  {observedSubmissions > 0 && (
-                    <span className="inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-bold text-foreground tabular-nums">
+                  <span>{t('evaluations.action.submissions')}</span>
+                  {kindPolicy.feedback && observedSubmissions > 0 && (
+                    <bdi className="ev-action__count" dir="ltr">
                       {number.format(submissionSummary!.given)}/{number.format(submissionSummary!.given + submissionSummary!.missing + submissionSummary!.pending)}
-                    </span>
+                    </bdi>
                   )}
-                  <span className="sr-only">{t('evaluations.homework.title')}</span>
                 </button>
               )}
 
@@ -467,7 +433,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 data-danger="true"
                 onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
                 className="ev-icon-btn shrink-0"
-                title={locale === 'ar' ? `حذف ${displayName} نهائياً` : `Supprimer définitivement ${displayName}`}
+                title={t('evaluations.tip.deleteForever', { name: displayName })}
                 aria-label={t('evaluations.manualDelete')}
               />
             </div>
@@ -536,6 +502,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                               onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
                               onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
                               onOpenStudents={(event) => setStudentsFor(event)}
+                              policy={policy}
                             />
                           ) : (
                             <div className="ev-board__rows">

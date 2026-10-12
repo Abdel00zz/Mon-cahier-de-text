@@ -1,0 +1,106 @@
+/* ══════════════════════════════════════════════════════════════
+   PASTILLE COULISSANTE DES BARRES DE NAVIGATION
+   Une seule surface qui glisse d'un onglet à l'autre, puis se tasse
+   et se détend (« jello ») à l'arrivée : le geste se voit, l'onglet
+   actif ne clignote pas. La position vient d'une variable, --tab-index ;
+   l'élément extérieur voyage, l'élément intérieur (.nav-slider__body)
+   porte l'animation, comme main-slider / main-slider-circle.
+   Couleurs : celles du thème (surface active existante), jamais un
+   fond de page qui change d'un onglet à l'autre.
+   ══════════════════════════════════════════════════════════════ */
+
+.nav-slider {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 300ms cubic-bezier(0.34, 1.32, 0.64, 1), opacity 160ms ease;
+}
+
+/* Page sans onglet actif dans cette barre (ex. le guide pour la barre mobile). */
+.nav-slider[data-hidden='true'] { opacity: 0; }
+
+.nav-slider__body {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: center;
+}
+
+/* ── Barre latérale : l'onglet voyage de haut en bas ──────────────
+   Pas = hauteur d'un onglet (2.75rem = h-11) + écart (0.5rem = gap-2). */
+.nav-slider--vertical {
+  inset-inline: 0;
+  top: 0;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  transform: translateY(calc(var(--tab-index, 0) * 3.25rem));
+}
+
+/* ── Barre mobile : trois colonnes égales, l'onglet voyage de côté ──
+   En arabe la grille se lit de droite à gauche : le sens est inversé. */
+.nav-slider--horizontal {
+  --nav-dir: 1;
+  inset-inline-start: 0.25rem;
+  top: 0.3125rem;
+  height: 3.375rem;
+  width: calc((100% - 0.5rem) / 3);
+  border-radius: 0.5rem;
+  transform: translateX(calc(var(--tab-index, 0) * 100% * var(--nav-dir)));
+}
+[dir='rtl'] .nav-slider--horizontal { --nav-dir: -1; }
+
+/* ── Jello : tassement à l'arrivée, dans l'axe du déplacement ───── */
+.nav-slider--vertical .nav-jello,
+.nav-surface .nav-jello { animation: nav-jello-y 480ms both; }
+.nav-slider--horizontal .nav-jello { animation: nav-jello-x 480ms both; }
+
+@keyframes nav-jello-x {
+  0% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(1.14, 0.88, 1); }
+  40% { transform: scale3d(0.9, 1.1, 1); }
+  50% { transform: scale3d(1.07, 0.95, 1); }
+  65% { transform: scale3d(0.98, 1.02, 1); }
+  75% { transform: scale3d(1.02, 0.99, 1); }
+  100% { transform: scale3d(1, 1, 1); }
+}
+
+/* La rangée latérale est large : on tasse surtout en hauteur, pour ne pas
+   déborder de la barre. */
+@keyframes nav-jello-y {
+  0% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(0.97, 1.14, 1); }
+  40% { transform: scale3d(1.02, 0.9, 1); }
+  50% { transform: scale3d(0.99, 1.07, 1); }
+  65% { transform: scale3d(1.005, 0.98, 1); }
+  75% { transform: scale3d(0.998, 1.01, 1); }
+  100% { transform: scale3d(1, 1, 1); }
+}
+
+/* ── Surface fixe (guide, rangé hors de la liste) : elle apparaît en
+   douceur au lieu de voyager. ─────────────────────────────────── */
+.nav-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 160ms ease, transform 300ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+.nav-surface[data-visible='true'] { opacity: 1; transform: none; }
+
+/* Surface de la barre mobile : même teinte que l'ancienne pastille. */
+.mobile-tab-bar .nav-slider__body {
+  background: hsl(var(--primary) / 0.12);
+  border: 1px solid hsl(var(--primary) / 0.25);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.06);
+}
+.dark .mobile-tab-bar .nav-slider__body { background: hsl(var(--primary) / 0.2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-slider,
+  .nav-surface { transition: none; }
+  .nav-slider--vertical .nav-jello,
+  .nav-surface .nav-jello,
+  .nav-slider--horizontal .nav-jello { animation: none; }
+}

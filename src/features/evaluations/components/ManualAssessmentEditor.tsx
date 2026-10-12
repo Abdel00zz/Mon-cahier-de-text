@@ -127,7 +127,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
                 setNum(event.target.value);
                 setError('');
               }}
-              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              dir="ltr"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold tabular-nums text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:text-right"
               inputMode="numeric"
             />
           </label>
@@ -142,7 +143,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
                 if (derived && !semesterTouched) setSemestre(derived);
                 setError('');
               }}
-              className="h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              dir="ltr"
+              className="h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold tabular-nums text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:text-right"
             />
           </label>
         </div>
@@ -154,7 +156,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
           <input
             value={duree}
             onChange={(event) => setDuree(event.target.value)}
-            placeholder="1h, 2h…"
+            placeholder={t('evaluations.manualDureePlaceholder')}
+            dir="auto"
             className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </label>

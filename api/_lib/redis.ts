@@ -57,6 +57,10 @@ export const KEYS = {
   adminTimetableClock: 'admin:timetable-clock',
   /** Surcharge horaire d'un compte ; une valeur nulle hérite du global. */
   adminTimetableClockForUser: (phone: string) => `admin:timetable-clock:${phone}`,
+  /** Politique du contrôle continu publiée par la direction (écarts aux défauts). */
+  adminEvaluationPolicy: 'admin:evaluation-policy',
+  /** Écarts propres à un compte, appliqués par-dessus la politique générale. */
+  adminEvaluationPolicyForUser: (phone: string) => `admin:evaluation-policy:${phone}`,
   adminMessages: (phone: string) => `admin:messages:${phone}`,
   inboxClock: (phone: string) => `admin:inbox-clock:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,

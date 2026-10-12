@@ -3,6 +3,7 @@ import { useImmer } from 'use-immer';
 import { AppConfig, AppLocale, NotificationSettings } from '../types';
 import { logger } from '../lib/logger';
 import { DEFAULT_TIMETABLE_CLOCK, effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
+import { EMPTY_EVALUATION_POLICY, normalizeEvaluationPolicy } from '../domain/evaluations/evaluationPolicy';
 import { SYNCABLE_KEYS } from '../infrastructure/sync/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
@@ -65,6 +66,7 @@ const defaultConfig: AppConfig = {
     timetable: [],
     dashboardClassOrder: [],
     timetableClock: DEFAULT_TIMETABLE_CLOCK,
+    evaluationPolicy: EMPTY_EVALUATION_POLICY,
     notificationSettings: { ...defaultNotificationSettings },
     notificationDismissals: {},
     absences: [],
@@ -131,6 +133,7 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
                 ? loadedConfig.dashboardClassOrder.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
                 : [],
             timetableClock: normalizeTimetableClock(loadedConfig.timetableClock),
+            evaluationPolicy: normalizeEvaluationPolicy(loadedConfig.evaluationPolicy),
             notificationSettings: normalizeNotificationSettings(loadedConfig.notificationSettings),
             notificationDismissals: loadedConfig.notificationDismissals ?? {},
             absences: loadedConfig.absences ?? [],

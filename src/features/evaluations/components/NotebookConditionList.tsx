@@ -1,5 +1,5 @@
 import { useDeferredValue, useId, useMemo, useState, type ReactNode } from 'react';
-import { BookOpenCheck, BookX, CircleCheck, CircleMinus, X, type LucideIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
@@ -9,16 +9,17 @@ import { studentSearchKey } from '@/domain/evaluations/studentRoster';
 import type { HomeworkOutcome, OralOutcome } from '@/types';
 import { StudentSearchBar } from './StudentSearchBar';
 
-const ICONS = { good: CircleCheck, average: CircleMinus, needs_work: BookOpenCheck, missing: BookX };
-export const NOTEBOOK_REVIEW_CHOICES = NOTEBOOK_CONDITIONS.map(value => ({ value, labelKey: `evaluations.notebook.${value}`, Icon: ICONS[value] }));
-export const ORAL_REVIEW_CHOICES: { value: OralOutcome; labelKey: string; Icon: LucideIcon }[] = [
-    { value: 'mastered', labelKey: 'evaluations.oral.mastered', Icon: CircleCheck },
-    { value: 'developing', labelKey: 'evaluations.oral.developing', Icon: CircleMinus },
-    { value: 'needs_support', labelKey: 'evaluations.oral.needs_support', Icon: BookOpenCheck },
+/** Un retour par élève : un mot, une teinte à la sélection — pas de pictogramme à décoder. */
+interface ReviewChoice<T extends string> { value: T; labelKey: string }
+export const NOTEBOOK_REVIEW_CHOICES = NOTEBOOK_CONDITIONS.map(value => ({ value, labelKey: `evaluations.notebook.${value}` }));
+export const ORAL_REVIEW_CHOICES: ReviewChoice<OralOutcome>[] = [
+    { value: 'mastered', labelKey: 'evaluations.oral.mastered' },
+    { value: 'developing', labelKey: 'evaluations.oral.developing' },
+    { value: 'needs_support', labelKey: 'evaluations.oral.needs_support' },
 ];
 /** Deux états seulement : ce que l'enseignant constate. L'absence se consigne à part. */
-export const HOMEWORK_REVIEW_CHOICES: { value: HomeworkOutcome; labelKey: string; Icon: LucideIcon }[] =
-    HOMEWORK_OUTCOMES.map(value => ({ value, labelKey: `evaluations.homework.${value}`, Icon: value === 'given' ? CircleCheck : BookX }));
+export const HOMEWORK_REVIEW_CHOICES: ReviewChoice<HomeworkOutcome>[] =
+    HOMEWORK_OUTCOMES.map(value => ({ value, labelKey: `evaluations.homework.${value}` }));
 
 export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, toolbarAction, inlineAddZone, isAddOpen }: {
     names: string[];
@@ -27,7 +28,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     onRemove: (name: string) => void;
     entry?: ReactNode;
     footer?: ReactNode;
-    choices: readonly { value: T; labelKey: string; Icon: LucideIcon }[];
+    choices: readonly ReviewChoice<T>[];
     mode?: 'notebook' | 'oral' | 'homework';
     /** Note /20 par élève (oral, colle) : saisie libre, jamais bloquante. */
     grades?: Record<string, string>;
@@ -104,12 +105,12 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                             </span>
                         </div>
                         <div className="notebook-segments eval-pill-group">
-                            {choices.map(({ value: condition, labelKey, Icon }) => {
+                            {choices.map(({ value: condition, labelKey }) => {
                                 const selected = Object.hasOwn(conditions, name) && conditions[name] === condition;
                                 return <label key={condition} className={`notebook-segment eval-pill ${selected ? `is-selected selected-${condition}` : ''}`} data-condition={condition} data-selected={selected ? 'true' : undefined}>
                                     <input type="radio" name={`${id}-${index}`} value={condition} checked={selected}
                                         onChange={() => onChange({ ...conditions, [name]: condition })} className="sr-only"/>
-                                    <span><Icon className="h-4 w-4 shrink-0" aria-hidden="true"/>{t(labelKey)}</span>
+                                    <span>{t(labelKey)}</span>
                                 </label>;
                             })}
                         </div>

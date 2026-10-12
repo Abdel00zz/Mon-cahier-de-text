@@ -2266,6 +2266,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
    couper une ligne de formule automatiquement. Rien d'autre ne défile.
    --------------------------------------------------------------------------- */
 .math-text .katex { font-size: 1.06em; }
+/* Une formule se lit toujours de gauche à droite : dans un texte arabe (dir=rtl), sans cela
+   KaTeX inverse l'ordre des symboles ("2 + 3x" devant "f(x)"). */
+.katex, .katex-display { direction: ltr; unicode-bidi: isolate; }
 
 .editor-item-description .katex-display,
 .editor-free-content .katex-display,

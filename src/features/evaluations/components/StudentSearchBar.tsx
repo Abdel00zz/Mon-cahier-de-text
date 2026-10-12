@@ -27,7 +27,7 @@ export function StudentSearchBar({ query, onQueryChange, count, children, isComp
             <input
                 ref={input}
                 type="search"
-                dir={locale === 'ar' ? 'rtl' : 'ltr'}
+                dir="auto"
                 enterKeyHint="search"
                 spellCheck={false}
                 autoCapitalize="none"

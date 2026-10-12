@@ -17,7 +17,8 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../src/types.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, EvaluationPolicy, EvaluationPolicyAssignment, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../src/types.js';
+import { EMPTY_EVALUATION_POLICY, normalizeEvaluationAssignment, normalizeEvaluationPolicy, resolveEvaluationPolicy, validateEvaluationKindOverrides } from '../src/domain/evaluations/evaluationPolicy.js';
 import { adminActivities, adminAssessmentDocuments } from '../src/domain/evaluations/adminDocuments.js';
 import { normalizeStudentNames, rostersForClasses } from '../src/domain/evaluations/studentRoster.js';
 import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../src/domain/calendar/calendar.js';
@@ -51,6 +52,9 @@ interface AdminBody {
     timetableClockOffsetMinutes?: number;
     expectedTimetableClockVersion?: number;
     inheritGlobalTimetableClock?: boolean;
+    /** Écarts à la politique par défaut (général) ou à la politique générale (compte). */
+    evaluationPolicyKinds?: unknown;
+    expectedEvaluationPolicyVersion?: number;
 }
 
 interface ClassesBlob {
@@ -335,6 +339,63 @@ const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
     res.status(200).json({ ok: true, timetableClock, globalTimetableClock: timetableClock, assignment: null });
 };
 
+/**
+ * POLITIQUE DU CONTRÔLE CONTINU — même circuit que l'horloge des séances :
+ * un document général versionné, des écarts par compte, résolus à la lecture.
+ * Elle ne passe jamais par les réglages de l'enseignant (un appareil ancien
+ * les remplacerait en bloc) : elle est livrée au pull et ne repart pas.
+ */
+const readEvaluationPolicyState = async (phone?: string) => {
+    const redis = await getRedis();
+    const globalEvaluationPolicy = normalizeEvaluationPolicy(
+        (await redis.get<EvaluationPolicy>(KEYS.adminEvaluationPolicy)) ?? EMPTY_EVALUATION_POLICY,
+    );
+    if (!phone) {
+        return { evaluationPolicy: globalEvaluationPolicy, globalEvaluationPolicy, assignment: null };
+    }
+    const [user, storedAssignment] = await Promise.all([
+        redis.get<StoredUser>(KEYS.user(phone)),
+        redis.get<EvaluationPolicyAssignment>(KEYS.adminEvaluationPolicyForUser(phone)),
+    ]);
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    const assignment = normalizeEvaluationAssignment(storedAssignment);
+    return {
+        evaluationPolicy: resolveEvaluationPolicy(globalEvaluationPolicy, assignment),
+        globalEvaluationPolicy,
+        assignment,
+    };
+};
+
+const handleGetEvaluationPolicy = async (req: ApiRequest, res: ApiResponse) => {
+    res.status(200).json(await readEvaluationPolicyState(getQueryParam(req, 'phone')));
+};
+
+const handleSaveEvaluationPolicy = async (body: AdminBody, res: ApiResponse) => {
+    assertBodySize(body);
+    const isPersonal = typeof body.phone === 'string' && body.phone.length > 0;
+    if (typeof body.expectedEvaluationPolicyVersion !== 'number'
+        || !Number.isInteger(body.expectedEvaluationPolicyVersion)
+        || body.expectedEvaluationPolicyVersion < 0) {
+        throw new HttpError(400, 'Version de la politique invalide. Rechargez puis réessayez.');
+    }
+    const checked = validateEvaluationKindOverrides(body.evaluationPolicyKinds ?? {});
+    if (!checked.ok) throw new HttpError(400, checked.error);
+
+    const redis = await getRedis();
+    const key = isPersonal ? KEYS.adminEvaluationPolicyForUser(body.phone!) : KEYS.adminEvaluationPolicy;
+    if (isPersonal) {
+        const user = await redis.get<StoredUser>(KEYS.user(body.phone!));
+        if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    }
+    const current = normalizeEvaluationPolicy((await redis.get<EvaluationPolicy>(key)) ?? EMPTY_EVALUATION_POLICY);
+    if (current.version !== body.expectedEvaluationPolicyVersion) {
+        throw new HttpError(409, 'La politique a été modifiée par une autre session. Rechargez avant de publier.');
+    }
+    const next: EvaluationPolicy = { kinds: checked.kinds, version: current.version + 1, updatedAt: new Date().toISOString() };
+    await saveVersionedDocument(redis, key, body.expectedEvaluationPolicyVersion, next);
+    res.status(200).json({ ok: true, ...(await readEvaluationPolicyState(isPersonal ? body.phone : undefined)) });
+};
+
 const handleGetOfficialEvents = async (res: ApiResponse) => {
     const redis = await getRedis();
     const officialEvents = (await redis.get<OfficialStudentEventsFile>(KEYS.adminOfficialEvents))
@@ -409,7 +470,15 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
 
     if (!user && !snapshot) throw new HttpError(404, 'Enseignant introuvable.');
 
+    // La fiche relit les documents avec la politique que CE compte applique (indicateur rouge/vert fidèle).
+    const [globalPolicy, policyAssignment] = await Promise.all([
+        redis.get<EvaluationPolicy>(KEYS.adminEvaluationPolicy),
+        redis.get<EvaluationPolicyAssignment>(KEYS.adminEvaluationPolicyForUser(phone)),
+    ]);
+    const evaluationPolicy = resolveEvaluationPolicy(normalizeEvaluationPolicy(globalPolicy), normalizeEvaluationAssignment(policyAssignment));
+
     res.status(200).json({
+        evaluationPolicy,
         user: user
             ? {
                 id: user.id ?? user.phone,
@@ -802,6 +871,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     pipeline.del(KEYS.adminMessages(phone));
     pipeline.del(KEYS.inboxClock(phone));
     pipeline.del(KEYS.adminTimetableClockForUser(phone));
+    pipeline.del(KEYS.adminEvaluationPolicyForUser(phone));
     await pipeline.exec();
     await deleteNativeDevices(redis, phone);
     if (isFirestoreStore(redis)) {
@@ -866,6 +936,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
             if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
             if (body.action === 'saveTimetableClock') return await handleSaveTimetableClock(body, res);
+            if (body.action === 'saveEvaluationPolicy') return await handleSaveEvaluationPolicy(body, res);
             if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
             if (body.action === 'saveClassRoster') return await handleSaveClassRoster(body, res);
@@ -883,6 +954,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);
             if (action === 'timetableClock') return await handleGetTimetableClock(req, res);
+            if (action === 'evaluationPolicy') return await handleGetEvaluationPolicy(req, res);
             if (action === 'officialEvents') return await handleGetOfficialEvents(res);
             if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');

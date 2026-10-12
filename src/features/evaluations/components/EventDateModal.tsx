@@ -1,6 +1,6 @@
 import { type FC, useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, Sparkles } from 'lucide-react';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
+import { dateTimeFormat } from '@/lib/formatters';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -22,23 +22,26 @@ export interface EventDateModalProps {
   onApplyDate?: (date: string, endDate?: string) => void;
 }
 
-const MONTHS_LIST = [
-  { m: 9, fr: 'Sept', ar: 'شتنبر' },
-  { m: 10, fr: 'Oct', ar: 'أكتوبر' },
-  { m: 11, fr: 'Nov', ar: 'نونبر' },
-  { m: 12, fr: 'Déc', ar: 'دجنبر' },
-  { m: 1, fr: 'Janv', ar: 'يناير' },
-  { m: 2, fr: 'Févr', ar: 'فبراير' },
-  { m: 3, fr: 'Mars', ar: 'مارس' },
-  { m: 4, fr: 'Avr', ar: 'أبريل' },
-  { m: 5, fr: 'Mai', ar: 'ماي' },
-  { m: 6, fr: 'Juin', ar: 'يونيو' },
-  { m: 7, fr: 'Juil', ar: 'يوليوز' },
+/** Mois de l'année scolaire, dans l'ordre de l'année (septembre → juillet). */
+const MONTHS_LIST: { m: number; fr: string; ar: string; en: string }[] = [
+  { m: 9, fr: 'Sept', ar: 'شتنبر', en: 'Sep' },
+  { m: 10, fr: 'Oct', ar: 'أكتوبر', en: 'Oct' },
+  { m: 11, fr: 'Nov', ar: 'نونبر', en: 'Nov' },
+  { m: 12, fr: 'Déc', ar: 'دجنبر', en: 'Dec' },
+  { m: 1, fr: 'Janv', ar: 'يناير', en: 'Jan' },
+  { m: 2, fr: 'Févr', ar: 'فبراير', en: 'Feb' },
+  { m: 3, fr: 'Mars', ar: 'مارس', en: 'Mar' },
+  { m: 4, fr: 'Avr', ar: 'أبريل', en: 'Apr' },
+  { m: 5, fr: 'Mai', ar: 'ماي', en: 'May' },
+  { m: 6, fr: 'Juin', ar: 'يونيو', en: 'Jun' },
+  { m: 7, fr: 'Juil', ar: 'يوليوز', en: 'Jul' },
 ];
 
+/** Semaine du lundi au dimanche ; en arabe, la grille se lit de droite à gauche. */
 const WEEKDAYS = {
   fr: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
   ar: ['إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت', 'أحد'],
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -54,8 +57,8 @@ export const EventDateModal: FC<EventDateModalProps> = ({
   onSave,
   onApplyDate,
 }) => {
-  const { locale } = useLocale();
-  const effectiveTitle = propTitle || event?.title || (locale === 'ar' ? 'تاريخ التقييم' : 'Date de l’évaluation');
+  const { locale, t } = useLocale();
+  const effectiveTitle = propTitle || event?.title || t('dateModal.fallbackTitle');
   const today = useMemo(() => todayInMorocco(), []);
 
   const [startDate, setStartDate] = useState('');
@@ -170,54 +173,39 @@ export const EventDateModal: FC<EventDateModalProps> = ({
 
   // Libellé en clair de la date choisie
   const formattedSelectedDate = useMemo(() => {
-    if (!startDate) return locale === 'ar' ? 'لم يتم تحديد تاريخ' : 'Aucune date sélectionnée';
+    if (!startDate) return t('dateModal.none');
     try {
-      const [y, m, d] = startDate.split('-').map(Number);
-      const dateObj = new Date(y, m - 1, d);
-      const localeCode = locale === 'ar' ? 'ar-MA' : 'fr-FR';
-      const formattedStart = new Intl.DateTimeFormat(localeCode, {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }).format(dateObj);
-
+      const format = dateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      const asDate = (iso: string) => {
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      };
+      const formattedStart = format.format(asDate(startDate));
       if (isRange && endDate && endDate !== startDate) {
-        const [ey, em, ed] = endDate.split('-').map(Number);
-        const endDateObj = new Date(ey, em - 1, ed);
-        const formattedEnd = new Intl.DateTimeFormat(localeCode, {
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        }).format(endDateObj);
-        return locale === 'ar'
-          ? `من ${formattedStart} إلى ${formattedEnd}`
-          : `Du ${formattedStart} au ${formattedEnd}`;
+        return t('evaluations.dateRange', { start: formattedStart, end: format.format(asDate(endDate)) });
       }
       return formattedStart;
     } catch {
       return startDate;
     }
-  }, [startDate, endDate, isRange, locale]);
+  }, [startDate, endDate, isRange, locale, t]);
 
   const copy = {
-    title: locale === 'ar' ? 'تحديد التاريخ' : 'Planification de la date',
-    singleDateMode: locale === 'ar' ? 'جلسة محددة' : 'Date unique',
-    rangeMode: locale === 'ar' ? 'فترة ممتدة' : 'Période (plage)',
-    clearDate: locale === 'ar' ? 'إزالة التاريخ' : 'Retirer',
-    cancel: locale === 'ar' ? 'إلغاء' : 'Annuler',
-    apply: locale === 'ar' ? 'تأكيد التاريخ' : 'Valider la date',
-    todayBtn: locale === 'ar' ? 'اليوم' : 'Aujourd’hui',
-    tomorrowBtn: locale === 'ar' ? 'غداً' : 'Demain',
-    plusWeekBtn: locale === 'ar' ? '+7 أيام' : '+7 jours',
-    plusTwoWeeksBtn: locale === 'ar' ? '+14 يوماً' : '+14 jours',
-    endMonthBtn: locale === 'ar' ? 'نهاية الشهر' : 'Fin du mois',
-    startDateLabel: locale === 'ar' ? 'تاريخ البداية' : 'Début',
-    endDateLabel: locale === 'ar' ? 'تاريخ النهاية' : 'Fin',
+    title: t('dateModal.title'),
+    singleDateMode: t('dateModal.single'),
+    rangeMode: t('dateModal.range'),
+    clearDate: t('dateModal.clear'),
+    cancel: t('common.cancel'),
+    apply: t('dateModal.apply'),
+    todayBtn: t('dateModal.today'),
+    tomorrowBtn: t('dateModal.tomorrow'),
+    plusWeekBtn: t('dateModal.plusWeek'),
+    plusTwoWeeksBtn: t('dateModal.plusTwoWeeks'),
+    endMonthBtn: t('dateModal.endMonth'),
+    month: t('dateModal.month'),
   };
 
-  const weekdaysHeader = locale === 'ar' ? WEEKDAYS.ar : WEEKDAYS.fr;
+  const weekdaysHeader = WEEKDAYS[locale] ?? WEEKDAYS.fr;
 
   return (
     <Modal
@@ -229,14 +217,9 @@ export const EventDateModal: FC<EventDateModalProps> = ({
       headerClassName="border-b border-border/50 bg-background/95 px-4 py-3 sm:px-5 sm:py-3.5"
       bodyClassName="px-4 py-3.5 sm:px-5 sm:py-4 space-y-3.5"
       title={
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <CalendarDays className="h-5 w-5" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-foreground leading-tight sm:text-base">{copy.title}</h3>
-            <p className="line-clamp-1 text-xs text-muted-foreground mt-0.5" dir="auto">{effectiveTitle}</p>
-          </div>
+        <div className="min-w-0">
+          <span className="block text-[15px] font-extrabold leading-tight tracking-[-0.015em] text-foreground rtl:tracking-normal sm:text-base">{copy.title}</span>
+          <p className="line-clamp-1 text-xs text-muted-foreground mt-0.5" dir="auto">{effectiveTitle}</p>
         </div>
       }
     >
@@ -289,14 +272,13 @@ export const EventDateModal: FC<EventDateModalProps> = ({
           </div>
         )}
 
-        {/* Raccourcis intelligents (Presets sans flèche) */}
-        <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto pb-1 scrollbar-none" dir="ltr">
+        {/* Raccourcis : ils suivent le sens de lecture de la langue */}
+        <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto pb-1 scrollbar-none">
           <button
             type="button"
             onClick={() => applyPreset(0)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
           >
-            <Sparkles className="h-3 w-3 text-primary" />
             {copy.todayBtn}
           </button>
           <button
@@ -332,8 +314,8 @@ export const EventDateModal: FC<EventDateModalProps> = ({
         {/* Sélecteur de mois & année direct (SANS FLÈCHE) */}
         <div className="space-y-1.5 pt-1 border-t border-border/40">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              {locale === 'ar' ? 'الشهر' : 'Mois'}
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider rtl:tracking-normal">
+              {copy.month}
             </span>
             <div className="flex items-center gap-1">
               {[2025, 2026, 2027].map((year) => (
@@ -356,9 +338,10 @@ export const EventDateModal: FC<EventDateModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none" dir="ltr">
-            {MONTHS_LIST.map(({ m, fr, ar }) => {
-              const label = locale === 'ar' ? ar : fr;
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+            {MONTHS_LIST.map((month) => {
+              const { m } = month;
+              const label = month[locale] ?? month.fr;
               const isActive = viewMonth === m;
               return (
                 <button
@@ -384,7 +367,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
         {/* Grille calendrier interactive */}
         <div className="date-cal">
           {/* En-tête des jours de la semaine */}
-          <div className="grid grid-cols-7 text-center" dir="ltr" aria-hidden="true">
+          <div className="grid grid-cols-7 text-center" aria-hidden="true">
             {weekdaysHeader.map((d, idx) => (
               <span key={idx} className="date-cal__weekday">
                 {d}
@@ -392,8 +375,9 @@ export const EventDateModal: FC<EventDateModalProps> = ({
             ))}
           </div>
 
-          {/* Grille des jours du mois : bande continue pour une période */}
-          <div className="date-cal__grid grid grid-cols-7 gap-y-1" dir="ltr">
+          {/* Grille des jours du mois : lundi en tête de ligne, à droite en arabe ;
+              bande continue pour une période */}
+          <div className="date-cal__grid grid grid-cols-7 gap-y-1">
             {/* Cases vides pour le décalage */}
             {Array.from({ length: emptyPrefixCount }).map((_, idx) => (
               <div key={`empty-${idx}`} className="h-11 w-full" aria-hidden="true" />
@@ -464,7 +448,6 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               disabled={!startDate}
               className="text-xs font-bold h-9 px-4 bg-zinc-800 text-zinc-100 hover:bg-zinc-900 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
             >
-              <Check className="h-3.5 w-3.5 me-1.5" />
               {copy.apply}
             </Button>
           </div>
