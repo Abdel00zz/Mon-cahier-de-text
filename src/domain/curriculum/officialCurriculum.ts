@@ -4,6 +4,7 @@ import { normalizeOfficialClassName } from '../../constants/class-levels.js';
 import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, schoolYearLabelFromDate, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
 import { getDaySessionBlocks } from '../calendar/timetable.js';
 import { detectChapterLifecycles, validChapterDate } from './chapterLifecycle.js';
+import { getClassTeachingEnd, type OfficialStudentEventsFile } from '../evaluations/officialStudentEvents.js';
 
 export interface CurriculumCatalog {
   version: number;
@@ -88,6 +89,8 @@ export interface ProgressionOptions {
   today?: string;
   /** Only teacher-confirmed dates consume timetable hours. */
   reservedHours?: Record<string, number>;
+  /** Bulletin officiel (fin des cours par niveau) ; par défaut celui chargé par l'application. */
+  officialEvents?: OfficialStudentEventsFile;
 }
 export function computeOfficialProgression(classInfo: ClassInfo, lessons: LessonsData, options: ProgressionOptions) {
   const { curriculum, config } = options;
@@ -125,9 +128,12 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
     const classTimetable = config.timetable?.filter(entry => entry.classId === classInfo.id) ?? [];
     const hoursByWeekday = Array.from({ length: 7 }, (_, day) => getDaySessionBlocks(classTimetable, day).reduce((sum, block) => sum + block.hours, 0));
     const date = new Date(`${courseStartDate}T12:00:00Z`);
+    // Le bulletin officiel ferme les cours avant la fin de l'année (2BAC fin mai, autres fin juin) :
+    // aucune heure de programme ne peut être projetée au-delà.
+    const lastTeachingDay = getClassTeachingEnd(classInfo, year, options.officialEvents) ?? year.fin;
     for (let n = 0; n < 370; n++, date.setUTCDate(date.getUTCDate() + 1)) {
       const iso = date.toISOString().slice(0, 10);
-      if (iso > year.fin) break;
+      if (iso > year.fin || iso > lastTeachingDay) break;
       if (isWeeklyRestDay(iso) || isHoliday(iso, calendar) || isVacation(iso, calendar)
         || config.absences?.some(absence => iso >= absence.debut && iso <= absence.fin)) continue;
       const hours = hoursByWeekday[date.getUTCDay()];

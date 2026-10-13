@@ -40,6 +40,8 @@ export interface LatenessInput {
     settings?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays'>;
     /** certificats de maladie / congés : exclus des séances attendues */
     absences?: AbsencePeriod[];
+    /** dernier jour de cours de la classe (bulletin officiel) : rien n'est attendu au-delà */
+    teachingEnd?: string | null;
 }
 
 export interface LatenessResult {
@@ -67,7 +69,9 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
         return { expectedSessions: 0, actualSessions: sessionsCount, gapSessions: 0, daysSinceLastEntry: null, severity: 'ok' };
     }
 
-    const expectedSessions = countExpectedSessions(from, today, slots, calendar);
+    // Une classe dont les cours sont clos n'accumule plus de retard.
+    const until = input.teachingEnd && input.teachingEnd < today ? input.teachingEnd : today;
+    const expectedSessions = countExpectedSessions(from, until, slots, calendar);
     const gapSessions = Math.max(0, expectedSessions - sessionsCount);
 
     const weekdays = slots.map(slot => slot.weekday);
@@ -75,7 +79,7 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
     if (input.lastDate) {
         // jours de classe écoulés depuis le lendemain de la dernière saisie
         const dayAfter = input.lastDate < today ? input.lastDate : today;
-        daysSinceLastEntry = countSchoolDaysBetween(dayAfter, today, weekdays, calendar);
+        daysSinceLastEntry = countSchoolDaysBetween(dayAfter, until, weekdays, calendar);
         if (input.lastDate < today && daysSinceLastEntry > 0) daysSinceLastEntry -= 1; // exclure le jour de la saisie
         daysSinceLastEntry = Math.max(0, daysSinceLastEntry);
     }

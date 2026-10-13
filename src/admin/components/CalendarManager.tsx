@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { FerieEntry, HolidayCalendar, VacancePeriode } from '../../domain/calendar/calendar';
+import type { AnneeScolaire, FerieEntry, HolidayCalendar, VacancePeriode } from '../../domain/calendar/calendar';
 import { fetchAdminCalendar, saveAdminCalendar } from '../api';
 import { CalendarDays, Plus, Save } from '../../components/ui/icons';
 import { AnimatedTrashButton } from '../../components/ui/AnimatedTrashButton';
@@ -20,6 +20,19 @@ export const CalendarManager: React.FC<{ onBack: () => void }> = ({ onBack }) =>
     const updateVacation = (index: number, patch: Partial<VacancePeriode>) =>
         setCalendar(current => current ? { ...current, vacances: current.vacances.map((item, i) => i === index ? { ...item, ...patch } : item) } : current);
 
+    /*
+     * Un calendrier multi-années ignore le champ historique `anneeScolaire` : les bornes se
+     * modifient donc sur la liste des années, et le champ historique suit la première.
+     */
+    const updateYear = (index: number, patch: Partial<AnneeScolaire>) =>
+        setCalendar(current => {
+            if (!current) return current;
+            const multi = !!current.anneesScolaires?.length;
+            const years = (multi ? current.anneesScolaires! : [current.anneeScolaire])
+                .map((year, i) => i === index ? { ...year, ...patch } : year);
+            return { ...current, anneeScolaire: years[0], ...(multi ? { anneesScolaires: years } : {}) };
+        });
+
     const save = async () => {
         if (!calendar) return;
         setBusy(true);
@@ -27,7 +40,7 @@ export const CalendarManager: React.FC<{ onBack: () => void }> = ({ onBack }) =>
         try {
             const result = await saveAdminCalendar(calendar);
             setCalendar(result.calendar);
-            setMessage('Calendrier publié. Les contrôles de dates et le cron utilisent maintenant cette version.');
+            setMessage('Calendrier publié. Les contrôles de dates, les séances attendues et les rappels utilisent maintenant cette version.');
         } catch (error) {
             setMessage(error instanceof Error ? error.message : 'Enregistrement impossible.');
         } finally {
@@ -54,9 +67,14 @@ export const CalendarManager: React.FC<{ onBack: () => void }> = ({ onBack }) =>
 
             <section className="rounded-2xl bg-secondary/60 p-4">
                 <div className="grid gap-3 sm:grid-cols-3">
-                    <label className="text-xs font-bold">Fuseau<input value={calendar.fuseau} onChange={e => setCalendar({ ...calendar, fuseau: e.target.value })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
-                    <label className="text-xs font-bold">Début de l'année<input type="date" value={calendar.anneeScolaire.debut} onChange={e => setCalendar({ ...calendar, anneeScolaire: { ...calendar.anneeScolaire, debut: e.target.value } })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
-                    <label className="text-xs font-bold">Fin de l'année<input type="date" value={calendar.anneeScolaire.fin} onChange={e => setCalendar({ ...calendar, anneeScolaire: { ...calendar.anneeScolaire, fin: e.target.value } })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
+                    <label className="text-xs font-bold sm:col-span-3">Fuseau<input value={calendar.fuseau} onChange={e => setCalendar({ ...calendar, fuseau: e.target.value })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
+                    {(calendar.anneesScolaires?.length ? calendar.anneesScolaires : [calendar.anneeScolaire]).map((year, index) => (
+                        <React.Fragment key={year.libelle}>
+                            <p className="self-end pb-2 text-xs font-black">Année {year.libelle}</p>
+                            <label className="text-xs font-bold">Début<input type="date" value={year.debut} onChange={e => updateYear(index, { debut: e.target.value })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
+                            <label className="text-xs font-bold">Fin<input type="date" value={year.fin} onChange={e => updateYear(index, { fin: e.target.value })} className="mt-1 h-10 w-full rounded-xl border bg-card px-3 font-normal" /></label>
+                        </React.Fragment>
+                    ))}
                 </div>
             </section>
 

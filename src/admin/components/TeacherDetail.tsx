@@ -6,6 +6,7 @@ import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { computeLateness } from '../../domain/calendar/lateness';
+import { getClassTeachingEndForYear } from '../../domain/evaluations/officialStudentEvents';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../domain/evaluations/assessments';
 import { documentIndicator, documentRequirementForAssessment, documentRequirementForEvent, documentRequirementForHomeworkCorrection, type DocumentIndicator } from '../../domain/evaluations/documentRequirement';
 import { homeworkCorrectionDocumentId } from '../../domain/evaluations/homeworkIds';
@@ -244,6 +245,7 @@ const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null
         from: teacher?.schoolYearStart,
         settings: teacher?.notifyPrefs,
         absences: teacher?.absences,
+        teachingEnd: getClassTeachingEndForYear(snapshot, calendar, teacher?.schoolYearStart),
     });
 
 /** Libellés des activités, côté direction : l'administration n'est pas traduite. */

@@ -3,7 +3,8 @@ import { apiFetch } from '../../platform/nativeHttp.js';
 // Vite côté navigateur, voir utils/calendar.ts.
 import officialEventsJson from '../../../public/official-student-events.json' with { type: 'json' };
 import { ClassInfo } from '../../types.js';
-import { normalizeOfficialClassName } from '../../constants/class-levels.js';
+import { lookupClassLevelIdentity, normalizeOfficialClassName } from '../../constants/class-levels.js';
+import { getEffectiveSchoolYear, type HolidayCalendar } from '../calendar/calendar.js';
 
 export type OfficialStudentEventCategory =
     | 'school'
@@ -144,7 +145,9 @@ const getClassStudentTags = (classInfo: Pick<ClassInfo, 'name' | 'cycle'>): Set<
     const raw = classInfo.name || '';
     const normalized = normalizeOfficialClassName(raw);
     const name = normalize(normalized);
-    const tags = new Set<string>(['all-secondary']);
+    // Le bulletin ministériel organise le secondaire : les classes préparatoires (CPGE) ont leur propre calendrier.
+    const isPrepa = classInfo.cycle === 'prepa' || !!lookupClassLevelIdentity(raw)?.identity.tier.startsWith('prepa');
+    const tags = new Set<string>(isPrepa ? [] : ['all-secondary']);
 
     const is1ac = /(^| )1 ?(ac|apic|asc)( |$)/.test(name) || name.includes('1ere annee college') || name.includes('1ere annee collegiale');
     const is2ac = /(^| )2 ?(ac|apic|asc)( |$)/.test(name) || name.includes('2eme annee college') || name.includes('2eme annee collegiale');
@@ -204,3 +207,56 @@ export const getOfficialStudentEventsForClass = (
 };
 
 export const getOfficialEventEffectiveEnd = (event: OfficialStudentEvent): string => event.end ?? event.start;
+
+/**
+ * Les événements « école » sont de deux sortes : la rentrée, puis la fin des
+ * cours. Un événement tombant plus de 90 jours après la rentrée ne peut être
+ * que la fin des cours, quel que soit l'identifiant choisi à la publication.
+ */
+const TEACHING_END_MIN_DAYS_AFTER_START = 90;
+
+const shiftISO = (iso: string, days: number): string => {
+    const [year, month, day] = iso.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+};
+
+/**
+ * Dernier jour de cours d'une classe d'après le bulletin officiel (« Fin des
+ * cours »), ou null quand le bulletin ne couvre pas l'année suivie ou ne dit
+ * rien de ce niveau. Au-delà, plus aucune séance n'est attendue : ni retard,
+ * ni séance manquée, ni projection du programme.
+ */
+export const getClassTeachingEnd = (
+    classInfo: Pick<ClassInfo, 'name' | 'cycle' | 'subject'>,
+    year: { libelle: string; debut: string },
+    file: OfficialStudentEventsFile = cached,
+): string | null => {
+    if (file.schoolYear !== year.libelle) return null;
+    const threshold = shiftISO(year.debut, TEACHING_END_MIN_DAYS_AFTER_START);
+    const ends = getOfficialStudentEventsForClass(classInfo, 'school', file)
+        .filter(event => event.dateKind === 'fixed' && event.start > threshold)
+        .map(event => event.start)
+        .sort();
+    return ends[0] ?? null;
+};
+
+/** Variante des vues qui ne connaissent que le calendrier et la rentrée choisie par l'enseignant. */
+export const getClassTeachingEndForYear = (
+    classInfo: Pick<ClassInfo, 'name' | 'cycle' | 'subject'>,
+    calendar: HolidayCalendar,
+    schoolYearStart?: string,
+    file: OfficialStudentEventsFile = cached,
+): string | null => getClassTeachingEnd(classInfo, getEffectiveSchoolYear(calendar, schoolYearStart), file);
+
+/**
+ * Épreuves officielles fixes (examens locaux, régionaux, nationaux) tombant
+ * le jour donné pour cette classe. Les fenêtres indicatives sont ignorées :
+ * elles n'interdisent aucun jour précis.
+ */
+export const getClassExamsOn = (
+    classInfo: Pick<ClassInfo, 'name' | 'cycle' | 'subject'>,
+    iso: string,
+    file: OfficialStudentEventsFile = cached,
+): OfficialStudentEvent[] =>
+    getOfficialStudentEventsForClass(classInfo, 'exam', file)
+        .filter(event => event.dateKind === 'fixed' && iso >= event.start && iso <= getOfficialEventEffectiveEnd(event));

@@ -9,6 +9,12 @@ import {
     localizeCalendarName,
 } from './calendar.js';
 import { translateLocaleMessage } from '../../i18n/messages.js';
+import {
+    getClassExamsOn,
+    getClassTeachingEnd,
+    getOfficialStudentEventsFile,
+    type OfficialStudentEventsFile,
+} from '../evaluations/officialStudentEvents.js';
 
 /**
  * Moteur de validation intelligente des dates de séance.
@@ -19,12 +25,14 @@ import { translateLocaleMessage } from '../../i18n/messages.js';
  *  3. les VACANCES         → « c'est les vacances de printemps »
  *  4. ses ABSENCES         → « vous étiez en congé maladie à cette date »
  *  5. l'ANNÉE SCOLAIRE     → date hors année scolaire
+ *  6. le BULLETIN OFFICIEL → cours terminés pour ce niveau, jour d'examen officiel
+ *     (mêmes données que le calendrier des échéances, aucune règle dupliquée)
  *
  * Les avertissements sont NON bloquants : le prof reste maître (rattrapage,
  * séance exceptionnelle...), mais il est prévenu immédiatement.
  */
 
-type DateWarningType = 'invalid' | 'weekly-rest' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year' | 'out-of-order' | 'evaluation-conflict';
+type DateWarningType = 'invalid' | 'weekly-rest' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year' | 'study-ended' | 'official-exam' | 'out-of-order' | 'evaluation-conflict';
 
 export interface DateWarning {
     type: DateWarningType;
@@ -42,11 +50,17 @@ const isActionableSessionDate = (iso: string, todayIso: string): boolean =>
     !!iso && !!todayIso && iso.slice(0, 10) >= todayIso.slice(0, 10);
 
 /**
+ * Alertes de planification : elles dépendent de la grille horaire ou du
+ * bulletin, qui ont pu changer depuis l'affectation de la date. Sur une séance
+ * passée elles seraient des faux positifs rétroactifs.
+ */
+const PLANNING_ONLY_WARNINGS: ReadonlySet<DateWarningType> = new Set(['not-scheduled', 'study-ended', 'official-exam']);
+
+/**
  * Avertissements affichables.
  *
- * Une séance passée n'est plus modifiable : son conflit avec l'emploi du temps
- * est donc neutralisé, car la grille a pu changer depuis l'affectation de la
- * date et ce serait un faux positif rétroactif.
+ * Une séance passée n'est plus modifiable : ses alertes de planification
+ * (emploi du temps, fin des cours, jour d'examen) sont donc neutralisées.
  *
  * Toutes les autres alertes restent affichées, y compris sur le passé : férié,
  * vacances, absence justifiée, date invalide, hors année. Ce sont des faits
@@ -55,7 +69,7 @@ const isActionableSessionDate = (iso: string, todayIso: string): boolean =>
 export const toDisplayWarnings = (warnings: DateWarning[], iso: string, todayIso: string): DateWarning[] =>
     isActionableSessionDate(iso, todayIso)
         ? warnings
-        : warnings.filter(warning => warning.type !== 'not-scheduled');
+        : warnings.filter(warning => !PLANNING_ONLY_WARNINGS.has(warning.type));
 
 const getWeekday = (iso: string): number => {
     const [y, m, d] = iso.split('-').map(Number);
@@ -64,10 +78,11 @@ const getWeekday = (iso: string): number => {
 
 export const validateSessionDate = (
     date: string,
-    classInfo: Pick<ClassInfo, 'id' | 'name'>,
+    classInfo: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'cycle' | 'subject'>>,
     config: Pick<AppConfig, 'schedules' | 'absences' | 'schoolYearStart'>,
     locale: AppLocale = 'fr',
-    calendar: HolidayCalendar = getBundledCalendar()
+    calendar: HolidayCalendar = getBundledCalendar(),
+    officialEvents: OfficialStudentEventsFile = getOfficialStudentEventsFile(),
 ): DateWarning[] => {
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
@@ -146,6 +161,22 @@ export const validateSessionDate = (
                 ? t('dateWarning.outOfYear', { year: selectedYear.libelle })
                 : t('dateWarning.outOfKnownYears'),
         });
+    }
+
+    // 6. Bulletin officiel : le niveau n'a plus cours, ou passe une épreuve ce jour-là.
+    // Les classes de l'enseignant sont rapprochées du bulletin par niveau (et matière).
+    const level = { name: classInfo.name, cycle: classInfo.cycle, subject: classInfo.subject ?? '' };
+    const teachingEnd = isInSchoolYear
+        ? getClassTeachingEnd(level, getEffectiveSchoolYear(calendar, config.schoolYearStart, iso), officialEvents)
+        : null;
+    if (teachingEnd && iso > teachingEnd && !vacance) {
+        warnings.push({
+            type: 'study-ended',
+            message: t('dateWarning.studyEnded', { date: new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${teachingEnd}T00:00:00Z`)) }),
+        });
+    }
+    if (isInSchoolYear && getClassExamsOn(level, iso, officialEvents).length > 0) {
+        warnings.push({ type: 'official-exam', message: t('dateWarning.officialExam') });
     }
 
     return warnings;

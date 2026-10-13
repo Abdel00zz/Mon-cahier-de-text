@@ -5,6 +5,7 @@ import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOvervie
 import type { AdminTeacherSummary } from '../api';
 import { getBundledCalendar } from '../../domain/calendar/calendar';
 import { LatenessSeverity, computeLateness, worstSeverity } from '../../domain/calendar/lateness';
+import { getClassTeachingEndForYear } from '../../domain/evaluations/officialStudentEvents';
 import { completionColor, globalCompletion, timeAgo } from '../utils';
 import { establishmentKey, establishmentLabel, listEstablishments } from '../establishments';
 
@@ -62,6 +63,7 @@ const teacherSeverity = (teacher: AdminTeacherSummary): LatenessSeverity =>
                 from: teacher.schoolYearStart,
                 settings: teacher.notifyPrefs,
                 absences: teacher.absences,
+                teachingEnd: getClassTeachingEndForYear(cls, calendar, teacher.schoolYearStart),
             }),
         }))
     );

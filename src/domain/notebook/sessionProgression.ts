@@ -47,6 +47,8 @@ export const analyseSessionProgression = (
     slots: ScheduleSlot[],
     today: string,
     calendar: HolidayCalendar,
+    /** dernier jour de cours de la classe (bulletin officiel) : rien n'est attendu au-delà */
+    teachingEnd?: string | null,
 ): SessionProgression => {
     const byDate = new Map<string, SessionEntry>();
     let itemsTotal = 0;
@@ -68,9 +70,10 @@ export const analyseSessionProgression = (
     const sessions = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
     const actualSessions = sessions.filter(session => session.date <= today).length;
     const from = getSchoolYearStart(calendar, today);
-    const expectedSessions = slots.length ? countExpectedSessions(from, today, slots, calendar) : 0;
+    const until = teachingEnd && teachingEnd < today ? teachingEnd : today;
+    const expectedSessions = slots.length ? countExpectedSessions(from, until, slots, calendar) : 0;
     const missing = slots.length
-        ? listExpectedSessionDates(from, today, slots, calendar).filter(date => !byDate.has(date))
+        ? listExpectedSessionDates(from, until, slots, calendar).filter(date => !byDate.has(date))
         : [];
 
     return {

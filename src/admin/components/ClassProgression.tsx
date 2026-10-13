@@ -4,6 +4,7 @@ import { MathText } from '../../components/ui/math-text';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
 import { getBundledCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { analyseSessionProgression, snapshotSlots } from '../../domain/notebook/sessionProgression';
+import { getClassTeachingEndForYear } from '../../domain/evaluations/officialStudentEvents';
 import type { ClassSnapshot, LessonsData, ScheduleSlot } from '../../types';
 
 /**
@@ -67,8 +68,8 @@ export const ClassProgression: React.FC<{ phone: string; classId: string; snapsh
     const today = useMemo(() => todayInMorocco(), []);
     const slots = useMemo<ScheduleSlot[]>(() => snapshotSlots(snapshot), [snapshot]);
     const report = useMemo(
-        () => (lessons ? analyseSessionProgression(lessons, slots, today, calendar) : null),
-        [lessons, slots, today]
+        () => (lessons ? analyseSessionProgression(lessons, slots, today, calendar, snapshot ? getClassTeachingEndForYear(snapshot, calendar) : null) : null),
+        [lessons, slots, today, snapshot]
     );
 
     const toggle = async () => {

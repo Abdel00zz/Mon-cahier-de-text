@@ -7,6 +7,7 @@ import { readCachedConfig } from '../storage/configStorage';
 import { DateWarning, toDisplayWarnings, validateSessionDate } from '../../domain/calendar/dateValidation';
 import { computeClassHoursInsight } from '../../domain/calendar/scheduleInsights';
 import { computeProgressionStats } from '../../domain/curriculum/progression';
+import { getClassTeachingEnd } from '../../domain/evaluations/officialStudentEvents';
 import { readJournal } from '../storage/journal';
 import { collectSessionDates } from '../printing/printMeta';
 import {
@@ -216,10 +217,12 @@ const findMissedSessions = (
     if (weekdays.size === 0) return [];
 
     const year = getEffectiveSchoolYear(calendar, config.schoolYearStart, today);
+    // Après la « fin des cours » du bulletin officiel, aucune séance n'est due.
+    const teachingEnd = getClassTeachingEnd(classInfo, year) ?? year.fin;
     const missed: string[] = [];
     for (let back = 1; back <= lookbackDays; back += 1) {
         const iso = addDaysISO(today, -back);
-        if (iso < year.debut || iso > year.fin) continue;
+        if (iso < year.debut || iso > year.fin || iso > teachingEnd) continue;
         if (!isClassSchoolDay(iso, weekdays, calendar, config.absences)) continue;
         if (!datedSet.has(iso)) missed.push(iso);
     }
