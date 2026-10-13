@@ -200,3 +200,29 @@ Invariants :
 - **Une seule porte par question** : `resolveKindPolicy`, `documentRequirementFor`,
   `kindTransmits`, `groupKinds` — la feuille, la réconciliation du cahier et la fiche
   enseignant de la direction lisent la même réponse.
+
+## 8. Le devoir maison : deux entrées, une identité
+
+Sur la feuille, un devoir maison s’affiche en **deux entrées, et deux seulement**. Elles partagent le même
+identifiant : un seul enregistrement dans `manualAssessments[classe]`, donc rien de nouveau à synchroniser
+avec le cloud (Redis ou Firestore stockent le même blob JSON, octet pour octet).
+
+| Entrée | Date de la ligne | Boutons | Stockage |
+| --- | --- | --- | --- |
+| **Devoir maison N** (assigné aux élèves) | `dateISO` (donné) | document · **date limite de rendu** · corbeille | sujet : `assessmentDocuments[id]` · `dueDateISO` |
+| **Correction du devoir maison N** | `correctionDateISO` | document (corrigé) · **élèves n’ayant pas rendu** · corbeille | corrigé : `assessmentDocuments[<id>:correction]` · `assessmentParticipants[id].homeworkOutcomes` |
+
+- **Pas d’absents** sur un devoir maison (`kindSupport('maison').absences === false`).
+- **Corbeille de l’assigné** : supprime le devoir entier, corrigé compris (`deleteAssessment`).
+- **Corbeille de la correction** : efface la date de correction, le corrigé et la liste des élèves, retire du
+  cahier le bloc « Correction du devoir maison N » et sa ligne de remarque (sinon la synchronisation du cahier la
+  daterait de nouveau). Le devoir, son sujet et sa date limite restent.
+- **Réglage de la direction** : « Correction du devoir » (page *Contrôle continu*) décide si la séance de
+  correction est datée sur la feuille ; le contenu du corrigé suit le réglage « Contenu » du devoir maison.
+- **Cahier ⇄ feuille** : la date de correction posée sur la feuille s’affiche en pastille dans la séance du cahier
+  (et inversement via le bloc ou la pastille « Correction du devoir à la maison N »). Le corrigé s’ouvre depuis cette
+  séance. Les phrases que l’application écrit elle-même (`remark.devoirMaisonGiven`, `remark.devoirMaisonCorrection`)
+  sont reconnues dans les trois langues (`homeworkNumbering.ts`).
+- **Direction** : la fiche enseignant montre la date limite, la correction et son corrigé en lecture seule.
+- **Compatibilité** : un appareil plus ancien ignore `dueDateISO` et la clé `:correction`, sans les perdre (le blob
+  est conservé tel quel côté serveur).

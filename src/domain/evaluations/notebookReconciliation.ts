@@ -1,5 +1,5 @@
 import type { AppConfig, EvaluationPolicy, LessonsData, PedagogicalEvent } from '../../types';
-import { isEvaluationKind, kindTransmits } from './evaluationPolicy';
+import { isEvaluationKind, kindTransmits, resolveKindPolicy } from './evaluationPolicy';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { findNotebookAssessments, linkAssessments, parseTrailingNumber, type NotebookAssessmentEntry } from './assessmentSync';
@@ -169,7 +169,8 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
    * devoir du planning officiel daté par le professeur, ou un devoir jamais
    * saisi, est transmis à la feuille « Contrôle continu et activités ».
    */
-  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison' && transmits('maison'))) {
+  const transmitsCorrection = transmits('maison') && resolveKindPolicy(options.policy, 'maison').correction;
+  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison' && transmitsCorrection)) {
     const { startDate } = extractDateRange(row.data.date);
     if (!validDate(startDate)) continue;
     const declared = parseTrailingNumber('title' in row.data ? row.data.title : undefined);

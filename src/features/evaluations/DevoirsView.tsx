@@ -7,12 +7,14 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { getBundledCalendar, todayInMorocco } from '@/domain/calendar/calendar';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/domain/evaluations/assessmentSync';
-import { documentIndicator, documentRequirementForAssessment } from '@/domain/evaluations/documentRequirement';
+import { documentIndicator, documentRequirementForAssessment, documentRequirementForHomeworkCorrection } from '@/domain/evaluations/documentRequirement';
+import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import './evaluationsResponsive.css';
 import './evaluationReference.css';
 import { ChevronDown } from 'lucide-react';
 import { ltrIsolate } from '@/lib/text/textDirection';
+import { ActionIcon } from './components/ActionIcon';
 import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
 import { useEvaluationConflictGuard } from './hooks/useEvaluationConflictGuard';
 import { assessmentSlot, eventSlot, evaluationSlots } from '@/domain/evaluations/evaluationConflicts';
@@ -22,6 +24,7 @@ import {
   syncAssessmentDateToNotebook,
   removeEventFromNotebook,
   removeAssessmentFromNotebook,
+  removeHomeworkCorrectionFromNotebook,
 } from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useEvaluationModals } from './hooks/useEvaluationModals';
@@ -62,7 +65,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     editingAssessment,
     setAbsencesFor, setOralFor, setSubmissionsFor, setDocumentFor, setStudentsFor, setManualEditorOpen,
     setEditingAssessment,
-    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment,
+    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment, setDeletingCorrection,
   } = evaluationModals;
   const actions = useEvaluationActions(classInfo.id, config, onConfigChange);
 
@@ -239,6 +242,27 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     toast.success(t('evaluations.manualDeleted'));
   };
 
+  /** Date limite ou séance de correction d'un devoir maison, écrite sur SON enregistrement (aucune clé de plus à synchroniser). */
+  const setHomeworkDate = (id: string, field: 'due' | 'correction', dateISO: string) => {
+    const planned = assessments.find(item => item.id === id);
+    if (!planned || planned.type !== 'maison') return;
+    const chosen = config.assessmentDates?.[classInfo.id]?.[id]
+      ?? (planned.legacyId ? config.assessmentDates?.[classInfo.id]?.[planned.legacyId] : undefined)
+      ?? (planned.manual ? planned.dateISO : '');
+    actions.setHomeworkSchedule(
+      { id: planned.id, legacyId: planned.legacyId, schoolYear: planned.schoolYear, semestre: planned.semestre, num: planned.num },
+      chosen,
+      field === 'due' ? { dueDateISO: dateISO } : { correctionDateISO: dateISO },
+    );
+  };
+
+  /** Corbeille de la correction : date, corrigé, élèves — et le bloc du cahier, pour qu'elle ne revienne pas. */
+  const deleteHomeworkCorrection = (link: AssessmentLink) => {
+    const { lessons: nextLessons } = removeHomeworkCorrectionFromNotebook(activeLessons, link.planned.num);
+    if (!commitNotebookChange(nextLessons, () => actions.clearHomeworkCorrection(link.planned.id, link.planned.legacyId))) return;
+    toast.success(t('evaluations.correctionDeleted'));
+  };
+
   const renderAssessmentRows = (group: AssessmentLink[]) => group.map((link) => {
     const a = link.planned;
     const custom = !!(
@@ -293,10 +317,25 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       ? t('evaluations.tip.absentSome', { count: number.format(absents.length) })
       : t('evaluations.tip.absentNone');
     const oralTooltip = t('evaluations.tip.oral');
-    const homeworkTooltip = t('evaluations.tip.homework');
     const observedSubmissions = submissionSummary ? submissionSummary.given + submissionSummary.missing : 0;
+    /*
+     * Un devoir maison = DEUX entrées : « assigné aux élèves » (document · date limite · corbeille) et
+     * « correction » (document · élèves n'ayant pas rendu · corbeille). Même identité, même enregistrement.
+     */
+    const dueDateISO = a.type === 'maison'
+      ? (config.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.dueDateISO ?? '')
+      : '';
+    const correctionDocument = a.type === 'maison'
+      ? config.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.id)]
+      : undefined;
+    const correctionIndicator = documentIndicator(documentRequirementForHomeworkCorrection(policy), correctionDocument);
+    const correctionName = `${t('manageLessons.type.correction_devoir_maison')} ${number.format(a.num)}`;
+    // Une correction déjà saisie reste visible même si la direction ne la transmet plus : rien n'est caché.
+    const showCorrection = a.type === 'maison'
+      && (kindPolicy.correction || !!correctionDateISO || correctionIndicator === 'attached' || !!submissions);
+    const notReturned = submissionSummary?.missing ?? 0;
 
-    return (
+    const assignedRow = (
       <div
         key={a.id}
         className="ev-row evaluation-tone"
@@ -314,7 +353,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               >
                               {displayName}
               </button>
-              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && ((rawDate && (custom || link.entry)) || correctionDateISO))) && (
+              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && ((rawDate && (custom || link.entry)) || dueDateISO))) && (
                 <div className="ev-row__meta">
                   {link.status === 'mismatch' && link.entry?.date && (
                     <button
@@ -334,8 +373,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   {a.type === 'maison' && rawDate && (custom || link.entry) && (
                     <span className="ev-row__note">{t('evaluations.homework.givenOn', { date: ltrIsolate(formatSingleDate(rawDate)) })}</span>
                   )}
-                  {a.type === 'maison' && correctionDateISO && (
-                    <span className="ev-row__note">{t('evaluations.homework.correctedOn', { date: ltrIsolate(formatSingleDate(correctionDateISO)) })}</span>
+                  {a.type === 'maison' && dueDateISO && (
+                    <span className="ev-row__note">{t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
                   )}
                 </div>
               )}
@@ -372,12 +411,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   data-tippy-content={docTooltip}
                   aria-label={`${t('evaluations.doc.title', { activity: displayName })}${docStateSuffix}`}
                 >
-                  {/* Rédigé : « Contenu » ; à rédiger : « + Contenu » — l'état se lit, il ne se devine pas. */}
+                  {/* Un seul mot, un seul pictogramme : l'état (rédigé, requis) se lit sur la teinte du bouton. */}
+                  <ActionIcon name="document" />
                   <span>{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
                 </button>
               )}
 
-              {kindPolicy.absences && (
+              {kindPolicy.absences && a.type !== 'maison' && (
                 <button
                   type="button"
                   onClick={() => setAbsencesFor(link)}
@@ -388,6 +428,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                     : t('evaluations.absentees')}
                 >
+                  <ActionIcon name="absents" />
                   <span>{t('evaluations.action.absent')}</span>
                   {absents.length > 0 && (
                     <span className="ev-action__count">{number.format(absents.length)}</span>
@@ -404,25 +445,25 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   data-tippy-content={oralTooltip}
                   aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : a.type === 'oral' ? 'evaluations.oral.title' : 'evaluations.track.title')} — ${displayName}`}
                 >
+                  <ActionIcon name="students" />
                   <span>{t(a.type === 'oral' || a.type === 'colle' ? 'evaluations.action.track' : 'evaluations.action.students')}</span>
                 </button>
               )}
 
-              {kindPolicy.students && a.type === 'maison' && (
+              {/* Date limite à laquelle les élèves rendent le devoir. */}
+              {a.type === 'maison' && (
                 <button
                   type="button"
-                  onClick={() => setSubmissionsFor(link)}
+                  onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: dueDateISO, field: 'due' })}
                   className="ev-action shrink-0"
-                  data-filled={submissionSummary?.missing ? 'danger' : observedSubmissions ? 'tone' : undefined}
-                  data-tippy-content={homeworkTooltip}
-                  aria-label={`${t('evaluations.homework.title')} — ${displayName}`}
+                  data-filled={dueDateISO ? 'tone' : undefined}
+                  data-tippy-content={t('evaluations.tip.dueDate')}
+                  aria-label={dueDateISO
+                    ? `${t('evaluations.action.dueDate')} — ${formatSingleDate(dueDateISO)} — ${displayName}`
+                    : `${t('evaluations.action.dueDate')} — ${displayName}`}
                 >
-                  <span>{t('evaluations.action.submissions')}</span>
-                  {kindPolicy.feedback && observedSubmissions > 0 && (
-                    <bdi className="ev-action__count" dir="ltr">
-                      {number.format(submissionSummary!.given)}/{number.format(submissionSummary!.given + submissionSummary!.missing + submissionSummary!.pending)}
-                    </bdi>
-                  )}
+                  <ActionIcon name="deadline" />
+                  <span>{dueDateISO ? <bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi> : t('evaluations.action.dueDate')}</span>
                 </button>
               )}
 
@@ -439,6 +480,79 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </div>
           </div>
         );
+    if (!showCorrection) return assignedRow;
+    const correctionTooltip = t(correctionIndicator === 'attached' ? 'evaluations.tip.docAttached' : 'evaluations.tip.docIdle');
+    const correctionRow = (
+      <div
+        key={`${a.id}:correction`}
+        className="ev-row ev-row--correction evaluation-tone"
+        data-assessment-id={`${a.id}:correction`}
+        data-assessment-type="maison_correction"
+        data-tone={kindStyle.tone}
+      >
+        <div className="ev-row__id min-w-0">
+          <span className="-ms-1 inline-flex max-w-full items-center truncate px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground">{correctionName}</span>
+        </div>
+        <div className="ev-row__date">
+          <button
+            type="button"
+            onClick={() => setEditingDateAssessment({ id: a.id, name: correctionName, date: correctionDateISO, field: 'correction' })}
+            className={cn(
+              "ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold select-none cursor-pointer transition-all active:scale-95 border-0 shadow-none",
+              correctionDateISO
+                ? "text-foreground hover:text-primary hover:bg-muted/40 rounded-md"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md"
+            )}
+            aria-label={t('evaluations.assessmentDateAria', { assessment: correctionName })}
+          >
+            <span className="whitespace-nowrap tabular-nums text-xs font-bold">
+              {correctionDateISO ? <bdi dir="ltr">{formatSingleDate(correctionDateISO)}</bdi> : t('evaluations.setDate')}
+            </span>
+          </button>
+        </div>
+        <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
+          {correctionIndicator !== 'none' && (
+            <button
+              type="button"
+              onClick={() => setDocumentFor({ kind: 'assessment', link, part: 'correction' })}
+              className="ev-action shrink-0"
+              data-filled={correctionIndicator === 'attached' ? 'ok' : undefined}
+              data-doc-state={correctionIndicator}
+              data-tippy-content={correctionTooltip}
+              aria-label={`${t('evaluations.doc.title', { activity: correctionName })}${correctionIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : ''}`}
+            >
+              <ActionIcon name="document" />
+              <span>{t(correctionIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
+            </button>
+          )}
+          {kindPolicy.students && (
+            <button
+              type="button"
+              onClick={() => setSubmissionsFor(link)}
+              className="ev-action shrink-0"
+              data-filled={notReturned > 0 ? 'danger' : observedSubmissions ? 'tone' : undefined}
+              data-tippy-content={t('evaluations.tip.notReturned')}
+              aria-label={`${t('evaluations.homework.notReturnedTitle')} — ${correctionName}${notReturned > 0 ? ` · ${number.format(notReturned)}` : ''}`}
+            >
+              <ActionIcon name="students" />
+              <span>{t('evaluations.action.notReturned')}</span>
+              {notReturned > 0 && <span className="ev-action__count">{number.format(notReturned)}</span>}
+            </button>
+          )}
+          <AnimatedTrashButton
+            iconOnly
+            size="sm"
+            variant="icon"
+            data-danger="true"
+            onClick={() => setDeletingCorrection(link)}
+            className="ev-icon-btn shrink-0"
+            title={t('evaluations.tip.deleteCorrection', { name: correctionName })}
+            aria-label={t('evaluations.deleteCorrectionAction')}
+          />
+        </div>
+      </div>
+    );
+    return <React.Fragment key={a.id}>{assignedRow}{correctionRow}</React.Fragment>;
   });
 
   return (
@@ -535,8 +649,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         actions={actions}
         saveAssessment={saveAssessment}
         setAssessmentDate={setAssessmentDate}
+        setHomeworkDate={setHomeworkDate}
         deletePedagogicalEvent={deletePedagogicalEvent}
         deleteAssessment={deleteAssessment}
+        deleteHomeworkCorrection={deleteHomeworkCorrection}
       />
 
     </div>

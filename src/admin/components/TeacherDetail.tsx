@@ -7,7 +7,8 @@ import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fet
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
 import { computeLateness } from '../../domain/calendar/lateness';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../domain/evaluations/assessments';
-import { documentIndicator, documentRequirementForAssessment, documentRequirementForEvent, type DocumentIndicator } from '../../domain/evaluations/documentRequirement';
+import { documentIndicator, documentRequirementForAssessment, documentRequirementForEvent, documentRequirementForHomeworkCorrection, type DocumentIndicator } from '../../domain/evaluations/documentRequirement';
+import { homeworkCorrectionDocumentId } from '../../domain/evaluations/homeworkIds';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Clock, Bell, LockKeyhole, Trash2 } from '../../components/ui/icons';
@@ -402,8 +403,19 @@ const AssessmentDateEditor: React.FC<{
                         ?? (row.legacyId ? documents[row.classId]?.[row.legacyId] : undefined);
                     const indicator = documentIndicator(documentRequirementForAssessment(row.type, policy), document);
                     const title = `${row.label} — ${row.className}`;
+                    // Un devoir maison a DEUX entrées : le devoir assigné (avec sa date limite) et sa correction.
+                    const manualItem = row.type === 'maison'
+                        ? assessmentConfig?.manualAssessments?.[row.classId]?.find(item => item.id === row.id || item.id === row.legacyId)
+                        : undefined;
+                    const dueDate = manualItem?.dueDateISO ? manualItem.dueDateISO.split('-').reverse().join('/') : '';
+                    const correctionDocument = row.type === 'maison' ? documents[row.classId]?.[homeworkCorrectionDocumentId(row.id)] : undefined;
+                    const correctionIndicator = row.type === 'maison'
+                        ? documentIndicator(documentRequirementForHomeworkCorrection(policy), correctionDocument)
+                        : 'none';
+                    const correctionTitle = `Correction du devoir maison ${row.num} — ${row.className}`;
                     return (
-                        <div key={`${row.classId}-${row.id}`} className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
+                        <React.Fragment key={`${row.classId}-${row.id}`}>
+                        <div className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
                             <button
                                 type="button"
                                 onClick={() => onPreview(previewTarget(document, title, `${row.className} · ${teacherName}`, { heading: row.label, classLabel: row.className }))}
@@ -412,7 +424,7 @@ const AssessmentDateEditor: React.FC<{
                             >
                                 <span className="block truncate text-xs font-bold text-foreground">{row.className}</span>
                                 <span className={`block truncate text-[10px] ${indicator === 'attached' ? 'text-success' : indicator === 'missing' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                    {row.label} · {indicator === 'attached' ? 'sujet rédigé' : indicator === 'missing' ? 'sujet manquant' : 'sans sujet'}
+                                    {row.label} · {indicator === 'attached' ? 'sujet rédigé' : indicator === 'missing' ? 'sujet manquant' : 'sans sujet'}{dueDate ? ` · à rendre avant le ${dueDate}` : ''}
                                 </span>
                             </button>
                             <input
@@ -423,6 +435,22 @@ const AssessmentDateEditor: React.FC<{
                                 className="h-9 w-32 shrink-0 rounded-lg border bg-background px-2 text-[11px]"
                             />
                         </div>
+                        {correctionIndicator !== 'none' && (
+                            <div className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm">
+                                <button
+                                    type="button"
+                                    onClick={() => onPreview(previewTarget(correctionDocument, correctionTitle, `${row.className} · ${teacherName}`, { heading: `Correction du devoir maison ${row.num}`, classLabel: row.className }))}
+                                    className="min-w-0 flex-1 rounded-lg px-1 py-1 text-start transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                    aria-label={`Aperçu du corrigé : ${correctionTitle}`}
+                                >
+                                    <span className="block truncate text-xs font-bold text-foreground">{row.className}</span>
+                                    <span className={`block truncate text-[10px] ${correctionIndicator === 'attached' ? 'text-success' : 'text-muted-foreground'}`}>
+                                        Correction du devoir maison {row.num} · {correctionIndicator === 'attached' ? 'corrigé rédigé' : 'sans corrigé'}{manualItem?.correctionDateISO ? ` · le ${manualItem.correctionDateISO.split('-').reverse().join('/')}` : ''}
+                                    </span>
+                                </button>
+                            </div>
+                        )}
+                        </React.Fragment>
                     );
                 })}
             </div>

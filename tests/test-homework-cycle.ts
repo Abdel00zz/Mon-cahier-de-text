@@ -284,7 +284,9 @@ test('la modale de séance relie les deux temps', () => {
   assert.match(modal, /pendingCorrections\(/, 'seuls les devoirs en attente sont offerts');
   assert.match(modal, /extractHomeworkAssignmentNumber/, 'l’attribution ignore la correction');
   const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  assert.match(view, /evaluations\.homework\.correctedOn/, 'la feuille d’évaluations affiche la date de correction');
+  // La correction a désormais SA propre entrée sous le devoir : sa date est la date de sa ligne.
+  assert.match(view, /ev-row ev-row--correction/, 'la feuille d’évaluations a une entrée « Correction du devoir maison »');
+  assert.match(view, /field: 'correction'/, 'la date de la ligne de correction est la date de correction');
   const remarks = readFileSync('src/domain/evaluations/sessionActivityRemarks.ts', 'utf8');
   assert.match(remarks, /:correction/, 'la correction s’annote par sa propre identité');
 });

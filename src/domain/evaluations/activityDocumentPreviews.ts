@@ -3,6 +3,7 @@ import { buildLessonRows } from '../notebook/lessonRows';
 import { coveredDates } from './notebookCheckRemarks';
 import type { AssessmentLink, NotebookDocumentPreview } from './assessmentSync';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
+import { homeworkCorrectionDocumentId } from './homeworkIds';
 
 export const documentsForSessionDates = (documents: ReadonlyMap<string, readonly NotebookDocumentPreview[]>, raw: string) =>
     [...new Map(sessionDateKeys(raw).flatMap(date => documents.get(date) ?? []).map(document => [document.assessmentId, document])).values()];
@@ -37,6 +38,18 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
         if ((config.sessionRemarkOverrides?.[classId]?.[`assessment:${planned.id}`]
           ?? (planned.legacyId ? config.sessionRemarkOverrides?.[classId]?.[`assessment:${planned.legacyId}`] : undefined))?.hidden) continue;
         if ((entry && planned.type !== 'maison') || removed.has(planned.id) || (planned.legacyId && removed.has(planned.legacyId))) continue;
+        // Le corrigé d'un devoir maison s'ouvre depuis SA séance : celle où le devoir est corrigé.
+        if (planned.type === 'maison') {
+            const correction = documents?.[homeworkCorrectionDocumentId(planned.id)];
+            const correctionDate = (manual.get(planned.id) ?? (planned.legacyId ? manual.get(planned.legacyId) : undefined))?.correctionDateISO;
+            if (correction?.source.trim() && correctionDate) {
+                addSession(homeworkSession(correctionDate, true), {
+                    document: correction,
+                    title: `${translate('manageLessons.type.correction_devoir_maison')} ${planned.num}`,
+                    assessmentId: homeworkCorrectionDocumentId(planned.id),
+                });
+            }
+        }
         const document = documents?.[planned.id] ?? (planned.legacyId ? documents?.[planned.legacyId] : undefined);
         if (!document?.source.trim()) continue;
         const manualAssessment = manual.get(planned.id) ?? (planned.legacyId ? manual.get(planned.legacyId) : undefined);

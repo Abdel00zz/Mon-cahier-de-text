@@ -11,6 +11,7 @@ import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
 import { EventDateModal } from './EventDateModal';
+import { ActionIcon } from './ActionIcon';
 
 /*
  * LA LISTE DES ACTIVITÉS PÉDAGOGIQUES D'UNE NATURE.
@@ -155,6 +156,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       aria-label={`${t('evaluations.doc.title', { activity: title })}${docStateSuffix}`}
                       data-tippy-content={eventDocTooltip}
                     >
+                      <ActionIcon name="document" />
                       <span>{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
                     </button>
                   )}
@@ -167,6 +169,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     aria-label={`${t(notebookCheck ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${title}${names > 0 ? ` · ${number.format(names)}` : ''}`}
                     data-tippy-content={eventStudentsTooltip}
                   >
+                    <ActionIcon name="students" />
                     <span>{t(notebookCheck ? 'evaluations.action.notebooks' : 'evaluations.action.students')}</span>
                     {names > 0 && <span className="ev-action__count">{number.format(names)}</span>}
                   </button>

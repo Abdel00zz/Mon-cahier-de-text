@@ -12,11 +12,11 @@ export const globalCompletion = (teacher: TeacherSnapshot): number => {
     return totals.total === 0 ? 0 : Math.round((totals.planned / totals.total) * 100);
 };
 
-export const timeAgo = (iso: string | null): string => {
+export const timeAgo = (iso: string | null, now: number = Date.now()): string => {
     if (!iso) return 'jamais synchronisé';
     const then = new Date(iso).getTime();
     if (Number.isNaN(then)) return 'date inconnue';
-    const diffMs = Date.now() - then;
+    const diffMs = now - then;
     const minutes = Math.floor(diffMs / 60_000);
     if (minutes < 1) return "à l'instant";
     if (minutes < 60) return `il y a ${minutes} min`;

@@ -164,3 +164,66 @@ export function withHomeworkCorrection(
   if (isRemoved(id) || sameYear.some(item => item.num === num && item.semester === semester)) return manual;
   return [...manual, { id, schoolYear: year, type: 'maison', num, dateISO: '', semestre: semester, correctionDateISO: date }];
 }
+
+/*
+ * DEUX ENTRÉES, UN SEUL DEVOIR.
+ *
+ * Sur la feuille, un devoir maison s'affiche en DEUX entrées, et deux seulement :
+ *
+ *   « Devoir maison N »              (assigné aux élèves)  document · date limite de rendu · corbeille
+ *   « Correction du devoir maison N » (second temps)        document · élèves n'ayant pas rendu · corbeille
+ *
+ * Elles partagent la même identité (`id`) : un seul enregistrement dans les devoirs
+ * manuels (`dateISO` = donné, `dueDateISO` = date limite, `correctionDateISO` = corrigé),
+ * donc rien de plus à synchroniser avec le cloud. Seul le document du corrigé a sa clé :
+ * `<id>:correction`, dans `assessmentDocuments`.
+ */
+export interface HomeworkSchedulePatch {
+  /** Date limite de rendu ; chaîne vide = l'effacer. */
+  dueDateISO?: string;
+  /** Date de la séance de correction ; chaîne vide = l'effacer. */
+  correctionDateISO?: string;
+}
+
+export interface HomeworkIdentity {
+  id: string;
+  legacyId?: string;
+  schoolYear: string;
+  semestre: 1 | 2;
+  num: number;
+}
+
+/**
+ * Écrit la date limite et/ou la date de correction d'UN devoir maison, par son identité.
+ * Le devoir du planning officiel qui n'est pas encore une entrée manuelle le devient (avec la
+ * date d'attribution choisie par le professeur, ou aucune : une date prévisionnelle ne doit
+ * jamais annoncer « devoir donné »). Une chaîne vide efface le champ. Même référence si rien ne change.
+ */
+export function withHomeworkSchedule(
+  manual: readonly ManualAssessment[],
+  homework: HomeworkIdentity,
+  givenDateISO: string,
+  patch: HomeworkSchedulePatch,
+): readonly ManualAssessment[] {
+  const apply = (item: ManualAssessment): ManualAssessment => {
+    const next: ManualAssessment = { ...item };
+    for (const field of ['dueDateISO', 'correctionDateISO'] as const) {
+      if (patch[field] === undefined) continue;
+      if (patch[field]) next[field] = patch[field];
+      else delete next[field];
+    }
+    return next;
+  };
+  const index = manual.findIndex(item => item.type === 'maison'
+    && (item.id === homework.id || (homework.legacyId !== undefined && item.id === homework.legacyId)));
+  if (index >= 0) {
+    const next = apply(manual[index]);
+    const unchanged = next.dueDateISO === manual[index].dueDateISO && next.correctionDateISO === manual[index].correctionDateISO;
+    return unchanged ? manual : manual.map((item, position) => (position === index ? next : item));
+  }
+  if (!patch.dueDateISO && !patch.correctionDateISO) return manual;
+  return [...manual, apply({
+    id: homework.id, schoolYear: homework.schoolYear, type: 'maison', num: homework.num,
+    dateISO: givenDateISO, semestre: homework.semestre,
+  })];
+}

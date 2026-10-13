@@ -289,13 +289,13 @@ test('la politique circule : API admin, pull, appareil — et ne repart jamais d
 
 test('l’administration propose la politique : général et par compte', () => {
   const app = read('src/admin/AdminApp.tsx');
-  assert.match(app, /name: 'evaluationPolicy'; phone\?: string/);
-  assert.match(app, /<EvaluationPolicyManager\s+phone=\{view\.phone\}/);
-  assert.match(app, /onManageEvaluationPolicy=\{\(\) => setView\(\{ name: 'evaluationPolicy', phone: view\.phone \}\)\}/);
+  assert.match(read('src/admin/route.ts'), /name: 'evaluationPolicy'; phone\?: string/);
+  assert.match(app, /<EvaluationPolicyManager phone=\{view\.phone\}/);
+  assert.match(app, /onManageEvaluationPolicy=\{\(\) => go\(\{ name: 'evaluationPolicy', phone: view\.phone \}\)\}/);
   const detail = read('src/admin/components/TeacherDetail.tsx');
   assert.match(detail, /Personnaliser le contrôle continu/);
   const manager = read('src/admin/components/EvaluationPolicyManager.tsx');
-  for (const label of ['Transmis à la feuille', 'Contrôle continu', 'Liste d’élèves', 'Retours par élève', 'Notes /20', 'Absents', 'Contenu (sujet, corrigé)']) {
+  for (const label of ['Transmis à la feuille', 'Contrôle continu', 'Liste d’élèves', 'Retours par élève', 'Notes /20', 'Absents', 'Correction du devoir', 'Contenu (sujet, corrigé)']) {
     assert.ok(manager.includes(label), label);
   }
   assert.match(manager, /role="switch"/, 'interrupteurs accessibles');
@@ -306,7 +306,7 @@ test('l’administration propose la politique : général et par compte', () => 
 test('la feuille lit la politique à chaque porte', () => {
   const view = read('src/features/evaluations/DevoirsView.tsx');
   assert.match(view, /resolveKindPolicy\(policy, a\.type\)/);
-  assert.match(view, /kindPolicy\.absences && \(/, 'absents');
+  assert.match(view, /kindPolicy\.absences && a\.type !== 'maison' && \(/, 'absents (jamais sur un devoir maison)');
   assert.match(view, /kindPolicy\.students && a\.type !== 'maison'/, 'élèves');
   assert.match(view, /groupKinds\(policy\)/, 'familles');
   const events = read('src/features/evaluations/components/PedagogicalEventsSection.tsx');
@@ -317,4 +317,44 @@ test('la feuille lit la politique à chaque porte', () => {
   assert.match(modals, /trackOral=\{studentsReview && !notebookCheck\}/);
   const editor = read('src/features/editor/Editor.tsx');
   assert.match(editor, /policy: latest\.config\.evaluationPolicy/, 'le cahier transmet selon la politique');
+});
+
+// ── 7. Correction du devoir maison : second temps, réglé par la direction ─────
+test('sans politique, la correction du devoir maison est datée comme avant — et seul le devoir maison la porte', () => {
+  assert.equal(resolveKindPolicy(undefined, 'maison').correction, true);
+  for (const kind of EVALUATION_KIND_ORDER.filter(candidate => candidate !== 'maison')) {
+    assert.equal(resolveKindPolicy(policyWith({ [kind]: { correction: true } }), kind).correction, false, `${kind} n’a pas de correction à dater`);
+    assert.equal(kindSupport(kind).correction, false);
+  }
+  // Pas de devoir transmis, pas de correction : elle ne survit jamais seule.
+  assert.equal(resolveKindPolicy(policyWith({ maison: { transmit: false } }), 'maison').correction, false);
+  assert.equal(clampKindPolicy('maison', { ...resolveKindPolicy(undefined, 'maison'), transmit: false }).correction, false);
+});
+
+test('couper la correction du devoir maison ne coupe ni le devoir ni les autres natures', () => {
+  const policy = policyWith({ maison: { correction: false } });
+  const { patch } = syncNotebookToEvaluations('c', config, notebook, { previousLessons: [], policy });
+  assert.ok((patch.manualAssessments?.c ?? []).some(item => item.type === 'controle'), 'le devoir surveillé est toujours transmis');
+  assert.ok(!(patch.manualAssessments?.c ?? []).some(item => item.type === 'maison'), 'la correction n’est pas datée sur la feuille');
+  const normal = syncNotebookToEvaluations('c', config, notebook, { previousLessons: [], policy: policyWith({ maison: { correction: true } }) });
+  assert.ok((normal.patch.manualAssessments?.c ?? []).some(item => item.type === 'maison' && item.correctionDateISO === '2026-10-20'));
+});
+
+test('la correction saisie dans une remarque suit la même porte', () => {
+  const source = read('src/domain/evaluations/sessionRemarkChanges.ts');
+  assert.match(source, /patch\.homeworkCorrection > 0 && resolveKindPolicy\(config\.evaluationPolicy, 'maison'\)\.correction/);
+});
+
+test('le serveur accepte le réglage « correction » et refuse un type incorrect', () => {
+  assert.equal(validateEvaluationKindOverrides({ maison: { correction: false } }).ok, true);
+  assert.equal(validateEvaluationKindOverrides({ maison: { correction: 'non' } }).ok, false);
+  assert.equal(countPolicyChanges(policyWith({ maison: { correction: false } })), 1);
+  assert.deepEqual(diffKindPolicies(resolveAllKindPolicies(policyWith({ maison: { correction: false } })), EMPTY_EVALUATION_POLICY), { maison: { correction: false } });
+});
+
+test('l’administration ne propose la correction que là où elle existe', () => {
+  const manager = read('src/admin/components/EvaluationPolicyManager.tsx');
+  assert.match(manager, /support\.correction && \(\s*<Toggle\s+label="Correction du devoir"/);
+  assert.match(manager, /disabled=\{locked \|\| !policy\.transmit\}/, 'suit la transmission du devoir');
+  assert.match(manager, /'correction'\] as const/, 'compté parmi les réglages modifiés');
 });

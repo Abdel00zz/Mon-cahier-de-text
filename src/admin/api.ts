@@ -75,14 +75,23 @@ export const adminLogout = (): Promise<void> =>
         body: JSON.stringify({ action: 'logout' }),
     }).then(() => undefined);
 
-export const fetchOverview = async (signal?: AbortSignal): Promise<{ teachers: AdminTeacherSummary[] }> => {
-    const data = await request('/api/admin?action=overview', { signal });
+export type AdminOverview =
+    | { unchanged: true; etag: string }
+    | { unchanged?: false; teachers: AdminTeacherSummary[]; etag: string | null };
+
+/**
+ * `since` : empreinte de la liste déjà affichée. Si rien n'a changé, le serveur répond
+ * `{ unchanged: true }` (quelques octets) et l'interface ne redessine rien.
+ */
+export const fetchOverview = async (signal?: AbortSignal, since?: string | null): Promise<AdminOverview> => {
+    const data = await request(`/api/admin?action=overview${since ? `&since=${encodeURIComponent(since)}` : ''}`, { signal });
+    if (data?.unchanged === true && typeof data.etag === 'string') return { unchanged: true, etag: data.etag };
     // validation de frontière : une réponse inattendue (proxy, dev sans API,
     // hash corrompu) ne doit jamais propager `undefined` dans l'interface
     if (!Array.isArray(data?.teachers)) {
         throw new Error('Réponse du serveur invalide (vue d\'ensemble indisponible).');
     }
-    return { teachers: data.teachers as AdminTeacherSummary[] };
+    return { teachers: data.teachers as AdminTeacherSummary[], etag: typeof data.etag === 'string' ? data.etag : null };
 };
 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>

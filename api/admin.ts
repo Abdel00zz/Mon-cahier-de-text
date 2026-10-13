@@ -1,5 +1,5 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
@@ -160,12 +160,18 @@ const handleAdminLogin = async (body: AdminBody, req: ApiRequest, res: ApiRespon
     res.status(200).json({ ok: true });
 };
 
-const handleOverview = async (res: ApiResponse) => {
+/** Empreinte du contenu renvoyé : le tableau de bord ne retélécharge ni ne redessine ce qui n'a pas changé. */
+const overviewEtag = (teachers: unknown): string =>
+    createHash('sha1').update(JSON.stringify(teachers)).digest('base64url').slice(0, 22);
+
+const handleOverview = async (req: ApiRequest, res: ApiResponse) => {
     const redis = await getRedis();
+    const since = getQueryParam(req, 'since');
     const snapshots = (await redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots)) ?? {};
     const entries = Object.entries(snapshots);
     if (entries.length === 0) {
-        return res.status(200).json({ teachers: [] });
+        const etag = overviewEtag([]);
+        return res.status(200).json(since === etag ? { unchanged: true, etag } : { teachers: [], etag });
     }
 
     const pipeline = redis.pipeline();
@@ -205,7 +211,9 @@ const handleOverview = async (res: ApiResponse) => {
         const bTime = b.lastSyncAt ?? '';
         return bTime.localeCompare(aTime);
     });
-    res.status(200).json({ teachers });
+    const etag = overviewEtag(teachers);
+    // Même contenu que celui déjà affiché : quelques octets au lieu de la liste entière.
+    res.status(200).json(since === etag ? { unchanged: true, etag } : { teachers, etag });
 };
 
 const validateCalendar = (value: unknown): HolidayCalendar => {
@@ -461,20 +469,21 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     pipeline.get(KEYS.classes(phone));
     pipeline.hget(KEYS.adminSnapshots, phone);
     pipeline.get(KEYS.adminMessages(phone));
-    const [user, classesBlob, snapshot, messages] = (await pipeline.exec()) as [
+    // La fiche relit les documents avec la politique que CE compte applique (indicateur rouge/vert fidèle) :
+    // lue dans le MÊME aller-retour que le reste, pas dans un second.
+    pipeline.get(KEYS.adminEvaluationPolicy);
+    pipeline.get(KEYS.adminEvaluationPolicyForUser(phone));
+    const [user, classesBlob, snapshot, messages, globalPolicy, policyAssignment] = (await pipeline.exec()) as [
         StoredUser | null,
         ClassesBlob | null,
         TeacherSnapshot | null,
         AdminMessage[] | null,
+        EvaluationPolicy | null,
+        EvaluationPolicyAssignment | null,
     ];
 
     if (!user && !snapshot) throw new HttpError(404, 'Enseignant introuvable.');
 
-    // La fiche relit les documents avec la politique que CE compte applique (indicateur rouge/vert fidèle).
-    const [globalPolicy, policyAssignment] = await Promise.all([
-        redis.get<EvaluationPolicy>(KEYS.adminEvaluationPolicy),
-        redis.get<EvaluationPolicyAssignment>(KEYS.adminEvaluationPolicyForUser(phone)),
-    ]);
     const evaluationPolicy = resolveEvaluationPolicy(normalizeEvaluationPolicy(globalPolicy), normalizeEvaluationAssignment(policyAssignment));
 
     res.status(200).json({
@@ -547,7 +556,8 @@ const handleSaveClassRoster = async (body: AdminBody, res: ApiResponse) => {
 
 const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
-    if (!body.classId || !body.assessmentId) throw new HttpError(400, 'Classe et devoir requis.');
+    if (typeof body.classId !== 'string' || typeof body.assessmentId !== 'string' || !body.classId || !body.assessmentId
+        || body.classId.length > 120 || body.assessmentId.length > 180) throw new HttpError(400, 'Classe et devoir requis.');
     if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
     const redis = await getRedis();
     const write = await beginAccountWrite(redis, phone);
@@ -845,7 +855,9 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     const write = await beginAccountWrite(redis, phone);
     const user = await redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone));
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
-    const blocked = body.blocked !== false;
+    // Jamais de blocage « par défaut » : un champ absent ou mal typé ne doit pas suspendre un compte.
+    if (typeof body.blocked !== 'boolean') throw new HttpError(400, 'Réglage de blocage invalide.');
+    const blocked = body.blocked;
     write.set(KEYS.user(phone), { ...user, blocked });
     await write.exec();
     if (isFirestoreStore(redis)) await firebaseAuth().updateUser(accountFirebaseUid(user), { disabled: blocked });
@@ -931,6 +943,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             }
             // actions de gestion : session admin requise
             await requireAdmin(req);
+            // Une seule garde pour toutes les écritures : aucune action ne dépend de la prudence de son handler.
+            assertBodySize(body);
             if (body.action === 'blockTeacher') return await handleBlockTeacher(body, res);
             if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
             if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
@@ -949,7 +963,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         if (req.method === 'GET') {
             await requireAdmin(req);
             const action = getQueryParam(req, 'action');
-            if (action === 'overview') return await handleOverview(res);
+            if (action === 'overview') return await handleOverview(req, res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
             if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);

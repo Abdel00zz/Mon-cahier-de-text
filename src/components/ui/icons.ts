@@ -168,3 +168,23 @@ export const SheetPrinter = createIcon('SheetPrinter', [
   ['path', { d: 'M7.5 13.75h9v5.5a1.25 1.25 0 0 1-1.25 1.25h-6.5A1.25 1.25 0 0 1 7.5 19.25v-5.5Z', fill: 'none', stroke: 'currentColor' }],
   ['circle', { cx: 17.25, cy: 11.25, r: 0.65, fill: 'currentColor', stroke: 'none' }],
 ]);
+/* Commandes de la feuille d'évaluations — même recette que FileText / User :
+   une silhouette douce (icon-wash) doublée de son contour, un seul détail qui
+   dit l'état (coche, plus, croix). Toujours currentColor : la couleur vient du bouton. */
+export const UserX = createIcon('UserX', [
+  ['circle', { cx: 9, cy: 7.5, r: 4, className: 'icon-wash', stroke: 'none' }],
+  ['path', { d: 'M2 22Q2 15 9 15Q16 15 16 22Z', className: 'icon-wash', stroke: 'none' }],
+  ['circle', { cx: 9, cy: 7.5, r: 4 }],
+  ['path', { d: 'M2 21.5V21Q2 15 9 15Q16 15 16 21V21.5M18 4.5L22 8.5M22 4.5L18 8.5' }],
+]);
+export const RotateCcw = createIcon('RotateCcw', [
+  ['path', { d: 'M3.5 4V9.5H9M4.2 9.5A8.5 8.5 0 1 1 3.6 14' }],
+]);
+export const CircleMinus = createIcon('CircleMinus', [
+  ['path', { d: 'M21 12c0-4.969-4.031-9-9-9S3 7.031 3 12s4.031 9 9 9 9-4.031 9-9Z', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M8 12H16' }],
+]);
+export const CircleX = createIcon('CircleX', [
+  ['path', { d: 'M21 12c0-4.969-4.031-9-9-9S3 7.031 3 12s4.031 9 9 9 9-4.031 9-9Z', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M15 9L9 15M9 9L15 15' }],
+]);

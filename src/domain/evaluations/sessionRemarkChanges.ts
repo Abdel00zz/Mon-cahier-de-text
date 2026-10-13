@@ -6,6 +6,7 @@ import { sessionDateKey, sessionDateKeys } from './homeworkPlacement';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import type { SessionRemarkEntry } from './sessionActivityRemarks';
 import { homeworkAssessmentId, withHomeworkCorrection } from './homeworkCycle';
+import { resolveKindPolicy } from './evaluationPolicy';
 
 export { homeworkAssessmentId };
 
@@ -142,7 +143,8 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
    * le professeur est servi, et un devoir jamais saisi est transmis à la feuille
    * par sa séance de correction.
    */
-  if (patch.homeworkCorrection && patch.homeworkCorrection > 0) {
+  // La direction peut ne pas dater la correction sur la feuille : la remarque reste, rien n'est transmis.
+  if (patch.homeworkCorrection && patch.homeworkCorrection > 0 && resolveKindPolicy(config.evaluationPolicy, 'maison').correction) {
     // Même repli que l'attribution : la séance de correction porte elle-même
     // sa date quand la remarque est saisie sans déplacer la séance.
     const date = sessionDateKeys(patch.date ?? '')[0] ?? [...sourceDates][0] ?? '';

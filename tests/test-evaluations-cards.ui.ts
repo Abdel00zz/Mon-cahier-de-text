@@ -102,18 +102,21 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 
-test('les commandes portent un libellé écrit et une infobulle explicative', () => {
+test('les commandes portent un pictogramme, un libellé écrit et une infobulle explicative', () => {
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
   const notebookLabel = translateLocaleMessage('fr', 'evaluations.notebook.title');
   const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
   const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
   // Les commandes sont des MOTS : libellé court visible, nom accessible complet, infobulle explicative.
-  assert.match(olympiade, /<span>\+ Contenu<\/span>/, 'à rédiger : « + Contenu »');
+  assert.match(olympiade, /<span>Contenu<\/span>/, 'un seul mot : « Contenu » ; le plus vit dans le pictogramme, seulement quand le contenu est requis');
+  assert.doesNotMatch(olympiade, /<span>\+ /, 'aucun « + » dans un libellé de commande');
   assert.match(olympiade, /<span>Élèves<\/span>/, 'les élèves consignés : un mot');
   assert.match(cahiers, /<span>Cahiers<\/span>/, 'le suivi des cahiers : un mot');
   assert.match(olympiade, /data-tippy-content="[^"]+"/, 'chaque commande a son infobulle');
-  assert.doesNotMatch(olympiade, /class="ev-action[^>]*>\s*<svg/, 'aucune commande ne commence par une icône');
+  // Un pictogramme décoratif (famille d'icônes maison) précède chaque mot ; il ne remplace jamais le libellé.
+  assert.match(olympiade, /class="ev-action[^>]*>\s*<svg[^>]*ev-action__icon/, 'chaque commande porte son pictogramme décoratif');
+  assert.doesNotMatch(olympiade, /ev-action__icon[^>]*>(?:(?!<\/svg>).)*<\/svg>\s*<\/button>/, 'le pictogramme n’est jamais seul : le libellé suit');
   assert.ok(documentLabel && studentsLabel && notebookLabel, 'libellés complets disponibles pour les lecteurs d’écran');
   // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton document.
   assert.equal(occurrences(cahiers, `<span>${documentLabel}</span>`), 0);
@@ -181,4 +184,42 @@ test('la fenêtre annonce un contenu précis, pas une redite du titre', () => {
     const title = translateLocaleMessage(locale, 'evaluationsSheet.title', { className: 'X' });
     assert.ok(subtitle.length > 0 && !title.startsWith(subtitle), `${locale} : le sous-titre ajoute une information`);
   }
+});
+
+test('trois fonctions, trois pictogrammes : document, élèves, corbeille — les mêmes pour toutes les natures', () => {
+  const icon = readFileSync('src/features/evaluations/components/ActionIcon.tsx', 'utf8');
+  assert.match(icon, /const ICONS = \{ document: FileText, students: Users, absents: UserX, deadline: CalendarCheck \} as const;/);
+  for (const path of ['src/features/evaluations/DevoirsView.tsx', 'src/features/evaluations/components/PedagogicalEventsSection.tsx']) {
+    const source = readFileSync(path, 'utf8');
+    assert.match(source, /<ActionIcon name="document" \/>/, `${path} : un seul pictogramme de document`);
+    assert.match(source, /<ActionIcon name="students" \/>/, `${path} : un seul pictogramme d’élèves`);
+    assert.doesNotMatch(source, /Mic|Presentation|ClipboardCheck|BookOpen|FileCheck|FilePlus/, `${path} : plus de pictogramme propre à une nature`);
+    assert.match(source, /<AnimatedTrashButton/, `${path} : la même corbeille`);
+  }
+});
+// ── Devoir maison : DEUX entrées, et deux seulement ───────────────────────────
+test('un devoir maison s’affiche en deux entrées : assigné aux élèves, puis sa correction', () => {
+  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
+  const split = view.indexOf('const correctionRow = (');
+  assert.ok(split > 0, 'la correction est une entrée à part');
+  const assigned = view.slice(view.indexOf('const assignedRow = ('), split);
+  const correction = view.slice(split, view.indexOf('return <React.Fragment key={a.id}>'));
+  // Assigné aux élèves : document · date limite · corbeille — ni absents, ni remises.
+  assert.match(assigned, /<ActionIcon name="document" \/>/);
+  assert.match(assigned, /field: 'due'/, 'le bouton de la date limite');
+  assert.match(assigned, /<ActionIcon name="deadline" \/>/);
+  assert.match(assigned, /<AnimatedTrashButton/);
+  assert.match(assigned, /kindPolicy\.absences && a\.type !== 'maison'/, 'jamais d’absents sur un devoir maison');
+  assert.match(assigned, /kindPolicy\.students && a\.type !== 'maison'/, 'le bouton d’élèves des autres devoirs ne s’applique pas');
+  assert.doesNotMatch(assigned, /evaluations\.action\.submissions/, 'plus de bouton « Remises » sur le devoir');
+  // Correction : document (corrigé) · élèves n'ayant pas rendu · corbeille.
+  assert.match(correction, /part: 'correction'/, 'le corrigé a son document');
+  assert.match(correction, /evaluations\.action\.notReturned/, 'les élèves qui n’ont pas rendu');
+  assert.match(correction, /setSubmissionsFor\(link\)/);
+  assert.match(correction, /field: 'correction'/, 'sa date est la séance de correction');
+  assert.match(correction, /setDeletingCorrection\(link\)/, 'sa corbeille supprime la correction seule');
+  assert.equal((correction.match(/<AnimatedTrashButton/g) ?? []).length, 1);
+  assert.doesNotMatch(correction, /evaluations\.action\.absent|evaluations\.action\.dueDate/, 'ni absents, ni date limite');
+  // Une seule corbeille par entrée, la même que partout.
+  assert.equal((assigned.match(/<AnimatedTrashButton/g) ?? []).length, 1);
 });

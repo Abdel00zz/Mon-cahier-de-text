@@ -1,4 +1,5 @@
 import type { AppConfig, ContentDocument } from '../../types.js';
+import { homeworkDocumentOwnerId } from './homeworkIds.js';
 
 type DocumentSettings = Pick<Partial<AppConfig>, 'assessmentDocuments' | 'pedagogicalEvents' | 'removedAssessments'>;
 const stamp = (document?: ContentDocument) => document ? Date.parse(document.updatedAt) || 0 : -1;
@@ -20,7 +21,8 @@ export function mergePedagogicalDocuments<T extends DocumentSettings>(preferred:
       const removed = new Set(preferred.removedAssessments?.[classId]);
       const values: Record<string, ContentDocument> = {};
       for (const id of new Set([...Object.keys(first), ...Object.keys(second)])) {
-        if (removed.has(id)) continue;
+        // Le corrigé d'un devoir supprimé disparaît avec lui (`<devoir>:correction`).
+        if (removed.has(id) || removed.has(homeworkDocumentOwnerId(id))) continue;
         const document = latestDocument(first[id], second[id]);
         if (document) values[id] = document;
       }

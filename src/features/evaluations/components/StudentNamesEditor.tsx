@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
+import { Check, Copy, Info, RotateCcw } from '@/components/ui/icons';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
@@ -343,9 +344,11 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               className="action-link danger notebook-text-action notebook-text-action--danger"
             />
             <button type="button" onClick={handleCopy} disabled={!names.length} title={t('evaluations.notebook.copyReport')} className="action-link neutral notebook-text-action" data-copied={copied ? 'true' : undefined}>
+              {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
               <span>{copied ? t(copy.copied) : t('evaluations.notebook.copyReport')}</span>
             </button>
             <button type="button" onClick={() => setConditions({})} disabled={!reviewed} className="action-link neutral notebook-text-action">
+              <RotateCcw size={14} aria-hidden="true" />
               <span>{t('evaluations.notebook.reset')}</span>
             </button>
           </div>
@@ -381,6 +384,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
                   title={t(copy.copy)}
                   data-copied={copied ? 'true' : undefined}
                 >
+                  {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
                   <span>{copied ? t(copy.copied) : t(copy.copy)}</span>
                 </button>
                 <AnimatedTrashButton
@@ -453,7 +457,10 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <summary className="min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
             {t(copy.hint)}
           </summary>
-          <p className="pb-2">{t(copy.directive)}</p>
+          <p className="flex items-start gap-2 pb-2">
+            <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <span>{t(copy.directive)}</span>
+          </p>
         </details>
 
         <div className="modal-footer pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3">

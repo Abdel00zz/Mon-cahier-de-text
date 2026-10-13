@@ -4,6 +4,8 @@ import type { AppConfig, AppLocale, ClassInfo, DevoirType, ManualAssessment } fr
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
+import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
+import type { AssessmentLink } from '@/domain/evaluations/assessmentSync';
 import { retainOralGrades, retainOralOutcomes } from '@/domain/evaluations/studentRoster';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -55,8 +57,11 @@ interface DevoirsModalsProps {
   actions: ReturnType<typeof useEvaluationActions>;
   saveAssessment: (manual: ManualAssessment) => void;
   setAssessmentDate: (id: string, dateISO: string) => void;
+  /** Date limite de rendu ou séance de correction d'un devoir maison (chaîne vide = effacer). */
+  setHomeworkDate: (id: string, field: 'due' | 'correction', dateISO: string) => void;
   deletePedagogicalEvent: (id: string) => void;
   deleteAssessment: (id: string) => void;
+  deleteHomeworkCorrection: (link: AssessmentLink) => void;
 }
 
 export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
@@ -69,8 +74,10 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   actions,
   saveAssessment,
   setAssessmentDate,
+  setHomeworkDate,
   deletePedagogicalEvent,
   deleteAssessment,
+  deleteHomeworkCorrection,
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
@@ -79,10 +86,10 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   const {
     absencesFor, oralFor, submissionsFor, documentFor, studentsFor,
     editingAssessment, manualEditorOpen,
-    deletingAssessment, deletingEvent, editingDateAssessment,
+    deletingAssessment, deletingEvent, editingDateAssessment, deletingCorrection,
     setAbsencesFor, setOralFor, setSubmissionsFor, setDocumentFor, setStudentsFor,
     setEditingAssessment, setManualEditorOpen,
-    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment,
+    setDeletingAssessment, setDeletingEvent, setEditingDateAssessment, setDeletingCorrection,
   } = modals;
 
   const pedagogicalEvents = useMemo(
@@ -100,6 +107,8 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
     if (!documentFor || !selectedClass) return undefined;
     if (documentFor.kind === 'event') return pedagogicalEvents.find(event => event.id === documentFor.event.id)?.document;
     const forClass = config.assessmentDocuments?.[selectedClass.id];
+    // Le corrigé d'un devoir maison a sa propre clé ; il n'existe pas d'ancien identifiant à lire.
+    if (documentFor.part === 'correction') return forClass?.[homeworkCorrectionDocumentId(documentFor.link.planned.id)];
     return forClass?.[documentFor.link.planned.id]
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
   })();
@@ -124,7 +133,9 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
     ? ''
     : documentFor.kind === 'event'
       ? (documentFor.event.title || t(PEDAGOGICAL_EVENT_CONFIG[documentFor.event.type].labelKey))
-      : `${t(`evaluations.type.${documentFor.link.planned.type}`)} ${number.format(documentFor.link.planned.num)}`;
+      : documentFor.part === 'correction'
+        ? `${t('manageLessons.type.correction_devoir_maison')} ${number.format(documentFor.link.planned.num)}`
+        : `${t(`evaluations.type.${documentFor.link.planned.type}`)} ${number.format(documentFor.link.planned.num)}`;
 
   /* « Classe · Devoir 2 » : chaque fragment isolé, l'arabe et le latin ne se réordonnent pas entre eux. */
   const contextOf = (...parts: string[]) => parts.filter(Boolean).map(bidiIsolate).join(' · ');
@@ -185,7 +196,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
 
       {/* 4. Modal Document Pédagogique */}
       <ContentDocumentModal
-        key={documentFor?.kind === 'event' ? documentFor.event.id : documentFor?.link.planned.id ?? 'closed'}
+        key={documentFor?.kind === 'event' ? documentFor.event.id : documentFor ? `${documentFor.link.planned.id}${documentFor.part ?? ''}` : 'closed'}
         isOpen={documentFor !== null}
         onClose={() => setDocumentFor(null)}
         title={documentTitle}
@@ -193,6 +204,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         document={documentOf}
         onSave={(source) => {
           if (documentFor?.kind === 'event') actions.saveEventDocument(documentFor.event.id, source);
+          else if (documentFor?.kind === 'assessment' && documentFor.part === 'correction') actions.saveAssessmentDocument(homeworkCorrectionDocumentId(documentFor.link.planned.id), source);
           else if (documentFor?.kind === 'assessment') actions.saveAssessmentDocument(documentFor.link.planned.id, source, documentFor.link.planned.legacyId);
           setDocumentFor(null);
         }}
@@ -239,7 +251,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         isOpen={submissionsFor !== null}
         onClose={() => setSubmissionsFor(null)}
         tracking={Boolean(homeworkPolicy?.feedback)}
-        title={t('evaluations.homework.title')}
+        title={t('evaluations.homework.notReturnedTitle')}
         context={submissionsFor ? contextOf(selectedClassDisplayName, submissionsLabel) : undefined}
       >
         {submissionsFor && selectedClass && (
@@ -337,14 +349,30 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       <EventDateModal
         isOpen={Boolean(editingDateAssessment)}
         onClose={() => setEditingDateAssessment(null)}
-        title={editingDateAssessment?.name}
+        title={editingDateAssessment?.field === 'due'
+          ? t('evaluations.homework.dueTitle', { name: editingDateAssessment.name })
+          : editingDateAssessment?.name}
         initialDate={editingDateAssessment?.date}
         allowRange={false}
         onApplyDate={(date) => {
           if (editingDateAssessment) {
-            setAssessmentDate(editingDateAssessment.id, date);
+            if (editingDateAssessment.field) setHomeworkDate(editingDateAssessment.id, editingDateAssessment.field, date);
+            else setAssessmentDate(editingDateAssessment.id, date);
             setEditingDateAssessment(null);
           }
+        }}
+      />
+      {/* 10. Corbeille de « Correction du devoir maison » : la correction seule, jamais le devoir */}
+      <ConfirmDialog
+        open={Boolean(deletingCorrection)}
+        onOpenChange={(open) => { if (!open) setDeletingCorrection(null); }}
+        title={t('evaluations.deleteTitle', { name: deletingCorrection ? `${t('manageLessons.type.correction_devoir_maison')} ${number.format(deletingCorrection.planned.num)}` : '' })}
+        description={t('evaluations.deleteCorrectionDescription')}
+        confirmLabel={t('evaluations.deleteCorrectionAction')}
+        onConfirm={() => {
+          if (!deletingCorrection) return;
+          deleteHomeworkCorrection(deletingCorrection);
+          setDeletingCorrection(null);
         }}
       />
     </>

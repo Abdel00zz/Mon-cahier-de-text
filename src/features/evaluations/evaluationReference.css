@@ -465,3 +465,58 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
     margin-top: 4px;
   }
 }
+
+/* Pictogramme des commandes (Contenu, Absents, Élèves…) : neutre au repos, il prend
+   la teinte du bouton quand celui-ci porte un état (rédigé, absents consignés).
+   Le contour fin et la silhouette douce viennent de la famille d'icônes maison. */
+.evaluation-reference .ev-action .ev-action__icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  stroke-width: 1.75;
+  opacity: 0.88;
+  transition: opacity 150ms ease, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.evaluation-reference .ev-action:hover .ev-action__icon,
+.evaluation-reference .ev-action:focus-visible .ev-action__icon { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .evaluation-reference .ev-action:hover .ev-action__icon { transform: translateY(-1px); }
+}
+/* Sur téléphone étroit, quatre commandes avec libellé ne tiennent pas sur une ligne :
+   l'icône seule garde la cible de 44 px, le libellé reste lu par les lecteurs d'écran
+   (aria-label) et par l'infobulle. */
+@media (max-width: 420px) {
+  .evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .evaluation-reference .ev-action:has(.ev-action__icon) { position: relative; min-width: 44px; min-height: 44px; padding-inline: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evaluation-reference .ev-action .ev-action__icon { transition: none; transform: none !important; }
+}
+
+/* ── « Correction du devoir maison » : la seconde entrée du devoir, rangée sous lui ──
+   Même grille, même hauteur que la ligne du devoir. Un filet de départ la rattache à son
+   devoir (il suit le sens de lecture : à droite en arabe) sans ajouter de cadre ni de couleur. */
+.evaluation-reference .ev-board__rows > .ev-row.ev-row--correction {
+  position: relative;
+  padding-inline-start: 1.75rem;
+  border-top-style: dashed;
+}
+.evaluation-reference .ev-board__rows > .ev-row.ev-row--correction::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.9rem;
+  top: 0;
+  bottom: 50%;
+  width: 0.55rem;
+  border-inline-start: 1.5px solid hsl(var(--border));
+  border-bottom: 1.5px solid hsl(var(--border));
+  border-end-start-radius: 0.5rem;
+  pointer-events: none;
+}

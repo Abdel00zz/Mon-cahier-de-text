@@ -520,7 +520,8 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     const entries = Object.entries(raw as Record<string, unknown>);
     if (entries.length > 300) throw new HttpError(400, `assessmentDocuments.${classId} est trop volumineux.`);
     for (const [assessmentId, candidate] of entries) {
-      if (!assessmentId || assessmentId.length > 180) throw new HttpError(400, 'Identifiant de document de devoir invalide.');
+      // 180 caractères pour l'identifiant du devoir + « :correction » pour le document du corrigé.
+      if (!assessmentId || assessmentId.length > 192) throw new HttpError(400, 'Identifiant de document de devoir invalide.');
       assertContentDocument(candidate, `le devoir ${assessmentId}`);
     }
   }
@@ -534,6 +535,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       if (!VALID_ASSESSMENT_TYPES.has(value.type as string) || !Number.isInteger(value.num) || Number(value.num) < 1 || Number(value.num) > 50) throw new HttpError(400, 'Type ou numéro de devoir manuel invalide.');
       if (typeof value.dateISO !== 'string' || (value.dateISO === '' ? !value.schoolYear : !ISO_DATE.test(value.dateISO)) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
       if (value.correctionDateISO !== undefined && value.correctionDateISO !== '' && !ISO_DATE.test(value.correctionDateISO)) throw new HttpError(400, 'Date de correction de devoir manuel invalide.');
+      if (value.dueDateISO !== undefined && value.dueDateISO !== '' && (typeof value.dueDateISO !== 'string' || !ISO_DATE.test(value.dueDateISO))) throw new HttpError(400, 'Date limite de devoir manuel invalide.');
       if (value.schoolYear !== undefined && (typeof value.schoolYear !== 'string' || !/^\d{4}-\d{4}$/.test(value.schoolYear))) throw new HttpError(400, 'Année scolaire de devoir manuel invalide.');
       assertContentDocument(value.document, 'le devoir manuel');
     }

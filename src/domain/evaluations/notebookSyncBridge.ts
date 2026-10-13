@@ -1,5 +1,6 @@
 import type { AppLocale, DevoirType, LessonsData, PedagogicalEvent, TopLevelItem } from '@/types';
-import { findNotebookAssessments } from './assessmentSync';
+import { findNotebookAssessments, parseTrailingNumber } from './assessmentSync';
+import { extractCorrectionNumber, isHomeworkCorrectionLine } from './homeworkNumbering';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { findItem } from '../notebook/dataUtils';
 import { produce } from 'immer';
@@ -366,4 +367,36 @@ export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
   const title = assessment.label || `${WRITTEN_TEST_TITLES[assessment.type]?.[locale] ?? WRITTEN_TEST_TITLES.controle[locale]} ${assessment.num}`;
   const block: TopLevelItem = { type: WRITTEN_TEST_BLOCK[assessment.type] ?? 'controle_continu', title, date, _tempId: 'dev-block-' + assessment.id };
   return { lessons: placeBlockChronologically(lessons, block).lessons, updated: true };
+}
+
+/**
+ * Retire du cahier la CORRECTION du devoir maison `num` : le bloc « Correction du devoir maison N » et la
+ * ligne de remarque qui la dit. Sans cela, la prochaine synchronisation du cahier la dateraient de nouveau
+ * et la corbeille de la feuille n'aurait aucun effet durable. Le devoir lui-même (« donné ») n'est pas touché.
+ */
+export function removeHomeworkCorrectionFromNotebook(lessons: LessonsData, num: number): { lessons: LessonsData; updated: boolean } {
+  const rows = buildLessonRows(lessons);
+  const remarked = rows.filter(row => {
+    const remark = (row.data as { remark?: unknown }).remark;
+    return typeof remark === 'string'
+      && remark.split('\n').some(line => isHomeworkCorrectionLine(line) && extractCorrectionNumber(line) === num);
+  });
+  const blocks = rows.filter(row => row.elementType === 'correction_devoir_maison'
+    && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === num);
+  if (!remarked.length && !blocks.length) return { lessons, updated: false };
+  // Les remarques d'abord (aucun index ne bouge), puis les blocs.
+  const withoutLines = remarked.length ? produce(lessons, draft => {
+    for (const row of remarked) {
+      const { item } = findItem(draft, row.indices);
+      const remark = (item as { remark?: string } | undefined)?.remark;
+      if (!item || typeof remark !== 'string') continue;
+      const kept = remark.split('\n').filter(line => !(isHomeworkCorrectionLine(line) && extractCorrectionNumber(line) === num)).join('\n').trim();
+      if (kept) (item as { remark?: string }).remark = kept;
+      else delete (item as { remark?: string }).remark;
+    }
+  }) : lessons;
+  if (!blocks.length) return { lessons: withoutLines, updated: true };
+  const survivors = buildLessonRows(withoutLines).filter(row => row.elementType === 'correction_devoir_maison'
+    && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === num);
+  return { lessons: deleteRows(withoutLines, survivors).lessons, updated: true };
 }

@@ -23,6 +23,7 @@ import type {
  *   feedback    retour par élève (niveau, remise, état du cahier)
  *   grades      note /20 par élève
  *   absences    liste des absents
+ *   correction  devoir maison seulement : la séance de correction est datée sur la feuille
  *
  * LES VALEURS PAR DÉFAUT REPRODUISENT LE COMPORTEMENT HISTORIQUE À L'IDENTIQUE :
  * une politique absente ne change rien. Seuls les ÉCARTS sont stockés
@@ -61,18 +62,21 @@ export interface KindSupport {
   feedback: FeedbackMode;
   grades: boolean;
   absences: boolean;
+  /** La nature a un second temps (la correction) que la feuille peut dater. */
+  correction: boolean;
 }
 
 export const kindSupport = (kind: EvaluationKindKey): KindSupport => {
-  if (kind === 'maison') return { feedback: 'submission', grades: false, absences: true };
-  if (kind === 'controle_cahiers') return { feedback: 'notebook', grades: false, absences: false };
-  if (isDevoirKind(kind)) return { feedback: 'levels', grades: true, absences: true };
-  return { feedback: 'levels', grades: true, absences: false };
+  // Le devoir maison n'a pas d'absents : sa feuille propose le contenu, la date limite, les élèves qui n'ont pas rendu.
+  if (kind === 'maison') return { feedback: 'submission', grades: false, absences: false, correction: true };
+  if (kind === 'controle_cahiers') return { feedback: 'notebook', grades: false, absences: false, correction: false };
+  if (isDevoirKind(kind)) return { feedback: 'levels', grades: true, absences: true, correction: false };
+  return { feedback: 'levels', grades: true, absences: false, correction: false };
 };
 
 type KindDefaults = EvaluationKindPolicy;
 const policy = (p: Partial<KindDefaults> & Pick<KindDefaults, 'document'>): KindDefaults => ({
-  transmit: true, continuous: false, students: false, feedback: false, grades: false, absences: false, ...p,
+  transmit: true, continuous: false, students: false, feedback: false, grades: false, absences: false, correction: false, ...p,
 });
 
 /** Comportement historique, nature par nature. */
@@ -85,7 +89,7 @@ const DEFAULTS: Record<EvaluationKindKey, KindDefaults> = {
   oral: policy({ continuous: true, document: 'optional', students: true, feedback: true, grades: true }),
   colle: policy({ continuous: true, document: 'optional', students: true, feedback: true, grades: true }),
   // Devoir maison : remise élève par élève.
-  maison: policy({ continuous: true, document: 'required', students: true, feedback: true }),
+  maison: policy({ continuous: true, document: 'required', students: true, feedback: true, correction: true }),
   evaluation_diagnostic: policy({ continuous: true, document: 'required', students: true }),
   // Fait de séance consigné dans la remarque : jamais un document.
   controle_cahiers: policy({ continuous: true, document: 'off', students: true, feedback: true }),
@@ -114,6 +118,8 @@ export const clampKindPolicy = (kind: EvaluationKindKey, value: EvaluationKindPo
     feedback,
     grades: feedback && support.grades && value.grades,
     absences: support.absences && value.absences,
+    // La correction est le second temps d'un devoir transmis : sans le devoir, elle n'a rien à dater.
+    correction: support.correction && value.transmit && value.correction,
   };
 };
 
@@ -126,7 +132,7 @@ export const resolveKindPolicy = (policyValue: EvaluationPolicy | undefined | nu
 
 // ── Lecture indulgente (disque, réseau) et validation stricte (API) ─────────────
 
-const FLAG_FIELDS = ['transmit', 'continuous', 'students', 'feedback', 'grades', 'absences'] as const;
+const FLAG_FIELDS = ['transmit', 'continuous', 'students', 'feedback', 'grades', 'absences', 'correction'] as const;
 const DOCUMENT_MODES: readonly EvaluationDocumentMode[] = ['off', 'optional', 'required'];
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);

@@ -71,12 +71,12 @@ const DOCUMENT_OPTIONS: ReadonlyArray<{ value: EvaluationDocumentMode; label: st
     { value: 'required', label: 'Requis' },
 ];
 
-const FIELDS = ['transmit', 'continuous', 'document', 'students', 'feedback', 'grades', 'absences'] as const;
+const FIELDS = ['transmit', 'continuous', 'document', 'students', 'feedback', 'grades', 'absences', 'correction'] as const;
 
 /** Les commandes que verra l'enseignant sur la ligne de cette nature, dans l'ordre de la feuille. */
 const previewFor = (kind: EvaluationKindKey, policy: EvaluationKindPolicy): { label: string; filled?: 'missing' }[] => {
     const items: { label: string; filled?: 'missing' }[] = [];
-    if (policy.document !== 'off') items.push({ label: '+ Contenu', filled: policy.document === 'required' ? 'missing' : undefined });
+    if (policy.document !== 'off') items.push({ label: 'Contenu', filled: policy.document === 'required' ? 'missing' : undefined });
     if (policy.absences) items.push({ label: 'Absents' });
     if (policy.students) {
         items.push({ label: kind === 'maison' ? 'Remises' : kind === 'oral' || kind === 'colle' ? 'Suivi' : kind === 'controle_cahiers' ? 'Cahiers' : 'Élèves' });
@@ -288,6 +288,15 @@ export const EvaluationPolicyManager: React.FC<EvaluationPolicyManagerProps> = (
                         disabled={locked || !support.absences}
                         onChange={absences => update(kind, { absences })}
                     />
+                    {support.correction && (
+                        <Toggle
+                            label="Correction du devoir"
+                            sub={policy.transmit ? 'Date « Corrigé le … » sur la feuille' : 'Suit la transmission du devoir'}
+                            checked={policy.correction}
+                            disabled={locked || !policy.transmit}
+                            onChange={correction => update(kind, { correction })}
+                        />
+                    )}
                     <div className="policy-document">
                         <span className="policy-document__label" id={`policy-doc-${kind}`}>Contenu (sujet, corrigé)</span>
                         <div className="policy-seg" role="radiogroup" aria-labelledby={`policy-doc-${kind}`}>
@@ -315,6 +324,8 @@ export const EvaluationPolicyManager: React.FC<EvaluationPolicyManagerProps> = (
                             <span key={item.label} className="ev-action" data-filled={item.filled} aria-hidden="true">{item.label}</span>
                         ))}
                     {detail && <span className="policy-preview__empty">{detail}</span>}
+                    {support.correction && policy.transmit && policy.correction && <span className="policy-preview__empty">Date de correction : « Corrigé le … »</span>}
+                    {support.correction && policy.transmit && !policy.correction && <span className="policy-preview__empty">Correction non datée sur la feuille</span>}
                     {!policy.transmit && <span className="policy-preview__empty">Reste dans le cahier, non transmis</span>}
                 </div>
             </article>

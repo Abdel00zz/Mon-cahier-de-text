@@ -195,6 +195,12 @@ export class FirestoreStore {
       hset(key: string, fields: Record<string, unknown>) { operations.push(['hset', key, fields]); return pipeline; },
       hdel(key: string, field: string) { operations.push(['hdel', key, field]); return pipeline; },
       exec: () => this.atomic(async view => {
+        // Un pipeline de pure LECTURE (vue d'ensemble de l'administration : 2 lectures par enseignant) n'a
+        // aucun ordre à respecter : les lectures partent ensemble au lieu de s'enchaîner une à une.
+        if (operations.every(([method]) => method === 'get' || method === 'hget')) {
+          return Promise.all(operations.map(([method, key, value]) =>
+            method === 'get' ? view.get(key) : view.hget(key, String(value))));
+        }
         const results: unknown[] = [];
         for (const [method, key, value] of operations) {
           switch (method) {

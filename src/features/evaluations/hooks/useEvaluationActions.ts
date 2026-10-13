@@ -1,6 +1,8 @@
 import type { AppConfig, HomeworkOutcome, ManualAssessment, NotebookCondition, OralOutcome, PedagogicalEvent } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
+import { withHomeworkSchedule, type HomeworkIdentity, type HomeworkSchedulePatch } from '@/domain/evaluations/homeworkCycle';
+import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
 
 /** Every write is scoped to the active class and uses the normal config/sync bus. */
 export function useEvaluationActions(classId: string, config: AppConfig, onChange: (patch: Partial<AppConfig>) => void) {
@@ -69,6 +71,41 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             }
             onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: records } });
         },
+        /** Date limite de rendu et/ou date de correction d'un devoir maison (chaîne vide = effacer). */
+        setHomeworkSchedule(homework: HomeworkIdentity, givenDateISO: string, patch: HomeworkSchedulePatch) {
+            const current = config.manualAssessments?.[classId] ?? [];
+            const next = withHomeworkSchedule(current, homework, givenDateISO, patch);
+            if (next === current) return;
+            const removed = config.removedAssessments?.[classId] ?? [];
+            onChange({
+                manualAssessments: { ...config.manualAssessments, [classId]: [...next] },
+                // Un devoir supprimé qui retrouve une date redevient visible.
+                ...(removed.includes(homework.id) ? { removedAssessments: { ...config.removedAssessments, [classId]: removed.filter(value => value !== homework.id) } } : {}),
+            });
+        },
+        /**
+         * Corbeille de « Correction du devoir maison » : la date de correction, le corrigé et la liste des
+         * élèves qui n'ont pas rendu s'effacent. Le devoir lui-même (donné, sujet, date limite) reste.
+         */
+        clearHomeworkCorrection(id: string, legacyId?: string) {
+            const current = config.manualAssessments?.[classId] ?? [];
+            const manualAssessments = current.map(item => {
+                if (item.id !== id && item.id !== legacyId) return item;
+                const { correctionDateISO: _cleared, ...rest } = item;
+                return rest;
+            });
+            const documents = { ...config.assessmentDocuments?.[classId] };
+            const participants = { ...config.assessmentParticipants?.[classId] };
+            for (const key of [id, legacyId].filter((value): value is string => !!value)) {
+                delete documents[homeworkCorrectionDocumentId(key)];
+                delete participants[key];
+            }
+            onChange({
+                manualAssessments: { ...config.manualAssessments, [classId]: manualAssessments },
+                assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents },
+                assessmentParticipants: { ...config.assessmentParticipants, [classId]: participants },
+            });
+        },
         saveAbsences(id: string, names: string[], legacyId?: string) {
             const records = { ...config.assessmentAbsences?.[classId] };
             if (names.length) records[id] = { names, updatedAt: new Date().toISOString() };
@@ -79,8 +116,14 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
         saveAssessment(manual: ManualAssessment, editingId?: string) {
             const current = config.manualAssessments?.[classId] ?? [];
             const id = editingId ?? manual.id;
+            // Modifier le numéro, le semestre ou la date d'un devoir ne doit jamais effacer ses deux autres moments :
+            // la date limite de rendu et la séance de correction vivent sur le même enregistrement.
+            const keepSchedule = (item: ManualAssessment): Pick<ManualAssessment, 'dueDateISO' | 'correctionDateISO'> => ({
+                ...(manual.dueDateISO === undefined && item.dueDateISO ? { dueDateISO: item.dueDateISO } : {}),
+                ...(manual.correctionDateISO === undefined && item.correctionDateISO ? { correctionDateISO: item.correctionDateISO } : {}),
+            });
             const next = current.some(item => item.id === id)
-                ? current.map(item => item.id === id ? { ...manual, id } : item)
+                ? current.map(item => item.id === id ? { ...manual, ...keepSchedule(item), id } : item)
                 : [...current, { ...manual, id }];
             onChange({ manualAssessments: { ...config.manualAssessments, [classId]: next },
                 assessmentDates: { ...config.assessmentDates, [classId]: { ...config.assessmentDates?.[classId], [id]: manual.dateISO } },
@@ -93,6 +136,8 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             const dates = { ...config.assessmentDates?.[classId] };
             for (const key of [id, legacyId].filter((key): key is string => !!key)) {
                 delete participants[key]; delete documents[key]; delete absences[key]; delete dates[key];
+                // Le corrigé d'un devoir maison part avec lui.
+                delete documents[homeworkCorrectionDocumentId(key)];
             }
             onChange({
                 manualAssessments: { ...config.manualAssessments, [classId]: (config.manualAssessments?.[classId] ?? []).filter(item => item.id !== id) },

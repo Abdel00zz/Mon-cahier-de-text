@@ -120,7 +120,8 @@ test('plus de colonne « État » : l’écart de date reste signalé et actionn
   assert.match(view, /className="ev-row__meta"/, 'les dates et l’alignement vivent sous le titre');
   assert.match(view, /setAssessmentDate\(a\.id, targetDate\)/, 'l’alignement sur le cahier est conservé');
   assert.match(view, /evaluations\.homework\.givenOn/, 'la date de remise du devoir maison est conservée');
-  assert.match(view, /evaluations\.homework\.correctedOn/, 'la date de correction aussi');
+  assert.match(view, /evaluations\.homework\.dueOn/, 'la date limite de rendu est rappelée sous le titre du devoir maison');
+  assert.match(view, /ev-row--correction/, 'la date de correction est celle de l’entrée « Correction du devoir maison »');
   assert.match(css, /\.ev-row__meta \{/, 'la ligne secondaire a son style');
   assert.match(css, /@media \(pointer: coarse\) \{ \.ev-row__align \{ min-height: 2\.75rem/, 'et atteint 44 px au doigt');
 });

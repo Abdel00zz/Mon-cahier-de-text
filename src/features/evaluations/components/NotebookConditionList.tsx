@@ -1,5 +1,6 @@
 import { useDeferredValue, useId, useMemo, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { CircleAlert, CircleCheck, CircleMinus, CircleX } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
@@ -9,8 +10,14 @@ import { studentSearchKey } from '@/domain/evaluations/studentRoster';
 import type { HomeworkOutcome, OralOutcome } from '@/types';
 import { StudentSearchBar } from './StudentSearchBar';
 
-/** Un retour par élève : un mot, une teinte à la sélection — pas de pictogramme à décoder. */
+/** Un retour par élève : un mot, un petit pictogramme neutre et une teinte à la sélection. */
 interface ReviewChoice<T extends string> { value: T; labelKey: string }
+const CHOICE_ICONS: Record<string, typeof CircleCheck> = {
+    good: CircleCheck, mastered: CircleCheck, given: CircleCheck,
+    average: CircleMinus, developing: CircleMinus,
+    needs_work: CircleAlert, needs_support: CircleAlert,
+    missing: CircleX,
+};
 export const NOTEBOOK_REVIEW_CHOICES = NOTEBOOK_CONDITIONS.map(value => ({ value, labelKey: `evaluations.notebook.${value}` }));
 export const ORAL_REVIEW_CHOICES: ReviewChoice<OralOutcome>[] = [
     { value: 'mastered', labelKey: 'evaluations.oral.mastered' },
@@ -107,10 +114,11 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                         <div className="notebook-segments eval-pill-group">
                             {choices.map(({ value: condition, labelKey }) => {
                                 const selected = Object.hasOwn(conditions, name) && conditions[name] === condition;
+                                const Icon = CHOICE_ICONS[condition];
                                 return <label key={condition} className={`notebook-segment eval-pill ${selected ? `is-selected selected-${condition}` : ''}`} data-condition={condition} data-selected={selected ? 'true' : undefined}>
                                     <input type="radio" name={`${id}-${index}`} value={condition} checked={selected}
                                         onChange={() => onChange({ ...conditions, [name]: condition })} className="sr-only"/>
-                                    <span>{t(labelKey)}</span>
+                                    <span>{Icon && <Icon size={16} aria-hidden="true" />}{t(labelKey)}</span>
                                 </label>;
                             })}
                         </div>

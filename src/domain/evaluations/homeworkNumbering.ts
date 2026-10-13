@@ -14,10 +14,17 @@ export function normalizeDigits(str: string): string {
 /**
  * Détecte si un texte contient une mention d'attribution ou de présence de devoir maison.
  */
+/**
+ * Les deux écritures françaises du même devoir : « devoir maison » (saisie libre, bloc du cahier) et
+ * « devoir à la maison » (le texte que l'application écrit elle-même : `remark.devoirMaisonGiven`).
+ * L'accent peut être aplati (« a la maison ») après `normalizeActivityText`. Sans cette seconde forme,
+ * la remarque posée par la pastille n'était plus reconnue : ni sélection, ni numéro, ni retrait.
+ */
+const FRENCH_HOMEWORK = String.raw`devoirs?\s+(?:[àa]\s+la\s+)?maison`;
 export function hasHomeworkMention(text: string | undefined): boolean {
   if (!text) return false;
   const normalized = normalizeDigits(text);
-  return /(?:تم\s+إعطاء\s+الفرض\s+المنزلي|الفرض\s+المنزلي|فرض\s+منزلي|devoir\s+maison|\bdm\b|homework)/i.test(normalized);
+  return new RegExp(`(?:تم\\s+إعطاء\\s+الفرض\\s+المنزلي|الفرض\\s+المنزلي|فرض\\s+منزلي|${FRENCH_HOMEWORK}|\\bdm\\b|homework)`, 'i').test(normalized);
 }
 
 /*
@@ -34,6 +41,8 @@ export function hasHomeworkMention(text: string | undefined): boolean {
 /** Préfixes de correction reconnus en tête de ligne ; `normalizeActivityText`
  * a déjà aplati les accents et les diacritiques (« Corrigée » → « corrigee »). */
 const CORRECTION_LINE_PREFIX = /^(?:corrections?|corrigee?s?|تصحيح|حل)(?:\s|$)/;
+/** Anglais : le texte de l'application est « Homework 2 correction » (le numéro précède le mot). */
+const ENGLISH_CORRECTION_LINE = /^(?:homework|hw)\s*(?:#|no\.?\s*)?\d*\s*corrections?(?:\s|$)/;
 
 /**
  * Vrai pour une ligne de correction : elle COMMENCE par un marqueur de
@@ -44,7 +53,7 @@ const CORRECTION_LINE_PREFIX = /^(?:corrections?|corrigee?s?|تصحيح|حل)(?:
 export function isHomeworkCorrectionLine(text: string | undefined): boolean {
   if (!text) return false;
   const normalized = normalizeActivityText(text);
-  return CORRECTION_LINE_PREFIX.test(normalized) && hasHomeworkMention(normalized);
+  return (CORRECTION_LINE_PREFIX.test(normalized) || ENGLISH_CORRECTION_LINE.test(normalized)) && hasHomeworkMention(normalized);
 }
 
 /** Vrai si AU MOINS une ligne annonce l'ATTRIBUTION du devoir (correction exclue). */
@@ -101,7 +110,7 @@ export function extractHomeworkNumber(text: string | undefined): number | null {
   if (arabicMatch) return parseInt(arabicMatch[1], 10);
 
   // 2. Motifs français explicites ("Devoir maison X donné", "Devoir maison n° X", "DM X")
-  const frenchMatch = normalized.match(/(?:devoir\s+maison|\bdm\b)(?:\s*(?:n[°o.]?\s*|#\s*|رقم\s*)|\s+)(\d+)/i);
+  const frenchMatch = normalized.match(new RegExp(`(?:${FRENCH_HOMEWORK}|\\bdm\\b)(?:\\s*(?:n[°o.]?\\s*|#\\s*|رقم\\s*)|\\s+)(\\d+)`, 'i'));
   if (frenchMatch) return parseInt(frenchMatch[1], 10);
 
   // 3. Motif anglais ("Homework X assigned", "Homework #X")

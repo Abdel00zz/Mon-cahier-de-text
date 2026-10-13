@@ -161,6 +161,8 @@ export interface ManualAssessment {
     semestre: 1 | 2;
     /** Séance de CORRECTION du devoir (second temps, distinct de l'attribution `dateISO`). */
     correctionDateISO?: string;
+    /** Devoir maison : DATE LIMITE à laquelle les élèves doivent rendre le devoir. */
+    dueDateISO?: string;
     /** compte dans la note officielle */
     note?: boolean;
     /** document pédagogique rédigé par le professeur (hors cahier) */
@@ -242,6 +244,8 @@ export interface EvaluationKindPolicy {
     grades: boolean;
     /** Liste des absents. */
     absences: boolean;
+    /** Devoir maison seulement : la séance de correction est datée sur la feuille (« Corrigé le … »). */
+    correction: boolean;
 }
 
 /** Écarts à la valeur par défaut, par nature : seuls les champs modifiés sont stockés. */

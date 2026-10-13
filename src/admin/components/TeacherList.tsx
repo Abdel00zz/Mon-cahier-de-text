@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Skeleton } from '../../components/ui/skeleton';
+import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
+import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
 import type { AdminTeacherSummary } from '../api';
 import { getBundledCalendar } from '../../domain/calendar/calendar';
 import { LatenessSeverity, computeLateness, worstSeverity } from '../../domain/calendar/lateness';
@@ -8,6 +11,10 @@ import { establishmentKey, establishmentLabel, listEstablishments } from '../est
 interface TeacherListProps {
     teachers: AdminTeacherSummary[];
     isLoading: boolean;
+    /** Dernière actualisation réussie (ms) : la direction sait si elle lit des données vivantes. */
+    lastUpdatedAt?: number | null;
+    /** Le dernier rafraîchissement automatique a échoué : les données affichées peuvent être anciennes. */
+    refreshFailed?: boolean;
     onRefresh: () => void;
     onSelect: (phone: string) => void;
     onLogout: () => void;
@@ -59,6 +66,10 @@ const teacherSeverity = (teacher: AdminTeacherSummary): LatenessSeverity =>
         }))
     );
 
+/** `localStorage` peut lever (navigation privée, politique du navigateur) : jamais d'écran blanc pour autant. */
+const browserStorage = (): Storage | undefined => {
+    try { return typeof window === 'undefined' ? undefined : window.localStorage; } catch { return undefined; }
+};
 const isInactive = (teacher: AdminTeacherSummary): boolean => {
     if (!teacher.lastSyncAt) return true;
     const then = new Date(teacher.lastSyncAt).getTime();
@@ -68,22 +79,122 @@ const isInactive = (teacher: AdminTeacherSummary): boolean => {
 type SortKey = 'severity' | 'completion' | 'activity' | 'name' | 'establishment';
 type PriorityFilter = LatenessSeverity | 'all' | 'inactive' | 'messages' | 'blocked';
 
-export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp, isLoading, onRefresh, onSelect, onLogout }) => {
+interface TeacherCardProps {
+    teacher: AdminTeacherSummary;
+    severity: LatenessSeverity;
+    inactive: boolean;
+    completion: number;
+    /** Minute courante (ms) : « il y a 3 min » se corrige sans redessiner les cartes à chaque frappe. */
+    minute: number;
+    onSelect: (phone: string) => void;
+}
+
+/**
+ * Une carte d'enseignant. Mémorisée : taper dans la recherche ou changer de tri ne redessine que les
+ * cartes dont les données ont réellement changé (et non toute la grille à chaque frappe).
+ */
+const TeacherCard = memo(function TeacherCard({ teacher, severity, inactive, completion, minute, onSelect }: TeacherCardProps) {
+    return (
+        <button
+            type="button"
+            onClick={() => onSelect(teacher.phone)}
+            className="admin-teacher-card rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 190px' }}
+        >
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                        <span className={`h-2 w-2 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} title={teacher.blocked ? 'Compte bloqué' : SEVERITY_META[severity].label} />
+                        <span className="truncate">{teacherNameOf(teacher)}</span>
+                    </div>
+                    <div dir="auto" className="text-xs text-muted-foreground truncate">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
+                    <div dir="auto" className="mt-1 text-xs text-muted-foreground break-words">{establishmentLabel(teacher.establishmentName)}</div>
+                </div>
+                <div className="text-right">
+                    <div className="text-lg font-black text-primary">{completion}%</div>
+                    <div className="text-[10px] text-muted-foreground">{teacher.classes.length} classe(s)</div>
+                </div>
+            </div>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div className={`h-full rounded-full ${completionColor(completion)}`} style={{ width: `${completion}%` }} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>
+                    {Array.from(new Set((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)))
+                        .map(c => CYCLE_LABEL[c as string] ?? c)
+                        .join(' · ') || 'Non renseigné'}
+                </span>
+                <span className={inactive ? 'font-bold text-destructive' : ''}>{timeAgo(teacher.lastSyncAt, minute)}</span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                {teacher.blocked && (
+                    <span className="rounded-full bg-foreground/10 px-2 py-1 text-[10px] font-bold text-foreground">Accès bloqué</span>
+                )}
+                {teacher.pendingMessages > 0 && (
+                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
+                        {teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}
+                    </span>
+                )}
+                {teacher.pendingMessages === 0 && teacher.lastMessageAt && (
+                    <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">Messages confirmés</span>
+                )}
+                <span className="ms-auto text-[10px] font-bold text-primary">Ouvrir la fiche →</span>
+            </div>
+        </button>
+    );
+});
+
+/** Heure courante, rafraîchie à intervalle régulier : « il y a 3 min » et « actualisé il y a 12 s » restent justes sans nouvelle requête. */
+const useNow = (intervalMs: number): number => {
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const timer = window.setInterval(() => setNow(Date.now()), intervalMs);
+        return () => window.clearInterval(timer);
+    }, [intervalMs]);
+    return now;
+};
+
+export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp, isLoading, lastUpdatedAt = null, refreshFailed = false, onRefresh, onSelect, onLogout }) => {
     // tolère une liste absente/mal formée : la console ne doit jamais écran-blanchir
     const teachers = Array.isArray(teachersProp) ? teachersProp : [];
+    // Les filtres du dernier passage sont repris : la direction reprend là où elle s'était arrêtée.
+    const remembered = useMemo(() => readOverviewFilters(browserStorage()), []);
     const [query, setQuery] = useState('');
-    const [schoolFilter, setSchoolFilter] = useState<string | null>(null);
+    // La recherche reste instantanée à la frappe ; la liste, elle, suit sans bloquer la saisie.
+    const deferredQuery = useDeferredValue(query);
+    const [schoolFilter, setSchoolFilter] = useState<string | null>(remembered.school);
     const schools = useMemo(() => listEstablishments(teachers), [teachers]);
-    const [cycleFilter, setCycleFilter] = useState<string>('all');
-    const [severityFilter, setSeverityFilter] = useState<PriorityFilter>('all');
-    const [sortKey, setSortKey] = useState<SortKey>('severity');
+    const [cycleFilter, setCycleFilter] = useState<string>(remembered.cycle);
+    const [severityFilter, setSeverityFilter] = useState<PriorityFilter>(remembered.severity);
+    const [sortKey, setSortKey] = useState<SortKey>(remembered.sort);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const now = useNow(30_000);
+    const minute = Math.floor(now / 60_000) * 60_000;
 
     const subjects = useMemo(() => {
         const set = new Set<string>();
         teachers.forEach(t => (t.classes ?? []).forEach(c => c.subject && set.add(c.subject)));
         return Array.from(set).sort();
     }, [teachers]);
-    const [subjectFilter, setSubjectFilter] = useState<string>('all');
+    const [subjectFilter, setSubjectFilter] = useState<string>(remembered.subject);
+
+    useEffect(() => {
+        writeOverviewFilters(browserStorage(), { school: schoolFilter, cycle: cycleFilter, subject: subjectFilter, severity: severityFilter, sort: sortKey });
+    }, [schoolFilter, cycleFilter, subjectFilter, severityFilter, sortKey]);
+
+    // « / » ouvre la recherche (comme partout où l'on pilote beaucoup de comptes), Échap la vide.
+    useEffect(() => {
+        const onKey = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
+            if (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                event.preventDefault();
+                searchRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     // sévérité + inactivité calculées une fois par rafraîchissement
     const enriched = useMemo(
@@ -133,7 +244,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
     );
 
     const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
+        const q = deferredQuery.trim().toLowerCase();
         const list = enriched.filter(({ teacher, severity, inactive }) => {
             const matchesQuery =
                 !q ||
@@ -175,7 +286,46 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 break;
         }
         return sorted;
-    }, [enriched, query, schoolFilter, cycleFilter, subjectFilter, severityFilter, sortKey]);
+    }, [enriched, deferredQuery, schoolFilter, cycleFilter, subjectFilter, severityFilter, sortKey]);
+
+    const filtersActive = hasActiveFilters({ school: schoolFilter, cycle: cycleFilter, subject: subjectFilter, severity: severityFilter, sort: sortKey }) || query.trim() !== '';
+    const resetFilters = () => {
+        setQuery('');
+        setSchoolFilter(DEFAULT_OVERVIEW_FILTERS.school);
+        setCycleFilter(DEFAULT_OVERVIEW_FILTERS.cycle);
+        setSubjectFilter(DEFAULT_OVERVIEW_FILTERS.subject);
+        setSeverityFilter(DEFAULT_OVERVIEW_FILTERS.severity);
+    };
+
+    // Vue d'ensemble chiffrée de ce qui est affiché : la moyenne de complétion et la part des comptes vivants.
+    const summary = useMemo(() => {
+        if (enriched.length === 0) return null;
+        const average = Math.round(enriched.reduce((sum, item) => sum + item.completion, 0) / enriched.length);
+        const syncedToday = enriched.filter(item => item.teacher.lastSyncAt && now - new Date(item.teacher.lastSyncAt).getTime() < 24 * 3600 * 1000).length;
+        return { average, syncedToday };
+    }, [enriched, now]);
+
+    const exportCsv = () => {
+        const rows: CsvTeacherRow[] = filtered.map(({ teacher, severity, inactive, completion }) => ({
+            name: teacherNameOf(teacher),
+            school: establishmentLabel(teacher.establishmentName),
+            email: teacher.email ?? '',
+            phone: teacher.contactPhone ?? (teacher.phone.startsWith('acct_') ? '' : teacher.phone),
+            classes: teacher.classes?.length ?? 0,
+            cycles: Array.from(new Set((teacher.classes ?? []).map(c => CYCLE_LABEL[c.cycle as string] ?? c.cycle).filter(Boolean))).join(' / '),
+            completion,
+            status: teacher.blocked ? 'Compte bloqué' : inactive ? 'Inactif' : SEVERITY_META[severity].label,
+            lastSyncAt: teacher.lastSyncAt ?? '',
+            pendingMessages: teacher.pendingMessages,
+            blocked: teacher.blocked === true,
+        }));
+        const url = URL.createObjectURL(new Blob([teachersToCsv(rows)], { type: 'text/csv;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `enseignants-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    };
 
     const toggleSeverityFilter = (value: Exclude<PriorityFilter, 'all'>) =>
         setSeverityFilter(current => (current === value ? 'all' : value));
@@ -191,10 +341,27 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                         Centre de pilotage
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        {teachers.length} enseignant(s) · données issues de la dernière synchronisation
+                        {teachers.length} enseignant(s)
+                        {summary && <> · {summary.average} % de complétion moyenne · {summary.syncedToday} synchronisé(s) sur 24 h</>}
+                    </p>
+                    <p
+                        role="status"
+                        className={`mt-0.5 flex items-center gap-1.5 text-[11px] ${refreshFailed ? 'font-bold text-warning' : 'text-muted-foreground'}`}
+                    >
+                        <span className={`h-1.5 w-1.5 rounded-full ${refreshFailed ? 'bg-warning' : isLoading ? 'animate-pulse bg-primary' : 'bg-success'}`} aria-hidden />
+                        {refreshFailed ? 'Actualisation interrompue : les données affichées peuvent être anciennes' : isLoading ? 'Actualisation…' : freshnessLabel(lastUpdatedAt, now)}
                     </p>
                 </div>
                 <div className="admin-overview__header-actions flex gap-2">
+                    <button
+                        type="button"
+                        onClick={exportCsv}
+                        disabled={filtered.length === 0}
+                        title="Exporter la liste affichée (CSV, ouvrable dans un tableur)"
+                        className="h-10 rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                        Exporter
+                    </button>
                     <button
                         onClick={onRefresh}
                         disabled={isLoading}
@@ -330,10 +497,14 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
 
             <div className="admin-filter-bar mb-5 flex flex-wrap gap-2">
                 <input
+                    ref={searchRef}
+                    type="search"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Escape') { setQuery(''); e.currentTarget.blur(); } }}
                     aria-label="Rechercher un enseignant ou un établissement"
-                    placeholder="Nom, établissement, téléphone…"
+                    aria-keyshortcuts="/"
+                    placeholder="Nom, établissement, téléphone…   ( / )"
                     className="h-10 min-w-[12rem] flex-1 rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <select
@@ -389,65 +560,41 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 )}
             </div>
 
-            {filtered.length === 0 ? (
-                <div className="admin-empty-state rounded-xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-                    {isLoading ? 'Chargement…' : 'Aucun enseignant à afficher.'}
+            {isLoading && teachers.length === 0 ? (
+                <div className="admin-teacher-grid grid grid-cols-1 gap-3 sm:grid-cols-2" role="status" aria-busy="true" aria-label="Chargement des enseignants">
+                    {Array.from({ length: 6 }, (_, index) => (
+                        <Skeleton key={index} className="h-[11.5rem] w-full rounded-2xl" />
+                    ))}
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="admin-empty-state flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
+                    <ClassroomWelcomeIllustration size={120} />
+                    <p className="text-base font-extrabold text-foreground">
+                        {teachers.length === 0 ? 'Aucun enseignant inscrit pour le moment' : 'Aucun enseignant ne correspond à ces filtres'}
+                    </p>
+                    <p className="max-w-md text-sm text-muted-foreground">
+                        {teachers.length === 0
+                            ? 'Dès qu’un enseignant se connecte et synchronise son cahier, il apparaît ici avec son avancement.'
+                            : 'Élargissez la recherche ou retirez un filtre pour retrouver la liste complète.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={teachers.length === 0 ? onRefresh : resetFilters}
+                        className="min-h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.98] active:brightness-90"
+                    >
+                        {teachers.length === 0 ? 'Actualiser' : filtersActive ? 'Réinitialiser les filtres' : 'Actualiser'}
+                    </button>
                 </div>
             ) : (
                 <div className="admin-teacher-grid grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {filtered.map(({ teacher, severity, inactive, completion }, index) => (
                         <React.Fragment key={teacher.phone}>
-                        {sortKey === 'establishment' && (index === 0 || establishmentKey(filtered[index - 1].teacher.establishmentName) !== establishmentKey(teacher.establishmentName)) &&
-                            <h3 dir="auto" className="col-span-full mt-3 text-sm font-semibold text-muted-foreground">{establishmentLabel(teacher.establishmentName)}</h3>}
-                        <button
-                            key={teacher.phone}
-                            onClick={() => onSelect(teacher.phone)}
-                            className="admin-teacher-card rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
-                        >
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                                        <span className={`h-2 w-2 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} title={teacher.blocked ? 'Compte bloqué' : SEVERITY_META[severity].label} />
-                                        <span className="truncate">{teacherNameOf(teacher)}</span>
-                                    </div>
-                                    <div dir="auto" className="text-xs text-muted-foreground truncate">{teacher.email || teacher.contactPhone || (!teacher.phone.startsWith('acct_') ? teacher.phone : 'Compte Google')}</div>
-                                    <div dir="auto" className="mt-1 text-xs text-muted-foreground break-words">{establishmentLabel(teacher.establishmentName)}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-lg font-black text-primary">{completion}%</div>
-                                    <div className="text-[10px] text-muted-foreground">{teacher.classes.length} classe(s)</div>
-                                </div>
-                            </div>
-                            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                                <div className={`h-full rounded-full ${completionColor(completion)}`} style={{ width: `${completion}%` }} />
-                            </div>
-                            <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-                                <span>
-                                    {Array.from(new Set((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)))
-                                        .map(c => CYCLE_LABEL[c as string] ?? c)
-                                        .join(' · ') || 'Non renseigné'}
-                                </span>
-                                <span className={inactive ? 'font-bold text-destructive' : ''}>{timeAgo(teacher.lastSyncAt)}</span>
-                            </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                                {teacher.blocked && (
-                                    <span className="rounded-full bg-foreground/10 px-2 py-1 text-[10px] font-bold text-foreground">Accès bloqué</span>
-                                )}
-                                {teacher.pendingMessages > 0 && (
-                                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
-                                        {teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}
-                                    </span>
-                                )}
-                                {teacher.pendingMessages === 0 && teacher.lastMessageAt && (
-                                    <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">Messages confirmés</span>
-                                )}
-                                <span className="ml-auto text-[10px] font-bold text-primary">Ouvrir la fiche →</span>
-                            </div>
-                        </button>
+                            {sortKey === 'establishment' && (index === 0 || establishmentKey(filtered[index - 1].teacher.establishmentName) !== establishmentKey(teacher.establishmentName)) &&
+                                <h3 dir="auto" className="col-span-full mt-3 text-sm font-semibold text-muted-foreground">{establishmentLabel(teacher.establishmentName)}</h3>}
+                            <TeacherCard teacher={teacher} severity={severity} inactive={inactive} completion={completion} minute={minute} onSelect={onSelect} />
                         </React.Fragment>
                     ))}
                 </div>
-            )}
-        </div>
+            )}        </div>
     );
 };

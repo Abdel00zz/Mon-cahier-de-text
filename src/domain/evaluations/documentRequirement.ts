@@ -33,6 +33,12 @@ export type DocumentIndicator = 'none' | 'attached' | 'missing' | 'idle';
 export const documentRequirementForAssessment = (type: DevoirType, policy?: EvaluationPolicy | null): DocumentRequirement =>
   documentRequirementFor(policy, type);
 
+/**
+ * Le corrigé du devoir maison : facultatif, jamais exigé. Il suit le contenu du devoir lui-même —
+ * si la direction retire le contenu aux devoirs maison, le corrigé n'a pas non plus de bouton.
+ */
+export const documentRequirementForHomeworkCorrection = (policy?: EvaluationPolicy | null): DocumentRequirement =>
+  documentRequirementFor(policy, 'maison') === 'none' ? 'none' : 'optional';
 export const documentRequirementForEvent = (type: PedagogicalEventType, policy?: EvaluationPolicy | null): DocumentRequirement =>
   documentRequirementFor(policy, type);
 
