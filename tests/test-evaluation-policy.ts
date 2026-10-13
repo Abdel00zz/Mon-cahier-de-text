@@ -268,7 +268,7 @@ test('le serveur accepte une colle manuelle et le retour par élève d’une act
 
 test('la politique circule : API admin, pull, appareil — et ne repart jamais du téléphone', () => {
   const admin = read('api/admin.ts');
-  assert.match(admin, /body\.action === 'saveEvaluationPolicy'/, 'publication');
+  assert.match(admin, /saveEvaluationPolicy: handleSaveEvaluationPolicy,/, 'publication (table des écritures de la console)');
   assert.match(admin, /action === 'evaluationPolicy'/, 'lecture');
   assert.match(admin, /validateEvaluationKindOverrides\(body\.evaluationPolicyKinds/, 'validation stricte des écarts');
   assert.match(admin, /saveVersionedDocument\(redis, key, body\.expectedEvaluationPolicyVersion, next\)/, 'écriture versionnée, 409 en cas de conflit');

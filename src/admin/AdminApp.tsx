@@ -19,6 +19,7 @@ const CalendarManager = lazy(() => import('./components/CalendarManager').then(m
 const OfficialBulletinManager = lazy(() => import('./components/OfficialBulletinManager').then(module => ({ default: module.OfficialBulletinManager })));
 const TimetableClockManager = lazy(() => import('./components/TimetableClockManager').then(module => ({ default: module.TimetableClockManager })));
 const EvaluationPolicyManager = lazy(() => import('./components/EvaluationPolicyManager').then(module => ({ default: module.EvaluationPolicyManager })));
+const AuditLog = lazy(() => import('./components/AuditLog').then(module => ({ default: module.AuditLog })));
 
 /** Gabarit de chargement d'un écran : même colonne et mêmes blocs que la page qui arrive (aucun saut). */
 const AdminViewFallback: React.FC = () => (
@@ -174,6 +175,7 @@ export const AdminApp: React.FC = () => {
         return <Suspense fallback={<AdminViewFallback />}><EvaluationPolicyManager phone={view.phone} onBack={() => backToTeacherOr(view.phone)} /></Suspense>;
     }
     if (view.name === 'bulletin') return <Suspense fallback={<AdminViewFallback />}><OfficialBulletinManager onBack={toOverview} /></Suspense>;
+    if (view.name === 'journal') return <Suspense fallback={<AdminViewFallback />}><AuditLog onBack={toOverview} onOpenTeacher={openTeacher} /></Suspense>;
 
     return (
         <div className="admin-shell min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
@@ -181,6 +183,9 @@ export const AdminApp: React.FC = () => {
                 <button onClick={() => go({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
                     <Clock className="admin-commandbar__icon" aria-hidden />
                     Horaires des séances
+                </button>
+                <button onClick={() => go({ name: 'journal' })} className="admin-commandbar__action admin-commandbar__action--journal min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                    Journal
                 </button>
                 <button onClick={() => go({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
                     Contrôle continu

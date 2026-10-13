@@ -5,7 +5,8 @@ import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { accountFirebaseUid } from './_lib/authAccounts.js';
 import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
-import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
+import { enforceAdminActionLimit, enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
+import { readAdminAudit, recordAdminAudit } from './_lib/adminAudit.js';
 import { withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic.js';
 import { deleteNativeDevices, sendNativeToOwner } from './_lib/nativePush.js';
 import {
@@ -931,6 +932,27 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     res.status(200).json({ ok: true, sent: nativeSent, nativeSent, message });
 };
 
+/** Écritures de la console : le routeur, le débit et le journal passent tous par cette table. */
+const ADMIN_WRITES: Readonly<Record<string, (body: AdminBody, res: ApiResponse) => Promise<unknown>>> = {
+    blockTeacher: handleBlockTeacher,
+    deleteTeacher: handleDeleteTeacher,
+    notifyTeacher: handleNotifyTeacher,
+    saveCalendar: handleSaveCalendar,
+    saveTimetableClock: handleSaveTimetableClock,
+    saveEvaluationPolicy: handleSaveEvaluationPolicy,
+    saveOfficialEvents: handleSaveOfficialEvents,
+    saveAssessmentDate: handleSaveAssessmentDate,
+    saveClassRoster: handleSaveClassRoster,
+    upsertTeacherClass: handleUpsertTeacherClass,
+    deleteTeacherClass: handleDeleteTeacherClass,
+    importClassLessons: handleImportClassLessons,
+};
+
+/** Journal des écritures de la console (lecture seule). */
+const handleAudit = async (res: ApiResponse) => {
+    res.status(200).json({ entries: await readAdminAudit(await getRedis(), 100) });
+};
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader('Cache-Control', 'no-store');
     try {
@@ -945,25 +967,21 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             await requireAdmin(req);
             // Une seule garde pour toutes les écritures : aucune action ne dépend de la prudence de son handler.
             assertBodySize(body);
-            if (body.action === 'blockTeacher') return await handleBlockTeacher(body, res);
-            if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
-            if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
-            if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
-            if (body.action === 'saveTimetableClock') return await handleSaveTimetableClock(body, res);
-            if (body.action === 'saveEvaluationPolicy') return await handleSaveEvaluationPolicy(body, res);
-            if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
-            if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
-            if (body.action === 'saveClassRoster') return await handleSaveClassRoster(body, res);
-            if (body.action === 'upsertTeacherClass') return await handleUpsertTeacherClass(body, res);
-            if (body.action === 'deleteTeacherClass') return await handleDeleteTeacherClass(body, res);
-            if (body.action === 'importClassLessons') return await handleImportClassLessons(body, res);
-            throw new HttpError(400, 'Action inconnue.');
-        }
+            const write = Object.hasOwn(ADMIN_WRITES, body.action ?? '') ? ADMIN_WRITES[body.action!] : undefined;
+            if (!write) throw new HttpError(400, 'Action inconnue.');
+            const redis = await getRedis();
+            // Débit borné par famille d'action (notifications, suppressions, imports, autres écritures).
+            await enforceAdminActionLimit(redis, req, res, body.action);
+            await write(body, res);
+            // Journal : une ligne par écriture réussie, au mieux, sans jamais bloquer ni annuler l'action.
+            await recordAdminAudit(redis, body.action!, body as Record<string, unknown>);
+            return;        }
 
         if (req.method === 'GET') {
             await requireAdmin(req);
             const action = getQueryParam(req, 'action');
             if (action === 'overview') return await handleOverview(req, res);
+            if (action === 'audit') return await handleAudit(res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
             if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);

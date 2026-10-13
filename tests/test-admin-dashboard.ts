@@ -138,7 +138,7 @@ test('les écritures d’administration sont gardées au même endroit, et un bl
   const server = read('api/admin.ts');
   const router = server.slice(server.indexOf('export default async function handler'));
   assert.ok(router.indexOf('await requireAdmin(req);') < router.indexOf('assertBodySize(body);'), 'session d’abord, taille ensuite');
-  assert.ok(router.indexOf('assertBodySize(body);') < router.indexOf("body.action === 'blockTeacher'"), 'avant toute action');
+  assert.ok(router.indexOf('assertBodySize(body);') < router.indexOf('Object.hasOwn(ADMIN_WRITES'), 'avant toute action');
   assert.match(server, /typeof body\.blocked !== 'boolean'\) throw new HttpError\(400/, 'un champ absent ne bloque pas un compte');
   assert.doesNotMatch(server, /body\.blocked !== false/);
   assert.match(server, /body\.classId\.length > 120 \|\| body\.assessmentId\.length > 180/, 'identifiants bornés');

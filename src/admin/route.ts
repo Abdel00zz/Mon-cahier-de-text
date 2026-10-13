@@ -15,7 +15,8 @@ export type AdminView =
     | { name: 'calendar' }
     | { name: 'timetableClock'; phone?: string }
     | { name: 'evaluationPolicy'; phone?: string }
-    | { name: 'bulletin' };
+    | { name: 'bulletin' }
+    | { name: 'journal' };
 
 const OVERVIEW: AdminView = { name: 'overview' };
 
@@ -26,6 +27,7 @@ const SEGMENTS = {
     timetableClock: 'horaires',
     evaluationPolicy: 'controle-continu',
     bulletin: 'bulletin',
+    journal: 'journal',
 } as const;
 
 const withPhone = (segment: string, phone?: string): string =>
@@ -38,6 +40,7 @@ export const viewToHash = (view: AdminView): string => {
         case 'timetableClock': return withPhone(SEGMENTS.timetableClock, view.phone);
         case 'evaluationPolicy': return withPhone(SEGMENTS.evaluationPolicy, view.phone);
         case 'bulletin': return `#/${SEGMENTS.bulletin}`;
+        case 'journal': return `#/${SEGMENTS.journal}`;
         default: return '#/';
     }
 };
@@ -57,6 +60,7 @@ export const hashToView = (hash: string): AdminView => {
         case SEGMENTS.timetableClock: return { name: 'timetableClock', ...(phone ? { phone } : {}) };
         case SEGMENTS.evaluationPolicy: return { name: 'evaluationPolicy', ...(phone ? { phone } : {}) };
         case SEGMENTS.bulletin: return { name: 'bulletin' };
+        case SEGMENTS.journal: return { name: 'journal' };
         default: return OVERVIEW;
     }
 };

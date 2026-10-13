@@ -1,5 +1,6 @@
 import type { AppConfig, AdminMessage, ClassInfo, ClassSchedule, ContentDirection, ContentDocument, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { AdminActivityDocument } from '../domain/evaluations/adminDocuments';
+import type { AdminAuditEntry } from '../domain/admin/auditLog';
 import type { ClassRoster, EvaluationKindOverrides, EvaluationPolicy, EvaluationPolicyAssignment } from '../types';
 import type { HolidayCalendar } from '../domain/calendar/calendar';
 import type { OfficialStudentEventsFile } from '../domain/evaluations/officialStudentEvents';
@@ -92,6 +93,12 @@ export const fetchOverview = async (signal?: AbortSignal, since?: string | null)
         throw new Error('Réponse du serveur invalide (vue d\'ensemble indisponible).');
     }
     return { teachers: data.teachers as AdminTeacherSummary[], etag: typeof data.etag === 'string' ? data.etag : null };
+};
+
+/** Journal des écritures de la console (les plus récentes d'abord). */
+export const fetchAdminAudit = async (signal?: AbortSignal): Promise<AdminAuditEntry[]> => {
+    const data = await request('/api/admin?action=audit', { signal });
+    return Array.isArray(data?.entries) ? data.entries as AdminAuditEntry[] : [];
 };
 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>

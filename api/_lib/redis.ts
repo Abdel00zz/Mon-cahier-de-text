@@ -61,6 +61,8 @@ export const KEYS = {
   adminEvaluationPolicy: 'admin:evaluation-policy',
   /** Écarts propres à un compte, appliqués par-dessus la politique générale. */
   adminEvaluationPolicyForUser: (phone: string) => `admin:evaluation-policy:${phone}`,
+  /** Journal des écritures de la console (300 dernières lignes, sans contenu). */
+  adminAudit: 'admin:audit',
   adminMessages: (phone: string) => `admin:messages:${phone}`,
   inboxClock: (phone: string) => `admin:inbox-clock:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
