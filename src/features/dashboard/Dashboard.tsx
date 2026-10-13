@@ -20,7 +20,7 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/domain/calendar/timetable';
 import { collectTeacherSubjects, subjectKey } from '@/domain/classes/subjectScope';
-import { Plus } from '@/components/ui/icons';
+import { CircleHelp, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/classes/classOrder';
@@ -33,6 +33,8 @@ const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEva
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     onEvaluationVisibilityChange?: (visible: boolean) => void;
+    /** Ouvre le guide : sur téléphone, un bouton d'aide au coin haut de la page (la barre latérale n'existe pas). */
+    onOpenGuide?: () => void;
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
@@ -43,6 +45,7 @@ const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mas
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     onEvaluationVisibilityChange,
+    onOpenGuide,
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
@@ -305,10 +308,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
+                    {/* Téléphone : l'aide au coin de FIN de la page (droite en français et en anglais, gauche en arabe), là où le titre ne va pas. */}
+                    {onOpenGuide && (
+                        <button
+                            type="button"
+                            onClick={onOpenGuide}
+                            className="dashboard-help sm:hidden"
+                            aria-label={t('toolbar.help')}
+                            title={t('toolbar.help')}
+                        >
+                            <CircleHelp className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                    )}
 
                     {classes.length > 0 && (
                         <div className="mb-4 sm:mb-6">
-                            <div className="dashboard-heading flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+                            <div className="dashboard-heading flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 max-sm:pe-14">
                                 <div className="max-w-xl">
                                     {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1

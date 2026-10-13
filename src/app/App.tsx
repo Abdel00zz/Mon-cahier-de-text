@@ -426,6 +426,7 @@ const App: React.FC = () => {
       <Dashboard
         onSelectClass={handleSelectClass}
         onEvaluationVisibilityChange={setClassActivitiesOpen}
+        onOpenGuide={() => setGuideOpen(true)}
         activeSessionClassIds={currentSession.classIds}
           accountTeacherName={teacherName}
         onOnboardingVisibilityChange={setOnboardingVisible}

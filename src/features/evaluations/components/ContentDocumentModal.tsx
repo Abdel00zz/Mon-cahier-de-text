@@ -12,6 +12,7 @@ import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/const
 import { SUPPORTED_HTML_TAGS } from '@/lib/text/htmlTags';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { useTextHistory } from '@/hooks/useTextHistory';
 import type { ContentDocument } from '@/types';
 
 /*
@@ -69,6 +70,9 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   const opened = useRef(false);
   const baseline = useRef<ContentDocument | undefined>(undefined);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Annuler / rétablir au clavier (Ctrl/Cmd + Z, Maj + Z, Y) : une pile interne, aucun bouton.
+  const history = useTextHistory({ value: source, setValue: setSource, textareaRef });
+  const resetHistory = history.reset;
 
   // Le document est rechargé à chaque ouverture : deux devoirs ne partagent
   // jamais le même brouillon, et fermer sans enregistrer laisse le précédent.
@@ -77,11 +81,12 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     if (opened.current) return;
     opened.current = true;
     baseline.current = saved;
+    resetHistory(saved?.source ?? '');
     setSource(saved?.source ?? '');
     setTab('preview');
     setShowHelp(false);
     setConflictOpen(false);
-  }, [isOpen, saved]);
+  }, [isOpen, saved, resetHistory]);
 
   /* Sens du document d'après sa première lettre hors formules : un sujet arabe
      qui s'ouvre sur « $f(x)=…$ » ou « Exercice 1 » reste de droite à gauche. */
@@ -161,8 +166,11 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               ref={textareaRef}
               value={source}
               onChange={(event) => setSource(event.target.value)}
+              onKeyDown={history.onKeyDown}
               rows={12}
-              dir={documentDir}
+              /* Le sens est celui de CHAQUE ligne (première lettre de la ligne) : effacer le haut du texte ne retourne
+                 plus les autres lignes. Un champ vide suit la langue de l'interface. */
+              dir={source.trim() ? 'auto' : (isRtl ? 'rtl' : 'ltr')}
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
               aria-label={t('evaluations.doc.source')}

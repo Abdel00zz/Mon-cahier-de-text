@@ -67,3 +67,18 @@ test('le mot d’attente est sous le spinner, sans toucher au chargement, et se 
   assert.match(css, /700ms forwards/, 'une attente brève ne montre aucun texte');
   assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*animation: none/);
 });
+
+test('téléphone : le bouton d’aide est au coin de fin de la page, jamais face au titre, et ouvre le guide', async () => {
+  const { readFileSync } = await import('node:fs');
+  const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
+  assert.match(dashboard, /className="dashboard-help sm:hidden"/, 'téléphone seulement : la barre latérale porte l’aide ailleurs');
+  assert.match(dashboard, /onClick=\{onOpenGuide\}/);
+  assert.match(dashboard, /aria-label=\{t\('toolbar\.help'\)\}/);
+  assert.match(dashboard, /dashboard-heading[^"]*max-sm:pe-14/, 'le titre réserve la place du bouton, du côté de fin');
+  const css = readFileSync('src/features/dashboard/dashboardCanvas.css', 'utf8');
+  const rule = css.match(/\.dashboard-help \{[^}]*\}/)?.[0] ?? '';
+  assert.match(rule, /inset-inline-end: max\(1rem, env\(safe-area-inset-right, 0px\)\)/, 'droite en LTR, gauche en RTL — sans jamais écrire left/right');
+  assert.doesNotMatch(rule, /\b(left|right):/);
+  assert.match(rule, /width: 2\.75rem;[\s\S]*height: 2\.75rem/, 'cible de 44 px');
+  assert.match(readFileSync('src/app/App.tsx', 'utf8'), /<Dashboard[\s\S]{0,200}onOpenGuide=\{\(\) => setGuideOpen\(true\)\}/);
+});

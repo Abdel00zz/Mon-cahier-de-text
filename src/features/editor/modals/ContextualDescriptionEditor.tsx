@@ -13,6 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
+import { useTextHistory } from '@/hooks/useTextHistory';
 import { findHighlightClose, highlightOpenAt, toggleHighlight } from '@/lib/text/highlightMarkers';
 
 type FormatAction = 'bold' | 'italic' | 'underline' | 'bullets' | 'numbered' | 'math';
@@ -102,6 +103,8 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
 }) => {
   const { t } = useLocale();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Annuler / rétablir sans bouton : la mise en forme posée par le code ne vide plus l'historique.
+  const history = useTextHistory({ value, setValue: onChange, textareaRef });
   const [selection, setSelection] = useState<SelectionRange | null>(null);
   const [showColorMenu, setShowColorMenu] = useState(false);
 
@@ -282,7 +285,8 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
           setShowColorMenu(false);
         }, 150)}
         onKeyDown={event => {
-          if (!(event.ctrlKey || event.metaKey)) return;
+          history.onKeyDown(event);
+          if (event.defaultPrevented || !(event.ctrlKey || event.metaKey)) return;
           const action = event.key.toLowerCase() === 'b'
             ? 'bold'
             : event.key.toLowerCase() === 'i'
