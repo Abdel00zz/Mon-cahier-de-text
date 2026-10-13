@@ -1,4 +1,4 @@
-import bundledJson from '../../../public/doc_officiel/curriculum.json' with { type: 'json' };
+import bundledJson from '../../data/curriculum.json' with { type: 'json' };
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../../types.js';
 import { normalizeOfficialClassName } from '../../constants/class-levels.js';
 import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, schoolYearLabelFromDate, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
