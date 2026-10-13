@@ -89,7 +89,7 @@ export const DashboardActionsMenu = memo(({ mode, onModeChange, onCreateClass }:
                 </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent side="bottom" align="end" sideOffset={10} className="dashboard-actions-menu__menu w-60">
+            <DropdownMenuContent side="bottom" align="end" sideOffset={8} className="dashboard-actions-menu__menu w-56">
                 <DropdownMenuItem onSelect={onCreateClass} className="dashboard-actions-menu__item dashboard-actions-menu__create" style={rank(0)}>
                     <Plus aria-hidden="true" />
                     <span>{t('dashboard.addClass')}</span>
