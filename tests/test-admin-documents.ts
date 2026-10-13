@@ -109,7 +109,7 @@ test('l’onglet Devoirs ouvre la page composée par le professeur', () => {
     const preview = readFileSync('src/admin/components/AdminDocumentPreview.tsx', 'utf8');
     // Même moteur que la feuille du professeur, même feuille de style.
     assert.match(preview, /renderDescriptionWithBold\(source\)/);
-    assert.match(preview, /className="devoir-document mx-auto max-w-\[44rem\]"/);
+    assert.match(preview, /className="devoir-document mx-auto max-w-\[56rem\]"/);
     // Lecture seule : aucun champ, aucune écriture.
     for (const forbidden of ['Textarea', 'onSave', 'contentEditable']) {
         assert.equal(preview.includes(forbidden), false, `${forbidden} n'a pas sa place dans une relecture`);

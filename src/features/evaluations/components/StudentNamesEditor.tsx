@@ -9,6 +9,7 @@ import type { ClassRoster, HomeworkOutcome, NotebookCondition, OralOutcome } fro
 import { retainNotebookConditions, notebookConditionReport } from '@/domain/evaluations/notebookConditions';
 import { countHomeworkOutcomes, retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
 import { namesWithRoster, normalizeStudentNames, parseStudentNames, retainOralOutcomes, retainOralGrades } from '@/domain/evaluations/studentRoster';
+import { StudentAddField } from './StudentAddField';
 import { StudentReviewList, NOTEBOOK_REVIEW_CHOICES, ORAL_REVIEW_CHOICES, HOMEWORK_REVIEW_CHOICES } from './NotebookConditionList';
 import './notebookTracking.css';
 
@@ -112,7 +113,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       ? retainHomeworkOutcomes(next, values as Record<string, HomeworkOutcome>)
       : retainNotebookConditions(next, values as Record<string, NotebookCondition>);
   const [names, setNames] = useState<string[]>(() => trackReview ? namesWithRoster(initialNames, roster) : [...new Set(initialNames)]);
-  const [draft, setDraft] = useState('');
+  // Le brouillon d'un nom vit dans le champ de saisie : taper ne refait pas le rendu de toute la liste.
+  const draftRef = useRef('');
   const [conditions, setConditions] = useState<Record<string, ReviewCondition>>(() => trackOral
     ? retainOralOutcomes(initialNames, initialOralOutcomes)
     : trackHomework ? retainHomeworkOutcomes(initialNames, initialHomeworkOutcomes)
@@ -142,7 +144,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       return null;
     }
     setNames(next);
-    setDraft('');
+    draftRef.current = '';
     if (next.length > names.length) setRemoved(null);
     return next;
   };
@@ -208,54 +210,18 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         </button>
       }
       inlineAddZone={
-        <div className="student-search-bar__add-inline">
-          <input
-            ref={addInputRef}
-            type="text"
-            value={draft}
-            onChange={event => setDraft(event.target.value)}
-            onKeyDown={event => {
-              if (['Enter', ',', '،'].includes(event.key) && !event.nativeEvent.isComposing) {
-                event.preventDefault();
-                commitDraft(draft);
-              } else if (event.key === 'Escape') {
-                event.stopPropagation();
-                if (draft) setDraft('');
-                else setIsAddOpen(false);
-              }
-            }}
-            onPaste={event => {
-              const text = event.clipboardData.getData('text');
-              if (/[،؛,;\n]/.test(text)) {
-                event.preventDefault();
-                commitDraft(text);
-              }
-            }}
-            placeholder={t('evaluations.notebook.addPlaceholder')}
-            aria-label={t(copy.placeholder)}
-            dir="auto"
-            autoFocus
-          />
-          <button
-            type="button"
-            onClick={() => commitDraft(draft)}
-            aria-label={t(copy.add)}
-            disabled={!draft.trim()}
-            className="btn-add-inline btn-add"
-            title={t(copy.add)}
-          >
-            <span className="btn-add-glyph" aria-hidden="true">+</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(false)}
-            className="btn-close-inline"
-            aria-label={t('common.close')}
-            title={t('common.close')}
-          >
-            <X className="h-4 w-4" aria-hidden="true"/>
-          </button>
-        </div>
+        <StudentAddField
+          variant="inline"
+          draftRef={draftRef}
+          inputRef={addInputRef}
+          autoFocus
+          placeholder={t('evaluations.notebook.addPlaceholder')}
+          label={t(copy.placeholder)}
+          addLabel={t(copy.add)}
+          closeLabel={t('common.close')}
+          onClose={() => setIsAddOpen(false)}
+          onCommit={commitDraft}
+        />
       }
       entry={<>
         {roster?.names.some(name => !names.includes(name)) && <div className="notebook-filter-info"><button type="button" onClick={() => { setNames(namesWithRoster(names, roster)); setRemoved(null); }}>{t('evaluations.students.restoreRoster')}</button></div>}
@@ -286,44 +252,15 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </div>
         )}
         {names.length === 0 && (
-          <div className="input-row notebook-entry">
-            <input
-              ref={addInputRef}
-              type="text"
-              value={draft}
-              onChange={event => setDraft(event.target.value)}
-              onKeyDown={event => {
-                if (['Enter', ',', '،'].includes(event.key) && !event.nativeEvent.isComposing) {
-                  event.preventDefault();
-                  commitDraft(draft);
-                } else if (event.key === 'Escape' && draft) {
-                  event.stopPropagation();
-                  setDraft('');
-                }
-              }}
-              onPaste={event => {
-                const text = event.clipboardData.getData('text');
-                if (/[،؛,;\n]/.test(text)) {
-                  event.preventDefault();
-                  commitDraft(text);
-                }
-              }}
-              placeholder={t('evaluations.notebook.addPlaceholder')}
-              aria-label={t(copy.placeholder)}
-              dir="auto"
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={() => commitDraft(draft)}
-              aria-label={t(copy.add)}
-              disabled={!draft.trim()}
-              className="notebook-primary notebook-entry__add btn-add"
-              title={t(copy.add)}
-            >
-              <span className="btn-add-glyph" aria-hidden="true">+</span>
-            </button>
-          </div>
+          <StudentAddField
+            variant="entry"
+            draftRef={draftRef}
+            inputRef={addInputRef}
+            placeholder={t('evaluations.notebook.addPlaceholder')}
+            label={t(copy.placeholder)}
+            addLabel={t(copy.add)}
+            onCommit={commitDraft}
+          />
         )}
       </>}
       footer={<>
@@ -354,7 +291,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </div>
           <div className="notebook-footer__commit footer-actions-right">
             <button type="button" className="btn-cancel notebook-text-action notebook-footer__cancel" onClick={onCancel}>{t('common.cancel')}</button>
-            <button type="button" className="btn-save notebook-primary" onClick={() => { const next = commitDraft(draft); if (next) onSave(next,
+            <button type="button" className="btn-save notebook-primary" onClick={() => { const next = commitDraft(draftRef.current); if (next) onSave(next,
               trackOral || trackHomework ? undefined : retainNotebookConditions(next, conditions as Record<string, NotebookCondition>),
               trackOral ? retainOralOutcomes(next, conditions as Record<string, OralOutcome>) : undefined,
               trackHomework ? retainHomeworkOutcomes(next, conditions as Record<string, HomeworkOutcome>) : undefined,
@@ -418,41 +355,14 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </div>
         )}
 
-        <div className="input-row notebook-entry">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ',' || e.key === '،') {
-                e.preventDefault();
-                commitDraft(draft);
-              }
-            }}
-            onPaste={(e) => {
-              const text = e.clipboardData.getData('text');
-              if (/[،؛,;\n]/.test(text)) {
-                e.preventDefault();
-                commitDraft(text);
-              }
-            }}
-            onBlur={() => commitDraft(draft)}
-            placeholder={t(copy.placeholder)}
-            aria-label={t(copy.placeholder)}
-            dir="auto"
-          />
-          <button
-            type="button"
-            onClick={() => commitDraft(draft)}
-            className="btn-add notebook-primary notebook-entry__add"
-            aria-label={t(copy.add)}
-            disabled={!draft.trim()}
-            title={t(copy.add)}
-          >
-            <span className="btn-add-glyph" aria-hidden="true">+</span>
-          </button>
-        </div>
-
+        <StudentAddField
+          draftRef={draftRef}
+          placeholder={t(copy.placeholder)}
+          label={t(copy.placeholder)}
+          addLabel={t(copy.add)}
+          onCommit={commitDraft}
+          commitOnBlur
+        />
         <details className="text-xs leading-relaxed text-[var(--text-muted)]">
           <summary className="min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
             {t(copy.hint)}
@@ -474,7 +384,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <button
             type="button"
             onClick={() => {
-              const next = commitDraft(draft);
+              const next = commitDraft(draftRef.current);
               if (next) onSave(next);
             }}
             className="btn-save truncate"

@@ -1,0 +1,33 @@
+/* Le mot d'attente sous le spinner : en fondu après 700 ms (une attente brève ne montre rien), il monte de
+   quelques pixels et respire doucement. La hauteur est réservée : le spinner ne bouge jamais. */
+.loading-hint {
+  min-height: 1.5em;
+  margin: 0;
+  font-family: var(--font-sans, inherit);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: hsl(var(--muted-foreground));
+  text-wrap: balance;
+}
+.loading-hint__text {
+  display: inline-block;
+  opacity: 0;
+  animation:
+    loading-hint-in 420ms cubic-bezier(0.22, 1, 0.36, 1) 700ms forwards,
+    loading-hint-breathe 2.8s ease-in-out 1200ms infinite;
+}
+/* La phrase qui remplace la première apparaît tout de suite : le délai de 700 ms ne vaut que pour la première. */
+.loading-hint__text[data-late] { animation-delay: 0ms, 420ms; }
+@keyframes loading-hint-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes loading-hint-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-hint__text { opacity: 1; animation: none; }
+}

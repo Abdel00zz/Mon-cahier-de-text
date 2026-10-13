@@ -204,13 +204,13 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
         ) : (
           /* Le vide est une affaire de contenu : la feuille épouse son texte, sans hauteur
              minimale qui creuserait un blanc sous un sujet court. Seul l'état vide en garde une. */
-          <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-4 sm:p-7 shadow-xs', !preview && 'min-h-[12rem]')}>
+          <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-3 sm:p-5 shadow-xs', !preview && 'min-h-[12rem]')}>
             {preview ? (
               <div dir={documentDir}>
                 <DocumentSheetHeader title={headerTitle} classLabel={sheetClass} />
                 {/* La feuille est une PAGE : colonne de lecture bornée, jamais
                     étirée sur toute la largeur d'un grand écran. */}
-                <div className="devoir-document mx-auto max-w-[44rem]" dir={documentDir}>{preview}</div>
+                <div className="devoir-document mx-auto max-w-[56rem]" dir={documentDir}>{preview}</div>
               </div>
             ) : (
               <div className="space-y-3 py-12 text-center text-xs text-muted-foreground">

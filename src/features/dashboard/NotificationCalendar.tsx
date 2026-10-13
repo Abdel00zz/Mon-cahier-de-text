@@ -5,6 +5,7 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import {
   BookOpen,
   CalendarCheck,
@@ -292,7 +293,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         result.push({
           id: `pedagogical:${classInfo.id}:${event.id}`,
           kind: 'pedagogical',
-          title: event.title,
+          title: localizedActivityTitle(event.title, event.type, locale),
           start: event.date,
           end: event.endDate ?? event.date,
           detail: formatLocalizedClassDisplayName(classInfo.name, locale),

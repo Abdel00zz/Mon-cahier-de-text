@@ -3,6 +3,8 @@ import { splitMathText } from '../../lib/text/math';
 import { expandHtmlTags } from '../../lib/text/htmlTags';
 import { renderKatexHtml } from '../../config/katex';
 import { toDisplayText } from '../../lib/text/textValue';
+import { findHighlightClose, findHighlightOpen } from '../../lib/text/highlightMarkers';
+import { nestHandTypedLists } from '../../lib/text/handLists';
 
 /*
  * Moteur de mise en page des descriptions, hors segments mathématiques :
@@ -280,7 +282,7 @@ function renderItem(type: ListKind, item: DescriptionItem, position: number, key
     : markerFor(style, position);
   // Une puce est décorative (l'item est déjà annoncé comme tel) ; un numéro ou
   // une lettre porte une information : il reste lu par les lecteurs d'écran.
-  const decorative = !item.label && style === 'bullet';
+  const decorative = item.label === '•' || (!item.label && style === 'bullet');
   const content = renderBlocks(item.blocks, `${key}-c`, depth + 1);
   return renderItemCells(marker, content.length ? content : [''], key, decorative, Boolean(item.label));
 }
@@ -347,7 +349,7 @@ function expandLatexTextCommands(source: string): string {
     .replace(/\\hspace\*?\{[^{}]*\}/g, '\u00A0')
     .replace(/~/g, '\u00A0')
     // Commandes sans équivalent en texte courant : retirées, pas imprimées.
-    .replace(/\\(?:noindent|centering|raggedright|raggedleft|newpage|clearpage|pagebreak|nopagebreak|vfill|hfill)\b/g, '')
+    .replace(/\\(?:noindent|centering|raggedright|raggedleft|newpage|clearpage|pagebreak|nopagebreak|columnbreak|vfill|hfill)\b/g, '')
     // Les listes ne sont PAS traitées ici : l'analyseur structurel (parseBlocks)
     // les reconnaît avant la mise en page, imbrications comprises, et sans
     // exiger la moindre ligne vide.
@@ -385,6 +387,108 @@ function hasDisplayMath(line: string | undefined): boolean {
   return line !== undefined && line.includes(DISPLAY_MARK);
 }
 
+/*
+ * COLONNES — la commande des corrigés.
+ *
+ * `\begin{multicols}{2} … \end{multicols}` (alias français `\begin{colonnes}{2}`) range son contenu en
+ * 2 ou 3 colonnes dans la feuille de document (aperçu et impression A5). Par défaut, RIEN n'est mis en
+ * colonnes : c'est le contenu lui-même qui porte la commande, typiquement pour la correction d'un devoir
+ * maison ou d'un devoir surveillé. Hors feuille de document (description de séance), le conteneur n'a
+ * pas de style et le texte reste dans son flux ordinaire.
+ *
+ * Le découpage a lieu AVANT la protection des formules : sinon `\begin{multicols}` serait pris pour un
+ * environnement mathématique.
+ */
+const COLUMNS_BLOCK = /\\begin\{(?:multicols|colonnes)\*?\}(?:\{(\d)\})?([\s\S]*?)\\end\{(?:multicols|colonnes)\*?\}/g;
+const COLUMNS_STRAY = /\\(?:begin|end)\{(?:multicols|colonnes)\*?\}(?:\{\d\})?/g;
+const clampColumns = (value: string | undefined): number => Math.min(3, Math.max(2, Number(value) || 2));
+
+function renderColumnSegments(text: string): React.ReactNode[] | null {
+  if (!/\\(?:begin|end)\{(?:multicols|colonnes)/.test(text)) return null;
+  // Un début ou une fin orphelins ne s'affichent jamais tels quels.
+  if (!/\\begin\{(?:multicols|colonnes)[^}]*\}[\s\S]*\\end\{(?:multicols|colonnes)/.test(text)) {
+    return renderDescriptionWithBold(text.replace(COLUMNS_STRAY, ''));
+  }
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let segment = 0;
+  const flush = (source: string, columns?: number) => {
+    const clean = source.replace(COLUMNS_STRAY, '');
+    if (!clean.trim()) return;
+    const key = `seg-${segment++}`;
+    const nodes = renderDescriptionWithBold(clean);
+    out.push(columns
+      ? React.createElement('div', { key, className: 'doc-columns', 'data-columns': columns }, ...nodes)
+      : React.createElement(React.Fragment, { key }, ...nodes));
+  };
+  for (const match of text.matchAll(COLUMNS_BLOCK)) {
+    const start = match.index ?? 0;
+    flush(text.slice(last, start));
+    flush(match[2], clampColumns(match[1]));
+    last = start + match[0].length;
+  }
+  flush(text.slice(last));
+  return out;
+}
+
+/**
+ * \textcolor{rouge}{…} (LaTeX) devient la couleur native [color:rouge]…[/color]. Appliqué APRÈS la protection
+ * des formules : leur contenu est alors un jeton sans accolades, et \textcolor à l'intérieur d'une formule
+ * reste l'affaire de KaTeX.
+ */
+const TEXTCOLOR = /\\textcolor\{([#A-Za-z0-9]{2,20})\}\{([^{}]*)\}/g;
+
+/*
+ * Une ponctuation ne se détache jamais de la formule qui la précède : « …= +∞ ⏎ . » n'existe pas.
+ * Une formule en ligne est un bloc insécable que le navigateur peut séparer du caractère suivant (même avec
+ * un joint-mot) : le bloc et sa ponctuation sont donc enveloppés ensemble (.doc-nowrap). Les formules
+ * affichées n'en reçoivent pas.
+ */
+const GLUE_AFTER_FORMULA = /^[.,;:!?)\]»…]+/u;
+function endsWithFormula(node: React.ReactNode): boolean {
+  if (!React.isValidElement<{ children?: React.ReactNode; className?: string; dangerouslySetInnerHTML?: { __html: string } }>(node)) return false;
+  const { className, dangerouslySetInnerHTML, children } = node.props;
+  if (typeof className === 'string' && className.split(' ').includes('math-text')) return !dangerouslySetInnerHTML?.__html.includes('katex-display');
+  const kids = React.Children.toArray(children);
+  return kids.length > 0 && endsWithFormula(kids[kids.length - 1]);
+}
+/**
+ * Place la ponctuation DANS le dernier bloc de la formule (dernière boîte `.base` de KaTeX) : le texte reste
+ * dans le DOM (copie, lecteurs d'écran) et aucune règle d'enrobage ne peut plus la séparer de la formule.
+ * Renvoie null si le dernier élément n'est pas une formule en ligne reconnaissable.
+ */
+function appendTail(node: React.ReactNode, tail: string): React.ReactNode | null {
+  if (!React.isValidElement<{ children?: React.ReactNode; className?: string; dangerouslySetInnerHTML?: { __html: string } }>(node)) return null;
+  const { className, dangerouslySetInnerHTML, children } = node.props;
+  if (typeof className === 'string' && className.split(' ').includes('math-text')) {
+    const html = dangerouslySetInnerHTML?.__html ?? '';
+    // Fin d'une sortie KaTeX en ligne : …</span> (base) </span> (katex-html) </span> (katex).
+    if (html.includes('katex-display') || !html.endsWith('</span></span></span>')) return null;
+    const escaped = tail.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    return React.cloneElement(node, { dangerouslySetInnerHTML: { __html: `${html.slice(0, -21)}<span class="katex-tail">${escaped}</span></span></span></span>` } });
+  }
+  const kids = React.Children.toArray(children);
+  if (kids.length === 0) return null;
+  const last = appendTail(kids[kids.length - 1], tail);
+  return last ? React.cloneElement(node, {}, ...kids.slice(0, -1), last) : null;
+}
+
+function glueAfterFormulas(list: React.ReactNode[]): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  list.forEach((child, index) => {
+    const punctuation = typeof child === 'string' && out.length > 0 ? GLUE_AFTER_FORMULA.exec(child) : null;
+    if (typeof child === 'string' && punctuation && endsWithFormula(out[out.length - 1])) {
+      const rest = child.slice(punctuation[0].length);
+      const tailed = appendTail(out[out.length - 1], punctuation[0]);
+      if (tailed) out[out.length - 1] = tailed;
+      else out.push(React.createElement('span', { key: `glue-${index}`, className: 'doc-nowrap' }, out.pop(), punctuation[0]));
+      if (rest) out.push(rest);
+      return;
+    }
+    out.push(child);
+  });
+  return out;
+}
 /**
  * Point d'entrée : formules protégées par des jetons indivisibles, commandes de
  * document traduites, puis analyse structurelle (listes, items imbriqués) et
@@ -394,6 +498,8 @@ function hasDisplayMath(line: string | undefined): boolean {
 export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
   const text = toDisplayText(input);
   if (!text) return [];
+  const columns = renderColumnSegments(text);
+  if (columns) return columns;
   let prefix = '\uE000';
   while (text.includes(prefix)) prefix += '\uE000';
   const formulas: string[] = [];
@@ -406,7 +512,9 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
     if (!part.math) return expandLatexTextCommands(expandHtmlTags(part.text));
     const index = formulas.push(part.text) - 1;
     return prefix + index + (isDisplayMath(part.text) ? DISPLAY_MARK : INLINE_MARK);
-  }).join('').replace(/\n{3,}/g, '\n\n');
+  }).join('').replace(/\n{3,}/g, '\n\n').replace(TEXTCOLOR, '[color:$1]$2[/color]');
+  // Sous-questions tapées à la main (1. / a. / -, indentées) : réécrites en listes imbriquées, marqueurs conservés.
+  const structuredSource = nestHandTypedLists(protectedSource);
   const token = new RegExp(prefix + '(\\d+)[\uE001\uE002]', 'g');
   // Les formules ne sont plus recopiées en TeX dans le DOM puis composées
   // après coup : elles arrivent ici déjà rendues par KaTeX, au milieu du texte
@@ -427,23 +535,25 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
       last = start + match[0].length;
     }
     if (last < value.length) out.push(value.slice(last));
-    return out.length === 1 ? out[0] : React.createElement(React.Fragment, null, ...out);
+    const glued = glueAfterFormulas(out);
+    return glued.length === 1 ? glued[0] : React.createElement(React.Fragment, null, ...glued);
   };
 
   const restore = (node: React.ReactNode): React.ReactNode => {
     if (typeof node === 'string') return restoreMath(node);
     if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
-      return React.cloneElement(node, {}, React.Children.map(node.props.children, restore));
+      const mapped = React.Children.map(node.props.children, restore);
+      return React.cloneElement(node, {}, Array.isArray(mapped) ? glueAfterFormulas(mapped) : mapped);
     }
     return node;
   };
-  const state: ParseCursor = { tokens: tokenizeLatex(protectedSource), index: 0 };
-  return renderBlocks(parseBlocks(state), '0').map((node, index) => {
+  const state: ParseCursor = { tokens: tokenizeLatex(structuredSource), index: 0 };
+  return glueAfterFormulas(renderBlocks(parseBlocks(state), '0').map((node, index) => {
     const restored = restore(node);
     return React.isValidElement(restored) && restored.key === null
       ? React.cloneElement(restored, { key: `restored-${index}` })
       : restored;
-  });
+  }));
 }
 
 /** Titre de document : `#` centré, `##` en barre d'exercice, `###` sous-titre. */
@@ -512,6 +622,22 @@ function renderLine(text: string, baremes: string[], key: string): React.ReactNo
   )];
 }
 
+/*
+ * Les deux points d'un titre principal (`#` titre, `##` barre d'exercice) : « Devoir surveillé 3 : ».
+ * Ajoutés à l'affichage, jamais dans le texte saisi. Rien n'est ajouté derrière une ponctuation finale ni
+ * derrière une formule (un titre qui s'achève sur une formule se lit comme une phrase). Typographie : une
+ * espace insécable avant « : » en français, aucune en arabe ni en anglais.
+ */
+const TITLE_END_PUNCTUATION = /[:：.!?؟…;،,)\]\uE001\uE002]\s*$/u;
+const ARABIC_LETTER = /[\u0600-\u06FF\u0750-\u077F]/u;
+function titleColon(text: string): string {
+  const trimmed = text.trimEnd();
+  if (!trimmed || TITLE_END_PUNCTUATION.test(trimmed)) return '';
+  const lastLetter = [...trimmed].reverse().find(char => /\p{L}|\p{N}/u.test(char)) ?? '';
+  const english = typeof document !== 'undefined' && document.documentElement.lang === 'en';
+  return ARABIC_LETTER.test(lastLetter) || english ? ':' : '\u00A0:';
+}
+
 /** Un titre : la classe porte le rôle, le niveau de `#` la nature. */
 function renderHeading(level: number, text: string, key: string): React.ReactNode[] {
   const className = level === 1 ? 'doc-title' : level === 2 ? 'doc-heading' : 'doc-subheading';
@@ -522,7 +648,7 @@ function renderHeading(level: number, text: string, key: string): React.ReactNod
       className,
       ...(level === 2 ? { 'data-tone': String(headingTone(text)) } : {}),
     },
-    ...applyInlineFormatting(text, `${key}-text`)
+    ...applyInlineFormatting(level <= 2 ? text.trimEnd() + titleColon(text) : text, `${key}-text`)
   )];
 }
 
@@ -563,6 +689,7 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
   const headings = lines.map((line, index) => (markers[index] ? null : line.match(HEADING_LINE)));
   const bodies = lines.map((line, index) => (headings[index] ? { text: '', baremes: [] as string[] } : splitBareme(line)));
 
+  let gapOpen = false;
   for (let index = 0; index < lines.length; index += 1) {
     const marker = markers[index];
 
@@ -574,6 +701,16 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
       out.push(...renderHeading(heading[1].length, heading[2], `head-${keyBase}-${index}`));
       continue;
     }
+
+    // Ligne vide = respiration entre deux paragraphes : un espacement compact (réglé par la feuille), jamais
+    // deux de suite. Une vraie ligne blanche par paragraphe donnerait un document aéré à l'excès.
+    if (!marker && !lines[index].trim()) {
+      flushItems();
+      if (!gapOpen) out.push(React.createElement('span', { key: `gap-${keyBase}-${index}`, className: 'doc-gap', 'aria-hidden': true }));
+      gapOpen = true;
+      continue;
+    }
+    gapOpen = false;
 
     if (!marker) {
       flushItems();
@@ -620,6 +757,9 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
 
 const INLINE_MARKERS = ['***', '**', '++', '==', '*'] as const;
 
+/* Surlignage qui n'entoure que des formules affichées : le surlignage est porté par chaque formule (CSS), la balise s'efface. */
+const DISPLAY_ONLY_TOKENS = /^\s*(?:\uE000+\d+\uE002\s*)+$/;
+
 function getColorClass(color: string): string {
   const c = color.toLowerCase();
   switch (c) {
@@ -658,7 +798,8 @@ function findNextInlineOpen(segment: string, from: number): InlineMatch | null {
   let best: InlineMatch | null = null;
 
   for (const marker of INLINE_MARKERS) {
-    const idx = segment.indexOf(marker, from);
+    // == ne s'ouvre que s'il est seul et colle au texte : x == y et  === b restent du texte.
+    const idx = marker === '==' ? findHighlightOpen(segment, from) : segment.indexOf(marker, from);
     if (idx < 0) continue;
     if (!best || idx < best.index || (idx === best.index && marker.length > best.openLen)) {
       best = { type: 'marker', index: idx, marker, openLen: marker.length, closeTag: marker };
@@ -693,7 +834,9 @@ function applyInlineFormatting(segment: string, keyBase: string): React.ReactNod
       break;
     }
 
-    const closingIndex = segment.indexOf(opening.closeTag, opening.index + opening.openLen);
+    const closingIndex = opening.type === 'marker' && opening.marker === '=='
+      ? findHighlightClose(segment, opening.index + opening.openLen)
+      : segment.indexOf(opening.closeTag, opening.index + opening.openLen);
     if (closingIndex < 0) {
       out.push(segment.slice(cursor, opening.index + opening.openLen));
       cursor = opening.index + opening.openLen;
@@ -726,7 +869,7 @@ function applyInlineFormatting(segment: string, keyBase: string): React.ReactNod
     } else if (opening.marker === '++') {
       out.push(React.createElement('u', { key, className: 'decoration-current underline-offset-2' }, ...children));
     } else if (opening.marker === '==') {
-      out.push(React.createElement('mark', { key, className: 'rounded-sm bg-amber-200/90 dark:bg-amber-400/30 text-inherit px-1 py-0.5 font-normal' }, ...children));
+      out.push(React.createElement('mark', { key, className: DISPLAY_ONLY_TOKENS.test(inner) ? 'doc-hl doc-hl--display' : 'doc-hl' }, ...children));
     } else {
       out.push(React.createElement('em', { key }, ...children));
     }

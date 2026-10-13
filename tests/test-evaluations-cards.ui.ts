@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { DevoirsView } from '../src/features/evaluations/DevoirsView';
 import { translateLocaleMessage } from '../src/i18n/messages';
+import { getBundledCalendar, todayInMorocco } from '../src/domain/calendar/calendar';
 import type { AppConfig, ClassInfo, PedagogicalEvent, PedagogicalEventType } from '../src/types';
 
 /*
@@ -92,10 +93,12 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.doesNotMatch(olympiade, /kind-group__badge/, 'le titre d’une catégorie ne porte pas d’icône');
   // Le sigle de la famille est écrit, la ligne dit ce qu'elle est.
   assert.match(olympiade, /class="tone-chip">Olympiade</);
-  assert.match(cahiers, /class="tone-chip">Contrôle des cahiers des élèves</);
+  // Le titre généré (ici enregistré en arabe) se dit en français sur un écran français : il porte déjà la nature, donc pas de pastille en double.
+  assert.match(cahiers, /dir="auto">Contrôle des cahiers des élèves<\/h4>/);
+  assert.doesNotMatch(cahiers, /class="tone-chip"/);
   assert.match(olympiade, /Olympiade de mathématiques/);
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
-  assert.match(cahiers, /<span>Cahiers<\/span><span class="ev-action__count">2<\/span>/, 'commande écrite, avec son compte');
+  assert.match(cahiers, /<span>Élèves<\/span><span class="ev-action__count">2<\/span>/, 'commande écrite, avec son compte');
   assert.match(cahiers, /aria-label="Suivi des cahiers — [^"]* · 2"/, 'le nom accessible garde le compte');
   // État et suppression restent des commandes, jamais un clic sur la ligne.
   assert.doesNotMatch(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/, 'le bouton marquer comme réalisé est purgé');
@@ -112,7 +115,8 @@ test('les commandes portent un pictogramme, un libellé écrit et une infobulle 
   assert.match(olympiade, /<span>Contenu<\/span>/, 'un seul mot : « Contenu » ; le plus vit dans le pictogramme, seulement quand le contenu est requis');
   assert.doesNotMatch(olympiade, /<span>\+ /, 'aucun « + » dans un libellé de commande');
   assert.match(olympiade, /<span>Élèves<\/span>/, 'les élèves consignés : un mot');
-  assert.match(cahiers, /<span>Cahiers<\/span>/, 'le suivi des cahiers : un mot');
+  assert.match(cahiers, /<span>Élèves<\/span>/, 'le suivi des cahiers : le même mot, « Élèves »');
+  assert.doesNotMatch(cahiers, /<span>Cahiers<\/span>/, 'aucun second mot pour la même commande');
   assert.match(olympiade, /data-tippy-content="[^"]+"/, 'chaque commande a son infobulle');
   // Un pictogramme décoratif (famille d'icônes maison) précède chaque mot ; il ne remplace jamais le libellé.
   assert.match(olympiade, /class="ev-action[^>]*>\s*<svg[^>]*ev-action__icon/, 'chaque commande porte son pictogramme décoratif');
@@ -222,4 +226,67 @@ test('un devoir maison s’affiche en deux entrées : assigné aux élèves, pui
   assert.doesNotMatch(correction, /evaluations\.action\.absent|evaluations\.action\.dueDate/, 'ni absents, ni date limite');
   // Une seule corbeille par entrée, la même que partout.
   assert.equal((assigned.match(/<AnimatedTrashButton/g) ?? []).length, 1);
+});
+test('un titre généré se dit dans la langue de l’écran, sans pastille ni remarque en doublon', () => {
+  // Titre enregistré en français dans un cahier lu en arabe : « تقويم تشخيصي 1 », à la place de « Évaluation diagnostique1 ».
+  const stored = event('d1', 'evaluation_diagnostic', 'Évaluation diagnostique1', '2026-09-14', { note: 'غياب معظم التلاميذ' });
+  const ar = renderSheet([stored], 'ar');
+  assert.match(ar, /dir="auto">تقويم تشخيصي 1<\/h4>/, 'titre localisé, numéro conservé');
+  assert.doesNotMatch(ar, /Évaluation diagnostique/, 'aucune seconde langue sur la ligne');
+  assert.doesNotMatch(ar, /class="tone-chip"/, 'la pastille de nature ne répète pas le titre');
+  assert.doesNotMatch(ar, /غياب معظم التلاميذ/, 'la remarque du cahier reste dans l’éditeur');
+  // En français, l’espace manquant est rétabli ; la remarque n’y paraît pas non plus.
+  const fr = renderSheet([event('d2', 'evaluation_diagnostic', 'Évaluation diagnostique1', '2026-09-14', { note: 'Absences nombreuses' })]);
+  assert.match(fr, /dir="auto">Évaluation diagnostique 1<\/h4>/);
+  assert.doesNotMatch(fr, /Absences nombreuses/);
+  // Un titre écrit par le professeur n’est jamais touché, et garde sa pastille de nature.
+  const own = renderSheet([event('o1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
+  assert.match(own, />Olympiade de mathématiques<\/h4>/);
+  assert.match(own, /class="tone-chip">Olympiade</);
+});
+
+test('sans date, la ligne le dit simplement : rien à cliquer, la date vient du tableau de l’éditeur', () => {
+  const undated = renderSheet([event('u1', 'olympiade', 'Olympiade', '')]);
+  assert.match(undated, /<span class="ev-date-empty">Pas encore de date<\/span>/);
+  assert.doesNotMatch(undated, /ev-date-trigger/, 'aucun bouton de date sans date');
+  assert.doesNotMatch(undated, /Définir une date/, 'plus de « + Définir une date »');
+  const arabic = renderSheet([event('u2', 'olympiade', 'أولمبياد', '')], 'ar');
+  assert.match(arabic, /<span class="ev-date-empty">لا يوجد تاريخ بعد<\/span>/);
+  const dated = renderSheet([event('u3', 'olympiade', 'Olympiade', '2026-09-14')]);
+  assert.match(dated, /class="ev-date-trigger[^"]*"/, 'une date posée reste modifiable');
+  assert.doesNotMatch(dated, /ev-date-empty/);
+});
+
+test('le jour de la date limite, le bouton pulse avec l’effet existant ; avant et après, il reste calme', () => {
+  const today = todayInMorocco(new Date(), getBundledCalendar());
+  const day = (offset: number) => new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
+  const render = (due: string) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(DevoirsView, { classInfo, onConfigChange: () => {}, onLessonsChange: () => {},
+      lessonsData: [{ type: 'devoir_maison', title: 'Devoir à la maison 1', sections: [] }] as never, config: {
+      manualAssessments: { c1: [{ id: 'maison-1-custom', schoolYear: '2026-2027', type: 'maison', num: 1, semestre: 1, dateISO: day(-3), dueDateISO: due }] },
+    } as unknown as AppConfig }) }));
+  const dueToday = render(today);
+  assert.match(dueToday, /class="ev-action shrink-0 glow-pulse-warning"[^>]*data-due="today"/, 'halo ambré le jour même');
+  assert.match(dueToday, /À rendre aujourd’hui/, 'la ligne le dit aussi');
+  for (const offset of [-1, 1]) {
+    const other = render(day(offset));
+    assert.doesNotMatch(other, /glow-pulse-warning|data-due=/, `${offset > 0 ? 'avant' : 'après'} : aucun halo`);
+  }
+});
+
+test('le halo d’échéance réutilise l’animation des commandes à ne pas manquer et respecte la réduction des mouvements', () => {
+  const css = readFileSync('src/components/ui/modal-motion.css', 'utf8');
+  assert.match(css, /\.glow-pulse-warning \{[^}]*animation: modal-glow-pulse/, 'même animation que glow-pulse-danger / primary');
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.glow-pulse-warning[\s\S]*animation: none/);
+});
+
+test('la fenêtre du rendu se dit « Rendu du devoir », sans la phrase « élèves n’ayant pas rendu »', () => {
+  assert.equal(translateLocaleMessage('fr', 'evaluations.homework.notReturnedTitle'), 'Rendu du devoir');
+  assert.equal(translateLocaleMessage('en', 'evaluations.homework.notReturnedTitle'), 'Homework hand-in');
+  assert.equal(translateLocaleMessage('ar', 'evaluations.homework.notReturnedTitle'), 'تسليم الفرض');
+  for (const locale of ['fr', 'en', 'ar'] as const) {
+    for (const key of ['evaluations.homework.notReturnedTitle', 'evaluations.tip.notReturned', 'evaluations.deleteCorrectionDescription']) {
+      assert.doesNotMatch(translateLocaleMessage(locale, key), /n’ayant pas rendu|n’ont pas rendu|did not hand in|لم يسلّموا/, `${locale}/${key}`);
+    }
+  }
 });

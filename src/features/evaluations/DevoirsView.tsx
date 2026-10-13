@@ -10,6 +10,7 @@ import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/doma
 import { documentIndicator, documentRequirementForAssessment, documentRequirementForHomeworkCorrection } from '@/domain/evaluations/documentRequirement';
 import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import './evaluationsResponsive.css';
 import './evaluationReference.css';
 import { ChevronDown } from 'lucide-react';
@@ -33,7 +34,7 @@ import { ActivitiesEmptyState } from './components/ActivitiesEmptyState';
 import { PedagogicalEventsSection } from './components/PedagogicalEventsSection';
 import { DevoirsModals } from './components/DevoirsModals';
 import { KindGroupHeader } from './components/KindGroupHeader';
-import { DEVOIR_KIND_CONFIG, PEDAGOGICAL_EVENT_CONFIG, groupKinds, kindLabelKey, type EvaluationKind } from './kindCatalog';
+import { DEVOIR_KIND_CONFIG, groupKinds, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
 
@@ -191,7 +192,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   };
 
   const activityLabelOf = (event: PedagogicalEvent) =>
-    event.title || t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey);
+    localizedActivityTitle(event.title, event.type, locale);
 
   const openEditAssessment = (assessment: { id: string; type: DevoirType; num: number; dateISO: string; duree?: string; semestre: 1 | 2 }) => {
     setEditingAssessment({
@@ -288,7 +289,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : '';
     const rawDate = link.entry ? (link.entry.date ?? '') : a.dateISO;
     const formatSingleDate = (iso: string) => {
-      if (!iso) return t('evaluations.setDate');
+      if (!iso) return '—';
       const parts = iso.split('-');
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
       return iso;
@@ -374,32 +375,28 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     <span className="ev-row__note">{t('evaluations.homework.givenOn', { date: ltrIsolate(formatSingleDate(rawDate)) })}</span>
                   )}
                   {a.type === 'maison' && dueDateISO && (
-                    <span className="ev-row__note">{t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
+                    <span className="ev-row__note">{dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
                   )}
                 </div>
               )}
             </div>
 
             <div className="ev-row__date">
-              <button
-                type="button"
-                onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: rawDate })}
-                className={cn(
-                  "ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold select-none cursor-pointer transition-all active:scale-95 border-0 shadow-none",
-                  rawDate
-                    ? "text-foreground hover:text-primary hover:bg-muted/40 rounded-md"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md"
-                )}
-                data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}
-                aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
-              >
-                {/* Seule la date est isolée de gauche à droite : « + Définir une date » suit la langue. */}
-                <span className="whitespace-nowrap tabular-nums text-xs font-bold">
-                  {rawDate ? <bdi dir="ltr">{formatSingleDate(rawDate)}</bdi> : t('evaluations.setDate')}
-                </span>
-              </button>
+              {rawDate ? (
+                <button
+                  type="button"
+                  onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: rawDate })}
+                  className="ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold text-foreground select-none cursor-pointer transition-all hover:text-primary hover:bg-muted/40 rounded-md active:scale-95 border-0 shadow-none"
+                  data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}
+                  aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
+                >
+                  <span className="whitespace-nowrap tabular-nums text-xs font-bold"><bdi dir="ltr">{formatSingleDate(rawDate)}</bdi></span>
+                </button>
+              ) : (
+                /* La date vient du tableau de l'éditeur : sans date, un simple constat, rien à cliquer. */
+                <span className="ev-date-empty" data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}>{t('evaluations.noDateYet')}</span>
+              )}
             </div>
-
             <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
               {docIndicator !== 'none' && (
                 <button
@@ -455,9 +452,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditingDateAssessment({ id: a.id, name: displayName, date: dueDateISO, field: 'due' })}
-                  className="ev-action shrink-0"
+                  // Le jour de la date limite, le bouton pulse (même halo que les autres commandes à ne pas manquer).
+                  className={cn('ev-action shrink-0', dueDateISO === today && 'glow-pulse-warning')}
                   data-filled={dueDateISO ? 'tone' : undefined}
-                  data-tippy-content={t('evaluations.tip.dueDate')}
+                  data-due={dueDateISO === today ? 'today' : undefined}
+                  data-tippy-content={dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.tip.dueDate')}
                   aria-label={dueDateISO
                     ? `${t('evaluations.action.dueDate')} — ${formatSingleDate(dueDateISO)} — ${displayName}`
                     : `${t('evaluations.action.dueDate')} — ${displayName}`}
@@ -506,7 +505,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             aria-label={t('evaluations.assessmentDateAria', { assessment: correctionName })}
           >
             <span className="whitespace-nowrap tabular-nums text-xs font-bold">
-              {correctionDateISO ? <bdi dir="ltr">{formatSingleDate(correctionDateISO)}</bdi> : t('evaluations.setDate')}
+              {correctionDateISO ? <bdi dir="ltr">{formatSingleDate(correctionDateISO)}</bdi> : t('evaluations.noDateYet')}
             </span>
           </button>
         </div>

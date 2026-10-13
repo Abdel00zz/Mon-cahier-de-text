@@ -102,7 +102,7 @@ test('au téléphone, deux lignes par entrée et jamais moins de 44 px au doigt'
   const tablet = css.slice(css.indexOf('@media (max-width: 1023px)'), css.indexOf('/* Repli en trois lignes'));
   assert.match(tablet, /\.ev-board__head \{ display: none; \}/, 'un en-tête de colonnes n’a plus de sens en deux lignes');
   assert.match(tablet, /grid-template-areas:[\s\S]{0,120}'id id'[\s\S]{0,80}'date actions'/, 'identité seule, puis date et actions');
-  assert.match(tablet, /\.ev-row__date input\[type='date'\] \{ height: 2\.75rem/, 'la date atteint 44 px');
+  assert.match(tablet, /\.ev-date-trigger, \.ev-date-empty \{ height: 2\.75rem/, 'la date atteint 44 px');
   assert.match(tablet, /\.ev-action \{ min-height: 2\.75rem/, 'les commandes aussi');
   assert.match(tablet, /\.ev-icon-btn \{ width: 2\.75rem; height: 2\.75rem; \}/, 'les icônes-commandes aussi');
   // Sous 640 px, date et commandes ne cohabitent plus : trois lignes, pas quatre.

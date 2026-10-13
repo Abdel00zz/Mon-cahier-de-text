@@ -1,51 +1,73 @@
 /* ══════════════════════════════════════════════════════════════
    LA FEUILLE DE DEVOIR — en-tête, marges et bouton d'impression
    Une seule mesure pour l'aperçu, la relecture de la direction et
-   l'impression A5 : le titre à l'inline-start, la classe à l'autre bord
-   (à droite en français, à gauche en arabe), un filet fin dessous.
+   l'impression A5 : le titre au centre, en texte coloré (aucun fond, aucun filet),
+   la classe discrète à l'autre bord (à droite en français, à gauche en arabe).
    ══════════════════════════════════════════════════════════════ */
 
 /* ── En-tête : écran ─────────────────────────────────────────── */
 .doc-sheet-header {
-  display: flex;
+  /* Encre dégradée bleu nuit → turquoise profond : académique, sans aplat. */
+  --sheet-ink-from: #1f3a8a;
+  --sheet-ink-to: #0f766e;
+  --sheet-ink-quiet: #475a78;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
   align-items: baseline;
-  justify-content: space-between;
-  gap: 0.35rem 1rem;
-  /* Même colonne de lecture que le corps (`max-w-[44rem]`). */
-  max-width: 44rem;
+  column-gap: 1rem;
+  /* Même colonne de lecture que le corps (`max-w-[56rem]`). */
+  max-width: 56rem;
   margin: 0 auto 1.1rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid hsl(var(--foreground) / 0.2);
+  padding: 0.1rem 0 0.2rem;
   break-after: avoid;
 }
+.dark .doc-sheet-header {
+  --sheet-ink-from: #93b4f2;
+  --sheet-ink-to: #6fd1c3;
+  --sheet-ink-quiet: #a9b8cf;
+}
 .doc-sheet-header__title {
-  flex: 1 1 auto;
-  min-width: 0;
+  grid-column: 2;
+  justify-self: center;
+  /* Le dégradé épouse la largeur du texte, pas celle de la colonne. */
+  width: fit-content;
+  max-width: 100%;
   margin: 0;
   font-family: 'Newsreader', var(--font-arabic-display), Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.45rem;
+  font-style: italic;
+  font-weight: 500;
   line-height: 1.25;
-  letter-spacing: -0.006em;
-  color: hsl(var(--foreground));
+  letter-spacing: 0.005em;
+  text-align: center;
+  color: var(--sheet-ink-from);
+  background-image: linear-gradient(95deg, var(--sheet-ink-from), var(--sheet-ink-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
 .doc-sheet-header__class {
-  /* Sans titre (déjà dit par le document), la classe garde son bord. */
+  grid-column: 3;
+  justify-self: end;
   margin: 0;
-  margin-inline-start: auto;
-  flex: 0 1 auto;
-  max-width: 46%;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 600;
   line-height: 1.3;
-  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-align: end;
+  color: var(--sheet-ink-quiet);
   overflow-wrap: anywhere;
 }
-html[lang='ar'] .doc-sheet-header__title { letter-spacing: normal; line-height: 1.45; }
-html[lang='ar'] .doc-sheet-header__class { line-height: 1.5; }
+html[lang='ar'] .doc-sheet-header__title { font-style: normal; letter-spacing: normal; line-height: 1.5; }
+html[lang='ar'] .doc-sheet-header__class { font-size: 0.84rem; letter-spacing: normal; text-transform: none; line-height: 1.5; }
+@media screen and (max-width: 480px) {
+  /* Téléphone : la classe passe sous le titre, centrée, au lieu d'écraser ses colonnes. */
+  .doc-sheet-header { grid-template-columns: minmax(0, 1fr); row-gap: 0.15rem; }
+  .doc-sheet-header__title, .doc-sheet-header__class { grid-column: 1; justify-self: center; text-align: center; }
+}
 
 /* ── Marges : jamais de vide ajouté en haut ni en bas ──────────
    Une barre d'exercice, un titre ou une formule affichée portent chacun une
@@ -109,17 +131,45 @@ html[lang='ar'] .doc-sheet-header__class { line-height: 1.5; }
   .doc-icon-btn[aria-busy='true'] .app-icon { animation: none; opacity: 0.6; }
 }
 
-/* ── En-tête : impression A5 (132 mm utiles) ───────────────────
-   Hauteur du bloc ≈ 5,5 mm de titre + 1,8 mm sous le texte + 0,3 mm de filet
-   + 3,2 mm avant le corps = 10,8 mm. Le titre prend au moins 58 % de la largeur
-   (≈ 72 mm : 30 caractères par ligne à 12,5 pt), la classe au plus 42 %. */
+/* ── En-tête : impression A5 (140 mm utiles) ───────────────────
+   Hauteur du bloc ≈ 6 mm de titre (14 pt) + 3,5 mm avant le corps. Le titre est au centre ;
+   les colonnes latérales (1fr) laissent à la classe environ le quart de la largeur. */
 .pedagogical-print-root .doc-sheet-header {
+  /* Toujours l'encre claire du jour, même si l'application est en mode sombre. */
+  --sheet-ink-from: #1f3a8a;
+  --sheet-ink-to: #0f766e;
+  --sheet-ink-quiet: #475a78;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
   max-width: none;
-  margin: 0 0 3.2mm;
-  padding-bottom: 1.8mm;
-  border-bottom: 0.3mm solid #24231f;
-  gap: 1mm 4mm;
+  margin: 0 0 3.5mm;
+  padding: 0;
+  column-gap: 4mm;
 }
-.pedagogical-print-root .doc-sheet-header__title { font-size: 12.5pt; line-height: 1.2; color: #24231f; }
-.pedagogical-print-root .doc-sheet-header__class { max-width: 42%; font-size: 8.5pt; line-height: 1.25; color: #5e594e; }
+.pedagogical-print-root .doc-sheet-header__title { font-size: 14pt; line-height: 1.2; grid-column: 2; justify-self: center; text-align: center; }
+.pedagogical-print-root .doc-sheet-header__class { font-size: 8pt; line-height: 1.25; }
 .pedagogical-print-root .doc-sheet-header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+/* ── Colonnes : la commande des corrigés ───────────────────────────────────────
+   `\begin{multicols}{2} … \end{multicols}` (alias `colonnes`) range son contenu en 2 ou 3 colonnes
+   dans la feuille de document. Par défaut rien n'est en colonnes : seul le contenu qui porte la
+   commande en reçoit. Hors feuille (description de séance), le conteneur reste sans style. */
+.devoir-document .doc-columns {
+  column-count: 2;
+  column-gap: 1.6rem;
+  column-rule: 1px solid hsl(var(--border));
+  margin-block: 0.4rem;
+}
+.devoir-document .doc-columns[data-columns='3'] { column-count: 3; column-gap: 1.2rem; }
+/* La première barre part du haut, comme celle de la colonne voisine (le navigateur retire déjà la marge en haut des suivantes). */
+.devoir-document .doc-columns > :first-child { margin-top: 0 !important; }
+/* Un exercice, une barre ou une formule centrée ne se coupe jamais entre deux colonnes. */
+.devoir-document .doc-columns > * { break-inside: avoid; }
+.devoir-document .doc-columns .doc-heading,
+.devoir-document .doc-columns .doc-subheading { break-after: avoid; }
+/* Sur téléphone, deux colonnes de lecture sont trop étroites : une seule, l'impression garde les colonnes. */
+@media screen and (max-width: 560px) {
+  .devoir-document .doc-columns, .devoir-document .doc-columns[data-columns='3'] { column-count: 1; column-rule: none; }
+}
+/* A5 : 140 mm utiles — deux colonnes de ~67 mm, trois de ~44 mm. */
+.pedagogical-print-root .devoir-document .doc-columns { column-gap: 5mm; column-rule: 0.2mm solid #a9a597; margin-block: 1mm; }
+.pedagogical-print-root .devoir-document .doc-columns[data-columns='3'] { column-gap: 3.5mm; }

@@ -1,12 +1,14 @@
 .pedagogical-print-root {
   position: fixed; inset-inline-start: -10000px; top: 0;
-  width: 132mm; color: #24231f; background: #fff;
+  width: 140mm; color: #24231f; background: #fff;
   font-size: 10pt; line-height: 1.38;
 }
 body[data-document-print] .pedagogical-print-root .devoir-document {
-  --doc-title-ink: #831f35; --doc-fs-title: 14pt; --doc-fs-heading: 10pt; --doc-fs-bareme: 9.5pt;
+  --doc-title-ink: #1f3a5f; --doc-fs-title: 14pt; --doc-fs-heading: 10pt; --doc-fs-bareme: 9.5pt;
   color: #24231f; font-size: 10pt; line-height: 1.38; max-width: none; overflow-wrap: anywhere;
 }
+/* Le surlignage s'imprime toujours dans sa teinte claire, même si l'application est en mode sombre. */
+body[data-document-print] .pedagogical-print-root mark.doc-hl { --hl: #fde68a; }
 .pedagogical-print-root .devoir-document > :first-child {
   margin-top: 0 !important;
   padding-top: 0 !important;
@@ -19,7 +21,7 @@ body[data-document-print] .pedagogical-print-root .devoir-document {
 .pedagogical-print-root { break-after: avoid; page-break-after: avoid; }
 .pedagogical-print-root .doc-title {
   margin: 0 0 2.5mm !important;
-  padding-block: 0 1.2mm !important;
+  padding-block: 0 0.6mm !important;
   font-size: 14pt !important;
   line-height: 1.25 !important;
 }
@@ -50,11 +52,12 @@ body[data-document-print] .pedagogical-print-root .devoir-document {
   break-inside: avoid;
 }
 @media print {
-  /* Marges symétriques : 7 mm en haut et en bas, 8 mm sur les côtés. Le haut de la page est
-     ensuite tenu par l'en-tête, jamais par un vide ajouté (voir documentSheet.css). */
+  /* Marges. Papier : aucune taille imposée, c'est le papier choisi qui décide (A5 par défaut sur Android).
+     Haut et bas : 7 mm, tenus par la page. Côtés : 0 sur la page, puis un remplissage de la feuille elle-même,
+     de 4 mm sur A5 (140 mm utiles) qui croît doucement avec le papier (≈ 12 mm sur A4) : ni marge énorme, ni texte
+     collé au bord. Le texte garde sa taille (10 pt) sur tous les papiers : seule la ligne s'élargit. */
   @page {
-    size: A5 portrait;
-    margin: 7mm 8mm;
+    margin: 7mm 0;
   }
   html:has(body[data-document-print]), body[data-document-print] {
     height: auto !important;
@@ -70,6 +73,8 @@ body[data-document-print] .pedagogical-print-root .devoir-document {
     position: static !important;
     width: auto !important;
     height: auto !important;
+    box-sizing: border-box;
+    padding-inline: clamp(4mm, calc(4mm + (100vw - 148mm) * 0.13), 16mm) !important;
     visibility: visible !important;
     overflow: visible !important;
   }

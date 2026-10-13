@@ -26,9 +26,9 @@ const render = (source: string) => renderToStaticMarkup(
 
 test('un titre de document est centré, une barre par exercice', () => {
   const html = render('# Devoir surveillé 3\n\n## Exercice 1\n\nUne urne contient 10 boules.\n\n## Exercice 2\n\nOn considère les points A et B.');
-  assert.match(html, /<span class="doc-title">Devoir surveillé 3<\/span>/);
-  assert.match(html, /<span class="doc-heading" data-tone="1">Exercice 1<\/span>/);
-  assert.match(html, /<span class="doc-heading" data-tone="2">Exercice 2<\/span>/);
+  assert.match(html, /<span class="doc-title">Devoir surveillé 3\u00A0:<\/span>/);
+  assert.match(html, /<span class="doc-heading" data-tone="1">Exercice 1\u00A0:<\/span>/);
+  assert.match(html, /<span class="doc-heading" data-tone="2">Exercice 2\u00A0:<\/span>/);
   // Le titre n'est pas un paragraphe : aucun saut de ligne parasite autour.
   assert.equal(/doc-title">[^<]*\n/.test(html), false);
 });
@@ -131,5 +131,20 @@ test('l’aide de la feuille cite les trois marqueurs', () => {
   assert.match(modal, /\['## Exercice 1', 'evaluations\.doc\.syntaxExercise'\]/);
   assert.match(modal, /\['\[\[2pts\]\]', 'evaluations\.doc\.syntaxBareme'\]/);
   // L'aperçu est une page : colonne de lecture bornée.
-  assert.match(modal, /devoir-document mx-auto max-w-\[44rem\]/);
+  assert.match(modal, /devoir-document mx-auto max-w-\[56rem\]/);
+});
+
+test('les titres principaux sont un peu plus gras et finissent par deux points, sans doublon', () => {
+  const css = readFileSync('src/styles/index.css', 'utf8');
+  assert.match(css, /\.devoir-document \.doc-title \{[^}]*font-weight: 700/, 'titre : un peu plus de gras');
+  // Ajoutés à l'affichage seulement : espace insécable en français, rien en arabe.
+  assert.match(render('# Fiche de cours'), /<span class="doc-title">Fiche de cours\u00A0:<\/span>/);
+  assert.match(render('# ورقة تمارين'), /<span class="doc-title">ورقة تمارين:<\/span>/);
+  assert.match(render('## Exercice 2'), />Exercice 2\u00A0:<\/span>/);
+  // Rien derrière une ponctuation finale ni derrière une formule.
+  for (const title of ['Fiche : étude de fonctions :', 'Quelle limite ?', 'Résumé.', 'Étude de $f(x)=x^2$']) {
+    assert.doesNotMatch(render(`# ${title}`), /:<\/span>[^]*:<\/span>|\u00A0:<\/span>/, title);
+  }
+  // Les sous-titres (###) ne reçoivent pas de deux points.
+  assert.match(render('### Remarque'), /<span class="doc-subheading">Remarque<\/span>/);
 });

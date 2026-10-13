@@ -61,7 +61,11 @@ export function expandHtmlTags(source: string): string {
   // Sortie rapide : sans chevron ni esperluette, il n'y a rien à traduire — et
   // c'est le cas de la quasi-totalité des descriptions déjà enregistrées.
   if (!source || (!source.includes('<') && !source.includes('&'))) return source;
-  let out = source;
+  // `<mark> texte </mark>` : les espaces de bord restent dehors, un `==` doit toucher le texte qu'il entoure.
+  let out = source.replace(/<mark\b[^>]*>([^<]*)<\/mark\s*>/gi, (_match, inner: string) => {
+    const core = inner.trim();
+    return core ? `${inner.slice(0, inner.indexOf(core))}==${core}==${inner.slice(inner.indexOf(core) + core.length)}` : inner;
+  });
   for (const [open, openReplacement, close, closeReplacement] of PAIRS) {
     out = out.replace(open, openReplacement).replace(close, closeReplacement);
   }

@@ -4,7 +4,6 @@
 .evaluation-modal .modal-header svg { stroke-width: 1.8; }
 .evaluation-modal .modal-body { scrollbar-gutter: stable; }
 .evaluation-modal.document-modal-frame.modal-motion-surface { border-radius: 16px; }
-.evaluation-modal .wizard-step { padding: 0; border: 0; background: none; box-shadow: none; }
 .evaluation-modal .hub-card[data-layout='tile'] {
   min-height: 112px;
   padding: 12px 10px;
@@ -33,7 +32,6 @@
   }
   .ev-row__date { justify-self: stretch; }
   .ev-row__actions { justify-self: stretch; flex-wrap: wrap; }
-  .ev-row__date input[type='date'] { min-height: 44px; }
   .ev-action { min-height: 44px; min-width: 44px; padding-inline: 8px; flex: none; text-align: center; }
   .ev-icon-btn { width: 44px; height: 44px; flex: 0 0 44px; }
   .ev-accordion__toggle {

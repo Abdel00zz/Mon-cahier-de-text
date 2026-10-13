@@ -39,15 +39,15 @@ test('print button is icon-only, uses the dedicated printer icon and keeps the A
   const button = read('src/components/documents/DocumentPrintButton.tsx');
   assert.match(button, /SheetPrinter/);
   assert.match(button, /<DocumentSheetHeader/);
-  assert.match(button, /margin: 7mm 8mm/);
-  assert.match(read('src/components/documents/documentPrint.css'), /margin: 7mm 8mm/);
+  assert.match(button, /margin: 7mm 0/);
+  assert.match(read('src/components/documents/documentPrint.css'), /margin: 7mm 0;/);
 });
 
 test('sheet css: no blank top/bottom margin, header on both edges, 44px print command', () => {
   const css = read('src/components/documents/documentSheet.css');
   assert.match(css, /\.devoir-document > :first-child[\s\S]*margin-top: 0 !important/);
   assert.match(css, /\.devoir-document > :last-child[\s\S]*margin-bottom: 0 !important/);
-  assert.match(css, /\.doc-sheet-header \{[^}]*justify-content: space-between/);
+  assert.match(css, /\.doc-sheet-header \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(0, auto\) minmax\(0, 1fr\)/);
   assert.match(css, /\.doc-icon-btn \{[^}]*width: 2\.75rem;[^}]*height: 2\.75rem/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
@@ -63,4 +63,34 @@ test('every document surface mounts the shared header with its class', () => {
     assert.match(source, /headerTitleFor|DocumentSheetHeader|<DocumentPrintButton/, `${path} passe par l'en-tête partagé`);
   }
   assert.match(read('src/features/editor/Editor.tsx'), /classLabel=\{formatLocalizedClassDisplayName\(/);
+});
+
+test('le titre d’en-tête est centré, en texte dégradé sans fond ni soulignement, et reste lisible à l’impression', () => {
+  const css = read('src/components/documents/documentSheet.css');
+  const header = css.match(/\.doc-sheet-header \{[^}]*\}/)?.[0] ?? '';
+  const title = css.match(/\.doc-sheet-header__title \{[^}]*\}/)?.[0] ?? '';
+  assert.doesNotMatch(header, /background|border|box-shadow/, 'aucun aplat, filet ni ombre');
+  assert.match(title, /grid-column: 2;[\s\S]*justify-self: center/);
+  assert.match(title, /linear-gradient\(95deg, var\(--sheet-ink-from\), var\(--sheet-ink-to\)\)/);
+  assert.match(title, /color: var\(--sheet-ink-from\)/, 'couleur de repli');
+  assert.match(css, /html\[lang='ar'\] \.doc-sheet-header__title \{[^}]*font-style: normal[^}]*letter-spacing: normal/, 'arabe : ni italique ni crénage');
+  assert.match(css, /\.dark \.doc-sheet-header \{[^}]*--sheet-ink-from/);
+  assert.match(css, /\.pedagogical-print-root \.doc-sheet-header \{[^}]*--sheet-ink-from: #1f3a8a/, 'impression toujours claire');
+  assert.match(css, /\.pedagogical-print-root \.doc-sheet-header \{ print-color-adjust: exact/);
+  const index = read('src/styles/index.css');
+  const docTitle = index.match(/\.devoir-document \.doc-title \{[^}]*\}/)?.[0] ?? '';
+  assert.doesNotMatch(docTitle, /background|border-bottom/);
+});
+
+test('l’en-tête d’un devoir maison ne porte pas « assigné aux élèves », numéro conservé, dans les trois langues', () => {
+  assert.equal(headerTitleFor('Devoir à la maison assigné aux élèves 1', ''), 'Devoir à la maison 1');
+  assert.equal(headerTitleFor('Devoir à la maison assigné aux élèves', undefined), 'Devoir à la maison');
+  assert.equal(headerTitleFor('Homework assigned to students 2', ''), 'Homework 2');
+  assert.equal(headerTitleFor('الفرض المنزلي المُوكَل إلى التلاميذ 3', ''), 'الفرض المنزلي 3');
+  assert.equal(headerTitleFor('Correction du devoir maison 1', ''), 'Correction du devoir maison 1', 'la correction ne change pas');
+  assert.equal(headerTitleFor('Devoir surveillé 2', ''), 'Devoir surveillé 2');
+});
+
+test('un document qui s’ouvre par « Devoir à la maison 1 » n’est pas répété par l’en-tête du devoir assigné', () => {
+  assert.equal(headerTitleFor('Devoir à la maison assigné aux élèves 1', '# Devoir à la maison 1\n\nExercice'), undefined);
 });

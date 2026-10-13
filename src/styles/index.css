@@ -2429,7 +2429,7 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
    dix règles dispersées. 14 px de corps, 1,72 d'interligne — la densité d'une
    feuille d'énoncé, lisible à l'écran comme sur le papier. */
 .devoir-document {
-  --doc-title-ink: #831f35;
+  --doc-title-ink: #1f3a5f;
   --doc-title-font: 'Newsreader', var(--font-arabic-display), Georgia, serif;
   --doc-fs: 14px;
   --doc-lh: 1.72;
@@ -2446,17 +2446,61 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 .devoir-document .doc-title {
   display: block;
   margin: 0 0 0.85rem;
-  padding-block: 0.15rem 0.65rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--doc-title-ink) 22%, transparent);
+  padding-block: 0.1rem 0.2rem;
   text-align: center;
   font-family: var(--doc-title-font);
   font-size: var(--doc-fs-title);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--doc-title-ink);
   overflow-wrap: anywhere;
   line-height: 1.25;
   letter-spacing: -0.004em;
 }
+/* Surlignage `==texte==` : un aplat OPAQUE, identique sur le texte et sur chaque formule. Une formule haute
+   (fraction, somme, intégrale, matrice) est ainsi surlignée sur toute sa hauteur, sans double teinte là où
+   deux aplats se recouvrent ; une formule affichée est un bloc ajusté à sa largeur. Le surlignage se
+   replie sur plusieurs lignes sans casser ses bords (`box-decoration-break`). */
+mark.doc-hl {
+  --hl: #fde68a;
+  padding-inline: 0.2em;
+  color: inherit;
+  font-weight: inherit;
+  background: var(--hl);
+  border-radius: 0.25em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.dark mark.doc-hl { --hl: #5c4a1a; }
+/* Que des formules affichées : la balise s'efface (aucun éclat jaune aux bords de la ligne), la teinte reste héritée. */
+mark.doc-hl.doc-hl--display { display: contents; padding: 0; background: none; }
+mark.doc-hl .katex {
+  background: var(--hl);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0 0.14em var(--hl);
+}
+mark.doc-hl .katex-display { margin-block: 0.45em; }
+mark.doc-hl .katex-display > .katex {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 0.2em 0.6em;
+  box-shadow: none;
+}
+/* Un bloc de formule et sa ponctuation finale ne se séparent pas ; le texte surligné/gras qui précède se replie. */
+.doc-nowrap { white-space: nowrap; }
+/* La ponctuation qui suit une formule en ligne vit dans sa dernière boîte (voir `appendTail`) : elle reprend la
+   police et la taille du texte, pas celles de KaTeX (1,21 em). */
+.katex .katex-tail { font-family: var(--font-document, inherit); font-size: calc(1em / 1.21); font-style: normal; font-weight: inherit; white-space: nowrap; }
+.doc-nowrap > :is(mark, strong, em, u) { white-space: pre-wrap; }
+/* Ligne vide entre deux paragraphes : une ligne ailleurs, une simple respiration dans une feuille de document. */
+.doc-gap { display: block; height: 1.5em; }
+.devoir-document .doc-gap { height: 0.5em; }
+/* Dans une feuille en colonnes, une longue liste (une question à sous-questions) se répartit entre les colonnes
+   au lieu de s'imposer en bloc et de creuser un vide : seuls ses items restent entiers. */
+.devoir-document .doc-columns > .editor-list { break-inside: auto; }
 /* Le corps suit le document, le titre garde la voix de l'application : les
    deux écritures cohabitent sans se confondre. */
 .devoir-document :is(strong, b) { font-weight: 700; }
@@ -2517,7 +2561,7 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.3;
-  color: #831f35;
+  color: #1f3a5f;
 }
 /* A shared document surface: restrained corners, quiet chrome and one reading
    column. Keep the standard modal gestures and accessible entry/exit motion. */
@@ -2564,8 +2608,8 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 @media (prefers-reduced-motion: reduce) {
   .document-modal-frame.modal-motion-surface[data-state] { animation: none; }
 }
-.dark .devoir-document { --doc-title-ink: #e5a5b2; }
-.dark .document-preview-title { color: #e5a5b2; }
+.dark .devoir-document { --doc-title-ink: #b9cdea; }
+.dark .document-preview-title { color: #b9cdea; }
 .devoir-document .katex-display {
   max-width: 100%;
   overflow-x: auto;
@@ -2574,8 +2618,8 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 }
 .devoir-document .doc-line__text { overflow-wrap: anywhere; }
 @media print {
-  .devoir-document { --doc-title-ink: #831f35; }
-  .document-preview-title { color: #831f35; }
+  .devoir-document { --doc-title-ink: #1f3a5f; }
+  .document-preview-title { color: #1f3a5f; }
   .devoir-document .katex-display { overflow: visible; }
 }
 

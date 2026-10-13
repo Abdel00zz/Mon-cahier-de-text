@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { cn } from '@/lib/utils';
 import { EvaluationPolicy, PedagogicalEvent } from '@/types';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { documentIndicator, documentRequirementForEvent } from '@/domain/evaluations/documentRequirement';
 import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -47,8 +47,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
 
   if (events.length === 0) return null;
 
-  const formatDateBadge = (date: string | undefined, endDate: string | undefined): string => {
-    if (!date) return t('evaluations.setDate');
+  const formatDateBadge = (date: string, endDate: string | undefined): string => {
     const formatFull = (iso: string) => {
       const parts = iso.split('-');
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -93,9 +92,11 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
             const names = event.students?.names.length ?? 0;
             const typeLabel = t(labelKey);
             const normalizeLabel = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase(locale);
-            const title = event.title.trim() || typeLabel;
-            const showType = normalizeLabel(title) !== normalizeLabel(typeLabel);
-            const showNote = event.note?.trim() && normalizeLabel(event.note) !== normalizeLabel(title) && normalizeLabel(event.note) !== normalizeLabel(typeLabel);
+            // Un titre généré se dit dans la langue de l'écran ; la remarque du cahier reste dans l'éditeur.
+            const title = localizedActivityTitle(event.title, event.type, locale);
+            // La pastille de nature ne répète pas un titre qui la dit déjà (« Évaluation diagnostique 1 ») ; un titre propre au professeur la garde.
+            const sameKind = normalizeLabel(title).startsWith(normalizeLabel(typeLabel)) && /^\d*$/.test(normalizeLabel(title).slice(normalizeLabel(typeLabel).length).trim());
+            const showType = !sameKind;
 
             const kindPolicy = resolveKindPolicy(policy, event.type);
             const docIndicator = documentIndicator(documentRequirementForEvent(event.type, policy), event.document);
@@ -121,30 +122,26 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                 <div className="ev-row__id min-w-0">
                   <h4 className="text-[13px] font-bold leading-tight text-foreground truncate" dir="auto">{title}</h4>
                   {showType && <span className="tone-chip">{typeLabel}</span>}
-                  {showNote && (
-                    <p className="line-clamp-1 text-[11px] leading-tight text-muted-foreground text-start mt-0.5" dir="auto">{event.note}</p>
-                  )}
                 </div>
 
 
                 <div className="ev-row__date">
-                  <button
-                    type="button"
-                    onClick={() => setEditingDateEvent(event)}
-                    className={cn(
-                      "ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 border-0 shadow-none",
-                      event.date
-                        ? "text-foreground hover:text-primary hover:bg-muted/40 rounded-md"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md"
-                    )}
-                    aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
-                  >
-                    <span className="whitespace-nowrap tabular-nums text-xs font-bold">
-                      {formatDateBadge(event.date, event.endDate)}
-                    </span>
-                  </button>
+                  {event.date ? (
+                    <button
+                      type="button"
+                      onClick={() => setEditingDateEvent(event)}
+                      className="ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold text-foreground transition-all cursor-pointer select-none hover:text-primary hover:bg-muted/40 rounded-md active:scale-95 border-0 shadow-none"
+                      aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
+                    >
+                      <span className="whitespace-nowrap tabular-nums text-xs font-bold">
+                        {formatDateBadge(event.date, event.endDate)}
+                      </span>
+                    </button>
+                  ) : (
+                    /* La date vient du tableau de l'éditeur : sans date, un simple constat, rien à cliquer. */
+                    <span className="ev-date-empty">{t('evaluations.noDateYet')}</span>
+                  )}
                 </div>
-
                 <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
                   {docIndicator !== 'none' && (
                     <button
@@ -170,7 +167,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     data-tippy-content={eventStudentsTooltip}
                   >
                     <ActionIcon name="students" />
-                    <span>{t(notebookCheck ? 'evaluations.action.notebooks' : 'evaluations.action.students')}</span>
+                    <span>{t('evaluations.action.students')}</span>
                     {names > 0 && <span className="ev-action__count">{number.format(names)}</span>}
                   </button>
                   )}
@@ -182,7 +179,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     data-danger="true"
                     onClick={() => onDelete(event)}
                     className="ev-icon-btn shrink-0"
-                    aria-label={t('evaluations.deleteEventAria', { title: event.title })}
+                    aria-label={t('evaluations.deleteEventAria', { title })}
                     title={deleteTooltip}
                   />
                 </div>

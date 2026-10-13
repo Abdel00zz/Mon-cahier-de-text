@@ -68,6 +68,6 @@ test('A5 layout fits wide formulae without enlarging normal ones or changing sur
     querySelector: () => ({ scrollWidth: width, getBoundingClientRect: () => ({ width }) }) });
   const wide = formula(960), normal = formula(200);
   fitDocumentMath({ querySelectorAll: () => [wide, normal] } as unknown as HTMLElement);
-  assert.equal(wide.style.fontSize, '7.92px');
+  assert.equal(wide.style.fontSize, '0.495em');
   assert.equal(normal.style.fontSize, '');
 });

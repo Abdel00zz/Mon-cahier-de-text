@@ -19,6 +19,23 @@ Il couvre les deux endroits où l'on écrit :
 
 ---
 
+## Nouveautés
+
+| Nouveauté | Ce qu'elle change pour vous |
+| --- | --- |
+| **Colonnes pour les corrigés** | Un corrigé de **devoir maison** ou de **devoir surveillé** se met en deux colonnes avec la commande `\begin{multicols}{2}` (voir § 5, *Colonnes*). **Par défaut, rien n'est en colonnes** : c'est le contenu qui porte la commande. |
+| **Devoir maison : deux entrées, deux contenus** | Sur la feuille, un devoir maison s'affiche en **deux entrées** : *Devoir maison N* (assigné aux élèves) et *Correction du devoir maison N*. **Chacune a son propre bouton Contenu** : le **sujet** d'un côté, le **corrigé** de l'autre. |
+| **Date limite de rendu** | L'entrée *Devoir maison N* porte un bouton **Date limite** : la date à laquelle les élèves rendent le devoir. **Le jour même, le bouton pulse** (halo ambré) pour ne pas être manqué. |
+| **Rendu du devoir** | L'entrée *Correction du devoir maison N* porte un bouton **Non rendus** : la fenêtre « Rendu du devoir » vous laisse noter, élève par élève, qui a rendu le devoir. |
+| **Le corrigé s'ouvre depuis le cahier** | Une fois la correction datée, le corrigé s'ouvre en aperçu depuis la **séance de correction** du cahier (pastille *Document*). |
+| **En-tête de la feuille** | L'aperçu et l'impression A5 s'ouvrent sur un en-tête : le **titre** de l'élément au bord de départ, la **classe** à l'autre bord, un filet dessous. Si votre document commence déjà par `# Devoir surveillé n°2`, le titre n'est pas répété. |
+| **Impression A5 plus régulière** | Marges haut et bas **symétriques (7 mm)**, plus de vide au-dessus du premier bloc ni sous le dernier, bouton d'impression en icône seule. |
+| **Formules en arabe** | Dans un texte arabe, une formule se lit toujours **de gauche à droite** (`2 + 3x − x²` n'est plus inversée). |
+| **Le bouton Contenu suit la direction** | La direction peut rendre le contenu **requis**, **facultatif** ou **absent** pour chaque nature d'élément ; le bouton *Contenu* s'affiche en conséquence. |
+| **Mêmes icônes partout** | Une icône pour le **document**, une pour les **élèves**, la même **corbeille** sur toutes les lignes de la feuille. |
+
+---
+
 ## 1. Structure d'un contenu
 
 Le cahier a une hiérarchie, posée par les boutons de l'éditeur, pas par la
@@ -70,6 +87,7 @@ de contenu.
 | `*italique*` | *italique* |
 | `++souligné++` | souligné |
 | `==surligné==` | surligné |
+| `==$\frac{\sum k^2}{n+1}$==` | une formule, même haute, est surlignée sur toute sa hauteur |
 | `[color:red]texte[/color]` | texte coloré (`red`, `blue`, `green`, `amber`, `purple`) |
 
 > Le `*` **seul** est réservé à l'italique : pour une puce tapée à la main,
@@ -266,9 +284,20 @@ mise en page du carnet). `\itshape` devient `\mathit`, `\sout` devient `\cancel`
 ### Où et comment
 
 *Évaluations* → sur un devoir : bouton **Contenu** · sur une activité
-(olympiade, devoir à surveiller, devoir maison…) : bouton **Contenu** également.
+(olympiade, devoir à surveiller…) : bouton **Contenu** également.
 Seul le **contrôle des cahiers** n'a pas de bouton *Contenu* : voir § 5, *Feuille
 de contrôle des cahiers*.
+
+**Le devoir maison a deux entrées, donc deux contenus** :
+
+| Entrée | Bouton *Contenu* | Autres boutons |
+| --- | --- | --- |
+| **Devoir maison N** (assigné aux élèves) | le **sujet** | **Date limite** de rendu · corbeille |
+| **Correction du devoir maison N** | le **corrigé** (facultatif) | **Non rendus** (rendu du devoir) · corbeille |
+
+La corbeille du *devoir* le supprime en entier (sujet, corrigé, listes) ; celle de
+la *correction* n'efface que la date de correction, le corrigé et la liste des
+élèves : le devoir et son sujet restent.
 
 La feuille s'ouvre sur deux onglets :
 
@@ -297,6 +326,8 @@ sujet est rédigé porte une pastille **Document** sur sa propre ligne.
   à valider.
 * L'aperçu est **instantané** : le document est déjà dans le cahier, il n'y a
   aucune lecture réseau au clic.
+* Le **corrigé** d'un devoir maison s'ouvre de la même façon, depuis la
+  **séance de correction** (la date de l'entrée *Correction du devoir maison N*).
 * **Pas de pastille = pas de sujet** : la table ne propose rien pour un devoir
   encore vide. Rien ne change dans le cahier — ni date, ni séance, ni remarque.
 * La pastille **ne s'imprime jamais** : la feuille imprimée reste la trace
@@ -309,7 +340,7 @@ exercices en barres colorées, un barème au bord de la ligne.
 
 | Ce que vous écrivez | Ce qui s'affiche |
 | --- | --- |
-| `# Devoir surveillé 3` | titre du document, **centré** et en gras |
+| `# Devoir surveillé 3` | titre du document, **centré**, en gras, terminé par « : » (ajouté à l'affichage, pas dans votre texte) |
 | `## Exercice 1` | **barre d'exercice**, teintée selon son **numéro** |
 | `### Partie A` | sous-titre, sans barre |
 | `[[2pts]]` — ou `\bareme{2pts}` | **barème**, aligné au bord de la ligne |
@@ -338,6 +369,45 @@ exercices en barres colorées, un barème au bord de la ligne.
   lecture est bornée à ~44 rem — la feuille se lit comme une page.
 * Les couleurs des barres s'impriment telles quelles (couleurs exactes) ; le
   contraste blanc sur fond est vérifié AA sur les quatre teintes.
+
+### Colonnes : les corrigés de devoir maison et de devoir surveillé
+
+> **Règle.** Si le contenu est une **correction de devoir maison** ou une
+> **correction de devoir surveillé**, appliquez la **commande colonnes** : le
+> corrigé est plus compact et se lit mieux sur une page A5.
+>
+> **Par défaut, ne mettez pas de colonnes.** Le logiciel n'en impose jamais :
+> c'est le **contenu Markdown lui-même** qui porte la commande. Un sujet, une
+> fiche, une olympiade ou une description de séance restent en un seul flux.
+
+```text
+\begin{multicols}{2}
+… le corrigé …
+\end{multicols}
+```
+
+| Écriture | Effet |
+| --- | --- |
+| `\begin{multicols}{2} … \end{multicols}` | contenu en **deux colonnes** |
+| `\begin{multicols}{3} … \end{multicols}` | **trois colonnes** (corrigés très courts, questions à réponse brève) |
+| `\begin{colonnes}{2} … \end{colonnes}` | même chose, en français |
+| `\begin{multicols}` sans nombre | deux colonnes |
+
+* Le nombre est **borné entre 2 et 3** : `{1}` donne deux colonnes, `{5}` en donne trois.
+* **Placez la commande autour de ce qui doit être en colonnes**, pas forcément du
+  document entier : le titre `# Corrigé — …` reste pleine largeur au-dessus, le
+  barème de fin de feuille reste pleine largeur en dessous.
+* Un exercice, une barre d'exercice (`## Exercice 1`) ou une formule centrée **ne se
+  coupe jamais** entre deux colonnes ; la barre d'un titre reste avec son texte.
+* Les listes, les formules, le barème `[[2pts]]` et l'arabe fonctionnent
+  **à l'intérieur** des colonnes comme ailleurs.
+* **À l'écran sur téléphone**, les colonnes se replient en une seule (deux
+  colonnes de lecture y seraient trop étroites) ; **à l'impression A5**, elles sont
+  conservées.
+* Une commande **sans fin** (ou une fin sans début) n'est jamais affichée telle
+  quelle : elle est ignorée et le texte reste dans son flux.
+* Hors de la fenêtre de document (par exemple dans une description de séance), la
+  commande est reconnue mais **n'a aucun effet visuel** : le texte garde son flux.
 
 ### Modèle : devoir surveillé
 
@@ -402,6 +472,31 @@ Utiliser le théorème de Pythagore dans le triangle $ABC$, rectangle en $B$.
 
    Donc $f(x)=0$ pour $x=1$ ou $x=3$. [[1pt]]
 ```
+
+### Modèle : corrigé en deux colonnes (devoir maison ou devoir surveillé)
+
+```text
+# Corrigé — Devoir maison n°3
+
+\begin{multicols}{2}
+
+## Exercice 1
+
+1. $AC=a\sqrt{2}$ d'après le théorème de Pythagore dans $ABC$. [[3pts]]
+2. $\mathcal{A}(ABC)=\dfrac{a^2}{2}$. [[3pts]]
+
+## Exercice 2
+
+1. $f(x)=(x-1)(x-3)$, donc $f(x)=0$ pour $x=1$ ou $x=3$. [[2pts]]
+2. Tableau de signes de $f'(x)=2x-4$. [[2pts]]
+
+\end{multicols}
+
+**Barème :** Ex. 1 : 6 pts · Ex. 2 : 4 pts
+```
+
+Le titre et le barème de fin restent pleine largeur ; seuls les exercices sont
+rangés en colonnes.
 
 ### Modèle : feuille à trois exercices (barres et barème)
 
@@ -485,6 +580,9 @@ de la séance du même jour** — sur l'écran comme à l'impression, sous la fo
    seulement leurs couleurs, réservées à la feuille de devoir.
 8. **Gardez les numéros d'exercice stables** (`## Exercice 2`) : c'est eux qui
    décident de la couleur de la barre. Renuméroter, c'est recolorer.
+9. **Un corrigé de devoir maison ou de devoir surveillé se met en colonnes** avec
+   `\begin{multicols}{2}` ; tout autre contenu reste **sans colonnes**. Ne les
+   ajoutez pas « au cas où » : le logiciel n'en impose jamais.
 
 ---
 
@@ -497,8 +595,11 @@ de la séance du même jour** — sur l'écran comme à l'impression, sous la fo
 * Pas d'images dans un document : joignez l'illustration au contenu du cahier.
 * Pas de notes de bas de page automatiques : écrivez-les entre parenthèses ou
   dans la remarque de séance.
-* Pas de saut de page forcé dans un document, ni de colonnes : une feuille se
-  compose d'un seul flux (le barème se pose par `[[…]]`).
+* Pas de saut de page forcé dans un document. Une feuille se compose d'**un seul
+  flux**, sauf pour les blocs que vous placez vous-même entre
+  `\begin{multicols}` et `\end{multicols}` (voir § 5, *Colonnes*) ; le barème se
+  pose par `[[…]]`.
+* Pas de colonnes imbriquées : un bloc de colonnes ne contient pas un autre bloc de colonnes.
 * Pas de barème calculé : le moteur **affiche** les points que vous écrivez, il
   ne les additionne pas et n'en déduit aucune note.
 
@@ -511,3 +612,5 @@ de la séance du même jour** — sur l'écran comme à l'impression, sous la fo
 | Importer un programme au format JSON | [`GUIDE_CREATION_CONTENUS_JSON_FR.md`](GUIDE_CREATION_CONTENUS_JSON_FR.md) |
 | Architecture, dossiers, conventions | [`architecture/architecture.md`](architecture/architecture.md) |
 | Prendre en main l'application | [`guides/`](guides/) |
+
+> **Surlignage `==texte==`** : les deux `==` doivent être seuls et coller le texte (`==mot==`). Un `==` entouré d'espaces, ou une suite de trois `=` ou plus, reste du texte : `x == y` et `a === b` s'affichent tels quels. Dans l'éditeur, le bouton de surlignage retire le surlignage s'il existe déjà, sans jamais empiler de `====`.

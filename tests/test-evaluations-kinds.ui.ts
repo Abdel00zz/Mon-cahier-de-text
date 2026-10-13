@@ -189,7 +189,7 @@ test('le catalogue est la SOURCE des natures pour la page', () => {
     const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8') + readFileSync('src/features/evaluations/components/DevoirsModals.tsx', 'utf8') + readFileSync('src/features/evaluations/components/ManualAssessmentEditor.tsx', 'utf8');
     // Une seule déclaration des natures : la vue l'importe.
     assert.equal((catalog.match(/export const PEDAGOGICAL_EVENT_CONFIG/g) ?? []).length, 1);
-    assert.match(view, /import \{ DEVOIR_KIND_CONFIG, PEDAGOGICAL_EVENT_CONFIG, groupKinds, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue (familles composées par la politique)');
+    assert.match(view, /import \{ DEVOIR_KIND_CONFIG, groupKinds, kindLabelKey, type EvaluationKind \} from '\.\/kindCatalog'/, 'la page lit le catalogue (familles composées par la politique)');
     assert.doesNotMatch(view, /const PEDAGOGICAL_EVENT_CONFIG/, 'aucune copie locale');
     // Le devoir : sélecteur de type conservé UNIQUEMENT en modification.
     assert.match(view, /initial \? \([\s\S]{0,900}<Select value=\{type\}/, 'type modifiable seulement en édition');

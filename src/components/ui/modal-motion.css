@@ -166,9 +166,14 @@
   --pulse-color: hsla(142, 65%, 45%, 0.45);
   animation: modal-glow-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+/* Échéance du jour (date limite d'un devoir) : même halo, en ambre — l'attention, pas l'alerte. */
+.glow-pulse-warning {
+  --pulse-color: hsla(38, 92%, 50%, 0.5);
+  animation: modal-glow-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success {
+  .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success, .glow-pulse-warning {
     animation: none !important;
   }
 }

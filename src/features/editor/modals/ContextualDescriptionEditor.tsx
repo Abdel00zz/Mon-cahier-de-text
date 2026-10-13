@@ -13,6 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
+import { findHighlightClose, highlightOpenAt, toggleHighlight } from '@/lib/text/highlightMarkers';
 
 type FormatAction = 'bold' | 'italic' | 'underline' | 'bullets' | 'numbered' | 'math';
 
@@ -78,18 +79,12 @@ const formatSelection = (action: FormatAction, selectedText: string): { value: s
 };
 
 const formatColorSelection = (colorId: string, selectedText: string): { value: string; inset: number; coreLength: number } => {
-  const stripped = selectedText
-    .replace(/^\[color:[^\]]+\]([\s\S]*)\[\/color\]$/, '$1')
-    .replace(/^==([\s\S]*)==$/, '$1');
+  const unwrapped = selectedText.replace(/^\[color:[^\]]+\]([\s\S]*)\[\/color\]$/, '$1');
+  // Un surlignage qui enveloppe toute la sélection se retire avec l'ancienne couleur (les `==` isolés restent du texte).
+  const stripped = highlightOpenAt(unwrapped, 0) && findHighlightClose(unwrapped, 2) === unwrapped.length - 2 ? unwrapped.slice(2, -2) : unwrapped;
 
   if (colorId === 'clear') {
     return { value: stripped, inset: 0, coreLength: stripped.length };
-  }
-  if (colorId === 'highlight') {
-    if (selectedText.startsWith('==') && selectedText.endsWith('==') && selectedText.length >= 4) {
-      return { value: stripped, inset: 0, coreLength: stripped.length };
-    }
-    return { value: `==${stripped}==`, inset: 2, coreLength: stripped.length };
   }
   const before = `[color:${colorId}]`;
   const after = `[/color]`;
@@ -138,6 +133,18 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
 
   const applyColor = useCallback((colorId: string, range = selection) => {
     if (!range || range.end <= range.start) return;
+    if (colorId === 'highlight') {
+      // Un seul geste, jamais de `====` : on retire le surlignage s'il existe déjà, sinon on entoure le texte visible.
+      const edit = toggleHighlight(value, range.start, range.end);
+      if (edit.value === value) return;
+      onChange(edit.value);
+      window.requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(edit.start, edit.end);
+        setSelection({ start: edit.start, end: edit.end });
+      });
+      return;
+    }
     const selectedText = value.slice(range.start, range.end);
     const formatted = formatColorSelection(colorId, selectedText);
     const nextValue = `${value.slice(0, range.start)}${formatted.value}${value.slice(range.end)}`;

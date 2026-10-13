@@ -30,9 +30,23 @@ const openingHeading = (source: string): string | null => {
   return null;
 };
 
+/*
+ * Le rôle d'un devoir maison (« assigné aux élèves ») distingue son entrée de celle de sa correction dans
+ * la liste ; sur la feuille, il n'ajoute rien : « Devoir à la maison 1 » suffit. Le numéro reste en place.
+ */
+const ASSIGNED_TO_STUDENTS = [
+  /\s*assign[ée]e?s?\s+aux\s+[ée]l[èe]ves/giu,
+  /\s*assigned\s+to\s+(?:the\s+)?students/giu,
+  /\s*ال[مـ][\u064B-\u065F]*و[\u064B-\u065F]*ك[\u064B-\u065F]*ل[\u064B-\u065F]*\s+(?:إلى|الى)\s+التلاميذ/gu,
+];
+
+/** Titre de l'élément tel qu'il s'écrit en en-tête : sans la mention « assigné aux élèves ». */
+const sheetTitleOf = (title: string): string =>
+  ASSIGNED_TO_STUDENTS.reduce((text, pattern) => text.replace(pattern, ''), title).replace(/\s{2,}/g, ' ').trim();
+
 /** Titre à porter en en-tête, ou `undefined` quand le document le dit déjà lui-même. */
 export const headerTitleFor = (title: string | null | undefined, source: string | null | undefined): string | undefined => {
-  const wanted = title?.trim();
+  const wanted = title ? sheetTitleOf(title.trim()) : '';
   if (!wanted) return undefined;
   const heading = openingHeading(source ?? '');
   if (heading !== null) {

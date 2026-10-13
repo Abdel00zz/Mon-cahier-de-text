@@ -24,7 +24,11 @@ test('document previews share A5 native/web output and prepare the same text/mat
   const action = read('src/components/documents/DocumentPrintButton.tsx');
   assert.match(action, /await preparePrintContent\(paper.current\)/);
   assert.match(action, /renderDescriptionWithBold\(snapshot\)/);
-  assert.match(action, /size: A5 portrait/);
+  assert.match(action, /@page \{ margin: 7mm 0; \}/);
+  assert.doesNotMatch(action, /size: A5/, 'le papier choisi décide : la feuille s’y adapte');
+  const printCss = read('src/components/documents/documentPrint.css');
+  assert.match(printCss, /padding-inline: clamp\(4mm, calc\(4mm \+ \(100vw - 148mm\) \* 0\.13\), 16mm\) !important/, 'côtés : 4 mm sur A5, ≈ 12 mm sur A4');
+  assert.doesNotMatch(printCss, /var\(--mm\)|var\(--pt\)/, 'le texte ne change pas de taille avec le papier');
   assert.match(read('android/app/src/main/java/ma/cahier/textes/NativePrintPlugin.java'), /ISO_A5/);
   assert.match(read('src/components/documents/documentPrint.css'), /body\[data-document-print\] > :not\(\.pedagogical-print-root\)/);
 });

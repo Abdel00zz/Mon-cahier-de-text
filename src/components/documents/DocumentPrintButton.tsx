@@ -66,7 +66,7 @@ export function DocumentPrintButton({ source, title, classLabel, className }: Do
       <SheetPrinter aria-hidden="true" />
     </button>
     {snapshot !== null && createPortal(<div className="pedagogical-print-root" ref={paper} dir={sheetDir}>
-      <style media="print">{'@page { size: A5 portrait; margin: 7mm 8mm; }'}</style>
+      <style media="print">{'@page { margin: 7mm 0; }'}</style>
       <DocumentSheetHeader title={headerTitleFor(title, snapshot)} classLabel={classLabel} />
       <article className="devoir-document">{renderDescriptionWithBold(snapshot)}</article>
     </div>, document.body)}

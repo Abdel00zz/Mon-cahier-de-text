@@ -2,11 +2,12 @@ import React from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 import { LoadingSpinner } from './LoadingSpinner';
+import { LoadingHint } from './LoadingHint';
 import type { BootstrapProgress, BootstrapStep } from '@/domain/sync/bootstrapProgress';
 import './page-loading.css';
 
 /**
- * Indicateur de navigation : le spinner seul. Aucun texte visible sous le spinner ;
+ * Indicateur de navigation : le spinner, puis un mot d'attente discret qui n'apparaît qu'après un court délai ;
  * les lecteurs d'écran reçoivent un état « Chargement… » unique.
  */
 export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay = false }) => {
@@ -19,6 +20,7 @@ export const PageTransitionLoader: React.FC<{ overlay?: boolean }> = ({ overlay 
   >
     <div className="page-transition-loader__content">
       <LoadingSpinner />
+      <LoadingHint />
       <span className="sr-only">{t('common.loading')}</span>
     </div>
   </div>;
@@ -67,6 +69,7 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
         <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
           {title}
         </p>
+        <LoadingHint />
         {showsProgress && (
           <span className="sr-only">
             {t('boot.progress.ariaLabel', { percent: progress.percent })}

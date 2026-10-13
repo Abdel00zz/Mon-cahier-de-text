@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import type { AppConfig, AppLocale, ClassInfo, DevoirType, ManualAssessment } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
 import { homeworkCorrectionDocumentId } from '@/domain/evaluations/homeworkIds';
 import type { AssessmentLink } from '@/domain/evaluations/assessmentSync';
@@ -17,7 +18,6 @@ import { EventDateModal } from './EventDateModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
 import { StudentReviewDialog } from './StudentReviewDialog';
 import { ManualAssessmentEditor } from './ManualAssessmentEditor';
-import { PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import type { useEvaluationActions } from '../hooks/useEvaluationActions';
 import type { useEvaluationModals } from '../hooks/useEvaluationModals';
 
@@ -132,7 +132,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   const documentTitle = documentFor === null
     ? ''
     : documentFor.kind === 'event'
-      ? (documentFor.event.title || t(PEDAGOGICAL_EVENT_CONFIG[documentFor.event.type].labelKey))
+      ? localizedActivityTitle(documentFor.event.title, documentFor.event.type, locale)
       : documentFor.part === 'correction'
         ? `${t('manageLessons.type.correction_devoir_maison')} ${number.format(documentFor.link.planned.num)}`
         : `${t(`evaluations.type.${documentFor.link.planned.type}`)} ${number.format(documentFor.link.planned.num)}`;
@@ -282,7 +282,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         onClose={() => setStudentsFor(null)}
         tracking={studentsReview}
         title={t(studentsReview ? (notebookCheck ? 'evaluations.notebook.title' : 'evaluations.track.title') : 'evaluations.students.open')}
-        context={studentsFor ? contextOf(selectedClassDisplayName, studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)) : undefined}
+        context={studentsFor ? contextOf(selectedClassDisplayName, localizedActivityTitle(studentsFor.title, studentsFor.type, locale)) : undefined}
       >
         {studentsFor && (
           <StudentNamesEditor
@@ -295,13 +295,13 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             trackGrades={Boolean(studentsPolicy?.grades)}
             initialOralOutcomes={studentsFor.students?.oralOutcomes}
             initialOralGrades={studentsFor.students?.oralGrades}
-            reportTitle={studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)}
+            reportTitle={localizedActivityTitle(studentsFor.title, studentsFor.type, locale)}
             roster={studentsReview && notebookCheck && selectedClass ? config.classRosters?.[selectedClass.id] : undefined}
-            reportContext={`${selectedClassDisplayName} · ${studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey)} · ${formatLongDate(studentsFor.date, locale)}`}
+            reportContext={`${selectedClassDisplayName} · ${localizedActivityTitle(studentsFor.title, studentsFor.type, locale)} · ${formatLongDate(studentsFor.date, locale)}`}
             updatedAt={studentsFor.students?.updatedAt}
             onCancel={() => setStudentsFor(null)}
             onSave={(names, conditions, oralOutcomes, _hw, oralGrades) => {
-              const activity = studentsFor.title || t(PEDAGOGICAL_EVENT_CONFIG[studentsFor.type].labelKey);
+              const activity = localizedActivityTitle(studentsFor.title, studentsFor.type, locale);
               actions.saveEventStudents(studentsFor.id, names, conditions, { oralOutcomes, oralGrades });
               toast.success(names.length > 0
                 ? t(names.length === 1 ? 'evaluations.students.savedOne' : 'evaluations.students.savedMany', {

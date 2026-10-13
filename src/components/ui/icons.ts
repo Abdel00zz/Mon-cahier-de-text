@@ -30,7 +30,17 @@ export const Check = createIcon('Check', [["path",{"d":"M19.5 6L9 18l-4.5-4.5","
 export const CheckCheck = createIcon('CheckCheck', [["path",{"d":"M21.75 6L11.25 18l-4.5-4.5M6.75 18l-4.5-4.5M17.25 6L10.875 13.313","fill":"none","stroke":"currentColor"}]]);
 export const CheckSquare = createIcon('CheckSquare', [["path",{"d":"M16.5 8.25L10.2 15.75 7.5 12.75","fill":"none","stroke":"currentColor"}],["rect",{"width":18,"height":18,"x":3,"y":3,"rx":2.25,"ry":2.25,"fill":"none","stroke":"currentColor"}]]);
 export const Settings = createIcon('Settings', [["path",{"d":"M12.295 9.015a3 3 0 1 0 2.69 2.69 3.006 3.006 0 0 0-2.69-2.69M19.518 12a7.219 7.219 0 0 1-0.071 0.975l2.119 1.662a0.507 0.507 0 0 1 0.115 0.644l-2.005 3.469a0.507 0.507 0 0 1-0.616 0.215l-2.105-0.847a0.755 0.755 0 0 0-0.711 0.082A7.711 7.711 0 0 1 15.234 18.788a0.747 0.747 0 0 0-0.413 0.569l-0.316 2.244a0.519 0.519 0 0 1-0.5 0.43h-4.01a0.521 0.521 0 0 1-0.501-0.416l-0.315-2.241a0.753 0.753 0 0 0-0.422-0.573 7.266 7.266 0 0 1-1.006-0.589 0.75 0.75 0 0 0-0.708-0.08l-2.104 0.847a0.507 0.507 0 0 1-0.616-0.215l-2.005-3.469a0.506 0.506 0 0 1 0.115-0.644l1.791-1.406a0.752 0.752 0 0 0 0.281-0.66c-0.017-0.195-0.027-0.39-0.027-0.586s0.01-0.388 0.027-0.579a0.75 0.75 0 0 0-0.284-0.654l-1.791-1.406A0.507 0.507 0 0 1 2.319 8.719l2.005-3.469a0.507 0.507 0 0 1 0.616-0.215l2.105 0.847a0.755 0.755 0 0 0 0.711-0.082A7.711 7.711 0 0 1 8.766 5.213a0.747 0.747 0 0 0 0.413-0.57l0.316-2.244A0.519 0.519 0 0 1 9.995 1.969h4.01a0.521 0.521 0 0 1 0.501 0.416l0.315 2.241a0.753 0.753 0 0 0 0.422 0.573 7.266 7.266 0 0 1 1.006 0.589 0.75 0.75 0 0 0 0.708 0.08l2.104-0.847a0.507 0.507 0 0 1 0.616 0.215l2.005 3.469a0.506 0.506 0 0 1-0.115 0.644l-1.791 1.406a0.752 0.752 0 0 0-0.283 0.66c0.015 0.194 0.026 0.389 0.025 0.585","fill":"none","stroke":"currentColor"}]]);
-export const Trash2 = createIcon('Trash2', [["path",{"d":"M5 6H19L18 19Q18 22 15 22H9Q6 22 6 19Z","className":"icon-wash","stroke":"none"}],["path",{"d":"M3.5 5.5H20.5M9 5V3H15V5M10 10V17M14 10V17"}]]);
+/* Corbeille : la silhouette douce, le couvercle et les deux fentes. Les trois tracés sont partagés avec
+   `AnimatedTrashButton`, qui lève le couvercle au survol : une seule corbeille dans toute l'application. */
+export const TRASH_PATHS = {
+  wash: 'M5 6H19L18 19Q18 22 15 22H9Q6 22 6 19Z',
+  lid: 'M3.5 5.5H20.5M9 5V3H15V5',
+  slits: 'M10 10V17M14 10V17',
+} as const;
+export const Trash2 = createIcon('Trash2', [
+  ['path', { d: TRASH_PATHS.wash, className: 'icon-wash', stroke: 'none' }],
+  ['path', { d: TRASH_PATHS.lid + TRASH_PATHS.slits }],
+]);
 export const LayoutGrid = createIcon('LayoutGrid', [["rect",{"x":2,"y":2,"width":9,"height":9,"rx":3,"className":"icon-wash","stroke":"none"}],["rect",{"x":13,"y":2,"width":9,"height":9,"rx":3,"className":"icon-wash","stroke":"none"}],["rect",{"x":2,"y":13,"width":9,"height":9,"rx":3,"className":"icon-wash","stroke":"none"}],["rect",{"x":13,"y":13,"width":9,"height":9,"rx":3,"className":"icon-wash","stroke":"none"}],["path",{"d":"M5 6H8M16 6H19M5 17H8M16 17H19"}]]);
 export const Clock = createIcon('Clock', [["circle",{"cx":12,"cy":12,"r":10,"className":"icon-wash","stroke":"none"}],["path",{"d":"M12 6V12L16 15"}],["circle",{"cx":12,"cy":3,"r":0.65,"fill":"currentColor","stroke":"none"}],["circle",{"cx":21,"cy":12,"r":0.65,"fill":"currentColor","stroke":"none"}],["circle",{"cx":12,"cy":21,"r":0.65,"fill":"currentColor","stroke":"none"}],["circle",{"cx":3,"cy":12,"r":0.65,"fill":"currentColor","stroke":"none"}]]);
 export const ArrowLeft = createIcon('ArrowLeft', [["path",{"d":"M11.438 18.75L4.688 12l6.75-6.75M5.625 12h13.688","fill":"none","stroke":"currentColor"}]]);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useState } from 'react';
-import { MoreVertical, Settings, Trash2, CalendarCheck } from 'lucide-react';
+import { MoreVertical, Settings, CalendarCheck } from 'lucide-react';
+import { Trash2 } from '@/components/ui/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -113,7 +114,7 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
                             className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
                         >
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/12 text-destructive dark:bg-destructive/18 dark:text-destructive transition-transform duration-180 group-hover/item:scale-105">
-                                <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" aria-hidden="true" />
+                                <Trash2 size={16} aria-hidden="true" />
                             </span>
                             <span className="flex-1 text-start leading-snug">{t('dashboard.delete')}</span>
                         </DropdownMenuItem>

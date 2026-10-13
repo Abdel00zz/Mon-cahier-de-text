@@ -1,0 +1,191 @@
+/* ══════════════════════════════════════════════════════════════
+   LISTE DE CHOIX — retour sur le travail d'un élève
+   Champ teinté selon le choix, liste en ressort, choix révélés l'un
+   après l'autre, coche qui se dessine. Aucun mouvement avec
+   prefers-reduced-motion.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Teintes (champ ET choix) : vert acquis · ambre en cours · bleu à accompagner · rouge non rendu ── */
+.choice-trigger,
+.choice-item {
+  --choice-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --choice-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --choice-ink: hsl(var(--muted-foreground));
+  --choice-wash: hsl(var(--muted) / 0.55);
+  --choice-line: hsl(var(--border));
+}
+:is(.choice-trigger, .choice-item)[data-tone='good'],
+:is(.choice-trigger, .choice-item)[data-tone='mastered'],
+:is(.choice-trigger, .choice-item)[data-tone='given'] {
+  --choice-ink: #166b44; --choice-wash: #e1f4ea; --choice-line: rgba(22, 107, 68, 0.32);
+}
+:is(.choice-trigger, .choice-item)[data-tone='average'],
+:is(.choice-trigger, .choice-item)[data-tone='developing'] {
+  --choice-ink: #a55d12; --choice-wash: #fdf3e7; --choice-line: rgba(177, 101, 24, 0.34);
+}
+:is(.choice-trigger, .choice-item)[data-tone='needs_work'],
+:is(.choice-trigger, .choice-item)[data-tone='needs_support'] {
+  --choice-ink: #2f56b3; --choice-wash: #eaf0fc; --choice-line: rgba(50, 91, 189, 0.32);
+}
+:is(.choice-trigger, .choice-item)[data-tone='missing'],
+:is(.choice-trigger, .choice-item)[data-tone='not_given'] {
+  --choice-ink: #b43b35; --choice-wash: #fdf2f2; --choice-line: rgba(180, 59, 53, 0.32);
+}
+.dark :is(.choice-trigger, .choice-item)[data-tone='good'],
+.dark :is(.choice-trigger, .choice-item)[data-tone='mastered'],
+.dark :is(.choice-trigger, .choice-item)[data-tone='given'] {
+  --choice-ink: #85e0b0; --choice-wash: rgba(22, 107, 68, 0.3); --choice-line: rgba(133, 224, 176, 0.3);
+}
+.dark :is(.choice-trigger, .choice-item)[data-tone='average'],
+.dark :is(.choice-trigger, .choice-item)[data-tone='developing'] {
+  --choice-ink: #f5be7e; --choice-wash: rgba(177, 101, 24, 0.3); --choice-line: rgba(245, 190, 126, 0.3);
+}
+.dark :is(.choice-trigger, .choice-item)[data-tone='needs_work'],
+.dark :is(.choice-trigger, .choice-item)[data-tone='needs_support'] {
+  --choice-ink: #a5c2f8; --choice-wash: rgba(50, 91, 189, 0.3); --choice-line: rgba(165, 194, 248, 0.3);
+}
+.dark :is(.choice-trigger, .choice-item)[data-tone='missing'],
+.dark :is(.choice-trigger, .choice-item)[data-tone='not_given'] {
+  --choice-ink: #fca5a5; --choice-wash: rgba(180, 59, 53, 0.3); --choice-line: rgba(252, 165, 165, 0.3);
+}
+
+/* ── Le champ ── */
+.choice-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  min-width: 10.5rem;
+  max-width: 100%;
+  padding-block: 0.4rem;
+  padding-inline: 0.7rem 0.6rem;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--choice-ink);
+  background: var(--choice-wash);
+  border: 1px solid var(--choice-line);
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 220ms var(--choice-soft),
+    border-color 220ms var(--choice-soft),
+    color 220ms var(--choice-soft),
+    box-shadow 260ms var(--choice-soft),
+    filter 180ms var(--choice-soft),
+    transform 280ms var(--choice-spring);
+}
+.choice-trigger--filter { min-width: 0; min-height: 2.5rem; border-radius: 999px; padding-inline: 0.8rem 0.6rem; font-size: 12.5px; }
+.choice-trigger:hover { filter: brightness(1.04); border-color: color-mix(in srgb, var(--choice-ink) 45%, transparent); }
+.choice-trigger:active { transform: scale(0.97); filter: brightness(0.94); }
+.choice-trigger:focus-visible,
+.choice-trigger[data-state='open'] {
+  outline: none;
+  border-color: color-mix(in srgb, var(--choice-ink) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--choice-ink) 20%, transparent);
+}
+.choice-trigger__label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
+.choice-trigger[data-placeholder] .choice-trigger__label { font-weight: 550; }
+.choice-trigger__icon { display: inline-flex; flex: none; animation: choicePop 380ms var(--choice-spring) both; }
+.choice-trigger__dot { display: block; width: 0.5rem; height: 0.5rem; margin: 0.25rem; border-radius: 50%; background: currentColor; opacity: 0.45; }
+.choice-trigger__chevron { flex: none; opacity: 0.7; transition: transform 320ms var(--choice-spring), opacity 200ms; }
+.choice-trigger[data-state='open'] .choice-trigger__chevron { transform: rotate(180deg); opacity: 1; }
+
+/* ── La liste ── */
+.choice-content {
+  z-index: 260;
+  min-width: max(var(--radix-select-trigger-width), 11rem);
+  max-width: calc(100vw - 1.25rem);
+  max-height: var(--radix-select-content-available-height);
+  overflow: hidden;
+  color: hsl(var(--popover-foreground));
+  background: hsl(var(--popover) / 0.97);
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  box-shadow: 0 18px 38px -14px rgba(36, 35, 31, 0.28), 0 4px 12px -4px rgba(36, 35, 31, 0.1);
+  backdrop-filter: blur(16px) saturate(1.4);
+  transform-origin: var(--radix-select-content-transform-origin);
+}
+.dark .choice-content { box-shadow: 0 24px 50px -16px rgba(0, 0, 0, 0.65); border-color: rgba(255, 255, 255, 0.1); }
+.choice-content[data-state='open'] { animation: choiceIn 240ms var(--choice-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both; }
+.choice-content[data-state='closed'] { animation: choiceOut 130ms ease-in both; }
+.choice-viewport { padding: 0.4rem; overflow-y: auto; max-height: inherit; }
+
+.choice-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding-block: 0.3rem;
+  padding-inline: 0.5rem 0.75rem;
+  font-size: 13px;
+  font-weight: 560;
+  color: hsl(var(--popover-foreground));
+  border-radius: 11px;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0;
+  animation: choiceItemIn 280ms var(--choice-soft) both;
+  animation-delay: calc(var(--i, 0) * 28ms + 40ms);
+  transition: background-color 150ms var(--choice-soft), color 150ms var(--choice-soft), transform 240ms var(--choice-spring);
+}
+.choice-item[data-highlighted] { background: var(--choice-wash); color: var(--choice-ink); }
+.choice-item:active { transform: scale(0.98); }
+.choice-item[data-state='checked'] { color: var(--choice-ink); font-weight: 700; }
+.choice-item__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--choice-ink);
+  background: var(--choice-wash);
+  border-radius: 9px;
+  transition: transform 300ms var(--choice-spring), background-color 150ms var(--choice-soft);
+}
+.choice-item[data-highlighted] .choice-item__icon { transform: scale(1.12) rotate(-4deg); background: color-mix(in srgb, var(--choice-ink) 16%, transparent); }
+.choice-item__check { display: inline-flex; margin-inline-start: auto; color: var(--choice-ink); }
+.choice-item__check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: choiceCheck 340ms 60ms var(--choice-soft) forwards; }
+.choice-item--clear { color: hsl(var(--muted-foreground)); margin-block-start: 0.25rem; }
+
+@keyframes choiceIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes choiceOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+@keyframes choiceItemIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes choicePop {
+  0% { transform: scale(0.6) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.18) rotate(3deg); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes choiceCheck { to { stroke-dashoffset: 0; } }
+
+/* ── Dans la fiche d'un élève ── */
+.notebook-choice { display: flex; flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+.notebook-choice .choice-trigger { width: min(100%, 15rem); }
+@media (max-width: 680px) {
+  /* Téléphone : le champ prend toute la largeur, sous le nom (le pouce l'atteint sans viser). */
+  .notebook-choice { grid-column: 1 / -1; grid-row: 2; width: 100%; justify-content: stretch; }
+  .notebook-choice .choice-trigger { width: 100%; min-height: 3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice-trigger, .choice-trigger__chevron, .choice-item, .choice-item__icon { transition: none; }
+  .choice-trigger__icon, .choice-content[data-state], .choice-item, .choice-item__check path { animation: none; }
+  .choice-item { opacity: 1; }
+  .choice-item__check path { stroke-dashoffset: 0; }
+  .choice-trigger:active, .choice-item:active { transform: none; }
+  .choice-item[data-highlighted] .choice-item__icon { transform: none; }
+}

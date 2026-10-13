@@ -69,11 +69,11 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={title} classLabel={classLabel} className="ms-auto" /></span>}
         >
             <div className="space-y-3">
-                <div className="document-preview-paper border border-border/80 bg-card p-5 sm:p-7">
+                <div className="document-preview-paper border border-border/80 bg-card p-3.5 sm:p-5">
                     {page ? (
                         <div dir={textDirectionAttribute(source) ?? 'ltr'}>
                             <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} />
-                            <div className="devoir-document mx-auto max-w-[44rem]" dir="auto">{page}</div>
+                            <div className="devoir-document mx-auto max-w-[56rem]" dir="auto">{page}</div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3 py-10 text-center">

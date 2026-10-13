@@ -10,12 +10,13 @@ const render = (tracked: boolean, initialNames = ['أمين', 'سلمى']) => re
     initialNotebookConditions: { 'أمين': 'good' }, onSave: () => {}, onCancel: () => {} }),
 }));
 
-test('notebook tracking offers four native radio options per student with one saved choice and pending legacy names', () => {
+test('notebook tracking gives each student one choice list (plus the filter), with the saved choice shown and legacy names pending', () => {
   const html = render(true);
-  assert.equal((html.match(/type="radio"/g) ?? []).length, 8);
-  assert.equal((html.match(/checked=""/g) ?? []).length, 1);
+  assert.equal((html.match(/role="combobox"/g) ?? []).length, 3, 'deux élèves et le filtre');
+  assert.doesNotMatch(html, /type="radio"/);
+  assert.equal((html.match(/data-tone="good"/g) ?? []).length >= 1, true, 'le choix enregistré porte sa teinte');
+  assert.ok(html.includes('جيد'));
   assert.ok(html.includes('لم يُراقَب بعد'));
-  for (const label of ['جيد', 'متوسط', 'يحتاج تحسيناً', 'لم يُحضَر']) assert.ok(html.includes(label));
   assert.equal((html.match(/<fieldset/g) ?? []).length, 2);
   assert.match(html, /aria-live="polite"/);
 });
@@ -33,14 +34,14 @@ test('notebook and oral tracking prefill the class roster and always expose a fl
       initialNames: [], roster, trackNotebookCondition: !oral, trackOral: oral, variant: 'checked', onCancel: () => {}, onSave: () => {},
     }) }));
     assert.equal((html.match(/<fieldset/g) ?? []).length, 2);
-    assert.equal((html.match(/type="radio"/g) ?? []).length, oral ? 6 : 8);
+    assert.equal((html.match(/role="combobox"/g) ?? []).length, 3);
+    assert.doesNotMatch(html, /type="radio"/);
     assert.match(html, /type="search"/);
     assert.match(html, /class="student-search-bar"/);
     assert.doesNotMatch(html, /notebook-summary|notebook-progress/);
-    assert.match(html, /<select/);
     assert.match(html, /أحمد العلوي/);
     if (oral) {
-      for (const label of ['مكتسب', 'في طور الاكتساب', 'يحتاج إلى دعم', 'لم يُقوَّم بعد']) assert.ok(html.includes(label));
+      assert.ok(html.includes('لم يُقوَّم بعد'));
       assert.doesNotMatch(html, /حالة دفتر/);
     }
   }

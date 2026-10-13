@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { useHapticFeedback } from "@/hooks/useHapticFeedback"
+import { TRASH_PATHS } from "./icons"
 
 export interface AnimatedTrashButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -11,10 +12,17 @@ export interface AnimatedTrashButtonProps
   onAction?: () => void | Promise<void>
 }
 
-/**
- * Bouton de suppression interactif avec animation liquide / vectorielle
- * (ouverture du couvercle, inclinaison du bac, aspiration des lettres et fermeture).
+/*
+ * LA CORBEILLE — un seul bouton, une seule icône, partout.
+ *
+ * L'icône est celle de la famille maison (`Trash2` : silhouette douce + contour fin, mêmes tracés), et non
+ * plus un dessin à part. Le geste est doux : au survol ou au focus le couvercle se soulève sur sa charnière,
+ * à l'appui le bouton se tasse, au clic le couvercle s'ouvre et se referme en un ressort court (≈ 440 ms)
+ * avant `onAction`. `onClick` part tout de suite : la confirmation s'ouvre pendant que le geste se termine.
+ * Avec `prefers-reduced-motion`, aucun mouvement : l'action part immédiatement.
  */
+const GESTURE_MS = 440
+
 export const AnimatedTrashButton = React.forwardRef<
   HTMLButtonElement,
   AnimatedTrashButtonProps
@@ -34,92 +42,59 @@ export const AnimatedTrashButton = React.forwardRef<
     },
     ref
   ) => {
-    const rawId = React.useId()
-    const canClipId = React.useMemo(
-      () => `trash-clip-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`,
-      [rawId]
-    )
-    const canFillId = React.useMemo(
-      () => `trash-fill-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`,
-      [rawId]
-    )
-
     const [isRunning, setIsRunning] = React.useState(false)
     const isRunningRef = React.useRef(false)
     const { impact } = useHapticFeedback()
+    const resolvedVariant = variant ?? (iconOnly ? "icon" : "destructive")
 
-    const resolvedVariant =
-      variant ?? (iconOnly ? "icon" : "destructive")
-
-    // Nettoyage / reset de sécurité
-    const timerRef = React.useRef<NodeJS.Timeout | null>(null)
+    const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
     React.useEffect(() => {
       return () => {
         if (timerRef.current) clearTimeout(timerRef.current)
       }
     }, [])
 
-    const handleReset = React.useCallback(() => {
+    const finish = React.useCallback(() => {
+      if (!isRunningRef.current) return
       isRunningRef.current = false
       setIsRunning(false)
       if (timerRef.current) {
         clearTimeout(timerRef.current)
         timerRef.current = null
       }
-    }, [])
+      if (onAction) void onAction()
+    }, [onAction])
 
-    const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (disabled || isRunningRef.current) return
-
       impact("medium")
-
       const prefersReduced =
         typeof window !== "undefined" &&
         window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
-
       if (prefersReduced) {
         onClick?.(e)
-        if (onAction) {
-          await onAction()
-        }
+        if (onAction) void onAction()
         return
       }
-
       isRunningRef.current = true
       setIsRunning(true)
-
-      // Filet de sécurité si `animationend` n'arrive pas : le geste court de
-      // l'icône seule dure ~360 ms, l'aspiration des lettres ~1,4 s.
-      timerRef.current = setTimeout(() => {
-        handleReset()
-        if (onAction) {
-          void onAction()
-        }
-      }, iconOnly ? 520 : 1450)
-
+      // Filet de sécurité si `animationend` n'arrive pas (onglet masqué, animation coupée).
+      timerRef.current = setTimeout(finish, GESTURE_MS + 120)
       onClick?.(e)
     }
 
     const handleAnimationEnd = (e: React.AnimationEvent) => {
-      // On déclenche le reset lorsque l'animation du couvercle se termine
-      if (e.animationName === "trashLid" || e.animationName === "trashLidFlip") {
-        handleReset()
-        if (onAction) {
-          void onAction()
-        }
-      }
+      if (e.animationName === "trashLid") finish()
     }
 
-    const letters = React.useMemo(() => {
-      const text = label || (typeof children === "string" ? children : "")
-      return text.split("")
-    }, [label, children])
+    const text = label ?? (typeof children === "string" ? children : undefined)
 
     return (
       <button
         ref={ref}
         type="button"
-        disabled={disabled || isRunning}
+        disabled={disabled}
+        aria-disabled={disabled || isRunning || undefined}
         data-running={isRunning ? "true" : "false"}
         onClick={handleClick}
         className={cn(
@@ -131,88 +106,30 @@ export const AnimatedTrashButton = React.forwardRef<
         {...props}
       >
         <svg
-          className="del-btn__icon"
-          viewBox="0 0 48 48"
-          width="48px"
-          height="48px"
+          className="app-icon del-btn__icon"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
+          focusable="false"
         >
-          <clipPath id={canClipId}>
-            <rect
-              className="del-btn__icon-can-fill"
-              x="5"
-              y="24"
-              width="14"
-              height="11"
-            />
-          </clipPath>
-
-          <g
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            transform="translate(12,12)"
-          >
-            {/* Feuille jetée : tombe dans le bac pendant le geste (icône seule) */}
-            <rect
-              className="del-btn__icon-paper"
-              x="9.5"
-              y="-5"
-              width="5"
-              height="6"
-              rx="1"
-              fill="currentColor"
-              stroke="none"
-            />
-
-            {/* Couvercle animé */}
-            <g
-              className="del-btn__icon-lid"
-              data-anim="true"
-              onAnimationEnd={handleAnimationEnd}
-            >
-              <polyline points="9,5 9,1 15,1 15,5" />
-              <polyline points="4,5 20,5" />
-            </g>
-
-            {/* Corps de poubelle animé */}
-            <g className="del-btn__icon-can">
-              <g strokeWidth="0">
-                <polyline
-                  id={canFillId}
-                  points="6,10 7,23 17,23 18,10"
-                />
-                <use
-                  clipPath={`url(#${canClipId})`}
-                  href={`#${canFillId}`}
-                  fill="currentColor"
-                />
-              </g>
-              <polyline points="6,10 7,23 17,23 18,10" />
-            </g>
+          <g className="del-btn__body">
+            <path d={TRASH_PATHS.wash} className="icon-wash" stroke="none" />
+            <path d={TRASH_PATHS.slits} />
+          </g>
+          <g className="del-btn__lid" onAnimationEnd={handleAnimationEnd}>
+            <path d={TRASH_PATHS.lid} />
           </g>
         </svg>
-
-        {/* Lettres volantes si libellé présent */}
-        {!iconOnly && letters.length > 0 && (
-          <span className="del-btn__letters" aria-hidden="true">
-            {letters.map((char, index) => (
-              <span key={index} className="del-btn__letter-box">
-                <span className="del-btn__letter">
-                  {char === " " ? "\u00A0" : char}
-                </span>
-              </span>
-            ))}
-          </span>
-        )}
-
-        {/* Support de contenu enfant si non string */}
-        {!iconOnly && letters.length === 0 && children}
+        {!iconOnly && text && <span className="del-btn__label">{text}</span>}
+        {!iconOnly && !text && children}
       </button>
     )
   }
 )
-
 AnimatedTrashButton.displayName = "AnimatedTrashButton"

@@ -6,9 +6,7 @@ export function fitDocumentMath(root: HTMLElement): void {
     if (!formula) continue;
     const available = display.clientWidth;
     const width = Math.max(formula.scrollWidth, formula.getBoundingClientRect().width);
-    const fontSize = Number.parseFloat(window.getComputedStyle(display).fontSize);
-    if (available > 0 && width > available && Number.isFinite(fontSize)) {
-      display.style.fontSize = `${fontSize * available / width * 0.99}px`;
-    }
+    // Un rapport en em, pas des pixels : la feuille est agrandie à la largeur du papier, la formule suit.
+    if (available > 0 && width > available) display.style.fontSize = `${Number((available / width * 0.99).toFixed(4))}em`;
   }
 }

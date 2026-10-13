@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { FerieEntry, HolidayCalendar, VacancePeriode } from '../../domain/calendar/calendar';
 import { fetchAdminCalendar, saveAdminCalendar } from '../api';
-import { CalendarDays, Plus, Save, Trash2 } from '../../components/ui/icons';
+import { CalendarDays, Plus, Save } from '../../components/ui/icons';
+import { AnimatedTrashButton } from '../../components/ui/AnimatedTrashButton';
 
 export const CalendarManager: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [calendar, setCalendar] = useState<HolidayCalendar | null>(null);
@@ -98,5 +99,5 @@ const CalendarList: React.FC<{ title: string; onAdd: () => void; children: React
 );
 
 const DeleteButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-    <button onClick={onClick} aria-label="Supprimer" className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20"><Trash2 className="h-3.5 w-3.5" /></button>
+    <AnimatedTrashButton iconOnly size="md" variant="icon" onAction={onClick} aria-label="Supprimer" title="Supprimer" className="shrink-0" />
 );

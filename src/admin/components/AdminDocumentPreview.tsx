@@ -66,7 +66,7 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
                     {hasDocument ? (
                         <div dir={sheetDir}>
                             <DocumentSheetHeader title={headerTitleFor(heading, source)} classLabel={classLabel} />
-                            <div className="devoir-document mx-auto max-w-[44rem]" dir={sheetDir}>
+                            <div className="devoir-document mx-auto max-w-[56rem]" dir={sheetDir}>
                                 {renderDescriptionWithBold(source)}
                             </div>
                         </div>

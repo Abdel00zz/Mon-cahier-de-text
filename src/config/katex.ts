@@ -1,4 +1,5 @@
 import katex from 'katex';
+import { highlightMathSource } from '../lib/text/highlightMarkers';
 
 /**
  * Moteur mathématique : KaTeX, embarqué dans le bundle (moteur + polices), donc
@@ -144,13 +145,14 @@ const stripMathDelimiters = (tex: string): string => {
  *  chargement, aucun scintillement de TeX brut, aucun décalage de mise en page. */
 export const renderKatexHtml = (tex: string, displayMode?: boolean): string => {
   const trimmed = tex.trim();
-  const value = expandComfortMacros(stripMathDelimiters(tex));
+  // Sans indication, c'est le délimiteur qui décide de l'affichage en bloc.
+  const display = displayMode ?? (trimmed.startsWith('$$') || trimmed.startsWith('\\['));
+  const value = highlightMathSource(expandComfortMacros(stripMathDelimiters(tex)), display);
   if (!value) return '';
   try {
     return katex.renderToString(value, {
       ...BASE_OPTIONS,
-      // Sans indication, c'est le délimiteur qui décide de l'affichage en bloc.
-      displayMode: displayMode ?? (trimmed.startsWith('$$') || trimmed.startsWith('\\[')),
+      displayMode: display,
     });
   } catch {
     return '';
