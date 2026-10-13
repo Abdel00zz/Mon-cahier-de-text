@@ -32,86 +32,33 @@
     background-attachment: fixed;
 }
 
-[data-dashboard-root] [data-slot="class-display-toggle"] {
-  border-radius: 999px;
-  background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
-  border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-}
-[data-dashboard-root] [data-slot="class-display-toggle"]:hover {
-  background: hsl(var(--card));
-  border-color: color-mix(in srgb, hsl(var(--primary)) 40%, hsl(var(--border)));
-  color: hsl(var(--foreground));
-  box-shadow: 0 2px 8px -2px rgba(40, 36, 33, 0.08);
-}
-[data-dashboard-root] .dashboard-add-class {
-  border-radius: 999px;
-  background: hsl(var(--primary));
-  border-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  box-shadow: 0 4px 14px rgb(179 84 59 / .25);
-  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-}
-[data-dashboard-root] .dashboard-add-class:hover {
-  background: color-mix(in srgb, hsl(var(--primary)) 88%, white 12%);
-  border-color: color-mix(in srgb, hsl(var(--primary)) 88%, white 12%);
-  box-shadow: 0 6px 18px rgb(179 84 59 / .32);
-}
-.dark [data-dashboard-root] .dashboard-add-class {
-  background: hsl(var(--primary));
-  border-color: color-mix(in srgb, hsl(var(--primary)) 85%, white 15%);
-}
-.dark [data-dashboard-root] [data-slot="class-display-toggle"] {
-  background: color-mix(in srgb, hsl(var(--card)) 85%, transparent);
-  border-color: hsl(var(--border) / 0.6);
-  color: hsl(var(--foreground));
-}
-.dark [data-dashboard-root] [data-slot="class-display-toggle"]:hover {
-  background: hsl(var(--card));
-  border-color: color-mix(in srgb, hsl(var(--primary)) 50%, hsl(var(--border)));
-}
-
-/* Portrait phone: one aligned toolbar, followed immediately by the classes. */
+/* Téléphone portrait : le titre passe un peu plus compact, la rangée d'actions reste à sa droite (à sa gauche en arabe). */
 @media (max-width: 639px) {
   [data-dashboard-root] .dashboard-heading { gap: 12px; }
   [data-dashboard-root] .dashboard-heading h1 { font-size: 22px; line-height: 1.4; }
-  [data-dashboard-root] .dashboard-actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    width: 100%;
-    align-self: stretch;
-    gap: 8px;
-  }
-  [data-dashboard-root] .dashboard-actions > button { width: 100%; min-width: 0; justify-content: center; border-radius: 10px; }
-  [data-dashboard-root] .class-display-toggle__glyph,
-  [data-dashboard-root] .class-display-toggle__glyph svg { width: 20px; height: 20px; }
-  [data-dashboard-root] .class-display-toggle__glyph { flex-basis: 20px; }
 }
-
 /* ── Aide du téléphone ────────────────────────────────────────────────────────
-   Un bouton de 44 px au coin de FIN de la page : à droite en français et en anglais, à gauche en arabe
-   (`inset-inline-end`). Le titre, lui, part du bord de DÉPART : ils ne se rencontrent jamais. */
+   Sur tablette et ordinateur, l'aide est dans la barre latérale : le bouton n'existe donc que sous 640 px.
+   L'affichage est posé DANS la requête de média : une règle non qualifiée (`display: grid`) l'emporterait
+   sur l'utilitaire Tailwind `sm:hidden`, qui vit dans une couche de priorité inférieure. */
 .dashboard-help {
-  position: absolute;
-  inset-block-start: 0.125rem;
-  inset-inline-end: max(1rem, env(safe-area-inset-right, 0px));
-  z-index: 2;
-  display: grid;
+  display: none;
   place-items: center;
+  flex: 0 0 auto;
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
   color: hsl(var(--muted-foreground));
   background: hsl(var(--card) / 0.9);
   border: 1px solid hsl(var(--border));
-  border-radius: 12px;
+  border-radius: 999px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: color 150ms ease, background-color 150ms ease, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (max-width: 639px) {
+  .dashboard-help { display: grid; }
 }
 .dashboard-help:hover { color: hsl(var(--foreground)); background: hsl(var(--accent)); }
 .dashboard-help:active { transform: scale(0.94); }

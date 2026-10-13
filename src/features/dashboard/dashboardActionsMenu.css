@@ -1,0 +1,91 @@
+/* Bouton d'actions du tableau de bord.
+   Inspiré d'un bouton « plus » rond : trois traits qui se transforment en croix, un anneau qui
+   pulse une fois à l'ouverture, des lignes qui apparaissent en cascade. Adapté à l'application :
+   couleurs du thème (jamais de teinte codée en dur), cible de 44 px, états clair/sombre, sens de
+   lecture et mouvement réduit respectés. Le menu s'ouvre vers le BAS. */
+
+.dashboard-actions-menu__trigger {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.22);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 200ms ease, filter 150ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dashboard-actions-menu__trigger:hover { filter: brightness(1.1); box-shadow: 0 0 0 7px hsl(var(--primary) / 0.22); }
+.dashboard-actions-menu__trigger:active { filter: brightness(0.9); transform: scale(0.94); }
+.dashboard-actions-menu__trigger:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 4px; }
+.dashboard-actions-menu__trigger[data-state="open"] { animation: dashboard-actions-menu-pulse 300ms linear forwards; }
+
+/* Trois traits : les deux demi-traits se redressent et le tout pivote, ce qui dessine une croix.
+   Toujours en LTR : la géométrie des demi-traits ne doit pas dépendre du sens de lecture. */
+.dashboard-actions-menu__icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 1.25rem;
+  height: 1.25rem;
+  direction: ltr;
+  transition: transform 300ms ease-out;
+}
+.dashboard-actions-menu__line {
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+.dashboard-actions-menu__line--first,
+.dashboard-actions-menu__line--last { width: 50%; transition: transform 300ms cubic-bezier(0.52, -0.8, 0.52, 0.52); }
+.dashboard-actions-menu__line--first { transform-origin: right; }
+.dashboard-actions-menu__line--last { align-self: flex-end; transform-origin: left; }
+.dashboard-actions-menu__trigger[data-state="open"] .dashboard-actions-menu__icon { transform: rotate(-45deg); }
+.dashboard-actions-menu__trigger[data-state="open"] .dashboard-actions-menu__line--first { transform: rotate(-90deg) translateX(1px); }
+.dashboard-actions-menu__trigger[data-state="open"] .dashboard-actions-menu__line--last { transform: rotate(-90deg) translateX(-1px); }
+
+/* Les lignes du menu descendent avec lui : un léger glissement vers le bas, en cascade. */
+.dashboard-actions-menu__menu { padding: 0.375rem; }
+.dashboard-actions-menu__menu .dashboard-actions-menu__item {
+  animation: dashboard-actions-menu-item-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(60ms + var(--i, 0) * 45ms);
+}
+.dashboard-actions-menu__menu .dashboard-actions-menu__glyph { color: hsl(var(--muted-foreground)); }
+.dashboard-actions-menu__menu [data-state="checked"] .dashboard-actions-menu__glyph { color: hsl(var(--primary)); }
+
+/* Création : l'action principale, à l'encre d'accent. */
+.dashboard-actions-menu__menu .dashboard-actions-menu__create { color: hsl(var(--primary)); font-weight: 600; }
+.dashboard-actions-menu__menu .dashboard-actions-menu__create svg { color: hsl(var(--primary)); width: 1.25rem; height: 1.25rem; stroke-width: 2; }
+
+/* Étiquette de groupe : en casse normale, plus lisible en arabe comme en français. */
+.dashboard-actions-menu__menu [role="group"],
+.dashboard-actions-menu__menu > div[class*="uppercase"] { text-transform: none; letter-spacing: 0; font-size: 0.75rem; }
+
+@keyframes dashboard-actions-menu-pulse {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0.1); }
+  100% { box-shadow: 0 0 0 4px hsl(var(--primary) / 0.22); }
+}
+@keyframes dashboard-actions-menu-item-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-actions-menu__trigger,
+  .dashboard-actions-menu__icon,
+  .dashboard-actions-menu__line--first,
+  .dashboard-actions-menu__line--last { transition: none; }
+  .dashboard-actions-menu__trigger[data-state="open"] { animation: none; }
+  .dashboard-actions-menu__trigger:active { transform: none; }
+  .dashboard-actions-menu__menu .dashboard-actions-menu__item { animation: none; }
+}

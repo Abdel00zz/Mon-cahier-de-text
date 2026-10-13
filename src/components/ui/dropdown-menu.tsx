@@ -84,6 +84,32 @@ const DropdownMenuLabel = React.forwardRef<
 ));
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
+
+const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+
+/** Choix exclusif dans un menu : l'élément actif porte `data-state="checked"`. */
+const DropdownMenuRadioItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
+>(({ className, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.RadioItem
+    ref={ref}
+    className={cn(
+      "group relative flex min-h-11 cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm sm:text-[13px] font-medium outline-none transition-colors duration-150 active:scale-[0.98]",
+      "text-popover-foreground hover:bg-muted/70 hover:text-foreground focus:bg-muted/80 focus:text-foreground",
+      "data-[state=checked]:bg-primary/10 data-[state=checked]:text-foreground",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+      "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </DropdownMenuPrimitive.RadioItem>
+));
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
+
+const DropdownMenuItemIndicator = DropdownMenuPrimitive.ItemIndicator;
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -91,4 +117,7 @@ export {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuItemIndicator,
 };

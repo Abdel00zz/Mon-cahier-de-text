@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassCard } from '../src/features/dashboard/ClassCard';
-import { ClassDisplayToggle } from '../src/features/dashboard/ClassDisplayToggle';
-import { isClassDisplayMode, nextClassDisplayMode, type ClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
+import { DashboardActionsMenu } from '../src/features/dashboard/DashboardActionsMenu';
+import { isClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { translateLocaleMessage } from '../src/i18n/messages';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
@@ -97,42 +97,56 @@ test('la carte garde son aplat pastel et se soulève doucement', () => {
   assert.match(cards, /@container \(max-width: 360px\)/, 'la densité dépend de la largeur de carte, même sur tablette');
 });
 
-test('la disposition avance d’un seul geste, sans menu', () => {
-  // Un appui = un cran. Le cycle est fermé : on revient au point de départ.
-  const cycle: ClassDisplayMode[] = ['double', 'single', 'list'];
-  assert.deepEqual(cycle.map(nextClassDisplayMode), ['single', 'list', 'double']);
-  assert.equal(nextClassDisplayMode(nextClassDisplayMode(nextClassDisplayMode('double'))), 'double', 'cycle fermé');
-  assert.ok(isClassDisplayMode('single'), 'une valeur connue est acceptée');
+test('la disposition mémorisée n’accepte que les valeurs connues', () => {
+  for (const accepted of ['list', 'single', 'double']) assert.ok(isClassDisplayMode(accepted), accepted);
   for (const rejected of ['triple', '', undefined, null, 3, {}]) {
     assert.equal(isClassDisplayMode(rejected), false, `valeur rejetée : ${String(rejected)}`);
   }
 });
 
-test('un seul bouton, un seul mécanisme, trois états montés d’avance', () => {
-  const html = renderToStaticMarkup(React.createElement(LocaleProvider, {
-    locale: 'fr',
-    children: React.createElement(ClassDisplayToggle, { mode: 'double', onChange: () => {} }),
-  }));
-  assert.ok(html.includes('data-slot="class-display-toggle"'), 'le bouton existe');
-  assert.ok(html.includes('data-mode="double"'), 'son état courant est exposé');
-  assert.equal((html.match(/<button/g) ?? []).length, 1, 'un seul bouton, aucun déclencheur secondaire');
-  assert.doesNotMatch(html, /role="menu"|menuitemradio|aria-haspopup/, 'plus aucun menu de disposition');
-  assert.equal((html.match(/<svg/g) ?? []).length, 3, 'les trois pictogrammes sont montés (métamorphose, pas remontage)');
-  assert.equal((html.match(/class-display-toggle__labels/g) ?? []).length, 1, 'une seule boîte de libellés');
-  assert.match(html, /aria-label="Disposition : 2 par ligne — passer à 1 par ligne"/, 'le geste est annoncé avant d’être fait');
-  assert.match(html, /aria-live="polite"/, 'le nouvel état est annoncé après le clic');
+test('un seul bouton rond d’actions : trois traits, un menu, une cible de 44 px', () => {
+  for (const locale of ['fr', 'ar', 'en'] as const) {
+    const html = renderToStaticMarkup(React.createElement(LocaleProvider, {
+      locale,
+      children: React.createElement(DashboardActionsMenu, { mode: 'double', onModeChange: () => {}, onCreateClass: () => {} }),
+    }));
+    assert.equal((html.match(/<button/g) ?? []).length, 1, `${locale} : un seul bouton dans la rangée`);
+    assert.match(html, /aria-haspopup="menu"/, `${locale} : le bouton annonce un menu`);
+    assert.match(html, /aria-label="(Actions|إجراءات)"/, `${locale} : nom accessible traduit`);
+    assert.equal((html.match(/dashboard-actions-menu__line/g) ?? []).length, 3 + 2, 'trois traits (deux portent aussi leur variante)');
+  }
+  const css = readFileSync('src/features/dashboard/dashboardActionsMenu.css', 'utf8');
+  assert.match(css, /\.dashboard-actions-menu__trigger \{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/, 'cible tactile de 44 px');
+  assert.match(css, /background: hsl\(var\(--primary\)\)/, 'couleur d’accent du thème');
+  assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|rgb\(|rgba\(/i, 'aucune teinte codée en dur : tout vient du thème');
+  assert.match(css, /\[data-state="open"\] \.dashboard-actions-menu__icon \{ transform: rotate\(-45deg\)/, 'les traits forment une croix à l’ouverture');
+  assert.match(css, /\.dashboard-actions-menu__icon \{[\s\S]*?direction: ltr;/, 'la croix ne dépend pas du sens de lecture');
+  assert.match(css, /@keyframes dashboard-actions-menu-item-in \{\s*from \{ opacity: 0; transform: translateY\(-6px\)/, 'la cascade descend avec le menu');
+  assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*animation: none/, 'mouvement réduit respecté');
+  assert.match(css, /animation: dashboard-actions-menu-item-in 220ms/, 'cascade entre 150 et 300 ms');
 });
 
-test('le tableau de bord ne propose plus deux chemins pour changer d’affichage', () => {
+test('le menu s’ouvre vers le bas et regroupe création et disposition, avec des icônes propres à chaque ligne', () => {
+  const menu = readFileSync('src/features/dashboard/DashboardActionsMenu.tsx', 'utf8');
+  assert.match(menu, /side="bottom" align="end"/, 'vers le bas, aligné sur le bord de fin (miroir en arabe)');
+  assert.match(menu, /<Plus aria-hidden="true" \/>[\s\S]*?t\('dashboard\.addClass'\)/, 'création : icône « plus »');
+  assert.match(menu, /onSelect=\{onCreateClass\}/);
+  assert.match(menu, /MENU_MODES: readonly ClassDisplayMode\[\] = \['double', 'single', 'list'\]/);
+  assert.match(menu, /DropdownMenuRadioGroup[\s\S]*?value=\{mode\}/, 'la disposition courante est cochée');
+  assert.match(menu, /isClassDisplayMode\(value\)/, 'une valeur inconnue n’est jamais appliquée');
+  assert.match(menu, /<Check /, 'indicateur de choix');
+});
+
+test('le tableau de bord n’a plus qu’un seul bouton d’actions et titre « Mes classes : »', () => {
   const source = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
-  assert.match(source, /<ClassDisplayToggle/, 'le bouton unique est branché');
-  assert.doesNotMatch(source, /menuitemradio|aria-haspopup="menu"|isDisplayMenuOpen|displayMenuRef/, 'plus de menu ni d’état de menu');
-  assert.doesNotMatch(source, /ChevronDown/, 'plus de chevron de menu');
+  assert.match(source, /<DashboardActionsMenu/, 'le bouton unique est branché');
+  assert.doesNotMatch(source, /dashboard-add-class|ClassDisplayToggle/, 'plus de boutons séparés « Classe » et disposition');
+  assert.match(source, /\{locale === 'fr' \? '\\u00A0:' : ':'\}/, 'deux points, avec espace insécable en français');
+  assert.match(source, /<span aria-hidden="true">\{locale === 'fr'/, 'les deux points sont décoratifs pour les lecteurs d’écran');
   // La disposition reste persistée : un seul écrivain, la valeur validée.
   assert.match(source, /dashboard_class_display_v1/, 'la disposition survit au rechargement');
   assert.match(source, /isClassDisplayMode\(classDisplayMode\)/, 'une valeur inconnue retombe sur deux colonnes');
 });
-
 test('taille du nom de classe sur les cartes augmentée de 15% sans toucher au niveau', () => {
   const cardsCss = readFileSync('src/features/dashboard/classCards.css', 'utf8');
   assert.match(cardsCss, /\.class-card__stream\s*\{[\s\S]*?font-size:\s*1\.15em/, 'le nom de la filière est agrandi de 15% (1.15em)');

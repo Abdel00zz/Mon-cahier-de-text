@@ -8,7 +8,7 @@ import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { DeferredMount } from '@/components/ui/DeferredMount';
 import { Button } from '@/components/cahier/Button';
 import { ClassCard } from './ClassCard';
-import { ClassDisplayToggle } from './ClassDisplayToggle';
+import { DashboardActionsMenu } from './DashboardActionsMenu';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
 import { ClassListItem } from './ClassListItem';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -298,6 +298,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
         );
     }
 
+    // Téléphone seulement (voir `.dashboard-help`) : la barre latérale porte déjà l'aide ailleurs.
+    const helpButton = onOpenGuide ? (
+        <button
+            type="button"
+            onClick={onOpenGuide}
+            className="dashboard-help"
+            aria-label={t('toolbar.help')}
+            title={t('toolbar.help')}
+        >
+            <CircleHelp className="h-5 w-5" aria-hidden="true" />
+        </button>
+    ) : null;
     return (
         <div
             /* Fond du tableau de bord : les valeurs vivent dans
@@ -308,22 +320,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    {/* Téléphone : l'aide au coin de FIN de la page (droite en français et en anglais, gauche en arabe), là où le titre ne va pas. */}
-                    {onOpenGuide && (
-                        <button
-                            type="button"
-                            onClick={onOpenGuide}
-                            className="dashboard-help sm:hidden"
-                            aria-label={t('toolbar.help')}
-                            title={t('toolbar.help')}
-                        >
-                            <CircleHelp className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                    )}
+                    {/* Téléphone seulement : sur tablette et ordinateur, l'aide vit dans la barre latérale.
+                        Sans classe, il n'y a pas de rangée de titre : le bouton reste au coin de fin. */}
+                    {classes.length === 0 && helpButton && <div className="mb-2 flex justify-end">{helpButton}</div>}
 
                     {classes.length > 0 && (
                         <div className="mb-4 sm:mb-6">
-                            <div className="dashboard-heading flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 max-sm:pe-14">
+                            <div className="dashboard-heading flex items-end justify-between gap-3 sm:gap-4">
                                 <div className="max-w-xl">
                                     {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1
@@ -332,32 +335,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
                                     >
                                         {t('dashboard.classes')}
+                                        {/* Deux points typographiques (espace insécable en français) ; ignorés des lecteurs d'écran. */}
+                                        <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
                                     </h1>
                                 </div>
 
-                                <div className="dashboard-actions flex flex-wrap items-center gap-2 min-w-0 self-start sm:self-end">
-                                    {/* Disposition : UN SEUL bouton, qui avance d'un cran à chaque
-                                        appui (deux colonnes → une colonne → liste → deux colonnes).
-                                        Plus de menu, donc plus d'aller-retour : l'icône se
-                                        métamorphose et le libellé se fond, à hauteur des autres
-                                        commandes de la rangée. */}
-                                    <ClassDisplayToggle
+                                <div className="dashboard-actions flex shrink-0 items-center gap-2">
+                                    {helpButton}
+                                    {/* Un seul bouton rond, ouvert vers le bas : créer une classe et choisir la disposition. */}
+                                    <DashboardActionsMenu
                                         mode={currentDisplay}
-                                        onChange={setClassDisplayMode}
-                                        className="relative z-10"
-                                    />
-
-                                    {/* Création : action principale à contraste élevé. */}
-                                    <Button
-                                        onClick={() => setCreateModalOpen(true)}
-                                        aria-label={t('dashboard.addClass')}
-                                        title={t('dashboard.addClass')}
-                                        className="dashboard-add-class h-11 min-h-11 gap-1.5 rounded-md px-3 text-sm"
-                                    >
-                                        <Plus className="h-5 w-5 stroke-[1.8]" aria-hidden="true" />
-                                        <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
-                                    </Button>
-                                </div>
+                                        onModeChange={setClassDisplayMode}
+                                        onCreateClass={() => setCreateModalOpen(true)}
+                                    />                                </div>
                             </div>
                         </div>
                     )}

@@ -7,7 +7,7 @@ import { GuideModal } from '../../src/features/guide/GuideModal';
 import { AbsencesTab } from '../../src/features/settings/components/AbsencesTab';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { TabBar } from '../../src/components/navigation/TabBar';
-import { ClassDisplayToggle } from '../../src/features/dashboard/ClassDisplayToggle';
+import { DashboardActionsMenu } from '../../src/features/dashboard/DashboardActionsMenu';
 import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplayMode';
 import '../../src/features/dashboard/dashboardCanvas.css';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
@@ -95,11 +95,10 @@ function Preview() {
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" >
-          <div className="dashboard-heading mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <h1 className="text-2xl font-bold">{isAr ? 'أقسامك' : 'Classes'}</h1>
-            <div className="dashboard-actions flex min-w-0 flex-wrap items-center gap-2 self-start sm:self-end">
-              <ClassDisplayToggle mode={display} onChange={setDisplay} />
-              <button className="dashboard-add-class inline-flex h-11 min-h-11 items-center gap-1.5 px-3 text-sm" onClick={noop}><span aria-hidden="true">＋</span>{isAr ? 'قسم' : 'Classe'}</button>
+          <div className="dashboard-heading mb-4 flex items-end justify-between gap-3">
+            <h1 className="text-2xl font-bold">{isAr ? 'أقسامك' : 'Classes'}<span aria-hidden="true">{isAr ? ':' : '\u00A0:'}</span></h1>
+            <div className="dashboard-actions flex shrink-0 items-center gap-2">
+              <DashboardActionsMenu mode={display} onModeChange={setDisplay} onCreateClass={noop} />
             </div>
           </div>
           <div className={`grid gap-3 ${display === 'double' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
