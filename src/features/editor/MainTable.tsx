@@ -19,6 +19,9 @@ import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIll
 import { motion, useReducedMotion } from 'framer-motion';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { SessionDocuments } from './SessionDocuments';
+import { GripHorizontal } from '@/components/ui/icons';
+import { useEditorRowReorder } from './useEditorRowReorder';
+import './editorRowReorder.css';
 
 // Une seule source de largeurs pour toute l'application : `.editor-table-grid`
 // résout `--cdt-table-cols`, redéfini par `index.css` pour le téléphone
@@ -26,6 +29,7 @@ import { SessionDocuments } from './SessionDocuments';
 // codés en dur ici écrasaient ces bornes sur téléphone et tassaient les
 // colonnes — donc les rails et la lisibilité.
 const TABLE_GRID_CLASS = 'editor-table-grid';
+const sortLabel = ({ data }: FlatDataItem) => ('title' in data && data.title) || ('name' in data ? data.name : undefined);
 
 interface MainTableProps {
   lessonsData: LessonsData;
@@ -71,6 +75,8 @@ interface MainTableProps {
   /** programme officiel proposé lorsque le cahier est encore vide */
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
+  onReorder?: (sourceKey: string, targetKey: string, side: 'before' | 'after') => boolean;
+  canReorder?: (sourceKey: string, targetKey: string, side: 'before' | 'after') => boolean;
 }
 
 const VIRTUALIZATION_THRESHOLD = 140;
@@ -136,6 +142,7 @@ interface SessionGroupRowProps {
     getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
     getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
     onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
+    reorderHandle?: React.ReactNode;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
@@ -159,6 +166,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     getDocumentPreview,
     getSessionDocuments,
     onOpenDocumentPreview,
+    reorderHandle,
 }) => {
     const { t } = useLocale();
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
@@ -255,6 +263,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 dateMerge={item.dateMerge}
                 lineClassOverride=""
                 layout="content-only"
+                reorderHandle={item === items[0] ? reorderHandle : undefined}
                 onToggleSelect={merged ? toggleMerged : onToggleSelect}
                 onDoubleClickEdit={onDoubleClickEdit}
                 onOpenRemark={onOpenRemark}
@@ -509,6 +518,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   focusKey,
   predefinedProgramTitle,
   onLoadPredefined,
+  onReorder,
+  canReorder,
 }) => {
   const { t } = useLocale();
   const { flatData, renderRows: courseRows } = useMemo(() => groupRowsWithAbsences(hasOnlyPristineStarterDiagnostic(lessonsData) ? [] : visibleRows, absenceSessions), [visibleRows, absenceSessions, lessonsData]);
@@ -535,6 +546,23 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       return id;
     }).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypes.join(',');
   }), [renderRows, contentDirection, showDescriptions, descriptionTypes]);
+  const sortRootRef = useRef<HTMLDivElement>(null);
+  const sort = useEditorRowReorder(sortRootRef, itemKeys, {
+    started: t('editor.reorderStarted'), moved: t('editor.reorderMoved'), cancelled: t('editor.reorderCancelled'),
+  }, searchQuery?.trim() ? undefined : onReorder, canReorder);
+  const reorderLabel = t('editor.reorderHandle');
+  const reorderHandle = (key: string) => onReorder && canReorder && !searchQuery?.trim() ? (
+    <button
+      type="button"
+      data-editor-sort-handle="true"
+      className="editor-row-sort-handle"
+      aria-label={reorderLabel}
+      title={reorderLabel}
+      onClick={event => event.stopPropagation()}
+      onPointerDown={event => sort.onPointerDown(event, key)}
+      onKeyDown={event => sort.onKeyDown(event, key)}
+    ><GripHorizontal size={18} aria-hidden="true" /></button>
+  ) : undefined;
   const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
   const focusIndex = useMemo(() => focusKey ? renderRows.findIndex(row => row.kind !== 'absence' && (
     row.kind === 'single' ? row.item.key === focusKey : row.items.some(item => item.key === focusKey)
@@ -635,8 +663,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       className="rtl-table mx-0 overflow-clip rounded-lg border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
     >
       <TableHeader />
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true"><span key={sort.announcement.sequence}>{sort.announcement.text}</span></span>
       <CardContent className="!p-0">
-        <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
+        <div ref={element => { scrollRef.current = element; sortRootRef.current = element; }} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
           {(() => {
               const rows: Array<{ row: RenderRow | AbsenceDisplayRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
                 ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
@@ -667,6 +696,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
                           <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                            <div data-editor-sort-row data-editor-sort-key={row.items[0].key} data-editor-sort-id={String(itemKeys[absoluteIndex])}
+                              data-editor-sort-label={onReorder ? [...new Set(row.items.map(sortLabel).filter(Boolean))].join(' · ') : undefined}>
                               <SessionGroupRow
                                   items={row.items}
                                   selectedKeys={selectedKeys}
@@ -688,7 +719,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   getDocumentPreview={getDocumentPreview}
                                   getSessionDocuments={getSessionDocuments}
                                   onOpenDocumentPreview={onOpenDocumentPreview}
+                                  reorderHandle={reorderHandle(row.items[0].key)}
                               />
+                            </div>
                           </VirtualListRow>
                       );
                   }
@@ -701,6 +734,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
                   return (
                       <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                        <div data-editor-sort-row data-editor-sort-key={item.key} data-editor-sort-id={String(itemKeys[absoluteIndex])}
+                          data-editor-sort-label={onReorder ? sortLabel(item) : undefined}>
                           <TableRow
                               data={item.data}
                               indices={item.indices}
@@ -723,7 +758,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               onOpenDocumentPreview={onOpenDocumentPreview}
                               sessionAnnotation={itemDate ? getSessionAnnotation?.(itemDate) : undefined}
                               sessionDocuments={itemDate ? getSessionDocuments?.(itemDate) : undefined}
+                              reorderHandle={reorderHandle(item.key)}
                           />
+                        </div>
                       </VirtualListRow>
                   );
               });

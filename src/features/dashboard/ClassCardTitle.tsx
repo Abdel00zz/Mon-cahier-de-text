@@ -2,7 +2,9 @@ import { titleDirection } from '@/domain/notebook/contentDirection';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 
 /** Only a separate trailing group number is highlighted, never the level (1AC/2BAC). */
-export function ClassCardTitle({ name, compact = false, intro }: { name: string; compact?: boolean; intro?: string }) {
+export function ClassCardTitle({ name, compact = false, wrap = false, intro }: { name: string; compact?: boolean; wrap?: boolean; intro?: string }) {
+    const labelClass = wrap ? 'block break-words text-pretty text-start'
+        : compact ? 'block truncate text-start' : 'line-clamp-2 break-words text-balance text-start';
     const renderLabel = (text: string) => {
         if (intro && text.startsWith(intro)) {
             return (
@@ -18,7 +20,7 @@ export function ClassCardTitle({ name, compact = false, intro }: { name: string;
     const match = name.match(/^(.*?)\s+([0-9\u0660-\u0669\u06f0-\u06f9]{1,2})$/u);
     if (!match) {
         return (
-            <span dir="auto" className={compact ? 'block truncate text-start' : 'line-clamp-2 break-words text-balance text-start'}>
+            <span dir="auto" className={labelClass}>
                 <span className="sr-only">{name}</span>
                 <span aria-hidden="true">{renderLabel(name)}</span>
             </span>
@@ -26,7 +28,7 @@ export function ClassCardTitle({ name, compact = false, intro }: { name: string;
     }
 
     return (
-        <span dir={titleDirection(match[1])} className={compact ? 'block truncate text-start' : 'line-clamp-2 break-words text-balance text-start'}>
+        <span dir={titleDirection(match[1])} className={labelClass}>
             <span className="sr-only">{name}</span>
             <span aria-hidden="true">
                 {renderLabel(match[1])}{'\u00a0'}<bdi dir="ltr" className="keep-group-number font-sans font-bold tracking-tight">{match[2]}</bdi>

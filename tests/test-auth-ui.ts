@@ -83,7 +83,7 @@ test('emploi du temps : la case suit la teinte de la carte, jamais une palette p
   }
 });
 
-test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de ligne', () => {
+test('cartes : seul le statut de séance remplace la dernière ouverture ; bouton Fermer aligné en fin de ligne', () => {
   const card = readFileSync(
     new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url),
     'utf8',
@@ -96,13 +96,10 @@ test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de li
     new URL('../src/features/settings/ConfigModal.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(card, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
-  assert.match(list, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
-  // Le pied de carte tient sa taille du jeton CSS unique (`class-card__status`) ;
-  // la liste garde sa paire compacte 10,5 / 11,9 px.
-  assert.match(card, /className="class-card__status"/);
-  assert.equal((card.match(/text-\[11\.9px\]/g) ?? []).length, 0);
-  assert.equal((list.match(/text-\[10\.5px\] sm:text-\[11\.9px\]/g) ?? []).length, 1);
+  for (const source of [card, list]) {
+    assert.doesNotMatch(source, /classOpeningLabel|lastOpenedAt|class-card__status|<time\b/);
+    assert.match(source, /isActiveSession &&[\s\S]*class-card__live[\s\S]*t\('dashboard\.welcome\.nowTitle'\)/);
+  }
   // Les actions de classe restent une liste déroulante dans les deux vues.
   assert.match(card, /ClassActionsMenu/);
   assert.match(list, /ClassActionsMenu/);

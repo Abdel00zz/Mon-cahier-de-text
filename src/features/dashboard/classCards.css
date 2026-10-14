@@ -1,21 +1,17 @@
-/* Surfaces calmes, accents stables et reflets composités sans boucle JS. */
+/* Course sheets: punched margin, quiet ruling and a clear class identity.
+   Only the decorative surface is masked; opening and menu targets stay whole. */
+:is(.class-card, .class-list-item) {
+  --class-live-ink: hsl(342 59% 31%);
+  --class-live-fill: hsl(342 35% 94%);
+}
 .class-card {
-  /* Palette pilotée par le ton de la classe : les valeurs vivent dans
-     `index.css` (`[data-keep-tone]`) — une seule source pour les cartes, les
-     surfaces et les filigranes. `--class-accent` porte la déclinaison lisible
-     (textes, icônes, bordures, filets) ; `--class-vivid` reste la teinte vive
-     de référence du ton (badges, emploi du temps). */
-  --class-vivid: var(--keep-vivid, #ffc701);
-  --class-accent: var(--keep-accent, #8a5a00);
   --class-surface: var(--keep-light, #fcfaf6);
-  --class-border: color-mix(in srgb, var(--class-accent) 18%, hsl(var(--border)));
-  /* Encre et texte secondaire unifiés : ceux du thème, chauds, nobles et lisibles. */
+  --class-accent: var(--keep-accent, #754c04);
+  --class-vivid: var(--keep-vivid, #f59e0b);
+  --class-border: color-mix(in srgb, var(--class-accent) 20%, hsl(var(--border)));
   --class-ink: hsl(var(--foreground));
   --class-muted: hsl(var(--muted-foreground));
-  /* Verre teinté : la surface du ton reste la référence, mais à 94 % — le
-     canevas du tableau de bord affleure derrière (charte §12 : 88-95 %), sans
-     coûter un point de contraste au texte. */
-  --class-glass: color-mix(in srgb, var(--class-surface) 94%, transparent);
+  --class-paper: color-mix(in srgb, hsl(var(--card)) 82%, var(--class-surface));
   position: relative;
   isolation: isolate;
   container-type: inline-size;
@@ -23,58 +19,51 @@
   flex-direction: column;
   width: 100%;
   min-width: 0;
-  min-height: 184px;
+  min-height: 158px;
   height: 100%;
-  overflow: hidden;
-  border: 1px solid var(--class-border);
-  border-radius: 16px;
+  border-radius: 12px;
   color: var(--class-ink);
-  background: hsl(var(--card));
-  /* Liseré supérieur spéculaire + ombre basse : la carte est POSÉE sur le
-     canevas, pas collée à lui. */
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 0 2px 4px rgb(32 30 26 / .03), 0 8px 24px -18px rgb(32 30 26 / .12);
-  transition: transform 260ms var(--ease-spring), box-shadow 260ms ease, border-color 200ms ease;
+  font-family: var(--font-class-sheet);
+  font-synthesis: weight;
+  filter: drop-shadow(0 3px 5px hsl(var(--foreground) / .055));
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), filter 220ms ease;
 }
-/* Halo radial : la couleur du ton sans aucun aplat. Deux sources très douces —
-   une en haut, une à l'angle opposé — sous la texture et sous le contenu. */
-.class-card::before {
-  content: '';
+.class-card__sheet {
   position: absolute;
   z-index: 0;
   inset: 0;
-  pointer-events: none;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--class-accent) 50%, var(--class-paper));
+  border-inline-end: 3px solid var(--class-accent);
   border-radius: inherit;
-  background:
-    radial-gradient(118% 92% at 10% -14%, color-mix(in srgb, var(--class-vivid) 22%, transparent), transparent 60%),
-    radial-gradient(96% 84% at 106% 116%, color-mix(in srgb, var(--class-accent) 12%, transparent), transparent 64%);
-  opacity: 0.45;
-  transition: opacity 260ms ease;
+  background: var(--class-paper);
+  pointer-events: none;
 }
-/* Mode sombre : la surface du ton est un gris profond (jamais du noir), le
-   verre reste teinté, et le halo se pose sur une élévation plus marquée. */
-.dark .class-card {
-  --class-surface: var(--keep-dark, #252729);
-  --class-border: color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border) / 0.55));
-  background: hsl(var(--card));
-  box-shadow: inset 0 1px 0 rgb(240 244 248 / .07), 0 12px 28px -24px rgb(0 0 0 / .6);
+/* The holes reveal the actual canvas in both themes, with a plain-sheet fallback. */
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+  .class-card__sheet {
+    -webkit-mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 42%, transparent 0);
+    -webkit-mask-size: 100% 100%, 14px 28px;
+    -webkit-mask-position: 0 0, 10px 6px;
+    -webkit-mask-repeat: no-repeat, repeat-y;
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 42%, transparent 0);
+    mask-size: 100% 100%, 14px 28px;
+    mask-position: 0 0, 10px 6px;
+    mask-repeat: no-repeat, repeat-y;
+    mask-composite: exclude;
+  }
+  .class-card[dir="rtl"] .class-card__sheet {
+    -webkit-mask-position: 0 0, calc(100% - 10px) 6px;
+    mask-position: 0 0, calc(100% - 10px) 6px;
+  }
 }
-/* Texture « toile + taches » : un masque SVG (trame tissée de 3 px et taches
-   d'ellipses superposées, **sans aucun dégradé**) rempli de la teinte de la
-   classe — donc subtilement coloré, en clair comme en sombre. */
-.class-card__texture {
-  --class-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cdefs%3E%3Cpattern id='w' width='3' height='3' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 .5H3' stroke='%23fff' stroke-opacity='.45' stroke-width='1'/%3E%3Cpath d='M.5 0V3' stroke='%23fff' stroke-opacity='.3' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='300' height='300' fill='url(%23w)'/%3E%3Cg fill='%23fff'%3E%3Cg fill-opacity='.4'%3E%3Cellipse cx='72' cy='66' rx='42' ry='32'/%3E%3Cellipse cx='98' cy='84' rx='24' ry='18'/%3E%3C/g%3E%3Cg fill-opacity='.32'%3E%3Cellipse cx='228' cy='140' rx='34' ry='26'/%3E%3Cellipse cx='206' cy='158' rx='18' ry='14'/%3E%3C/g%3E%3Cg fill-opacity='.28'%3E%3Cellipse cx='142' cy='248' rx='36' ry='24'/%3E%3Cellipse cx='168' cy='270' rx='20' ry='14'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+.class-card__sheet::before {
+  content: '';
   position: absolute;
   inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 27px, hsl(var(--foreground) / .08) 27px 28px);
   pointer-events: none;
-  background-color: var(--class-accent);
-  opacity: 0;
-  -webkit-mask-image: var(--class-texture);
-  mask-image: var(--class-texture);
-  -webkit-mask-size: 300px 300px;
-  mask-size: 300px 300px;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  transition: opacity 250ms ease;
 }
 .class-card__open {
   position: absolute;
@@ -85,209 +74,89 @@
   border-radius: inherit;
   cursor: pointer;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   outline: none;
 }
 .class-card__open:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -4px; }
 .class-card__body, .class-card__footer { position: relative; z-index: 2; pointer-events: none; }
-.class-card__body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 18px 16px;
+.class-card__body { display: flex; flex: 1; flex-direction: column; gap: 4px; padding-block: 12px 10px; padding-inline: 36px 14px; }
+.class-card__header { display: flex; align-items: center; gap: 8px; min-height: 28px; min-width: 0; }
+.class-card__tier {
+  display: inline-block;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--class-accent);
+  font-family: inherit;
+  font-size: .78em;
+  font-weight: 400;
+  letter-spacing: .3px;
+  line-height: 1.5;
+  text-align: start;
+  overflow-wrap: anywhere;
 }
-.class-card__header, .class-card__identity { position: relative; z-index: 1; }
-.class-card__header { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-height: 44px; margin-bottom: 2px; }
-/* Dans la version arabe (RTL), le menu '...' se positionne élégamment à droite */
-/* Dans la version arabe (RTL), le menu '⋮' s'aligne naturellement au-dessus du grand chiffre de groupe à gauche */
-.class-card[dir="rtl"] .class-card__header { justify-content: flex-end; }
-.class-card[dir="rtl"] .class-card__live { margin-inline-end: auto; margin-inline-start: 0; }
 .class-card__menu {
-  pointer-events: auto;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
-  margin: 0;
-  border-radius: 11px;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin-block: -8px;
+  margin-inline-end: -8px;
+  margin-inline-start: auto;
   border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
-  color: hsl(var(--foreground) / .62);
-  cursor: pointer;
+  color: var(--class-muted);
+  pointer-events: auto;
   touch-action: manipulation;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
 }
-.class-card__menu:hover, .class-card__menu[data-state="open"] {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border-color: color-mix(in srgb, var(--class-accent) 45%, hsl(var(--border)));
-  box-shadow: 0 4px 14px -3px color-mix(in srgb, var(--class-accent) 28%, transparent);
-  transform: translateY(-1px) scale(1.02);
-}
-.dark .class-card__menu {
-  border-color: color-mix(in srgb, hsl(var(--border)) 55%, transparent);
-  background: color-mix(in srgb, hsl(var(--card)) 70%, transparent);
-  color: hsl(var(--muted-foreground));
-  box-shadow: 0 1px 3px rgb(0 0 0 / .2);
-}
-.dark .class-card__menu:hover, .dark .class-card__menu[data-state="open"] {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border-color: color-mix(in srgb, var(--class-accent) 55%, hsl(var(--border)));
-  box-shadow: 0 4px 16px -3px color-mix(in srgb, var(--class-accent) 35%, transparent);
-}
+.class-card__menu:hover, .class-card__menu[data-state="open"] { color: var(--class-ink); background: hsl(var(--card) / .8); }
+.class-card__menu:active { transform: scale(.96); }
 .class-card__menu:focus-visible { outline: 2px solid var(--class-accent); outline-offset: -3px; }
-.class-card__menu:active { transform: scale(.93); }
-
-/* Surface d'action liquide et ultra-moderne */
-.class-actions-menu {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: color-mix(in srgb, hsl(var(--popover)) 96%, transparent);
-  border: 1px solid color-mix(in srgb, hsl(var(--border)) 80%, transparent);
-  border-radius: 16px;
-  box-shadow: 0 18px 42px -10px rgb(0 0 0 / .18), 0 4px 14px -2px rgb(0 0 0 / .08);
-}
-.dark .class-actions-menu {
-  background: color-mix(in srgb, hsl(var(--popover)) 94%, transparent);
-  border: 1px solid hsl(var(--border) / 0.65);
-  box-shadow: 0 22px 52px -12px rgba(0, 0, 0, 0.75), 0 4px 16px -1px rgba(0, 0, 0, 0.45);
-}
-.class-actions-menu [role="menuitem"] {
-  transition: background-color 150ms ease, color 150ms ease, transform 150ms cubic-bezier(0.2, 0, 0, 1);
-}
-.class-actions-menu [role="menuitem"]:active {
-  transform: scale(0.98);
-}
-@media (prefers-reduced-motion: reduce) {
-  .class-actions-menu [role="menuitem"] { transition: none; }
-  .class-actions-menu [role="menuitem"]:active { transform: none; }
-}
-/* Titles wrap in their own column; the group cannot drop below the name.
-   Logical grid order starts on the right for Arabic, on the left for French. */
-.class-card__identity {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  min-height: 64px;
-  margin-top: auto;
-  text-align: start;
-}
-.class-card__identity[data-has-group='true'] { grid-template-columns: minmax(0, 1fr) max-content; }
-.class-card__title {
-  min-width: 0;
-  margin: 0;
-  font-size: 21px;
-  line-height: 1.45;
-  color: var(--class-ink);
-  overflow-wrap: anywhere;
-  text-wrap: pretty;
-  font-synthesis: none;
-}
-.class-card[dir="rtl"] .class-card__title { line-height: 1.6; }
-.class-card__name { display: grid; gap: 3px; }
-.class-card__tier { font-size: .78em; font-weight: 600; }
-.class-card__stream {
-  display: block;
-  font-size: 1.15em;
-  line-height: 1.35;
-}
+.class-card__identity { display: flex; align-items: flex-start; min-width: 0; margin-block-start: 8px; }
+.class-card__title { --class-title-max: 18px; --class-title-min: 12.6px; flex: 1; min-width: 0; margin: 0; font-size: var(--class-title-fit, var(--class-title-max)); line-height: 1.45; text-align: start; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: weight; }
+.class-card__name { display: block; }
+.class-card__stream { display: block; font-size: 1.15em; line-height: 1.4; }
+.class-card[dir="rtl"] .class-card__stream { line-height: 1.65; }
+.class-card[dir="rtl"] .class-card__title { font-synthesis: none; }
 .class-card .class-card__group {
-  position: static;
-  display: block;
-  align-self: flex-end;
-  min-width: 1.25ch;
-  min-height: 0;
+  display: inline;
   margin: 0;
-  margin-top: auto;
-  margin-bottom: -6px;
   padding: 0;
-  text-align: center;
-  font-family: 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', var(--font-display), system-ui, sans-serif;
-  font-size: 3.75rem;
-  font-size: clamp(4.5rem, 5.8vw, 5.25rem);
-  font-weight: 800;
-  font-style: normal;
-  line-height: 0.88;
-  user-select: none;
-  pointer-events: none;
-  color: var(--class-accent);
-  color: color-mix(in srgb, var(--class-accent) 30%, transparent);
+  color: var(--class-ink);
   opacity: 1;
-  letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: 'zero' 1, 'tnum' 1;
-  background: none;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  transform: translateY(2px);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: normal;
+  line-height: inherit;
+  letter-spacing: inherit;
+  vertical-align: baseline;
+  font-variant-numeric: lining-nums tabular-nums;
   -webkit-text-stroke: 0;
   text-shadow: none;
-  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
-.class-card:hover .class-card__group {
-  color: color-mix(in srgb, var(--class-accent) 46%, transparent);
-  transform: translateY(-2px) scale(1.02);
-}
-.dark .class-card .class-card__group {
-  color: var(--class-vivid);
-  color: color-mix(in srgb, var(--class-vivid) 38%, transparent);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--class-vivid) 28%, transparent);
-}
-.dark .class-card:hover .class-card__group {
-  color: color-mix(in srgb, var(--class-vivid) 55%, transparent);
-}
-.class-card__status-compact { display: none; }
-.class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, hsl(var(--border)) 70%, transparent); color: var(--class-muted); }
-.dark .class-card__footer { border-top-color: color-mix(in srgb, hsl(var(--border)) 50%, transparent); }
-.class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 12px; line-height: 1.5; }
-/* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
-   en interface latine — en arabe, `--font-sans` porte la fonte locale
-   (Arabswell 3) qu'un Lato forcé ferait perdre. */
-:is(html[lang='fr'], html[lang='en']) :is(.class-card__status, .class-card__live) { font-family: var(--font-lato); }
-.class-card__clock { width: 16px; height: 16px; flex-shrink: 0; }
-/* Unboxed liquid lettering is reserved for the active class. */
-.class-card__live {
-  display: inline-flex;
-  align-items: center;
-  margin-inline-end: auto;
-  color: var(--class-accent);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .005em;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
+.class-card__footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; min-height: 36px; margin-inline: 36px 14px; padding-block: 6px 10px; color: var(--class-muted); }
+.class-card__live { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 3px 8px; border-radius: 6px; background: var(--class-live-fill); color: var(--class-live-ink); font-size: 11px; font-weight: 600; line-height: 1.5; }
+.class-card__live-dot { position: relative; flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: class-live-heartbeat 1800ms ease-in-out infinite; }
+.class-card__live-dot::after { content: ''; position: absolute; inset: -3px; border: 1px solid currentColor; border-radius: inherit; animation: class-live-ripple 1800ms cubic-bezier(.2,.7,.3,1) infinite; }
+@keyframes class-live-heartbeat { 0%, 100% { opacity: 1; transform: scale(1); } 45% { opacity: .45; transform: scale(.82); } 65% { opacity: 1; transform: scale(1); } }
+@keyframes class-live-ripple { 0% { opacity: .5; transform: scale(.65); } 65%, 100% { opacity: 0; transform: scale(1.6); } }
+.dark :is(.class-card, .class-list-item) { --class-live-fill: hsl(342 30% 78%); }
+.class-card--active .class-card__sheet { border-color: var(--class-accent); }
 @media (hover: hover) and (pointer: fine) {
-  /* La carte se SOULÈVE : elle monte de 6 px, son ombre s'allonge et son halo
-     s'allume d'un cran. Aucune autre propriété n'est animée, donc le geste
-     reste à 60 fps même avec vingt-cinq cartes à l'écran. */
-  .class-card:hover {
-    transform: translateY(-6px);
-    border-color: color-mix(in srgb, var(--class-accent) 46%, var(--class-surface));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 24px 42px -28px color-mix(in srgb, var(--class-vivid) 62%, transparent), 0 8px 18px -12px rgb(32 30 26 / .22);
-  }
-  .class-card:hover::before { opacity: 0; }
-  .class-card:hover .class-card__texture { opacity: 0; }
+  .class-card:has(.class-card__open:hover) { transform: translateY(-3px); filter: drop-shadow(0 7px 9px hsl(var(--foreground) / .09)); }
 }
-/* Clavier : le même soulèvement, sans dépendre du survol. */
-.class-card:has(.class-card__open:focus-visible) { transform: translateY(-4px); }
-.class-card:has(.class-card__open:focus-visible)::before { opacity: 0; }
-.class-card:has(.class-card__open:active) { transform: scale(.988); }
-
-@media (prefers-reduced-motion: reduce) {
-  .class-card, .class-card *, .class-card:hover, .class-card:has(.class-card__open:active) { transition: none; transform: none; }
-}
-
-/* Reference pastel palette, scoped to class cards to preserve other screens.
-   Palette chromatique haute précision : pastels frais, lumineux et contrastés (WCAG AA > 5.5:1),
-   garantissant une différenciation nette et immédiate entre classes du même niveau ou de niveaux différents. */
+.class-card:has(.class-card__open:active) { transform: scale(.99); }
+/* Eight existing class tones, extended by the saved custom hue. */
 .class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #def4e8; --class-border: #b3e2cb; --class-accent: #165a3e; --class-vivid: #10b981; }
 .class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #edf6d0; --class-border: #d0e698; --class-accent: #435c12; --class-vivid: #84cc16; }
 .class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #def0fc; --class-border: #b3daf7; --class-accent: #145582; --class-vivid: #38bdf8; }
@@ -296,45 +165,44 @@
 .class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e8eafa; --class-border: #c6cbf2; --class-accent: #343b80; --class-vivid: #6366f1; }
 .class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #ffe3d5; --class-border: #fdc3a9; --class-accent: #8e3710; --class-vivid: #f97316; }
 .class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fce1e8; --class-border: #f6bccb; --class-accent: #8a1c3e; --class-vivid: #f43f5e; }
-.class-card[data-class-color] {
-  --class-surface: hsl(var(--class-hue) 60% 93%);
-  --class-accent: hsl(var(--class-hue) 65% 26%);
-  --class-border: hsl(var(--class-hue) 45% 82%);
-  --class-vivid: hsl(var(--class-hue) 70% 52%);
-}
-.dark .class-card[data-keep-tone] {
-  --class-surface: var(--keep-dark, #1c1e22);
-  --class-accent: var(--keep-accent);
-  --class-border: color-mix(in srgb, var(--class-accent) 30%, var(--class-surface));
-}
-.dark .class-card[data-class-color] {
-  --class-surface: hsl(var(--class-hue) 24% 15%);
-  --class-accent: hsl(var(--class-hue) 60% 75%);
-  --class-border: hsl(var(--class-hue) 28% 28%);
-  --class-vivid: hsl(var(--class-hue) 65% 65%);
-}
+.class-card[data-class-color] { --class-surface: hsl(var(--class-hue) 60% 93%); --class-accent: hsl(var(--class-hue) 65% 26%); --class-border: hsl(var(--class-hue) 45% 82%); --class-vivid: hsl(var(--class-hue) 70% 52%); }
+.dark .class-card[data-keep-tone] { --class-surface: var(--keep-dark, #252729); --class-accent: var(--keep-accent); --class-border: color-mix(in srgb, var(--class-accent) 25%, hsl(var(--border))); }
+.dark .class-card[data-class-color] { --class-surface: hsl(var(--class-hue) 24% 17%); --class-accent: hsl(var(--class-hue) 60% 75%); --class-border: hsl(var(--class-hue) 28% 32%); --class-vivid: hsl(var(--class-hue) 65% 65%); }
+.dark .class-card { filter: drop-shadow(0 3px 6px hsl(var(--background) / .22)); }
 
-
-/* Card width, not device width: two columns on a tablet need the same compact
-   typography as a narrow phone. Preserve full dates for assistive technology. */
-@container (max-width: 360px) {
-  .class-card__body { padding: 10px 14px 14px; gap: 8px; }
-  .class-card__identity { gap: 10px; min-height: 60px; }
-  .class-card__title { font-size: 18px; }
-  .class-card .class-card__group { font-size: 3.15rem; }
-  .class-card__footer { padding: 9px 14px; gap: 7px; }
-  .class-card__status { font-size: 12px; line-height: 1.6; }
-  .class-card__status-full { display: none; }
-  .class-card__status-compact { display: inline; }
-}
 @container (max-width: 240px) {
-  .class-card__body { padding-inline: 12px; }
-  .class-card__identity { gap: 8px; }
-  .class-card__title { font-size: 16px; }
-  .class-card .class-card__group { font-size: 2.45rem; }
+  .class-card { min-height: 152px; }
+  .class-card__body { padding-block: 10px 8px; padding-inline: 32px 10px; gap: 2px; }
+  .class-card__header { gap: 2px; }
+  .class-card__tier { font-size: 11px; }
+  .class-card__title { --class-title-max: 16px; }
+  .class-card__identity { margin-block-start: 5px; }
+  .class-card__footer { margin-inline: 32px 10px; }
 }
-@media (max-width: 639px) {
-  .class-card { min-height: 172px; border-radius: 12px; }
-  .class-card .class-card__status-full { display: none; }
-  .class-card .class-card__status-compact { display: inline; }
+/* Échelle proportionnelle : 2 cartes par ligne (container >= 300px) */
+@container (min-width: 300px) {
+  .class-card { min-height: 178px; }
+  .class-card__body { padding-block: 15px 13px; padding-inline: 40px 16px; gap: 6px; }
+  .class-card__tier { font-size: .84em; letter-spacing: .35px; }
+  .class-card__title { --class-title-max: 20.5px; }
+  .class-card__identity { margin-block-start: 11px; }
+  .class-card__footer { margin-inline: 40px 16px; min-height: 38px; }
 }
+/* Échelle proportionnelle : 1 carte par ligne ou grand conteneur (container >= 420px) */
+@container (min-width: 420px) {
+  .class-card { min-height: 202px; }
+  .class-card__body { padding-block: 18px 16px; padding-inline: 46px 18px; gap: 8px; }
+  .class-card__tier { font-size: .90em; letter-spacing: .45px; }
+  .class-card__title { --class-title-max: 23px; }
+  .class-card__identity { margin-block-start: 15px; }
+  .class-card__footer { margin-inline: 46px 18px; min-height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .class-card, .class-card__menu { transition: none; }
+  .class-card:has(.class-card__open:hover), .class-card:has(.class-card__open:active) { transform: none; }
+  .class-card__live-dot, .class-card__live-dot::after { animation: none; transform: none; opacity: 1; }
+  .class-card__live-dot::after { display: none; }
+}
+.class-actions-menu { background: hsl(var(--popover)); border: 1px solid hsl(var(--border)); border-radius: 14px; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 12px 28px hsl(var(--foreground) / .14); }
+.class-actions-menu [role="menuitem"] { min-height: 44px; transition: background-color 160ms ease, color 160ms ease; }
+@media (prefers-reduced-motion: reduce) { .class-actions-menu [role="menuitem"] { transition: none; } }

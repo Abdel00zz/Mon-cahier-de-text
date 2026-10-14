@@ -2,13 +2,7 @@ import { useState, useMemo, useCallback, useTransition } from 'react';
 import type { Draft } from 'immer';
 import type { Indices, LessonsData } from '@/types';
 import { indicesKey } from '@/domain/notebook/lessonRows';
-import {
-  planContentMove, applyContentMove,
-  planContentRelocation, applyContentRelocation,
-  planContentTransfer, applyContentTransfer,
-  isExercise,
-} from '@/domain/notebook/contentReorder';
-import { findItem } from '@/domain/notebook/dataUtils';
+import { applyContentMove, planContentDrop } from '@/domain/notebook/contentReorder';
 import type { ContentEditTargets } from '@/domain/notebook/contentEditing';
 
 export interface SelectionState {
@@ -34,19 +28,12 @@ export const createSelectionState = (indices?: Indices | Indices[]): SelectionSt
 export function useSelectionEngine({
   lessonsData,
   moveTargets,
-  contentMoveTargets,
-  freeKeys,
   setState,
   setEditorState,
 }: {
   lessonsData: LessonsData;
   /** cibles du déplacement : la séance fusionnée bouge d'un seul lot */
   moveTargets: ContentEditTargets;
-  /** Exercises can move independently of other contents dated the same day. */
-  contentMoveTargets?: ContentEditTargets;
-  /** clés des lignes libres : seule une sélection qui en contient une peut
-   *  prétendre à la relocalisation (sinon on évite un parcours complet). */
-  freeKeys: ReadonlySet<string>;
   setState: (recipe: (draft: Draft<LessonsData>) => void, action: string) => void;
   setEditorState: (recipe: (draft: SelectionEditorState) => void) => void;
 }) {
@@ -56,49 +43,18 @@ export function useSelectionEngine({
   const selectedIndices = useMemo(() => Array.from(selectionState.items.values()), [selectionState]);
   const selectedCount = selectionState.keys.size;
 
-  const moveOptions = useMemo(() => {
-    const groups = contentMoveTargets && selectedIndices.length && selectedIndices.every(indices => isExercise(findItem(lessonsData, indices).item))
-      ? contentMoveTargets : moveTargets;
-    const build = (direction: 'up' | 'down') => {
-      // 1. Ligne libre : elle glisse le long de la structure, y compris sous un
-      //    titre — donc dans un autre parent — pour se poser sous un paragraphe,
-      //    une proposition ou n'importe quel type de contenu.
-      const mayRelocate = Array.from(selectionState.keys).some(key => freeKeys.has(key));
-      const relocation = mayRelocate
-        ? planContentRelocation(lessonsData, moveTargets, selectionState.keys, direction)
-        : null;
-      if (relocation) return { kind: 'relocation' as const, relocation };
-      // 2. Contenu typé ou séance fusionnée : permutation avec le voisin de la même liste.
-      const swap = planContentMove(lessonsData, groups, selectionState.keys, direction);
-      if (swap) return { kind: 'swap' as const, swap };
-      // 3. Au bord de la liste : le bloc passe au conteneur voisin du cahier
-      //    (fin du précédent en montant, début du suivant en descendant).
-      const transfer = planContentTransfer(lessonsData, groups, selectionState.keys, direction);
-      return transfer ? { kind: 'transfer' as const, transfer } : null;
-    };
-    return { up: build('up'), down: build('down') };
-  }, [lessonsData, moveTargets, contentMoveTargets, freeKeys, selectionState.keys, selectedIndices]);
-
-  const canMoveUp = moveOptions.up !== null;
-  const canMoveDown = moveOptions.down !== null;
-
-  const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
-    const option = moveOptions[direction];
-    if (!option) return;
-
-    setState(draft => {
-      if (option.kind === 'relocation') applyContentRelocation(draft, option.relocation);
-      else if (option.kind === 'transfer') applyContentTransfer(draft, option.transfer);
-      else applyContentMove(draft, option.swap);
-    }, 'reorder');
-
-    setSelectionState(createSelectionState(
-      option.kind === 'relocation' ? option.relocation.selection
-        : option.kind === 'transfer' ? option.transfer.selection
-          : option.swap.selection
-    ));
+  const handleDropRow = useCallback((sourceKey: string, targetKey: string, side: 'before' | 'after') => {
+    const plan = planContentDrop(lessonsData, moveTargets, sourceKey, targetKey, side);
+    if (!plan) return false;
+    setState(draft => { applyContentMove(draft, plan); }, 'reorder');
+    setSelectionState(createSelectionState(plan.selection));
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [moveOptions, setState, setEditorState]);
+    return true;
+  }, [lessonsData, moveTargets, setState, setEditorState]);
+
+  const canDropRow = useCallback((sourceKey: string, targetKey: string, side: 'before' | 'after') =>
+    planContentDrop(lessonsData, moveTargets, sourceKey, targetKey, side) !== null,
+  [lessonsData, moveTargets]);
 
   const handleToggleSelectRow = useCallback((indices: Indices) => {
     startSelectionTransition(() => {
@@ -155,9 +111,8 @@ export function useSelectionEngine({
     selectedCount,
     setSelectionState,
     isSelectionPending,
-    canMoveUp,
-    canMoveDown,
-    handleMoveSelected,
+    handleDropRow,
+    canDropRow,
     handleToggleSelectRow,
     handleToggleSelectGroup,
     handleDeselectAll,

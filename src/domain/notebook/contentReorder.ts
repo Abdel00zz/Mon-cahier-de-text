@@ -14,6 +14,39 @@ export interface ContentMovePlan {
   selection: Indices[];
 }
 
+/** Déplacement direct entre deux rangées visibles d'une même liste parente.
+ * La cible peut être une séance fusionnée : elle reste un bloc indivisible. */
+export function planContentDrop(
+  data: LessonsData,
+  groups: ContentEditTargets,
+  sourceKey: string,
+  targetKey: string,
+  side: 'before' | 'after',
+): ContentMovePlan | null {
+  const sourceGroup = groups.get(sourceKey);
+  const targetGroup = groups.get(targetKey);
+  if (!sourceGroup || !targetGroup) return null;
+
+  const source = getContiguousSiblingBlock(data, sourceGroup);
+  const target = getContiguousSiblingBlock(data, targetGroup);
+  if (!source || !target || source.parent !== target.parent) return null;
+  if (source.start < target.start + target.count && target.start < source.start + source.count) return null;
+
+  const rawDestination = target.start + (side === 'after' ? target.count : 0);
+  const destination = rawDestination > source.start ? rawDestination - source.count : rawDestination;
+  if (destination === source.start) return null;
+
+  const field = getIndexField(source.anchor);
+  return {
+    ...source,
+    destination,
+    selection: Array.from({ length: source.count }, (_, offset) => ({
+      ...source.anchor,
+      [field]: destination + offset,
+    })),
+  };
+}
+
 const getIndexField = (indices: Indices): keyof Indices => {
   const fields = ['itemIndex', 'subsubsectionIndex', 'subsectionIndex', 'sectionIndex', 'chapterIndex'] as const;
   return fields.find(field => indices[field] !== undefined)!;

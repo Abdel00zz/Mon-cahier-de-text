@@ -38,7 +38,7 @@ import { SelectionBar } from '../src/features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../src/domain/classes/classColors';
 import { insertFreeContent } from '../src/domain/notebook/freeContent';
 import { applyRemarkEdit, buildSessionTargets, orderDeletionsDeepestFirst } from '../src/domain/notebook/contentEditing';
-import { applyContentMove, applyContentRelocation, applyContentTransfer, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
+import { applyContentMove, applyContentRelocation, applyContentTransfer, planContentDrop, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
 import { isFreeContent } from '../src/domain/notebook/freeLineType';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
 import { filterLessonsByDates } from '../src/infrastructure/printing/printMeta';
@@ -741,6 +741,24 @@ test('diagnostic et séance fusionnée : une seule ligne, déplaçable dans tous
   const moved = produce(session, draft => { applyContentMove(draft, plan!); });
   assert.deepEqual(moved[0].items!.map(item => item.type), ['exercice', 'activite', 'definition']);
   assert.deepEqual(plan!.selection.map(index => index.itemIndex), [0, 1]);
+});
+
+test('glisser une séance conserve son lot, refuse un dépôt interne et ne franchit pas le parent', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Chapitre 1', items: [
+    { type: 'definition', title: 'Avant' },
+    { type: 'exercice', title: 'Exercice', date: '2026-09-08' },
+    { type: 'activite', title: 'Activité', date: '2026-09-08' },
+    { type: 'definition', title: 'Après' },
+  ], sections: [{ name: 'Autre parent', items: [{ type: 'definition', title: 'Isolé' }] }] }];
+  const key = (itemIndex: number) => indicesKey({ chapterIndex: 0, itemIndex });
+  const targets = buildSessionTargets(buildLessonRows(data));
+  assert.equal(planContentDrop(data, targets, key(1), key(2), 'after'), null, 'une séance ne se dépose pas sur elle-même');
+  assert.equal(planContentDrop(data, targets, key(1), indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }), 'after'), null, 'le parent reste intact');
+  const plan = planContentDrop(data, targets, key(1), key(3), 'after');
+  assert.ok(plan);
+  assert.deepEqual(plan.selection.map(index => index.itemIndex), [2, 3]);
+  const moved = produce(data, draft => { assert.equal(applyContentMove(draft, plan), true); });
+  assert.deepEqual(moved[0].items!.map(item => item.title), ['Avant', 'Après', 'Exercice', 'Activité']);
 });
 
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {

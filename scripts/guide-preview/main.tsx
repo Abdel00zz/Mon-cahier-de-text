@@ -1,16 +1,21 @@
 /** Development-only capture entry. Real components and fictitious teaching data. */
 import { useState } from 'react';
+import { produce } from 'immer';
 import { createRoot } from 'react-dom/client';
 import '../../src/styles/index.css';
-import { LocaleProvider } from '../../src/i18n/LocaleProvider';
+import { LocaleProvider, useLocale } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
 import { AbsencesTab } from '../../src/features/settings/components/AbsencesTab';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { TabBar } from '../../src/components/navigation/TabBar';
-import { DashboardActionsMenu } from '../../src/features/dashboard/DashboardActionsMenu';
+import { DashboardActions } from '../../src/features/dashboard/DashboardActions';
 import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplayMode';
 import '../../src/features/dashboard/dashboardCanvas.css';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
+import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
+import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
+import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
+import { dashboardTitleStyle } from '../../src/constants/classTitleTypography';
 import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../src/features/settings/components/NotificationsTab';
@@ -31,16 +36,22 @@ import { AuthProvider } from '../../src/contexts/AuthContext';
 import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
+import { buildSessionTargets } from '../../src/domain/notebook/contentEditing';
+import { applyContentMove, planContentDrop } from '../../src/domain/notebook/contentReorder';
 import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
+import { KEEP_TONES } from '../../src/platform/keepTheme';
 
 const params = new URLSearchParams(location.search);
 const locale = params.get('lang') === 'ar' ? 'ar' : params.get('lang') === 'en' ? 'en' : 'fr';
 const screen = params.get('screen') ?? 'guide';
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
-const classes: ClassInfo[] = ['1AC 1', '2AC 2', '3AC 1'].map((name, i) => ({
+const fixtureNames = params.get('fixture') === 'palette' ? KEEP_TONES.map((_, i) => `2BAC PC ${i + 1}`) : params.get('fixture') === 'long-names'
+  ? ['2BAC Sciences Mathématiques A 12', 'TC Sciences Option Français 3', 'Classe de consolidation et approfondissement 7']
+  : ['1AC 1', '2AC 2', '3AC 1'];
+const classes: ClassInfo[] = fixtureNames.map((name, i) => ({
   id: `guide-demo-${i}`, name, cycle: 'college', teacherName: '', subject: 'Mathématiques',
-  createdAt: '2026-09-01T08:00:00Z', color: '#8b7355',
+  createdAt: '2026-09-01T08:00:00Z', color: params.get('fixture') === 'palette' ? KEEP_TONES[i] : '',
 }));
 const timetable = [
   { day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id },
@@ -66,8 +77,11 @@ const lessons: LessonsData = [{ type: 'chapter', title: 'Nombres rationnels', it
 const noop = () => {};
 
 function Preview() {
+  const { t } = useLocale();
   const [config, setConfig] = useState(initialConfig);
-  const [display, setDisplay] = useState<ClassDisplayMode>('single');
+  const [display, setDisplay] = useState<ClassDisplayMode>('triple');
+  const [dashboardCreateOpen, setDashboardCreateOpen] = useState(false);
+  const [dashboardGuideOpen, setDashboardGuideOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(true);
   const [add, setAdd] = useState(screen === 'add');
@@ -75,6 +89,18 @@ function Preview() {
     indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0, itemIndex: 1 }),
   ]));
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewLessons, setPreviewLessons] = useState<LessonsData>(() => params.get('fixture') === 'long-notebook'
+    ? [{ type: 'chapter', title: 'Cahier de vérification', items: Array.from({ length: 240 }, (_, i) => ({ type: 'exercice', title: `Exercice ${i + 1}`, description: 'Un contenu pédagogique à réordonner.' })) }]
+    : lessons);
+  const previewTargets = buildSessionTargets(buildLessonRows(previewLessons));
+  const canPreviewReorder = (source: string, target: string, side: 'before' | 'after') =>
+    planContentDrop(previewLessons, previewTargets, source, target, side) !== null;
+  const previewReorder = (source: string, target: string, side: 'before' | 'after') => {
+    const plan = planContentDrop(previewLessons, previewTargets, source, target, side);
+    if (!plan) return false;
+    setPreviewLessons(current => produce(current, draft => { applyContentMove(draft, plan); }));
+    return true;
+  };
   const toggleSelection = (indices: Parameters<typeof indicesKey>[0]) => setSelectedKeys(current => {
     const next = new Set(current);
     const key = indicesKey(indices);
@@ -95,16 +121,26 @@ function Preview() {
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" >
-          <div className="dashboard-heading mb-4 flex items-end justify-between gap-3">
-            <h1 className="text-2xl font-bold">{isAr ? 'أقسامك' : 'Classes'}<span aria-hidden="true">{isAr ? ':' : '\u00A0:'}</span></h1>
-            <div className="dashboard-actions flex shrink-0 items-center gap-2">
-              <DashboardActionsMenu mode={display} onModeChange={setDisplay} onCreateClass={noop} />
-            </div>
+          <div className="dashboard-heading mb-4">
+            <DashboardActions mode={display} onModeChange={setDisplay} onCreateClass={() => setDashboardCreateOpen(true)} onOpenGuide={() => setDashboardGuideOpen(true)} />
+            <h1 className="dashboard-heading__title text-2xl sm:text-3xl" style={dashboardTitleStyle(locale)}>{t('dashboard.classes')}<span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>
-          <div className={`grid gap-3 ${display === 'double' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
-            {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={{ ...classInfo, color: '', lastOpenedAt: '2026-10-07T09:30:00Z' }} index={i} onSelect={noop} onConfigure={noop} />)}
+          <div className="dashboard-class-section">
+          {display === 'list' ? (
+            <div key={display} className="dashboard-class-collection dashboard-class-list" role="list" aria-label={t('dashboard.classList')}>
+              {classes.map((classInfo, i) => <div key={classInfo.id} role="listitem"><ClassListItem classInfo={classInfo} onSelect={noop} onConfigure={noop} isActiveSession={params.get('active') === '1' && i === 0} /></div>)}
+            </div>
+          ) : (
+            <div key={display} data-layout={display} className="dashboard-class-collection dashboard-class-grid">
+              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={noop} isActiveSession={params.get('active') === '1' && i === 0} />)}
+              <AddClassCard onCreate={() => setDashboardCreateOpen(true)} />
+            </div>
+          )}
+          {display === 'list' && <div className="dashboard-class-create-row"><AddClassCard variant="row" onCreate={() => setDashboardCreateOpen(true)} /></div>}
           </div>
           <TabBar activeTab="dashboard" onTabChange={noop} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
+          <CreateClassModal isOpen={dashboardCreateOpen} onClose={() => setDashboardCreateOpen(false)} onCreate={() => setDashboardCreateOpen(false)} defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} />
+          <GuideModal isOpen={dashboardGuideOpen} onClose={() => setDashboardGuideOpen(false)} />
         </div>
       </AuthProvider>}
       {screen === 'classes' && <>
@@ -131,11 +167,12 @@ function Preview() {
           </div>
         </div>
         <div className="pb-40 sm:pb-24">
-          <MainTable lessonsData={lessons} visibleRows={filterLessonRows(buildLessonRows(lessons), searchQuery)} contentDirection="ltr"
+          <MainTable lessonsData={previewLessons} visibleRows={filterLessonRows(buildLessonRows(previewLessons), searchQuery)} contentDirection="ltr"
             onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
-            showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]} />
+            showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]}
+            onReorder={previewReorder} canReorder={canPreviewReorder} />
         </div>
-        {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
+        {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit
           onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />}
         <ContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
           selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />

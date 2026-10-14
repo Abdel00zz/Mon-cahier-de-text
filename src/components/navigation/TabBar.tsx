@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, CircleHelp, Bell as AlarmBell, Menu } from 'lucide-react';
+import { Settings, Bell as AlarmBell, Menu } from 'lucide-react';
 import { Users } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,6 @@ const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
 ];
 const sidebarTabs: typeof tabs = [
   tabs[0],
-  { id: 'settings', icon: Settings },
   tabs[1],
 ];
 
@@ -102,7 +101,7 @@ export const TabBar = React.memo<TabBarProps>(({
   const sidebarIndex = sidebarTabs.findIndex(tab => tab.id === activeTab);
   const mobileIndex = MOBILE_ORDER.indexOf(activeTab);
   const sidebarJello = useJello<HTMLSpanElement>(activeTab);
-  const helpJello = useJello<HTMLSpanElement>(activeTab === 'help');
+  const settingsJello = useJello<HTMLSpanElement>(activeTab === 'settings');
   const mobileJello = useJello<HTMLSpanElement>(activeTab);
 
   // Référence du menu et gestion gestuelle (On Drag / Swipe pour refermer)
@@ -279,8 +278,6 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 whileTap={{ scale: 0.98 }}
                 onClick={() => goTo(tab.id)}
-                onPointerEnter={tab.id === 'settings' ? preloadSettingsPage : undefined}
-                onFocus={tab.id === 'settings' ? preloadSettingsPage : undefined}
                 title={copy[tab.id]}
                 className={cn(
                   'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
@@ -336,7 +333,7 @@ export const TabBar = React.memo<TabBarProps>(({
          </div>
         </div>
 
-        {/* Guide pédagogique accessible en bas du menu. */}
+        {/* Paramètres reste à portée en bas de la barre latérale. */}
         <div
           className="mt-auto flex shrink-0 flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-4 pe-4"
         >
@@ -346,26 +343,28 @@ export const TabBar = React.memo<TabBarProps>(({
           <motion.button
             type="button"
             whileTap={{ scale: 0.98 }}
-            onClick={() => goTo('help')}
-            title={copy.help}
+            onClick={() => goTo('settings')}
+            onPointerEnter={preloadSettingsPage}
+            onFocus={preloadSettingsPage}
+            title={copy.settings}
             className={cn(
               'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-background/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
-              activeTab === 'help'
+              activeTab === 'settings'
                 ? 'font-bold'
                 : 'text-muted-foreground hover:text-foreground font-medium'
             )}
-            aria-label={copy.help}
+            aria-label={copy.settings}
+            aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            {/* Le guide vit hors de la liste : sa surface apparaît en douceur. */}
-            <span aria-hidden="true" className="nav-surface" data-visible={activeTab === 'help' ? 'true' : undefined}>
-              <span ref={helpJello} className="nav-slider__body sidebar-active-surface" />
+            <span aria-hidden="true" className="nav-surface" data-visible={activeTab === 'settings' ? 'true' : undefined}>
+              <span ref={settingsJello} className="nav-slider__body sidebar-active-surface" />
             </span>
 
             <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
-              <CircleHelp className={cn(
+              <Settings className={cn(
                 'size-[20.5px] max-xl:size-[22.5px] aspect-square shrink-0 transition-colors duration-200',
-                activeTab === 'help'
+                activeTab === 'settings'
                   ? 'text-foreground stroke-[2]'
                   : 'stroke-[2] text-muted-foreground group-hover:text-foreground'
               )} />
@@ -380,10 +379,10 @@ export const TabBar = React.memo<TabBarProps>(({
                   className={cn(
                     'relative z-10 flex-1 truncate text-start text-sm leading-normal font-medium ms-3',
                     locale === 'ar' && 'text-[15px]',
-                    activeTab === 'help' ? 'font-semibold text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+                    activeTab === 'settings' ? 'font-semibold text-foreground' : 'text-muted-foreground group-hover:text-foreground'
                   )}
                 >
-                  {copy.help}
+                  {copy.settings}
                 </motion.span>
               )}
             </AnimatePresence>

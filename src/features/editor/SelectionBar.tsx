@@ -1,7 +1,7 @@
 import React, { FC, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
+  Plus, CalendarDays, CalendarCheck, CalendarX,
   Pencil, Trash2, MoreVertical,
 } from '@/components/ui/icons';
 import {
@@ -28,10 +28,6 @@ export interface SelectionBarProps {
   /** Désélection : Échap, balayage vers le bas, clic hors de la liste (géré par l'éditeur). */
   onClear: () => void;
   canEdit?: boolean;
-  canMoveUp?: boolean;
-  canMoveDown?: boolean;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
   isPending?: boolean;
 }
 
@@ -78,13 +74,11 @@ const DISMISS_DISTANCE = 44;
  * Les actions suivent la situation :
  * - « Aujourd'hui » disparaît quand tout porte déjà la date du jour ;
  * - « Modifier » n'existe que pour un contenu unique ;
- * - le déplacement n'apparaît que s'il est possible ;
  * - « Dissocier la date » n'est proposé que s'il y a une date.
  */
 const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = ({
   count, hasDate, allToday = false, canAdd, canAssignDate, onAdd, onAssignDate, onAssignToday,
-  onClearDate, onEdit, onDelete, onClear, canEdit, canMoveUp = false, canMoveDown = false,
-  onMoveUp, onMoveDown, isPending = false, state,
+  onClearDate, onEdit, onDelete, onClear, canEdit, isPending = false, state,
 }) => {
   const { t, locale } = useLocale();
   const { impact, selection } = useHapticFeedback();
@@ -103,12 +97,10 @@ const SelectionBarView: FC<SelectionBarProps & { state: 'open' | 'closed' }> = (
 
   const menu = useMemo(() => {
     const items: { id: string; icon: IconType; onSelect: () => void; title: string }[] = [];
-    if (onMoveUp && canMoveUp) items.push({ id: 'move-up', icon: ArrowUp, onSelect: onMoveUp, title: t('selection.moveUp') });
-    if (onMoveDown && canMoveDown) items.push({ id: 'move-down', icon: ArrowDown, onSelect: onMoveDown, title: t('selection.moveDown') });
     if (canAdd) items.push({ id: 'add', icon: Plus, onSelect: onAdd, title: t('selection.addAfter') });
     if (hasDate) items.push({ id: 'clear-date', icon: CalendarX, onSelect: onClearDate, title: t('selection.unassignDate') });
     return items;
-  }, [onMoveUp, canMoveUp, onMoveDown, canMoveDown, canAdd, onAdd, hasDate, onClearDate, t]);
+  }, [canAdd, onAdd, hasDate, onClearDate, t]);
 
   /** Flèches, Début/Fin pour parcourir les actions ; Échap désélectionne. */
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {

@@ -1,0 +1,60 @@
+/* Interactions propres à la création de classe ; les couleurs viennent du thème. */
+.class-create-primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.class-create-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 25%, hsl(var(--primary-foreground) / 0.16) 50%, transparent 75%);
+  transform: translateX(-130%);
+}
+
+.class-create-primary > span {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .class-create-primary:hover::after {
+    transform: translateX(130%);
+    transition: transform 260ms ease-out;
+  }
+}
+
+.class-create-stepper {
+  transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .class-create-step-down:active { transform: rotate(-8deg) scale(0.94); }
+  .class-create-step-up:active { transform: rotate(8deg) scale(0.94); }
+}
+
+.class-create-step:focus-visible,
+.class-create-choice:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+.class-create-footer > button:only-child {
+  margin-inline-start: auto;
+}
+
+@media (max-width: 379px) {
+  .class-create-footer { gap: 0.375rem; }
+  .class-create-footer > button { padding-inline: 0.625rem; }
+  .class-create-summary { padding: 0.875rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .class-create-stepper,
+  .class-create-step,
+  .class-create-choice,
+  .class-create-primary::after { transition: none !important; }
+}

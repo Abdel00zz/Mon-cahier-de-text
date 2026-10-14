@@ -49,15 +49,11 @@ test('les paramètres comptent six rubriques et gardent les anciens liens direct
   assert.match(messages, /'settings\.item\.appearance':\s*'المظهر واللغة'/, 'rubrique المظهر واللغة en arabe');
 });
 
-test('déplacement : le mécanisme existant (menu de la barre) est conservé, les exercices passent de paragraphe en paragraphe', () => {
-  const bar = read('src/features/editor/SelectionBar.tsx');
-  assert.match(bar, /id: 'move-up'/, 'monter reste dans le menu de la barre');
-  assert.ok(!/icon=\{ArrowUp\}/.test(bar), 'aucun nouveau bouton dédié dans la barre');
-  const editor = read('src/features/editor/Editor.tsx');
-  assert.ok(!/altKey[\s\S]{0,200}ArrowUp/.test(editor), 'aucun nouveau raccourci clavier');
-  assert.match(editor, /moveFocusPendingRef/, 'la ligne déplacée est recentrée');
+test('déplacement : réordonnancement direct par glisser-déposer sur le tableau', () => {
+  const table = read('src/features/editor/MainTable.tsx');
+  assert.match(table, /useEditorRowReorder/, 'moteur de réordonnancement direct');
   const engine = read('src/features/editor/hooks/useSelectionEngine.ts');
-  assert.match(engine, /planContentTransfer/, 'l’exercice peut changer de paragraphe');
+  assert.match(engine, /planContentDrop/, 'déplacement de contenu par dépôt');
 });
 
 test('paramètres : grandes cartes colorées sur téléphone et tablette, menu latéral dès 1024 px', () => {

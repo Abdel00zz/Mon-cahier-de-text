@@ -3,17 +3,15 @@ import type { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Clock } from 'lucide-react';
 import { ClassActionsMenu } from './ClassActionsMenu';
 import { classColorAttributes } from '@/domain/classes/classColors';
-import { classOpeningLabel } from '@/infrastructure/storage/classOpening';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
+import { useFittedClassTitle } from './hooks/useFittedClassTitle';
 import { cn } from '@/lib/utils';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
-import { ActiveSessionGlass } from './ActiveSessionGlass';
 import './classCardLoading.css';
 
 interface ClassCardProps {
@@ -33,6 +31,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { locale, t, isRtl } = useLocale();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
+    const titleRef = useFittedClassTitle(label.fullName);
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
     // Préparation du cahier : la carte garde sa géométrie, un voile discret
@@ -45,8 +44,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     }, [classInfo.id, progress.done, progress.state]);
     const preparing = !hasNotebook
         && (progress.state === 'pulling' || (progress.state === 'notebooks' && progress.done < progress.total));
-    const subtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale), [classInfo.lastOpenedAt, locale]);
-    const compactSubtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale, { compact: true }), [classInfo.lastOpenedAt, locale]);
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
         () => { impact('medium'); onConfigure(); },
@@ -67,40 +64,35 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 title={displayName}
                 className="class-card__open"
             />
-            <span className="class-card__texture" aria-hidden="true" />
+            <span className="class-card__sheet" aria-hidden="true" />
 
             {preparing && <span className="class-card__loading" aria-hidden="true" />}
             <div className="class-card__body">
                 <div className="class-card__header">
-                    {isActiveSession && (
-                        <span className="class-card__live">
-                            <ActiveSessionGlass label={t('dashboard.welcome.nowTitle')} />
-                        </span>
-                    )}
+                    {label.tier && <span className="class-card__tier" aria-hidden="true">{formatWithOrdinals(label.tier)}</span>}
                     <ClassActionsMenu name={label.fullName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
                         triggerClassName="class-card__menu"/>
                 </div>
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
-                    <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
+                    <h3 ref={titleRef} style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true" className="class-card__name">
-                            {label.tier && <span className="class-card__tier">{formatWithOrdinals(label.tier)}</span>}
-                            <span className="class-card__stream">{formatWithOrdinals(label.title)}</span>
+                            <span className="class-card__stream">
+                                {formatWithOrdinals(label.title)}
+                                {label.group && <>{'\u00A0'}<ClassGroupWatermark group={label.group} variant="engraved" className="class-card__group" /></>}
+                            </span>
                         </span>
                     </h3>
-                    {label.group && (
-                        <ClassGroupWatermark group={label.group} variant="engraved" className="class-card__group" />
-                    )}
                 </div>
             </div>
-            <div className="class-card__footer">
-                <Clock className="class-card__clock" aria-hidden="true" />
-                <span className="class-card__status" title={subtext}>
-                    <span className="sr-only">{subtext}</span>
-                    <span aria-hidden="true" className="class-card__status-full">{classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{subtext}</time> : subtext}</span>
-                    <span aria-hidden="true" className="class-card__status-compact">{classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{compactSubtext}</time> : compactSubtext}</span>
-                </span>
-            </div>
+            {isActiveSession && (
+                <div className="class-card__footer">
+                    <span className="class-card__live">
+                        <span className="class-card__live-dot" aria-hidden="true" />
+                        {t('dashboard.welcome.nowTitle')}
+                    </span>
+                </div>
+            )}
         </article>
     );
 };
@@ -109,7 +101,6 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     previous.classInfo.id === next.classInfo.id
     && previous.classInfo.color === next.classInfo.color
     && previous.classInfo.name === next.classInfo.name
-    && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
     && previous.classInfo.subject === next.classInfo.subject
     && previous.index === next.index
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)

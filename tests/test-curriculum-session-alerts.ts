@@ -323,8 +323,9 @@ test('dashboard identifies the live session on its class card without a duplicat
   assert.match(dashboard, /activeSessionClassIds = \[\]/, 'Le tableau de bord reçoit les classes actives');
   assert.doesNotMatch(dashboard, /SessionLiveBanner|data-session-banner/);
   const card = readFileSync('src/features/dashboard/ClassCard.tsx', 'utf8');
-  assert.match(card, /ActiveSessionGlass label=\{t\('dashboard.welcome.nowTitle'\)\}/);
+  assert.match(card, /isActiveSession &&[\s\S]*?class-card__live[\s\S]*?t\('dashboard.welcome.nowTitle'\)/);
+  assert.doesNotMatch(card, /ActiveSessionGlass/, 'le repère actif reste calme');
   assert.match(dashboard, /isActiveSession=\{isActiveSession\}/);
-  const effects = readFileSync('src/features/dashboard/sessionEffects.css', 'utf8');
+  const effects = readFileSync('src/features/dashboard/classCards.css', 'utf8');
   assert.match(effects, /prefers-reduced-motion/, 'Animation adaptée au mouvement réduit');
 });

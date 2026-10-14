@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import type { AppLocale } from '@/types';
 
 /* ───────────────────────────────────────────────────────────────────────────
  *  SOURCE UNIQUE de la typographie des titres de classe.
@@ -36,7 +37,7 @@ const TITLE_FAMILIES: Record<TitleScript, string> = {
  *  pas de gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 600, tracking: '-0.016em' },
+        latin: { weight: 600, tracking: '0' },
         arabic: { weight: 400, tracking: '0' },
     },
     list: {
@@ -50,7 +51,7 @@ const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number;
 };
 
 const buildStyle = (script: TitleScript, role: TitleFontRole): CSSProperties => Object.freeze({
-    fontFamily: TITLE_FAMILIES[script],
+    fontFamily: role === 'card' ? 'var(--font-class-sheet)' : TITLE_FAMILIES[script],
     fontWeight: TITLE_RECIPES[role][script].weight,
     letterSpacing: TITLE_RECIPES[role][script].tracking,
 });
@@ -65,4 +66,16 @@ const TITLE_STYLES: Record<TitleFontRole, Record<TitleScript, CSSProperties>> = 
 /** Typographie à appliquer au titre d'une classe (`style={...}`). */
 export function classTitleStyle(isRtl: boolean, role: TitleFontRole = 'card'): CSSProperties {
     return TITLE_STYLES[role][isRtl ? 'arabic' : 'latin'];
+}
+
+const FRENCH_DASHBOARD_TITLE: CSSProperties = Object.freeze({
+    fontFamily: 'var(--font-class-sheet)',
+    fontWeight: 600,
+    letterSpacing: '0',
+    fontSynthesis: 'weight',
+});
+
+/** The French dashboard heading follows the course-sheet typography. */
+export function dashboardTitleStyle(locale: AppLocale): CSSProperties {
+    return locale === 'fr' ? FRENCH_DASHBOARD_TITLE : classTitleStyle(locale === 'ar', 'page');
 }

@@ -48,6 +48,7 @@ interface TableRowProps {
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   sessionAnnotation?: string;
   sessionDocuments?: readonly NotebookDocumentPreview[];
+  reorderHandle?: React.ReactNode;
 }
 
 
@@ -318,6 +319,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   onOpenDocumentPreview,
   sessionAnnotation,
   sessionDocuments,
+  reorderHandle,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
@@ -438,7 +440,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${reorderHandle ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -455,6 +457,7 @@ const TableRowComponent: FC<TableRowProps> = ({
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
           </div>
         </div>
+        {reorderHandle}
       </div>
     );
 
@@ -509,7 +512,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${reorderHandle ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;
@@ -532,6 +535,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         getDocumentPreview={getDocumentPreview}
         onOpenDocumentPreview={onOpenDocumentPreview}
       />
+      {reorderHandle}
     </div>
   );
 
@@ -589,6 +593,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
+  if (prev.reorderHandle !== next.reorderHandle) return false;
   // La fonction d'aperçu fait partie du contrat : l'oublier ici figerait les
   // pastilles « Document » sur l'état du premier rendu.
   if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.onOpenRemark !== next.onOpenRemark || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber || prev.getDocumentPreview !== next.getDocumentPreview || prev.onOpenDocumentPreview !== next.onOpenDocumentPreview) return false;

@@ -148,16 +148,14 @@ test('les aplats d’avertissement portent l’encre de leur thème', () => {
   assert.ok(darkDestructive >= 4.5, `encre sur --destructive-strong (sombre) : ${darkDestructive.toFixed(2)}:1`);
 });
 
-test('les cartes reprennent le numéro décoratif de la référence sans masquer le nom', () => {
+test('le numéro de groupe porte une encre pleine et reste décoratif', () => {
   const cards = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
   const start = cards.indexOf('.class-card .class-card__group {');
   assert.ok(start > 0);
   const group = cards.slice(start, cards.indexOf('}', start));
   assert.match(group, /opacity: 1;/);
-  assert.match(group, /position: static;/);
-  assert.match(group, /color: var\(--class-accent\)/);
+  assert.match(group, /color: var\(--class-ink\)/);
   assert.match(group, /pointer-events: none;/);
-  assert.match(cards, /grid-template-columns: minmax\(0, 1fr\) max-content;/, 'le nom peut revenir à la ligne sans déplacer le numéro');
   const classCard = readFileSync(new URL('../src/features/dashboard/ClassCard.tsx', import.meta.url), 'utf8');
   const identity = classCard.slice(classCard.indexOf('<div className="class-card__identity"'), classCard.indexOf('</div>', classCard.indexOf('variant="engraved"')));
   assert.match(identity, /class-card__title[\s\S]*variant="engraved"/);
@@ -171,11 +169,9 @@ test('les cartes reprennent le numéro décoratif de la référence sans masquer
   assert.match(watermark, /-webkit-text-stroke: 1\.5px hsl\(var\(--card\)\)/);
 });
 
-test('le numéro de groupe est gravé, à l’italique, et reste lisible sur les huit tons', () => {
-  // Le chiffre n'est plus une pastille : c'est une ENCRE adoucie, la grande
-  // italique serif et deux ombres de gravure. L'encre ne descend pas sous 68 %
-  // de l'encre du thème — mesuré 5,3:1 à 6,7:1 sur les huit tons — sinon le
-  // filigrane devient illisible sur les surfaces claires.
+test('le numéro sur la fiche conserve un contraste AA sur les huit tons dans les deux thèmes', () => {
+  const cardCss = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
+  const paperWeight = Number(cardCss.match(/--class-paper: color-mix\(in srgb, hsl\(var\(--card\)\) (\d+)%/)![1]) / 100;
   const hexToRgb = (hex: string): Rgb => ({
     r: parseInt(hex.slice(1, 3), 16),
     g: parseInt(hex.slice(3, 5), 16),
@@ -209,19 +205,18 @@ test('le numéro de groupe est gravé, à l’italique, et reste lisible sur les
     const dark = rules.find(rule => rule.dark);
     assert.ok(light && dark, `le ton ${tone} doit être déclaré dans les deux thèmes`);
     const cases = [
-      ['clair', hexToken(light!.body, 'keep-light')],
+      ['clair', cardCss.match(new RegExp(`\\.class-card\\[data-keep-tone="${tone}"\\]:not\\(\\[data-class-color\\]\\) \\{ --class-surface: (#[a-f0-9]{6})`))![1]],
       ['sombre', hexToken(light!.body, 'keep-dark')],
     ] as const;
     for (const [theme, surfaceHex] of cases) {
-      const surface = hexToRgb(surfaceHex);
-      const ink = mix(surface, inkOf(theme), 0.68);
-      const measured = ratioRgb(ink, surface);
+      const surface = mix(hexToRgb(surfaceHex), hslToRgb(hslTriplet(theme === 'clair' ? lightCss : darkCss, 'card')), paperWeight);
+      const measured = ratioRgb(inkOf(theme), surface);
       floor = Math.min(floor, measured);
       if (measured < 4.5) failures.push(`${tone} en ${theme} : ${measured.toFixed(2)}:1`);
     }
   }
-  assert.deepEqual(failures, [], `numéros gravés insuffisamment lisibles :\n${failures.join('\n')}`);
-  assert.ok(floor >= 4.5, `planche de lisibilité du numéro gravé : ${floor.toFixed(2)}:1`);
+  assert.deepEqual(failures, [], `numéros de groupe insuffisamment lisibles :\n${failures.join('\n')}`);
+  assert.ok(floor >= 4.5, `lisibilité du numéro de groupe : ${floor.toFixed(2)}:1`);
 });
 
 test('l’écran de lancement et l’icône suivent la palette, sans saut de couleur', () => {

@@ -1,4 +1,15 @@
 /* One local variable file per family; no external stylesheet or font request. */
+:root {
+  --font-class-sheet: 'Special Elite', 'SamsungOne Arabic', system-ui, sans-serif;
+}
+/* The course-sheet reference uses Special Elite. Bundle it for offline use;
+   Arabic glyphs fall back to the existing Arabic family. */
+@font-face {
+  font-family: 'Special Elite';
+  src: url('@fontsource/special-elite/files/special-elite-latin-400-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+
 @font-face {
   font-family: 'DM Sans';
   src: url('@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2') format('woff2');

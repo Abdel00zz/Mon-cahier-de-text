@@ -70,7 +70,6 @@ import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatLocalizedClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/domain/notebook/freeContent';
-import { isFreeContent } from '@/domain/notebook/freeLineType';
 import { logger } from '@/lib/logger';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic, withoutPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
@@ -391,16 +390,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /** Même moteur de fusion, autre intention : une séance fusionnée est UNE
    *  ligne pour la remarque et pour le déplacement. */
   const sessionTargets = useMemo(() => buildSessionTargetsGrouped(groupedRows), [groupedRows]);
-  /** Lignes libres : la relocalisation ne les concerne qu'elles. */
-  const freeKeys = useMemo(() => new Set(allRows.filter(row => isFreeContent(row.data)).map(row => row.key)), [allRows]);
   const {
     selectionState,
     selectedIndices,
     selectedCount,
     isSelectionPending,
-    canMoveUp,
-    canMoveDown,
-    handleMoveSelected,
+    handleDropRow,
+    canDropRow,
     handleToggleSelectRow,
     handleToggleSelectGroup,
     handleDeselectAll,
@@ -408,8 +404,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   } = useSelectionEngine({
     lessonsData,
     moveTargets: sessionTargets,
-    contentMoveTargets: contentEditTargets,
-    freeKeys,
     setState,
     setEditorState
   });
@@ -1349,31 +1343,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleSelectionEdit = useCallback(() => {
     if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]);
   }, [editSelectionTargets, handleOpenContentEditor]);
-  // Déplacement : le bloc reste à l'écran. Après un déplacement réel (y compris vers un autre
-  // paragraphe), la ligne est recentrée en douceur et brièvement mise en évidence.
-  const moveFocusPendingRef = useRef(false);
-  const moveSelection = useCallback((direction: 'up' | 'down') => {
-    if (!(direction === 'up' ? canMoveUp : canMoveDown)) return;
-    moveFocusPendingRef.current = true;
-    handleMoveSelected(direction);
-  }, [canMoveDown, canMoveUp, handleMoveSelected]);
-  const handleSelectionMoveUp = useCallback(() => moveSelection('up'), [moveSelection]);
-  const handleSelectionMoveDown = useCallback(() => moveSelection('down'), [moveSelection]);
-
-  useEffect(() => {
-    if (!moveFocusPendingRef.current) return;
-    moveFocusPendingRef.current = false;
-    const first = selectedIndices[0];
-    if (!first) return;
-    const key = indicesKey(first);
-    setSessionFocusKey(key);
-    if (placementTimerRef.current !== null) window.clearTimeout(placementTimerRef.current);
-    placementTimerRef.current = window.setTimeout(() => {
-      placementTimerRef.current = null;
-      setSessionFocusKey(current => (current === key ? null : current));
-    }, 900);
-  }, [selectedIndices]);
-
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
   // varie (retour à la ligne sur mobile, ouverture de la recherche), un
@@ -1437,6 +1406,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               selectedKeys={selectionState.keys}
               onToggleSelect={handleToggleSelectRow}
               onToggleSelectGroup={handleToggleSelectGroup}
+              onReorder={handleDropRow}
+              canReorder={canDropRow}
               onOpenContentEditor={handleOpenContentEditor}
               onOpenDateModal={handleOpenDateModal}
               onOpenRemark={handleOpenRemark}
@@ -1476,10 +1447,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           onDelete={handleBulkDelete}
           onClear={handleDeselectAll}
           canEdit={canEditSelection}
-          canMoveUp={canMoveUp}
-          canMoveDown={canMoveDown}
-          onMoveUp={handleSelectionMoveUp}
-          onMoveDown={handleSelectionMoveDown}
           isPending={isSelectionPending}
         />
       )}

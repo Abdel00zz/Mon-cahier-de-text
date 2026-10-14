@@ -6,9 +6,9 @@ import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { DeferredMount } from '@/components/ui/DeferredMount';
-import { Button } from '@/components/cahier/Button';
 import { ClassCard } from './ClassCard';
-import { DashboardActionsMenu } from './DashboardActionsMenu';
+import { AddClassCard } from './AddClassCard';
+import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
 import { ClassListItem } from './ClassListItem';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -17,10 +17,9 @@ import { OnboardingPage } from './OnboardingPage';
 import { hasCompletedOnboarding } from '../../domain/auth/onboardingCompletion';
 import { ClassInfo, ClassIdentityDraft, ClassEvaluationEntry, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { classTitleStyle } from '@/constants/classTitleTypography';
+import { dashboardTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/domain/calendar/timetable';
 import { collectTeacherSubjects, subjectKey } from '@/domain/classes/subjectScope';
-import { CircleHelp, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/classes/classOrder';
@@ -33,7 +32,7 @@ const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEva
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     onEvaluationVisibilityChange?: (visible: boolean) => void;
-    /** Ouvre le guide : sur téléphone, un bouton d'aide au coin haut de la page (la barre latérale n'existe pas). */
+    /** Ouvre le guide depuis les actions du tableau de bord. */
     onOpenGuide?: () => void;
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
@@ -50,7 +49,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     accountTeacherName = '',
     onOnboardingVisibilityChange,
 }) => {
-    const { locale, t, isRtl } = useLocale();
+    const { locale, t } = useLocale();
     const reduceMotion = useReducedMotion();
     const { user: accountUser, completeWelcome } = useAuth();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
@@ -70,7 +69,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const { type: deviceType } = useDevice();
     const isMobile = deviceType === 'phone';
-    const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
+    const defaultDisplayMode: ClassDisplayMode = isMobile ? 'double' : 'triple';
     const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
@@ -87,9 +86,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     useEffect(() => {
         if (!isClassDisplayMode(classDisplayMode)) {
-            setClassDisplayMode('double');
+            setClassDisplayMode(defaultDisplayMode);
         }
-    }, [classDisplayMode, setClassDisplayMode]);
+    }, [classDisplayMode, defaultDisplayMode, setClassDisplayMode]);
 
     // Les cartes ne sont révélées qu'avec leur cycle et leur disposition réels,
     // ce qui évite un flash dans le mauvais filtre ou le mauvais nombre de colonnes.
@@ -270,10 +269,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return <DashboardSkeleton />;
     }
 
-    const currentDisplay = isClassDisplayMode(classDisplayMode) ? classDisplayMode : 'double';
-    const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1 max-w-[500px] mx-auto auto-rows-fr items-stretch'
-        : 'grid-cols-1 sm:grid-cols-2 auto-rows-fr items-stretch justify-start';
+    const currentDisplay = isClassDisplayMode(classDisplayMode) ? classDisplayMode : defaultDisplayMode;
 
     /*
      * Suppression d'une classe : même garde-fou que depuis la fenêtre de
@@ -298,18 +294,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         );
     }
 
-    // Téléphone seulement (voir `.dashboard-help`) : la barre latérale porte déjà l'aide ailleurs.
-    const helpButton = onOpenGuide ? (
-        <button
-            type="button"
-            onClick={onOpenGuide}
-            className="dashboard-help"
-            aria-label={t('toolbar.help')}
-            title={t('toolbar.help')}
-        >
-            <CircleHelp className="h-5 w-5" aria-hidden="true" />
-        </button>
-    ) : null;
     return (
         <div
             /* Fond du tableau de bord : les valeurs vivent dans
@@ -320,41 +304,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    {/* Téléphone seulement : sur tablette et ordinateur, l'aide vit dans la barre latérale.
-                        Sans classe, il n'y a pas de rangée de titre : le bouton reste au coin de fin. */}
-                    {classes.length === 0 && helpButton && <div className="mb-2 flex justify-end">{helpButton}</div>}
-
-                    {classes.length > 0 && (
-                        <div className="mb-4 sm:mb-6">
-                            <div className="dashboard-heading flex items-end justify-between gap-3 sm:gap-4">
-                                <div className="max-w-xl">
-                                    {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
-                                    <h1
-                                        id="classes-heading"
-                                        style={classTitleStyle(isRtl, 'page')}
-                                        className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
-                                    >
-                                        {t('dashboard.classes')}
-                                        {/* Deux points typographiques (espace insécable en français) ; ignorés des lecteurs d'écran. */}
-                                        <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
-                                    </h1>
-                                </div>
-
-                                <div className="dashboard-actions flex shrink-0 items-center gap-2">
-                                    {helpButton}
-                                    {/* Un seul bouton rond, ouvert vers le bas : créer une classe et choisir la disposition. */}
-                                    <DashboardActionsMenu
-                                        mode={currentDisplay}
-                                        onModeChange={setClassDisplayMode}
-                                        onCreateClass={() => setCreateModalOpen(true)}
-                                    />                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div className="dashboard-heading mb-4 sm:mb-6">
+                        <DashboardActions
+                            mode={currentDisplay}
+                            onModeChange={setClassDisplayMode}
+                            onOpenGuide={onOpenGuide}
+                            showDisplayModes={classes.length > 0}
+                        />
+                        {classes.length > 0 && (
+                            <h1
+                                id="classes-heading"
+                                style={dashboardTitleStyle(locale)}
+                                className="dashboard-heading__title text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
+                            >
+                                {t('dashboard.classes')}
+                                <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
+                            </h1>
+                        )}
+                    </div>
                     <main>
-                        <section className="w-full" aria-labelledby="classes-heading">
+                        <section className="dashboard-class-section w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
+                                    <div className="dashboard-empty flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
                                         <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
 
                                         <div className="max-w-md space-y-1.5 px-2">
@@ -366,21 +337,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             </p>
                                         </div>
 
-                                        <div className="mt-5 sm:mt-6">
-                                            <Button
-                                                variant="primary"
-                                                onClick={() => {
+                                        <div className="mt-5 sm:mt-6 w-full max-w-xs">
+                                            <AddClassCard
+                                                onCreate={() => {
                                                     if (welcomeCompleted) {
                                                         setCreateModalOpen(true);
                                                     } else {
                                                         setOnboardingOpen(true);
                                                     }
                                                 }}
-                                                className="h-10 px-6 text-sm font-semibold"
-                                            >
-                                                <Plus className="h-4.5 w-4.5 stroke-[2.2]" />
-                                                <span>{t('dashboard.addClass')}</span>
-                                            </Button>
+                                            />
                                         </div>
                                     </div>
                                 ) : filteredClasses.length === 0 ? (
@@ -404,7 +370,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </motion.button>
                                     </div>
                                 ) : currentDisplay === 'list' ? (
-                                    <div className="overflow-hidden rounded-[var(--radius-xl,0.875rem)] border border-border bg-card shadow-none" role="list" aria-label={t('dashboard.classList')}>
+                                    <div key={currentDisplay} className="dashboard-class-collection dashboard-class-list" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
@@ -430,7 +396,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-3 sm:gap-4 lg:gap-5`}>
+                                    <div key={currentDisplay} data-layout={currentDisplay} className="dashboard-class-collection dashboard-class-grid">
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
@@ -454,6 +420,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 />
                                             </motion.div>
                                         )})}
+                                        <AddClassCard onCreate={() => setCreateModalOpen(true)} />
+                                </div>
+                            )}
+                            {classes.length > 0 && (currentDisplay === 'list' || filteredClasses.length === 0) && (
+                                <div className="dashboard-class-create-row">
+                                    <AddClassCard variant="row" onCreate={() => setCreateModalOpen(true)} />
                                 </div>
                             )}
                         </section>

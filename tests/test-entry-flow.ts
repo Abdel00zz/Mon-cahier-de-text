@@ -6,7 +6,7 @@ import {
   resolveAuthRoute,
 } from "../src/features/auth/authNavigation";
 import { createLongPress, type PressClock } from "../src/platform/longPress";
-import { classOpeningLabel, latestClassOpening } from "../src/infrastructure/storage/classOpening";
+import { latestClassOpening } from "../src/infrastructure/storage/classOpening";
 import { assertValidClasses } from "../api/_lib/validate";
 import {
   applyRegistrationSetup,
@@ -282,15 +282,6 @@ test("menu contextuel natif après appui : pas de double ouverture", () => {
   g.press.context();
   g.fire();
   assert.equal(g.holds(), 2);
-});
-test("date réelle, état jamais ouvert et invalides sans date inventée", () => {
-  assert.match(classOpeningLabel(undefined, "fr"), /première séance/);
-  assert.equal(classOpeningLabel("bad", "ar"), "جاهز لأول حصة");
-  assert.match(
-    classOpeningLabel("2026-08-31T09:30:00.000Z", "fr"),
-    /Dernière ouverture/,
-  );
-  assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /آخر فتح/);
 });
 test("préparation terminée : cahier et checklist, pas de deuxième onboarding", () => {
   const values = new Map<string, string>();

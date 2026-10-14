@@ -68,19 +68,14 @@ test('le mot d’attente est sous le spinner, sans toucher au chargement, et se 
   assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*animation: none/);
 });
 
-test('le bouton d’aide n’existe que sur téléphone, à côté du bouton d’actions, et ouvre le guide', async () => {
+test('le guide reste accessible directement depuis les actions du tableau de bord', async () => {
   const { readFileSync } = await import('node:fs');
   const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
-  assert.match(dashboard, /className="dashboard-help"/);
-  assert.doesNotMatch(dashboard, /dashboard-help sm:hidden/, 'le masquage ne repose plus sur un utilitaire que la règle du bouton écrasait');
-  assert.match(dashboard, /onClick=\{onOpenGuide\}/);
-  assert.match(dashboard, /aria-label=\{t\('toolbar\.help'\)\}/);
-  assert.match(dashboard, /\{helpButton\}\s*\n?\s*\{\/\*[^*]*\*\/\}\s*\n?\s*<DashboardActionsMenu/, 'l’aide précède le bouton d’actions dans la même rangée');
-  const css = readFileSync('src/features/dashboard/dashboardCanvas.css', 'utf8');
-  const rule = css.match(/\.dashboard-help \{[^}]*\}/)?.[0] ?? '';
-  assert.match(rule, /display: none;/, 'masqué par défaut : tablette et ordinateur ont l’aide dans la barre latérale');
-  assert.match(css, /@media \(max-width: 639px\) \{\s*\.dashboard-help \{ display: grid; \}/, 'affiché seulement sous 640 px, comme la barre inférieure');
-  assert.match(rule, /width: 2\.75rem;[\s\S]*height: 2\.75rem/, 'cible de 44 px');
-  assert.doesNotMatch(rule, /\b(left|right):|position: absolute/, 'plus de coin codé : la rangée suit le sens de lecture');
+  const actions = readFileSync('src/features/dashboard/DashboardActions.tsx', 'utf8');
+  const css = readFileSync('src/features/dashboard/dashboardActions.css', 'utf8');
+  assert.match(dashboard, /<DashboardActions[\s\S]*?onOpenGuide=\{onOpenGuide\}/, 'le guide est transmis aux actions');
+  assert.match(actions, /onOpenGuide && \([\s\S]*?onClick=\{\(\) => \{ impact\('light'\); onOpenGuide\(\); \}\}/, 'l’action ouvre le guide');
+  assert.match(actions, /t\('toolbar\.help'\)/, 'libellé traduit');
+  assert.match(css, /\.dashboard-actions-bar__icon \{[\s\S]*?width: 44px;[\s\S]*?height: 44px;/, 'cible de 44 px');
   assert.match(readFileSync('src/app/App.tsx', 'utf8'), /<Dashboard[\s\S]{0,200}onOpenGuide=\{\(\) => setGuideOpen\(true\)\}/);
 });
