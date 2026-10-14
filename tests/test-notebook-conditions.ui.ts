@@ -27,7 +27,7 @@ test('other student lists keep their simple labels and an empty notebook list ha
   assert.match(render(true, []), /aria-label="إضافة تلميذ"/);
 });
 
-test('notebook and oral tracking prefill the class roster and always expose a floating search', () => {
+test('notebook and oral tracking prefill the class roster and keep adding available alongside auxiliary search', () => {
   const roster = { names: ['أحمد العلوي', 'سلمى الفاسي'], version: 1, updatedAt: '2026-10-08T08:00:00Z' };
   for (const oral of [false, true]) {
     const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'ar', children: React.createElement(StudentNamesEditor, {
@@ -38,6 +38,8 @@ test('notebook and oral tracking prefill the class roster and always expose a fl
     assert.doesNotMatch(html, /type="radio"/);
     assert.match(html, /type="search"/);
     assert.match(html, /class="student-search-bar"/);
+    assert.match(html, /class="student-add student-add--entry"/);
+    assert.ok(html.indexOf('student-add student-add--entry') < html.indexOf('student-search-bar'), 'l’ajout reste exposé avant les outils auxiliaires');
     assert.doesNotMatch(html, /notebook-summary|notebook-progress/);
     assert.match(html, /أحمد العلوي/);
     if (oral) {
@@ -45,4 +47,14 @@ test('notebook and oral tracking prefill the class roster and always expose a fl
       assert.doesNotMatch(html, /حالة دفتر/);
     }
   }
+});
+
+test('la liste administrative remplit les participants simples mais ne déclare jamais toute la classe absente', () => {
+  const roster = { names: ['Amine Alami', 'Salma Fassi'], version: 1, updatedAt: '2026-10-14T08:00:00Z' };
+  const show = (variant: 'checked' | 'absent') => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children: React.createElement(StudentNamesEditor, {
+    initialNames: [], roster, variant, onCancel: () => {}, onSave: () => {},
+  }) }));
+  assert.match(show('checked'), /<bdi>Amine Alami<\/bdi>/);
+  assert.doesNotMatch(show('absent'), /<bdi>Amine Alami<\/bdi>/);
+  assert.match(show('absent'), /<datalist/);
 });

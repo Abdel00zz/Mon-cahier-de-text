@@ -183,6 +183,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
           <StudentNamesEditor
             key={`${selectedClass.id}-${absencesFor.planned.id}`}
             variant="absent"
+            roster={config.classRosters?.[selectedClass.id]}
             initialNames={absencesRecord?.names ?? []}
             updatedAt={absencesRecord?.updatedAt}
             onCancel={() => setAbsencesFor(null)}
@@ -296,7 +297,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             initialOralOutcomes={studentsFor.students?.oralOutcomes}
             initialOralGrades={studentsFor.students?.oralGrades}
             reportTitle={localizedActivityTitle(studentsFor.title, studentsFor.type, locale)}
-            roster={studentsReview && notebookCheck && selectedClass ? config.classRosters?.[selectedClass.id] : undefined}
+            roster={config.classRosters?.[selectedClass.id]}
             reportContext={`${selectedClassDisplayName} · ${localizedActivityTitle(studentsFor.title, studentsFor.type, locale)} · ${formatLongDate(studentsFor.date, locale)}`}
             updatedAt={studentsFor.students?.updatedAt}
             onCancel={() => setStudentsFor(null)}

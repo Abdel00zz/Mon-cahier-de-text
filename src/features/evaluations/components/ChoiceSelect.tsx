@@ -41,13 +41,14 @@ interface ChoiceSelectProps<T extends string> {
   /** `field` : champ d'une ligne d'élève ; `filter` : filtre compact d'une barre d'outils. */
   variant?: 'field' | 'filter';
   className?: string;
+  appearance?: 'oral';
 }
 
 /** Valeur interne du choix « rien » (Radix n'accepte pas de valeur vide pour un item). */
 const NONE = '__none__';
 
 export function ChoiceSelect<T extends string>({
-  value, options, onChange, placeholder, clearLabel, ariaLabel, variant = 'field', className,
+  value, options, onChange, placeholder, clearLabel, ariaLabel, variant = 'field', className, appearance,
 }: ChoiceSelectProps<T>) {
   const { isRtl } = useLocale();
   const { selection } = useHapticFeedback();
@@ -86,7 +87,7 @@ export function ChoiceSelect<T extends string>({
           sideOffset={6}
           collisionPadding={10}
           dir={isRtl ? 'rtl' : 'ltr'}
-          className="choice-content"
+          className={`choice-content${appearance === 'oral' ? ' choice-content--oral' : ''}`}
         >
           <SelectPrimitive.Viewport className="choice-viewport">
             {options.map((option, index) => {

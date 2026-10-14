@@ -10,6 +10,7 @@ export function summarizeClassStudentReviews(config: AppConfig, classId: string)
         .filter(event => event.type === 'controle_cahiers' && event.students)
         .sort((left, right) => right.date.localeCompare(left.date) || right.students!.updatedAt.localeCompare(left.students!.updatedAt))[0];
     const oral = Object.entries(config.assessmentParticipants?.[classId] ?? {})
+        .filter(([, record]) => !record.homeworkOutcomes || record.oralOutcomes || record.oralGrades)
         .sort((left, right) => right[1].updatedAt.localeCompare(left[1].updatedAt))[0];
     const describe = <T extends string>(names: string[], values: Record<string, T>, priorities: readonly T[], date: string) => {
         const reviewed = Object.keys(values).length;

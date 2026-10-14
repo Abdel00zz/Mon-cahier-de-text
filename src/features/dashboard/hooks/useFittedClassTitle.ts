@@ -16,7 +16,7 @@ export function useFittedClassTitle(text: string) {
             const style = getComputedStyle(title);
             const preferred = parseFloat(style.getPropertyValue('--class-title-max'));
             const minimum = parseFloat(style.getPropertyValue('--class-title-min'));
-            const multiplier = 1.15;
+            const multiplier = parseFloat(getComputedStyle(line).fontSize) / parseFloat(style.fontSize);
             context.font = `${style.fontWeight} ${preferred * multiplier}px ${style.fontFamily}`;
             context.direction = style.direction === 'rtl' ? 'rtl' : 'ltr';
             const width = context.measureText(line.textContent ?? '').width;

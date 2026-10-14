@@ -11,6 +11,7 @@ import { TabBar } from '../../src/components/navigation/TabBar';
 import { DashboardActions } from '../../src/features/dashboard/DashboardActions';
 import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplayMode';
 import '../../src/features/dashboard/dashboardCanvas.css';
+import { computeDynamicCanvasStyle } from '../../src/features/dashboard/dashboardCanvas';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
 import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
 import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
@@ -65,6 +66,20 @@ const initialConfig: AppConfig = {
   schoolYearStart: '2026-09-01', timetable, schedules: deriveSchedules(timetable),
   notificationSettings: { ...defaultNotificationSettings }, theme: 'light',
 };
+if (params.get('fixture') === 'student-followup') {
+  const names = ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'سلمى العلوي'];
+  initialConfig.classRosters = { [classes[0].id]: { names, version: 1, updatedAt: '2026-10-14T08:00:00Z' } };
+  initialConfig.manualAssessments = { [classes[0].id]: [
+    { id: 'review-previous', type: 'oral', num: 2, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-05' },
+    { id: 'review-oral', type: 'oral', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' },
+    { id: 'review-homework', type: 'maison', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-07', dueDateISO: '2026-10-14' },
+  ] };
+  initialConfig.assessmentParticipants = { [classes[0].id]: {
+    'review-previous': { names: names.slice(0, 5), updatedAt: '2026-10-05T10:00:00Z', oralGrades: { 'Amine Alami': '13', 'Salma Fassi': '14', 'Youssef Naji': '7', 'Lina Idrissi': '16', 'Adam Berrada': '10' } },
+    'review-oral': { names, updatedAt: '2026-10-12T10:00:00Z', oralOutcomes: { 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }, oralGrades: { 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' } },
+    'review-homework': { names, updatedAt: '2026-10-14T08:00:00Z', homeworkOutcomes: { 'Amine Alami': 'given', 'Salma Fassi': 'given', 'Youssef Naji': 'missing' } },
+  } };
+}
 const isAr = locale === 'ar';
 // Course direction is independent of interface language: a French course stays LTR.
 const lessons: LessonsData = [{ type: 'chapter', title: 'Nombres rationnels', items: [
@@ -120,8 +135,8 @@ function Preview() {
       {screen === 'evaluations' && <DevoirsView classes={classes} config={config} onConfigChange={onChange} />}
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>
-        <div data-dashboard-root className="pb-24 sm:ps-[84px]" >
-          <div className="dashboard-heading mb-4">
+        <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, params.get('active') === '1' ? [classes[0]?.id] : [])} >
+          <div className="dashboard-heading mb-4" data-layout={display}>
             <DashboardActions mode={display} onModeChange={setDisplay} onCreateClass={() => setDashboardCreateOpen(true)} onOpenGuide={() => setDashboardGuideOpen(true)} />
             <h1 className="dashboard-heading__title text-2xl sm:text-3xl" style={dashboardTitleStyle(locale)}>{t('dashboard.classes')}<span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>

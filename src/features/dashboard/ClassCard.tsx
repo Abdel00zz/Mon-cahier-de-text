@@ -8,6 +8,7 @@ import { classColorAttributes } from '@/domain/classes/classColors';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
 import { useFittedClassTitle } from './hooks/useFittedClassTitle';
+import { useCardSurface } from './hooks/useCardSurface';
 import { cn } from '@/lib/utils';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
@@ -32,6 +33,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
     const titleRef = useFittedClassTitle(label.fullName);
+    const { surfaceRef, rippleRef, surfaceHandlers } = useCardSurface();
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
     // Préparation du cahier : la carte garde sa géométrie, un voile discret
@@ -50,7 +52,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     );
 
     return (
-        <article
+        <div className="dashboard-class-slot"><article
+            ref={surfaceRef}
+            {...surfaceHandlers}
             dir={isRtl ? 'rtl' : 'ltr'}
             {...color}
             data-session-active={isActiveSession ? 'true' : undefined}
@@ -65,11 +69,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="class-card__open"
             />
             <span className="class-card__sheet" aria-hidden="true" />
+            <span className="class-card__feedback" aria-hidden="true"><span ref={rippleRef} className="class-card__ripple" /></span>
 
             {preparing && <span className="class-card__loading" aria-hidden="true" />}
             <div className="class-card__body">
                 <div className="class-card__header">
-                    {label.tier && <span className="class-card__tier" aria-hidden="true">{formatWithOrdinals(label.tier)}</span>}
+                    {label.tier && <span className="class-card__tier" title={label.tier} aria-hidden="true">{label.tier}</span>}
                     <ClassActionsMenu name={label.fullName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
                         triggerClassName="class-card__menu"/>
                 </div>
@@ -93,7 +98,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </span>
                 </div>
             )}
-        </article>
+        </article></div>
     );
 };
 

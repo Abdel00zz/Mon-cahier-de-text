@@ -1,11 +1,13 @@
 /* Actions visibles, sans menu : l'accent est réservé à la création. */
 .dashboard-actions-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
+  min-height: 68px;
+  direction: ltr;
 }
 
 .dashboard-actions-bar__mode {
@@ -17,7 +19,7 @@
   height: 44px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 50%;
   color: hsl(var(--foreground) / .8);
   background: transparent;
   cursor: pointer;
@@ -44,7 +46,7 @@
   height: 44px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 50%;
   color: hsl(var(--foreground) / .8);
   background: transparent;
   cursor: pointer;
@@ -67,4 +69,3 @@
   .dashboard-actions-bar__mode:active { transform: none; }
   .dashboard-actions-bar__mode-glyph { animation: none; }
 }
-

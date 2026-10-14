@@ -3,12 +3,11 @@
    Inspiré du prototype HTML/CSS ultra-clean
    ══════════════════════════════════════════════════════════════ */
 
-:root,
 .notebook-tracker,
 .tracking-dialog,
 .notebook-tracker-standalone {
-    --bg-page: #ffffff;
-    --card-bg: #ffffff;
+    --bg-page: hsl(var(--card));
+    --card-bg: hsl(var(--card));
     --surface-subtle: #f6f5f0;
     --surface-subtle-hover: #eeede6;
     --border-card: #e5e3dd;
@@ -21,11 +20,11 @@
     --text-regular: #444540;
     --text-sub: #767771;
     --text-muted: #73746f;
-    --text-placeholder: #9c9c96;
+    --text-placeholder: hsl(var(--muted-foreground));
     
     /* Tons Terracotta / Pêche terre cuite */
-    --btn-add-bg: #c88d79;
-    --btn-add-hover: #b87e6b;
+    --btn-add-bg: hsl(var(--primary));
+    --btn-add-hover: hsl(var(--primary) / .9);
     --btn-save-bg: #ab4b2a;
     --btn-save-hover: #983f21;
     
@@ -63,7 +62,6 @@
     --notebook-missing: #b3261e;
 }
 
-.dark,
 .dark .notebook-tracker,
 .dark .tracking-dialog,
 .dark .notebook-tracker-standalone {
@@ -81,7 +79,7 @@
     --text-regular: #dedcd5;
     --text-sub: #9b9a93;
     --text-muted: #9b9a93;
-    --text-placeholder: #72736c;
+    --text-placeholder: hsl(var(--muted-foreground));
 
     --btn-add-bg: #b87c69;
     --btn-add-hover: #cb8e7a;
@@ -125,8 +123,8 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
-    min-height: 480px;
-    max-height: calc(85vh - 70px);
+    min-height: 0;
+    max-height: min(72dvh, 640px);
     color: var(--text-dark);
     background: var(--bg-page);
 }
@@ -152,17 +150,17 @@
 }
 
 /* 2. Champs de saisie & Filtres */
+.notebook-tracker__controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 8px; padding: 14px 24px 10px; border-bottom: 1px solid var(--border-subtle); }
+.notebook-tracker__controls .student-add { margin: 0; }
+.student-roster-source { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
 
 /* Bloc Rechercher / Filtrer / Ajouter unifié */
 .student-search-bar {
-    position: sticky;
-    top: 0;
-    z-index: 3;
     display: flex;
     align-items: center;
     gap: 10px;
     background: transparent;
-    padding: 4px 0 14px 0;
+    padding: 0;
     box-shadow: none;
     width: 100%;
 }
@@ -171,26 +169,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--surface-subtle);
+    flex: 1;
+    min-width: 0;
+    background: transparent;
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-item);
+    border-radius: 10px;
     padding: 0 12px;
     min-height: 44px;
     transition: border-color 140ms ease;
     position: relative;
 }
 
-/* Mode étendu : prend tout l'espace disponible (aucun trou béant) */
-.student-search-bar__input.is-expanded {
-    flex: 1;
-    min-width: 0;
-}
-
-/* Mode compact : se resserre élégamment pour accueillir la zone d'ajout sur la MÊME LIGNE */
-.student-search-bar__input.is-compact {
-    width: 200px;
-    flex-shrink: 0;
-}
+.student-search-bar > .choice-trigger--filter { flex: 0 1 170px; min-height: 44px; border-radius: 10px; background: transparent; font-weight: 500; }
 
 .student-search-bar__input:focus-within {
     border-color: color-mix(in srgb, var(--color-terracotta, #a24726) 50%, var(--border-subtle));
@@ -258,10 +248,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 50%;
     background: transparent;
     border: none;
@@ -284,88 +274,18 @@
     display: none;
 }
 
-/* Toolbar actions : Filtre et Bouton '+' */
-.student-toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-/* Bouton '+' tactile 44px minimum dans la toolbar */
-.btn-toolbar-add,
-.btn-quick-add {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    border-radius: var(--radius-item);
-    background: var(--btn-add-bg);
-    color: #ffffff;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(162, 71, 38, 0.12);
-    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    flex-shrink: 0;
-    font-size: 24px;
-    font-weight: 400;
-    line-height: 1;
-}
-
-.btn-toolbar-add:hover,
-.btn-quick-add:hover {
-    background: var(--btn-add-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(162, 71, 38, 0.2);
-}
-
-.btn-toolbar-add:active,
-.btn-quick-add:active {
-    transform: scale(0.96);
-}
-
-.btn-toolbar-add.is-active,
-.btn-quick-add.is-active {
-    background: var(--btn-save-bg);
-    box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px rgba(171, 75, 42, 0.25);
-}
-
-/* Zone d'ajout inline sur la MÊME LIGNE */
-
-@keyframes fadeInSlide {
-    from {
-        opacity: 0;
-        transform: scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Zone d'entrée autonome quand names.length === 0 */
-
 @media (max-width: 640px) {
     .student-search-bar {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 8px;
     }
     .student-search-bar__input {
-        width: 100%;
         max-width: 100%;
-        order: 2;
     }
     .student-search-bar__input:focus-within {
     border-color: color-mix(in srgb, var(--color-terracotta, #a24726) 50%, var(--border-subtle));
 }
-    .student-toolbar-actions {
-        width: 100%;
-        justify-content: space-between;
-        order: 1;
-    }
+
 }
 
 .notebook-filter-info {
@@ -379,7 +299,7 @@
 
 .notebook-filter-info button,
 .notebook-undo button {
-    min-height: 38px;
+    min-height: 44px;
     padding: 5px 8px;
     border-radius: 8px;
     color: var(--text-dark);
@@ -451,7 +371,7 @@
 /* 3. Zone centrale & Liste d'élèves */
 .notebook-empty,
 .empty-state-text {
-    padding: 48px 16px;
+    padding: 24px 16px;
     text-align: center;
     color: var(--text-muted);
     font-size: 14.5px;
@@ -462,7 +382,7 @@
 .students-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .notebook-student,
@@ -470,7 +390,7 @@
     background: var(--card-bg, var(--bg-page));
     border: 1px solid var(--border-card, var(--border-subtle));
     border-radius: var(--radius-card, 16px);
-    padding: 14px 18px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -504,9 +424,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 120px;
-    max-width: 250px;
-    flex-shrink: 0;
+    min-width: 0;
+    flex: 1;
 }
 
 .student-name,
@@ -567,6 +486,10 @@
     background: var(--bg-page);
     margin-top: auto;
 }
+.notebook-footer__auxiliary { min-width: 0; font-size: 12px; }
+.notebook-footer__auxiliary summary { min-height: 44px; padding: 12px 6px; cursor: pointer; color: var(--text-muted); }
+.notebook-footer__auxiliary summary:focus-visible { outline: 2px solid var(--border-focus); border-radius: 8px; }
+.notebook-footer__auxiliary[open] { flex-basis: 100%; }
 
 .notebook-footer,
 .modal-footer {
@@ -581,7 +504,7 @@
 .notebook-footer__tools {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
@@ -602,12 +525,12 @@
     background: none;
     border: none;
     font-family: inherit;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 550;
     letter-spacing: 0.015em;
     cursor: pointer;
     padding: 4px 7px;
-    min-height: 28px;
+    min-height: 44px;
     border-radius: 7px;
     transition: color var(--transition), background var(--transition), transform 0.12s ease;
     user-select: none;
@@ -754,7 +677,7 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
     }
     .notebook-student,
     .student-card {
-        padding: 14px 18px;
+        padding: 8px 12px;
         gap: 10px;
     }
     .notebook-tracker__footer {
@@ -763,6 +686,9 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
 }
 
 @media (max-width: 680px) {
+    .notebook-tracker__controls { padding: 12px 14px 10px; }
+    .student-search-bar > .choice-trigger--filter { flex: 0 0 145px; }
+    .student-search-bar__shortcut { display: none; }
     .notebook-tracker__scroll {
         padding: 12px 14px;
         gap: 12px;
@@ -770,8 +696,8 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
 
     .notebook-student,
     .student-card {
-        padding: 14px 14px;
-        gap: 12px;
+        padding: 8px 12px;
+        gap: 8px;
         border-radius: 14px;
     }
 
@@ -799,6 +725,8 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
         width: 44px;
         height: 44px;
     }
+    .notebook-choice { grid-column: 1 / -1; min-width: 0; }
+    .notebook-choice .choice-trigger { width: 100%; min-width: 0; }
 
 
 
@@ -821,13 +749,13 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
     .notebook-grade__input {
         width: 100%;
         min-height: 36px;
-        font-size: 14px;
+        font-size: 16px;
     }
 
-    .modal-footer {
-        flex-direction: column-reverse;
-        gap: 16px;
-        align-items: stretch;
+    .notebook-footer {
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
     }
 
     .footer-actions-left,
@@ -843,8 +771,8 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        width: 100%;
-        gap: 12px;
+        width: auto;
+        gap: 8px;
     }
 
     .btn-cancel,
@@ -852,13 +780,18 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
         min-height: 44px;
     }
 }
+@media (max-width: 360px) {
+    .student-search-bar { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .student-search-bar > .choice-trigger--filter { width: 100%; }
+    .notebook-footer__commit { gap: 4px; }
+}
 
 @media (max-width: 639px) {
     .notebook-student__name {
         font-size: 0.92rem;
     }
     .student-search-bar input {
-        font-size: 15px;
+        font-size: 16px;
     }
 }
 
@@ -943,14 +876,6 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
     from { opacity: 1; scale: 1; }
     to { opacity: 0.45; scale: 0.96; }
 }
-
-/* Le « + » de la barre d'outils : le glyphe suit le bouton, il ne capte pas le clic. */
-.btn-toolbar-add .btn-add-glyph,
-.btn-quick-add .btn-add-glyph {
-    display: inline-flex;
-    font-size: 24px;
-    line-height: 1;
-    color: #ffffff;
-    pointer-events: none;
-    transform: translateY(-1px);
+@media (max-width: 680px) {
+    .grade-chip input, .notebook-grade__input { font-size: 16px; }
 }

@@ -1,0 +1,49 @@
+.student-stats { border: 1px solid hsl(var(--border)); border-radius: 14px; padding: 14px; margin-block: 4px 12px; background: hsl(var(--muted) / .2); font-size: 12px; }
+.student-stats__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; }
+.student-stats__header h4, .homework-deadlines h3 { font-size: 13px; font-weight: 650; }
+.student-stats__sessions { font-size: 11px; color: hsl(var(--muted-foreground)); }
+.student-stats__insights { display: grid; gap: 6px; margin-block-start: 12px; }
+.student-stats__insights details, .homework-deadlines__pupils { border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.student-stats__insights summary, .homework-deadlines__pupils summary { cursor: pointer; min-height: 44px; padding: 12px; font-size: 12px; font-weight: 600; }
+.student-stats__insights summary:focus-visible, .homework-deadlines__pupils summary:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; border-radius: inherit; }
+.student-stats__insights ul, .student-stats__insights p, .homework-deadlines__pupils p { padding: 0 12px 12px; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.student-stats__insights li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.student-stats__insights p > span, .homework-deadlines__pupils p > span { display: block; color: hsl(var(--muted-foreground)); }
+.homework-deadlines__progress { grid-column: 1 / -1; height: 6px; background: hsl(var(--muted)); border-radius: 6px; overflow: hidden; }
+.homework-deadlines__progress span { display: block; height: 100%; background: hsl(var(--primary)); border-radius: inherit; }
+.homework-deadlines__pupils { grid-column: 1 / -1; }
+.student-stats__header button, .homework-deadlines__item button { min-height: 44px; padding: 6px 8px; border-radius: 8px; color: hsl(var(--primary)); font-size: 12px; font-weight: 600; cursor: pointer; }
+.student-stats__header button:hover, .homework-deadlines__item button:hover { background: hsl(var(--primary) / .07); }
+.student-stats button:focus-visible, .homework-deadlines button:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.student-stats__overview { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: center; padding-block: 10px; }
+.student-stats__coverage { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.student-stats__coverage svg { width: 56px; height: 56px; flex-shrink: 0; fill: none; stroke-width: 5; }
+.student-stats__ring-track { stroke: hsl(var(--border)); }
+.student-stats__ring { stroke: hsl(var(--primary)); stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; transition: stroke-dasharray 240ms ease; }
+.student-stats__coverage span, .student-stats__average { display: flex; flex-direction: column; gap: 3px; color: hsl(var(--muted-foreground)); }
+.student-stats__coverage strong, .student-stats__average strong { color: hsl(var(--foreground)); font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.student-stats__average small { font-size: 12px; font-weight: 400; }
+.student-stats__caption, .student-stats__empty { color: hsl(var(--muted-foreground)); line-height: 1.6; font-size: 11px; }
+.student-stats__distribution { margin-block-start: 16px; }
+.student-stats__distribution figcaption { font-weight: 600; margin-block-end: 10px; }
+.student-stats__bins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.student-stats__bin { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-variant-numeric: tabular-nums; }
+.student-stats__bar-track { width: min(100%, 40px); height: 64px; display: flex; align-items: flex-end; border-radius: 5px; background: hsl(var(--muted)); overflow: hidden; }
+.student-stats__bar-track > span { width: 100%; border-radius: 5px 5px 0 0; background: hsl(var(--primary) / .7); transition: height 240ms ease; }
+.student-stats__outcomes { display: grid; gap: 10px; margin-block-start: 18px; }
+.student-stats__outcomes > div { display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; }
+.student-stats__outcomes dd { font-weight: 600; }
+.student-stats__outcome-track { grid-column: 1 / -1; height: 5px; border-radius: 8px; overflow: hidden; background: hsl(var(--muted)); }
+.student-stats__outcome-track > span { display: block; height: 100%; background: hsl(var(--primary) / .65); border-radius: inherit; transition: width 240ms ease; }
+.homework-deadlines { display: grid; gap: 12px; }
+.homework-deadlines__list { display: grid; gap: 10px; }
+.homework-deadlines__item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 14px; background: hsl(var(--card)); }
+.homework-deadlines__identity p { font-size: 11px; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.homework-deadlines__identity h4 { margin-block-start: 4px; font-size: 13px; font-weight: 600; }
+.homework-deadlines__date { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; font-size: 11px; }
+.homework-deadlines__date span { color: hsl(var(--muted-foreground)); }
+.homework-deadlines__item[data-status="past"] .homework-deadlines__date span, .homework-deadlines__item[data-status="today"] .homework-deadlines__date span { color: hsl(var(--destructive)); font-weight: 600; }
+.homework-deadlines__summary { grid-column: 1 / -1; font-size: 11px; line-height: 1.6; color: hsl(var(--muted-foreground)); }
+.homework-deadlines__item button { grid-column: 1 / -1; justify-self: end; }
+@media (max-width: 380px) { .student-stats__overview { grid-template-columns: 1fr; gap: 12px; } .homework-deadlines__item { grid-template-columns: 1fr; } .homework-deadlines__date { align-items: flex-start; } }
+@media (prefers-reduced-motion: reduce) { .student-stats__ring, .student-stats__bar-track > span, .student-stats__outcome-track > span { transition: none; } }

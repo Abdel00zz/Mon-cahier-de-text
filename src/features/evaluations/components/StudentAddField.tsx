@@ -1,4 +1,4 @@
-import { useState, type MutableRefObject, type Ref } from 'react';
+import { useId, useRef, useState, type MutableRefObject, type Ref } from 'react';
 import { X } from 'lucide-react';
 import './notebookTracking.css';
 import './studentAdd.css';
@@ -25,11 +25,14 @@ interface StudentAddFieldProps {
   closeLabel?: string;
   /** Un nom resté dans le champ est validé en le quittant (liste simple des absents). */
   commitOnBlur?: boolean;
+  suggestions?: string[];
 }
 
 export function StudentAddField({
-  draftRef, placeholder, label, addLabel, onCommit, variant = 'entry', autoFocus = false, inputRef, onClose, closeLabel, commitOnBlur = false,
+  draftRef, placeholder, label, addLabel, onCommit, variant = 'entry', autoFocus = false, inputRef, onClose, closeLabel, commitOnBlur = false, suggestions,
 }: StudentAddFieldProps) {
+  const suggestionId = useId();
+  const localInput = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(draftRef.current);
   const update = (next: string) => { draftRef.current = next; setValue(next); };
   const commit = (raw: string) => { if (onCommit(raw)) update(''); };
@@ -38,7 +41,8 @@ export function StudentAddField({
     <div className={`student-add student-add--${variant}`}>
       <div className="student-add__field">
         <input
-          ref={inputRef}
+          ref={inputRef ?? localInput}
+          list={suggestions?.length ? suggestionId : undefined}
           type="text"
           value={value}
           onChange={event => update(event.target.value)}
@@ -66,8 +70,9 @@ export function StudentAddField({
           enterKeyHint="done"
           autoComplete="off"
         />
+        {!!suggestions?.length && <datalist id={suggestionId}>{suggestions.map(name => <option key={name} value={name} />)}</datalist>}
       </div>
-      <button type="button" onClick={() => commit(value)} disabled={!value.trim()} className="student-add__button" aria-label={addLabel} title={addLabel}>
+      <button type="button" onClick={() => { commit(value); localInput.current?.focus(); }} disabled={!value.trim()} className="student-add__button" aria-label={addLabel} title={addLabel}>
         <span aria-hidden="true">+</span>
       </button>
       {onClose && (

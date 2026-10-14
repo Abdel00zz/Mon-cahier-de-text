@@ -3,8 +3,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 
-export function StudentSearchBar({ query, onQueryChange, count, children, isCompact }: {
-    query: string; onQueryChange: (query: string) => void; count: number; children?: ReactNode; isCompact?: boolean;
+export function StudentSearchBar({ query, onQueryChange, count, children }: {
+    query: string; onQueryChange: (query: string) => void; count: number; children?: ReactNode;
 }) {
     const { t, locale } = useLocale();
     const number = numberFormat(locale);
@@ -12,7 +12,7 @@ export function StudentSearchBar({ query, onQueryChange, count, children, isComp
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+            if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !(event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"], [role="combobox"]'))) {
                 event.preventDefault();
                 input.current?.focus();
             }
@@ -22,7 +22,7 @@ export function StudentSearchBar({ query, onQueryChange, count, children, isComp
     }, []);
 
     return <div className="student-search-bar">
-        <div className={`student-search-bar__input ${isCompact ? 'is-compact' : 'is-expanded'}`}>
+        <div className="student-search-bar__input">
             <Search className="h-4 w-4 shrink-0 student-search-bar__icon" aria-hidden="true"/>
             <input
                 ref={input}

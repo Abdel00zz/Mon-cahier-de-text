@@ -26,18 +26,16 @@ type TitleScript = 'latin' | 'arabic';
 /** Rôle du titre, du plus discret au plus affirmé. */
 export type TitleFontRole = 'card' | 'list' | 'page';
 
-/** Piles de caractères. Newsreader (sérif éditoriale haute fidélité inspirée
- *  de l'artisanat typographique moderne) pour le français/latin. */
+/** Outfit reprend la géométrie du prototype ; l'arabe conserve sa famille dédiée. */
 const TITLE_FAMILIES: Record<TitleScript, string> = {
-    latin: "'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif",
+    latin: "'Samsung Sharp Sans', 'Outfit', system-ui, sans-serif",
     arabic: "'SamsungOne Arabic', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'Maghribi Font 3', sans-serif",
 };
 
-/** Titres : sérif éditoriale expressive en latin (élégante et sculptée) ;
- *  pas de gras synthétique en arabe. */
+/** Graisse par rôle, sans gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 600, tracking: '0' },
+        latin: { weight: 700, tracking: '-0.015em' },
         arabic: { weight: 400, tracking: '0' },
     },
     list: {
@@ -51,7 +49,7 @@ const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number;
 };
 
 const buildStyle = (script: TitleScript, role: TitleFontRole): CSSProperties => Object.freeze({
-    fontFamily: role === 'card' ? 'var(--font-class-sheet)' : TITLE_FAMILIES[script],
+    fontFamily: TITLE_FAMILIES[script],
     fontWeight: TITLE_RECIPES[role][script].weight,
     letterSpacing: TITLE_RECIPES[role][script].tracking,
 });
@@ -69,9 +67,9 @@ export function classTitleStyle(isRtl: boolean, role: TitleFontRole = 'card'): C
 }
 
 const FRENCH_DASHBOARD_TITLE: CSSProperties = Object.freeze({
-    fontFamily: 'var(--font-class-sheet)',
-    fontWeight: 600,
-    letterSpacing: '0',
+    fontFamily: TITLE_FAMILIES.latin,
+    fontWeight: 700,
+    letterSpacing: '-0.025em',
     fontSynthesis: 'weight',
 });
 

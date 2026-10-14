@@ -60,7 +60,7 @@
   font-size: 1.35rem;
   font-weight: 500;
   line-height: 1;
-  color: #fff;
+  color: hsl(var(--primary-foreground));
   background: var(--btn-add-bg);
 }
 .student-add__button:hover:not(:disabled) { background: var(--btn-add-hover); }
@@ -75,6 +75,7 @@
 
 /* Dans la barre d'outils, la zone prend la place du filtre : elle occupe la ligne. */
 .student-add--inline { flex: 1 1 auto; margin: 0; }
+@media (max-width: 640px) { .student-add .student-add__field input { font-size: 16px; } }
 
 @media (prefers-reduced-motion: reduce) {
   .student-add__field, .student-add__button, .student-add__close { transition: none; }

@@ -2,6 +2,16 @@
 :root {
   --font-class-sheet: 'Special Elite', 'SamsungOne Arabic', system-ui, sans-serif;
 }
+@font-face {
+  font-family: 'Outfit';
+  src: url('@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 100 900; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 100 900; font-display: swap;
+}
 /* The course-sheet reference uses Special Elite. Bundle it for offline use;
    Arabic glyphs fall back to the existing Arabic family. */
 @font-face {
@@ -110,7 +120,7 @@
        local('One UI Sans'),
        url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
        url('/SamsungOneArabic-400.ttf') format('truetype');
-  font-style: normal; font-weight: 300 900; font-display: swap;
+  font-style: normal; font-weight: 400; font-display: swap;
 }
 
 @font-face {
@@ -129,9 +139,6 @@
   font-family: 'Samsung Sharp Sans';
   src: local('Samsung Sharp Sans'),
        local('SamsungSharpSans'),
-       local('SamsungSharpSans-Bold'),
-       local('SamsungOne'),
-       local('Samsung Sans'),
-       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
+       local('SamsungSharpSans-Bold');
   font-style: normal; font-weight: 600 900; font-display: swap;
 }

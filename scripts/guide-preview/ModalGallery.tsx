@@ -22,6 +22,8 @@ import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvalu
 import { AdminMessageModal } from '../../src/features/messages/AdminMessageModal';
 import { ClassJsonImportModal } from '../../src/admin/components/ClassJsonImportModal';
 import { useLocale } from '../../src/i18n/LocaleProvider';
+import { StudentNamesEditor } from '../../src/features/evaluations/components/StudentNamesEditor';
+import { StudentReviewDialog } from '../../src/features/evaluations/components/StudentReviewDialog';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 
 const dialogs = {
@@ -32,6 +34,7 @@ const dialogs = {
   settings: 'Paramètres', guide: 'Aide', evaluations: 'Évaluations et activités',
   message: 'Message de la direction',
   'admin-import': 'Import administrateur', confirm: 'Confirmation', 'confirm-typed': 'Confirmation de suppression',
+  students: 'Suivi des élèves', 'homework-students': 'Remise du devoir',
 };
 
 export function ModalGallery({ config, classes, lessons, onChange }: {
@@ -71,6 +74,19 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'content' && <ContentModal {...common} mode="edit" item={{ type: 'définition', title: 'Nombre rationnel', description: '$a/b, b \\ne 0$' }} onSave={close} subject="Mathématiques" contentDirection="ltr" />}
     {current === 'manage' && <ManageLessonsModal {...common} lessons={lessons} onUpdate={close} config={config} onConfigChange={onChange} />}
     {current === 'analysis' && <AnalysisModal {...common} lessonsData={lessons} classInfo={classInfo} config={config} />}
+    {(current === 'students' || current === 'homework-students') && <StudentReviewDialog {...common} tracking title={t(current === 'students' ? 'evaluations.oral.title' : 'evaluations.homework.title')} context={classInfo.name}>
+      <StudentNamesEditor key={`${current}-${open}`} variant="checked" trackOral={current === 'students'} trackHomework={current === 'homework-students'}
+        roster={config.classRosters?.[classInfo.id]}
+        initialNames={config.assessmentParticipants?.[classInfo.id]?.[current === 'students' ? 'review-oral' : 'review-homework']?.names ?? []}
+        initialOralOutcomes={config.assessmentParticipants?.[classInfo.id]?.['review-oral']?.oralOutcomes}
+        initialOralGrades={config.assessmentParticipants?.[classInfo.id]?.['review-oral']?.oralGrades}
+        initialHomeworkOutcomes={config.assessmentParticipants?.[classInfo.id]?.['review-homework']?.homeworkOutcomes}
+        onCancel={close} onSave={(names, _notebook, oralOutcomes, homeworkOutcomes, oralGrades) => {
+          const id = current === 'students' ? 'review-oral' : 'review-homework';
+          onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classInfo.id]: { ...config.assessmentParticipants?.[classInfo.id], [id]: { names, oralOutcomes, oralGrades, homeworkOutcomes, updatedAt: new Date().toISOString() } } } });
+          close();
+        }} />
+    </StudentReviewDialog>}
     {current === 'print' && <PrintModal {...common} classId="visual-review-print" totalDates={2} newDates={['2026-09-14']} allDates={['2026-09-07', '2026-09-14']} printedDates={['2026-09-07']} lastPrintedAt="2026-09-07T10:00:00Z" config={config} onConfigChange={onChange} onPrint={close} />}
     {current === 'transfer' && <DataTransferModal {...common} onExport={close} onImport={() => false} />}
     {current === 'restore' && <ImportPlatformModal {...common} onImport={close} />}

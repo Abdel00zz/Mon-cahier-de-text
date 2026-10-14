@@ -3,7 +3,7 @@ import { numberFormat, dateTimeFormat } from '@/lib/formatters';
 import { summarizeClassStudentReviews } from '@/domain/evaluations/pedagogicalReview';
 import type { AppConfig } from '@/types';
 
-export function ClassPedagogicalSummary({ config, classId, onOpen }: { config: AppConfig; classId: string; onOpen: () => void }) {
+export function ClassPedagogicalSummary({ config, classId, onOpen, includeOral = true }: { config: AppConfig; classId: string; onOpen?: () => void; includeOral?: boolean }) {
     const { t, locale } = useLocale();
     const reviews = summarizeClassStudentReviews(config, classId);
     const number = numberFormat(locale);
@@ -11,7 +11,7 @@ export function ClassPedagogicalSummary({ config, classId, onOpen }: { config: A
     return <div className="space-y-2 pb-4" data-pedagogical-review-summary>
         {(['notebook', 'oral'] as const).map(mode => {
             const review = reviews[mode];
-            if (!review) return null;
+            if (!review || (mode === 'oral' && !includeOral)) return null;
             const date = new Date(`${review.date}T12:00:00`);
             return <details key={mode} className="rounded-lg border border-border/70 bg-muted/15 text-xs">
                 <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 focus-visible:outline-2 focus-visible:outline-primary">
@@ -27,7 +27,7 @@ export function ClassPedagogicalSummary({ config, classId, onOpen }: { config: A
                         {(mode === 'notebook' ? ['good', 'average', 'needs_work', 'missing'] : ['mastered', 'developing', 'needs_support']).map(state => <div key={state} className="flex gap-1"><dt>{t(`evaluations.${mode}.${state}`)}</dt><dd className="font-semibold text-foreground">{number.format(review.counts[state] ?? 0)}</dd></div>)}
                     </dl>
                     {review.priorityNames.length > 0 && <p dir="auto" className="break-words text-foreground">{review.priorityNames.slice(0, 4).join(locale === 'ar' ? '، ' : ', ')}{review.priorityNames.length > 4 ? '…' : ''}</p>}
-                    <button type="button" onClick={onOpen} className="min-h-11 rounded-lg px-2 font-semibold text-primary underline underline-offset-4">{t('notifications.review.open')}</button>
+                    {onOpen && <button type="button" onClick={onOpen} className="min-h-11 rounded-lg px-2 font-semibold text-primary underline underline-offset-4">{t('notifications.review.open')}</button>}
                 </div>
             </details>;
         })}

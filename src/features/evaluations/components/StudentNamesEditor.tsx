@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { Check, Copy, Info, RotateCcw } from '@/components/ui/icons';
@@ -12,6 +12,7 @@ import { namesWithRoster, normalizeStudentNames, parseStudentNames, retainOralOu
 import { StudentAddField } from './StudentAddField';
 import { StudentReviewList, NOTEBOOK_REVIEW_CHOICES, ORAL_REVIEW_CHOICES, HOMEWORK_REVIEW_CHOICES } from './NotebookConditionList';
 import './notebookTracking.css';
+import './oralTracking.css';
 
 /*
  * Une seule liste d'élèves pour deux usages : les ABSENTS d'un devoir surveillé
@@ -112,7 +113,16 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
     : trackHomework
       ? retainHomeworkOutcomes(next, values as Record<string, HomeworkOutcome>)
       : retainNotebookConditions(next, values as Record<string, NotebookCondition>);
-  const [names, setNames] = useState<string[]>(() => trackReview ? namesWithRoster(initialNames, roster) : [...new Set(initialNames)]);
+  const [names, setNames] = useState<string[]>(() => variant === 'checked' ? namesWithRoster(initialNames, roster) : normalizeStudentNames(initialNames));
+  const receivedRoster = useRef(new Set(roster?.names.map(name => name.toLowerCase()) ?? []));
+  useEffect(() => {
+    const added = roster?.names.filter(name => !receivedRoster.current.has(name.toLowerCase())) ?? [];
+    receivedRoster.current = new Set(roster?.names.map(name => name.toLowerCase()) ?? []);
+    // A publication received while editing adds newcomers without replacing the draft or its observations.
+    if (variant === 'checked' && roster && added.length) {
+      setNames(current => namesWithRoster(current, { ...roster, names: added }));
+    }
+  }, [roster, variant]);
   // Le brouillon d'un nom vit dans le champ de saisie : taper ne refait pas le rendu de toute la liste.
   const draftRef = useRef('');
   const [conditions, setConditions] = useState<Record<string, ReviewCondition>>(() => trackOral
@@ -121,20 +131,8 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
     : retainNotebookConditions(initialNames, initialNotebookConditions));
   const [grades, setGrades] = useState<Record<string, string>>(() => trackOral
     ? retainOralGrades(initialNames, initialOralGrades) : {});
-  const [removed, setRemoved] = useState<{ names: string[]; conditions: Record<string, ReviewCondition> } | null>(null);
+  const [removed, setRemoved] = useState<{ names: string[]; conditions: Record<string, ReviewCondition>; grades: Record<string, string> } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const addInputRef = useRef<HTMLInputElement>(null);
-
-  const toggleAdd = () => {
-    setIsAddOpen(prev => {
-      const next = !prev;
-      if (next) {
-        setTimeout(() => addInputRef.current?.focus(), 60);
-      }
-      return next;
-    });
-  };
 
   const commitDraft = (raw: string) => {
     let next: string[];
@@ -150,7 +148,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   };
 
   const removeName = (name: string) => {
-    if (trackReview) setRemoved({ names, conditions });
+    if (trackReview) setRemoved({ names, conditions, grades });
     const next = names.filter(value => value !== name);
     setNames(next);
     setConditions(previous => retainConditions(next, previous));
@@ -182,8 +180,10 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   const restoreRemoved = () => {
     if (!removed) return;
     const restoredConditions = retainConditions(removed.names.filter(name => !names.includes(name)), removed.conditions);
-    setNames(removed.names);
+    const restoredNames = normalizeStudentNames([...names, ...removed.names]);
+    setNames(restoredNames);
     setConditions({ ...conditions, ...restoredConditions });
+    setGrades({ ...retainOralGrades(removed.names.filter(name => !names.includes(name)), removed.grades), ...grades });
     setRemoved(null);
   };
 
@@ -195,35 +195,17 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       choices={trackOral ? ORAL_REVIEW_CHOICES : trackHomework ? HOMEWORK_REVIEW_CHOICES : NOTEBOOK_REVIEW_CHOICES}
       grades={trackOral && trackGrades ? grades : undefined}
       onGradesChange={trackOral && trackGrades ? setGrades : undefined}
-      isAddOpen={isAddOpen}
-      toolbarAction={
-        <button
-          type="button"
-          onClick={toggleAdd}
-          className="btn-toolbar-add btn-quick-add"
-          aria-label={t(copy.add)}
-          title={t(copy.add)}
-          aria-expanded={isAddOpen}
-        >
-          <span className="btn-add-glyph" aria-hidden="true">+</span>
-          <span className="sr-only">{t(copy.add)}</span>
-        </button>
-      }
-      inlineAddZone={
+      addField={
         <StudentAddField
-          variant="inline"
           draftRef={draftRef}
-          inputRef={addInputRef}
-          autoFocus
           placeholder={t('evaluations.notebook.addPlaceholder')}
           label={t(copy.placeholder)}
           addLabel={t(copy.add)}
-          closeLabel={t('common.close')}
-          onClose={() => setIsAddOpen(false)}
           onCommit={commitDraft}
         />
       }
       entry={<>
+        {roster && <p className="student-roster-source">{t('evaluations.students.rosterSource', { count: numberFormat(locale).format(roster.names.length) })}</p>}
         {roster?.names.some(name => !names.includes(name)) && <div className="notebook-filter-info"><button type="button" onClick={() => { setNames(namesWithRoster(names, roster)); setRemoved(null); }}>{t('evaluations.students.restoreRoster')}</button></div>}
         {/* Le professeur constate les exceptions : « tout rendu » en un geste, puis on décoche. */}
         {trackHomework && names.length > 0 && (
@@ -251,17 +233,6 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             </button>
           </div>
         )}
-        {names.length === 0 && (
-          <StudentAddField
-            variant="entry"
-            draftRef={draftRef}
-            inputRef={addInputRef}
-            placeholder={t('evaluations.notebook.addPlaceholder')}
-            label={t(copy.placeholder)}
-            addLabel={t(copy.add)}
-            onCommit={commitDraft}
-          />
-        )}
       </>}
       footer={<>
         {removed && <div className="notebook-undo" role="status">
@@ -269,12 +240,14 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <button type="button" onClick={restoreRemoved}>{t('toolbar.undo')}</button>
         </div>}
         <div className="notebook-footer modal-footer">
+          <details className="notebook-footer__auxiliary">
+          <summary>{t('selection.moreActions')}</summary>
           <div className="notebook-footer__tools footer-actions-left">
             <AnimatedTrashButton
               label={t(copy.clear)}
               variant="ghost"
               size="sm"
-              onClick={() => { setRemoved({ names, conditions }); setNames([]); setConditions({}); }}
+              onClick={() => { setRemoved({ names, conditions, grades }); setNames([]); setConditions({}); setGrades({}); }}
               disabled={!names.length}
               aria-label={t(copy.clear)}
               title={t(copy.clear)}
@@ -289,6 +262,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               <span>{t('evaluations.notebook.reset')}</span>
             </button>
           </div>
+          </details>
           <div className="notebook-footer__commit footer-actions-right">
             <button type="button" className="btn-cancel notebook-text-action notebook-footer__cancel" onClick={onCancel}>{t('common.cancel')}</button>
             <button type="button" className="btn-save notebook-primary" onClick={() => { const next = commitDraft(draftRef.current); if (next) onSave(next,
@@ -357,6 +331,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
 
         <StudentAddField
           draftRef={draftRef}
+          suggestions={variant === 'absent' ? roster?.names : undefined}
           placeholder={t(copy.placeholder)}
           label={t(copy.placeholder)}
           addLabel={t(copy.add)}

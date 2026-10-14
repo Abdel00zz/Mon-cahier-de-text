@@ -32,10 +32,10 @@ const extendedFamilyColor = (family: string): string => {
   return `class-hue:${100 + hash % 999000}`;
 };
 
-const TONE_HUES: Record<typeof KEEP_TONES[number], number> = {
+export const TONE_HUES: Record<typeof KEEP_TONES[number], number> = {
   sand: 43, coral: 24, lime: 77, mint: 155, sky: 204, indigo: 236, lavender: 276, rose: 348,
 };
-const hueOf = (color: string): number => color.startsWith('class-hue:')
+export const hueOf = (color: string): number => color.startsWith('class-hue:')
   ? (Number(color.slice(10)) * 137.508 + 22) % 360 : TONE_HUES[color as keyof typeof TONE_HUES];
 const hueDistance = (a: number, b: number): number => {
   const delta = Math.abs(a - b);

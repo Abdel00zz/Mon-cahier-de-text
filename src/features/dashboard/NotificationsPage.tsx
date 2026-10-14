@@ -37,6 +37,10 @@ import {
 import { consumeNotificationsAxis, type NotificationsAxisId } from '@/infrastructure/notifications/notificationNavigation';
 import { NotificationCalendar } from './NotificationCalendar';
 import { ClassPedagogicalSummary } from './ClassPedagogicalSummary';
+import { ContinuousAssessmentStats } from './ContinuousAssessmentStats';
+import { HomeworkDeadlines } from './HomeworkDeadlines';
+import { homeworkDeadlines } from '@/domain/evaluations/studentFollowUp';
+import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
@@ -262,6 +266,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   onBack,
 }) => {
   const { locale, t, isRtl } = useLocale();
+  const today = useMoroccoToday();
+  const homeworkDue = useMemo(() => homeworkDeadlines(config, classes, today), [config, classes, today]);
   const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
@@ -370,7 +376,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       id: 'echeances',
       label: t('notifications.deadlines'),
       icon: CalendarCheck,
-      count: filteredOfficial.length,
+      count: filteredOfficial.length + homeworkDue.length,
       group: 'alerts',
     },
     {
@@ -854,11 +860,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         </h2>
                       </div>
                       <span className="text-xs font-bold text-muted-foreground bg-muted dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-                        {t('notifications.eventCount', { count: filteredOfficial.length })}
+                        {t('notifications.eventCount', { count: filteredOfficial.length + homeworkDue.length })}
                       </span>
                     </div>
 
-                    {filteredOfficial.length === 0 ? (
+                    <HomeworkDeadlines items={homeworkDue} onOpen={classId => {
+                      openClassById(classId);
+                    }} />
+                    {filteredOfficial.length === 0 && homeworkDue.length === 0 ? (
                       <EmptyState
                         title={t('notifications.noAssessmentTitle')}
                         kind="schedule"
@@ -986,10 +995,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 </li>)}
                               </ul>
                             </details>}
-                            <ClassPedagogicalSummary config={config} classId={overview.classInfo.id} onOpen={() => {
-                              requestEditorModal({ classId: overview.classInfo.id, modal: 'evaluations', expiresAt: Date.now() + 120_000 });
-                              openClassById(overview.classInfo.id);
-                            }}/>
+                            <ContinuousAssessmentStats config={config} classInfo={overview.classInfo} />
+                            <ClassPedagogicalSummary config={config} classId={overview.classInfo.id} includeOral={false} />
                             </article>
                           );
                         })}

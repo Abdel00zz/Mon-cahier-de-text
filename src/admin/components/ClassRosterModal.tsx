@@ -26,7 +26,7 @@ export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublishe
     };
     return <Modal isOpen dir="ltr" onClose={() => { if (!busy) onClose(); }} maxWidth="xl" title={<span className="flex items-center gap-2"><Users className="h-5 w-5"/>Liste des élèves · <bdi>{classInfo.name}</bdi></span>}>
         <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">La liste sera disponible dans cette classe pour le contrôle des cahiers et l’évaluation orale.</p>
+            <p className="text-sm text-muted-foreground">La liste sera transmise à cette classe pour le suivi des élèves, les remises de devoirs et le contrôle continu. Les observations déjà enregistrées par le professeur sont conservées.</p>
             <label className="block space-y-2"><span className="text-sm font-semibold">Noms complets séparés par un point-virgule</span>
                 <textarea value={draft} onChange={event => { setDraft(event.target.value); setError(''); }} disabled={busy} rows={7} dir="auto"
                     spellCheck={false} aria-describedby="class-roster-format" placeholder="Ahmed Alami ; Sara Fassi ; أحمد العلوي ؛ سلمى الفاسي" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"/>

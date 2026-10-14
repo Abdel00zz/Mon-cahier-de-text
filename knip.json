@@ -5,11 +5,14 @@
   "ignoreDependencies": [
     "@fontsource-variable/cairo",
     "@fontsource-variable/dm-sans",
+    "@fontsource-variable/inter",
+    "@fontsource-variable/outfit",
     "@fontsource-variable/newsreader",
     "@fontsource-variable/roboto-slab",
     "@fontsource-variable/rubik",
     "@fontsource-variable/source-sans-3",
     "@fontsource/lato",
+    "@fontsource/special-elite",
     "firebase-tools"
   ],
   "entry": [

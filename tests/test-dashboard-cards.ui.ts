@@ -144,9 +144,4 @@ test('le tableau de bord place les actions au-dessus de « Mes classes : »', ()
   assert.match(source, /dashboard_class_display_v1/, 'la disposition survit au rechargement');
   assert.match(source, /isClassDisplayMode\(classDisplayMode\)/, 'une valeur inconnue retombe sur la disposition par défaut');
 });
-test('taille du nom de classe sur les cartes augmentée de 15% sans toucher au niveau', () => {
-  const cardsCss = readFileSync('src/features/dashboard/classCards.css', 'utf8');
-  assert.match(cardsCss, /\.class-card__stream\s*\{[\s\S]*?font-size:\s*1\.15em/, 'le nom de la filière est agrandi de 15% (1.15em)');
-  assert.match(cardsCss, /\.class-card__tier\s*\{[\s\S]*?font-size:\s*\.78em/, 'le nom du niveau garde sa taille d’origine (.78em)');
-});
 

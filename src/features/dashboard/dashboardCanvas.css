@@ -1,71 +1,206 @@
-/* Canevas éditorial chaleureux, immersif et cohérent : texture carnet/stationery & auras douces */
+/* Canevas éditorial dynamique & immersif : esthétique Google Pixel Warm Paper & Samsung One UI 7 */
+
 [data-dashboard-surface],
 [data-dashboard-root],
 .keep-dashboard-canvas,
 .keep-futuristic-surface {
+    --font-samsung: 'SamsungOne', 'Outfit', 'SamsungOne Arabic', var(--font-sans, sans-serif);
+    --font-samsung-display: 'Samsung Sharp Sans', 'Outfit', 'SamsungOne Arabic', var(--font-sans, sans-serif);
+    --pixel-spring: cubic-bezier(0.22, 1, 0.36, 1);
+    --pixel-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
     position: relative;
     min-height: 100dvh;
+    font-family: var(--font-samsung);
+    --canvas-zenith-hue: 24;
+    --canvas-zenith-sat: 78%;
+    --canvas-nadir-hue: 148;
+    --canvas-nadir-sat: 64%;
+    --canvas-horizon-hue: 220;
+    --canvas-horizon-sat: 70%;
+    --canvas-dot-hue: 36;
+    --canvas-tint-hue: 36;
+    --canvas-dot-lightness: 30%;
+    --canvas-dot-alpha: 0.075;
+    --canvas-dot-subtle-alpha: 0.024;
+    --canvas-dot-micro-alpha: 0.034;
+    --canvas-zenith-alpha: 0.085;
+    --canvas-nadir-alpha: 0.06;
+    --canvas-horizon-alpha: 0.04;
+
     background-color: var(--canvas-base, hsl(var(--background)));
     background-image:
-        /* Trame pointillée discrète style carnet de notes / papier d'architecte */
-        radial-gradient(circle, hsl(var(--foreground) / 0.045) 1px, transparent 1px),
-        /* Douce aura ambre/champagne au zénith : profondeur noble et chaleureuse */
-        radial-gradient(ellipse 80% 50% at 85% -5%, color-mix(in srgb, hsl(var(--primary)) 8.5%, transparent), transparent 72%),
-        /* Douce lueur minérale en bas à gauche pour équilibrer la composition */
-        radial-gradient(ellipse 65% 45% at 5% 95%, color-mix(in srgb, hsl(var(--accent, 140 30% 50%)) 5%, transparent), transparent 75%),
-        /* Teinte soyeuse légèrement réchauffée */
-        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 98%, hsl(var(--primary) / 0.02)) 0%, hsl(var(--background)) 100%);
-    background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-    background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0, 0 0, 0 0;
-    background-attachment: fixed, fixed, fixed, fixed;
+        /* 1. Trame pointillée haute précision façon carnet Pixel */
+        radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.15px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.55px, transparent 1.65px),
+        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px),
+        /* 2. Aura zénithale chaude (Terracotta Pixel) */
+        radial-gradient(ellipse 82% 58% at 82% -6%, hsl(var(--canvas-zenith-hue) var(--canvas-zenith-sat) 56% / var(--canvas-zenith-alpha)), transparent 74%),
+        /* 3. Aura nadir sauge douce */
+        radial-gradient(ellipse 72% 52% at 8% 96%, hsl(var(--canvas-nadir-hue) var(--canvas-nadir-sat) 50% / var(--canvas-nadir-alpha)), transparent 76%),
+        /* 4. Lueur horizon latérale */
+        radial-gradient(ellipse 60% 45% at 15% 42%, hsl(var(--canvas-horizon-hue) var(--canvas-horizon-sat) 55% / var(--canvas-horizon-alpha)), transparent 70%),
+        /* 5. Voile de surface soyeux */
+        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97.5%, hsl(var(--canvas-tint-hue) 65% 52% / 0.03)) 0%, hsl(var(--background)) 100%);
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+    background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+    transition: background-color 240ms var(--pixel-spring);
 }
+
 .dark [data-dashboard-surface],
 .dark [data-dashboard-root],
 .dark .keep-dashboard-canvas,
 .dark .keep-futuristic-surface {
     background-color: var(--canvas-base-dark, hsl(var(--background)));
+    --canvas-dot-lightness: 78%;
+    --canvas-dot-alpha: 0.085;
+    --canvas-dot-subtle-alpha: 0.03;
+    --canvas-dot-micro-alpha: 0.038;
+    --canvas-zenith-alpha: 0.13;
+    --canvas-nadir-alpha: 0.09;
+    --canvas-horizon-alpha: 0.055;
     background-image:
-        radial-gradient(circle, hsl(var(--foreground) / 0.055) 1px, transparent 1px),
-        radial-gradient(ellipse 80% 50% at 85% -5%, color-mix(in srgb, hsl(var(--primary)) 12%, transparent), transparent 72%),
-        radial-gradient(ellipse 65% 45% at 5% 95%, color-mix(in srgb, hsl(var(--accent, 220 30% 50%)) 6.5%, transparent), transparent 75%),
-        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97%, hsl(var(--primary) / 0.03)) 0%, hsl(var(--background)) 100%);
-}
-[data-dashboard-root] .dashboard-heading__title {
-    margin-block-start: .75rem;
-    color: hsl(var(--foreground));
+        radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.1px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.5px, transparent 1.6px),
+        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px),
+        radial-gradient(ellipse 80% 55% at 85% -5%, hsl(var(--canvas-zenith-hue) var(--canvas-zenith-sat) 62% / var(--canvas-zenith-alpha)), transparent 72%),
+        radial-gradient(ellipse 70% 50% at 5% 95%, hsl(var(--canvas-nadir-hue) var(--canvas-nadir-sat) 58% / var(--canvas-nadir-alpha)), transparent 75%),
+        radial-gradient(ellipse 60% 45% at 15% 42%, hsl(var(--canvas-horizon-hue) var(--canvas-horizon-sat) 60% / var(--canvas-horizon-alpha)), transparent 70%),
+        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97%, hsl(var(--canvas-tint-hue) 60% 50% / 0.035)) 0%, hsl(var(--background)) 100%);
 }
 
-.dashboard-class-collection { animation: dashboard-view-enter 200ms cubic-bezier(.2,.8,.2,1) both; }
-.dashboard-class-section { container-type: inline-size; }
-.dashboard-class-grid { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; width: 100%; gap: 12px; }
-.dashboard-class-grid[data-layout="single"] { max-width: 480px; margin-inline: auto; }
-.dashboard-class-grid[data-layout="double"] { max-width: 820px; margin-inline: auto; }
-.dashboard-class-grid[data-layout="triple"] { max-width: 1040px; margin-inline: auto; }
-.dashboard-class-list { overflow: hidden; border: 1px solid hsl(var(--border) / .8); border-radius: 16px; background: hsl(var(--card)); }
-.dashboard-class-list > [role="listitem"]:last-child .class-list-item { border-bottom: 0; }
-.class-list-item .keep-level-badge { flex-shrink: 1; max-width: 100%; font-size: .85em; line-height: 1.4; text-align: start; }
-html[lang="ar"] .class-list-item .keep-level-badge { font-family: var(--font-sans); }
-.class-list-item .keep-level-badge > span { white-space: normal; }
-.class-list-item .keep-level-badge > span > [aria-hidden="true"] { flex-wrap: wrap; gap: 2px 6px; }
-@keyframes dashboard-view-enter { from { opacity: .65; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-@container (min-width: 348px) {
-  .dashboard-class-grid[data-layout="double"],
-  .dashboard-class-grid[data-layout="triple"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Les outils occupent la rangée supérieure ; le titre suit le bord du contenu. */
+[data-dashboard-root] .dashboard-heading {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
-@container (min-width: 768px) { .dashboard-class-grid[data-layout="triple"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 640px) { .dashboard-class-grid { gap: 16px; } }
-@media (min-width: 1024px) { .dashboard-class-grid { gap: 20px; } }
-@media (prefers-reduced-motion: reduce) { .dashboard-class-collection { animation: none; } }
+
+[data-dashboard-root] .dashboard-heading__title {
+    margin-block-start: 0.25rem;
+    font-family: var(--font-samsung-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: hsl(var(--foreground));
+    text-align: start;
+    font-size: 32px;
+    line-height: 1.35;
+}
+
+.dashboard-class-collection {
+    animation: dashboard-view-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-class-section {
+    container-type: inline-size;
+}
+
+/* Grille harmonisée avec mesures et proportions One UI / Pixel */
+.dashboard-class-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    width: 100%;
+    gap: 16px;
+}
+
+.dashboard-class-grid[data-layout="single"] { max-width: 520px; margin-inline: auto; }
+.dashboard-class-grid[data-layout="double"] { max-width: 920px; margin-inline: auto; }
+.dashboard-class-grid[data-layout="triple"] { max-width: 1080px; margin-inline: auto; }
+[data-dashboard-root] .dashboard-heading { width: 100%; margin-inline: auto; max-width: 1080px; }
+[data-dashboard-root] .dashboard-heading[data-layout='double'] { max-width: 920px; }
+[data-dashboard-root] .dashboard-heading[data-layout='single'] { max-width: 520px; }
+
+.dashboard-class-list {
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.75);
+    border-radius: 24px;
+    background: color-mix(in srgb, hsl(var(--card)) 94%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 28px -12px hsl(var(--foreground) / 0.06);
+}
+
+.dashboard-class-list > [role="listitem"]:last-child .class-list-item {
+    border-bottom: 0;
+}
+
+.class-list-item .keep-level-badge {
+    flex-shrink: 1;
+    max-width: 100%;
+    font-size: 0.85em;
+    line-height: 1.4;
+    text-align: start;
+}
+
+html[lang="ar"] .class-list-item .keep-level-badge {
+    font-family: var(--font-sans);
+}
+
+.class-list-item .keep-level-badge > span {
+    white-space: normal;
+}
+
+.class-list-item .keep-level-badge > span > [aria-hidden="true"] {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+}
+
+@keyframes dashboard-view-enter {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@container (min-width: 520px) {
+    .dashboard-class-grid[data-layout="double"],
+    .dashboard-class-grid[data-layout="triple"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (min-width: 768px) {
+    .dashboard-class-grid[data-layout="triple"] {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 640px) {
+    .dashboard-class-grid { gap: 20px; }
+}
+
+@media (min-width: 1024px) {
+    .dashboard-class-grid { gap: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-class-collection { animation: none; }
+}
 
 [data-dashboard-root] .dashboard-empty {
-    border: 1px solid hsl(var(--border) / .75);
-    border-radius: 1.5rem;
-    background: color-mix(in srgb, hsl(var(--card)) 91%, transparent);
-    box-shadow: inset 0 1px 0 hsl(var(--background) / .75), 0 14px 30px -26px hsl(var(--foreground) / .2);
+    border: 1px solid hsl(var(--border) / 0.75);
+    border-radius: 26px;
+    background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
+    backdrop-filter: blur(14px);
+    box-shadow:
+        inset 0 1px 0 hsl(var(--background) / 0.8),
+        0 18px 38px -24px hsl(var(--foreground) / 0.14);
 }
 
-/* Téléphone portrait : actions tactiles en haut, titre légèrement plus bas. */
-@media (max-width: 639px) {
-  [data-dashboard-root] .dashboard-heading h1 { font-size: 22px; line-height: 1.4; }
+/* Scrolling phones use a local paper texture and opaque panels. */
+@media (hover: none), (pointer: coarse), (max-width: 639px) {
+    [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
+        background-attachment: scroll;
+    }
+    .dashboard-class-list, [data-dashboard-root] .dashboard-empty {
+        background: hsl(var(--card));
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }

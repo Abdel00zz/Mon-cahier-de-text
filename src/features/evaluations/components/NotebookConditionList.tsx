@@ -1,4 +1,4 @@
-import { memo, useCallback, useDeferredValue, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { CircleAlert, CircleCheck, CircleHelp, CircleMinus, CircleX } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -43,16 +43,23 @@ interface StudentRowProps<T extends string> {
     onGrade?: (name: string, grade: string) => void;
     gradeLabel?: string;
     gradePlaceholder?: string;
+    appearance?: 'oral';
 }
 
 /* Une fiche d'élève. Mémoïsée : choisir un retour pour un élève ne refait que SA fiche, pas toute la liste. */
-function StudentRowView<T extends string>({ name, value, options, pendingLabel, hintId, removeLabel, onPick, onRemove, grade, onGrade, gradeLabel, gradePlaceholder }: StudentRowProps<T>) {
-    return <fieldset className="notebook-student student-card" aria-describedby={hintId}>
+function StudentRowView<T extends string>({ name, value, options, pendingLabel, hintId, removeLabel, onPick, onRemove, grade, onGrade, gradeLabel, gradePlaceholder, appearance }: StudentRowProps<T>) {
+    return <fieldset className="notebook-student student-card" data-has-grade={Boolean(onGrade)} aria-describedby={hintId}>
         <legend className="sr-only">{name}</legend>
         <div className="card-main-line">
             <div className="notebook-student__identity student-text-group">
                 <span dir={textDirectionAttribute(name)} className="notebook-student__name student-name">{name}</span>
             </div>
+            {onGrade && <label className="grade-chip notebook-grade">
+                <span className="sr-only">{gradeLabel}</span>
+                <input type="text" inputMode="decimal" dir="ltr" value={grade ?? ''}
+                    onChange={event => onGrade(name, event.target.value)} placeholder={gradePlaceholder}
+                    aria-label={gradeLabel} className="grade-chip__input notebook-grade__input" maxLength={5} />
+            </label>}
             <div className="notebook-choice">
                 <ChoiceSelect<T>
                     value={value}
@@ -61,34 +68,17 @@ function StudentRowView<T extends string>({ name, value, options, pendingLabel, 
                     clearLabel={pendingLabel}
                     ariaLabel={name}
                     onChange={next => onPick(name, next)}
+                    appearance={appearance}
                 />
             </div>
             <button type="button" onClick={() => onRemove(name)} aria-label={removeLabel} className="notebook-student__remove btn-delete-row">
                 <X className="h-4 w-4" aria-hidden="true"/>
             </button>
         </div>
-        {onGrade && (
-            <div className="card-sub-line notebook-student__sub-line">
-                <label className="grade-chip notebook-grade">
-                    <span className="sr-only">{gradeLabel}</span>
-                    <input
-                        type="text"
-                        inputMode="decimal"
-                        dir="ltr"
-                        value={grade ?? ''}
-                        onChange={event => onGrade(name, event.target.value)}
-                        placeholder={gradePlaceholder}
-                        aria-label={gradeLabel}
-                        className="grade-chip__input notebook-grade__input"
-                        maxLength={5}
-                    />
-                </label>
-            </div>
-        )}
     </fieldset>;
 }
 const StudentRow = memo(StudentRowView) as typeof StudentRowView;
-export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, toolbarAction, inlineAddZone, isAddOpen }: {
+export function StudentReviewList<T extends string>({ names, conditions, onChange, onRemove, entry, footer, choices, mode = 'notebook', grades, onGradesChange, addField }: {
     names: string[];
     conditions: Record<string, T>;
     onChange: (conditions: Record<string, T>) => void;
@@ -100,14 +90,17 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     /** Note /20 par élève (oral, colle) : saisie libre, jamais bloquante. */
     grades?: Record<string, string>;
     onGradesChange?: (grades: Record<string, string>) => void;
-    toolbarAction?: ReactNode;
-    inlineAddZone?: ReactNode;
-    isAddOpen?: boolean;
+    addField?: ReactNode;
 }) {
     const { t, locale } = useLocale();
     const id = useId();
     const [query, setQuery] = useState('');
     const [filter, setFilter] = useState<T | 'pending' | null>(null);
+    const previousCount = useRef(names.length);
+    useEffect(() => {
+        if (names.length > previousCount.current) { setQuery(''); setFilter(null); }
+        previousCount.current = names.length;
+    }, [names.length]);
     const number = numberFormat(locale);
     const copy = `evaluations.${mode}`;
     const reviewed = names.filter(name => Object.hasOwn(conditions, name) && choices.some(choice => choice.value === conditions[name])).length;
@@ -137,7 +130,16 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
     }, []);
     const remove = useCallback((name: string) => latest.current.onRemove(name), []);
     const grade = useCallback((name: string, value: string) => latest.current.onGradesChange?.({ ...(latest.current.grades ?? {}), [name]: value }), []);
-    return <div className="notebook-tracker" data-review-mode={mode} data-notebook-check-list={mode === 'notebook' ? '' : undefined}>
+    return <div className="notebook-tracker" data-review-mode={mode} data-empty={names.length === 0} data-notebook-check-list={mode === 'notebook' ? '' : undefined}>
+        <div className="notebook-tracker__controls">
+            {addField}
+            {names.length > 0 && <StudentSearchBar query={query} onQueryChange={setQuery} count={shownNames.length}>
+                <ChoiceSelect<T | 'pending'> variant="filter" value={filter} options={filterOptions} onChange={setFilter}
+                    appearance={mode === 'oral' ? 'oral' : undefined}
+                    placeholder={t('evaluations.notebook.showAll')} clearLabel={t('evaluations.notebook.showAll')}
+                    ariaLabel={t(`${copy}.filterLabel`)} />
+            </StudentSearchBar>}
+        </div>
         <div className="notebook-tracker__scroll modern-scrollbar" data-swipe-scroll-region>
             <p className="sr-only" id={`${id}-hint`}>{t(`${copy}.hint`)}</p>
 
@@ -148,22 +150,6 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                 </>
             ) : (
                 <>
-                    <StudentSearchBar query={query} onQueryChange={setQuery} count={shownNames.length} isCompact={isAddOpen}>
-                        {isAddOpen ? inlineAddZone : (
-                            <div className="student-toolbar-actions">
-                                <ChoiceSelect<T | 'pending'>
-                                    variant="filter"
-                                    value={filter}
-                                    options={filterOptions}
-                                    onChange={setFilter}
-                                    placeholder={t('evaluations.notebook.showAll')}
-                                    clearLabel={t('evaluations.notebook.showAll')}
-                                    ariaLabel={t(`${copy}.filterLabel`)}
-                                />
-                                {toolbarAction}
-                            </div>
-                        )}
-                    </StudentSearchBar>
                     {entry}
                     {(filter || query) && <div className="notebook-filter-info">
                         <span>{filter ? t(`${copy}.${filter}`) : t('evaluations.notebook.search')} · {number.format(shownNames.length)}</span>
@@ -187,6 +173,7 @@ export function StudentReviewList<T extends string>({ names, conditions, onChang
                     onGrade={mode === 'oral' && onGradesChange ? grade : undefined}
                     gradeLabel={mode === 'oral' && onGradesChange ? t('evaluations.oral.gradeLabel', { name }) : undefined}
                     gradePlaceholder={mode === 'oral' && onGradesChange ? t('evaluations.oral.gradePlaceholder') : undefined}
+                    appearance={mode === 'oral' ? 'oral' : undefined}
                 />)}
             </div>
         </div>

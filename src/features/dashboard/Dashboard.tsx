@@ -23,7 +23,7 @@ import { collectTeacherSubjects, subjectKey } from '@/domain/classes/subjectScop
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/classes/classOrder';
-import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
+import { computeDynamicCanvasStyle } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
@@ -258,6 +258,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
             .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter),
         activeSessionIds,
     ), [persistedClassOrder, classById, subjectFilter, activeSessionIds]);
+    const canvasStyle = useMemo(
+        () => computeDynamicCanvasStyle(filteredClasses, activeSessionClassIds),
+        [filteredClasses, activeSessionClassIds],
+    );
     // Measure only when order, session title or display mode changes, not on
     // unrelated sync/config renders. Position-only animation keeps text crisp.
     const classLayoutKey = useMemo(
@@ -298,13 +302,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div
             /* Fond du tableau de bord : les valeurs vivent dans
                `dashboardCanvas.ts`, la structure dans `dashboardCanvas.css`. */
-            style={DASHBOARD_CANVAS_STYLE}
+            style={canvasStyle}
             className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pb-6 sm:pb-8 pt-3 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    <div className="dashboard-heading mb-4 sm:mb-6">
+                    <div className="dashboard-heading mb-4 sm:mb-6" data-layout={currentDisplay}>
                         <DashboardActions
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}

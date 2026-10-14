@@ -38,7 +38,7 @@ export const DashboardActions = memo(({ mode, onModeChange, onOpenGuide, showDis
                     }}
                 >
                     <span key={mode} className="dashboard-actions-bar__mode-glyph" aria-hidden="true">
-                        <DisplayIcon size={21} strokeWidth={1.65} aria-hidden="true" />
+                        <DisplayIcon size={19} strokeWidth={1.8} aria-hidden="true" />
                     </span>
                 </button>
             )}
@@ -52,7 +52,7 @@ export const DashboardActions = memo(({ mode, onModeChange, onOpenGuide, showDis
                     title={t('toolbar.help')}
                     onClick={() => { impact('light'); onOpenGuide(); }}
                 >
-                    <CircleHelp size={20} aria-hidden="true" />
+                    <CircleHelp size={19} strokeWidth={1.8} aria-hidden="true" />
                 </button>
             )}
         </div>
