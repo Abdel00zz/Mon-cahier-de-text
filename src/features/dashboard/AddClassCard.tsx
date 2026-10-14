@@ -23,7 +23,7 @@ export const AddClassCard = memo(({ onCreate, variant = 'card' }: {
             />
             <span className="class-card__sheet" aria-hidden="true" />
             <div className="class-create-card__content" aria-hidden="true">
-                <span className="class-create-card__plus"><Plus size={30} strokeWidth={1.6} aria-hidden="true" /></span>
+                <span className="class-create-card__plus"><Plus size={26} strokeWidth={2.2} aria-hidden="true" /></span>
                 <span className="class-create-card__label" style={classTitleStyle(isRtl)}>{t('dashboard.addClass')}</span>
             </div>
         </article>
