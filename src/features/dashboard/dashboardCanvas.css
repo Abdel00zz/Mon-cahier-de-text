@@ -1,15 +1,35 @@
-/* A neutral canvas makes the course-sheet tint and punched margin readable. */
+/* Canevas éditorial chaleureux, immersif et cohérent : texture carnet/stationery & auras douces */
 [data-dashboard-surface],
 [data-dashboard-root],
+.keep-dashboard-canvas,
 .keep-futuristic-surface {
     position: relative;
     min-height: 100dvh;
     background-color: var(--canvas-base, hsl(var(--background)));
+    background-image:
+        /* Trame pointillée discrète style carnet de notes / papier d'architecte */
+        radial-gradient(circle, hsl(var(--foreground) / 0.045) 1px, transparent 1px),
+        /* Douce aura ambre/champagne au zénith : profondeur noble et chaleureuse */
+        radial-gradient(ellipse 80% 50% at 85% -5%, color-mix(in srgb, hsl(var(--primary)) 8.5%, transparent), transparent 72%),
+        /* Douce lueur minérale en bas à gauche pour équilibrer la composition */
+        radial-gradient(ellipse 65% 45% at 5% 95%, color-mix(in srgb, hsl(var(--accent, 140 30% 50%)) 5%, transparent), transparent 75%),
+        /* Teinte soyeuse légèrement réchauffée */
+        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 98%, hsl(var(--primary) / 0.02)) 0%, hsl(var(--background)) 100%);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0, 0 0;
+    background-attachment: fixed, fixed, fixed, fixed;
 }
 .dark [data-dashboard-surface],
 .dark [data-dashboard-root],
+.dark .keep-dashboard-canvas,
 .dark .keep-futuristic-surface {
     background-color: var(--canvas-base-dark, hsl(var(--background)));
+    background-image:
+        radial-gradient(circle, hsl(var(--foreground) / 0.055) 1px, transparent 1px),
+        radial-gradient(ellipse 80% 50% at 85% -5%, color-mix(in srgb, hsl(var(--primary)) 12%, transparent), transparent 72%),
+        radial-gradient(ellipse 65% 45% at 5% 95%, color-mix(in srgb, hsl(var(--accent, 220 30% 50%)) 6.5%, transparent), transparent 75%),
+        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97%, hsl(var(--primary) / 0.03)) 0%, hsl(var(--background)) 100%);
 }
 [data-dashboard-root] .dashboard-heading__title {
     margin-block-start: .75rem;
