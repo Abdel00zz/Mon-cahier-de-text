@@ -14,22 +14,37 @@ export interface ContentMovePlan {
   selection: Indices[];
 }
 
-/** Déplacement direct entre deux rangées visibles d'une même liste parente.
- * La cible peut être une séance fusionnée : elle reste un bloc indivisible. */
+/** A merged session stays atomic. Exercise-only blocks can also enter any
+ * paragraph/chapter, including an empty container without an items list. */
 export function planContentDrop(
   data: LessonsData,
   groups: ContentEditTargets,
   sourceKey: string,
   targetKey: string,
   side: 'before' | 'after',
-): ContentMovePlan | null {
+): ContentMovePlan | ContentTransferPlan | null {
   const sourceGroup = groups.get(sourceKey);
   const targetGroup = groups.get(targetKey);
   if (!sourceGroup || !targetGroup) return null;
 
   const source = getContiguousSiblingBlock(data, sourceGroup);
   const target = getContiguousSiblingBlock(data, targetGroup);
-  if (!source || !target || source.parent !== target.parent) return null;
+  if (!source || !target) return null;
+  if (source.parent !== target.parent) {
+    if (source.anchor.itemIndex === undefined || !source.parent.slice(source.start, source.start + source.count).every(isExercise)) return null;
+    const intoContainer = target.anchor.itemIndex === undefined;
+    if (intoContainer && (target.count !== 1 || (getIndexField(target.anchor) === 'chapterIndex' && data[target.anchor.chapterIndex]?.type !== 'chapter'))) return null;
+    const container = intoContainer ? target.anchor : withoutDeepestIndex(target.anchor);
+    const holder = resolveContainer(data, container);
+    if (!holder) return null;
+    const index = intoContainer ? 0 : target.start + (side === 'after' ? target.count : 0);
+    if (holder.items === source.parent && index === source.start) return null;
+    return {
+      source: { anchor: source.anchor, parent: source.parent, start: source.start, count: source.count },
+      container, index,
+      selection: Array.from({ length: source.count }, (_, offset) => ({ ...container, itemIndex: index + offset })),
+    };
+  }
   if (source.start < target.start + target.count && target.start < source.start + source.count) return null;
 
   const rawDestination = target.start + (side === 'after' ? target.count : 0);
@@ -45,6 +60,11 @@ export function planContentDrop(
       [field]: destination + offset,
     })),
   };
+}
+
+/** Both kinds of drop use one atomic undoable editor mutation. */
+export function applyContentDrop(draft: Draft<LessonsData>, plan: ContentMovePlan | ContentTransferPlan): boolean {
+  return 'source' in plan ? applyContentTransfer(draft, plan) : applyContentMove(draft, plan);
 }
 
 const getIndexField = (indices: Indices): keyof Indices => {

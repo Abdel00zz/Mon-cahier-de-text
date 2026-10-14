@@ -38,7 +38,7 @@ import { SelectionBar } from '../src/features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../src/domain/classes/classColors';
 import { insertFreeContent } from '../src/domain/notebook/freeContent';
 import { applyRemarkEdit, buildSessionTargets, orderDeletionsDeepestFirst } from '../src/domain/notebook/contentEditing';
-import { applyContentMove, applyContentRelocation, applyContentTransfer, planContentDrop, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
+import { applyContentDrop, applyContentMove, applyContentRelocation, applyContentTransfer, planContentDrop, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
 import { isFreeContent } from '../src/domain/notebook/freeLineType';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
 import { filterLessonsByDates } from '../src/infrastructure/printing/printMeta';
@@ -757,8 +757,66 @@ test('glisser une séance conserve son lot, refuse un dépôt interne et ne fran
   const plan = planContentDrop(data, targets, key(1), key(3), 'after');
   assert.ok(plan);
   assert.deepEqual(plan.selection.map(index => index.itemIndex), [2, 3]);
-  const moved = produce(data, draft => { assert.equal(applyContentMove(draft, plan), true); });
+  const moved = produce(data, draft => { assert.equal(applyContentDrop(draft, plan), true); });
   assert.deepEqual(moved[0].items!.map(item => item.title), ['Avant', 'Après', 'Exercice', 'Activité']);
+});
+
+test('dépôt direct : un exercice traverse chapitres et paragraphes et garde toutes ses données', () => {
+  const exercise = { type: 'exercice' as const, title: 'À déplacer', description: 'Énoncé', date: '2026-09-08', remark: 'À revoir', duration: 20 };
+  const initial: LessonsData = [
+    { type: 'chapter', title: 'A', items: [exercise, { type: 'definition', title: 'Reste en A' }] },
+    { type: 'chapter', title: 'B', sections: [{ name: 'Paragraphe', subsections: [{ name: 'Sous-paragraphe', items: [{ type: 'definition', title: 'Cible' }] }] }] },
+  ];
+  const source = { chapterIndex: 0, itemIndex: 0 };
+  const target = { chapterIndex: 1, sectionIndex: 0, subsectionIndex: 0, itemIndex: 0 };
+  for (const side of ['before', 'after'] as const) {
+    const plan = planContentDrop(initial, buildSessionTargets(buildLessonRows(initial)), indicesKey(source), indicesKey(target), side);
+    assert.ok(plan);
+    const moved = produce(initial, draft => { assert.equal(applyContentDrop(draft, plan), true); });
+    const list = moved[1].sections![0].subsections![0].items!;
+    const index = side === 'before' ? 0 : 1;
+    assert.equal(list[index], exercise, 'le nœud complet garde son identité, son énoncé, sa date et sa remarque');
+    assert.deepEqual(plan.selection, [{ ...target, itemIndex: index }]);
+    assert.equal(moved[0].items!.length, 1);
+    const back = planContentDrop(moved, buildSessionTargets(buildLessonRows(moved)), indicesKey(plan.selection[0]), indicesKey({ chapterIndex: 0, itemIndex: 0 }), 'before');
+    assert.ok(back);
+    const restored = produce(moved, draft => { assert.equal(applyContentDrop(draft, back), true); });
+    assert.deepEqual(restored, initial, 'le trajet inverse restitue les données initiales');
+  }
+});
+
+test('dépôt direct : les titres et conteneurs vides accueillent les exercices sans créer de nœud de structure', () => {
+  const initial: LessonsData = [{ type: 'chapter', title: 'A', items: [{ type: 'exercice', title: 'Exercice' }] },
+    { type: 'chapter', title: 'B', sections: [{ name: 'Vide', subsections: [{ name: 'Profond', subsubsections: [{ name: 'Ultime' }] }] }] }];
+  for (const container of [{ chapterIndex: 1 }, { chapterIndex: 1, sectionIndex: 0 },
+    { chapterIndex: 1, sectionIndex: 0, subsectionIndex: 0, subsubsectionIndex: 0 }]) {
+    const plan = planContentDrop(initial, buildSessionTargets(buildLessonRows(initial)), indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey(container), 'after');
+    assert.ok(plan);
+    assert.deepEqual(plan.selection, [{ ...container, itemIndex: 0 }]);
+    const moved = produce(initial, draft => { assert.equal(applyContentDrop(draft, plan), true); });
+    assert.deepEqual(findItem(moved, plan.selection[0]).item, initial[0].items![0]);
+    assert.equal(moved.length, 2);
+    assert.equal(moved[1].sections!.length, 1);
+  }
+});
+
+test('dépôt direct : lot d’exercices intact, groupes mixtes et plans obsolètes refusés', () => {
+  const initial: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'exercice', title: 'Premier', date: '2026-09-08' },
+    { type: 'exercice', title: 'Second', date: '2026-09-08' },
+  ] }, { type: 'chapter', title: 'B' }];
+  const source = indicesKey({ chapterIndex: 0, itemIndex: 0 });
+  const target = indicesKey({ chapterIndex: 1 });
+  const plan = planContentDrop(initial, buildSessionTargets(buildLessonRows(initial)), source, target, 'after');
+  assert.ok(plan);
+  const moved = produce(initial, draft => { assert.equal(applyContentDrop(draft, plan), true); });
+  assert.deepEqual(moved[1].items, initial[0].items);
+  assert.equal(plan.selection.length, 2);
+  assert.equal(planContentDrop(initial, buildSessionTargets(buildLessonRows(initial)), source, indicesKey({ chapterIndex: 0 }), 'after'), null, 'pas de faux déplacement dans son propre titre');
+  const changed = produce(initial, draft => { draft[0].items!.push({ type: 'definition', title: 'Nouveau' }); });
+  assert.equal(produce(changed, draft => { assert.equal(applyContentDrop(draft, plan), false); }), changed, 'un plan obsolète ne modifie rien');
+  const mixed = produce(initial, draft => { draft[0].items![1].type = 'activite'; });
+  assert.equal(planContentDrop(mixed, buildSessionTargets(buildLessonRows(mixed)), source, target, 'after'), null);
 });
 
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {

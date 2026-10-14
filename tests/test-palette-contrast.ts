@@ -18,11 +18,13 @@ import { KEEP_TONES } from '../src/platform/keepTheme';
 
 const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
 
-/** Les jetons sont définis une fois en clair (`:root`) puis redéclarés en sombre. */
-const darkStart = css.indexOf('\n  .dark {');
-assert.ok(darkStart > 0, 'le bloc sombre doit exister');
-const lightCss = css.slice(0, darkStart);
-const darkCss = css.slice(darkStart);
+/** Read the theme blocks themselves: component-scoped light overrides later
+ * in the stylesheet must never be mistaken for dark theme tokens. */
+const lightBlock = [...css.matchAll(/\n  :root \{([^}]+)\}/g)].find(([, body]) => body.includes('--background:'));
+const darkBlock = [...css.matchAll(/\n  \.dark \{([^}]+)\}/g)].find(([, body]) => body.includes('--background:'));
+assert.ok(lightBlock && darkBlock, 'les blocs de palette doivent exister');
+const lightCss = lightBlock[1];
+const darkCss = darkBlock[1];
 
 type Rgb = { r: number; g: number; b: number };
 
@@ -172,6 +174,9 @@ test('le numéro de groupe porte une encre pleine et reste décoratif', () => {
 test('le numéro sur la fiche conserve un contraste AA sur les huit tons dans les deux thèmes', () => {
   const cardCss = readFileSync(new URL('../src/features/dashboard/classCards.css', import.meta.url), 'utf8');
   const paperWeight = Number(cardCss.match(/--class-paper: color-mix\(in srgb, hsl\(var\(--card\)\) (\d+)%/)![1]) / 100;
+  const lightPaper = cardCss.match(/--class-paper: hsl\(([\d.]+) ([\d.]+)% ([\d.]+)%\)/);
+  assert.ok(lightPaper, 'la fiche claire utilise un papier neutre');
+  const paperRgb = hslToRgb([Number(lightPaper[1]), Number(lightPaper[2]), Number(lightPaper[3])]);
   const hexToRgb = (hex: string): Rgb => ({
     r: parseInt(hex.slice(1, 3), 16),
     g: parseInt(hex.slice(3, 5), 16),
@@ -209,7 +214,7 @@ test('le numéro sur la fiche conserve un contraste AA sur les huit tons dans le
       ['sombre', hexToken(light!.body, 'keep-dark')],
     ] as const;
     for (const [theme, surfaceHex] of cases) {
-      const surface = mix(hexToRgb(surfaceHex), hslToRgb(hslTriplet(theme === 'clair' ? lightCss : darkCss, 'card')), paperWeight);
+      const surface = theme === 'clair' ? paperRgb : mix(hexToRgb(surfaceHex), hslToRgb(hslTriplet(darkCss, 'card')), paperWeight);
       const measured = ratioRgb(inkOf(theme), surface);
       floor = Math.min(floor, measured);
       if (measured < 4.5) failures.push(`${tone} en ${theme} : ${measured.toFixed(2)}:1`);

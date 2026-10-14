@@ -19,7 +19,7 @@ import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIll
 import { motion, useReducedMotion } from 'framer-motion';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { SessionDocuments } from './SessionDocuments';
-import { GripHorizontal } from '@/components/ui/icons';
+import { isExercise } from '@/domain/notebook/contentReorder';
 import { useEditorRowReorder } from './useEditorRowReorder';
 import './editorRowReorder.css';
 
@@ -142,7 +142,7 @@ interface SessionGroupRowProps {
     getDocumentPreview?: (rowKey: string) => NotebookDocumentPreview | undefined;
     getSessionDocuments?: (date: string) => readonly NotebookDocumentPreview[] | undefined;
     onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
-    reorderHandle?: React.ReactNode;
+    sortable?: boolean;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
@@ -166,7 +166,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     getDocumentPreview,
     getSessionDocuments,
     onOpenDocumentPreview,
-    reorderHandle,
+    sortable,
 }) => {
     const { t } = useLocale();
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
@@ -263,7 +263,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 dateMerge={item.dateMerge}
                 lineClassOverride=""
                 layout="content-only"
-                reorderHandle={item === items[0] ? reorderHandle : undefined}
+                sortable={sortable}
                 onToggleSelect={merged ? toggleMerged : onToggleSelect}
                 onDoubleClickEdit={onDoubleClickEdit}
                 onOpenRemark={onOpenRemark}
@@ -405,6 +405,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
         || previous.focusKey !== next.focusKey
         || previous.onDoubleClickEdit !== next.onDoubleClickEdit || previous.onOpenDateModal !== next.onOpenDateModal
         || previous.onOpenRemark !== next.onOpenRemark || previous.showDescriptions !== next.showDescriptions
+        || previous.sortable !== next.sortable
         || previous.descriptionTypes !== next.descriptionTypes || previous.searchQuery !== next.searchQuery
         || previous.getDateWarnings !== next.getDateWarnings || previous.getDateOrder !== next.getDateOrder
         || previous.getContentNumber !== next.getContentNumber || previous.newlyAddedIds !== next.newlyAddedIds
@@ -550,19 +551,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   const sort = useEditorRowReorder(sortRootRef, itemKeys, {
     started: t('editor.reorderStarted'), moved: t('editor.reorderMoved'), cancelled: t('editor.reorderCancelled'),
   }, searchQuery?.trim() ? undefined : onReorder, canReorder);
-  const reorderLabel = t('editor.reorderHandle');
-  const reorderHandle = (key: string) => onReorder && canReorder && !searchQuery?.trim() ? (
-    <button
-      type="button"
-      data-editor-sort-handle="true"
-      className="editor-row-sort-handle"
-      aria-label={reorderLabel}
-      title={reorderLabel}
-      onClick={event => event.stopPropagation()}
-      onPointerDown={event => sort.onPointerDown(event, key)}
-      onKeyDown={event => sort.onKeyDown(event, key)}
-    ><GripHorizontal size={18} aria-hidden="true" /></button>
-  ) : undefined;
+  const sortable = Boolean(onReorder && canReorder && !searchQuery?.trim());
   const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
   const focusIndex = useMemo(() => focusKey ? renderRows.findIndex(row => row.kind !== 'absence' && (
     row.kind === 'single' ? row.item.key === focusKey : row.items.some(item => item.key === focusKey)
@@ -665,7 +654,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       <TableHeader />
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true"><span key={sort.announcement.sequence}>{sort.announcement.text}</span></span>
       <CardContent className="!p-0">
-        <div ref={element => { scrollRef.current = element; sortRootRef.current = element; }} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
+        <div ref={element => { scrollRef.current = element; sortRootRef.current = element; }} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}
+          onPointerDown={sort.onPointerDown} onTouchStart={sort.onTouchStart} onClickCapture={sort.onClickCapture} onDoubleClickCapture={sort.onClickCapture}
+          onContextMenuCapture={sort.onContextMenu} onKeyDown={sort.onKeyDown}>
           {(() => {
               const rows: Array<{ row: RenderRow | AbsenceDisplayRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
                 ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
@@ -697,6 +688,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       return (
                           <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} className={rowFocusKey ? 'action-source-highlight' : undefined}>
                             <div data-editor-sort-row data-editor-sort-key={row.items[0].key} data-editor-sort-id={String(itemKeys[absoluteIndex])}
+                              data-editor-sort-transfer={row.items.every(item => isExercise(item.data)) || undefined}
                               data-editor-sort-label={onReorder ? [...new Set(row.items.map(sortLabel).filter(Boolean))].join(' · ') : undefined}>
                               <SessionGroupRow
                                   items={row.items}
@@ -719,7 +711,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   getDocumentPreview={getDocumentPreview}
                                   getSessionDocuments={getSessionDocuments}
                                   onOpenDocumentPreview={onOpenDocumentPreview}
-                                  reorderHandle={reorderHandle(row.items[0].key)}
+                                  sortable={sortable}
                               />
                             </div>
                           </VirtualListRow>
@@ -735,6 +727,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   return (
                       <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
                         <div data-editor-sort-row data-editor-sort-key={item.key} data-editor-sort-id={String(itemKeys[absoluteIndex])}
+                          data-editor-sort-transfer={isExercise(item.data) || undefined}
+                          data-editor-sort-container={['chapter', 'section', 'subsection', 'subsubsection'].includes(item.elementType) || undefined}
                           data-editor-sort-label={onReorder ? sortLabel(item) : undefined}>
                           <TableRow
                               data={item.data}
@@ -758,7 +752,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               onOpenDocumentPreview={onOpenDocumentPreview}
                               sessionAnnotation={itemDate ? getSessionAnnotation?.(itemDate) : undefined}
                               sessionDocuments={itemDate ? getSessionDocuments?.(itemDate) : undefined}
-                              reorderHandle={reorderHandle(item.key)}
+                              sortable={sortable}
                           />
                         </div>
                       </VirtualListRow>

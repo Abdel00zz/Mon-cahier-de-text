@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useTransition } from 'react';
 import type { Draft } from 'immer';
 import type { Indices, LessonsData } from '@/types';
 import { indicesKey } from '@/domain/notebook/lessonRows';
-import { applyContentMove, planContentDrop } from '@/domain/notebook/contentReorder';
+import { applyContentDrop, planContentDrop } from '@/domain/notebook/contentReorder';
 import type { ContentEditTargets } from '@/domain/notebook/contentEditing';
 
 export interface SelectionState {
@@ -46,7 +46,7 @@ export function useSelectionEngine({
   const handleDropRow = useCallback((sourceKey: string, targetKey: string, side: 'before' | 'after') => {
     const plan = planContentDrop(lessonsData, moveTargets, sourceKey, targetKey, side);
     if (!plan) return false;
-    setState(draft => { applyContentMove(draft, plan); }, 'reorder');
+    setState(draft => { applyContentDrop(draft, plan); }, 'reorder');
     setSelectionState(createSelectionState(plan.selection));
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     return true;

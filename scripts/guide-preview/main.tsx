@@ -38,7 +38,7 @@ import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
 import { buildSessionTargets } from '../../src/domain/notebook/contentEditing';
-import { applyContentMove, planContentDrop } from '../../src/domain/notebook/contentReorder';
+import { applyContentDrop, planContentDrop } from '../../src/domain/notebook/contentReorder';
 import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 import { KEEP_TONES } from '../../src/platform/keepTheme';
@@ -49,10 +49,12 @@ const screen = params.get('screen') ?? 'guide';
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
 const fixtureNames = params.get('fixture') === 'palette' ? KEEP_TONES.map((_, i) => `2BAC PC ${i + 1}`) : params.get('fixture') === 'long-names'
   ? ['2BAC Sciences Mathématiques A 12', 'TC Sciences Option Français 3', 'Classe de consolidation et approfondissement 7']
+  : params.get('fixture') === 'paper-cards' ? ['2BAC SVT 2', '2BAC PC 3', '2BAC PC 4', 'TCL 6']
   : ['1AC 1', '2AC 2', '3AC 1'];
 const classes: ClassInfo[] = fixtureNames.map((name, i) => ({
   id: `guide-demo-${i}`, name, cycle: 'college', teacherName: '', subject: 'Mathématiques',
-  createdAt: '2026-09-01T08:00:00Z', color: params.get('fixture') === 'palette' ? KEEP_TONES[i] : '',
+  createdAt: '2026-09-01T08:00:00Z', color: params.get('fixture') === 'palette' ? KEEP_TONES[i]
+    : params.get('fixture') === 'paper-cards' ? ['mint', 'coral', 'indigo', 'mint'][i] : '',
 }));
 const timetable = [
   { day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id },
@@ -106,6 +108,10 @@ function Preview() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewLessons, setPreviewLessons] = useState<LessonsData>(() => params.get('fixture') === 'long-notebook'
     ? [{ type: 'chapter', title: 'Cahier de vérification', items: Array.from({ length: 240 }, (_, i) => ({ type: 'exercice', title: `Exercice ${i + 1}`, description: 'Un contenu pédagogique à réordonner.' })) }]
+    : params.get('fixture') === 'reorder' ? [
+      { type: 'chapter', title: 'Chapitre A', items: [{ type: 'definition', title: 'Rappel' }, { type: 'exercice', title: 'Exercice à déplacer', description: 'Énoncé à conserver', date: '2026-09-14', remark: 'À revoir' }], sections: [{ name: 'Paragraphe vide' }] },
+      { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', items: [{ type: 'definition', title: 'Repère B' }] }] },
+    ]
     : lessons);
   const previewTargets = buildSessionTargets(buildLessonRows(previewLessons));
   const canPreviewReorder = (source: string, target: string, side: 'before' | 'after') =>
@@ -113,7 +119,8 @@ function Preview() {
   const previewReorder = (source: string, target: string, side: 'before' | 'after') => {
     const plan = planContentDrop(previewLessons, previewTargets, source, target, side);
     if (!plan) return false;
-    setPreviewLessons(current => produce(current, draft => { applyContentMove(draft, plan); }));
+    setPreviewLessons(current => produce(current, draft => { applyContentDrop(draft, plan); }));
+    setSelectedKeys(new Set(plan.selection.map(indicesKey)));
     return true;
   };
   const toggleSelection = (indices: Parameters<typeof indicesKey>[0]) => setSelectedKeys(current => {

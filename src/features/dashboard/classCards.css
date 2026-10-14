@@ -12,8 +12,11 @@
   --class-border: color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border)));
   --class-ink: hsl(var(--foreground));
   --class-muted: hsl(var(--muted-foreground));
-  --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
-  --class-pill-bg: color-mix(in srgb, var(--class-accent) 13%, var(--class-paper));
+  --class-paper: hsl(45 16% 99%);
+  --class-pill-bg: color-mix(in srgb, var(--class-vivid) 13%, var(--class-paper));
+  --class-rule-step: 28px;
+  --class-rule-ink: hsl(var(--foreground) / .025);
+  --class-hole-offset: 12px;
   --spring-out: cubic-bezier(0.22, 1, 0.36, 1);
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -39,8 +42,8 @@
   z-index: 0;
   inset: 0;
   overflow: hidden;
-  border: 1.5px solid color-mix(in srgb, var(--class-accent) 42%, var(--class-paper));
-  border-inline-end: 4.5px solid var(--class-accent);
+  border: 1px solid var(--class-accent);
+  border-inline-end: 5px solid var(--class-accent);
   border-radius: inherit;
   background: var(--class-paper);
   pointer-events: none;
@@ -54,32 +57,29 @@
 @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
   .class-card__sheet {
     -webkit-mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 40%, transparent 0);
-    -webkit-mask-size: 100% 100%, 15px 28px;
-    -webkit-mask-position: 0 0, 12px 8px;
+    -webkit-mask-size: 100% 100%, 15px var(--class-rule-step);
+    -webkit-mask-position: 0 0, var(--class-hole-offset) 8px;
     -webkit-mask-repeat: no-repeat, repeat-y;
     -webkit-mask-composite: xor;
     mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 40%, transparent 0);
-    mask-size: 100% 100%, 15px 28px;
-    mask-position: 0 0, 12px 8px;
+    mask-size: 100% 100%, 15px var(--class-rule-step);
+    mask-position: 0 0, var(--class-hole-offset) 8px;
     mask-repeat: no-repeat, repeat-y;
     mask-composite: exclude;
   }
   .class-card[dir="rtl"] .class-card__sheet {
-    -webkit-mask-position: 0 0, calc(100% - 12px) 8px;
-    mask-position: 0 0, calc(100% - 12px) 8px;
+    -webkit-mask-position: 0 0, calc(100% - var(--class-hole-offset)) 8px;
+    mask-position: 0 0, calc(100% - var(--class-hole-offset)) 8px;
   }
 }
 
-/* Lignes de cahier douces + Halo lumineux subtil au survol */
+/* Quiet notebook ruling: the resting paper stays neutral across class colours. */
 .class-card__sheet::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--class-accent) 10%, transparent) 0%, transparent 60%),
-    repeating-linear-gradient(to bottom, transparent 0 27px, hsl(var(--foreground) / 0.055) 27px 28px);
-  background-position: 0 0, 0 10px;
-  transition: background-position 280ms var(--spring-out), opacity 240ms ease;
+  background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--class-rule-step) - 1px), var(--class-rule-ink) calc(var(--class-rule-step) - 1px) var(--class-rule-step));
+  background-position: 0 10px;
   pointer-events: none;
 }
 
@@ -125,14 +125,14 @@
   min-width: 0;
 }
 
-/* Pilule teintée : un contour fin accompagne la couleur de la classe. */
+/* A soft, frameless badge carries the class colour. */
 .class-card__tier {
   display: inline-block;
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
-  padding: 4px 12px;
-  border: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent);
+  padding: 5px 13px;
+  border: 0;
   border-radius: 999px;
   background: var(--class-pill-bg);
   color: var(--class-accent);
@@ -317,9 +317,6 @@
   .class-card:has(.class-card__open:hover) .class-card__sheet {
     border-inline-end-width: 7px;
   }
-  .class-card:has(.class-card__open:hover) .class-card__sheet::before {
-    background-position: 0 0, 0 7px;
-  }
   .class-card:has(.class-card__open:hover) .class-card__tier {
     transform: translateX(2px) scale(1.03);
     box-shadow: 0 3px 10px color-mix(in srgb, var(--class-accent) 16%, transparent);
@@ -373,6 +370,8 @@
 }
 
 .dark .class-card {
+  --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
+  --class-rule-ink: hsl(var(--foreground) / .055);
   box-shadow: 0 4px 12px hsl(var(--background) / 0.28);
 }
 
@@ -393,11 +392,19 @@
 }
 
 @container (min-width: 420px) {
-  .class-card { min-height: 196px; }
-  .class-card__body { padding-block: 20px 18px; padding-inline: 48px 22px; }
-  .class-card__title { --class-title-max: 22px; }
-  .class-card__tier { font-size: .86em; }
-  .class-card__footer { margin-inline: 48px 22px; min-height: 40px; }
+  .class-card { min-height: 208px; border-radius: 30px; --class-rule-step: 32px; --class-hole-offset: 18px; }
+  .class-card__body { padding-block: 22px 24px; padding-inline: 54px 24px; }
+  .class-card__identity { flex: 1; align-items: center; padding-block-start: 0; }
+  .class-card__title { --class-title-max: 24px; }
+  .class-card__tier { font-size: 14px; padding: 6px 15px; }
+  .class-card__footer { margin-inline: 54px 24px; min-height: 40px; }
+}
+
+@container (min-width: 520px) {
+  .class-card { min-height: 224px; border-radius: 32px; }
+  .class-card__body { padding-inline: 60px 32px; }
+  .class-card__title { --class-title-max: 26px; }
+  .class-card__footer { margin-inline: 60px 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

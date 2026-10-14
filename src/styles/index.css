@@ -670,6 +670,13 @@ html[lang="ar"] .modal-header h2,
     border: 2px solid hsl(var(--border) / 0.95) !important;
   }
 
+  /* A lighter paper surface shared by content, dates and remarks. Keep the
+     surrounding workspace warm and let the dark theme retain its own surfaces. */
+  html:not(.dark) [data-editor-table] {
+    --card: 45 16% 99%;
+    --muted: 45 12% 96%;
+  }
+
 
 
   /* ── Typographie des contenus du cahier ───────────────────────────────
