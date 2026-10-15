@@ -20,6 +20,7 @@ import { createContentDraft, contentDraftChanged, type ContentDraft, type Editab
 import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import type { TimetableEntry, TimetableClockPolicy } from '@/types';
+import './paperFormModal.css';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -93,14 +94,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex min-h-[56px] select-none items-center gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
+      className={`content-category group relative flex min-h-[56px] select-none items-center gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
         disabled
           ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
           : 'bg-background hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
       }`}
       title={disabled ? tooltip : undefined}
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
+      <div className={`content-category__icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
         <Icon className="h-5 w-5 stroke-[2.2]" />
       </div>
       <div className="min-w-0 flex-1">
@@ -289,7 +290,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
         <button
           type="button"
           onClick={() => setStage('select')}
-          className="btn-back flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
+          className="btn-back flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
           aria-label={t('addContent.back')}
         >
           <ArrowLeft className="h-4.5 w-4.5 stroke-[2.2] rtl:rotate-180" />
@@ -310,13 +311,13 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
         ? (edit.affectedCount && edit.affectedCount > 1 ? t('editContent.sharedDescription', { count: edit.affectedCount }) : undefined)
         : t('addContent.subtitle')}
       maxWidth={stage === 'select' ? "3xl" : "2xl"}
-      className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-3xl sm:rounded-2xl"}
+      className={stage === 'select' ? "paper-form-modal sm:max-w-4xl" : "paper-form-modal content-form-modal sm:max-w-xl"}
       headerClassName="border-b border-[#e7e5df] dark:border-stone-800 bg-background/95 px-6 pt-5 pb-4"
       bodyClassName="px-6 py-5 sm:px-7 sm:py-6"
       footerClassName="border-t border-[#e7e5df] dark:border-stone-800 bg-background/95 px-6 py-4"
       footer={
         stage === 'form' ? (
-          <div className="modal-footer flex w-full flex-wrap items-center justify-end gap-3">
+          <div className="content-modal__actions flex w-full flex-wrap items-center justify-end gap-3">
             {edit && (
               <Button
                 type="button"

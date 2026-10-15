@@ -1,7 +1,6 @@
 import { memo, useMemo, type FC } from 'react';
 import { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
-import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
@@ -11,8 +10,6 @@ import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
-import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
-import { ClassCardTitle } from './ClassCardTitle';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 
 interface ClassListItemProps {
@@ -54,46 +51,30 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
             className={cn(
                 // A shared minimum keeps short rows aligned; long bilingual
                 // names and enlarged text can grow without being clipped.
-                "class-list-item group relative flex min-h-[var(--class-list-row-h)] items-center border-b border-border/60 bg-card",
+                "class-list-item group",
                 isActiveSession && "z-10"
             )}
         >
             <button
                 type="button"
                 {...pressHandlers}
-                className="flex min-h-11 min-w-0 flex-1 self-stretch touch-manipulation items-center gap-2.5 sm:gap-3 px-3 py-2 sm:px-4 sm:py-2.5 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
+                className="class-list-item__open"
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
-                <div className="min-w-0 flex-1 py-0.5">
+                {label.tier && <span className="class-list-item__level" aria-hidden="true"><span>{formatWithOrdinals(label.tier)}</span></span>}
+                <div className="class-list-item__copy">
                     {/* Même échelle que la carte en grille, avec un cran de
                         plus pour l'arabe (lecture plus dense en hauteur). */}
                     <h3
                         aria-live="polite"
                         aria-atomic="true"
                         style={classTitleStyle(isRtl, 'list')}
-                        className={cn("keep-class-title min-w-0 text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}
+                        className="class-list-item__title"
                     >
                         <span className="sr-only">{displayName}</span>
-                            <span aria-hidden="true" className="class-list-item__identity flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
-                                {label.tier ? (
-                                    <ClassLevelBadge
-                                        label={label.tier}
-                                        subLevel={formatWithOrdinals(label.title)}
-                                        accessibleSubLevel={label.title}
-                                        tierKey={identity.tierKey}
-                                    />
-                                ) : (
-                                    <span className="min-w-0" title={label.fullName}>
-                                        <ClassCardTitle name={label.title} compact wrap />
-                                    </span>
-                                )}
-                                {label.group && (
-                                     <ClassGroupWatermark
-                                         group={label.group}
-                                         label={formatClassGroupLabel(label.group, locale)}
-                                         tierKey={identity.tierKey}
-                                     />
-                                 )}
+                            <span aria-hidden="true" className="class-list-item__identity">
+                                {formatWithOrdinals(label.title)}
+                                {label.group && <>{'\u00a0'}<bdi className="class-list-item__group" dir="ltr">{label.group}</bdi></>}
                             </span>
                     </h3>
                     {(isActiveSession || (showsSubjectLabels && classInfo.subject)) && (
@@ -116,10 +97,10 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="flex shrink-0 items-center pe-1 opacity-100 transition-opacity duration-200"
+                className="class-list-item__actions"
             >
                 <ClassActionsMenu name={displayName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
-                        triggerClassName="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"/>
+                        triggerClassName="class-list-item__menu"/>
             </div>
         </article>
     );

@@ -12,17 +12,18 @@ export function ContinuousAssessmentStats({ config, classInfo }: {
 }) {
     const { t, locale } = useLocale();
     const today = useMoroccoToday();
-    const { assessments } = useClassAssessments(classInfo, config);
+    const { assessments, calendar, planning } = useClassAssessments(classInfo, config);
     const stats = useMemo(() => summarizeContinuousStudents(config, classInfo.id, assessments, today), [config, classInfo.id, assessments, today]);
     const number = numberFormat(locale, { maximumFractionDigits: 1 });
+    const loading = !calendar || !planning;
     const coverage = stats.total ? stats.observed / stats.total * 100 : 0;
     const observedOutcomes = stats.outcomes.reduce((sum, item) => sum + item.count, 0);
-    return <section className="student-stats" aria-label={t('followUp.continuous')}>
+    return <section className="student-stats" aria-label={t('followUp.continuous')} aria-busy={loading}>
         <header className="student-stats__header">
             <h4>{t('followUp.continuous')}</h4>
-            <span className="student-stats__sessions">{t('followUp.sessions', { count: number.format(stats.sessions) })}</span>
+            <span className="student-stats__sessions">{loading ? t('common.loading') : t('followUp.sessions', { count: number.format(stats.sessions) })}</span>
         </header>
-        {stats.observed === 0 ? <p className="student-stats__empty">{t('followUp.noObservations')}</p> : <>
+        {loading ? <div className="student-stats__skeleton" role="status"><span className="sr-only">{t('common.loading')}</span><i /><i /><i /></div> : stats.observed === 0 ? <p className="student-stats__empty">{t('followUp.noObservations')}</p> : <>
             <div className="student-stats__overview">
                 <div className="student-stats__coverage">
                     <svg viewBox="0 0 64 64" aria-hidden="true"><circle className="student-stats__ring-track" cx="32" cy="32" r="26" /><circle className="student-stats__ring" cx="32" cy="32" r="26" pathLength="100" strokeDasharray={`${coverage} 100`} /></svg>

@@ -103,3 +103,16 @@
   .dynamic-illustration { --figure-ink: CanvasText; --figure-accent: Highlight; --figure-success: Highlight; --figure-paper: Canvas; --figure-neutral: Canvas; --figure-soft: Canvas; --figure-cut: HighlightText; --figure-book-cover: Highlight; --figure-book-spine: CanvasText; --figure-book-pages: Canvas; --figure-book-ribbon: CanvasText; --figure-book-title: HighlightText; --figure-skin-1: Canvas; --figure-skin-2: Canvas; --figure-skin-3: Canvas; --figure-hair-1: CanvasText; --figure-hair-2: CanvasText; --figure-hair-3: CanvasText; --figure-outfit-2: Highlight; --figure-outfit-3: Highlight; --figure-face-ink: CanvasText; --figure-mouth: CanvasText; --figure-teeth: Canvas; --figure-cheek: Canvas; --figure-gold: Highlight; }
   .figure-paper, .figure-neutral, .figure-soft, .figure-skin-1, .figure-skin-2, .figure-skin-3 { stroke: CanvasText; stroke-width: 2; }
 }
+
+/* Small gestures share a long resting phase so the content keeps priority. */
+.figure-wave, .figure-point { transform-box: fill-box; transform-origin: 50% 100%; }
+.figure-wave { animation: figure-wave 5.8s ease-in-out infinite; }
+.figure-point { animation: figure-point 6.2s ease-in-out infinite; }
+.figure-face-dot, .figure-face-eyes { transform-box: fill-box; transform-origin: center; animation: figure-blink 6.8s ease-in-out infinite; }
+.dynamic-illustration[data-motion="off"] * { animation-play-state: paused; }
+@keyframes figure-wave { 8%, 20% { transform: rotate(-7deg); } 14%, 26% { transform: rotate(5deg); } 32%, 100% { transform: rotate(0); } }
+@keyframes figure-point { 12%, 24% { transform: rotate(-4deg); } 36%, 100% { transform: rotate(0); } }
+@keyframes figure-blink { 0%, 44%, 48%, 100% { transform: scaleY(1); } 46% { transform: scaleY(.12); } }
+@media (prefers-reduced-motion: reduce) {
+  .dynamic-illustration * { animation: none; }
+}

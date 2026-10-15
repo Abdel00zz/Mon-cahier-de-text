@@ -9,7 +9,7 @@
    ══════════════════════════════════════════════════════════════ */
 
 .evaluation-reference {
-  --bg-page: #ffffff;
+  --bg-page: hsl(40 30% 97%);
   --text-dark: #1e1e1c;
   --text-secondary: #747470;
   --text-muted: #9c9a94;
@@ -18,8 +18,8 @@
   /* Tons d'accent doux */
   --badge-green-bg: #e2f5ec;
   --badge-green-text: #1d744c;
-  --icon-blue-bg: #e8effe;
-  --icon-blue-fg: #3b66d4;
+  --icon-blue-bg: hsl(30 25% 93%);
+  --icon-blue-fg: var(--control-ink);
   --icon-gray-bg: #f1f0eb;
   --icon-gray-fg: #5b5a55;
   --danger-bg: #fdf2f2;
@@ -38,12 +38,12 @@
   --ev-actions-width: 15.5rem;
 
   /* Jetons d'application */
-  --eval-paper: #ffffff;
+  --eval-paper: var(--bg-page);
   --eval-border: var(--border-card);
   --eval-ink: var(--text-dark);
   --eval-muted: var(--text-secondary);
   --eval-accent: var(--color-terracotta);
-  --eval-card: #ffffff;
+  --eval-card: hsl(42 32% 99%);
   --eval-row-hover: #faf9f6;
 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -59,8 +59,8 @@
 
   --badge-green-bg: hsl(150, 42%, 18%);
   --badge-green-text: #86efac;
-  --icon-blue-bg: hsl(220, 45%, 20%);
-  --icon-blue-fg: #93c5fd;
+  --icon-blue-bg: var(--control-wash);
+  --icon-blue-fg: var(--control-ink);
   --icon-gray-bg: hsl(var(--muted));
   --icon-gray-fg: hsl(var(--foreground) / 0.85);
   --danger-bg: hsl(0, 45%, 18%);

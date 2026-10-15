@@ -1,0 +1,44 @@
+/* Warm, quiet form surfaces inspired by the supplied content/date dialog. */
+.paper-form-modal {
+  --form-paper: hsl(40 30% 97%);
+  --form-surface: hsl(42 32% 99%);
+  --form-well: hsl(38 24% 94%);
+  --form-line: hsl(35 18% 85%);
+  background: var(--form-paper);
+  border-color: var(--form-line);
+  box-shadow: 0 24px 48px -12px hsl(var(--foreground) / .18);
+}
+.dark .paper-form-modal {
+  --form-paper: hsl(var(--background));
+  --form-surface: hsl(var(--card));
+  --form-well: hsl(var(--muted) / .45);
+  --form-line: hsl(var(--border));
+  box-shadow: 0 24px 48px -12px hsl(var(--background) / .6);
+}
+.paper-form-modal .modal-pro-header,
+.paper-form-modal > .modal-footer { background: var(--form-surface); border-color: var(--form-line); backdrop-filter: none; }
+.paper-form-modal .modal-body { background: var(--form-paper); }
+.paper-form-modal :is(.dialog-close, .btn-back, .remark-close-btn) { color: var(--control-ink); }
+.paper-form-modal :is(.dialog-close, .btn-back, .remark-close-btn):hover { background: var(--control-wash); color: var(--control-ink-hover); }
+.paper-form-modal .insertion-point-box { padding: 12px 16px; border-radius: 12px; background: var(--form-well); border-color: var(--form-line); box-shadow: none; }
+.paper-form-modal .icon-pin-wrap { background: var(--form-surface); color: var(--control-ink); box-shadow: none; }
+.paper-form-modal .content-category { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: none; }
+.paper-form-modal .content-category:not(:disabled):hover { border-color: var(--control-ink); background: var(--form-well); }
+.paper-form-modal .content-category__icon { color: var(--control-ink); background: var(--form-well); box-shadow: none; border-radius: 10px; }
+.paper-form-modal .content-category:disabled .content-category__icon { color: hsl(var(--muted-foreground)); }
+.paper-form-modal .content-fields :is(input, [role="combobox"]) { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: 0 1px 2px hsl(var(--foreground) / .025); }
+.paper-form-modal .content-fields :is(input, [role="combobox"]):focus-visible { border-color: hsl(var(--primary)); }
+.paper-form-modal .date-card { padding: 16px; border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: none; }
+.paper-form-modal .date-card-header { padding-bottom: 0; border-bottom: 0; }
+.paper-form-modal .date-header-left svg { color: var(--control-ink); }
+.paper-form-modal .date-card .btn-link-action { min-height: 44px; border-radius: 8px; padding-inline: 6px; font-size: 12px; }
+.paper-form-modal .date-card .btn-link-action:hover { background: var(--form-well); text-decoration: none; }
+.paper-form-modal .content-fields input[type="date"] { padding-inline: 12px; background: var(--form-paper); font-variant-numeric: tabular-nums; }
+.paper-form-modal .btn-cancel { background: var(--form-well); color: hsl(var(--foreground)); }
+.paper-form-modal :is(.btn-cancel, .btn-submit) { border-radius: 10px; box-shadow: none; }
+.paper-form-modal .content-modal__actions { justify-content: flex-end; }
+.paper-form-modal .content-modal__actions > div:last-child { margin-inline-start: auto; }
+@media (min-width: 640px) {
+  .paper-form-modal { border-radius: 18px; }
+  .content-form-modal { max-width: 580px; }
+}

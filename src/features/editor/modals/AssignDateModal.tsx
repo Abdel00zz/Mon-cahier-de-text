@@ -51,6 +51,7 @@ import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionD
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
 import './AssignDateModal.premium.css';
+import './paperFormModal.css';
 
 interface AssignDateModalProps {
   isOpen: boolean;
@@ -587,7 +588,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         </div>
       }
       maxWidth="lg"
-      className="sm:max-w-xl sm:rounded-3xl"
+      className="paper-form-modal sm:max-w-xl"
       headerClassName="py-3 px-5 sm:px-6 min-h-0 border-b border-border/30 bg-background/95 backdrop-blur-md"
       bodyClassName="px-5 py-4 sm:px-6 sm:py-5"
       footerClassName="py-3 px-5 sm:px-6 border-t border-border/30 bg-background/95 backdrop-blur-md"

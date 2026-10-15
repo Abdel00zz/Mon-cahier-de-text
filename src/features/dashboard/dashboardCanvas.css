@@ -61,6 +61,7 @@
 
 [data-dashboard-root] .dashboard-heading__title {
     margin-block-start: 0.25rem;
+    margin-inline-start: -6px;
     font-family: var(--font-samsung-display);
     font-weight: 700;
     letter-spacing: -0.025em;
@@ -95,38 +96,8 @@
 [data-dashboard-root] .dashboard-heading[data-layout='single'] { max-width: 520px; }
 
 .dashboard-class-list {
-    overflow: hidden;
-    border: 1px solid hsl(var(--border) / 0.75);
-    border-radius: 24px;
-    background: color-mix(in srgb, hsl(var(--card)) 94%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 8px 28px -12px hsl(var(--foreground) / 0.06);
-}
-
-.dashboard-class-list > [role="listitem"]:last-child .class-list-item {
-    border-bottom: 0;
-}
-
-.class-list-item .keep-level-badge {
-    flex-shrink: 1;
-    max-width: 100%;
-    font-size: 0.85em;
-    line-height: 1.4;
-    text-align: start;
-}
-
-html[lang="ar"] .class-list-item .keep-level-badge {
-    font-family: var(--font-sans);
-}
-
-.class-list-item .keep-level-badge > span {
-    white-space: normal;
-}
-
-.class-list-item .keep-level-badge > span > [aria-hidden="true"] {
-    flex-wrap: wrap;
-    gap: 2px 6px;
+    display: grid;
+    gap: 12px;
 }
 
 @keyframes dashboard-view-enter {
@@ -180,7 +151,7 @@ html[lang="ar"] .class-list-item .keep-level-badge {
     [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
         background-attachment: scroll;
     }
-    .dashboard-class-list, [data-dashboard-root] .dashboard-empty {
+    [data-dashboard-root] .dashboard-empty {
         background: hsl(var(--card));
         backdrop-filter: none;
         -webkit-backdrop-filter: none;

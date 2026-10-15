@@ -53,7 +53,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   const isRange = Boolean(showRange || value.endDate || value.type === 'evaluation_diagnostic');
   const labelClass = 'mb-2 block text-[14px] font-medium text-foreground/90';
   const fieldClass = 'h-11 rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 text-[14.5px] text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs';
-  return <div className="space-y-4">
+  return <div className="content-fields space-y-4">
     {!titleOnly && !free && <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_.45fr_.45fr]">
         <div className="col-span-2 sm:col-span-1">
@@ -107,7 +107,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
               className="btn-link-action inline-flex items-center gap-1 text-[13.5px] font-medium text-primary hover:text-primary/90 hover:underline cursor-pointer transition-colors"
             >
               <Plus className="h-3.5 w-3.5 stroke-[2.4]" />
-              <span>+ {t('editor.defineRange')}</span>
+              <span>{t('editor.defineRange')}</span>
             </button>
           ) : (
             <button
@@ -141,7 +141,6 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                 onChange={event => onChange({ ...value, date: event.target.value })}
                 className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
               />
-              <CalendarDays className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 stroke-[1.8]" aria-hidden />
             </div>
           </div>
 
@@ -159,7 +158,6 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                   onChange={event => onChange({ ...value, endDate: event.target.value })}
                   className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
                 />
-                <CalendarDays className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 stroke-[1.8]" aria-hidden />
               </div>
             </div>
           )}

@@ -1,0 +1,42 @@
+.deadline-timeline { list-style: none; margin: 0; padding: 0; }
+.deadline-timeline__item { --timeline-ink: var(--control-ink, hsl(var(--primary))); position: relative; padding-block: 0 22px; padding-inline-start: 24px; }
+.deadline-timeline__item::before { content: ''; position: absolute; inset-inline-start: 3px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--timeline-ink); box-shadow: 0 0 0 4px hsl(var(--card)); }
+.deadline-timeline__item::after { content: ''; position: absolute; inset-inline-start: 7px; top: 20px; bottom: 0; width: 1px; background: hsl(var(--border)); }
+.deadline-timeline__item:last-child { padding-bottom: 0; }
+.deadline-timeline__item:last-child::after { display: none; }
+.deadline-timeline__item[data-status="past"], .deadline-timeline__item[data-status="today"] { --timeline-ink: hsl(var(--destructive)); }
+.deadline-timeline__item[data-status="complete"] { --timeline-ink: hsl(var(--success-strong)); }
+.deadline-timeline__when { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding-block: 0 8px; font-size: 12px; line-height: 1.6; }
+.deadline-timeline__when time { font-weight: 650; color: hsl(var(--foreground)); }
+.deadline-timeline__when > span { color: var(--timeline-ink); font-size: 11px; }
+.deadline-timeline__body { min-width: 0; padding: 14px 16px; border: 1px solid hsl(var(--border) / .8); border-radius: 12px; background: hsl(var(--card)); }
+.deadline-timeline__body h3 { margin-top: 4px; font-size: 14px; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
+.deadline-timeline__context { color: hsl(var(--muted-foreground)); font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.deadline-timeline__body button { min-height: 44px; padding: 8px 0; font-size: 12px; font-weight: 600; color: var(--control-ink); cursor: pointer; }
+.deadline-timeline__body button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.deadline-timeline__body button:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 3px; border-radius: 4px; }
+.deadline-timeline .homework-deadlines__item { padding: 0; border: 0; background: transparent; }
+@media (min-width: 768px) {
+  .deadline-timeline__item { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 40px; padding-inline-start: 0; }
+  .deadline-timeline__item::before { inset-inline-start: 146px; }
+  .deadline-timeline__item::after { inset-inline-start: 150px; }
+  .deadline-timeline__when { flex-direction: column; text-align: end; align-items: flex-end; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .deadline-timeline__item[data-entered="true"] .deadline-timeline__body { animation: deadline-enter 220ms cubic-bezier(.2,.8,.2,1) both; }
+  .deadline-timeline__item[data-entered="true"]::before { animation: deadline-dot 220ms ease-out both; }
+}
+@keyframes deadline-enter { from { opacity: .5; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes deadline-dot { from { scale: .65; } to { scale: 1; } }
+
+.deadline-timeline .homework-deadlines__item button { justify-self: start; }
+
+.deadline-filters { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 0 20px; }
+.deadline-filters > div { flex: 1 1 140px; min-width: 0; max-width: 300px; }
+.deadline-filters label { display: block; margin-block-end: 4px; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.deadline-filters select { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--card)); color: hsl(var(--foreground)); font: inherit; font-size: 12px; text-overflow: ellipsis; cursor: pointer; }
+.deadline-filters select:focus-visible, .deadline-filter-empty button:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.deadline-filter-empty { padding: 24px 12px; text-align: center; font-size: 13px; color: hsl(var(--muted-foreground)); }
+.deadline-filter-empty button { min-height: 44px; margin-block-start: 8px; padding-inline: 10px; color: var(--control-ink); font-weight: 600; cursor: pointer; border-radius: 8px; }
+
+@media (max-width: 639px) { .deadline-filters select { font-size: 16px; } }

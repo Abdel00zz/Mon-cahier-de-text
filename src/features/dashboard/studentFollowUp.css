@@ -47,3 +47,10 @@
 .homework-deadlines__item button { grid-column: 1 / -1; justify-self: end; }
 @media (max-width: 380px) { .student-stats__overview { grid-template-columns: 1fr; gap: 12px; } .homework-deadlines__item { grid-template-columns: 1fr; } .homework-deadlines__date { align-items: flex-start; } }
 @media (prefers-reduced-motion: reduce) { .student-stats__ring, .student-stats__bar-track > span, .student-stats__outcome-track > span { transition: none; } }
+
+.student-stats__skeleton { display: grid; align-content: center; gap: 16px; min-height: 180px; }
+.student-stats__skeleton i { display: block; height: 16px; width: 72%; border-radius: 5px; background: hsl(var(--muted)); }
+.student-stats__skeleton i:nth-last-child(2) { width: 92%; height: 48px; }
+.student-stats__skeleton i:last-child { width: 58%; }
+
+.homework-deadlines__item[data-status="complete"] .homework-deadlines__progress > span { background: hsl(var(--success-strong)); }

@@ -76,9 +76,13 @@ if (params.get('fixture') === 'student-followup') {
   initialConfig.manualAssessments = { [classes[0].id]: [
     { id: 'review-previous', type: 'oral', num: 2, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-05' },
     { id: 'review-oral', type: 'oral', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' },
+    { id: 'review-complete', type: 'maison', num: 2, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-08', dueDateISO: '2026-10-10' },
+    { id: 'review-written', type: 'controle', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-20' },
     { id: 'review-homework', type: 'maison', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-07', dueDateISO: '2026-10-14' },
   ] };
+  initialConfig.pedagogicalEvents = { [classes[0].id]: [{ id: 'review-activity', type: 'soutien', title: locale === 'ar' ? 'دعم في الأعداد النسبية' : 'Soutien · nombres rationnels', date: '2026-10-18', status: 'planned', createdAt: '2026-10-14T08:00:00Z' }] };
   initialConfig.assessmentParticipants = { [classes[0].id]: {
+    'review-complete': { names, updatedAt: '2026-10-10T08:00:00Z', homeworkOutcomes: Object.fromEntries(names.map(name => [name, 'given' as const])) },
     'review-previous': { names: names.slice(0, 5), updatedAt: '2026-10-05T10:00:00Z', oralGrades: { 'Amine Alami': '13', 'Salma Fassi': '14', 'Youssef Naji': '7', 'Lina Idrissi': '16', 'Adam Berrada': '10' } },
     'review-oral': { names, updatedAt: '2026-10-12T10:00:00Z', oralOutcomes: { 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }, oralGrades: { 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' } },
     'review-homework': { names, updatedAt: '2026-10-14T08:00:00Z', homeworkOutcomes: { 'Amine Alami': 'given', 'Salma Fassi': 'given', 'Youssef Naji': 'missing' } },

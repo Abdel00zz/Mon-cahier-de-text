@@ -38,7 +38,9 @@ import { consumeNotificationsAxis, type NotificationsAxisId } from '@/infrastruc
 import { NotificationCalendar } from './NotificationCalendar';
 import { ClassPedagogicalSummary } from './ClassPedagogicalSummary';
 import { ContinuousAssessmentStats } from './ContinuousAssessmentStats';
-import { HomeworkDeadlines } from './HomeworkDeadlines';
+import { DeadlineTimeline } from './DeadlineTimeline';
+import { DeadlineFilters } from './DeadlineFilters';
+import { buildFollowUpDeadlines, selectFollowUpDeadlines, type DeadlineScope } from '@/domain/evaluations/followUpDeadlines';
 import { homeworkDeadlines } from '@/domain/evaluations/studentFollowUp';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
@@ -47,7 +49,7 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { CurriculumProgressLabel } from '@/components/curriculum/CurriculumProgressLabel';
 import { dateTimeFormat } from '@/lib/formatters';
-import { SereneStudyIllustration, ClassroomWelcomeIllustration, SchedulePlanningIllustration, ProudTeacherIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { SereneStudyIllustration, ProgressReviewIllustration, DeadlinePreparationIllustration, ProudTeacherIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -127,8 +129,8 @@ const SignalCard: React.FC<{
 
 const EMPTY_ILLUSTRATIONS = {
   complete: SereneStudyIllustration,
-  classes: ClassroomWelcomeIllustration,
-  schedule: SchedulePlanningIllustration,
+  classes: ProgressReviewIllustration,
+  schedule: DeadlinePreparationIllustration,
   activity: ProudTeacherIllustration,
   search: LessonSearchIllustration,
 };
@@ -242,12 +244,6 @@ const timeRangeLabel = (entry: GroupedActivityEntry, locale: AppLocale): string 
 
 const ACTIVITY_FILTERS: ActivityFilter[] = ['all', 'content', 'dates', 'structure'];
 
-const delayLabel = (inDays: number, t: Translate): string => {
-  if (inDays <= 0) return t('notifications.relative.today');
-  if (inDays === 1) return t('notifications.relative.tomorrow');
-  return t('notifications.relative.inDays', { count: inDays });
-};
-
 interface NotificationsPageProps {
   classes: ClassInfo[];
   config: AppConfig;
@@ -271,6 +267,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
+  const [deadlineClass, setDeadlineClass] = useState('');
+  const [deadlineScope, setDeadlineScope] = useState<DeadlineScope>('pending');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isModalOpen, setModalOpen] = useState(true);
@@ -292,7 +290,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   // Les repères réunissent les écarts d'emploi du temps et les informations transversales.
   const corrections = feed.insights;
   const ignoredCorrections = feed.ignoredInsights;
-  const officialEvents = feed.officialEvents;
+  const deadlineItems = useMemo(() => buildFollowUpDeadlines(classes, {
+    homework: homeworkDue, assessments: feed.assessments,
+    activities: feed.pedagogicalEvents, official: feed.officialEvents,
+  }), [classes, homeworkDue, feed.assessments, feed.pedagogicalEvents, feed.officialEvents]);
+  const effectiveDeadlineClass = classes.some(item => item.id === deadlineClass) ? deadlineClass : '';
+  const visibleDeadlines = useMemo(() => selectFollowUpDeadlines(deadlineItems, today, effectiveDeadlineClass, deadlineScope), [deadlineItems, today, effectiveDeadlineClass, deadlineScope]);
   const classById = useMemo(() => new Map(classes.map((classInfo) => [classInfo.id, classInfo])), [classes]);
   const actionLabels: Record<ClassSignal['action'], string> = {
     class: t('notifications.action.openClass'),
@@ -331,7 +334,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const filteredCorrections = corrections;
   const filteredIgnored = ignoredCorrections;
-  const filteredOfficial = officialEvents;
   const filteredOverviews = classOverviews;
   const rankedOverviews = [...filteredOverviews].sort((left, right) =>
     right.completionRate - left.completionRate
@@ -376,7 +378,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       id: 'echeances',
       label: t('notifications.deadlines'),
       icon: CalendarCheck,
-      count: filteredOfficial.length + homeworkDue.length,
+      count: deadlineItems.length,
       group: 'alerts',
     },
     {
@@ -860,45 +862,20 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         </h2>
                       </div>
                       <span className="text-xs font-bold text-muted-foreground bg-muted dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-                        {t('notifications.eventCount', { count: filteredOfficial.length + homeworkDue.length })}
+                        {visibleDeadlines.length === deadlineItems.length ? t('notifications.eventCount', { count: deadlineItems.length }) : t('followUp.filteredDeadlines', { count: visibleDeadlines.length, total: deadlineItems.length })}
                       </span>
                     </div>
 
-                    <HomeworkDeadlines items={homeworkDue} onOpen={classId => {
-                      openClassById(classId);
-                    }} />
-                    {filteredOfficial.length === 0 && homeworkDue.length === 0 ? (
-                      <EmptyState
-                        title={t('notifications.noAssessmentTitle')}
-                        kind="schedule"
-                        description={t('notifications.noAssessmentDescription')}
-                      />
-                    ) : (
-                      <div className="grid gap-3 sm:grid-cols-2 auto-rows-fr">
-                        {filteredOfficial.map(item => (
-                          <div
-                            key={`official-${item.event.id}`}
-                            className="flex h-full min-h-[110px] flex-col justify-between rounded-xl border border-border bg-card p-3.5 text-start shadow-xs transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
-                          >
-                            <div>
-                              <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="rounded-md border border-cyan-200/80 bg-cyan-100/80 px-2 py-0.5 text-[10px] font-extrabold uppercase text-cyan-800 dark:border-cyan-800/70 dark:bg-cyan-950/70 dark:text-cyan-200">
-                                  {t('notifications.officialEvent')}
-                                </span>
-                                <span className="rounded-full bg-blue-100/80 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/70 dark:text-blue-300">
-                                  {delayLabel(item.inDays, t)}
-                                </span>
-                              </div>
-                              <h3 className="text-xs font-bold text-slate-950 dark:text-slate-100">
-                                {item.event.title}
-                              </h3>
-                              <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
-                                {t('notifications.concerns', { classes: item.classNames.slice(0, 3).map(name => formatLocalizedClassDisplayName(name, locale)).join(', ') })}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                    {deadlineItems.length > 0 && <DeadlineFilters classes={classes} classId={effectiveDeadlineClass} scope={deadlineScope} onClassChange={setDeadlineClass} onScopeChange={setDeadlineScope} />}
+                    {deadlineItems.length === 0 ? (
+                      <EmptyState title={t('notifications.noAssessmentTitle')} kind="schedule" description={t('notifications.noAssessmentDescription')} />
+                    ) : visibleDeadlines.length === 0 ? (
+                      <div className="deadline-filter-empty" role="status">
+                        <p>{t('followUp.noFilteredDeadlines')}</p>
+                        <button type="button" onClick={() => { setDeadlineClass(''); setDeadlineScope('all'); }}>{t('followUp.resetFilters')}</button>
                       </div>
+                    ) : (
+                      <DeadlineTimeline items={visibleDeadlines} classes={classes} today={today} onOpen={openClassById} />
                     )}
                   </div>
                 )}

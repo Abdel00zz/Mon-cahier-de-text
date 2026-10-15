@@ -17,6 +17,9 @@
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
 :root {
+  --control-ink: hsl(27 25% 35%);
+  --control-ink-hover: hsl(25 32% 27%);
+  --control-wash: hsl(30 25% 90%);
   --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground)));
   --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 11%, hsl(var(--card)));
   --workspace-focus: color-mix(in srgb, hsl(var(--primary)) 55%, hsl(var(--foreground)));
@@ -26,6 +29,9 @@
   --app-text-density: 1;
 }
 .dark {
+  --control-ink: hsl(30 28% 74%);
+  --control-ink-hover: hsl(30 36% 84%);
+  --control-wash: hsl(25 12% 24%);
   --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--foreground)));
   --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 13%, hsl(var(--card)));
 }

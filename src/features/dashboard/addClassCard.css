@@ -150,6 +150,7 @@
 /* Variante rangée (mode liste ou tableau filtré) */
 .dashboard-class-create-row { margin-block-start: 14px; }
 .class-card--create[data-variant="row"] { min-height: 72px; }
+.class-card--create[data-variant="row"] .class-card__sheet { border-style: dashed; box-shadow: none; }
 .class-card--create[data-variant="row"] .class-create-card__content {
   flex-direction: row;
   justify-content: center;
@@ -157,8 +158,8 @@
   gap: 14px;
 }
 .class-card--create[data-variant="row"] .class-create-card__plus {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
 }
 .class-card--create[data-variant="row"] .class-create-card__plus svg {
