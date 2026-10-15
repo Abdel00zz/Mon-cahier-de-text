@@ -37,7 +37,7 @@ import { collectClassSignals, dateActionId } from '../src/infrastructure/notific
 import { SelectionBar } from '../src/features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../src/domain/classes/classColors';
 import { insertFreeContent } from '../src/domain/notebook/freeContent';
-import { applyRemarkEdit, buildSessionTargets, orderDeletionsDeepestFirst } from '../src/domain/notebook/contentEditing';
+import { applyRemarkEdit, buildContentMoveTargets, buildSessionTargets, orderDeletionsDeepestFirst } from '../src/domain/notebook/contentEditing';
 import { applyContentDrop, applyContentMove, applyContentRelocation, applyContentTransfer, planContentDrop, planContentMove, planContentRelocation, planContentTransfer } from '../src/domain/notebook/contentReorder';
 import { isFreeContent } from '../src/domain/notebook/freeLineType';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
@@ -817,6 +817,44 @@ test('dépôt direct : lot d’exercices intact, groupes mixtes et plans obsolè
   assert.equal(produce(changed, draft => { assert.equal(applyContentDrop(draft, plan), false); }), changed, 'un plan obsolète ne modifie rien');
   const mixed = produce(initial, draft => { draft[0].items![1].type = 'activite'; });
   assert.equal(planContentDrop(mixed, buildSessionTargets(buildLessonRows(mixed)), source, target, 'after'), null);
+});
+
+test('déplacement individuel : une date partagée ne retient plus un exercice dans une séance mixte', () => {
+  const exercise = { type: 'exercice', title: 'Exercice', description: 'Énoncé', date: '2026-09-08', remark: 'À revoir' };
+  const data: LessonsData = [
+    { type: 'chapter', title: 'A', items: [{ type: 'definition', title: 'Rappel', date: exercise.date }, exercise] },
+    { type: 'chapter', title: 'B', sections: [{ name: 'Paragraphe', subsections: [{ name: 'Sous-partie', subsubsections: [{ name: 'Ultime' }] }] }] },
+  ];
+  const source = indicesKey({ chapterIndex: 0, itemIndex: 1 });
+  const destination = { chapterIndex: 1, sectionIndex: 0, subsectionIndex: 0, subsubsectionIndex: 0 };
+  const targets = buildContentMoveTargets(buildLessonRows(data));
+  const plan = planContentDrop(data, targets, source, indicesKey(destination), 'after');
+  assert.ok(plan);
+  const moved = produce(data, draft => { assert.equal(applyContentDrop(draft, plan), true); });
+  assert.deepEqual(moved[0].items, [data[0].items![0]], 'la définition voisine reste dans sa séance');
+  assert.equal(findItem(moved, plan.selection[0]).item, exercise, 'toutes les données et l’identité de l’exercice restent intactes');
+  assert.equal(plan.selection.length, 1);
+});
+
+test('déplacement individuel : chaque contenu de la même date peut sortir et revenir sans déplacer ses voisins', () => {
+  const data: LessonsData = [
+    { type: 'chapter', title: 'A', items: [
+      { type: 'exercice', title: 'Premier contenu', description: 'Premier énoncé', date: '2026-09-08', remark: 'Première' },
+      { type: 'exercice', title: 'Deuxième contenu', description: 'Deuxième énoncé', date: '2026-09-08', remark: 'Deuxième' },
+      { type: 'exercice', title: 'Troisième contenu', description: 'Troisième énoncé', date: '2026-09-08', remark: 'Troisième' },
+    ] }, { type: 'chapter', title: 'B', items: [] },
+  ];
+  for (let index = 0; index < 3; index++) {
+    const plan = planContentDrop(data, buildContentMoveTargets(buildLessonRows(data)), indicesKey({ chapterIndex: 0, itemIndex: index }), indicesKey({ chapterIndex: 1 }), 'after');
+    assert.ok(plan);
+    const moved = produce(data, draft => { assert.equal(applyContentDrop(draft, plan), true); });
+    assert.deepEqual(moved[0].items, data[0].items!.filter((_, i) => i !== index));
+    assert.deepEqual(moved[1].items, [data[0].items![index]]);
+    const neighbour = { chapterIndex: 0, itemIndex: Math.min(index, 1) };
+    const back = planContentDrop(moved, buildContentMoveTargets(buildLessonRows(moved)), indicesKey(plan.selection[0]), indicesKey(neighbour), index === 2 ? 'after' : 'before');
+    assert.ok(back);
+    assert.deepEqual(produce(moved, draft => { applyContentDrop(draft, back); }), data);
+  }
 });
 
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {

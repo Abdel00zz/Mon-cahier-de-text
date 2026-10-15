@@ -10,6 +10,12 @@ import { resolveClassSessionDatesInRange } from './classSessionDates';
 
 export type ContentEditTargets = ReadonlyMap<string, readonly Indices[]>;
 
+/** A shared date does not join distinct content. Exact repeated content keeps
+ * the same atomic target as editing; only the presentation date is shared. */
+export function buildContentMoveTargets(rows: readonly LessonRow[]): ContentEditTargets {
+  return buildContentEditTargetsGrouped(groupLessonRows([...rows]).renderRows);
+}
+
 /** Même moteur que le tableau. Une cellule de contenu fusionnée constitue
  * une seule cible d'édition ; une date partagée ne fusionne pas les contenus. */
 

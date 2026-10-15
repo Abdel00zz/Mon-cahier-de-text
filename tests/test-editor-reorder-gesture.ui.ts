@@ -25,6 +25,7 @@ function sensor(context: TestContext) {
     style: {} as Record<string, string>, attrs: new Map<string, string>(), offsetWidth: 120, offsetHeight: 40,
     setAttribute(name: string, value: string) { this.attrs.set(name, value); },
     removeAttribute(name: string) { this.attrs.delete(name); },
+    append: (..._children: unknown[]) => {},
     getBoundingClientRect: () => ({ left: 0, right: 375, top, bottom: top + 60, width: 375, height: 60 }),
     closest(selector: string): unknown { return selector === '[data-editor-sort-row]' ? this : null; },
   });
@@ -115,6 +116,37 @@ test('contenu tactile : un deuxième doigt annule sans mutation ni aperçu rési
   s.win.emit('touchstart', { touches: [s.point(), { ...s.point(), identifier: 2 }] });
   assert.equal(s.ghosts.length, 0); assert.equal(s.frames.size, 0);
   assert.equal(s.moves.length, 0); assert.equal(s.win.count(), 0);
+});
+
+test('contenu tactile : maintenir puis relâcher permet de déposer avec un seul tap', context => {
+  const s = sensor(context);
+  s.start(); context.mock.timers.tick(260); s.end();
+  assert.equal(s.ghosts.length, 1, 'le contenu reste pris après le maintien');
+  assert.equal(s.moves.length, 0, 'relâcher sur la source ne modifie pas les données');
+  // A fresh touch starts a new click, distinct from the release's synthetic click.
+  s.actions.onPointerDown({ target: s.surface, pointerType: 'touch' } as unknown as React.PointerEvent<HTMLElement>);
+  s.actions.onClickCapture({ target: s.surface, clientX: 150, clientY: 230,
+    preventDefault: () => {}, stopPropagation: () => {} } as unknown as React.MouseEvent<HTMLElement>);
+  assert.deepEqual(s.moves, [['source', 'target', 'after']]);
+  assert.equal(s.ghosts.length, 0); assert.equal(s.win.count(), 0);
+});
+
+test('un contenu combiné reçoit un dépôt après sa dernière occurrence, pas après la première', context => {
+  const s = sensor(context);
+  s.target.dataset.editorSortContainer = '';
+  s.target.dataset.editorSortLastKey = 'last-occurrence';
+  s.start(); context.mock.timers.tick(260);
+  s.end(270);
+  assert.deepEqual(s.moves, [['source', 'last-occurrence', 'after']]);
+});
+
+test('un maintien annulé avec Échap ne laisse ni cible ni écouteurs tactiles', context => {
+  const s = sensor(context);
+  s.start(); context.mock.timers.tick(260); s.end();
+  s.win.emit('keydown', { key: 'Escape', preventDefault: () => {}, stopPropagation: () => {} });
+  assert.equal(s.ghosts.length, 0); assert.equal(s.moves.length, 0); assert.equal(s.win.count(), 0);
+  assert.equal(s.source.attrs.has('data-editor-pressing'), false);
+  assert.equal(s.source.attrs.has('data-editor-dragging'), false);
 });
 
 test('contenu souris : perte de capture annule et Entrée reste une sélection accessible', context => {

@@ -387,8 +387,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // de séance en dérivent, au lieu de refaire le parcours de fusion deux fois.
   const groupedRows = useMemo(() => groupRowsWithAbsences(allRows, absenceSessions).renderRows, [allRows, absenceSessions]);
   const contentEditTargets = useMemo(() => buildContentEditTargetsGrouped(groupedRows), [groupedRows]);
-  /** Même moteur de fusion, autre intention : une séance fusionnée est UNE
-   *  ligne pour la remarque et pour le déplacement. */
+  /** Shared session remarks stay grouped; dragging addresses each entry. */
   const sessionTargets = useMemo(() => buildSessionTargetsGrouped(groupedRows), [groupedRows]);
   const {
     selectionState,
@@ -403,7 +402,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setSelectionState
   } = useSelectionEngine({
     lessonsData,
-    moveTargets: sessionTargets,
+    moveTargets: contentEditTargets,
     setState,
     setEditorState
   });
@@ -1178,9 +1177,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
 
   const handleOpenDateModal = useCallback((indices: Indices) => {
-    const targets = sessionTargets.get(indicesKey(indices)) ?? [indices];
+    const targets = contentEditTargets.get(indicesKey(indices)) ?? [indices];
     openSession(targets);
-  }, [sessionTargets, openSession]);
+  }, [contentEditTargets, openSession]);
 
 
 

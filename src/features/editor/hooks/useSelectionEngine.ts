@@ -32,7 +32,7 @@ export function useSelectionEngine({
   setEditorState,
 }: {
   lessonsData: LessonsData;
-  /** cibles du déplacement : la séance fusionnée bouge d'un seul lot */
+  /** Movement targets refer to individual entries, including shared sessions. */
   moveTargets: ContentEditTargets;
   setState: (recipe: (draft: Draft<LessonsData>) => void, action: string) => void;
   setEditorState: (recipe: (draft: SelectionEditorState) => void) => void;

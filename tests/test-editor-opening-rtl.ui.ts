@@ -14,6 +14,18 @@ const noop = () => {};
 const render = (child: React.ReactElement, locale: 'ar' | 'fr' = 'ar') => renderToStaticMarkup(
   React.createElement(LocaleProvider, { locale, manageDocument: false, children: child }));
 
+test('each content of a shared session has its own drag target', () => {
+  const lessons: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'definition', title: 'Rappel', date: '2026-09-01' },
+    { type: 'exercice', title: 'Exercice', date: '2026-09-01' },
+  ] }];
+  const html = render(React.createElement(MainTable, { lessonsData: lessons, visibleRows: buildLessonRows(lessons),
+    contentDirection: 'ltr', onClearSearch: noop, onOpenAddContentModal: noop, selectedKeys: new Set<string>(),
+    onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [], onReorder: () => true, canReorder: () => true }), 'fr');
+  assert.match(html, /data-session-cell="content"[^>]*data-editor-sort-key="0\|\|\|\|0"/);
+  assert.match(html, /data-session-cell="content"[^>]*data-editor-sort-key="0\|\|\|\|1"[^>]*data-editor-sort-transfer="true"/);
+});
+
 test('the last row of a merged session owns the scroll anchor, not its entire group', () => {
   const lessons: LessonsData = [{ type: 'chapter', title: 'درس', items: [
     { type: 'cours', title: 'أول سطر', date: '2026-09-01' },

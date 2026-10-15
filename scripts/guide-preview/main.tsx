@@ -37,7 +37,7 @@ import { AuthProvider } from '../../src/contexts/AuthContext';
 import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
-import { buildSessionTargets } from '../../src/domain/notebook/contentEditing';
+import { buildContentMoveTargets } from '../../src/domain/notebook/contentEditing';
 import { applyContentDrop, planContentDrop } from '../../src/domain/notebook/contentReorder';
 import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
@@ -108,12 +108,19 @@ function Preview() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewLessons, setPreviewLessons] = useState<LessonsData>(() => params.get('fixture') === 'long-notebook'
     ? [{ type: 'chapter', title: 'Cahier de vérification', items: Array.from({ length: 240 }, (_, i) => ({ type: 'exercice', title: `Exercice ${i + 1}`, description: 'Un contenu pédagogique à réordonner.' })) }]
-    : params.get('fixture') === 'reorder' ? [
-      { type: 'chapter', title: 'Chapitre A', items: [{ type: 'definition', title: 'Rappel' }, { type: 'exercice', title: 'Exercice à déplacer', description: 'Énoncé à conserver', date: '2026-09-14', remark: 'À revoir' }], sections: [{ name: 'Paragraphe vide' }] },
+    : params.get('fixture') === 'reorder-combined' ? [
+      { type: 'chapter', title: 'Chapitre A', items: [
+        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-14' },
+        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-15' },
+        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-16' },
+      ] },
+      { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', subsections: [{ name: 'Sous-paragraphe', subsubsections: [{ name: 'Ultime' }] }] }] },
+    ] : params.get('fixture') === 'reorder' ? [
+      { type: 'chapter', title: 'Chapitre A', items: [{ type: 'definition', title: 'Rappel', date: '2026-09-14' }, { type: 'exercice', title: 'Exercice à déplacer', description: 'Énoncé à conserver', date: '2026-09-14', remark: 'À revoir' }], sections: [{ name: 'Paragraphe vide' }] },
       { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', items: [{ type: 'definition', title: 'Repère B' }] }] },
     ]
     : lessons);
-  const previewTargets = buildSessionTargets(buildLessonRows(previewLessons));
+  const previewTargets = buildContentMoveTargets(buildLessonRows(previewLessons));
   const canPreviewReorder = (source: string, target: string, side: 'before' | 'after') =>
     planContentDrop(previewLessons, previewTargets, source, target, side) !== null;
   const previewReorder = (source: string, target: string, side: 'before' | 'after') => {
