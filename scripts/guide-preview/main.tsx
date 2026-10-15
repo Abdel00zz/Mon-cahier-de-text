@@ -39,6 +39,8 @@ import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
 import { buildContentMoveTargets } from '../../src/domain/notebook/contentEditing';
 import { applyContentDrop, planContentDrop } from '../../src/domain/notebook/contentReorder';
+import { applySessionEdit, readSessionSelection } from '../../src/domain/notebook/sessionEditing';
+import type { SessionEditorState } from '../../src/features/editor/hooks/useSessionAssignment';
 import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 import { KEEP_TONES } from '../../src/platform/keepTheme';
@@ -121,6 +123,12 @@ function Preview() {
     ]
     : lessons);
   const previewTargets = buildContentMoveTargets(buildLessonRows(previewLessons));
+  const [previewDate, setPreviewDate] = useState<SessionEditorState | null>(null);
+  const openPreviewDate = (indices: Parameters<typeof indicesKey>[0]) => {
+    const targets = previewTargets.get(indicesKey(indices)) ?? [indices];
+    const selection = readSessionSelection(previewLessons, targets);
+    if (selection) setPreviewDate({ source: previewLessons, selection, intent: 'date' });
+  };
   const canPreviewReorder = (source: string, target: string, side: 'before' | 'after') =>
     planContentDrop(previewLessons, previewTargets, source, target, side) !== null;
   const previewReorder = (source: string, target: string, side: 'before' | 'after') => {
@@ -199,12 +207,18 @@ function Preview() {
           <MainTable lessonsData={previewLessons} visibleRows={filterLessonRows(buildLessonRows(previewLessons), searchQuery)} contentDirection="ltr"
             onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
             showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]}
+            onOpenDateModal={openPreviewDate}
             onReorder={previewReorder} canReorder={canPreviewReorder} />
         </div>
         {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit
           onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />}
         <ContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
           selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />
+        {previewDate && <AssignDateModal isOpen onClose={() => setPreviewDate(null)} session={previewDate}
+          onApply={patch => {
+            setPreviewLessons(current => produce(current, draft => { applySessionEdit(draft, previewDate.selection.targets, patch); }));
+            setPreviewDate(null);
+          }} />}
       </>}
     </main>}
   </>;

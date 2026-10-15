@@ -202,18 +202,19 @@
 
 .class-card__title {
   --class-title-max: 19px;
-  --class-title-min: 13px;
   flex: 1;
   min-width: 0;
   margin: 0;
   font-family: var(--font-samsung-display, inherit);
-  font-size: var(--class-title-fit, var(--class-title-max));
+  font-size: var(--class-title-max);
   font-weight: 700;
   line-height: 1.38;
   letter-spacing: -0.015em;
   text-align: start;
   color: var(--class-ink);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  white-space: normal;
+  word-break: normal;
   text-wrap: pretty;
   font-synthesis: weight;
   transition: transform 260ms var(--spring-out);

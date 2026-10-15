@@ -114,8 +114,8 @@ export function applyContentEdit(
  * Cible « UNE SEULE LIGNE » du tableau : toutes les lignes d'une séance
  * fusionnée — même date, ou même contenu répété — forment un seul bloc.
  *
- * C'est la cible de la REMARQUE et du DÉPLACEMENT : tant qu'elles sont
- * combinées, elles s'annotent et bougent ensemble. L'édition de contenu garde
+ * C'est la cible de la REMARQUE : tant qu'elles sont
+ * combinées, elles s'annotent ensemble. L'édition et le déplacement de contenu gardent
  * sa propre cible (`buildContentEditTargets`) : une date partagée ne doit
  * jamais écraser des contenus distincts.
  */

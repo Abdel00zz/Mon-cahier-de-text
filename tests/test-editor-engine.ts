@@ -857,6 +857,38 @@ test('déplacement individuel : chaque contenu de la même date peut sortir et r
   }
 });
 
+test('date individuelle : changer la date d’un contenu dissocie puis recompose automatiquement la séance', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'definition', title: 'Rappel', date: '2026-09-14' },
+    { type: 'exercice', title: 'Exercice', description: 'Énoncé', date: '2026-09-14', remark: 'À revoir' },
+    { type: 'activite', title: 'Application', date: '2026-09-14' },
+  ] }];
+  const key = indicesKey({ chapterIndex: 0, itemIndex: 1 });
+  const targets = buildContentMoveTargets(buildLessonRows(data)).get(key)!;
+  assert.equal(targets.length, 1, 'les autres contenus de la même date ne sont pas sélectionnés');
+  const changed = produce(data, draft => { applySessionEdit(draft, targets, { date: '2026-09-15' }); });
+  assert.deepEqual(changed[0].items!.map(item => item.date), ['2026-09-14', '2026-09-15', '2026-09-14']);
+  assert.equal(changed[0].items![1].remark, 'À revoir');
+  assert.equal(groupLessonRows(buildLessonRows(changed)).renderRows.filter(row => row.kind === 'session').length, 0);
+  const restored = produce(changed, draft => { applySessionEdit(draft, targets, { date: '2026-09-14' }); });
+  assert.deepEqual(restored, data);
+  assert.equal(groupLessonRows(buildLessonRows(restored)).renderRows.filter(row => row.kind === 'session').length, 1);
+});
+
+test('le ciblage conserve la fusion du contenu strictement identique', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'A', items: [
+    { type: 'exercice', title: 'Même contenu', date: '2026-09-14' },
+    { type: 'exercice', title: 'Même contenu', date: '2026-09-15' },
+  ] }, { type: 'chapter', title: 'B' }];
+  const key = indicesKey({ chapterIndex: 0, itemIndex: 0 });
+  const targets = buildContentMoveTargets(buildLessonRows(data));
+  assert.equal(targets.get(key)!.length, 2);
+  const plan = planContentDrop(data, targets, key, indicesKey({ chapterIndex: 1 }), 'after');
+  assert.ok(plan);
+  const moved = produce(data, draft => { applyContentDrop(draft, plan); });
+  assert.deepEqual(moved[1].items, data[0].items);
+});
+
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {
   const classes: ClassInfo[] = [{ id: 'schedule-test', name: 'Classe test', subject: 'Test', cycle: 'lycee', teacherName: 'Test', createdAt: '2026-09-01', color: 'blue' }];
   const capture = (config: AppConfig) => {

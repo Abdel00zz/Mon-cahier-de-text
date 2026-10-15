@@ -15,9 +15,6 @@ html[data-app-visible="false"] *::after {
 
 /* Rendu typographique net et sans bavure sur écrans AMOLED/OLED Android (Samsung / Pixel) */
 html[data-platform="android"] {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
   font-synthesis: none;
 }
 

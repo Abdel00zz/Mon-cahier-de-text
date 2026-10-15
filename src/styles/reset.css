@@ -1,0 +1,47 @@
+/* Tailwind Preflight owns the structural reset: box sizing, zero margins,
+ * borders, headings, lists, media, tables and native controls. These app-level
+ * additions stay in base so component styles and accessibility overrides win. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+  }
+
+  body {
+    min-inline-size: 0;
+    min-block-size: 100vh;
+    min-block-size: 100svh;
+  }
+
+  /* Native field metrics follow the surrounding bilingual typography. */
+  :where(button, input, optgroup, select, textarea), ::file-selector-button {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  :where(fieldset, input, select, textarea) { min-inline-size: 0; }
+  :where(fieldset, legend) { max-inline-size: 100%; }
+  :where(textarea) { resize: vertical; }
+  :where(button:enabled, summary, [role="button"]:not([aria-disabled="true"])) { cursor: pointer; }
+  :where(button:disabled, input:disabled, select:disabled, textarea:disabled) { cursor: default; }
+
+  /* Keep content and formulas accessible; no global overflow, outline,
+   * selection, appearance or animation reset. Native focus/zoom remain usable. */
+  :where(img, video) { max-inline-size: 100%; block-size: auto; }
+  :where(iframe, embed, object) { max-inline-size: 100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html:focus-within { scroll-behavior: auto; }
+  }
+
+  @media (forced-colors: active) {
+    :focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  }
+}

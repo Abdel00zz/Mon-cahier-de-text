@@ -342,10 +342,10 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             {mergeContent ? (
                 <div
                     data-session-cell="content"
-                    data-session-content-key={items[0].key}
                     {...(sortable ? sortAttributes(items[0], `combined-${getSortId(items[0].data)}`) : {})}
                     data-editor-sort-last-key={items[items.length - 1].key}
                     data-focus-key={items.some(item => item.key === focusKey) ? focusKey : undefined}
+                    data-session-content-key={items[0].key}
                     className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full`}
                     style={{ gridColumn: 2, gridRow: `1 / span ${visualRowCount}` }}
                 >
@@ -355,9 +355,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 <div
                     key={`content-${item.key}`}
                     data-session-cell="content"
-                    data-session-content-key={item.key}
                     {...(sortable ? sortAttributes(item, getSortId(item.data)) : {})}
                     data-focus-key={item.key === focusKey ? focusKey : undefined}
+                    data-session-content-key={item.key}
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
                     className={`min-w-0 self-stretch ${dividerClass} ${index < items.length - 1 ? innerLineClass : ''}`}
                     style={{ gridColumn: 2, gridRow: index + 1 }}

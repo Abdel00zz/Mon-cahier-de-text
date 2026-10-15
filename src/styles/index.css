@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./reset.css";
 @import "./fonts.css";
 @import "katex/dist/katex.min.css";
 @import "../components/ui/modal-motion.css";
@@ -449,11 +450,6 @@ html[lang="ar"] .keep-class-title {
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);

@@ -7,7 +7,6 @@ import { ClassActionsMenu } from './ClassActionsMenu';
 import { classColorAttributes } from '@/domain/classes/classColors';
 import { classCardLabelFor, classIdentityFor } from '@/domain/classes/classIdentity';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
-import { useFittedClassTitle } from './hooks/useFittedClassTitle';
 import { useCardSurface } from './hooks/useCardSurface';
 import { cn } from '@/lib/utils';
 import { classTitleStyle } from '@/constants/classTitleTypography';
@@ -32,7 +31,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { locale, t, isRtl } = useLocale();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
-    const titleRef = useFittedClassTitle(label.fullName);
     const { surfaceRef, rippleRef, surfaceHandlers } = useCardSurface();
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const color = classColorAttributes(classInfo);
@@ -79,7 +77,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         triggerClassName="class-card__menu"/>
                 </div>
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
-                    <h3 ref={titleRef} style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
+                    <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true" className="class-card__name">
                             <span className="class-card__stream">

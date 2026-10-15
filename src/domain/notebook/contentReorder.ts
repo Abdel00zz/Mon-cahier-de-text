@@ -14,7 +14,7 @@ export interface ContentMovePlan {
   selection: Indices[];
 }
 
-/** A merged session stays atomic. Exercise-only blocks can also enter any
+/** The supplied content target stays atomic. Exercise-only blocks can enter any
  * paragraph/chapter, including an empty container without an items list. */
 export function planContentDrop(
   data: LessonsData,
