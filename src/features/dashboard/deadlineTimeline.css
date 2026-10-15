@@ -55,7 +55,7 @@
 .deadline-filter-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 13px;
   font-weight: 650;
   color: hsl(var(--foreground) / 0.88);
@@ -65,34 +65,18 @@
   cursor: pointer;
 }
 
-.deadline-filter-label-icon {
-  width: 15px;
-  height: 15px;
-  color: hsl(var(--muted-foreground));
-  flex-shrink: 0;
-  opacity: 0.85;
-}
-
 .deadline-filter-colon {
   opacity: 0.6;
   margin-inline-start: -2px;
 }
 
-.deadline-filter-control {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
+.deadline-filter-select {
+  flex: 1 1 auto;
   min-width: 130px;
   max-width: 260px;
-  flex: 1 1 auto;
-}
-
-.deadline-filter-select {
-  width: 100%;
   min-height: 40px;
   height: 40px;
-  padding-inline-start: 12px;
-  padding-inline-end: 32px;
+  padding-inline: 12px;
   padding-block: 0;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent);
@@ -103,9 +87,6 @@
   font-weight: 500;
   text-overflow: ellipsis;
   cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
@@ -118,21 +99,6 @@
   outline: none;
   border-color: hsl(var(--primary));
   box-shadow: 0 0 0 3px color-mix(in srgb, hsl(var(--primary)) 22%, transparent);
-}
-
-.deadline-filter-chevron {
-  position: absolute;
-  inset-inline-end: 10px;
-  width: 15px;
-  height: 15px;
-  color: hsl(var(--muted-foreground));
-  pointer-events: none;
-  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms ease;
-}
-
-.deadline-filter-control:focus-within .deadline-filter-chevron {
-  color: hsl(var(--primary));
-  transform: rotate(180deg);
 }
 
 .deadline-filter-empty { padding: 24px 12px; text-align: center; font-size: 13px; color: hsl(var(--muted-foreground)); }
@@ -148,12 +114,10 @@
     width: 100%;
     justify-content: space-between;
   }
-  .deadline-filter-control {
+  .deadline-filter-select {
     flex: 0 1 66%;
     max-width: 66%;
     min-width: 0;
-  }
-  .deadline-filter-select {
     font-size: 13px;
   }
 }
