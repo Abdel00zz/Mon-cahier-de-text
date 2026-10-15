@@ -43,6 +43,7 @@ import { produce, type Draft } from 'immer';
 import { applySessionEdit } from '@/domain/notebook/sessionEditing';
 import { evaluationSlots, newEvaluationWarnings } from '@/domain/evaluations/evaluationConflicts';
 import { syncNotebookToEvaluations, formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
+import { materializeContentAssessments } from '@/domain/evaluations/homeworkCorrectionContent';
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import { useNotebookDocumentPreviews } from './hooks/useNotebookDocumentPreviews';
@@ -524,7 +525,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const detectedDirection = detectContentDirection(lessons, fallback).direction;
       const nextDirection = storedDirection ?? detectedDirection;
       // Un cahier vierge reste vierge : le choix de démarrage appartient au professeur.
-      const normalizedLessons = migratedLessons;
+      const normalizedLessons = materializeContentAssessments(migratedLessons, evaluationContext.current.config, classInfo.id, locale);
       resetState(normalizedLessons, 'initial-load');
       evaluationsBaseline.current = normalizedLessons;
       setEditorState(draft => { draft.contentDirection = nextDirection; });

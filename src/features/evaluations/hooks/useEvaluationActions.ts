@@ -84,8 +84,7 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             });
         },
         /**
-         * Corbeille de « Correction du devoir maison » : la date de correction, le corrigé et la liste des
-         * élèves qui n'ont pas rendu s'effacent. Le devoir lui-même (donné, sujet, date limite) reste.
+         * Retire la date et le corrigé. Le suivi des remises appartient au devoir et reste conservé.
          */
         clearHomeworkCorrection(id: string, legacyId?: string) {
             const current = config.manualAssessments?.[classId] ?? [];
@@ -95,15 +94,12 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                 return rest;
             });
             const documents = { ...config.assessmentDocuments?.[classId] };
-            const participants = { ...config.assessmentParticipants?.[classId] };
             for (const key of [id, legacyId].filter((value): value is string => !!value)) {
                 delete documents[homeworkCorrectionDocumentId(key)];
-                delete participants[key];
             }
             onChange({
                 manualAssessments: { ...config.manualAssessments, [classId]: manualAssessments },
                 assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents },
-                assessmentParticipants: { ...config.assessmentParticipants, [classId]: participants },
             });
         },
         saveAbsences(id: string, names: string[], legacyId?: string) {

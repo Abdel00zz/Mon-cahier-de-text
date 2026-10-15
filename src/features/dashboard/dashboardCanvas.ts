@@ -40,7 +40,7 @@ const TONE_SPECS: Record<typeof KEEP_TONES[number], HarmonicColorPoint> = {
 /**
  * Calcule la distance angulaire la plus courte sur le cercle chromatique [0, 360).
  */
-function angularDistance(a: number, b: number): number {
+export function angularDistance(a: number, b: number): number {
     const delta = Math.abs(a - b) % 360;
     return Math.min(delta, 360 - delta);
 }
@@ -48,7 +48,7 @@ function angularDistance(a: number, b: number): number {
 /**
  * Extrait le point chromatique précis associé à une classe.
  */
-function resolveClassColorPoint(item: Pick<ClassInfo, 'id' | 'color'>): HarmonicColorPoint {
+export function resolveClassColorPoint(item: Pick<ClassInfo, 'id' | 'color'>): HarmonicColorPoint {
     const color = item.color || keepToneForClass(item.id);
     if (color in TONE_SPECS) {
         return TONE_SPECS[color as keyof typeof TONE_SPECS];
@@ -70,7 +70,7 @@ function resolveClassColorPoint(item: Pick<ClassInfo, 'id' | 'color'>): Harmonic
  * 4. Pôle Horizon (centre-flanc) : triade d'équilibre maximisant la diversité visuelle.
  * 5. Moyenne vectorielle circulaire pondérée pour la trame pointillée et la nuance d'ambiance.
  */
-function computeHarmonicCanvasPalette(
+export function computeHarmonicCanvasPalette(
     classes: Pick<ClassInfo, 'id' | 'color'>[] = [],
     activeSessionClassIds: string[] = []
 ): DynamicCanvasPalette {

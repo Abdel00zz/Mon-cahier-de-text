@@ -198,6 +198,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       addField={
         <StudentAddField
           draftRef={draftRef}
+          suggestions={roster?.names.filter(name => !names.includes(name))}
           placeholder={t('evaluations.notebook.addPlaceholder')}
           label={t(copy.placeholder)}
           addLabel={t(copy.add)}

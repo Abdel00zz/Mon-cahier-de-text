@@ -20,6 +20,7 @@ import { useEvaluationNotebook } from './hooks/useEvaluationNotebook';
 import { useEvaluationConflictGuard } from './hooks/useEvaluationConflictGuard';
 import { assessmentSlot, eventSlot, evaluationSlots } from '@/domain/evaluations/evaluationConflicts';
 import { countHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
+import { syncHomeworkCorrectionContent } from '@/domain/evaluations/homeworkCorrectionContent';
 import {
   syncEventToNotebook,
   syncAssessmentDateToNotebook,
@@ -56,7 +57,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   onLessonsChange,
 }) => {
   const { t, locale } = useLocale();
-  const { lessons: activeLessons, commit: commitNotebookChange } = useEvaluationNotebook(classInfo.id, locale, lessonsData, onLessonsChange);
+  const { lessons: activeLessons, commit: commitNotebookChange } = useEvaluationNotebook(classInfo.id, locale, lessonsData, onLessonsChange, config);
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
   const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
@@ -232,13 +233,18 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const deleteAssessment = (id: string) => {
     const target = assessments.find(item => item.id === id);
-    const nextLessons = target ? removeAssessmentFromNotebook(
+    let nextLessons = target ? removeAssessmentFromNotebook(
         activeLessons,
         target.id,
         target.type,
         target.num,
         links.find(link => link.planned.id === id)?.entry?.key
       ).lessons : activeLessons;
+    if (target?.type === 'maison') {
+      const owner = config.manualAssessments?.[classInfo.id]?.find(item => item.id === id || item.id === target.legacyId);
+      nextLessons = removeHomeworkCorrectionFromNotebook(nextLessons, target.num,
+        { id, legacyId: target.legacyId, date: owner?.correctionDateISO }).lessons;
+    }
     if (!commitNotebookChange(nextLessons, () => actions.deleteAssessment(id, target?.legacyId))) return;
     toast.success(t('evaluations.manualDeleted'));
   };
@@ -250,16 +256,22 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const chosen = config.assessmentDates?.[classInfo.id]?.[id]
       ?? (planned.legacyId ? config.assessmentDates?.[classInfo.id]?.[planned.legacyId] : undefined)
       ?? (planned.manual ? planned.dateISO : '');
-    actions.setHomeworkSchedule(
+    const previous = config.manualAssessments?.[classInfo.id]?.find(item => item.id === id || item.id === planned.legacyId);
+    const nextLessons = field === 'correction'
+      ? syncHomeworkCorrectionContent(activeLessons, { id: previous?.id ?? id, num: planned.num, correctionDateISO: dateISO }, locale, previous?.correctionDateISO)
+      : activeLessons;
+    commitNotebookChange(nextLessons, () => actions.setHomeworkSchedule(
       { id: planned.id, legacyId: planned.legacyId, schoolYear: planned.schoolYear, semestre: planned.semestre, num: planned.num },
       chosen,
       field === 'due' ? { dueDateISO: dateISO } : { correctionDateISO: dateISO },
-    );
+    ));
   };
 
-  /** Corbeille de la correction : date, corrigé, élèves — et le bloc du cahier, pour qu'elle ne revienne pas. */
+  /** Corbeille de la correction : date et corrigé — et le bloc du cahier, pour qu'elle ne revienne pas. */
   const deleteHomeworkCorrection = (link: AssessmentLink) => {
-    const { lessons: nextLessons } = removeHomeworkCorrectionFromNotebook(activeLessons, link.planned.num);
+    const owner = config.manualAssessments?.[classInfo.id]?.find(item => item.id === link.planned.id || item.id === link.planned.legacyId);
+    const { lessons: nextLessons } = removeHomeworkCorrectionFromNotebook(activeLessons, link.planned.num,
+      { id: link.planned.id, legacyId: link.planned.legacyId, date: owner?.correctionDateISO });
     if (!commitNotebookChange(nextLessons, () => actions.clearHomeworkCorrection(link.planned.id, link.planned.legacyId))) return;
     toast.success(t('evaluations.correctionDeleted'));
   };
@@ -282,6 +294,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const submissionSummary = submissions
       ? countHomeworkOutcomes(submissions.names ?? [], submissions.homeworkOutcomes)
       : null;
+    const notReturned = submissionSummary?.missing ?? 0;
+    const observedSubmissions = submissionSummary ? submissionSummary.given + submissionSummary.missing : 0;
     // Second temps du devoir maison : la séance de correction, distincte de la
     // séance d'attribution — elle date le devoir sans changer sa date de remise.
     const correctionDateISO = a.type === 'maison'
@@ -318,10 +332,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       ? t('evaluations.tip.absentSome', { count: number.format(absents.length) })
       : t('evaluations.tip.absentNone');
     const oralTooltip = t('evaluations.tip.oral');
-    const observedSubmissions = submissionSummary ? submissionSummary.given + submissionSummary.missing : 0;
     /*
      * Un devoir maison = DEUX entrées : « assigné aux élèves » (document · date limite · corbeille) et
-     * « correction » (document · élèves n'ayant pas rendu · corbeille). Même identité, même enregistrement.
+     * « correction » (contenu de la correction · corbeille). Même identité, même enregistrement.
      */
     const dueDateISO = a.type === 'maison'
       ? (config.manualAssessments?.[selectedClass!.id]?.find(item => item.id === a.id || item.id === a.legacyId)?.dueDateISO ?? '')
@@ -333,8 +346,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const correctionName = `${t('manageLessons.type.correction_devoir_maison')} ${number.format(a.num)}`;
     // Une correction déjà saisie reste visible même si la direction ne la transmet plus : rien n'est caché.
     const showCorrection = a.type === 'maison'
-      && (kindPolicy.correction || !!correctionDateISO || correctionIndicator === 'attached' || !!submissions);
-    const notReturned = submissionSummary?.missing ?? 0;
+      && (!!correctionDateISO || correctionIndicator === 'attached');
 
     const assignedRow = (
       <div
@@ -398,7 +410,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               )}
             </div>
             <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
-              {docIndicator !== 'none' && (
+              {a.type !== 'colle' && docIndicator !== 'none' && (
                 <button
                   type="button"
                   onClick={() => setDocumentFor({ kind: 'assessment', link })}
@@ -443,10 +455,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : a.type === 'oral' ? 'evaluations.oral.title' : 'evaluations.track.title')} — ${displayName}`}
                 >
                   <ActionIcon name="students" />
-                  <span>{t(a.type === 'oral' || a.type === 'colle' ? 'evaluations.action.track' : 'evaluations.action.students')}</span>
+                  <span>{t(a.type === 'oral' ? 'evaluations.action.track' : 'evaluations.action.students')}</span>
                 </button>
               )}
 
+              {a.type === 'maison' && kindPolicy.students && (
+                <button
+                  type="button"
+                  onClick={() => setSubmissionsFor(link)}
+                  className="ev-action shrink-0"
+                  data-filled={notReturned > 0 ? 'danger' : observedSubmissions ? 'tone' : undefined}
+                  data-tippy-content={t('evaluations.tip.notReturned')}
+                  aria-label={`${t('evaluations.homework.notReturnedTitle')} — ${displayName}${notReturned > 0 ? ` · ${number.format(notReturned)}` : ''}`}
+                >
+                  <ActionIcon name="students" />
+                  <span>{t('evaluations.action.notReturned')}</span>
+                  {notReturned > 0 && <span className="ev-action__count">{number.format(notReturned)}</span>}
+                </button>
+              )}
               {/* Date limite à laquelle les élèves rendent le devoir. */}
               {a.type === 'maison' && (
                 <button
@@ -510,7 +536,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           </button>
         </div>
         <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
-          {correctionIndicator !== 'none' && (
+          {(
             <button
               type="button"
               onClick={() => setDocumentFor({ kind: 'assessment', link, part: 'correction' })}
@@ -521,21 +547,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               aria-label={`${t('evaluations.doc.title', { activity: correctionName })}${correctionIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : ''}`}
             >
               <ActionIcon name="document" />
-              <span>{t(correctionIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
-            </button>
-          )}
-          {kindPolicy.students && (
-            <button
-              type="button"
-              onClick={() => setSubmissionsFor(link)}
-              className="ev-action shrink-0"
-              data-filled={notReturned > 0 ? 'danger' : observedSubmissions ? 'tone' : undefined}
-              data-tippy-content={t('evaluations.tip.notReturned')}
-              aria-label={`${t('evaluations.homework.notReturnedTitle')} — ${correctionName}${notReturned > 0 ? ` · ${number.format(notReturned)}` : ''}`}
-            >
-              <ActionIcon name="students" />
-              <span>{t('evaluations.action.notReturned')}</span>
-              {notReturned > 0 && <span className="ev-action__count">{number.format(notReturned)}</span>}
+              <span>{t('evaluations.action.correctionContent')}</span>
             </button>
           )}
           <AnimatedTrashButton

@@ -36,6 +36,7 @@ interface ContentDocumentModalProps {
   title: string;
   /** Classe : portée à l'autre bord de l'en-tête. */
   subtitle?: string;
+  heading?: string;
   document?: ContentDocument;
   onSave: (source: string) => void;
 }
@@ -59,6 +60,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   onClose,
   title: sheetTitle,
   subtitle: sheetClass,
+  heading,
   document: saved,
   onSave,
 }) => {
@@ -83,7 +85,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     baseline.current = saved;
     resetHistory(saved?.source ?? '');
     setSource(saved?.source ?? '');
-    setTab('preview');
+    setTab(saved?.source.trim() ? 'preview' : 'source');
     setShowHelp(false);
     setConflictOpen(false);
   }, [isOpen, saved, resetHistory]);
@@ -96,6 +98,10 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   const length = source.length;
   const isTooLong = length > MAX_CONTENT_DOCUMENT_CHARS;
   const isTight = length > CONTENT_DOCUMENT_WARN_CHARS;
+
+  useEffect(() => {
+    if (isOpen && tab === 'source') textareaRef.current?.focus({ preventScroll: true });
+  }, [isOpen, tab]);
 
   // L'aperçu n'est composé QUE lorsque son onglet est visible : écrire ne
   // déclenche donc aucune composition KaTeX, aussi longue soit la formule.
@@ -130,7 +136,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
       maxWidth="3xl"
       className="document-modal-frame evaluation-modal"
       headerClassName="border-b border-border/70"
-      title={t('documentPreview.heading')}
+      title={heading ?? t('documentPreview.heading')}
     >
       <div className="space-y-3.5">
         <ConfirmDialog open={conflictOpen} onOpenChange={setConflictOpen} variant="default"
@@ -145,10 +151,10 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               <button
                 key={value}
                 type="button"
-                onClick={() => { setTab(value); if (value === 'source') textareaRef.current?.focus(); }}
+                onClick={() => setTab(value)}
                 aria-pressed={isActive}
                 className={cn(
-                  'inline-flex h-10 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
+                  'inline-flex min-h-11 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
                   isActive
                     ? 'bg-card text-foreground shadow-xs ring-1 ring-border/70'
                     : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
@@ -235,7 +241,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+        <div className="document-editor-actions sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur-sm">
           <div className="flex items-center">
             <DocumentPrintButton source={source} title={sheetTitle} classLabel={sheetClass} />
           </div>

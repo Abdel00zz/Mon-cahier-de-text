@@ -129,36 +129,6 @@ const lessons: LessonsData = [{
 }];
 const targets: Indices[] = [{ chapterIndex: 0, itemIndex: 1 }];
 
-test('la correction date le devoir existant sans toucher à son attribution', () => {
-  const config = {
-    manualAssessments: { [classId]: [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-10-05', semestre: 1 as const }] },
-  } as unknown as AppConfig;
-  const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
-    { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
-  const item = patch.manualAssessments?.[classId]?.[0];
-  assert.equal(item?.correctionDateISO, '2026-10-12', 'la séance de correction date le devoir');
-  assert.equal(item?.dateISO, '2026-10-05', 'la séance d’attribution reste intacte');
-  assert.equal(item?.schoolYear, '2026-2027', 'l’identité annuelle ne bouge pas');
-});
-
-test('la correction d’un devoir jamais saisi le transmet à la feuille, attribution à compléter', () => {
-  const patch = sessionRemarkSettingsPatch({} as AppConfig, classId, lessons, targets,
-    { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
-  assert.deepEqual(patch.manualAssessments?.[classId], [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison', num: 1,
-    dateISO: '', semestre: 1, correctionDateISO: '2026-10-12' }], 'le devoir rejoint le contrôle continu');
-  assert.equal(patch.assessmentDates, undefined, 'aucune date d’attribution inventée');
-});
-
-test('la correction d’un devoir du planning officiel daté par le professeur le rejoint', () => {
-  const config = { assessmentDates: { [classId]: { '2026-2027:s1-maison1': '2026-10-05' } } } as unknown as AppConfig;
-  const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
-    { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
-  const item = patch.manualAssessments?.[classId]?.[0];
-  assert.equal(item?.id, '2026-2027:s1-maison1', 'même identité que le planning');
-  assert.equal(item?.dateISO, '2026-10-05', 'l’attribution choisie par le professeur reste');
-  assert.equal(item?.correctionDateISO, '2026-10-12', 'la séance de correction date le devoir');
-});
-
 test('donné sans déplacer la séance : la remarque crée quand même le devoir daté', () => {
   // Geste réel : le professeur annote la séance du 12/10 (« Devoir maison 1
   // donné ») sans toucher à sa date — le patch n’a donc AUCUN champ `date`.
@@ -174,32 +144,7 @@ test('donné sans déplacer la séance : la remarque crée quand même le devoir
     'la date suit la même identité que la réconciliation du cahier');
 });
 
-test('corrigé sans déplacer la séance : la date de correction vient de la séance', () => {
-  const config = {
-    manualAssessments: { [classId]: [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-10-05', semestre: 1 as const }] },
-  } as unknown as AppConfig;
-  const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
-    { homeworkCorrection: 1 }, new Map());
-  const item = patch.manualAssessments?.[classId]?.[0];
-  assert.equal(item?.correctionDateISO, '2026-10-12', 'la séance annotée date la correction');
-  assert.equal(item?.dateISO, '2026-10-05', 'la séance d’attribution reste intacte');
-});
-
-test('à numéro égal, la correction choisit le devoir encore en attente', () => {
-  const config = {
-    manualAssessments: { [classId]: [
-      { id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-05-04', semestre: 1 as const, correctionDateISO: '2026-05-11' },
-      { id: '2026-2027:s2-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-10-05', semestre: 2 as const },
-    ] },
-  } as unknown as AppConfig;
-  const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
-    { date: '2026-10-12', homeworkCorrection: 1 }, new Map());
-  const items = patch.manualAssessments?.[classId] ?? [];
-  assert.equal(items[0].correctionDateISO, '2026-05-11', 'le devoir déjà corrigé ne bouge pas');
-  assert.equal(items[1].correctionDateISO, '2026-10-12', 'c’est le devoir en attente qui est daté');
-});
-
-test('déplacer la séance de correction déplace la date de correction, pas l’attribution', () => {
+test('déplacer un cours ne déplace plus la correction via une ancienne annotation', () => {
   const config = {
     manualAssessments: { [classId]: [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-10-05', semestre: 1 as const, correctionDateISO: '2026-10-12' }] },
   } as unknown as AppConfig;
@@ -208,14 +153,12 @@ test('déplacer la séance de correction déplace la date de correction, pas l�
   ] ]]);
   const patch = sessionRemarkSettingsPatch(config, classId, lessons, targets,
     { date: '2026-10-19' }, entries);
-  const item = patch.manualAssessments?.[classId]?.[0];
-  assert.equal(item?.correctionDateISO, '2026-10-19', 'la correction suit sa séance');
-  assert.equal(item?.dateISO, '2026-10-05', 'l’attribution ne suit pas la correction');
+  assert.equal(patch.manualAssessments, undefined, 'seul le contenu de correction porte sa date');
 });
 
 // ── 3. La correction s’annote dans la séance ─────────────────────────────────
 
-test('le devoir corrigé s’annote sur SA séance de correction, et sur elle seule', () => {
+test('le devoir donné reste annoté mais sa correction ne dépend plus des remarques', () => {
   const config = {
     manualAssessments: { [classId]: [{ id: '2026-2027:s1-maison1', schoolYear: '2026-2027', type: 'maison' as const, num: 1, dateISO: '2026-10-05', semestre: 1 as const, correctionDateISO: '2026-10-12' }] },
     assessmentDates: { [classId]: { '2026-2027:s1-maison1': '2026-10-05' } },
@@ -231,7 +174,7 @@ test('le devoir corrigé s’annote sur SA séance de correction, et sur elle se
   const given = (entries.get('2026-10-05') ?? []).filter(entry => entry.id === 'assessment:2026-2027:s1-maison1');
   assert.deepEqual(given.map(entry => entry.text), ['Devoir maison 1 donné']);
   const correction = (entries.get('2026-10-12') ?? []).filter(entry => entry.id === 'assessment:2026-2027:s1-maison1:correction');
-  assert.deepEqual(correction.map(entry => entry.text), ['Correction devoir maison 1']);
+  assert.deepEqual(correction, []);
 });
 
 // ── 4. L’état du cycle pour l’écran de séance ────────────────────────────────
@@ -277,31 +220,15 @@ test('l’API valide correctionDateISO', () => {
 
 // ── 6. L’écran branche bien le cycle ─────────────────────────────────────────
 
-test('la modale de séance relie les deux temps', () => {
-  const modal = readFileSync('src/features/editor/modals/AssignDateModal.tsx', 'utf8');
-  assert.match(modal, /homeworkCorrection: detectedCorrectionNum/, 'la pastille de correction produit le patch');
-  assert.match(modal, /remark\.devoirMaisonCorrection/, 'la pastille affiche la ligne de correction');
-  assert.match(modal, /pendingCorrections\(/, 'seuls les devoirs en attente sont offerts');
-  assert.match(modal, /extractHomeworkAssignmentNumber/, 'l’attribution ignore la correction');
-  const view = readFileSync('src/features/evaluations/DevoirsView.tsx', 'utf8');
-  // La correction a désormais SA propre entrée sous le devoir : sa date est la date de sa ligne.
-  assert.match(view, /ev-row ev-row--correction/, 'la feuille d’évaluations a une entrée « Correction du devoir maison »');
-  assert.match(view, /field: 'correction'/, 'la date de la ligne de correction est la date de correction');
-  const remarks = readFileSync('src/domain/evaluations/sessionActivityRemarks.ts', 'utf8');
-  assert.match(remarks, /:correction/, 'la correction s’annote par sa propre identité');
-});
-
 test('la puce de la remarque ne porte pas le numéro : la cellule du tableau s’en charge', () => {
   const modal = readFileSync('src/features/editor/modals/AssignDateModal.tsx', 'utf8');
   assert.match(modal, /title=\{t\('remark\.devoirMaisonGivenSimple'\)\}/, 'l’infobulle de la puce est sans numéro');
   assert.match(modal, /<span>\{t\('remark\.devoirMaisonGivenSimple'\)\}<\/span>/, 'et son libellé aussi');
-  assert.match(modal, /title=\{t\('remark\.devoirMaisonCorrectionSimple'\)\}/, 'la puce de correction est sans numéro');
   // …mais la LIGNE écrite dans la remarque, elle, porte le numéro : c’est elle
   // que la cellule du tableau affiche.
   assert.match(modal, /const dmText = t\('remark\.devoirMaisonGiven', \{ num: activeHomeworkNum \}\);/,
     'la ligne d’attribution écrite est numérotée');
-  assert.match(modal, /const dmText = t\('remark\.devoirMaisonCorrection', \{ num: correctionOfferNum \}\);/,
-    'la ligne de correction écrite est numérotée');
+  assert.doesNotMatch(modal, /homeworkCorrection|correctionOfferNum/, 'la correction appartient au contenu');
 });
 
 // ── 7. La correction saisie au tableau date le devoir, sans le dupliquer ─────

@@ -316,6 +316,7 @@ const WRITTEN_TEST_BLOCK: Partial<Record<DevoirType, TopLevelItem['type']>> = {
   controle: 'controle_continu',
   controle_court: 'controle_court',
   controle_global: 'controle_global',
+  colle: 'colle',
 };
 
 /** Titres de repli d’un bloc matérialisé (quand l’appelant ne fournit pas de libellé). */
@@ -323,6 +324,7 @@ const WRITTEN_TEST_TITLES: Record<string, Record<AppLocale, string>> = {
   controle: { fr: 'Devoir surveillé', en: 'Supervised test', ar: 'فرض محروس' },
   controle_court: { fr: 'Devoir écrit court', en: 'Short written test', ar: 'فرض كتابي قصير محروس' },
   controle_global: { fr: 'Devoir écrit global', en: 'Global written test', ar: 'فرض كتابي إجمالي محروس' },
+  colle: { fr: 'Colle', en: 'Oral examination', ar: 'استجواب شفوي' },
 };
 
 function assessmentRow(lessons: LessonsData, id: string, type: DevoirType, num?: number, entryKey?: string) {
@@ -374,15 +376,20 @@ export function syncAssessmentDateToNotebook(lessons: LessonsData, assessment: {
  * ligne de remarque qui la dit. Sans cela, la prochaine synchronisation du cahier la dateraient de nouveau
  * et la corbeille de la feuille n'aurait aucun effet durable. Le devoir lui-même (« donné ») n'est pas touché.
  */
-export function removeHomeworkCorrectionFromNotebook(lessons: LessonsData, num: number): { lessons: LessonsData; updated: boolean } {
+export function removeHomeworkCorrectionFromNotebook(lessons: LessonsData, num: number,
+  owner?: { id: string; legacyId?: string; date?: string }): { lessons: LessonsData; updated: boolean } {
   const rows = buildLessonRows(lessons);
   const remarked = rows.filter(row => {
     const remark = (row.data as { remark?: unknown }).remark;
-    return typeof remark === 'string'
+    return (!owner || (!!owner.date && extractDateRange(row.data.date).startDate === owner.date)) && typeof remark === 'string'
       && remark.split('\n').some(line => isHomeworkCorrectionLine(line) && extractCorrectionNumber(line) === num);
   });
-  const blocks = rows.filter(row => row.elementType === 'correction_devoir_maison'
-    && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === num);
+  const matchesBlock = (row: LessonRow) => row.elementType === 'correction_devoir_maison'
+    && (owner && [owner.id, owner.legacyId].filter(Boolean).some(id => row.data._tempId === `homework-correction:${id}`)
+      || ((!owner || !row.data._tempId?.startsWith('homework-correction:'))
+        && (!owner || (!!owner.date && extractDateRange(row.data.date).startDate === owner.date))
+        && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === num));
+  const blocks = rows.filter(matchesBlock);
   if (!remarked.length && !blocks.length) return { lessons, updated: false };
   // Les remarques d'abord (aucun index ne bouge), puis les blocs.
   const withoutLines = remarked.length ? produce(lessons, draft => {
@@ -396,7 +403,6 @@ export function removeHomeworkCorrectionFromNotebook(lessons: LessonsData, num: 
     }
   }) : lessons;
   if (!blocks.length) return { lessons: withoutLines, updated: true };
-  const survivors = buildLessonRows(withoutLines).filter(row => row.elementType === 'correction_devoir_maison'
-    && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === num);
+  const survivors = buildLessonRows(withoutLines).filter(matchesBlock);
   return { lessons: deleteRows(withoutLines, survivors).lessons, updated: true };
 }

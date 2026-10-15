@@ -5,8 +5,7 @@ import { applySessionEdit, type SessionPatch } from '../notebook/sessionEditing'
 import { sessionDateKey, sessionDateKeys } from './homeworkPlacement';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import type { SessionRemarkEntry } from './sessionActivityRemarks';
-import { homeworkAssessmentId, withHomeworkCorrection } from './homeworkCycle';
-import { resolveKindPolicy } from './evaluationPolicy';
+import { homeworkAssessmentId } from './homeworkCycle';
 
 export { homeworkAssessmentId };
 
@@ -80,7 +79,7 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
    * dépendre d'un déplacement de date. On ne sort tôt que s'il n'y a NI
    * nouvelle date NI devoir à créer sur la date de la séance ciblée.
    */
-  const materializesHomework = Boolean(patch.homeworkGiven || patch.homeworkCorrection) && sourceDates.size > 0;
+  const materializesHomework = Boolean(patch.homeworkGiven) && sourceDates.size > 0;
   if (!nextDates.length && !materializesHomework) return result;
   const oldDates = [...sourceDates].sort();
   const attached = oldDates.filter(date => !remainingDates.has(date)).flatMap(date => entries.get(date) ?? []);
@@ -88,21 +87,6 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
     const index = oldDates.indexOf(sessionDateKey(raw));
     return nextDates[Math.min(Math.max(index, 0), nextDates.length - 1)];
   };
-  /*
-   * Les annotations de correction portent l'identité `assessment:<id>:correction` :
-   * elles se déplacent avec la séance comme les autres, mais vers un AUTRE champ —
-   * la date de correction du devoir, jamais sa date d'attribution.
-   */
-  const correctionIds = new Set(attached
-    .filter(entry => entry.id.startsWith('assessment:') && entry.id.endsWith(':correction'))
-    .map(entry => entry.id.slice(11, -11)));
-  if (correctionIds.size) {
-    const manual = result.manualAssessments?.[classId] ?? config.manualAssessments?.[classId] ?? [];
-    result.manualAssessments = { ...config.manualAssessments, [classId]: manual.map(item => {
-      const id = [...correctionIds].find(key => key === item.id || key.endsWith(`:${item.id}`));
-      return id && item.correctionDateISO ? { ...item, correctionDateISO: destination(item.correctionDateISO) } : item;
-    }) };
-  }
   const assessmentIds = new Set(attached
     .filter(entry => entry.id.startsWith('assessment:') && !entry.id.endsWith(':correction'))
     .map(entry => entry.id.slice(11)));
@@ -135,36 +119,6 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
     if (date) Object.assign(result, assignHomeworkPatch(config, classId, date, patch.homeworkGiven, result));
   }
 
-  /*
-   * Correction du devoir pendant la séance : le SECOND temps du même devoir.
-   * On pose seulement sa date de correction, sans toucher à la date
-   * d'attribution — même règle que le bloc « Correction du devoir maison » du
-   * cahier (`withHomeworkCorrection`) : un devoir du planning officiel daté par
-   * le professeur est servi, et un devoir jamais saisi est transmis à la feuille
-   * par sa séance de correction.
-   */
-  // La direction peut ne pas dater la correction sur la feuille : la remarque reste, rien n'est transmis.
-  if (patch.homeworkCorrection && patch.homeworkCorrection > 0 && resolveKindPolicy(config.evaluationPolicy, 'maison').correction) {
-    // Même repli que l'attribution : la séance de correction porte elle-même
-    // sa date quand la remarque est saisie sans déplacer la séance.
-    const date = sessionDateKeys(patch.date ?? '')[0] ?? [...sourceDates][0] ?? '';
-    if (date) {
-      const manual = result.manualAssessments?.[classId] ?? config.manualAssessments?.[classId] ?? [];
-      const currentRemoved = result.removedAssessments?.[classId] ?? config.removedAssessments?.[classId] ?? [];
-      const next = withHomeworkCorrection(manual, date, patch.homeworkCorrection, {
-        dates: result.assessmentDates?.[classId] ?? config.assessmentDates?.[classId],
-        removed: currentRemoved,
-      });
-      if (next !== manual) {
-        result.manualAssessments = { ...config.manualAssessments, ...result.manualAssessments, [classId]: [...next] };
-        // Le devoir servi est la seule entrée réécrite (ou ajoutée en fin de liste).
-        const target = next.find((item, index) => item !== manual[index]);
-        if (target && currentRemoved.includes(target.id)) {
-          result.removedAssessments = { ...config.removedAssessments, [classId]: currentRemoved.filter(entryId => entryId !== target.id) };
-        }
-      }
-    }
-  }
   return result;
 }
 

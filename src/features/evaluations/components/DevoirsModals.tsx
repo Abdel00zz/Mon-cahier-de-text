@@ -201,6 +201,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         isOpen={documentFor !== null}
         onClose={() => setDocumentFor(null)}
         title={documentTitle}
+        heading={documentFor?.kind === 'assessment' && documentFor.part === 'correction' ? t('evaluations.action.correctionContent') : undefined}
         subtitle={selectedClass ? selectedClassDisplayName : undefined}
         document={documentOf}
         onSave={(source) => {
@@ -225,16 +226,16 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             variant="checked"
             trackOral={Boolean(oralPolicy?.feedback)}
             trackGrades={Boolean(oralPolicy?.grades)}
-            initialNames={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.names ?? []}
-            initialOralOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralOutcomes}
-            initialOralGrades={config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id]?.oralGrades}
+            initialNames={(config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id] ?? (oralFor.planned.legacyId ? config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.legacyId] : undefined))?.names ?? []}
+            initialOralOutcomes={(config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id] ?? (oralFor.planned.legacyId ? config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.legacyId] : undefined))?.oralOutcomes}
+            initialOralGrades={(config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id] ?? (oralFor.planned.legacyId ? config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.legacyId] : undefined))?.oralGrades}
             roster={config.classRosters?.[selectedClass.id]}
             reportTitle={oralTitle}
             reportContext={`${selectedClassDisplayName} · ${t(`evaluations.type.${oralFor.planned.type}`)} ${number.format(oralFor.planned.num)} · ${formatLongDate(oralFor.planned.dateISO, locale)}`}
             onCancel={() => setOralFor(null)}
             onSave={(names, _notebook, oralOutcomes, _hw, oralGrades) => {
               // Liste simple (retour désactivé) : les niveaux et notes déjà saisis sont conservés pour les élèves restants.
-              const previous = config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id];
+              const previous = (config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id] ?? (oralFor.planned.legacyId ? config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.legacyId] : undefined));
               actions.saveOral(oralFor.planned.id, names,
                 oralOutcomes ?? retainOralOutcomes(names, previous?.oralOutcomes),
                 oralGrades ?? retainOralGrades(names, previous?.oralGrades));

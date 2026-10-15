@@ -1,15 +1,12 @@
 import { sessionDateKeys } from '@/domain/evaluations/homeworkPlacement';
 import {
   extractHomeworkAssignmentNumber,
-  extractCorrectionNumber,
   hasHomeworkAssignmentMention,
   getChronologicalHomeworkNumber,
   replaceOrInsertHomeworkInRemark,
   removeHomeworkFromRemark,
-  replaceOrInsertCorrectionInRemark,
-  removeCorrectionFromRemark,
 } from '@/domain/evaluations/homeworkNumbering';
-import { pendingCorrections, type HomeworkMoment } from '@/domain/evaluations/homeworkCycle';
+import { type HomeworkMoment } from '@/domain/evaluations/homeworkCycle';
 import { findItem } from '@/domain/notebook/dataUtils';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
@@ -23,7 +20,6 @@ import {
   Lightbulb,
   Users,
   CalendarCheck,
-  CheckCheck,
   X,
   Plus,
   Eye,
@@ -106,9 +102,6 @@ interface RemarqueSimplifieeProps {
   activeHomeworkNum: number;
   detectedHomeworkNum: number | null;
   chronologicalNumForDate: number;
-  detectedCorrectionNum: number | null;
-  correctionOfferNum: number | null;
-  correctionCycle: number[];
   resolvedDocs?: readonly NotebookDocumentPreview[];
   onOpenDocumentPreview?: (preview: NotebookDocumentPreview) => void;
   locale: string;
@@ -124,8 +117,6 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
   placeholder,
   hasHomework,
   activeHomeworkNum,
-  detectedCorrectionNum,
-  correctionOfferNum,
   resolvedDocs,
   onOpenDocumentPreview,
   locale,
@@ -209,30 +200,6 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
             <FileText className="remark-chip-icon" />
             <span>{t('remark.devoirMaisonGivenSimple')}</span>
           </motion.button>
-
-          {/* Correction Devoir Maison (toggle simple) */}
-          {(detectedCorrectionNum !== null || correctionOfferNum !== null) && (
-            <motion.button
-              type="button"
-              data-selected={detectedCorrectionNum !== null}
-              whileTap={{ scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              onClick={() => {
-                triggerHaptic();
-                if (detectedCorrectionNum !== null) {
-                  onRemarkChange(removeCorrectionFromRemark(remark));
-                } else if (correctionOfferNum !== null) {
-                  const dmText = t('remark.devoirMaisonCorrection', { num: correctionOfferNum });
-                  onRemarkChange(replaceOrInsertCorrectionInRemark(remark, dmText));
-                }
-              }}
-              className="remark-chip"
-              title={t('remark.devoirMaisonCorrectionSimple')}
-            >
-              <CheckCheck className="remark-chip-icon" />
-              <span>{t('remark.devoirMaisonCorrectionSimple')}</span>
-            </motion.button>
-          )}
 
           {/* Les activités pédagogiques : Contrôle des cahiers, Remédiation, Soutien, Rattrapage */}
           {PEDAGOGICAL_ACTIVITIES.map(act => {
@@ -452,10 +419,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       // La pastille « Devoir maison N donné » crée le devoir dans la feuille
       // d'évaluations (contrôle continu) : un texte ne suffit pas.
       ...(hasHomework && actionType === 'associate' && selectedDate ? { homeworkGiven: activeHomeworkNum } : {}),
-      // La correction est le SECOND temps du même devoir : elle date le devoir
-      // existant sans le recréer ni toucher à sa séance d'attribution.
-      ...(detectedCorrectionNum !== null && detectedCorrectionNum > 0 && actionType === 'associate' && selectedDate
-        ? { homeworkCorrection: detectedCorrectionNum } : {}),
+
     });
   };
 
@@ -464,16 +428,6 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   // chaque détection ignore l'autre temps pour que les pastilles ne se confondent pas.
   const detectedHomeworkNum = useMemo(() => extractHomeworkAssignmentNumber(remark), [remark]);
   const hasHomework = useMemo(() => Boolean(detectedHomeworkNum !== null || hasHomeworkAssignmentMention(remark)), [detectedHomeworkNum, remark]);
-  const detectedCorrectionNum = useMemo(() => extractCorrectionNumber(remark), [remark]);
-  // Devoirs donnés en attente de correction : le plus récent est offert d'un
-  // clic ; une fois la pastille posée, les flèches parcourent les autres.
-  const correctionCandidates = useMemo(() => pendingCorrections(homeworkMoments ?? [], activeDate), [homeworkMoments, activeDate]);
-  const correctionOfferNum = correctionCandidates[0]?.num ?? null;
-  const correctionCycle = useMemo(() => {
-    const nums = correctionCandidates.map(item => item.num);
-    return detectedCorrectionNum !== null && !nums.includes(detectedCorrectionNum)
-      ? [detectedCorrectionNum, ...nums] : nums;
-  }, [correctionCandidates, detectedCorrectionNum]);
   const chronologicalNumForDate = useMemo(() => {
     /*
      * Les devoirs déjà donnés vivent dans la FEUILLE d'évaluations
@@ -510,9 +464,6 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       activeHomeworkNum={activeHomeworkNum}
       detectedHomeworkNum={detectedHomeworkNum}
       chronologicalNumForDate={chronologicalNumForDate}
-      detectedCorrectionNum={detectedCorrectionNum}
-      correctionOfferNum={correctionOfferNum}
-      correctionCycle={correctionCycle}
       resolvedDocs={resolvedDocs}
       onOpenDocumentPreview={onOpenDocumentPreview}
       locale={locale}

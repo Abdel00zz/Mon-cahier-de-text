@@ -123,7 +123,7 @@ test('supprimer la correction retire sa ligne et son bloc du cahier, pas le devo
   assert.equal(again.lessons, lessons, 'idempotent : même référence');
 });
 
-test('la corbeille de la correction efface sa date, son corrigé et les non-rendus — le devoir et son sujet restent', () => {
+test('la corbeille de la correction conserve les remises du devoir', () => {
   const patches: Array<Partial<AppConfig>> = [];
   const config = {
     manualAssessments: { c: [item({ dueDateISO: '2026-10-12', correctionDateISO: '2026-10-19' })] },
@@ -139,7 +139,7 @@ test('la corbeille de la correction efface sa date, son corrigé et les non-rend
   assert.equal('correctionDateISO' in kept, false);
   assert.equal(kept.dueDateISO, '2026-10-12', 'la date limite reste');
   assert.deepEqual(Object.keys(patch.assessmentDocuments?.c ?? {}), [homework.id], 'seul le corrigé est supprimé');
-  assert.equal(patch.assessmentParticipants?.c[homework.id], undefined);
+  assert.equal(patch.assessmentParticipants, undefined, 'le suivi des remises reste rattaché au devoir');
 });
 
 test('supprimer le devoir emporte aussi son corrigé', () => {
@@ -187,15 +187,15 @@ test('les fenêtres relient chaque bouton à SON enregistrement', () => {
   assert.match(modals, /deleteHomeworkCorrection\(deletingCorrection\)/, 'la corbeille de la correction est confirmée');
   assert.match(modals, /title=\{t\('evaluations\.homework\.notReturnedTitle'\)\}/, 'la fenêtre des élèves se dit « non rendus »');
   const view = read('src/features/evaluations/DevoirsView.tsx');
-  assert.match(view, /removeHomeworkCorrectionFromNotebook\(activeLessons, link\.planned\.num\)/, 'la correction ne renaît pas du cahier');
+  assert.match(view, /removeHomeworkCorrectionFromNotebook\(activeLessons, link\.planned\.num,/, 'la correction ne renaît pas du cahier');
   assert.match(view, /actions\.setHomeworkSchedule\(/);
   const admin = read('src/admin/components/TeacherDetail.tsx');
   assert.match(admin, /homeworkCorrectionDocumentId\(row\.id\)/, 'la direction relit aussi le corrigé');
 });
 
-test('le corrigé s’ouvre aussi depuis la séance de correction du cahier', () => {
+test('le corrigé est relié au contenu de correction du cahier', () => {
   const previews = read('src/domain/evaluations/activityDocumentPreviews.ts');
-  assert.match(previews, /correctionDate = \(manual\.get\(planned\.id\)/);
+  assert.match(previews, /rows\.set\(target\.key,/);
   assert.match(previews, /assessmentId: homeworkCorrectionDocumentId\(planned\.id\)/);
 });
 

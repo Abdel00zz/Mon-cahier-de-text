@@ -11,8 +11,8 @@ export function StudentReviewDialog({ isOpen, onClose, title, context, tracking 
         bodyClassName={tracking ? 'notebook-tracking-body' : 'px-6 pb-6 pt-2'}
         headerClassName="border-b-0 bg-background pt-5 px-6 pb-2 sm:pt-6 sm:px-8"
         title={<div className="min-w-0 header-left header-titles">
-            <span className="block break-words text-[18px] sm:text-[19px] font-extrabold text-[#1f201d] dark:text-foreground tracking-[-0.018em] rtl:tracking-normal leading-snug">{title}</span>
-            {context && <p className="mt-0.5 break-words text-[13px] text-[#73746f] dark:text-muted-foreground leading-normal">{context}</p>}
+            <span className="block break-words text-[18px] sm:text-[19px] font-extrabold text-foreground tracking-[-0.018em] rtl:tracking-normal leading-snug">{title}</span>
+            {context && <p className="mt-0.5 break-words text-[13px] text-muted-foreground leading-normal">{context}</p>}
         </div>}>
         {children}
     </Modal>;

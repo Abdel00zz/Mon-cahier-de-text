@@ -30,7 +30,7 @@ import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedB
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
-import { DASHBOARD_CANVAS_STYLE } from '../features/dashboard/dashboardCanvas';
+import { DASHBOARD_CANVAS_STYLE, computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('../features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -493,10 +493,14 @@ const App: React.FC = () => {
     handleSelectClass(classInfo);
   }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isClassActivitiesOpen, isGuideOpen, view]);
 
+  const dynamicCanvasStyle = useMemo(() => {
+    return computeDynamicCanvasStyle(classes, currentSession.classIds);
+  }, [classes, currentSession.classIds]);
+
   const appSurface = (
     <div
       className="relative min-h-dvh overflow-x-clip text-foreground bg-background"
-      style={backgroundView === 'dashboard' ? DASHBOARD_CANVAS_STYLE : undefined}
+      style={backgroundView === 'dashboard' ? dynamicCanvasStyle : undefined}
       /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
       data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
     >

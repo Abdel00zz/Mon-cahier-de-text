@@ -69,7 +69,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         aria-live="polite"
                         aria-atomic="true"
                         style={classTitleStyle(isRtl, 'list')}
-                        className="class-list-item__title"
+                        className="class-list-item__title keep-class-title"
                     >
                         <span className="sr-only">{displayName}</span>
                             <span aria-hidden="true" className="class-list-item__identity">

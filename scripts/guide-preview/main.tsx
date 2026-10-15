@@ -7,6 +7,7 @@ import { LocaleProvider, useLocale } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
 import { AbsencesTab } from '../../src/features/settings/components/AbsencesTab';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
+import { materializeContentAssessments } from '../../src/domain/evaluations/homeworkCorrectionContent';
 import { TabBar } from '../../src/components/navigation/TabBar';
 import { DashboardActions } from '../../src/features/dashboard/DashboardActions';
 import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplayMode';
@@ -70,7 +71,7 @@ const initialConfig: AppConfig = {
   schoolYearStart: '2026-09-01', timetable, schedules: deriveSchedules(timetable),
   notificationSettings: { ...defaultNotificationSettings }, theme: 'light',
 };
-if (params.get('fixture') === 'student-followup') {
+if (['student-followup', 'content-assessments'].includes(params.get('fixture') ?? '')) {
   const names = ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'سلمى العلوي'];
   initialConfig.classRosters = { [classes[0].id]: { names, version: 1, updatedAt: '2026-10-14T08:00:00Z' } };
   initialConfig.manualAssessments = { [classes[0].id]: [
@@ -87,6 +88,13 @@ if (params.get('fixture') === 'student-followup') {
     'review-oral': { names, updatedAt: '2026-10-12T10:00:00Z', oralOutcomes: { 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }, oralGrades: { 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' } },
     'review-homework': { names, updatedAt: '2026-10-14T08:00:00Z', homeworkOutcomes: { 'Amine Alami': 'given', 'Salma Fassi': 'given', 'Youssef Naji': 'missing' } },
   } };
+}
+if (params.get('fixture') === 'content-assessments') {
+  classes[0].cycle = 'prepa';
+  classes[0].name = 'MPSI 1';
+  initialConfig.manualAssessments![classes[0].id].push({ id: 'review-colle', type: 'colle', num: 1,
+    semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' });
+  initialConfig.manualAssessments![classes[0].id].find(item => item.id === 'review-homework')!.correctionDateISO = '2026-10-15';
 }
 const isAr = locale === 'ar';
 // Course direction is independent of interface language: a French course stays LTR.
@@ -125,7 +133,7 @@ function Preview() {
       { type: 'chapter', title: 'Chapitre A', items: [{ type: 'definition', title: 'Rappel', date: '2026-09-14' }, { type: 'exercice', title: 'Exercice à déplacer', description: 'Énoncé à conserver', date: '2026-09-14', remark: 'À revoir' }], sections: [{ name: 'Paragraphe vide' }] },
       { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', items: [{ type: 'definition', title: 'Repère B' }] }] },
     ]
-    : lessons);
+    : materializeContentAssessments(lessons, initialConfig, classes[0].id, locale));
   const previewTargets = buildContentMoveTargets(buildLessonRows(previewLessons));
   const [previewDate, setPreviewDate] = useState<SessionEditorState | null>(null);
   const openPreviewDate = (indices: Parameters<typeof indicesKey>[0]) => {
@@ -158,7 +166,7 @@ function Preview() {
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
     {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'absences' && <AbsencesTab config={config} classes={classes} onConfigChange={onChange} visible />}
-      {screen === 'evaluations' && <DevoirsView classes={classes} config={config} onConfigChange={onChange} />}
+      {screen === 'evaluations' && <DevoirsView classInfo={classes[0]} config={config} onConfigChange={onChange} lessonsData={previewLessons} onLessonsChange={setPreviewLessons} />}
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, params.get('active') === '1' ? [classes[0]?.id] : [])} >

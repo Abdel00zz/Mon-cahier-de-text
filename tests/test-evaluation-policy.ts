@@ -340,9 +340,9 @@ test('couper la correction du devoir maison ne coupe ni le devoir ni les autres 
   assert.ok((normal.patch.manualAssessments?.c ?? []).some(item => item.type === 'maison' && item.correctionDateISO === '2026-10-20'));
 });
 
-test('la correction saisie dans une remarque suit la même porte', () => {
-  const source = read('src/domain/evaluations/sessionRemarkChanges.ts');
-  assert.match(source, /patch\.homeworkCorrection > 0 && resolveKindPolicy\(config\.evaluationPolicy, 'maison'\)\.correction/);
+test('la correction du devoir maison dans le cahier suit la même porte', () => {
+  const source = read('src/domain/evaluations/notebookReconciliation.ts');
+  assert.match(source, /transmits\('maison'\) && resolveKindPolicy\(options\.policy, 'maison'\)\.correction/);
 });
 
 test('le serveur accepte le réglage « correction » et refuse un type incorrect', () => {

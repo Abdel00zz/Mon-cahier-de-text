@@ -7,6 +7,7 @@ import { withHomeworkCorrection } from './homeworkCycle';
 import type { PlannedAssessment } from './assessments';
 import { extractDateRange } from './notebookSyncBridge';
 import { normalizeActivityText } from './pedagogicalActivities';
+import { correctionOwner } from './homeworkCorrectionContent';
 
 interface ReconcileOptions {
   previousLessons?: LessonsData;
@@ -170,9 +171,36 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
    * saisi, est transmis à la feuille « Contrôle continu et activités ».
    */
   const transmitsCorrection = transmits('maison') && resolveKindPolicy(options.policy, 'maison').correction;
-  for (const row of rows.filter(candidate => candidate.elementType === 'correction_devoir_maison' && transmitsCorrection)) {
+  const correctionRows = rows.filter(row => row.elementType === 'correction_devoir_maison');
+  // An individual correction follows its content, never a neighbouring course session.
+  const handledCorrections = new Set<string>();
+  if (options.previousLessons && transmitsCorrection) {
+    for (const old of previousRows.filter(row => row.elementType === 'correction_devoir_maison')) {
+      const owner = correctionOwner(old, manual);
+      if (!owner || !old.data._tempId) continue;
+      const matches = correctionRows.filter(row => row.data._tempId === old.data._tempId);
+      if (matches.length > 1) continue;
+      const next = matches[0];
+      const date = extractDateRange(next?.data.date).startDate;
+      const index = manual.findIndex(item => item.id === owner.id);
+      if (index >= 0) {
+        const updated = { ...manual[index] };
+        if (validDate(date)) updated.correctionDateISO = date;
+        else delete updated.correctionDateISO;
+        manual[index] = updated;
+      }
+      if (next) handledCorrections.add(next.key);
+    }
+  }
+  for (const row of correctionRows.filter(candidate => transmitsCorrection && !handledCorrections.has(candidate.key))) {
     const { startDate } = extractDateRange(row.data.date);
     if (!validDate(startDate)) continue;
+    const owner = correctionOwner(row, manual);
+    if (owner) {
+      const index = manual.findIndex(item => item.id === owner.id);
+      manual[index] = { ...manual[index], correctionDateISO: startDate };
+      continue;
+    }
     const declared = parseTrailingNumber('title' in row.data ? row.data.title : undefined);
     const next = withHomeworkCorrection(manual, startDate, declared ?? undefined, { dates, removed: [...removed] });
     if (next !== manual) manual.splice(0, manual.length, ...next);
