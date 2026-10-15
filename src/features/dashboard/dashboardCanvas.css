@@ -59,6 +59,12 @@
     gap: 0.5rem;
 }
 
+[dir="rtl"] [data-dashboard-root] .dashboard-heading,
+html[dir="rtl"] [data-dashboard-root] .dashboard-heading,
+html[lang="ar"] [data-dashboard-root] .dashboard-heading {
+    gap: 0.25rem;
+}
+
 [data-dashboard-root] .dashboard-heading__title {
     margin-block-start: 0.25rem;
     margin-inline-start: -6px;
@@ -69,6 +75,12 @@
     text-align: start;
     font-size: 32px;
     line-height: 1.35;
+}
+
+[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
+html[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
+html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
+    margin-inline-start: 22px;
 }
 
 .dashboard-class-collection {
