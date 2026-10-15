@@ -119,13 +119,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return () => clearTimeout(timer);
     }, [isLoading, welcomeCompleted]);
 
+    const isPreviewOnboarding = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('onboarding');
+
     // Le shell applicatif ne doit pas réafficher sa navigation au premier
     // ajout de classe : le parcours reste visuellement ouvert jusqu'à sa fin.
     useEffect(() => {
-        const visible = isOnboardingOpen && !welcomeCompleted;
+        const visible = (isOnboardingOpen && !welcomeCompleted) || isPreviewOnboarding;
         onOnboardingVisibilityChange?.(visible);
         return () => onOnboardingVisibilityChange?.(false);
-    }, [isOnboardingOpen, onOnboardingVisibilityChange, welcomeCompleted]);
+    }, [isOnboardingOpen, isPreviewOnboarding, onOnboardingVisibilityChange, welcomeCompleted]);
 
     const closeOnboarding = useCallback(async () => {
         // Le stockage local ferme la page immédiatement ; le compte et la
@@ -283,8 +285,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         ? formatLocalizedClassDisplayName(classPendingDelete.name, locale)
         : '';
 
-    // Page de démarrage immersive (première connexion, aucun cahier)
-    if (isOnboardingOpen && !welcomeCompleted) {
+    // Page de démarrage immersive (première connexion, aucun cahier ou prévisualisation via ?onboarding)
+    if ((isOnboardingOpen && !welcomeCompleted) || isPreviewOnboarding) {
         return (
             <OnboardingPage
                 config={config}
@@ -292,8 +294,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 classes={classes}
                 onCreateClass={createOnboardingClass}
                 onDeleteClass={handleDeleteClass}
-                onComplete={closeOnboarding}
-                onSkip={closeOnboarding}
+                onComplete={() => {
+                    if (isPreviewOnboarding) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('onboarding');
+                        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+                        window.location.reload();
+                        return;
+                    }
+                    closeOnboarding();
+                }}
+                onSkip={() => {
+                    if (isPreviewOnboarding) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('onboarding');
+                        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+                        window.location.reload();
+                        return;
+                    }
+                    closeOnboarding();
+                }}
             />
         );
     }

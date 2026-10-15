@@ -156,7 +156,7 @@ const Switch = React.forwardRef<React.ElementRef<typeof SwitchPrimitives.Root>, 
         checked={checked}
         onCheckedChange={handleCheckedChange}
         className={cn(
-          "peer group/switch relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full touch-manipulation select-none",
+          "switch peer group/switch relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full touch-manipulation select-none",
           // Zone tactile de sécurité Fitts mobile (>= 44x44px)
           "min-h-[44px] min-w-[54px] p-0.5 border-0 bg-transparent outline-none",
           "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",

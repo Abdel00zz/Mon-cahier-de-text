@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Loader2, Sun, Moon, Laptop } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
 import { ONBOARDING_TOTAL_STEPS } from './types';
@@ -72,44 +73,83 @@ export function OnboardingShell({
             />
             <span className="text-sm font-bold tracking-tight truncate">{copy.brand}</span>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* 1. Language Smart Selection Pill */}
             <div
-              className="flex gap-1"
-              role="group"
+              className="onboarding-pill-rail flex items-center p-0.5 rounded-full border border-border/70 bg-muted/50 dark:bg-zinc-900/60 shadow-2xs"
+              role="radiogroup"
               aria-label={copy.sectionLanguage}
             >
-              {(['fr', 'ar'] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  lang={value}
-                  disabled={finishing}
-                  aria-pressed={value === lang}
-                  onClick={() => onLanguageChange(value)}
-                  className={`keep-surface keep-choice min-h-11 px-3 sm:px-3.5 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                  value === lang ? 'border-primary/40 text-primary font-bold' : ''
-                }`}
-                >
-                  {value === 'fr' ? 'FR' : 'العربية'}
-                </button>
-              ))}
+              {(['fr', 'ar'] as const).map((value) => {
+                const active = value === lang;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    lang={value}
+                    disabled={finishing}
+                    onClick={() => onLanguageChange(value)}
+                    className={cn(
+                      'relative z-10 min-h-8 sm:min-h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-semibold transition-colors duration-200 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2',
+                      active
+                        ? 'text-foreground font-bold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="onboarding-lang-active-pill"
+                        className="absolute inset-0 -z-10 rounded-full bg-background border border-border/70 shadow-xs"
+                        transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+                      />
+                    )}
+                    {value === 'fr' ? 'FR' : 'العربية'}
+                  </button>
+                );
+              })}
             </div>
-            <div className="onboarding-theme-control">
-            <label className="sr-only" htmlFor="onboarding-theme">
-              {rtl ? 'المظهر' : 'Thème'}
-            </label>
-            <select
-              id="onboarding-theme"
-              value={theme}
-              disabled={finishing}
-              onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-              className="onboarding-theme-select"
+
+            {/* 2. Theme Smart Selection Pill */}
+            <div
+              className="onboarding-pill-rail flex items-center p-0.5 rounded-full border border-border/70 bg-muted/50 dark:bg-zinc-900/60 shadow-2xs"
+              role="radiogroup"
+              aria-label={rtl ? 'المظهر' : 'Thème'}
             >
-              <option value="light">{rtl ? 'فاتح' : 'Clair'}</option>
-              <option value="dark">{rtl ? 'داكن' : 'Sombre'}</option>
-              <option value="system">{rtl ? 'النظام' : 'Système'}</option>
-            </select>
-            {theme === 'dark' ? <Moon size={20} /> : theme === 'light' ? <Sun size={20} /> : <Laptop size={20} />}
+              {(['light', 'dark', 'system'] as const).map((mode) => {
+                const active = theme === mode;
+                const Icon = mode === 'dark' ? Moon : mode === 'light' ? Sun : Laptop;
+                const label = mode === 'light' ? (rtl ? 'فاتح' : 'Clair') : mode === 'dark' ? (rtl ? 'داكن' : 'Sombre') : (rtl ? 'النظام' : 'Système');
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    disabled={finishing}
+                    onClick={() => onThemeChange(mode)}
+                    title={label}
+                    aria-label={label}
+                    className={cn(
+                      'relative z-10 flex min-h-8 sm:min-h-9 items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-full text-xs font-semibold transition-colors duration-200 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2',
+                      active
+                        ? 'text-foreground font-bold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="onboarding-theme-active-pill"
+                        className="absolute inset-0 -z-10 rounded-full bg-background border border-border/70 shadow-xs"
+                        transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+                      />
+                    )}
+                    <Icon size={15} />
+                    <span className="hidden md:inline">{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

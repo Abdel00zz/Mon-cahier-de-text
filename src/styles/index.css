@@ -13,6 +13,7 @@
 @import "../features/evaluations/evaluationsBoard.css";
 @import "./mobile-performance.css";
 @import "./onboarding.css";
+@import "./elastic-morph.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
