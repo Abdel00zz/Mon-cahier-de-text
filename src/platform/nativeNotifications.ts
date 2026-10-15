@@ -31,8 +31,26 @@ export async function nativeNotificationState(requestPermission = false) {
       remote = requestPermission ? await connectNativePush(locale) : await nativeRemoteState();
     } catch { remote = { available: false, registered: null }; }
   }
-  return { permission: display, subscribed: current() && display === 'granted' && enabled(), serverRegistered: remote.registered, remoteAvailable: remote.available, delivery: 'local' as const,
-    reason: requestPermission && display !== 'granted' ? display === 'denied' ? 'permissionDenied' as const : 'permissionDismissed' as const : undefined };
+  let background = { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+  try {
+    const { getNativeBackgroundStatus, requestNativeIgnoreBatteryOptimization } = await import('./nativeRuntime');
+    background = await getNativeBackgroundStatus();
+    if (requestPermission && display === 'granted' && !background.batteryOptimizationIgnored) {
+      await requestNativeIgnoreBatteryOptimization();
+      background = await getNativeBackgroundStatus();
+    }
+  } catch { /* platform fallback */ }
+
+  return {
+    permission: display,
+    subscribed: current() && display === 'granted' && enabled(),
+    serverRegistered: remote.registered,
+    remoteAvailable: remote.available,
+    delivery: 'local' as const,
+    batteryOptimizationIgnored: background.batteryOptimizationIgnored,
+    canScheduleExactAlarms: background.canScheduleExactAlarms,
+    reason: requestPermission && display !== 'granted' ? display === 'denied' ? 'permissionDenied' as const : 'permissionDismissed' as const : undefined
+  };
 }
 
 export function reconcileNativeReminders(config: AppConfig, classes: ClassInfo[], owner?: string): Promise<void> {
@@ -98,3 +116,14 @@ export async function showNativeNotification(title: string, body: string, key: s
     extra: { url, owner } }] });
   return current();
 }
+
+export async function requestBatteryOptimizationExemption(): Promise<void> {
+  const { requestNativeIgnoreBatteryOptimization } = await import('./nativeRuntime');
+  await requestNativeIgnoreBatteryOptimization();
+}
+
+export async function requestExactAlarmAccess(): Promise<void> {
+  const { requestNativeExactAlarmPermission } = await import('./nativeRuntime');
+  await requestNativeExactAlarmPermission();
+}
+

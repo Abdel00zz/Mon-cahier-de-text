@@ -10,6 +10,8 @@ import {
     pushSupported,
     sendTestNotification,
     unsubscribeFromPush,
+    requestIgnoreBatteryOptimization,
+    requestExactAlarmPermission,
     type PushNotificationState,
 } from '@/infrastructure/push/push';
 import { Bell, CalendarCheck, CalendarDays, Clock, TriangleAlert } from '@/components/ui/icons';
@@ -37,10 +39,25 @@ export const PushActivationCard: React.FC<{
     onDeactivate: () => void;
     onTest: () => void;
     onOpenSettings?: () => void;
+    onRequestBatteryOptimization?: () => void;
+    onRequestExactAlarm?: () => void;
     t: Translate;
     supported?: boolean;
     iosNeedsInstall?: boolean;
-}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, onOpenSettings, t, supported = pushSupported(), iosNeedsInstall = supported && isIOSDevice() && !isStandalone() }) => {
+}> = ({
+    state,
+    checking,
+    busy,
+    onActivate,
+    onDeactivate,
+    onTest,
+    onOpenSettings,
+    onRequestBatteryOptimization,
+    onRequestExactAlarm,
+    t,
+    supported = pushSupported(),
+    iosNeedsInstall = supported && isIOSDevice() && !isStandalone(),
+}) => {
     const local = state.delivery === 'local';
     const active = state.permission === 'granted' && (local ? state.subscribed : state.remoteAvailable === false);
     const blocked = state.permission === 'denied' && !active;
@@ -63,6 +80,16 @@ export const PushActivationCard: React.FC<{
         [t(local ? 'notifications.nativeRemote' : 'notifications.state.server'), checking ? t('notifications.state.checking')
             : state.serverRegistered === null ? t('notifications.state.unavailable')
             : state.serverRegistered ? t('notifications.state.registered') : t(local ? 'notifications.nativeRemotePending' : 'notifications.state.notRegistered')],
+        ...(local ? [
+            [t('notifications.nativeBackground'), checking ? t('notifications.state.checking')
+                : state.batteryOptimizationIgnored ? t('notifications.nativeBackgroundOptimal')
+                : t('notifications.nativeBackgroundRestricted')],
+            ...(state.canScheduleExactAlarms !== undefined ? [
+                [t('notifications.nativeExactAlarms'), checking ? t('notifications.state.checking')
+                    : state.canScheduleExactAlarms ? t('notifications.state.allowed')
+                    : t('notifications.state.notAllowed')]
+            ] : [])
+        ] : []),
     ];
     return (
         <StatusNotice
@@ -81,6 +108,16 @@ export const PushActivationCard: React.FC<{
                     {busy ? t('common.loading') : active ? t('notifications.sendTest')
                         : state.permission === 'granted' ? t('notifications.finalizeReminders')
                         : t('notifications.enableReminders')}
+                </Button>
+            )}
+            {local && active && state.batteryOptimizationIgnored === false && onRequestBatteryOptimization && (
+                <Button variant="outline" disabled={busy || checking} onClick={onRequestBatteryOptimization}>
+                    {t('notifications.nativeAllowBackground')}
+                </Button>
+            )}
+            {local && active && state.canScheduleExactAlarms === false && onRequestExactAlarm && (
+                <Button variant="outline" disabled={busy || checking} onClick={onRequestExactAlarm}>
+                    {t('notifications.nativeAllowExactAlarms')}
                 </Button>
             )}
             {local && active && state.remoteAvailable && state.serverRegistered !== true && (
@@ -105,6 +142,11 @@ export const PushActivationCard: React.FC<{
                     ))}
                 </dl>
             </details>
+            {local && active && state.batteryOptimizationIgnored === false && (
+                <p className="basis-full text-xs leading-relaxed text-amber-700 dark:text-amber-300 font-medium">
+                    {t('notifications.nativeBackgroundWarning')}
+                </p>
+            )}
             {local && active && state.serverRegistered !== true && (
                 <p className="basis-full text-xs leading-relaxed text-muted-foreground">{t('notifications.nativeRemotePendingHint')}</p>
             )}
@@ -236,9 +278,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         };
         document.addEventListener('visibilitychange', refresh);
         window.addEventListener('online', refresh);
+        window.addEventListener('native-resume', refresh);
+        window.addEventListener('focus', refresh);
         return () => {
             document.removeEventListener('visibilitychange', refresh);
             window.removeEventListener('online', refresh);
+            window.removeEventListener('native-resume', refresh);
+            window.removeEventListener('focus', refresh);
         };
     }, []);
 
@@ -357,6 +403,30 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         }
     };
 
+    const handleRequestBatteryOptimization = async () => {
+        if (busyRef.current) return;
+        const lease = captureWorkspaceLease();
+        try {
+            await requestIgnoreBatteryOptimization();
+            if (liveRef.current && lease()) {
+                const updated = await getPushNotificationState();
+                if (liveRef.current && lease()) setPushState(updated);
+            }
+        } catch { /* ignored */ }
+    };
+
+    const handleRequestExactAlarm = async () => {
+        if (busyRef.current) return;
+        const lease = captureWorkspaceLease();
+        try {
+            await requestExactAlarmPermission();
+            if (liveRef.current && lease()) {
+                const updated = await getPushNotificationState();
+                if (liveRef.current && lease()) setPushState(updated);
+            }
+        } catch { /* ignored */ }
+    };
+
     const minuteOptions = (values: number[]) => values.map(value => ({ value, label: String(value) }));
 
     return (
@@ -375,6 +445,8 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                                 if (liveRef.current && lease()) setMessage({ text: t('notifications.nativePermissionDenied'), tone: 'warning' });
                             });
                         }}
+                        onRequestBatteryOptimization={handleRequestBatteryOptimization}
+                        onRequestExactAlarm={handleRequestExactAlarm}
                         onDeactivate={handleDeactivate}
                         onTest={handleTest}
                         t={t}

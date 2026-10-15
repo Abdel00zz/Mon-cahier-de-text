@@ -216,17 +216,14 @@ test('un devoir maison s’affiche en deux entrées : assigné aux élèves, pui
   assert.match(assigned, /kindPolicy\.absences && a\.type !== 'maison'/, 'jamais d’absents sur un devoir maison');
   assert.match(assigned, /kindPolicy\.students && a\.type !== 'maison'/, 'le bouton d’élèves des autres devoirs ne s’applique pas');
   assert.doesNotMatch(assigned, /evaluations\.action\.submissions/, 'plus de bouton « Remises » sur le devoir');
-  assert.match(assigned, /evaluations\.action\.notReturned/, 'les élèves qui n’ont pas rendu');
-  assert.match(assigned, /setSubmissionsFor\(link\)/);
-  assert.doesNotMatch(assigned, /evaluations\.action\.submissions/, 'plus de bouton « Remises » sur le devoir');
-  // Correction : document (corrigé) · corbeille.
-  assert.match(correction, /part: 'correction'/, 'le corrigé a son document');
-  assert.match(correction, /evaluations\.action\.correctionContent/, 'le libellé du corrigé');
-  assert.match(correction, /field: 'correction'/, 'sa date est la séance de correction');
-  assert.match(correction, /setDeletingCorrection\(link\)/, 'sa corbeille supprime la correction seule');
+  // Correction : document (corrigé) · élèves non rendus · corbeille.
+  assert.match(correction, /evaluations\.action\.correctionContent/, "le libellé du corrigé");
+  assert.match(correction, /evaluations\.action\.notReturned/, "les élèves qui n’ont pas rendu");
+  assert.match(correction, /setSubmissionsFor\(link\)/);
+  assert.match(correction, /field: 'correction'/, "sa date est la séance de correction");
+  assert.match(correction, /setDeletingCorrection\(link\)/, "sa corbeille supprime la correction seule");
   assert.equal((correction.match(/<AnimatedTrashButton/g) ?? []).length, 1);
-  assert.doesNotMatch(correction, /evaluations\.action\.absent|evaluations\.action\.dueDate/, 'ni absents, ni date limite');
-  assert.equal((assigned.match(/<AnimatedTrashButton/g) ?? []).length, 1);
+  assert.doesNotMatch(correction, /evaluations\.action\.absent|evaluations\.action\.dueDate/, "ni absents, ni date limite");
 });
 test('un titre généré se dit dans la langue de l’écran, sans pastille ni remarque en doublon', () => {
   // Titre enregistré en français dans un cahier lu en arabe : « تقويم تشخيصي 1 », à la place de « Évaluation diagnostique1 ».

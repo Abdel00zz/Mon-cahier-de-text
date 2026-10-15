@@ -346,7 +346,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     const correctionName = `${t('manageLessons.type.correction_devoir_maison')} ${number.format(a.num)}`;
     // Une correction déjà saisie reste visible même si la direction ne la transmet plus : rien n'est caché.
     const showCorrection = a.type === 'maison'
-      && (!!correctionDateISO || correctionIndicator === 'attached');
+      && (kindPolicy.correction || kindPolicy.students || !!correctionDateISO || correctionIndicator === 'attached' || !!submissions);
 
     const assignedRow = (
       <div
@@ -459,20 +459,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 </button>
               )}
 
-              {a.type === 'maison' && kindPolicy.students && (
-                <button
-                  type="button"
-                  onClick={() => setSubmissionsFor(link)}
-                  className="ev-action shrink-0"
-                  data-filled={notReturned > 0 ? 'danger' : observedSubmissions ? 'tone' : undefined}
-                  data-tippy-content={t('evaluations.tip.notReturned')}
-                  aria-label={`${t('evaluations.homework.notReturnedTitle')} — ${displayName}${notReturned > 0 ? ` · ${number.format(notReturned)}` : ''}`}
-                >
-                  <ActionIcon name="students" />
-                  <span>{t('evaluations.action.notReturned')}</span>
-                  {notReturned > 0 && <span className="ev-action__count">{number.format(notReturned)}</span>}
-                </button>
-              )}
               {/* Date limite à laquelle les élèves rendent le devoir. */}
               {a.type === 'maison' && (
                 <button
@@ -548,6 +534,20 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             >
               <ActionIcon name="document" />
               <span>{t('evaluations.action.correctionContent')}</span>
+            </button>
+          )}
+          {kindPolicy.students && (
+            <button
+              type="button"
+              onClick={() => setSubmissionsFor(link)}
+              className="ev-action shrink-0"
+              data-filled={notReturned > 0 ? 'danger' : observedSubmissions ? 'tone' : undefined}
+              data-tippy-content={t('evaluations.tip.notReturned')}
+              aria-label={`${t('evaluations.homework.notReturnedTitle')} — ${correctionName}${notReturned > 0 ? ` · ${number.format(notReturned)}` : ''}`}
+            >
+              <ActionIcon name="students" />
+              <span>{t('evaluations.action.notReturned')}</span>
+              {notReturned > 0 && <span className="ev-action__count">{number.format(notReturned)}</span>}
             </button>
           )}
           <AnimatedTrashButton

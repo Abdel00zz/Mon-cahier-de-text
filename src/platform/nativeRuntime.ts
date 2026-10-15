@@ -8,10 +8,35 @@ import { readThemeBackground } from './themeColor';
 const NativeShell = registerPlugin<{
   setAppearance(options: { background: string; dark: boolean }): Promise<void>;
   openNotificationSettings(): Promise<void>;
+  getBackgroundExecutionStatus(): Promise<{ batteryOptimizationIgnored: boolean; canScheduleExactAlarms: boolean }>;
+  requestIgnoreBatteryOptimization(): Promise<void>;
+  requestExactAlarmPermission(): Promise<void>;
 }>('NativeShell');
+
+export interface NativeBackgroundStatus {
+  batteryOptimizationIgnored: boolean;
+  canScheduleExactAlarms: boolean;
+}
 
 export async function openNativeNotificationSettings(): Promise<void> {
   if (Capacitor.isNativePlatform()) await NativeShell.openNotificationSettings();
+}
+
+export async function getNativeBackgroundStatus(): Promise<NativeBackgroundStatus> {
+  if (!Capacitor.isNativePlatform()) return { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+  try {
+    return await NativeShell.getBackgroundExecutionStatus();
+  } catch {
+    return { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+  }
+}
+
+export async function requestNativeIgnoreBatteryOptimization(): Promise<void> {
+  if (Capacitor.isNativePlatform()) await NativeShell.requestIgnoreBatteryOptimization();
+}
+
+export async function requestNativeExactAlarmPermission(): Promise<void> {
+  if (Capacitor.isNativePlatform()) await NativeShell.requestExactAlarmPermission();
 }
 
 /** Native services are loaded only inside the installed application. */

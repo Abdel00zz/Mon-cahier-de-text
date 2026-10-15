@@ -48,6 +48,10 @@ export interface PushNotificationState {
     /** false = aucune livraison distante possible sur cet appareil (page web). */
     remoteAvailable?: boolean;
     reason?: NotificationActivationReason;
+    /** Android : exemption d'optimisation de batterie pour l'arrière-plan */
+    batteryOptimizationIgnored?: boolean;
+    /** Android : droit de planifier des alarmes exactes */
+    canScheduleExactAlarms?: boolean;
 }
 
 export type NativeNotificationActivation = PushNotificationState;
@@ -189,4 +193,18 @@ export const sendTestNotification = async (): Promise<PushTestResult> => {
     }
     const ok = await showLocalNotification(title, body, 'local-test', '/#/notifications', 'test' as PushNotificationKind, true, () => true, locale);
     return { ok, sent: ok ? 1 : 0 };
+};
+
+export const requestIgnoreBatteryOptimization = async (): Promise<void> => {
+    if (Capacitor.isNativePlatform()) {
+        const { requestBatteryOptimizationExemption } = await import('../../platform/nativeNotifications');
+        await requestBatteryOptimizationExemption();
+    }
+};
+
+export const requestExactAlarmPermission = async (): Promise<void> => {
+    if (Capacitor.isNativePlatform()) {
+        const { requestExactAlarmAccess } = await import('../../platform/nativeNotifications');
+        await requestExactAlarmAccess();
+    }
 };
