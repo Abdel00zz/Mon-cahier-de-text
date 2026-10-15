@@ -55,7 +55,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                 // A shared minimum keeps short rows aligned; long bilingual
                 // names and enlarged text can grow without being clipped.
                 "class-list-item group relative flex min-h-[var(--class-list-row-h)] items-center border-b border-border/60 bg-card",
-                isActiveSession && "keep-session-active z-10"
+                isActiveSession && "z-10"
             )}
         >
             <button

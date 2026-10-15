@@ -35,11 +35,11 @@ const TITLE_FAMILIES: Record<TitleScript, string> = {
 /** Graisse par rôle, sans gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 700, tracking: '-0.015em' },
+        latin: { weight: 400, tracking: '0' },
         arabic: { weight: 400, tracking: '0' },
     },
     list: {
-        latin: { weight: 500, tracking: '-0.01em' },
+        latin: { weight: 400, tracking: '0' },
         arabic: { weight: 400, tracking: '0' },
     },
     page: {
@@ -49,7 +49,7 @@ const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number;
 };
 
 const buildStyle = (script: TitleScript, role: TitleFontRole): CSSProperties => Object.freeze({
-    fontFamily: TITLE_FAMILIES[script],
+    fontFamily: script === 'latin' && role !== 'page' ? 'var(--font-class-sheet)' : TITLE_FAMILIES[script],
     fontWeight: TITLE_RECIPES[role][script].weight,
     letterSpacing: TITLE_RECIPES[role][script].tracking,
 });
@@ -67,10 +67,9 @@ export function classTitleStyle(isRtl: boolean, role: TitleFontRole = 'card'): C
 }
 
 const FRENCH_DASHBOARD_TITLE: CSSProperties = Object.freeze({
-    fontFamily: TITLE_FAMILIES.latin,
-    fontWeight: 700,
-    letterSpacing: '-0.025em',
-    fontSynthesis: 'weight',
+    fontFamily: 'var(--font-class-sheet)',
+    fontWeight: 400,
+    letterSpacing: '0',
 });
 
 /** The French dashboard heading follows the course-sheet typography. */

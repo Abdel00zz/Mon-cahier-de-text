@@ -24,27 +24,16 @@
     --canvas-dot-alpha: 0.075;
     --canvas-dot-subtle-alpha: 0.024;
     --canvas-dot-micro-alpha: 0.034;
-    --canvas-zenith-alpha: 0.085;
-    --canvas-nadir-alpha: 0.06;
-    --canvas-horizon-alpha: 0.04;
 
     background-color: var(--canvas-base, hsl(var(--background)));
     background-image:
         /* 1. Trame pointillée haute précision façon carnet Pixel */
         radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.15px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.55px, transparent 1.65px),
-        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px),
-        /* 2. Aura zénithale chaude (Terracotta Pixel) */
-        radial-gradient(ellipse 82% 58% at 82% -6%, hsl(var(--canvas-zenith-hue) var(--canvas-zenith-sat) 56% / var(--canvas-zenith-alpha)), transparent 74%),
-        /* 3. Aura nadir sauge douce */
-        radial-gradient(ellipse 72% 52% at 8% 96%, hsl(var(--canvas-nadir-hue) var(--canvas-nadir-sat) 50% / var(--canvas-nadir-alpha)), transparent 76%),
-        /* 4. Lueur horizon latérale */
-        radial-gradient(ellipse 60% 45% at 15% 42%, hsl(var(--canvas-horizon-hue) var(--canvas-horizon-sat) 55% / var(--canvas-horizon-alpha)), transparent 70%),
-        /* 5. Voile de surface soyeux */
-        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97.5%, hsl(var(--canvas-tint-hue) 65% 52% / 0.03)) 0%, hsl(var(--background)) 100%);
-    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-    background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-    background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px);
+    background-repeat: repeat;
+    background-size: 24px 24px;
+    background-position: 0 0;
+    background-attachment: scroll;
     transition: background-color 240ms var(--pixel-spring);
 }
 
@@ -57,16 +46,9 @@
     --canvas-dot-alpha: 0.085;
     --canvas-dot-subtle-alpha: 0.03;
     --canvas-dot-micro-alpha: 0.038;
-    --canvas-zenith-alpha: 0.13;
-    --canvas-nadir-alpha: 0.09;
-    --canvas-horizon-alpha: 0.055;
     background-image:
         radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.1px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.5px, transparent 1.6px),
-        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px),
-        radial-gradient(ellipse 80% 55% at 85% -5%, hsl(var(--canvas-zenith-hue) var(--canvas-zenith-sat) 62% / var(--canvas-zenith-alpha)), transparent 72%),
-        radial-gradient(ellipse 70% 50% at 5% 95%, hsl(var(--canvas-nadir-hue) var(--canvas-nadir-sat) 58% / var(--canvas-nadir-alpha)), transparent 75%),
-        radial-gradient(ellipse 60% 45% at 15% 42%, hsl(var(--canvas-horizon-hue) var(--canvas-horizon-sat) 60% / var(--canvas-horizon-alpha)), transparent 70%),
-        linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 97%, hsl(var(--canvas-tint-hue) 60% 50% / 0.035)) 0%, hsl(var(--background)) 100%);
+        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px);
 }
 
 /* Les outils occupent la rangée supérieure ; le titre suit le bord du contenu. */
