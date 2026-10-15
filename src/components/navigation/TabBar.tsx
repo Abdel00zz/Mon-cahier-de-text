@@ -335,11 +335,8 @@ export const TabBar = React.memo<TabBarProps>(({
 
         {/* Paramètres reste à portée en bas de la barre latérale. */}
         <div
-          className="mt-auto flex shrink-0 flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-4 pe-4"
+          className="mt-auto flex shrink-0 flex-col gap-1.5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] ps-4 pe-4"
         >
-          {/* Ligne de séparation subtile */}
-          <div className="mx-2 mb-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" aria-hidden="true" />
-
           <motion.button
             type="button"
             whileTap={{ scale: 0.98 }}
