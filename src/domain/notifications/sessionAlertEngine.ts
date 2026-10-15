@@ -3,6 +3,7 @@ import { getDaySessionBlocks, type SessionBlock } from '../calendar/timetable.js
 import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
 import { dateTimeFormat } from '../../lib/formatters.js';
 import { millisecondsUntilNextMoroccoDay } from '../../platform/mobileScheduling.js';
+import { sessionReminderMinutes } from './sessionReminderTiming.js';
 
 interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number; remainingMinutes?: number }
 const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
@@ -37,7 +38,7 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
   const groups = new Map<number, SessionBlock[]>();
   blocks.forEach(block => groups.set(block.endMin, [...groups.get(block.endMin) ?? [], block]));
   const events: SessionAlert[] = [];
-  const lead = reminderMinutes(settings?.sessionReminderMinutes, 1, 10);
+  const lead = sessionReminderMinutes(settings);
   const grace = reminderMinutes(settings?.missingDateReminderMinutes, 5);
   for (const [end, group] of groups) {
     // 60-second freshness window survives ordinary re-renders but never rings after a finished session.

@@ -6,6 +6,7 @@ import { translateLocaleMessage } from '../../i18n/messages';
 import { formatLocalizedClassDisplayName } from '../../constants/class-levels';
 import { dateTimeFormat } from '../../lib/formatters';
 import { conciseNotificationText } from './notificationPresentation';
+import { sessionReminderMinutes } from './sessionReminderTiming';
 
 /** Convert school wall time through Casablanca's DST changes, independently of the phone zone. */
 export function schoolMinuteInstant(day: string, minute: number, zone = 'Africa/Casablanca'): Date | null {
@@ -40,8 +41,7 @@ export function buildNativeReminderPlan(config: AppConfig, classes: ClassInfo[],
   const calendar = getBundledCalendar();
   const today = todayInMorocco(now, calendar);
   const locale = config.applicationLocale ?? 'ar';
-  const rawLead = config.notificationSettings?.sessionReminderMinutes;
-  const lead = Number.isFinite(rawLead) ? Math.min(10, Math.max(1, Math.round(rawLead!))) : 1;
+  const lead = sessionReminderMinutes(config.notificationSettings);
   const planned: NativeReminder[] = [];
   for (let offset = 0; offset < 14; offset++) {
     const day = new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);

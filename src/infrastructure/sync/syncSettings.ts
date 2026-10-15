@@ -1,5 +1,6 @@
 import { AppConfig } from '../../types.js';
 import { mergePedagogicalDocuments } from '../../domain/evaluations/documentSync.js';
+import { sessionReminderMinutes } from '../../domain/notifications/sessionReminderTiming.js';
 
 /**
  * Sous-ensemble de la configuration qui appartient AU PROFESSEUR et doit
@@ -155,6 +156,11 @@ export const mergeAdminAssessmentDates = (
         merged.notificationSettings = {
             ...localNotify,
             ...remoteNotify,
+            // Migrate a legacy remote delay before a local version marker can mask it.
+            ...(remote.notify.sessionReminderMinutes !== undefined ? {
+                sessionReminderMinutes: sessionReminderMinutes(remote.notify),
+                sessionReminderTimingVersion: 1,
+            } : {}),
             // les états push et vibration restent ceux de CET appareil
             pushEnabled: local.notificationSettings?.pushEnabled ?? false,
             sessionVibration: local.notificationSettings?.sessionVibration ?? false,

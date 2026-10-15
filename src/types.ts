@@ -345,6 +345,8 @@ export interface NotificationSettings {
     sessionEndReminderEnabled?: boolean;
     sessionEndReminderTime?: string;
     sessionReminderMinutes?: number;
+    /** Marks the five-minute default migration; preserves later explicit one-minute choices. */
+    sessionReminderTimingVersion?: 1;
     missingDateReminderEnabled?: boolean;
     missingDateReminderMinutes?: number;
 }

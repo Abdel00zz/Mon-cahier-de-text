@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { SettingsRow, SettingsSection, settingsFieldClass } from './SettingsPrimitives';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease } from '@/infrastructure/storage/accountWorkspace';
+import { sessionReminderMinutes } from '@/domain/notifications/sessionReminderTiming';
 
 type Translate = ReturnType<typeof useLocale>['t'];
 
@@ -407,9 +408,9 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     checked={settings.sessionEndReminderEnabled}
                     onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} icon={Clock} />
                 <SelectRow label={l('Minutes avant la fin', 'الدقائق قبل النهاية', 'Minutes before the end')}
-                    value={settings.sessionReminderMinutes ?? 1} options={minuteOptions([1, 2, 5, 10])}
+                    value={sessionReminderMinutes(settings)} options={minuteOptions([1, 2, 5, 10])}
                     disabled={!settings.enabled || !settings.sessionEndReminderEnabled}
-                    onChange={value => patch({ sessionReminderMinutes: value })} />
+                    onChange={value => patch({ sessionReminderMinutes: value, sessionReminderTimingVersion: 1 })} />
                 <Toggle label={l('Rappel si aucune date', 'تذكير إن لم يُسجَّل تاريخ', 'Reminder if no date')}
                     hint={l('Une date ne confirme pas chaque séance du jour.', 'التاريخ الواحد لا يؤكد كل حصص اليوم.', 'One date does not confirm every session that day.')}
                     checked={settings.missingDateReminderEnabled}

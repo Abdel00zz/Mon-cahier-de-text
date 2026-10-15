@@ -7,6 +7,7 @@ import { EMPTY_EVALUATION_POLICY, normalizeEvaluationPolicy } from '../domain/ev
 import { SYNCABLE_KEYS } from '../infrastructure/sync/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
+import { DEFAULT_SESSION_REMINDER_MINUTES, sessionReminderMinutes } from '../domain/notifications/sessionReminderTiming';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
@@ -29,7 +30,8 @@ export const defaultNotificationSettings = {
     // désactivées dans un profil existant restent respectées.
     sessionVibration: false,
     sessionEndReminderEnabled: true,
-    sessionReminderMinutes: 1,
+    sessionReminderMinutes: DEFAULT_SESSION_REMINDER_MINUTES,
+    sessionReminderTimingVersion: 1,
     missingDateReminderEnabled: true,
     missingDateReminderMinutes: 5,
 } as const;
@@ -40,7 +42,11 @@ const normalizeNotificationSettings = (value: unknown): NotificationSettings => 
         : {};
     // Migration de l'ancien contrôle lié à la cloche flottante supprimée.
     delete stored.autoOpenCurrentClass;
-    return { ...defaultNotificationSettings, ...stored } as NotificationSettings;
+    return {
+        ...defaultNotificationSettings, ...stored,
+        sessionReminderMinutes: sessionReminderMinutes(stored as Partial<NotificationSettings>),
+        sessionReminderTimingVersion: 1,
+    } as NotificationSettings;
 };
 
 const defaultConfig: AppConfig = {
