@@ -25,8 +25,8 @@
     /* Tons Terracotta / Pêche terre cuite */
     --btn-add-bg: hsl(var(--primary));
     --btn-add-hover: hsl(var(--primary) / .9);
-    --btn-save-bg: #ab4b2a;
-    --btn-save-hover: #983f21;
+    --btn-save-bg: hsl(var(--primary));
+    --btn-save-hover: hsl(var(--primary) / .9);
     
     /* États d'acquisition (Oral / Suivi des élèves) */
     --acquis-bg: #e1f4ea;
@@ -81,10 +81,10 @@
     --text-muted: #9b9a93;
     --text-placeholder: hsl(var(--muted-foreground));
 
-    --btn-add-bg: #b87c69;
-    --btn-add-hover: #cb8e7a;
-    --btn-save-bg: #bd522d;
-    --btn-save-hover: #d25f37;
+    --btn-add-bg: hsl(var(--primary));
+    --btn-add-hover: hsl(var(--primary) / .9);
+    --btn-save-bg: hsl(var(--primary));
+    --btn-save-hover: hsl(var(--primary) / .9);
 
     --danger-color: #e07676;
     --danger-soft: #e07676;
@@ -686,25 +686,25 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
 }
 
 @media (max-width: 680px) {
-    .notebook-tracker__controls { padding: 12px 14px 10px; }
-    .student-search-bar > .choice-trigger--filter { flex: 0 0 145px; }
+    .notebook-tracker__controls { padding: 10px 10px 8px; }
+    .student-search-bar > .choice-trigger--filter { flex: 0 0 135px; }
     .student-search-bar__shortcut { display: none; }
     .notebook-tracker__scroll {
-        padding: 12px 14px;
-        gap: 12px;
+        padding: 10px 10px;
+        gap: 8px;
     }
 
     .notebook-student,
     .student-card {
-        padding: 8px 12px;
-        gap: 8px;
-        border-radius: 14px;
+        padding: 7px 10px;
+        gap: 6px;
+        border-radius: 13px;
     }
 
     .card-main-line {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 44px;
-        gap: 10px;
+        grid-template-columns: minmax(0, 1fr) auto 36px;
+        gap: 8px;
         align-items: center;
         width: 100%;
     }
@@ -717,16 +717,19 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
         max-width: 100%;
     }
 
+    .notebook-choice { grid-column: 2; grid-row: 1; min-width: 0; }
+    .notebook-choice .choice-trigger { width: auto; min-width: 112px; max-width: 152px; min-height: 34px; padding: 4px 8px; font-size: 12px; border-radius: 9px; }
+
     .btn-delete-row,
     .notebook-student__remove {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 1;
         justify-self: end;
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
     }
-    .notebook-choice { grid-column: 1 / -1; min-width: 0; }
-    .notebook-choice .choice-trigger { width: 100%; min-width: 0; }
 
 
 

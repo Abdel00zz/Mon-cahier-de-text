@@ -6,30 +6,29 @@
    ══════════════════════════════════════════════════════════════ */
 
 .date-cal-theme {
-    --cal-ink: #222741;
-    --cal-muted: #6e7883;
-    --cal-line: #dcdce3;
-    --cal-soft: #f2f6f8;
-    --cal-surface: #f8fafa;
-    --cal-item: #424588;
-    --cal-accent: #66dcec;
-    --cal-accent-ink: #222741;
-    --cal-band: rgb(102 220 236 / 0.24);
+    --cal-ink: hsl(var(--foreground));
+    --cal-muted: hsl(var(--muted-foreground));
+    --cal-line: hsl(var(--border) / 0.8);
+    --cal-soft: hsl(var(--muted) / 0.7);
+    --cal-surface: hsl(var(--card));
+    --cal-item: hsl(var(--foreground) / 0.9);
+    --cal-accent: hsl(var(--primary));
+    --cal-accent-ink: hsl(var(--primary-foreground));
+    --cal-band: hsl(var(--primary) / 0.14);
     --cal-radius: 14px;
-    --cal-pad: 10px;
+    --cal-pad: 8px;
 }
 
-/* Mode sombre : gris profonds étagés, bleu désaturé, texte adouci. */
 .dark .date-cal-theme {
-    --cal-ink: #e4e6f0;
-    --cal-muted: #9aa3ad;
-    --cal-line: rgb(255 255 255 / 0.08);
-    --cal-soft: rgb(255 255 255 / 0.07);
-    --cal-surface: rgb(255 255 255 / 0.03);
-    --cal-item: #c5c8f0;
-    --cal-accent: #56bfcd;
-    --cal-accent-ink: #10202a;
-    --cal-band: rgb(86 191 205 / 0.2);
+    --cal-ink: hsl(var(--foreground));
+    --cal-muted: hsl(var(--muted-foreground));
+    --cal-line: rgba(255, 255, 255, 0.1);
+    --cal-soft: rgba(255, 255, 255, 0.08);
+    --cal-surface: hsl(var(--card));
+    --cal-item: hsl(var(--foreground) / 0.9);
+    --cal-accent: hsl(var(--primary));
+    --cal-accent-ink: hsl(var(--primary-foreground));
+    --cal-band: hsl(var(--primary) / 0.2);
 }
 
 .date-cal {
@@ -40,12 +39,12 @@
 }
 
 .date-cal__weekday {
-    padding-block: 2px 6px;
+    padding-block: 2px 5px;
     text-align: center;
     color: var(--cal-muted);
     font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
 }
 
@@ -55,7 +54,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 44px;
+    height: 38px;
     border: 0;
     background: transparent;
     cursor: pointer;
@@ -77,8 +76,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 999px;
     color: var(--cal-item);
     font-size: 13px;
@@ -91,16 +90,15 @@
 .date-cal__day:hover .date-cal__num { background: var(--cal-soft); }
 .date-cal__day:active .date-cal__num { transform: scale(0.9); }
 .date-cal__day:focus-visible { outline: none; }
-.date-cal__day:focus-visible .date-cal__num { box-shadow: 0 0 0 2px var(--cal-surface), 0 0 0 4px var(--cal-ink); }
+.date-cal__day:focus-visible .date-cal__num { box-shadow: 0 0 0 2px var(--cal-surface), 0 0 0 4px var(--cal-accent); }
 
 /* Dimanche : jour sans classe, gris de la palette. */
 .date-cal__day[data-inactive] .date-cal__num { color: var(--cal-muted); font-weight: 500; }
 
 .date-cal__day[data-today] .date-cal__num {
-    background: var(--cal-soft);
-    color: var(--cal-ink);
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
     font-weight: 700;
-    box-shadow: 0 1px 2px rgb(34 39 65 / 0.08), 0 4px 10px -4px rgb(34 39 65 / 0.22);
 }
 
 .date-cal__day[data-range='middle'] .date-cal__num { color: var(--cal-ink); }
@@ -109,20 +107,18 @@
     background: var(--cal-accent);
     color: var(--cal-accent-ink);
     font-weight: 700;
-    box-shadow: 0 4px 12px -4px rgb(102 220 236 / 0.75);
+    box-shadow: 0 4px 12px -3px hsl(var(--primary) / 0.45);
 }
 
 .date-cal__day[data-selected]:hover .date-cal__num { filter: brightness(1.06); }
 .date-cal__day[data-selected]:active .date-cal__num { filter: brightness(0.92); }
 
-/* Sélecteurs de mois et d'année : l'encre de la palette marque le choix. */
+/* Sélecteurs de mois et d'année : le thème primaire marque le choix. */
 .date-cal-chip[data-active] {
-    background: var(--cal-ink);
-    color: var(--cal-surface);
+    background: var(--cal-accent);
+    color: var(--cal-accent-ink);
     font-weight: 700;
 }
-
-.dark .date-cal-chip[data-active] { color: #1b1d27; }
 
 @media (prefers-reduced-motion: reduce) {
     .date-cal__num { transition: none; }

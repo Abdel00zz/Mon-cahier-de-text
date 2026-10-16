@@ -377,10 +377,10 @@ export const EventDateModal: FC<EventDateModalProps> = ({
 
           {/* Grille des jours du mois : lundi en tête de ligne, à droite en arabe ;
               bande continue pour une période */}
-          <div className="date-cal__grid grid grid-cols-7 gap-y-1">
+          <div className="date-cal__grid grid grid-cols-7 gap-y-0.5">
             {/* Cases vides pour le décalage */}
             {Array.from({ length: emptyPrefixCount }).map((_, idx) => (
-              <div key={`empty-${idx}`} className="h-11 w-full" aria-hidden="true" />
+              <div key={`empty-${idx}`} className="h-[38px] w-full" aria-hidden="true" />
             ))}
 
             {/* Jours du mois */}
@@ -427,7 +427,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={handleClearDate}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-9"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-9 rounded-xl"
             />
           ) : <div />}
 
@@ -437,7 +437,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="text-xs font-medium h-9 px-3"
+              className="text-xs font-medium h-9 px-3.5 rounded-xl"
             >
               {copy.cancel}
             </Button>
@@ -446,7 +446,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               size="sm"
               onClick={handleApply}
               disabled={!startDate}
-              className="text-xs font-bold h-9 px-4 bg-zinc-800 text-zinc-100 hover:bg-zinc-900 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+              className="text-xs font-bold h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
             >
               {copy.apply}
             </Button>
