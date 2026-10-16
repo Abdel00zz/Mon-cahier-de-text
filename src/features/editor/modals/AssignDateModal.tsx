@@ -46,6 +46,9 @@ import { extractDateRange, formatPedagogicalDateCell } from '@/domain/evaluation
 import { resolveClassSessionDatesInRange } from '@/domain/notebook/classSessionDates';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
+import { ContextualDescriptionEditor } from './ContextualDescriptionEditor';
+import { renderDescriptionWithBold } from '@/components/typography/textFormat';
+import { MathText } from '@/components/ui/math-text';
 import './AssignDateModal.premium.css';
 import './paperFormModal.css';
 
@@ -234,18 +237,19 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
         </div>
       </div>
 
-      {/* Zone de saisie beige épurée avec compteur "X caractères" en dessous */}
-      <div className="space-y-1.5">
+      {/* Zone de saisie enrichie (gras, italique, souligné, puces, formules, couleurs, surlignage) avec compteur */}
+      <div className="space-y-2">
         <div className="remark-textarea-wrapper">
-          <textarea
-            ref={textareaRef}
+          <ContextualDescriptionEditor
             id="assign-date-remark"
+            externalRef={textareaRef}
             value={remark}
-            onChange={event => onRemarkChange(event.target.value)}
+            onChange={onRemarkChange}
             dir={fieldDir}
             rows={4}
             placeholder={placeholder}
-            className="remark-textarea"
+            className="remark-textarea !min-h-[125px]"
+            alwaysShowToolbar
           />
         </div>
         <div className="flex justify-end pe-1">
@@ -253,6 +257,18 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
             {charCount} {locale === 'ar' ? 'حرف' : locale === 'en' ? 'characters' : 'caractères'}
           </span>
         </div>
+        {remark.trim() && (
+          <div className="rounded-2xl border border-border/70 bg-muted/25 p-3 text-sm text-foreground shadow-2xs">
+            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              {t('editContent.mathPreview')}
+            </p>
+            <MathText source={remark} cacheKey={`remark-preview-${remark}`}>
+              <div dir="auto" className="editor-type-remark space-y-1 text-start text-xs sm:text-sm leading-relaxed">
+                {renderDescriptionWithBold(remark)}
+              </div>
+            </MathText>
+          </div>
+        )}
       </div>
     </div>
   );

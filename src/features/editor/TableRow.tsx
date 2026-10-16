@@ -10,6 +10,7 @@ import { numberFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
+import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import './editorRowStates.css';
 
@@ -254,7 +255,7 @@ const RemarkCell: FC<{
             )}
             {otherRemark && (
               <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
-                {otherRemark}
+                {renderDescriptionWithBold(otherRemark)}
               </div>
             )}
             {!homeworkLine && !otherRemark && (

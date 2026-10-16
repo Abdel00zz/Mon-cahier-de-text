@@ -28,7 +28,7 @@ import { buildSessionActivityRemarks, remarksForSessionDates } from '@/domain/ev
 import { translateLocaleMessage } from '@/i18n/messages';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { getAcademyById } from '@/domain/classes/moroccoEducation';
-import { isArabicText } from '@/components/typography/textFormat';
+import { isArabicText, renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
@@ -426,7 +426,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                                             {remarks.length > 0 && (
                                                 <div className="print-session-remarks">
                                                     {remarks.map((remark, remarkIndex) => (
-                                                        <div key={`remark-${remarkIndex}`} dir={textDirectionAttribute(remark)} className="print-session-remark"><MathText source={remark}>{remark}</MathText></div>
+                                                        <div key={`remark-${remarkIndex}`} dir={textDirectionAttribute(remark)} className="print-session-remark">{renderDescriptionWithBold(remark)}</div>
                                                     ))}
                                                 </div>
                                             )}
@@ -452,7 +452,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                                 const sep = isRtlPrint ? '، ' : ', ';
                                 const absenceStr = `${prefix}${itemAbsences.join(sep)}`;
                                 if (!displayRemark.includes('الغياب') && !displayRemark.toLowerCase().includes('absent')) {
-                                    // Texte pur : la composition se fait par le <MathText> du rendu.
+                                    // Texte pur : la composition se fait par renderDescriptionWithBold au rendu.
                                     displayRemark = displayRemark ? `${displayRemark}\n${absenceStr}` : absenceStr;
                                 }
                             }
@@ -464,7 +464,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                                         {renderPrintContent(item)}
                                     </td>
                                     <td className="print-col-remark" dir={textDirectionAttribute(displayRemark)}>
-                                        <MathText source={displayRemark}>{displayRemark}</MathText>
+                                        {displayRemark ? renderDescriptionWithBold(displayRemark) : null}
                                     </td>
                                 </tr>
                             );

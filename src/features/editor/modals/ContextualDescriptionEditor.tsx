@@ -31,6 +31,8 @@ interface ContextualDescriptionEditorProps {
   rows?: number;
   className?: string;
   dir?: 'ltr' | 'rtl' | 'auto';
+  externalRef?: React.RefObject<HTMLTextAreaElement | null>;
+  alwaysShowToolbar?: boolean;
 }
 
 const ACTIONS: Array<{ action: FormatAction; icon: React.ComponentType<{ className?: string }>; labelKey: string }> = [
@@ -100,9 +102,12 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
   rows = 10,
   className,
   dir,
+  externalRef,
+  alwaysShowToolbar = false,
 }) => {
   const { t } = useLocale();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = externalRef ?? internalRef;
   // Annuler / rétablir sans bouton : la mise en forme posée par le code ne vide plus l'historique.
   const history = useTextHistory({ value, setValue: onChange, textareaRef });
   const [selection, setSelection] = useState<SelectionRange | null>(null);
@@ -113,32 +118,87 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
       ? { start: textarea.selectionStart, end: textarea.selectionEnd }
       : null;
     setSelection(next);
-    if (!next) setShowColorMenu(false);
-  }, []);
+    if (!next && !alwaysShowToolbar) setShowColorMenu(false);
+  }, [alwaysShowToolbar]);
 
   const applyFormat = useCallback((action: FormatAction, range = selection) => {
-    if (!range || range.end <= range.start) return;
-    const selectedText = value.slice(range.start, range.end);
+    const activeRange = range && range.end > range.start
+      ? range
+      : (textareaRef.current && textareaRef.current.selectionEnd > textareaRef.current.selectionStart
+          ? { start: textareaRef.current.selectionStart, end: textareaRef.current.selectionEnd }
+          : null);
+
+    if (!activeRange) {
+      const cursor = textareaRef.current?.selectionStart ?? value.length;
+      if (action === 'bullets' || action === 'numbered') {
+        const lineStart = value.lastIndexOf('\n', Math.max(0, cursor - 1)) + 1;
+        const lineEndIdx = value.indexOf('\n', cursor);
+        const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
+        const currentLine = value.slice(lineStart, lineEnd);
+        const prefix = action === 'bullets' ? '- ' : '1. ';
+        const cleanedLine = currentLine.replace(/^\s*(?:[-*]|\d+[.)])\s+/, '');
+        const nextLine = currentLine.startsWith(prefix) ? cleanedLine : `${prefix}${cleanedLine}`;
+        const nextValue = `${value.slice(0, lineStart)}${nextLine}${value.slice(lineEnd)}`;
+        onChange(nextValue);
+        const nextCursor = lineStart + nextLine.length;
+        window.requestAnimationFrame(() => {
+          textareaRef.current?.focus();
+          textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+        });
+        return;
+      }
+      const formatted = formatSelection(action, '');
+      const nextValue = `${value.slice(0, cursor)}${formatted.value}${value.slice(cursor)}`;
+      onChange(nextValue);
+      const nextCursor = cursor + formatted.inset;
+      window.requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+      });
+      return;
+    }
+
+    const selectedText = value.slice(activeRange.start, activeRange.end);
     const formatted = formatSelection(action, selectedText);
-    const nextValue = `${value.slice(0, range.start)}${formatted.value}${value.slice(range.end)}`;
+    const nextValue = `${value.slice(0, activeRange.start)}${formatted.value}${value.slice(activeRange.end)}`;
     onChange(nextValue);
 
-    const nextStart = range.start + formatted.inset;
+    const nextStart = activeRange.start + formatted.inset;
     const nextEnd = action === 'bullets' || action === 'numbered'
-      ? range.start + formatted.value.length
+      ? activeRange.start + formatted.value.length
       : nextStart + selectedText.length;
     window.requestAnimationFrame(() => {
       textareaRef.current?.focus();
       textareaRef.current?.setSelectionRange(nextStart, nextEnd);
       setSelection({ start: nextStart, end: nextEnd });
     });
-  }, [onChange, selection, value]);
+  }, [onChange, selection, textareaRef, value]);
 
   const applyColor = useCallback((colorId: string, range = selection) => {
-    if (!range || range.end <= range.start) return;
+    const activeRange = range && range.end > range.start
+      ? range
+      : (textareaRef.current && textareaRef.current.selectionEnd > textareaRef.current.selectionStart
+          ? { start: textareaRef.current.selectionStart, end: textareaRef.current.selectionEnd }
+          : null);
+
+    if (!activeRange) {
+      if (colorId === 'clear') return;
+      const cursor = textareaRef.current?.selectionStart ?? value.length;
+      const before = colorId === 'highlight' ? '==' : `[color:${colorId}]`;
+      const after = colorId === 'highlight' ? '==' : '[/color]';
+      const nextValue = `${value.slice(0, cursor)}${before}${after}${value.slice(cursor)}`;
+      onChange(nextValue);
+      const nextCursor = cursor + before.length;
+      window.requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+      });
+      return;
+    }
+
     if (colorId === 'highlight') {
       // Un seul geste, jamais de `====` : on retire le surlignage s'il existe déjà, sinon on entoure le texte visible.
-      const edit = toggleHighlight(value, range.start, range.end);
+      const edit = toggleHighlight(value, activeRange.start, activeRange.end);
       if (edit.value === value) return;
       onChange(edit.value);
       window.requestAnimationFrame(() => {
@@ -148,12 +208,12 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
       });
       return;
     }
-    const selectedText = value.slice(range.start, range.end);
+    const selectedText = value.slice(activeRange.start, activeRange.end);
     const formatted = formatColorSelection(colorId, selectedText);
-    const nextValue = `${value.slice(0, range.start)}${formatted.value}${value.slice(range.end)}`;
+    const nextValue = `${value.slice(0, activeRange.start)}${formatted.value}${value.slice(activeRange.end)}`;
     onChange(nextValue);
 
-    const nextStart = range.start + formatted.inset;
+    const nextStart = activeRange.start + formatted.inset;
     const nextEnd = nextStart + formatted.coreLength;
 
     window.requestAnimationFrame(() => {
@@ -161,15 +221,22 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
       textareaRef.current?.setSelectionRange(nextStart, nextEnd);
       setSelection({ start: nextStart, end: nextEnd });
     });
-  }, [onChange, selection, value]);
+  }, [onChange, selection, textareaRef, value]);
+
+  const showToolbar = alwaysShowToolbar || Boolean(selection);
 
   return (
-    <div className="relative">
-      {selection && (
+    <div className={cn('relative', alwaysShowToolbar && 'space-y-1.5')}>
+      {showToolbar && (
         <div
           role="toolbar"
           aria-label={t('editContent.formatSelection')}
-          className="absolute end-2 top-2 z-20 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
+          className={cn(
+            'flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in',
+            alwaysShowToolbar
+              ? 'relative z-20 w-fit max-w-full flex-wrap shadow-2xs'
+              : 'absolute end-2 top-2 z-20 shadow-xl',
+          )}
         >
           {ACTIONS.map(({ action, icon: Icon, labelKey }) => (
             <button

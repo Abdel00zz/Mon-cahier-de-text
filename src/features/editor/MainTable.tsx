@@ -18,6 +18,7 @@ import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock'
 import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
+import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { SessionDocuments } from './SessionDocuments';
 import { isExercise } from '@/domain/notebook/contentReorder';
 import { useEditorRowReorder } from './useEditorRowReorder';
@@ -395,12 +396,12 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                             </span>
                           )}
                           {otherRemark && (
-                            <span
+                            <div
                               dir={textDirectionAttribute(otherRemark)}
                               className="editor-type-remark w-full whitespace-pre-wrap break-words text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm"
                             >
-                              {otherRemark}
-                            </span>
+                              {renderDescriptionWithBold(otherRemark)}
+                            </div>
                           )}
                           {!homeworkLine && !otherRemark && (
                             <span className="opacity-0 select-none text-xs">·</span>
