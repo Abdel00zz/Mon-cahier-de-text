@@ -34,6 +34,10 @@
 .paper-form-modal .date-card .btn-link-action { min-height: 44px; border-radius: 8px; padding-inline: 6px; font-size: 12px; }
 .paper-form-modal .date-card .btn-link-action:hover { background: var(--form-well); text-decoration: none; }
 .paper-form-modal .content-fields input[type="date"] { padding-inline: 12px; background: var(--form-paper); font-variant-numeric: tabular-nums; }
+.content-date-fields { display: grid; gap: 10px; }
+.content-date-field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(144px, 1.35fr); align-items: center; gap: 12px; }
+.content-date-field .date-card-label { margin: 0; line-height: 1.5; text-align: start; }
+.content-date-field input[type="date"] { min-width: 0; width: 100%; text-align: start; }
 .paper-form-modal .btn-cancel { background: var(--form-well); color: hsl(var(--foreground)); }
 .paper-form-modal :is(.btn-cancel, .btn-submit) { border-radius: 10px; box-shadow: none; }
 .paper-form-modal .content-modal__actions { justify-content: flex-end; }

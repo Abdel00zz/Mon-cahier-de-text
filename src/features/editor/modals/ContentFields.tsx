@@ -9,8 +9,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { translateLocaleMessage } from '@/i18n/messages';
 import { hasMathSyntax } from '@/lib/text/math';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
-import { cn } from '@/lib/utils';
-import { formatPedagogicalDateCell } from '@/domain/evaluations/notebookSyncBridge';
 import type { ContentDirection } from '@/types';
 import type { ContentDraft, ContentField } from '@/domain/notebook/contentDraft';
 
@@ -128,48 +126,42 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
           )}
         </div>
 
-        <div className={cn("grid gap-3.5", isRange ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
-          <div className="space-y-1.5">
-            <label htmlFor={`${id}-date`} className="date-card-label block text-[13.5px] font-medium text-foreground/80">
+        <div className="content-date-fields">
+          <div className="content-date-field">
+            <label htmlFor={`${id}-date`} className="date-card-label text-[13.5px] font-medium text-foreground/80">
               {isRange ? `${t('editor.startDate')} :` : `${t('assignDate.chooseDate')} :`}
             </label>
-            <div className="date-input-wrap relative">
+            <div className="date-input-wrap relative min-w-0">
               <Input
                 id={`${id}-date`}
                 type="date"
                 value={value.date ?? ''}
                 onChange={event => onChange({ ...value, date: event.target.value })}
-                className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
+                className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-3 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
               />
             </div>
           </div>
 
           {isRange && (
-            <div className="space-y-1.5">
-              <label htmlFor={`${id}-end-date`} className="date-card-label block text-[13.5px] font-medium text-foreground/80">
+            <div className="content-date-field">
+              <label htmlFor={`${id}-end-date`} className="date-card-label text-[13.5px] font-medium text-foreground/80">
                 {t('editor.endDate')} :
               </label>
-              <div className="date-input-wrap relative">
+              <div className="date-input-wrap relative min-w-0">
                 <Input
                   id={`${id}-end-date`}
                   type="date"
                   min={value.date || undefined}
                   value={value.endDate ?? ''}
                   onChange={event => onChange({ ...value, endDate: event.target.value })}
-                  className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-4 pr-10 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
+                  className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-3 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
                 />
               </div>
             </div>
           )}
         </div>
 
-        {value.date && (
-          <div className="flex items-center gap-2 pt-0.5">
-            <span className="font-semibold text-foreground px-3 py-1 rounded-xl bg-background border border-[#e0ded7] dark:border-stone-700 shadow-2xs text-xs">
-              {formatPedagogicalDateCell(value.date, value.endDate, contentLocale)}
-            </span>
-          </div>
-        )}
+
       </div>
     )}
     {!titleOnly && <div>

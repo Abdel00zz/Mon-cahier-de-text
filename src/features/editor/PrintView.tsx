@@ -5,7 +5,6 @@ import React, { useMemo } from 'react';
 import './print.css';
 import { printLayoutStyle } from '@/infrastructure/printing/printLayout';
 import { collectSessionDates } from '@/infrastructure/printing/printMeta';
-import { MathText } from '@/components/ui/math-text';
 import { visibleNotebookRows } from '@/domain/evaluations/homeworkPlacement';
 import { ContentRenderer } from './ContentRenderer';
 import { buildContentNumbers } from '@/domain/notebook/contentNumbering';

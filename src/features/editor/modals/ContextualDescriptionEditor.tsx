@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Bold,
   Highlighter,
@@ -13,6 +13,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import './contextualDescriptionEditor.css';
 import { useTextHistory } from '@/hooks/useTextHistory';
 import { findHighlightClose, highlightOpenAt, toggleHighlight } from '@/lib/text/highlightMarkers';
 
@@ -112,30 +114,12 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
   const { t } = useLocale();
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
-  const colorMenuRef = useRef<HTMLDivElement>(null);
+  const colorSelection = useRef<{ start: number; end: number } | null>(null);
+  const colorApplied = useRef(false);
 
   // Annuler / rétablir sans bouton : l'historique conserve chaque frappe et mise en forme.
   const history = useTextHistory({ value, setValue: onChange, textareaRef });
   const [showColorMenu, setShowColorMenu] = useState(false);
-
-  // Fermer le menu des couleurs au clic externe ou sur Échap
-  useEffect(() => {
-    if (!showColorMenu) return;
-    const handleOutside = (e: MouseEvent) => {
-      if (colorMenuRef.current && !colorMenuRef.current.contains(e.target as Node)) {
-        setShowColorMenu(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowColorMenu(false);
-    };
-    document.addEventListener('pointerdown', handleOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handleOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showColorMenu]);
 
   const applyFormat = useCallback((action: FormatAction) => {
     const textarea = textareaRef.current;
@@ -189,12 +173,18 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
 
   const applyColor = useCallback((colorId: string) => {
     const textarea = textareaRef.current;
-    const start = textarea?.selectionStart ?? value.length;
-    const end = textarea?.selectionEnd ?? value.length;
+    const start = colorSelection.current?.start ?? textarea?.selectionStart ?? value.length;
+    const end = colorSelection.current?.end ?? textarea?.selectionEnd ?? value.length;
     const hasSelection = end > start;
 
     if (!hasSelection) {
-      if (colorId === 'clear') return;
+      if (colorId === 'clear') {
+        window.requestAnimationFrame(() => {
+          textarea?.focus();
+          textarea?.setSelectionRange(start, start);
+        });
+        return;
+      }
       const before = colorId === 'highlight' ? '==' : `[color:${colorId}]`;
       const after = colorId === 'highlight' ? '==' : '[/color]';
       const nextValue = `${value.slice(0, start)}${before}${after}${value.slice(start)}`;
@@ -232,172 +222,77 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
     });
   }, [onChange, textareaRef, value]);
 
-const TOOL_BTN_CLS = cn(
-  'tool-btn w-8 h-8 border-none bg-transparent rounded-[8px]',
-  'text-[#5e5e5a] dark:text-[#a8a8a2]',
-  'flex items-center justify-center cursor-pointer select-none shrink-0',
-  'transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]',
-  'hover:bg-white/90 hover:text-[#1c1c1a] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06),0_0_0_1px_#e4e4e0]',
-  'dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_1px_2px_rgba(0,0,0,0.3),0_0_0_1px_#383832]',
-  'active:scale-[0.92] active:bg-[#e8e8e4] dark:active:bg-[#242420]',
-  'motion-reduce:transition-none motion-reduce:active:scale-100',
-);
-
-const HIGHLIGHT_BTN_CLS = cn(
-  'tool-btn w-8 h-8 border-none bg-transparent rounded-[8px]',
-  'text-amber-600 dark:text-amber-400',
-  'flex items-center justify-center cursor-pointer select-none shrink-0',
-  'transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]',
-  'hover:bg-amber-50 hover:text-amber-700 hover:shadow-[0_1px_2px_rgba(217,119,6,0.12),0_0_0_1px_rgba(217,119,6,0.28)]',
-  'dark:hover:bg-amber-950/40 dark:hover:text-amber-300 dark:hover:shadow-[0_1px_2px_rgba(0,0,0,0.3),0_0_0_1px_rgba(217,119,6,0.3)]',
-  'active:scale-[0.92] active:bg-amber-100/70 dark:active:bg-amber-950/60',
-  'motion-reduce:transition-none motion-reduce:active:scale-100',
-);
-
   return (
-    <div className="editor rounded-[14px] overflow-hidden bg-white dark:bg-[#1c1c1a] shadow-[0_0_0_1px_#e4e4e0] dark:shadow-[0_0_0_1px_#2e2e28]">
-      {/* Barre d'outils cohérente, serrée et compacte */}
-      <div
-        role="toolbar"
-        aria-label={t('editContent.formatSelection')}
-        className="toolbar flex items-center justify-start gap-0.5 px-2 py-1 bg-[#f0f0ec] dark:bg-[#1e1e1b] border-b border-[#e4e4e0] dark:border-[#2e2e28] select-none overflow-x-auto no-scrollbar"
-      >
-        {/* Formule mathématique (Sigma) */}
-        <button
-          type="button"
-          onPointerDown={event => {
-            event.preventDefault();
-            applyFormat('math');
-          }}
-          className={TOOL_BTN_CLS}
-          aria-label={t('editContent.formatMath')}
-          title={t('editContent.formatMath')}
-        >
-          <Sigma className="w-3.5 h-3.5 stroke-[1.9]" />
-        </button>
-
-        {/* Listes */}
-        {LIST_ACTIONS.map(({ action, icon: Icon, labelKey }) => (
-          <button
-            key={action}
-            type="button"
-            onPointerDown={event => {
-              event.preventDefault();
-              applyFormat(action);
-            }}
-            className={TOOL_BTN_CLS}
-            aria-label={t(labelKey)}
-            title={t(labelKey)}
-          >
-            <Icon className="w-3.5 h-3.5 stroke-[1.9]" />
-          </button>
-        ))}
-
-        <span className="tool-sep w-px h-3.5 bg-[#e4e4e0] dark:bg-[#34342e] mx-0.5 shrink-0 self-center" aria-hidden="true" />
-
-        {/* Typographie : Souligné, Italique, Gras */}
-        {TEXT_ACTIONS.map(({ action, icon: Icon, labelKey, shortcut }) => (
-          <button
-            key={action}
-            type="button"
-            onPointerDown={event => {
-              event.preventDefault();
-              applyFormat(action);
-            }}
-            className={TOOL_BTN_CLS}
-            aria-label={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
-            title={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
-          >
-            <Icon className="w-3.5 h-3.5 stroke-[1.9]" />
-          </button>
-        ))}
-
-        <span className="tool-sep w-px h-3.5 bg-[#e4e4e0] dark:bg-[#34342e] mx-0.5 shrink-0 self-center" aria-hidden="true" />
-
-        {/* Surlignage rapide */}
-        <button
-          type="button"
-          onPointerDown={event => {
-            event.preventDefault();
-            applyColor('highlight');
-          }}
-          className={HIGHLIGHT_BTN_CLS}
-          aria-label={t('editContent.formatHighlight')}
-          title={t('editContent.formatHighlight')}
-        >
-          <Highlighter className="w-3.5 h-3.5 stroke-[1.9]" />
-        </button>
-
-        {/* Palette de couleurs */}
-        <div ref={colorMenuRef} className="relative shrink-0">
-          <button
-            type="button"
-            onPointerDown={event => {
-              event.preventDefault();
-              setShowColorMenu(prev => !prev);
-            }}
-            className={cn(
-              'tool-btn w-8 h-8 border-none rounded-[8px] flex items-center justify-center cursor-pointer select-none shrink-0 transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100',
-              showColorMenu
-                ? 'bg-white text-[#1c1c1a] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_0_0_1px_#e4e4e0] dark:bg-[#2c2c28] dark:text-white dark:shadow-[0_1px_2px_rgba(0,0,0,0.4),0_0_0_1px_#383832]'
-                : 'bg-transparent text-[#5e5e5a] dark:text-[#a8a8a2] hover:bg-white/90 hover:text-[#1c1c1a] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06),0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_0_0_1px_#383832]',
-            )}
-            aria-label={t('editContent.formatColor')}
-            title={t('editContent.formatColor')}
-            aria-haspopup="true"
-            aria-expanded={showColorMenu}
-          >
-            <Palette className="w-3.5 h-3.5 stroke-[1.9]" />
-          </button>
-
-          {/* Menu des couleurs */}
-          {showColorMenu && (
-            <div
-              role="menu"
+    <div className="content-composer">
+      <div role="toolbar" aria-label={t('editContent.formatSelection')} className="content-composer__toolbar">
+        <div role="group" aria-label={t('editContent.formatSelection')} className="content-composer__group">
+          {TEXT_ACTIONS.map(({ action, icon: Icon, labelKey, shortcut }) => (
+            <button key={action} type="button" className="content-composer__tool"
+              onMouseDown={event => event.preventDefault()} onClick={() => applyFormat(action)}
+              aria-label={t(labelKey)} title={`${t(labelKey)} (${shortcut})`}>
+              <Icon />
+            </button>
+          ))}
+        </div>
+        <span className="content-composer__separator" aria-hidden="true" />
+        <div role="group" aria-label={t('editContent.formatBullets')} className="content-composer__group">
+          {LIST_ACTIONS.map(({ action, icon: Icon, labelKey }) => (
+            <button key={action} type="button" className="content-composer__tool"
+              onMouseDown={event => event.preventDefault()} onClick={() => applyFormat(action)}
+              aria-label={t(labelKey)} title={t(labelKey)}><Icon /></button>
+          ))}
+        </div>
+        <span className="content-composer__separator" aria-hidden="true" />
+        <div className="content-composer__group">
+          <button type="button" className="content-composer__tool"
+            onMouseDown={event => event.preventDefault()} onClick={() => applyFormat('math')}
+            aria-label={t('editContent.formatMath')} title={t('editContent.formatMath')}><Sigma /></button>
+          <button type="button" className="content-composer__tool content-composer__highlight"
+            onMouseDown={event => event.preventDefault()} onClick={() => applyColor('highlight')}
+            aria-label={t('editContent.formatHighlight')} title={t('editContent.formatHighlight')}><Highlighter /></button>
+          <DropdownMenu modal={false} open={showColorMenu} onOpenChange={open => {
+            if (open) {
+              const textarea = textareaRef.current;
+              colorSelection.current = { start: textarea?.selectionStart ?? value.length, end: textarea?.selectionEnd ?? value.length };
+              colorApplied.current = false;
+            } else {
+              colorSelection.current = null;
+            }
+            setShowColorMenu(open);
+          }}>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="content-composer__tool" aria-label={t('editContent.formatColor')}
+                title={t('editContent.formatColor')}><Palette /></button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={8} className="content-composer__palette"
               aria-label={t('editContent.formatColor')}
-              className="absolute start-0 sm:start-auto sm:end-0 top-[calc(100%+4px)] z-30 flex items-center gap-0.5 rounded-[10px] border border-[#e4e4e0] dark:border-[#2e2e28] bg-white/95 dark:bg-[#1e1e1b]/95 p-1 shadow-lg backdrop-blur-xl animate-fade-in"
-            >
-              {COLOR_OPTIONS.map(({ id, nameKey, dotColor }) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="menuitem"
-                  onPointerDown={event => {
-                    event.preventDefault();
-                    applyColor(id);
-                    setShowColorMenu(false);
-                  }}
-                  className="flex h-6 w-6 items-center justify-center rounded-md text-[#5e5e5a] transition-all duration-150 hover:bg-[#f2f2ef] dark:hover:bg-[#282824] hover:scale-110 active:scale-90"
-                  aria-label={t(nameKey)}
-                  title={t(nameKey)}
-                >
-                  <span className={cn('h-3 w-3 rounded-full ring-1 ring-black/10 dark:ring-white/20', dotColor)} />
-                </button>
-              ))}
-
-              <span className="tool-sep w-px h-3 bg-[#e4e4e0] dark:bg-[#34342e] mx-0.5" aria-hidden="true" />
-
-              <button
-                type="button"
-                role="menuitem"
-                onPointerDown={event => {
-                  event.preventDefault();
-                  applyColor('clear');
-                  setShowColorMenu(false);
-                }}
-                className="flex h-6 w-6 items-center justify-center rounded-md text-[#5e5e5a] transition-all duration-150 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 active:scale-90"
-                aria-label={t('editContent.colorClear')}
-                title={t('editContent.colorClear')}
-              >
-                <X className="w-3 h-3 stroke-[2]" />
-              </button>
-            </div>
-          )}
+              onCloseAutoFocus={event => {
+                if (colorApplied.current) event.preventDefault();
+              }}>
+              <DropdownMenuLabel className="content-composer__palette-label">{t('editContent.formatColor')}</DropdownMenuLabel>
+              <div className="content-composer__swatches">
+                {COLOR_OPTIONS.map(({ id: colorId, nameKey, dotColor }) => (
+                  <DropdownMenuItem key={colorId} className="content-composer__color" onSelect={() => {
+                    colorApplied.current = true;
+                    applyColor(colorId);
+                  }}>
+                    <span className={cn('content-composer__swatch', dotColor)} aria-hidden="true" />
+                    <span>{t(nameKey)}</span>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="content-composer__clear" onSelect={() => {
+                colorApplied.current = true;
+                applyColor('clear');
+              }}><X /><span>{t('editContent.colorClear')}</span></DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {/* Editor Body */}
-      <div className="editor-body p-3.5 sm:p-4 bg-[#fafaf8] dark:bg-[#141412]">
+      <div className="content-composer__body">
         <Textarea
           ref={textareaRef}
           id={id}
@@ -420,7 +315,7 @@ const HIGHLIGHT_BTN_CLS = cn(
           }}
           rows={rows}
           className={cn(
-            'w-full min-h-[120px] border-none bg-transparent p-0 text-start text-[15px] leading-[1.65] text-[#1c1c1a] dark:text-[#f0f0ec] placeholder:text-[#9b9b96] focus:outline-none focus-visible:ring-0 shadow-none resize-none',
+            'content-composer__input w-full min-h-[120px] border-none bg-transparent p-0 text-start text-[15px] leading-[1.65] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-0 shadow-none resize-none',
             className,
           )}
           placeholder={placeholder}

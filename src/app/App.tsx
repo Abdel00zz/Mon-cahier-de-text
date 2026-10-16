@@ -30,7 +30,7 @@ import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedB
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
-import { DASHBOARD_CANVAS_STYLE, computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas';
+import { computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('../features/editor/Editor').then(module => ({ default: module.Editor })));
