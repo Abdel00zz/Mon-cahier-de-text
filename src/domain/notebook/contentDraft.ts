@@ -24,6 +24,8 @@ export function contentFields(
 
 export function createContentDraft(item: EditableContent, titleOnly = false, titleField: 'title' | 'name' = 'title'): ContentDraft {
   const source = item as unknown as Record<string, unknown>;
+  // Renaming must never copy or normalize dates from the selected occurrence.
+  if (titleOnly) return { [titleField]: String(source[titleField] ?? '') };
   const hasDate = Boolean(source.date !== undefined || 'date' in source);
   const rawDate = typeof source.date === 'string' ? source.date : undefined;
   const { startDate, endDate } = extractDateRange(rawDate);

@@ -29,7 +29,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 const dialogs = {
   create: 'Créer une classe', editclass: 'Configurer une classe', dates: 'Attribuer une date',
   'date-review': 'Vérifier une date', timetable: 'Compléter les horaires', add: 'Ajouter un contenu',
-  content: 'Modifier un contenu', manage: 'Organiser les leçons', analysis: 'Suivi et progression',
+  content: 'Modifier un contenu', 'content-title': 'Modifier un titre', manage: 'Organiser les leçons', analysis: 'Suivi et progression',
   print: 'Imprimer', transfer: 'Transférer un cahier', restore: 'Restaurer une sauvegarde',
   settings: 'Paramètres', guide: 'Aide', evaluations: 'Évaluations et activités',
   message: 'Message de la direction',
@@ -72,6 +72,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'timetable' && <TimetableNudgeModal isOpen={open} className={classInfo.name} onSkip={close} onFill={close} />}
     {current === 'add' && <ContentModal {...common} onConfirm={close} lessonsData={lessons} selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />}
     {current === 'content' && <ContentModal {...common} mode="edit" item={{ type: 'définition', title: 'Nombre rationnel', description: '$a/b, b \\ne 0$' }} onSave={close} subject="Mathématiques" contentDirection="ltr" />}
+    {current === 'content-title' && <ContentModal {...common} mode="edit" titleOnly item={{ type: 'chapter', title: 'Nombres rationnels', date: '2026-09-14' }} onSave={close} contentDirection="ltr" />}
     {current === 'manage' && <ManageLessonsModal {...common} lessons={lessons} onUpdate={close} config={config} onConfigChange={onChange} />}
     {current === 'analysis' && <AnalysisModal {...common} lessonsData={lessons} classInfo={classInfo} config={config} />}
     {(current === 'students' || current === 'homework-students') && <StudentReviewDialog {...common} tracking title={t(current === 'students' ? 'evaluations.oral.title' : 'evaluations.homework.title')} context={classInfo.name}>

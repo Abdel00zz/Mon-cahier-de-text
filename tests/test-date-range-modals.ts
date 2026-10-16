@@ -29,6 +29,26 @@ test('createContentDraft and contentDraftChanged track date and endDate', () => 
   assert.equal(contentDraftChanged(modifiedStart, draft), true);
 });
 
+test('rename drafts contain only the title or name, even when the source has a date range', () => {
+  const assessment = { type: 'evaluation_diagnostic' as const, title: 'Diagnostic', date: 'Du 2026-09-08 au 2026-09-15' };
+  assert.deepEqual(createContentDraft(assessment, true), { title: 'Diagnostic' });
+  assert.deepEqual(createContentDraft({ name: 'Section', date: '2026-09-08', items: [] }, true, 'name'), { name: 'Section' });
+});
+
+test('renaming shared content preserves each occurrence’s dates, remarks and identity', () => {
+  const lessons: LessonsData = [
+    { type: 'evaluation_diagnostic', title: 'Diagnostic', date: 'Du 2026-09-08 au 2026-09-15', remark: 'À conserver', _tempId: 'first' },
+    { type: 'evaluation_diagnostic', title: 'Diagnostic', date: '2026-09-18', _tempId: 'second' },
+  ];
+  const original = createContentDraft(lessons[0], true);
+  const patch = { ...original, title: 'Diagnostic initial' };
+  assert.equal(contentDraftChanged(patch, original), true);
+  const updated = produce(lessons, draft => {
+    applyContentEdit(draft, [{ chapterIndex: 0 }, { chapterIndex: 1 }], patch);
+  });
+  assert.deepEqual(updated, lessons.map(item => ({ ...item, title: 'Diagnostic initial' })));
+});
+
 test('applyContentEdit writes pedagogical date range cell format in French and Arabic without raw ranges', () => {
   const lessons: LessonsData = [
     { type: 'evaluation_diagnostic', title: 'Diag', date: '2026-09-08', _tempId: 'diag-1' }

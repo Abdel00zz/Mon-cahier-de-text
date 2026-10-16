@@ -229,6 +229,11 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (edit?.titleOnly) {
+      const field = edit.titleField ?? 'title';
+      if (edit.item && isDirty) edit.onSave({ [field]: formData[field] ?? '' });
+      return;
+    }
     const finalData = { ...formData };
     if (finalData.date && finalData.endDate && finalData.endDate > finalData.date) {
       const localeCode = contentDirection === 'rtl' ? 'ar' : 'fr';
@@ -249,7 +254,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
   const structure = selectedType === 'section' || selectedType === 'subsection' || selectedType === 'subsubsection';
   const titleOnly = edit ? Boolean(edit.titleOnly) : Boolean(structure || (selectedType && TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType]));
   const titleField = edit ? (edit.titleField ?? 'title') : structure ? 'name' : 'title';
-  const canEditDate = Boolean(isEditing || selectedType === 'evaluation_diagnostic' || (selectedType && TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType]));
+  const canEditDate = edit ? !titleOnly : Boolean(selectedType === 'evaluation_diagnostic' || (selectedType && TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType]));
   const renderForm = () => <ContentFields value={formData} onChange={setFormData} subject={subject}
     contentDirection={contentDirection} titleOnly={titleOnly} titleField={titleField}
     titleRequired={!edit && titleOnly} titleRef={initialFocusRef} canEditDate={canEditDate} />;
