@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Segmented } from '@/components/ui/segmented';
 import { useLocale } from '@/i18n/LocaleProvider';
+import './PrintModal.css';
 
 export type PrintMode = 'new' | 'all' | 'custom';
 export type PrintHeaderMode = 'first' | 'all' | 'none';
@@ -204,7 +205,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}
             onClick={() => onPrint(mode, { pageNumbers, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm"
+            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
           >
             {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
               ? sessionCountLabel(newDates.length)
@@ -216,6 +217,34 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       }
     >
       <div className="space-y-4">
+        {/* Sortie physique du document inspirée du motif Receipt Printer #1 */}
+        {isPrinting && (
+          <div className="receipt-slot-container flex flex-col items-center justify-center py-4 px-3 rounded-2xl bg-[#fafaf8] dark:bg-[#181816] border border-[#e4e4e0] dark:border-[#2e2e28] shadow-xs animate-in fade-in duration-200">
+            <div className="receipt-slot w-[220px]">
+              <div className="receipt-printer-head w-full" />
+              <div className="receipt-paper w-[196px] p-3 text-xs font-mono space-y-1.5 rounded-b-md">
+                <div className="flex justify-between items-center text-[#5e5e5a] dark:text-[#a8a8a2] text-[10px]">
+                  <span>{t('print.title')}</span>
+                  <span>{new Date().toLocaleDateString(locale === 'ar' ? 'ar-MA' : 'fr-FR')}</span>
+                </div>
+                <div className="border-t border-dashed border-[#d8d8d4] dark:border-[#3e3e38] my-1" />
+                <div className="text-center font-bold text-foreground text-[13px] py-0.5">
+                  {mode === 'new'
+                    ? sessionCountLabel(newDates.length)
+                    : mode === 'custom'
+                      ? sessionCountLabel(selectedDates.size)
+                      : t('print.complete')}
+                </div>
+                <div className="border-t border-dashed border-[#d8d8d4] dark:border-[#3e3e38] my-1" />
+                <div className="flex justify-between text-[11px] text-primary font-semibold">
+                  <span>{locale === 'ar' ? 'الوثيقة' : 'Document'}</span>
+                  <span className="animate-pulse">{t('print.preparing')}...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!historyKnown && <p className="text-xs text-muted-foreground">{t('print.historyUnavailable')}</p>}
 
         {/* Choix du mode */}

@@ -302,6 +302,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const [dateChanged, setDateChanged] = useState(false);
   const [remarkChanged, setRemarkChanged] = useState(false);
   const [activityRemarks, setActivityRemarks] = useState<Record<string, string | null>>({});
+  const [isSuccessSaved, setIsSuccessSaved] = useState(false);
   /*
    * Sens de saisie de la remarque : elle suit SON écriture, jamais celle du
    * cahier — un texte arabe commence à droite même dans un cahier latin, et un
@@ -332,6 +333,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    setIsSuccessSaved(false);
     setActionType(patch?.date === '' ? 'dissociate' : 'associate');
     const rawDate = patch?.date ?? selection.date;
     const { startDate, endDate: extractedEnd } = extractDateRange(rawDate);
@@ -436,6 +438,15 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       ...(hasHomework && actionType === 'associate' && selectedDate ? { homeworkGiven: activeHomeworkNum } : {}),
 
     });
+  };
+
+  const handleApplyWithFeedback = () => {
+    if (isSuccessSaved) return;
+    setIsSuccessSaved(true);
+    triggerHaptic();
+    window.setTimeout(() => {
+      handleApply();
+    }, 280);
   };
 
   // Détection et synchronisation avancée du numéro de devoir maison (إعطاء الفرض المنزلي).
@@ -561,48 +572,73 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       footer={
         intent === 'remark' ? (
           <div className="flex w-full items-center justify-center gap-3">
-            <Button
+            <motion.button
               type="button"
-              onClick={handleApply}
-              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-7 h-11 text-sm shadow-sm min-w-[110px]"
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              onClick={handleApplyWithFeedback}
+              disabled={isSuccessSaved}
+              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-7 h-11 text-sm shadow-sm min-w-[120px] inline-flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
-              {t('common.save')}
-            </Button>
-            <Button
+              {isSuccessSaved ? (
+                <span className="inline-flex items-center gap-1.5 animate-in fade-in duration-150">
+                  <svg className="w-4 h-4 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" className="animate-draw-check" />
+                  </svg>
+                  <span>{locale === 'ar' ? 'تم الحفظ' : locale === 'en' ? 'Saved' : 'Enregistré'}</span>
+                </span>
+              ) : (
+                <span>{t('common.save')}</span>
+              )}
+            </motion.button>
+            <motion.button
               type="button"
-              variant="secondary"
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               onClick={onClose}
-              className="rounded-xl h-11 px-6 text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none"
+              disabled={isSuccessSaved}
+              className="rounded-xl h-11 px-6 text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none cursor-pointer transition-colors"
             >
               {t('common.cancel')}
-            </Button>
+            </motion.button>
           </div>
         ) : (
           <div className="flex w-full items-center gap-2.5">
-            <Button
+            <motion.button
               type="button"
-              variant="secondary"
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               onClick={onClose}
-              className="rounded-xl h-10 w-1/3 text-xs sm:text-sm font-semibold"
+              disabled={isSuccessSaved}
+              className="rounded-xl h-10 w-1/3 text-xs sm:text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none cursor-pointer transition-colors"
             >
               {t('common.cancel')}
-            </Button>
-            <Button
+            </motion.button>
+            <motion.button
               type="button"
-              onClick={handleApply}
-              disabled={invalidDate}
-              className={`rounded-xl h-10 flex-1 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 ${
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              onClick={handleApplyWithFeedback}
+              disabled={invalidDate || isSuccessSaved}
+              className={`rounded-xl h-10 flex-1 text-xs sm:text-sm font-bold shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 ${
                 actionType === 'associate'
                   ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                   : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
               }`}
             >
-              {actionType === 'associate' ? (
+              {isSuccessSaved ? (
+                <span className="inline-flex items-center gap-1.5 animate-in fade-in duration-150">
+                  <svg className="w-4 h-4 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" className="animate-draw-check" />
+                  </svg>
+                  <span>{actionType === 'associate' ? (locale === 'ar' ? 'تم التعيين' : 'Assigné') : (locale === 'ar' ? 'تم الإلغاء' : 'Dissocié')}</span>
+                </span>
+              ) : actionType === 'associate' ? (
                 <span>{t('assignDate.applyDate')}</span>
               ) : (
                 <span>{t('assignDate.removeDates')}</span>
               )}
-            </Button>
+            </motion.button>
           </div>
         )
       }

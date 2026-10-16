@@ -213,7 +213,25 @@
   .remark-clear-btn,
   .remark-textarea,
   .remark-close-btn,
-  .remark-date-badge {
+  .remark-date-badge,
+  .animate-draw-check {
     transition: none !important;
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Micro-interaction de confirmation SVG (Draw SVG #10)
+   ══════════════════════════════════════════════════════════════ */
+.animate-draw-check {
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+  animation: drawCheckmark 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes drawCheckmark {
+  to {
+    stroke-dashoffset: 0;
   }
 }

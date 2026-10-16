@@ -1,0 +1,47 @@
+/* ══════════════════════════════════════════════════════════════
+   PrintModal – Micro-interaction de sortie ticket (Receipt Printer #1)
+   ══════════════════════════════════════════════════════════════ */
+
+.receipt-slot {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.receipt-printer-head {
+  height: 12px;
+  background: hsl(var(--foreground));
+  border-radius: 6px 6px 0 0;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-paper {
+  background: hsl(var(--card));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  clip-path: inset(0 0 0% 0);
+  animation: receiptRollout 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes receiptRollout {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-10px);
+    opacity: 0.8;
+  }
+  100% {
+    clip-path: inset(0 0 0% 0);
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .receipt-paper {
+    animation: none !important;
+    clip-path: inset(0 0 0% 0) !important;
+    transform: none !important;
+  }
+}
