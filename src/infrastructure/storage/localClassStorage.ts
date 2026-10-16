@@ -5,8 +5,10 @@ import { LocalSyncDataError, readLocalJson } from './localJson';
 
 export const CLASS_STORAGE_KEY = 'classManager_v1';
 
-export const readStoredClasses = (storage: Pick<Storage, 'getItem'> = localStorage): ClassInfo[] => {
-  const stored = readLocalJson(CLASS_STORAGE_KEY, [], storage);
+export const readStoredClasses = (storage?: Pick<Storage, 'getItem'>): ClassInfo[] => {
+  const store = storage ?? (typeof localStorage !== 'undefined' ? localStorage : null);
+  if (!store) return [];
+  const stored = readLocalJson(CLASS_STORAGE_KEY, [], store);
   if (!Array.isArray(stored) || stored.some(c => !c || typeof c.id !== 'string' || typeof c.name !== 'string')) {
     throw new LocalSyncDataError(CLASS_STORAGE_KEY);
   }

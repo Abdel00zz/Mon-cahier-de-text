@@ -651,6 +651,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       </div>
 
       <DevoirsModals
+        onConfigChange={onConfigChange}
         classInfo={classInfo}
         classDisplayName={selectedClassDisplayName}
         config={config}

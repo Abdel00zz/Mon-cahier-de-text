@@ -22,11 +22,15 @@ const flushWorkspaceWriters = (): boolean => {
   return saved;
 };
 
+const defaultStorage = (): WorkspaceStorage | null => (typeof localStorage !== 'undefined' ? localStorage : null);
+
 /** Capture once per component lifetime; reject writes from a previous workspace. */
-export const captureWorkspaceLease = (storage: WorkspaceStorage = localStorage): (() => boolean) => {
-  const marker = storage.getItem(WORKSPACE_SCOPE_KEY);
+export const captureWorkspaceLease = (storage?: WorkspaceStorage): (() => boolean) => {
+  const store = storage ?? defaultStorage();
+  if (!store) return () => true;
+  const marker = store.getItem(WORKSPACE_SCOPE_KEY);
   return () => {
-    try { return storage.getItem(WORKSPACE_SCOPE_KEY) === marker; } catch { return false; }
+    try { return store.getItem(WORKSPACE_SCOPE_KEY) === marker; } catch { return false; }
   };
 };
 
@@ -45,17 +49,21 @@ export class WorkspaceSwitchError extends Error {
   constructor() { super('Impossible de changer de compte sans préserver les données locales. Libérez de l’espace puis réessayez.'); }
 }
 
-export const readWorkspaceScope = (storage: WorkspaceStorage = localStorage): WorkspaceScope | null => {
+export const readWorkspaceScope = (storage?: WorkspaceStorage): WorkspaceScope | null => {
+  const store = storage ?? defaultStorage();
+  if (!store) return null;
   try {
-    const raw = storage.getItem(WORKSPACE_SCOPE_KEY);
+    const raw = store.getItem(WORKSPACE_SCOPE_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw);
     return value && (value.owner === null || validOwner(value.owner)) && typeof value.revision === 'string'
       ? value : null;
   } catch { return null; }
 };
-export const workspaceIsCurrent = (scope: WorkspaceScope | null, storage: WorkspaceStorage = localStorage): boolean => {
-  const current = readWorkspaceScope(storage);
+export const workspaceIsCurrent = (scope: WorkspaceScope | null, storage?: WorkspaceStorage): boolean => {
+  const store = storage ?? defaultStorage();
+  if (!store) return Boolean(scope && scope.owner);
+  const current = readWorkspaceScope(store);
   return Boolean(scope && scope.owner && current?.owner === scope.owner && current.revision === scope.revision);
 };
 
@@ -93,7 +101,8 @@ export const switchAccountWorkspace = (
   owner: string | null,
   options: { storage?: WorkspaceStorage; legacyOwner?: string; revision?: string } = {},
 ): WorkspaceScope => {
-  const storage = options.storage ?? localStorage;
+  const storage = options.storage ?? defaultStorage();
+  if (!storage) throw new WorkspaceSwitchError();
   if (owner !== null && !validOwner(owner)) throw new WorkspaceSwitchError();
   if (!flushWorkspaceWriters()) throw new WorkspaceSwitchError();
   const oldScope = readWorkspaceScope(storage);

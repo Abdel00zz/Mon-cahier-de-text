@@ -1,3 +1,4 @@
+import { acceptRosterEdits } from '../../src/domain/evaluations/classRosterSync';
 import type express from 'express';
 
 import { getBundledCalendar, validateHolidayCalendar } from '../../src/domain/calendar/calendar';
@@ -261,7 +262,7 @@ export function setupMockApi(app: express.Express) {
                         settings: (() => {
                             const settings = { ...(body.settings ?? (existingBlob?.settings as any) ?? {}) };
                             if (settings.sessionRemarkOverrides === undefined) settings.sessionRemarkOverrides = (existingBlob?.settings as any)?.sessionRemarkOverrides;
-                            settings.classRosters = { ...((existingBlob?.settings as any)?.classRosters ?? {}) };
+                            settings.classRosters = acceptRosterEdits((existingBlob?.settings as any)?.classRosters, body.settings?.classRosters, now);
                             for (const id of deletedIds) delete settings.classRosters[id];
                             if (body.settings) {
                                 // Parite avec l'API reelle : une date de devoir imposee par
@@ -293,7 +294,7 @@ export function setupMockApi(app: express.Express) {
                     // synchronisation active, sans compromettre l'isolation
                     // des réponses /api/sync entre comptes de test.
                     classesBlob = nextBlob;
-                    return send(res, 200, { ok: true, serverTime: now, classMeta, deletedClasses });
+                    return send(res, 200, { ok: true, serverTime: now, classMeta, deletedClasses, classRosters: nextBlob.settings.classRosters });
                 }
                 send(res, 405, { error: 'Méthode non autorisée.' });
             });

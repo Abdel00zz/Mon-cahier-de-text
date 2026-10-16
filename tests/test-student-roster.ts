@@ -42,11 +42,11 @@ test('a roster fills a session, preserves recorded names and is isolated to its 
   assert.deepEqual(retainOralOutcomes(['أحمد العلوي', 'constructor'], { 'أحمد العلوي': 'mastered', 'Deleted': 'needs_support' }), { 'أحمد العلوي': 'mastered' });
 });
 
-test('teacher settings transport observations but never write administrative rosters', () => {
+test('teacher settings transport validated shared rosters and observations', () => {
   const oral: OralStudentsRecord = { names: roster.names, oralOutcomes: { 'أحمد العلوي': 'mastered' }, updatedAt: roster.updatedAt };
   const settings = { classRosters: { x: roster }, assessmentParticipants: { x: { oral } } };
-  assert.deepEqual(extractSyncableSettings(settings), { assessmentParticipants: settings.assessmentParticipants });
-  assert.deepEqual(assertValidSyncSettings(settings, new Set(['x'])), { assessmentParticipants: settings.assessmentParticipants });
+  assert.deepEqual(extractSyncableSettings(settings), settings);
+  assert.deepEqual(assertValidSyncSettings(settings, new Set(['x'])), settings);
   assert.deepEqual(mergeSyncableSettings({}, { ...settings, establishmentName: '', defaultTeacherName: '' }).assessmentParticipants, settings.assessmentParticipants);
   assert.throws(() => assertValidSyncSettings({ assessmentParticipants: { other: { oral } } }, new Set(['x'])));
   assert.throws(() => assertValidSyncSettings({ assessmentParticipants: { x: { oral: { ...oral, oralOutcomes: { Unknown: 'mastered' } } } } }, new Set(['x'])));

@@ -1,3 +1,4 @@
+import { classRosterPatch } from '../../src/domain/evaluations/classRosterSync';
 /** Interactive review of production dialogs with fictitious, local-only data. */
 import { ArrowDown } from 'lucide-react';
 import { Modal } from '../../src/components/ui/modal';
@@ -46,6 +47,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
   const params = new URLSearchParams(location.search);
   const current = params.get('modal') ?? 'settings';
   const [open, setOpen] = useState(true);
+  const [rosterOpen, setRosterOpen] = useState(false);
   const close = () => setOpen(false);
   const common = { isOpen: open, onClose: close };
   const classInfo = classes[0];
@@ -66,7 +68,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
       <a href={`?screen=feedback&lang=${locale}`} className="inline-flex min-h-12 items-center rounded-xl border border-border bg-card px-4 text-sm">Notifications et retours d’état</a>
     </nav>
     {current === 'create' && <CreateClassModal {...common} defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} onCreate={close} />}
-    {current === 'editclass' && <CreateClassModal {...common} editingClass={classInfo} teacherSubjects={['Mathématiques']} teacherCycles={['college']} onCreate={close} onUpdate={close} onDelete={close} />}
+    {current === 'editclass' && <CreateClassModal {...common} editingClass={classInfo} teacherSubjects={['Mathématiques']} teacherCycles={['college']} onCreate={close} onUpdate={close} onDelete={close} roster={config.classRosters?.[classInfo.id]} onRosterSave={(base, names) => onChange(classRosterPatch(config, classInfo.id, base, names))} />}
     {current === 'dates' && <AssignDateModal {...common} onApply={close} session={{ source: lessons, intent: 'date', selection: { targets: [{ chapterIndex: 0, itemIndex: 0 }], date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false } }} />}
     {current === 'date-review' && <DateReviewModal isOpen={open} date="2026-09-14" warnings={[{ message: l('Aucun créneau prévu pour cette classe ce jour-là.', 'لا توجد حصة مبرمجة لهذا القسم في هذا اليوم.', 'No lesson is scheduled for this class on that day.') }]} onModify={close} onConfirm={close} onIgnore={close} />}
     {current === 'timetable' && <TimetableNudgeModal isOpen={open} className={classInfo.name} onSkip={close} onFill={close} />}
@@ -76,7 +78,7 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
     {current === 'manage' && <ManageLessonsModal {...common} lessons={lessons} onUpdate={close} config={config} onConfigChange={onChange} />}
     {current === 'analysis' && <AnalysisModal {...common} lessonsData={lessons} classInfo={classInfo} config={config} />}
     {(current === 'students' || current === 'homework-students') && <StudentReviewDialog {...common} tracking title={t(current === 'students' ? 'evaluations.oral.title' : 'evaluations.homework.title')} context={classInfo.name}>
-      <StudentNamesEditor key={`${current}-${open}`} variant="checked" trackOral={current === 'students'} trackHomework={current === 'homework-students'}
+      <StudentNamesEditor onManageStudents={() => setRosterOpen(true)} key={`${current}-${open}`} variant="checked" trackOral={current === 'students'} trackHomework={current === 'homework-students'}
         roster={config.classRosters?.[classInfo.id]}
         initialNames={config.assessmentParticipants?.[classInfo.id]?.[current === 'students' ? 'review-oral' : 'review-homework']?.names ?? []}
         initialOralOutcomes={config.assessmentParticipants?.[classInfo.id]?.['review-oral']?.oralOutcomes}
@@ -88,6 +90,9 @@ export function ModalGallery({ config, classes, lessons, onChange }: {
           close();
         }} />
     </StudentReviewDialog>}
+    <CreateClassModal isOpen={rosterOpen} onClose={() => setRosterOpen(false)} editingClass={classInfo}
+      initialSection="students" roster={config.classRosters?.[classInfo.id]} teacherSubjects={['Mathématiques']} teacherCycles={['college']}
+      onRosterSave={(base, names) => onChange(classRosterPatch(config, classInfo.id, base, names))} onCreate={close} onUpdate={() => setRosterOpen(false)} />
     {current === 'print' && <PrintModal {...common} classId="visual-review-print" totalDates={2} newDates={['2026-09-14']} allDates={['2026-09-07', '2026-09-14']} printedDates={['2026-09-07']} lastPrintedAt="2026-09-07T10:00:00Z" config={config} onConfigChange={onChange} onPrint={close} />}
     {current === 'transfer' && <DataTransferModal {...common} onExport={close} onImport={() => false} />}
     {current === 'restore' && <ImportPlatformModal {...common} onImport={close} />}

@@ -444,8 +444,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       ...(numbering.badgeStyle !== undefined ? { badgeStyle: numbering.badgeStyle } : {}),
       ...(numbering.scope !== undefined ? { scope: numbering.scope } : {}) };
   }
-  // Published class lists are administrative data, never writable by a teacher.
-  delete result.classRosters;
+
   // La politique du contrôle continu aussi : elle est résolue par le serveur à chaque pull.
   delete result.evaluationPolicy;
   const classRecord = (key: string): Record<string, unknown> | undefined => {
@@ -457,6 +456,23 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     for (const classId of Object.keys(record)) if (!validClassIds.has(classId)) throw new HttpError(400, `${key} référence une classe inconnue.`);
     return record;
   };
+
+  const rosterInput = classRecord('classRosters');
+  const rosters = rosterInput ? { ...rosterInput } : undefined;
+  if (rosters) result.classRosters = rosters;
+  for (const [classId, raw] of Object.entries(rosters ?? {})) {
+    assertStudentNames(raw, `classRosters.${classId}`);
+    const roster = raw as Record<string, unknown>;
+    if (!Number.isSafeInteger(roster.version) || Number(roster.version) < 0) throw new HttpError(400, 'Version de liste invalide.');
+    if (roster.edit !== undefined) {
+      const edit = roster.edit as Record<string, unknown>;
+      if (!isPlainObject(edit) || typeof edit.id !== 'string' || !/^[a-zA-Z0-9-]{1,80}$/.test(edit.id)) throw new HttpError(400, 'Modification de liste invalide.');
+      assertStudentNames({ names: edit.baseNames, updatedAt: roster.updatedAt }, `classRosters.${classId}.base`);
+    }
+    // Receipts are server-owned; clients cannot acknowledge their own writes.
+    rosters![classId] = { names: roster.names, version: roster.version, updatedAt: roster.updatedAt,
+      ...(roster.edit ? { edit: roster.edit } : {}) };
+  }
 
   for (const key of ['assessmentDates'] as const) {
     const record = classRecord(key);

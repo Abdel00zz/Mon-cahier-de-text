@@ -1,5 +1,8 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { parseStudentNames } from '@/domain/evaluations/studentRoster';
+import { ClassRosterFields } from './ClassRosterFields';
+import type { ClassRoster } from '@/types';
 import type { ClassInfo, Cycle } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
@@ -31,6 +34,10 @@ interface CreateClassModalProps {
   editingClass?: ClassInfo | null;
   onUpdate?: (classId: string, updates: Partial<ClassInfo>) => void | Promise<void>;
   onDelete?: () => void;
+  roster?: ClassRoster;
+  onRosterSave?: (baseNames: string[], names: string[]) => void | Promise<void>;
+  initialSection?: 'identity' | 'students';
+  suggestedStudentNames?: string[];
 }
 
 const COPY: Record<AppLocale, {
@@ -99,7 +106,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = props => (
 );
 
 const ClassFormSession: React.FC<CreateClassModalProps> = ({
-  isOpen, onClose, onCreate, defaultCycle = 'lycee', teacherSubjects = EMPTY_SUBJECTS, teacherCycles = EMPTY_CYCLES, existingClasses = EMPTY_CLASSES, editingClass = null, onUpdate, onDelete,
+  isOpen, onClose, onCreate, defaultCycle = 'lycee', teacherSubjects = EMPTY_SUBJECTS, teacherCycles = EMPTY_CYCLES, existingClasses = EMPTY_CLASSES, editingClass = null, onUpdate, onDelete, roster, onRosterSave, initialSection = 'identity', suggestedStudentNames,
 }) => {
   const { locale, t, isRtl } = useLocale();
   const haptics = useModalHaptics();
@@ -125,6 +132,20 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
+  const [section, setSection] = useState(initialSection);
+  const [rosterBase] = useState(() => roster?.names ?? []);
+  const [rosterText, setRosterText] = useState(() => rosterBase.join(' ؛ '));
+  const [discardRoster, setDiscardRoster] = useState(false);
+  const parsedRoster = useMemo(() => {
+    try { return { names: parseStudentNames(rosterText), invalid: false }; }
+    catch { return { names: [], invalid: true }; }
+  }, [rosterText]);
+  const rosterDirty = parsedRoster.invalid || JSON.stringify(parsedRoster.names) !== JSON.stringify(rosterBase);
+  const rosterSection = Boolean(editingClass && onRosterSave && section === 'students');
+  const requestClose = () => {
+    if (submittingRef.current) return;
+    if (rosterDirty) setDiscardRoster(true); else onClose();
+  };
   const formId = useId();
   const stepContentRef = useRef<HTMLDivElement>(null);
 
@@ -228,6 +249,16 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (rosterSection) {
+      if (submittingRef.current || parsedRoster.invalid || !rosterDirty || !onRosterSave) return;
+      submittingRef.current = true; setSubmitting(true);
+      try {
+        await onRosterSave(rosterBase, parsedRoster.names);
+        haptics.onConfirm(); toast.success(t('classRoster.saved')); onClose();
+      } catch { haptics.onError(); toast.error(t('common.error')); }
+      finally { submittingRef.current = false; setSubmitting(false); }
+      return;
+    }
     if ((!editingClass && step !== 'details') || submittingRef.current || !isFormValid || !normalizedGroup) return;
     submittingRef.current = true;
     setSubmitting(true);
@@ -250,6 +281,10 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     try {
       if (editingClass) {
         if (!onUpdate) return;
+        if (rosterDirty && onRosterSave) {
+          if (parsedRoster.invalid) return;
+          await onRosterSave(rosterBase, parsedRoster.names);
+        }
         await onUpdate(editingClass.id, details);
       } else {
         await onCreate(details);
@@ -330,7 +365,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={() => { if (!submittingRef.current) onClose(); }} blockDismiss={submitting} hideClose={submitting} title={
+      <Modal isOpen={isOpen} onClose={requestClose} blockDismiss={submitting} hideClose={submitting} title={
         <div className="flex items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background/80 text-foreground">
             <Users className="h-8 w-8" />
@@ -348,7 +383,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         bodyClassName="bg-muted/20 px-4 py-4 sm:px-7 sm:py-6"
         footerClassName="border-t border-border/70 bg-background"
         footer={<fieldset disabled={submitting} className="class-create-footer flex w-full min-w-0 items-center gap-2">
-          {editingClass && onDelete && <AnimatedTrashButton
+          {editingClass && onDelete && !rosterSection && <AnimatedTrashButton
             label={t('dashboard.delete')}
             variant="ghost"
             size="md"
@@ -356,12 +391,12 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             className="h-11 shrink-0 rounded-xl px-3 text-destructive hover:bg-destructive/5 hover:text-destructive sm:me-auto sm:px-4"
           />}
           {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold sm:me-auto sm:px-4 sm:text-sm">{copy.back}</Button>}
-          <Button type="button" variant="outline" onClick={onClose} className="h-11 shrink-0 rounded-xl border-border bg-background px-3 text-xs font-semibold shadow-xs sm:ms-auto sm:px-4 sm:text-sm">{copy.cancel}</Button>
+          <Button type="button" variant="outline" onClick={requestClose} className="h-11 shrink-0 rounded-xl border-border bg-background px-3 text-xs font-semibold shadow-xs sm:ms-auto sm:px-4 sm:text-sm">{copy.cancel}</Button>
           {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="class-create-primary h-11 min-w-0 flex-1 px-3 text-xs font-bold shadow-sm sm:flex-none sm:px-5 sm:text-sm">{copy.next}</Button>}
           {(editingClass || step === 'details') && <AnimatedSubmitButton
             type="submit"
             form={formId}
-            disabled={!isFormValid || submitting}
+            disabled={submitting || (rosterSection ? !rosterDirty || parsedRoster.invalid : !isFormValid || (rosterDirty && parsedRoster.invalid))}
             aria-busy={submitting}
             isSubmitting={submitting}
             label={editingClass ? copy.save : copy.create}
@@ -370,6 +405,12 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           />}
         </fieldset>}
       >
+        {editingClass && onRosterSave && <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/60 p-1" role="group" aria-label={copy.editTitle}>
+          {(['identity', 'students'] as const).map(item => <button key={item} type="button" aria-pressed={section === item}
+            onClick={() => setSection(item)} className={cn('min-h-11 rounded-lg px-3 text-sm font-semibold transition-colors duration-150', section === item ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground')}>
+            {t(item === 'identity' ? 'classRoster.identity' : 'classRoster.title')}
+          </button>)}
+        </div>}
         <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-5 text-start">
           <fieldset disabled={submitting} className="min-w-0 space-y-5">
           {!editingClass && <nav className="class-create-progress relative overflow-hidden rounded-xl border border-border bg-background/80 px-3 py-3 shadow-[0_2px_12px_rgba(63,58,52,0.04)] dark:shadow-[0_2px_16px_rgba(0,0,0,0.25)] sm:px-6 sm:py-5" aria-label={copy.guidedLabel}>
@@ -434,11 +475,17 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-3"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-3 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
           </div></section>}
           </div>}
-          {editConfiguration}
+          <div hidden={rosterSection}>{editConfiguration}</div>
+          {editingClass && onRosterSave && <div hidden={!rosterSection}>
+            <ClassRosterFields value={rosterText} onChange={setRosterText} names={parsedRoster.names} invalid={parsedRoster.invalid}
+              changed={JSON.stringify(roster?.names ?? []) !== JSON.stringify(rosterBase)} suggestedNames={suggestedStudentNames} />
+          </div>}
           </fieldset>
         </form>
       </Modal>
 
+      <ConfirmDialog open={discardRoster} onOpenChange={setDiscardRoster} title={t('classRoster.discard')}
+        description={t('classRoster.discardBody')} confirmLabel={t('classRoster.leave')} onConfirm={onClose} />
       {editingClass && onDelete && <ConfirmDialog open={confirmDelete} onOpenChange={setConfirmDelete} title={t('dashboard.deleteNotebookTitle', { name: formatLocalizedClassDisplayName(editingClass.name, locale) })} description={t('dashboard.deleteNotebookDescription')} confirmLabel={t('dashboard.delete')} confirmationPhrase={formatLocalizedClassDisplayName(editingClass.name, locale)} confirmationHint={t('dashboard.deleteNotebookConfirmHint', { name: formatLocalizedClassDisplayName(editingClass.name, locale) })} onConfirm={onDelete} />}
     </>
   );

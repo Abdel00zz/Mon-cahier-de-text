@@ -1,4 +1,7 @@
-import React, { useMemo } from 'react';
+import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
+import { useClassManager } from '@/hooks/useClassManager';
+import { classRosterPatch, historicalStudentNames } from '@/domain/evaluations/classRosterSync';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { AppConfig, AppLocale, ClassInfo, DevoirType, ManualAssessment } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
@@ -51,6 +54,7 @@ interface DevoirsModalsProps {
   classInfo: ClassInfo;
   classDisplayName: string;
   config: AppConfig;
+  onConfigChange: (patch: Partial<AppConfig>) => void;
   today: string;
   assessments: { id: string; type: DevoirType; num?: number; semestre?: 1 | 2 }[];
   modals: ReturnType<typeof useEvaluationModals>;
@@ -68,6 +72,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   classInfo,
   classDisplayName,
   config,
+  onConfigChange,
   today,
   assessments,
   modals,
@@ -80,6 +85,9 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
   deleteHomeworkCorrection,
 }) => {
   const { t, locale } = useLocale();
+  const [classSettingsOpen, setClassSettingsOpen] = useState(false);
+  const { classes, updateClass } = useClassManager();
+  const openClassSettings = () => setClassSettingsOpen(true);
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
   const selectedClassDisplayName = classDisplayName;
@@ -181,6 +189,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       >
         {absencesFor && selectedClass && (
           <StudentNamesEditor
+            onManageStudents={openClassSettings}
             key={`${selectedClass.id}-${absencesFor.planned.id}`}
             variant="absent"
             roster={config.classRosters?.[selectedClass.id]}
@@ -222,6 +231,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       >
         {oralFor && selectedClass && (
           <StudentNamesEditor
+            onManageStudents={openClassSettings}
             key={`oral-${selectedClass.id}-${oralFor.planned.id}`}
             variant="checked"
             trackOral={Boolean(oralPolicy?.feedback)}
@@ -258,6 +268,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       >
         {submissionsFor && selectedClass && (
           <StudentNamesEditor
+            onManageStudents={openClassSettings}
             key={`homework-${selectedClass.id}-${submissionsFor.planned.id}`}
             variant="checked"
             trackHomework={Boolean(homeworkPolicy?.feedback)}
@@ -288,6 +299,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       >
         {studentsFor && (
           <StudentNamesEditor
+            onManageStudents={openClassSettings}
             key={`students-${studentsFor.id}`}
             variant="checked"
             initialNames={studentsFor.students?.names ?? []}
@@ -316,6 +328,14 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
           />
         )}
       </StudentReviewDialog>
+
+      <CreateClassModal isOpen={classSettingsOpen} onClose={() => setClassSettingsOpen(false)}
+        onCreate={() => {}} editingClass={classes.find(item => item.id === classInfo.id) ?? classInfo}
+        existingClasses={classes} teacherSubjects={config.selectedSubjects} teacherCycles={config.selectedCycles}
+        initialSection="students" roster={config.classRosters?.[classInfo.id]}
+        suggestedStudentNames={historicalStudentNames(config, classInfo.id)}
+        onRosterSave={(base, names) => onConfigChange(classRosterPatch(config, classInfo.id, base, names))}
+        onUpdate={(id, updates) => { if (!updateClass(id, updates)) throw new Error(t('common.error')); }} />
 
       {/* 7. Dialogue de confirmation suppression d'un devoir */}
       <ConfirmDialog

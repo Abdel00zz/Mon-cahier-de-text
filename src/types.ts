@@ -131,7 +131,7 @@ export interface AppConfig {
     assessmentDates?: Record<string, Record<string, string>>;
     /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: StudentNamesRecord } } */
     assessmentAbsences?: Record<string, Record<string, StudentNamesRecord>>;
-    /** Effectifs publiés par la direction : lecture seule pour le professeur. */
+    /** Liste commune de la classe, partagée avec la direction et les suivis. */
     classRosters?: Record<string, ClassRoster>;
     /** Observations de l'oral, séparées des absences et du programme du cahier. */
     assessmentParticipants?: Record<string, Record<string, OralStudentsRecord>>;
@@ -179,6 +179,10 @@ export interface ClassRoster {
     names: string[];
     updatedAt: string;
     version: number;
+    /** Modification locale en attente : base stable pour fusionner sans écraser la direction. */
+    edit?: { id: string; baseNames: string[] };
+    /** Reçus de synchronisation ; une relance réseau ne rejoue pas une modification. */
+    appliedEdits?: string[];
 }
 
 export type OralOutcome = 'mastered' | 'developing' | 'needs_support';

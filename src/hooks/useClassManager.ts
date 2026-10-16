@@ -21,7 +21,7 @@ export const useClassManager = () => {
     // Le marqueur d'onboarding n'a aucune autorité sur les classes déjà stockées.
     // Lecture immédiate, sans spinner réseau ni réécriture à chaque rendu.
     useEffect(() => {
-        if (!workspaceIsActive()) return;
+        if (!workspaceIsActive() || typeof localStorage === 'undefined') return;
         try {
             const normalized = readStoredClasses();
             const raw = localStorage.getItem(CLASS_STORAGE_KEY);
@@ -37,7 +37,7 @@ export const useClassManager = () => {
     }, [workspaceIsActive]);
 
     const persistClassesNow = useCallback((next: ClassInfo[], markDirty = true) => {
-        if (!workspaceIsActive()) return false;
+        if (!workspaceIsActive() || typeof localStorage === 'undefined') return false;
         try {
             const colored = assignClassColors(next);
             localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(colored));
@@ -52,6 +52,7 @@ export const useClassManager = () => {
     }, [workspaceIsActive]);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
         const reload = () => {
             if (!workspaceIsActive()) return;
             try { setClasses(readStoredClasses()); }

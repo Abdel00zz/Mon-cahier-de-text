@@ -546,7 +546,7 @@ const handleSaveClassRoster = async (body: AdminBody, res: ApiResponse) => {
     if (!blob?.classes.some(item => item.id === classId) || blob.deletedClasses?.[classId]) throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
     const current = blob.settings?.classRosters?.[classId];
     if ((current?.version ?? 0) !== body.expectedRosterVersion) throw new HttpError(409, 'La liste a été modifiée. Rechargez la fiche avant de publier.');
-    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1 };
+    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1, appliedEdits: current?.appliedEdits };
     write.set(KEYS.classes(phone), {
         ...blob, updatedAt: roster.updatedAt,
         settings: { ...blob.settings, classRosters: { ...blob.settings?.classRosters, [classId]: roster } },

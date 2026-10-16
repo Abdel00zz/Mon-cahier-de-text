@@ -10,7 +10,7 @@ import { saveClassRoster } from '../api';
 export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublished }: {
     phone: string; classInfo: ClassInfo; roster?: ClassRoster; onClose: () => void; onPublished: (roster: ClassRoster) => void;
 }) {
-    const [draft, setDraft] = useState(roster?.names.join(' ; ') ?? '');
+    const [draft, setDraft] = useState(roster?.names.join(' ؛ ') ?? '');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
     const parsed = useMemo(() => {
@@ -27,11 +27,11 @@ export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublishe
     return <Modal isOpen dir="ltr" onClose={() => { if (!busy) onClose(); }} maxWidth="xl" title={<span className="flex items-center gap-2"><Users className="h-5 w-5"/>Liste des élèves · <bdi>{classInfo.name}</bdi></span>}>
         <div className="space-y-4">
             <p className="text-sm text-muted-foreground">La liste sera transmise à cette classe pour le suivi des élèves, les remises de devoirs et le contrôle continu. Les observations déjà enregistrées par le professeur sont conservées.</p>
-            <label className="block space-y-2"><span className="text-sm font-semibold">Noms complets séparés par un point-virgule</span>
+            <label className="block space-y-2"><span className="text-sm font-semibold">Noms complets séparés par « ؛ »</span>
                 <textarea value={draft} onChange={event => { setDraft(event.target.value); setError(''); }} disabled={busy} rows={7} dir="auto"
-                    spellCheck={false} aria-describedby="class-roster-format" placeholder="Ahmed Alami ; Sara Fassi ; أحمد العلوي ؛ سلمى الفاسي" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"/>
+                    spellCheck={false} aria-describedby="class-roster-format" placeholder="أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"/>
             </label>
-            <p id="class-roster-format" className="text-xs text-muted-foreground">Nom Prénom ; Nom Prénom — les séparateurs ; et ؛ sont reconnus. Les espaces du nom complet sont conservés.</p>
+            <p id="class-roster-format" className="text-xs text-muted-foreground">Nom Prénom ؛ Nom Prénom — les séparateurs ؛ et ; sont reconnus. Les espaces du nom complet sont conservés.</p>
             <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{parsed.names.length} / 200 élèves · doublons retirés</span>
                 {roster && <span>Liste publiée · version {roster.version}</span>}</div>
             {parsed.names.length > 0 && <ol className="grid max-h-44 gap-2 overflow-y-auto rounded-xl border border-border p-3 sm:grid-cols-2" aria-label="Aperçu de la liste">

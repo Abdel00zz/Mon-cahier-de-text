@@ -55,7 +55,7 @@ test('la modale de document est un éditeur à deux onglets, borné', () => {
 test('un seul éditeur d’élèves pour les absents et les cahiers contrôlés', () => {
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, {
     locale: 'fr',
-    children: React.createElement(StudentNamesEditor, {
+    children: React.createElement(StudentNamesEditor, { onManageStudents: () => {},
       initialNames: ['Amine R.', 'Salma B.'],
       onCancel: () => undefined,
       onSave: () => undefined,

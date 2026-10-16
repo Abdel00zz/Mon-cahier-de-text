@@ -389,6 +389,18 @@ test('admin class rosters reach the right email account and survive stale pushes
   assert.equal((await postAdmin({ ...request, studentNames: [], expectedRosterVersion: 2 })).status, 200);
   assert.equal((await push(observations, 15_000)).status, 200);
   assert.deepEqual((await pull()).settings.classRosters?.[x.id]?.names, [], 'empty publication must not resurrect after an old client push');
+  const teacherDraft = { names: ['تلميذ جديد', 'تلميذة جديدة'], version: 3, updatedAt: observedAt,
+    edit: { id: 'teacher-roster-edit-1', baseNames: [] } };
+  const teacherPush = await push({ ...observations, classRosters: { [x.id]: teacherDraft } }, 1_000);
+  assert.equal(teacherPush.status, 200, 'roster edits are independent of stale general settings');
+  restored = (await pull()).settings;
+  assert.deepEqual(restored.classRosters?.[x.id]?.names, teacherDraft.names);
+  assert.equal(restored.classRosters?.[x.id]?.edit, undefined);
+  const updatedDetail = await call(adminHandler, { method: 'GET', headers: adminHeaders, query: { action: 'teacher', phone: owner } });
+  assert.deepEqual((updatedDetail.body as { classRosters: Record<string, ClassRoster> }).classRosters[x.id].names, teacherDraft.names);
+  assert.equal((await postAdmin({ ...request, studentNames: ['تلميذ مصحح', 'إضافة الإدارة'], expectedRosterVersion: restored.classRosters![x.id].version })).status, 200);
+  assert.equal((await push({ classRosters: { [x.id]: teacherDraft } })).status, 200);
+  assert.deepEqual((await pull()).settings.classRosters?.[x.id]?.names, ['تلميذ مصحح', 'إضافة الإدارة'], 'retry does not resurrect names removed by admin');
   assert.equal((await postAdmin({ action: 'deleteTeacherClass', phone: owner, classId: x.id })).status, 200);
   restored = (await pull()).settings;
   assert.equal(restored.classRosters?.[x.id], undefined);

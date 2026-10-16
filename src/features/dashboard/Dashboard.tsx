@@ -1,3 +1,4 @@
+import { classRosterPatch, historicalStudentNames } from '@/domain/evaluations/classRosterSync';
 import React, { lazy, Suspense, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useClassManager } from '@/hooks/useClassManager';
@@ -491,6 +492,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 teacherCycles={config.selectedCycles}
                 existingClasses={classes}
                 editingClass={editingClass}
+                roster={editingClass ? config.classRosters?.[editingClass.id] : undefined}
+                suggestedStudentNames={editingClass ? historicalStudentNames(config, editingClass.id) : undefined}
+                onRosterSave={editingClass ? (base, names) => updateConfig(classRosterPatch(config, editingClass.id, base, names)) : undefined}
                 onUpdate={(classId, updates) => {
                     if (!updateClass(classId, updates)) throw new Error(t('common.error'));
                     setEditingClass(null);

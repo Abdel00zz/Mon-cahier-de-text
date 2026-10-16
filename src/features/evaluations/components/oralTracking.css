@@ -27,20 +27,18 @@
   max-height: min(74dvh, 640px);
 }
 .notebook-tracker[data-review-mode='oral'] .notebook-tracker__controls {
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   padding: 14px 24px;
   align-items: center;
   background: hsl(var(--muted) / .25);
 }
-.notebook-tracker[data-review-mode='oral'][data-empty='true'] .student-add { grid-column: 1 / -1; }
 .notebook-tracker[data-review-mode='oral'] .student-search-bar {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
   gap: 10px;
   min-width: 0;
 }
-.notebook-tracker[data-review-mode='oral'] .student-add__field,
 .notebook-tracker[data-review-mode='oral'] .student-search-bar__input,
 .evaluation-modal .notebook-tracker[data-review-mode='oral'] .choice-trigger--filter {
   background: hsl(var(--card));
@@ -48,17 +46,16 @@
   padding-inline: 10px;
   font-size: 12px;
 }
-.evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-add__field input, .student-search-bar input) { font-size: 12px; }
-.evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-add__field input, .student-search-bar input, .notebook-grade__input):focus {
+.evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-search-bar input) { font-size: 12px; }
+.evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-search-bar input, .notebook-grade__input):focus {
   outline: none; box-shadow: none;
 }
-.notebook-tracker[data-review-mode='oral'] :is(.student-add__field, .student-search-bar__input, .notebook-grade):focus-within {
+.notebook-tracker[data-review-mode='oral'] :is(.student-search-bar__input, .notebook-grade):focus-within {
   border-color: hsl(var(--primary));
   box-shadow: 0 0 0 3px hsl(var(--primary) / .16);
 }
-.notebook-tracker[data-review-mode='oral'] :is(.student-add__field input, .student-search-bar input)::placeholder { font-size: 12px; }
+.notebook-tracker[data-review-mode='oral'] :is(.student-search-bar input)::placeholder { font-size: 12px; }
 .notebook-tracker[data-review-mode='oral'] .student-search-bar__input { gap: 6px; }
-.notebook-tracker[data-review-mode='oral'] .student-add__button { border-radius: 8px; font-size: 22px; }
 .notebook-tracker[data-review-mode='oral'] .notebook-tracker__scroll {
   padding: 18px 24px 24px;
   gap: 12px;
@@ -129,7 +126,7 @@
     grid-template-areas: 'name remove' 'choice choice';
   }
   .notebook-tracker[data-review-mode='oral'] .notebook-grade { width: 80px; }
-  .evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-add__field input, .student-search-bar input, .notebook-grade__input) { font-size: 16px; }
+  .evaluation-modal .notebook-tracker[data-review-mode='oral'] :is(.student-search-bar input, .notebook-grade__input) { font-size: 16px; }
   .notebook-tracker[data-review-mode='oral'] .notebook-tracker__footer { padding-inline: 16px; }
 }
 @media (max-width: 639px) {

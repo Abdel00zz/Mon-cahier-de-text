@@ -151,7 +151,7 @@
 
 /* 2. Champs de saisie & Filtres */
 .notebook-tracker__controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 8px; padding: 14px 24px 10px; border-bottom: 1px solid var(--border-subtle); }
-.notebook-tracker__controls .student-add { margin: 0; }
+
 .student-roster-source { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
 
 /* Bloc Rechercher / Filtrer / Ajouter unifié */

@@ -1,3 +1,7 @@
+import { rostersForClasses } from '../domain/evaluations/studentRoster';
+import { readStoredClasses } from '../infrastructure/storage/localClassStorage';
+import { reconcileClassRosters } from '../domain/evaluations/classRosterSync';
+import type { ClassRoster } from '../types';
 import { apiFetch } from '@/platform/nativeHttp';
 import { accountOwner } from '../domain/auth/accountIdentity';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -309,7 +313,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (!isCurrent()) return;
                 const isFirst = i === 0;
                 const includeSettings = isFirst && work.classesListDirty;
-                let data: { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean };
+                let data: { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean; classRosters?: Record<string, ClassRoster> };
                 try {
                     data = await requestSyncPush({
                         classes, schedules, timetable: config.timetable ?? [],
@@ -367,6 +371,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     break;
                 }
                 if (!isCurrent()) return;
+                if (data.classRosters) {
+                    const latest = readCachedConfig();
+                    const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), readStoredClasses().map(item => item.id));
+                    localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
+                    notifyPullApplied();
+                }
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
                 if (includeSettings && data.settingsAccepted !== false) pushedSettingsAt = settingsUpdatedAt;
                 if (includeSettings && data.settingsAccepted === false) requiresPull = true;
@@ -806,11 +816,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 nextConfig = withDocuments;
                 if (!pedagogicalDocumentsEqual(nextConfig, settings ?? {})) settingsNeedPush = true;
 
-                // Effectifs administratifs : indépendants des préférences locales
-                // et de leur date. Un retrait de liste est aussi transmis via {}.
-                if (settings?.classRosters !== undefined && JSON.stringify(nextConfig.classRosters ?? {}) !== JSON.stringify(settings.classRosters)) {
-                    nextConfig = { ...nextConfig, classRosters: settings.classRosters };
-                    configChanged = true;
+                // Receive admin edits without dropping locally pending roster changes.
+                if (settings?.classRosters !== undefined) {
+                    const classRosters = rostersForClasses(reconcileClassRosters(localConfig.classRosters, settings.classRosters), mergedClasses.map(item => item.id));
+                    if (JSON.stringify(nextConfig.classRosters ?? {}) !== JSON.stringify(classRosters)) {
+                        nextConfig = { ...nextConfig, classRosters };
+                        configChanged = true;
+                    }
+                    if (Object.values(classRosters).some(roster => roster.edit)) settingsNeedPush = true;
                 }
 
                 // L'horloge de la direction n'entre jamais dans le LWW des

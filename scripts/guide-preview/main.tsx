@@ -1,3 +1,4 @@
+import { classRosterPatch, historicalStudentNames } from '../../src/domain/evaluations/classRosterSync';
 /** Development-only capture entry. Real components and fictitious teaching data. */
 import { useState } from 'react';
 import { produce } from 'immer';
@@ -54,11 +55,12 @@ const fixtureNames = params.get('fixture') === 'palette' ? KEEP_TONES.map((_, i)
   ? ['2BAC Sciences Mathématiques A 12', 'TC Sciences Option Français 3', 'Classe de consolidation et approfondissement 7']
   : params.get('fixture') === 'paper-cards' ? ['2BAC SVT 2', '2BAC PC 3', '2BAC PC 4', 'TCL 6']
   : ['1AC 1', '2AC 2', '3AC 1'];
-const classes: ClassInfo[] = fixtureNames.map((name, i) => ({
+const fixtureClasses: ClassInfo[] = fixtureNames.map((name, i) => ({
   id: `guide-demo-${i}`, name, cycle: 'college', teacherName: '', subject: 'Mathématiques',
   createdAt: '2026-09-01T08:00:00Z', color: params.get('fixture') === 'palette' ? KEEP_TONES[i]
     : params.get('fixture') === 'paper-cards' ? ['mint', 'coral', 'indigo', 'mint'][i] : '',
 }));
+const classes = fixtureClasses;
 const timetable = [
   { day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id },
   { day: 1, slot: 4, classId: classes[1].id }, { day: 2, slot: 2, classId: classes[2].id },
@@ -108,6 +110,8 @@ const lessons: LessonsData = [{ type: 'chapter', title: 'Nombres rationnels', it
 const noop = () => {};
 
 function Preview() {
+  const [classes, setClasses] = useState(fixtureClasses);
+  const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
   const { t } = useLocale();
   const [config, setConfig] = useState(initialConfig);
   const [display, setDisplay] = useState<ClassDisplayMode>('triple');
@@ -177,24 +181,29 @@ function Preview() {
           <div className="dashboard-class-section">
           {display === 'list' ? (
             <div key={display} className="dashboard-class-collection dashboard-class-list" role="list" aria-label={t('dashboard.classList')}>
-              {classes.map((classInfo, i) => <div key={classInfo.id} role="listitem"><ClassListItem classInfo={classInfo} onSelect={noop} onConfigure={noop} isActiveSession={params.get('active') === '1' && i === 0} /></div>)}
+              {classes.map((classInfo, i) => <div key={classInfo.id} role="listitem"><ClassListItem classInfo={classInfo} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={params.get('active') === '1' && i === 0} /></div>)}
             </div>
           ) : (
             <div key={display} data-layout={display} className="dashboard-class-collection dashboard-class-grid">
-              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={noop} isActiveSession={params.get('active') === '1' && i === 0} />)}
+              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={params.get('active') === '1' && i === 0} />)}
               <AddClassCard onCreate={() => setDashboardCreateOpen(true)} />
             </div>
           )}
           {display === 'list' && <div className="dashboard-class-create-row"><AddClassCard variant="row" onCreate={() => setDashboardCreateOpen(true)} /></div>}
           </div>
           <TabBar activeTab="dashboard" onTabChange={noop} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
-          <CreateClassModal isOpen={dashboardCreateOpen} onClose={() => setDashboardCreateOpen(false)} onCreate={() => setDashboardCreateOpen(false)} defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} />
+          <CreateClassModal isOpen={dashboardCreateOpen || !!editingClass} onClose={() => { setDashboardCreateOpen(false); setEditingClass(null); }} onCreate={() => setDashboardCreateOpen(false)}
+            defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} editingClass={editingClass}
+            onUpdate={(id, updates) => setClasses(current => current.map(item => item.id === id ? { ...item, ...updates } : item))}
+            roster={editingClass ? config.classRosters?.[editingClass.id] : undefined}
+            suggestedStudentNames={editingClass ? historicalStudentNames(config, editingClass.id) : undefined}
+            onRosterSave={editingClass ? (base, names) => onChange(classRosterPatch(config, editingClass.id, base, names)) : undefined} />
           <GuideModal isOpen={dashboardGuideOpen} onClose={() => setDashboardGuideOpen(false)} />
         </div>
       </AuthProvider>}
       {screen === 'classes' && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} />)}</div>
       </>}
       {screen === 'schedule' && <ScheduleTab config={config} classes={classes} onChange={onChange} />}
       {screen === 'notifications' && <NotificationsTab config={config} onChange={onChange} />}

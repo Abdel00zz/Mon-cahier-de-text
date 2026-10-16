@@ -6,9 +6,11 @@ export class LocalSyncDataError extends Error {
   }
 }
 
-export function readLocalJson(key: string, fallback: unknown, storage: Pick<Storage, 'getItem'> = localStorage): unknown {
+export function readLocalJson(key: string, fallback: unknown, storage?: Pick<Storage, 'getItem'>): unknown {
+  const store = storage ?? (typeof localStorage !== 'undefined' ? localStorage : null);
+  if (!store) return fallback;
   try {
-    const raw = storage.getItem(key);
+    const raw = store.getItem(key);
     return raw === null ? fallback : JSON.parse(raw);
   } catch (cause) {
     throw new LocalSyncDataError(key, cause);

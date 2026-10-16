@@ -1,3 +1,5 @@
+import { acceptRosterEdits } from '../src/domain/evaluations/classRosterSync.js';
+import type { ClassRoster } from '../src/types.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
@@ -184,9 +186,9 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         acceptedSettings = mergePedagogicalDocuments(acceptedSettings, existing.settings ?? {});
         adminAssessmentDatesUpdatedAt = mergedDates.watermarks;
     }
-    // The roster belongs to the direction. Even a newer teacher settings push
-    // or an older client omitting this field must preserve the server's list.
-    acceptedSettings = { ...acceptedSettings, classRosters: existing.settings?.classRosters ?? {} };
+    acceptedSettings = { ...acceptedSettings, classRosters: acceptRosterEdits(
+        existing.settings?.classRosters as Record<string, ClassRoster> | undefined,
+        submittedSettings?.classRosters as Record<string, ClassRoster> | undefined, now) };
     const submittedTimetable = assertValidTimetable(body.timetable, requestedClassIds);
     const acceptLegacySchedule = !existing.settingsUpdatedAt && !submittedSettings;
     const timetable = ((acceptSettings || acceptLegacySchedule ? submittedTimetable : undefined) ?? existing.timetable ?? [])
@@ -290,7 +292,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     await pipeline.exec();
 
     res.status(200).json({ ok: true, serverTime: now, classMeta, deletedClasses,
-        acceptedClassIds: acceptedLessons.map(entry => entry.classId), settingsAccepted: acceptSettings });
+        acceptedClassIds: acceptedLessons.map(entry => entry.classId), settingsAccepted: acceptSettings, classRosters: nextBlob.settings?.classRosters });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

@@ -1,3 +1,4 @@
+import { reconcileClassRosters } from '../../domain/evaluations/classRosterSync.js';
 import { AppConfig } from '../../types.js';
 import { mergePedagogicalDocuments } from '../../domain/evaluations/documentSync.js';
 import { sessionReminderMinutes } from '../../domain/notifications/sessionReminderTiming.js';
@@ -47,7 +48,7 @@ export type SyncableSettings = Pick<
     | 'schoolYearStart'
     | 'notificationDismissals'
 > & {
-    /** Direction-owned lists are received, never included in a teacher push. */
+    /** Shared class lists; pending edits are merged independently of other settings. */
     classRosters?: AppConfig['classRosters'];
     /** préférences de notification hors états locaux à l'appareil (push, vibration) */
     notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled' | 'sessionVibration'>;
@@ -81,6 +82,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'assessmentAbsences',
     'assessmentDocuments',
     'assessmentParticipants',
+    'classRosters',
     'pedagogicalEvents',
     'manualAssessments',
     'removedAssessments',
@@ -166,5 +168,6 @@ export const mergeAdminAssessmentDates = (
             sessionVibration: local.notificationSettings?.sessionVibration ?? false,
         } as NonNullable<AppConfig['notificationSettings']>;
     }
+    merged.classRosters = reconcileClassRosters(local.classRosters, remote.classRosters ?? local.classRosters);
     return mergePedagogicalDocuments(merged, local);
 };

@@ -1,25 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-import { Check, Copy, Info, RotateCcw } from '@/components/ui/icons';
+import { Check, Copy, RotateCcw } from '@/components/ui/icons';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import type { ClassRoster, HomeworkOutcome, NotebookCondition, OralOutcome } from '@/types';
 import { retainNotebookConditions, notebookConditionReport } from '@/domain/evaluations/notebookConditions';
 import { countHomeworkOutcomes, retainHomeworkOutcomes } from '@/domain/evaluations/homeworkSubmissions';
-import { namesWithRoster, normalizeStudentNames, parseStudentNames, retainOralOutcomes, retainOralGrades } from '@/domain/evaluations/studentRoster';
-import { StudentAddField } from './StudentAddField';
+import { namesWithRoster, normalizeStudentNames, studentSearchKey, retainOralOutcomes, retainOralGrades } from '@/domain/evaluations/studentRoster';
 import { StudentReviewList, NOTEBOOK_REVIEW_CHOICES, ORAL_REVIEW_CHOICES, HOMEWORK_REVIEW_CHOICES } from './NotebookConditionList';
 import './notebookTracking.css';
 import './oralTracking.css';
 
-/*
- * Une seule liste d'élèves pour deux usages : les ABSENTS d'un devoir surveillé
- * et les ÉLÈVES CONTRÔLÉS d'une activité (contrôle des cahiers). Le mécanisme est
- * identique — on colle une liste, on ajoute un nom, on retire une puce — seul
- * l'habillage change, donc les deux écrans ne peuvent pas diverger.
- */
+/** Session selections and observations use the shared roster; names are edited in class settings. */
 
 type StudentNamesVariant = 'absent' | 'checked';
 
@@ -72,6 +66,7 @@ interface StudentNamesEditorProps {
   initialNotebookConditions?: Record<string, NotebookCondition>;
   reportContext?: string;
   roster?: ClassRoster;
+  onManageStudents: () => void;
   trackOral?: boolean;
   initialOralOutcomes?: Record<string, OralOutcome>;
   /** Note /20 par élève, saisie depuis la modale élèves (oral, colle). */
@@ -96,6 +91,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   initialNotebookConditions,
   reportContext,
   roster,
+  onManageStudents,
   initialOralGrades,
   reportTitle,
   trackGrades = true,
@@ -123,8 +119,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       setNames(current => namesWithRoster(current, { ...roster, names: added }));
     }
   }, [roster, variant]);
-  // Le brouillon d'un nom vit dans le champ de saisie : taper ne refait pas le rendu de toute la liste.
-  const draftRef = useRef('');
+  const [query, setQuery] = useState('');
   const [conditions, setConditions] = useState<Record<string, ReviewCondition>>(() => trackOral
     ? retainOralOutcomes(initialNames, initialOralOutcomes)
     : trackHomework ? retainHomeworkOutcomes(initialNames, initialHomeworkOutcomes)
@@ -134,18 +129,10 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
   const [removed, setRemoved] = useState<{ names: string[]; conditions: Record<string, ReviewCondition>; grades: Record<string, string> } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const commitDraft = (raw: string) => {
-    let next: string[];
-    try { next = normalizeStudentNames([...names, ...parseStudentNames(raw)]); }
-    catch {
-      toast.error(t('evaluations.students.limit'));
-      return null;
-    }
-    setNames(next);
-    draftRef.current = '';
-    if (next.length > names.length) setRemoved(null);
-    return next;
-  };
+  const manageStudents = <button type="button" onClick={onManageStudents}
+    className="min-h-11 rounded-lg px-3 text-start text-sm font-medium text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+    {t('classRoster.manage')}
+  </button>;
 
   const removeName = (name: string) => {
     if (trackReview) setRemoved({ names, conditions, grades });
@@ -195,16 +182,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
       choices={trackOral ? ORAL_REVIEW_CHOICES : trackHomework ? HOMEWORK_REVIEW_CHOICES : NOTEBOOK_REVIEW_CHOICES}
       grades={trackOral && trackGrades ? grades : undefined}
       onGradesChange={trackOral && trackGrades ? setGrades : undefined}
-      addField={
-        <StudentAddField
-          draftRef={draftRef}
-          suggestions={roster?.names.filter(name => !names.includes(name))}
-          placeholder={t('evaluations.notebook.addPlaceholder')}
-          label={t(copy.placeholder)}
-          addLabel={t(copy.add)}
-          onCommit={commitDraft}
-        />
-      }
+      addField={manageStudents}
       entry={<>
         {roster && <p className="student-roster-source">{t('evaluations.students.rosterSource', { count: numberFormat(locale).format(roster.names.length) })}</p>}
         {roster?.names.some(name => !names.includes(name)) && <div className="notebook-filter-info"><button type="button" onClick={() => { setNames(namesWithRoster(names, roster)); setRemoved(null); }}>{t('evaluations.students.restoreRoster')}</button></div>}
@@ -266,7 +244,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </details>
           <div className="notebook-footer__commit footer-actions-right">
             <button type="button" className="btn-cancel notebook-text-action notebook-footer__cancel" onClick={onCancel}>{t('common.cancel')}</button>
-            <button type="button" className="btn-save notebook-primary" onClick={() => { const next = commitDraft(draftRef.current); if (next) onSave(next,
+            <button type="button" className="btn-save notebook-primary" onClick={() => { const next = names; onSave(next,
               trackOral || trackHomework ? undefined : retainNotebookConditions(next, conditions as Record<string, NotebookCondition>),
               trackOral ? retainOralOutcomes(next, conditions as Record<string, OralOutcome>) : undefined,
               trackHomework ? retainHomeworkOutcomes(next, conditions as Record<string, HomeworkOutcome>) : undefined,
@@ -330,24 +308,24 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           </div>
         )}
 
-        <StudentAddField
-          draftRef={draftRef}
-          suggestions={variant === 'absent' ? roster?.names : undefined}
-          placeholder={t(copy.placeholder)}
-          label={t(copy.placeholder)}
-          addLabel={t(copy.add)}
-          onCommit={commitDraft}
-          commitOnBlur
-        />
-        <details className="text-xs leading-relaxed text-[var(--text-muted)]">
-          <summary className="min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
-            {t(copy.hint)}
-          </summary>
-          <p className="flex items-start gap-2 pb-2">
-            <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <span>{t(copy.directive)}</span>
-          </p>
-        </details>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">{t('classRoster.selection')}</p>
+          {manageStudents}
+        </div>
+        {!!roster?.names.length ? <div className="space-y-2">
+          <input type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label={t('evaluations.notebook.search')}
+            placeholder={t('evaluations.notebook.search')} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 text-base" />
+          <div className="grid max-h-64 gap-1 overflow-y-auto sm:grid-cols-2">
+            {roster.names.filter(name => studentSearchKey(name).includes(studentSearchKey(query))).map(name => <label key={name}
+              className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border bg-background px-3 py-2 text-sm hover:bg-muted">
+              <input type="checkbox" checked={names.includes(name)} onChange={event => {
+                if (event.target.checked) setNames(current => namesWithRoster(current, { ...roster, names: [name] }));
+                else removeName(name);
+              }} className="h-4 w-4 accent-primary" />
+              <bdi className="min-w-0 break-words">{name}</bdi>
+            </label>)}
+          </div>
+        </div> : <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">{t('classRoster.empty')}</p>}
 
         <div className="modal-footer pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3">
           <button
@@ -360,8 +338,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           <button
             type="button"
             onClick={() => {
-              const next = commitDraft(draftRef.current);
-              if (next) onSave(next);
+              onSave(names);
             }}
             className="btn-save truncate"
           >
