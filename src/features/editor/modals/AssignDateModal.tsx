@@ -560,21 +560,21 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       footerClassName="py-3 px-5 sm:px-6 border-t border-border/30 bg-background/95 backdrop-blur-md"
       footer={
         intent === 'remark' ? (
-          <div className="flex w-full items-center justify-end gap-2.5">
+          <div className="flex w-full items-center justify-center gap-3">
+            <Button
+              type="button"
+              onClick={handleApply}
+              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-7 h-11 text-sm shadow-sm min-w-[110px]"
+            >
+              {t('common.save')}
+            </Button>
             <Button
               type="button"
               variant="secondary"
               onClick={onClose}
-              className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm"
+              className="rounded-xl h-11 px-6 text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none"
             >
               {t('common.cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleApply}
-              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 h-10 text-xs sm:text-sm shadow-sm"
-            >
-              {t('common.save')}
             </Button>
           </div>
         ) : (

@@ -1,78 +1,78 @@
 /* ══════════════════════════════════════════════════════════════
-   Modale Remarque de Séance – Design System Premium Épuré
-   Harmonisé avec le gabarit 2025 :
-   - Fond beige doux par défaut (#f2f3f0 / warm neutral)
-   - Contours subtils cohérents (1px hairline)
-   - Bascule propre en un clic : inactif = beige, actif = vert menthe doux
-   - Pas de boutons - / + / X encombrants : chaque puce est un bouton unique
-   - Pas d'icône de validation redondante (✓)
-   - Bouton X circulaire stylé
-   - Textarea harmonisée avec fond beige et contour soigné
-   - Boutons Annuler / Enregistrer modernes arrondis
+   Modale Remarque de Séance – Design System Épuré
+   Inspiré du prototype officiel :
+   - Fond beige/gris doux par défaut (#f2f2ef / --surface-2)
+   - Contours subtils cohérents (1px #e4e4e0)
+   - Puces tactiles 42px : inactif = surface-2, actif = vert émeraude doux (#e6f5ee / #1a7a52)
+   - Bouton X circulaire stylé (36px, 50% radius)
+   - Éditeur de texte harmonisé avec barre d'outils et textarea
+   - Boutons de validation et d'annulation modernes arrondis
    ══════════════════════════════════════════════════════════════ */
 
 :root {
   --remark-green-bg: #e6f5ee;
-  --remark-green-text: #136f45;
-  --remark-green-border: rgba(19, 111, 69, 0.16);
-  --remark-green-glow: rgba(19, 111, 69, 0.1);
-  --remark-chip-default-bg: #f2f3f0;
-  --remark-chip-default-hover: #e8eae5;
-  --remark-chip-default-border: rgba(0, 0, 0, 0.04);
-  --remark-chip-default-text: #374151;
-  --remark-textarea-bg: #f2f3f0;
-  --remark-textarea-border: rgba(0, 0, 0, 0.05);
+  --remark-green-text: #1a7a52;
+  --remark-green-border: rgba(26, 122, 82, 0.2);
+  --remark-green-glow: rgba(26, 122, 82, 0.1);
+  --remark-chip-default-bg: #f2f2ef;
+  --remark-chip-default-hover: #e8e8e4;
+  --remark-chip-default-border: #e4e4e0;
+  --remark-chip-default-text: #5e5e5a;
+  --remark-textarea-bg: #fafaf8;
+  --remark-textarea-border: #e4e4e0;
   --remark-textarea-focus-border: hsl(var(--primary));
   --remark-textarea-focus-ring: hsl(var(--primary) / 0.18);
 }
 
 .dark {
-  --remark-green-bg: hsl(150, 42%, 18%);
+  --remark-green-bg: rgba(26, 122, 82, 0.25);
   --remark-green-text: #86efac;
-  --remark-green-border: rgba(134, 239, 172, 0.25);
+  --remark-green-border: rgba(134, 239, 172, 0.3);
   --remark-green-glow: rgba(134, 239, 172, 0.15);
-  --remark-chip-default-bg: hsl(var(--muted) / 0.55);
-  --remark-chip-default-hover: hsl(var(--muted) / 0.8);
-  --remark-chip-default-border: hsl(var(--border) / 0.35);
-  --remark-chip-default-text: hsl(var(--foreground) / 0.9);
-  --remark-textarea-bg: hsl(var(--muted) / 0.35);
-  --remark-textarea-border: hsl(var(--border) / 0.4);
+  --remark-chip-default-bg: #242421;
+  --remark-chip-default-hover: #2c2c28;
+  --remark-chip-default-border: #32322e;
+  --remark-chip-default-text: #a8a8a2;
+  --remark-textarea-bg: #141412;
+  --remark-textarea-border: #2e2e28;
   --remark-textarea-focus-border: hsl(var(--primary));
   --remark-textarea-focus-ring: hsl(var(--primary) / 0.28);
 }
 
-/* Grille de puces avec espacement standardisé 9px */
+/* Grille de puces centrée avec espacement doux */
 .remark-chips-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
   padding: 2px 0;
 }
 
-/* Puce unique cliquable : beige doux inactif, vert doux actif */
+/* Puce d'activité : beige doux inactif, vert doux actif */
 .remark-chip {
   outline: none;
-  min-height: 44px;
-  border-radius: 14px;
-  padding: 10px 16px;
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 10px 14px;
   background-color: var(--remark-chip-default-bg);
   border: 1px solid var(--remark-chip-default-border);
   color: var(--remark-chip-default-text);
   font-family: inherit;
   font-size: 13.5px;
-  font-weight: 550;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   user-select: none;
   transition:
-    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.15s ease;
 }
 
 .remark-chip:hover:not([data-selected="true"]) {
@@ -84,20 +84,25 @@
   transform: scale(0.97);
 }
 
-/* État sélectionné : Fond vert doux (#e6f5ee), texte vert (#136f45), SANS icône de validation */
+/* État sélectionné : Fond vert doux (#e6f5ee), texte vert (#1a7a52) */
 .remark-chip[data-selected="true"] {
   background-color: var(--remark-green-bg) !important;
   color: var(--remark-green-text) !important;
   border-color: var(--remark-green-border) !important;
-  font-weight: 600;
+  font-weight: 550;
   box-shadow: 0 1px 2px var(--remark-green-glow);
 }
 
 .remark-chip-icon {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   flex-shrink: 0;
-  stroke-width: 1.85;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+
+.remark-chip[data-selected="true"] .remark-chip-icon {
+  opacity: 0.95;
 }
 
 /* Bouton d'effacement discret */
@@ -128,11 +133,11 @@
 .remark-textarea {
   width: 100%;
   min-height: 125px;
-  border-radius: 18px;
-  padding: 15px 18px;
-  font-size: 14.5px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.6;
+  line-height: 1.65;
   border: 1px solid var(--remark-textarea-border);
   background-color: var(--remark-textarea-bg);
   color: hsl(var(--foreground));
@@ -155,19 +160,19 @@
   box-shadow: 0 0 0 3.5px var(--remark-textarea-focus-ring);
 }
 
-/* Bouton de fermeture circulaire moderne */
+/* Bouton de fermeture circulaire moderne inspiré du prototype */
 .remark-close-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 9999px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background-color: var(--remark-chip-default-bg);
   border: 1px solid var(--remark-chip-default-border);
-  color: hsl(var(--foreground) / 0.8);
+  color: var(--remark-chip-default-text);
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 .remark-close-btn:hover {
@@ -176,10 +181,12 @@
 }
 
 .remark-close-btn:active {
-  transform: scale(0.92);
+  background-color: #fef1ef;
+  color: #c4473a;
+  transform: scale(0.94);
 }
 
-/* Pastille de date en en-tête (pour mode date hors remarque) */
+/* Pastille de date en en-tête */
 .remark-date-badge {
   padding: 6px 14px;
   border-radius: 9999px;
