@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { ChevronDown, LineChart } from 'lucide-react';
 import { fetchClassLessons } from '../api';
 import { MathText } from '../../components/ui/math-text';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
@@ -93,15 +94,17 @@ export const ClassProgression: React.FC<{ phone: string; classId: string; snapsh
     const missingList = report ? [...report.missing].reverse() : [];
 
     return (
-        <div className="mt-2 border-t border-border pt-2">
+        <div className="mt-2 border-t border-border/80 pt-2">
             <button
                 type="button"
                 onClick={toggle}
                 aria-expanded={open}
                 aria-controls={contentId}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-semibold text-primary hover:bg-primary/10"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-primary transition-all hover:bg-primary/10 active:scale-95"
             >
-                {open ? '▾' : '▸'} Progression des séances
+                <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Progression des séances</span>
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
 
             {open && (

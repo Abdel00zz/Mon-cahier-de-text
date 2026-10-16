@@ -12,7 +12,27 @@ import { documentIndicator, documentRequirementForAssessment, documentRequiremen
 import { homeworkCorrectionDocumentId } from '../../domain/evaluations/homeworkIds';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
-import { Clock, Bell, LockKeyhole, Trash2 } from '../../components/ui/icons';
+import {
+    ArrowLeft,
+    Clock,
+    SlidersHorizontal,
+    Bell,
+    Lock,
+    Unlock,
+    Plus,
+    Printer,
+    FileCode2,
+    Users,
+    Pencil,
+    Eye,
+    BookOpen,
+    CalendarCheck,
+    FileText,
+    ChevronDown,
+    Loader2,
+    Check,
+} from 'lucide-react';
+import { Trash2 } from '../../components/ui/icons';
 import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
@@ -154,15 +174,17 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
     };
 
     return (
-        <div className="mt-3 border-t border-border pt-2">
+        <div className="mt-3 border-t border-border/80 pt-2">
             <button
                 type="button"
                 onClick={toggle}
                 aria-expanded={open}
                 aria-controls={contentId}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-semibold text-primary hover:bg-primary/10"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-primary transition-all hover:bg-primary/10 active:scale-95"
             >
-                {open ? '▾' : '▸'} Inspecter les chapitres
+                <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Inspecter les chapitres</span>
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
 
             {open && (
@@ -326,9 +348,11 @@ const AdminActivities: React.FC<{
                                 <button
                                     type="button"
                                     onClick={() => onPreview(previewTarget(activity.document, activity.title || label, `${classInfo.name} · ${label}`, { heading: activity.title || label, classLabel: classInfo.name }))}
-                                    className={`h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-semibold ${DOCUMENT_TONE[indicator]}`}
+                                    title={indicator === 'attached' ? 'Aperçu du document rédigé' : indicator === 'missing' ? 'Document manquant' : 'Aucun document'}
+                                    aria-label={`Aperçu du document : ${activity.title || label}`}
+                                    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border shadow-2xs transition-all active:scale-95 ${DOCUMENT_TONE[indicator]}`}
                                 >
-                                    {indicator === 'attached' ? 'Aperçu' : indicator === 'missing' ? 'Document manquant' : 'Aucun document'}
+                                    {indicator === 'attached' ? <Eye className="h-4 w-4" aria-hidden="true" /> : <FileText className="h-4 w-4" aria-hidden="true" />}
                                 </button>
                             )}
                         </article>
@@ -486,8 +510,9 @@ const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages
                                 <h3 className="text-xs font-bold text-foreground">{message.title}</h3>
                                 <p className="mt-1 whitespace-pre-wrap text-[11px] leading-relaxed text-muted-foreground">{message.body}</p>
                             </div>
-                            <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${message.acknowledgedAt ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
-                                {message.acknowledgedAt ? `Compris le ${formatDateTimeFr(message.acknowledgedAt)}` : 'En attente'}
+                            <span className={`inline-flex items-center gap-1 shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${message.acknowledgedAt ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning-strong'}`}>
+                                {message.acknowledgedAt ? <Check className="h-3 w-3" aria-hidden="true" /> : <Clock className="h-3 w-3" aria-hidden="true" />}
+                                <span>{message.acknowledgedAt ? `Compris le ${formatDateTimeFr(message.acknowledgedAt)}` : 'En attente'}</span>
                             </span>
                         </div>
                         <p className="mt-2 text-[10px] text-muted-foreground">Envoyé le {formatDateTimeFr(message.createdAt)}</p>
@@ -853,10 +878,13 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     return (
         <div className="admin-detail mx-auto max-w-5xl p-4 sm:p-8">
             <button
+                type="button"
                 onClick={onBack}
-                className="mb-4 inline-flex h-9 items-center gap-1 rounded-md border border-border bg-card px-3 text-sm font-semibold text-foreground hover:bg-muted"
+                title="Retour à la liste des enseignants"
+                aria-label="Retour à la liste des enseignants"
+                className="group mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/80 bg-card/80 text-muted-foreground shadow-xs backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-card hover:text-foreground active:scale-95"
             >
-                ← Retour
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
             </button>
 
             {isLoading && <div className="text-muted-foreground">Chargement…</div>}
@@ -864,109 +892,130 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
 
             {data && (
                 <>
-                    <header className="admin-detail__header mb-5 rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
-                        <h1 className="text-2xl font-bold text-foreground tracking-tight">
-                            {data.snapshot?.displayName?.trim()
-                                || `${data.user?.prenom ?? data.snapshot?.prenom ?? ''} ${data.user?.nom ?? data.snapshot?.nom ?? ''}`.trim()}
-                            {isBlocked && (
-                                <span className="ml-2 rounded-full bg-destructive/15 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-destructive">
-                                    Bloqué
-                                </span>
-                            )}
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            {data.user?.email || data.user?.phone || 'Compte enseignant'} · dernière synchro {timeAgo(data.user?.lastSyncAt ?? data.snapshot?.lastSyncAt ?? null)}
-                        </p>
-                        {/*
-                         * Matières déclarées dans le profil : la direction voit ce
-                         * que l'enseignant enseigne, y compris une matière encore
-                         * sans classe — et le changement de matière du profil suit.
-                         */}
-                        {(data.snapshot?.subjects ?? []).length > 0 && (
-                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                <span className="text-[11px] font-semibold text-muted-foreground">Matières déclarées :</span>
-                                {(data.snapshot?.subjects ?? []).map(subject => (
-                                    <span key={subject} className="rounded-full border border-primary/25 bg-primary/5 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                                        {subject}
-                                    </span>
-                                ))}
+                    <header className="admin-detail__header relative mb-6 overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-5 shadow-sm backdrop-blur-md sm:p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                                        {data.snapshot?.displayName?.trim()
+                                            || `${data.user?.prenom ?? data.snapshot?.prenom ?? ''} ${data.user?.nom ?? data.snapshot?.nom ?? ''}`.trim()}
+                                    </h1>
+                                    {isBlocked && (
+                                        <span className="rounded-full border border-destructive/25 bg-destructive/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">
+                                            Bloqué
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {data.user?.email || data.user?.phone || 'Compte enseignant'} · dernière synchro {timeAgo(data.user?.lastSyncAt ?? data.snapshot?.lastSyncAt ?? null)}
+                                </p>
+                                {(data.snapshot?.subjects ?? []).length > 0 && (
+                                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                                        <span className="text-[11px] font-semibold text-muted-foreground">Matières déclarées :</span>
+                                        {(data.snapshot?.subjects ?? []).map(subject => (
+                                            <span key={subject} className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                                                {subject}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
 
-                        {/* Actions d'administration */}
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            <button
-                                onClick={onManageTimetable}
-                                disabled={busy}
-                                className="min-h-11 rounded-xl border border-primary/25 bg-primary/5 px-3 text-xs font-semibold text-primary hover:bg-primary/10 disabled:opacity-50"
-                            >
-                                <Clock aria-hidden className="me-2 inline-block h-4 w-4" />Personnaliser l’horaire
-                            </button>
-                            <button
-                                onClick={onManageEvaluationPolicy}
-                                disabled={busy}
-                                className="min-h-11 rounded-xl border border-primary/25 bg-primary/5 px-3 text-xs font-semibold text-primary hover:bg-primary/10 disabled:opacity-50"
-                            >
-                                Personnaliser le contrôle continu
-                            </button>
-                            <button
-                                onClick={() => setMessageModalOpen(true)}
-                                disabled={busy}
-                                className="min-h-11 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                            >
-                                <Bell aria-hidden className="me-2 inline-block h-4 w-4" />Envoyer un message
-                            </button>
-                            <button
-                                onClick={() => setConfirmAction({ kind: 'block' })}
-                                disabled={busy}
-                                className="min-h-11 rounded-xl border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
-                            >
-                                <LockKeyhole aria-hidden className="me-2 inline-block h-4 w-4" />{isBlocked ? 'Débloquer' : 'Bloquer'}
-                            </button>
-                            <button
-                                onClick={() => setConfirmAction({ kind: 'deleteAccount' })}
-                                disabled={busy}
-                                className="min-h-11 rounded-xl border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                            >
-                                <Trash2 aria-hidden className="me-2 inline-block h-4 w-4" />Supprimer le compte
-                            </button>
+                            {/* Actions d'administration : boutons avec icônes sans labels superflus, accessibles et ergonomiques */}
+                            <div className="flex flex-wrap items-center gap-2 self-start rounded-2xl border border-border/70 bg-muted/30 p-1.5 shadow-2xs">
+                                <button
+                                    type="button"
+                                    onClick={onManageTimetable}
+                                    disabled={busy}
+                                    title="Personnaliser l’horaire"
+                                    aria-label="Personnaliser l’horaire"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/80 bg-background text-foreground/80 shadow-xs transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95 disabled:opacity-50"
+                                >
+                                    <Clock className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onManageEvaluationPolicy}
+                                    disabled={busy}
+                                    title="Personnaliser le contrôle continu"
+                                    aria-label="Personnaliser le contrôle continu"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/80 bg-background text-foreground/80 shadow-xs transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95 disabled:opacity-50"
+                                >
+                                    <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMessageModalOpen(true)}
+                                    disabled={busy}
+                                    title="Envoyer un message"
+                                    aria-label="Envoyer un message"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-all hover:bg-primary/90 hover:brightness-110 active:scale-95 disabled:opacity-50"
+                                >
+                                    <Bell className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setConfirmAction({ kind: 'block' })}
+                                    disabled={busy}
+                                    title={isBlocked ? 'Débloquer le compte enseignant' : 'Bloquer le compte enseignant'}
+                                    aria-label={isBlocked ? 'Débloquer' : 'Bloquer'}
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-warning/35 bg-warning/10 text-warning-strong shadow-xs transition-all hover:bg-warning/20 active:scale-95 disabled:opacity-50"
+                                >
+                                    {isBlocked ? <Unlock className="h-4 w-4" aria-hidden="true" /> : <Lock className="h-4 w-4" aria-hidden="true" />}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setConfirmAction({ kind: 'deleteAccount' })}
+                                    disabled={busy}
+                                    title="Supprimer le compte"
+                                    aria-label="Supprimer le compte"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-destructive/25 bg-destructive/5 text-destructive shadow-xs transition-all hover:border-destructive/40 hover:bg-destructive/15 active:scale-95 disabled:opacity-50"
+                                >
+                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            </div>
                         </div>
+
                         {actionMessage && (
-                            <p role="status" aria-live="polite" className="mt-3 rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-muted-foreground">{actionMessage}</p>
+                            <p role="status" aria-live="polite" className="mt-4 rounded-xl border border-border/60 bg-secondary/80 px-3.5 py-2 text-xs font-semibold text-foreground">{actionMessage}</p>
                         )}
                     </header>
 
-                    <div className="admin-detail__tabs sticky top-0 z-20 mb-5 overflow-x-auto rounded-2xl border bg-background/90 p-1.5 shadow-sm backdrop-blur">
+                    <div className="admin-detail__tabs sticky top-0 z-20 mb-6 overflow-x-auto rounded-2xl border border-border/80 bg-background/90 p-1.5 shadow-sm backdrop-blur-md">
                         <div role="tablist" aria-label="Sections de la fiche professeur" aria-orientation="horizontal" className="flex min-w-max gap-1 sm:min-w-0">
                             {([
-                                { id: 'classes', label: 'Classes & cahiers', count: classes.length },
-                                { id: 'assessments', label: 'Devoirs', count: null },
-                                { id: 'messages', label: 'Messages', count: (data.adminMessages ?? []).length },
-                            ] as Array<{ id: TeacherDetailTab; label: string; count: number | null }>).map(tab => (
-                                <button
-                                    key={tab.id}
-                                    id={`teacher-tab-${tab.id}`}
-                                    type="button"
-                                    role="tab"
-                                    aria-selected={activeTab === tab.id}
-                                    aria-controls={`teacher-panel-${tab.id}`}
-                                    tabIndex={activeTab === tab.id ? 0 : -1}
-                                    onClick={() => selectTab(tab.id)}
-                                    onKeyDown={event => handleTabKeyDown(event, tab.id)}
-                                    className={`flex h-11 min-w-[9rem] shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-w-0 sm:flex-1 ${
-                                        activeTab === tab.id
-                                            ? 'bg-card text-primary shadow-sm ring-1 ring-border'
-                                            : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
-                                    }`}
-                                >
-                                    <span>{tab.label}</span>
-                                    {tab.count !== null && (
-                                        <span className={`min-w-5 rounded-full px-1.5 py-0.5 text-[10px] ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                            {tab.count}
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
+                                { id: 'classes', label: 'Classes & cahiers', count: classes.length, icon: BookOpen },
+                                { id: 'assessments', label: 'Devoirs', count: null, icon: CalendarCheck },
+                                { id: 'messages', label: 'Messages', count: (data.adminMessages ?? []).length, icon: Bell },
+                            ] as const).map(tab => {
+                                const TabIcon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        id={`teacher-tab-${tab.id}`}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === tab.id}
+                                        aria-controls={`teacher-panel-${tab.id}`}
+                                        tabIndex={activeTab === tab.id ? 0 : -1}
+                                        onClick={() => selectTab(tab.id)}
+                                        onKeyDown={event => handleTabKeyDown(event, tab.id)}
+                                        className={`flex h-11 min-w-[9rem] shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-w-0 sm:flex-1 ${
+                                            activeTab === tab.id
+                                                ? 'bg-card text-primary shadow-xs ring-1 ring-border'
+                                                : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                                        }`}
+                                    >
+                                        <TabIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                                        <span>{tab.label}</span>
+                                        {tab.count !== null && (
+                                            <span className={`min-w-5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                                {tab.count}
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -1065,18 +1114,29 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         aria-labelledby="teacher-tab-classes"
                         hidden={activeTab !== 'classes'}
                     >
-                    <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
-                        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                    <section className="mb-6 rounded-2xl border border-border/80 bg-card p-5 shadow-sm sm:p-6">
+                        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                             <div>
-                                <h2 className="text-sm font-black text-foreground">Classes attribuées</h2>
+                                <h2 className="text-sm font-bold text-foreground">Classes attribuées</h2>
                                 <p className="mt-1 text-[11px] text-muted-foreground">Ajoutez, modifiez ou retirez une classe pour cet enseignant. La suppression efface aussi son cahier cloud.</p>
                             </div>
-                            <Button type="button" size="sm" onClick={() => openClassModal()} disabled={busy}>+ Ajouter une classe</Button>
+                            <button
+                                type="button"
+                                onClick={() => openClassModal()}
+                                disabled={busy}
+                                title="Ajouter une classe"
+                                aria-label="Ajouter une classe"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-50"
+                            >
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                            </button>
                         </div>
 
                     {classes.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">
-                            Aucune classe attribuée.
+                        <div className="rounded-xl border border-dashed border-border bg-card/60 p-10 text-center text-muted-foreground">
+                            <BookOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+                            <p className="text-xs font-semibold">Aucune classe attribuée pour le moment.</p>
+                            <p className="mt-1 text-[11px]">Cliquez sur « Ajouter une classe » pour initialiser son premier cahier.</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -1084,27 +1144,84 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                 const snapshot = snapshotsByClassId.get(cls.id);
                                 const lateness = snapshot ? latenessBadge(snapshot, data?.snapshot) : null;
                                 return (
-                                    <div key={cls.id} className="admin-managed-class rounded-xl border border-border bg-card p-4 shadow-sm">
-                                        <div className="flex flex-wrap items-start justify-between gap-2">
+                                    <div key={cls.id} className="admin-managed-class rounded-xl border border-border/80 bg-card/70 p-4 shadow-2xs transition-all hover:border-border hover:shadow-sm">
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>
-                                                <div className="font-semibold text-foreground">{cls.name}</div>
-                                                <div className="text-xs text-muted-foreground">
+                                                <div className="text-sm font-bold text-foreground">{cls.name}</div>
+                                                <div className="mt-0.5 text-xs text-muted-foreground">
                                                     {cls.subject}
                                                     {snapshot && snapshot.sessionsPerWeek > 0 && ` · ${snapshot.sessionsPerWeek} séance(s)/sem.`}
                                                 </div>
                                             </div>
-                                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                            <div className="flex flex-wrap items-center justify-end gap-3">
                                                 <div className="text-right">
-                                                    <div className="text-lg font-black text-primary">{snapshot?.completionRate ?? 0}%</div>
+                                                    <div className="text-base font-black tabular-nums text-primary">{snapshot?.completionRate ?? 0}%</div>
                                                     <div className="text-[10px] text-muted-foreground">
                                                         {snapshot ? `${snapshot.plannedCount}/${snapshot.totalItems} éléments` : 'En attente de synchro'}
                                                     </div>
                                                 </div>
-                                                <button onClick={() => void handlePrintClass(cls)} disabled={busy || isPrinting || printingClassId === cls.id} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50">{printingClassId === cls.id ? 'Chargement…' : 'Imprimer'}</button>
-                                                <button onClick={() => setImportingClass(cls)} disabled={busy} className="h-8 rounded-md border border-primary/25 bg-primary/5 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-50">Importer JSON</button>
-                                                <button onClick={() => setRosterClass(cls)} disabled={busy} className="min-h-11 rounded-md border border-border px-3 text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50">Élèves · {data?.classRosters?.[cls.id]?.names.length ?? 0}</button>
-                                                <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
-                                                <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
+                                                {/* Barre d'actions compacte icon-only */}
+                                                <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-secondary/35 p-1 shadow-2xs">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => void handlePrintClass(cls)}
+                                                        disabled={busy || isPrinting || printingClassId === cls.id}
+                                                        title="Imprimer le cahier de textes"
+                                                        aria-label={`Imprimer le cahier de ${cls.name}`}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-foreground/80 transition-all hover:bg-background hover:text-foreground active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        {printingClassId === cls.id ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+                                                        ) : (
+                                                            <Printer className="h-4 w-4" aria-hidden="true" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setImportingClass(cls)}
+                                                        disabled={busy}
+                                                        title="Importer un cahier JSON"
+                                                        aria-label={`Importer un cahier JSON pour ${cls.name}`}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-all hover:bg-primary/10 active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        <FileCode2 className="h-4 w-4" aria-hidden="true" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setRosterClass(cls)}
+                                                        disabled={busy}
+                                                        title={`Liste des élèves (${data?.classRosters?.[cls.id]?.names.length ?? 0} élèves)`}
+                                                        aria-label={`Gérer la liste des élèves de ${cls.name} (${data?.classRosters?.[cls.id]?.names.length ?? 0} élèves)`}
+                                                        className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-foreground/80 transition-all hover:bg-background hover:text-foreground active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        <Users className="h-4 w-4" aria-hidden="true" />
+                                                        {(data?.classRosters?.[cls.id]?.names.length ?? 0) > 0 && (
+                                                            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-xs">
+                                                                {data?.classRosters?.[cls.id]?.names.length}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openClassModal(cls)}
+                                                        disabled={busy}
+                                                        title="Modifier la classe"
+                                                        aria-label={`Modifier la classe ${cls.name}`}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-foreground/80 transition-all hover:bg-background hover:text-primary active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })}
+                                                        disabled={busy}
+                                                        title="Supprimer la classe"
+                                                        aria-label={`Supprimer la classe ${cls.name}`}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-destructive/80 transition-all hover:bg-destructive/10 hover:text-destructive active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
