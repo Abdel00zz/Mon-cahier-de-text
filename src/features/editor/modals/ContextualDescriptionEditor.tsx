@@ -32,7 +32,6 @@ interface ContextualDescriptionEditorProps {
   className?: string;
   dir?: 'ltr' | 'rtl' | 'auto';
   externalRef?: React.RefObject<HTMLTextAreaElement | null>;
-  alwaysShowToolbar?: boolean;
 }
 
 const ACTIONS: Array<{ action: FormatAction; icon: React.ComponentType<{ className?: string }>; labelKey: string }> = [
@@ -103,7 +102,6 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
   className,
   dir,
   externalRef,
-  alwaysShowToolbar = false,
 }) => {
   const { t } = useLocale();
   const internalRef = useRef<HTMLTextAreaElement>(null);
@@ -118,8 +116,8 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
       ? { start: textarea.selectionStart, end: textarea.selectionEnd }
       : null;
     setSelection(next);
-    if (!next && !alwaysShowToolbar) setShowColorMenu(false);
-  }, [alwaysShowToolbar]);
+    if (!next) setShowColorMenu(false);
+  }, []);
 
   const applyFormat = useCallback((action: FormatAction, range = selection) => {
     const activeRange = range && range.end > range.start
@@ -223,20 +221,13 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
     });
   }, [onChange, selection, textareaRef, value]);
 
-  const showToolbar = alwaysShowToolbar || Boolean(selection);
-
   return (
-    <div className={cn('relative', alwaysShowToolbar && 'space-y-1.5')}>
-      {showToolbar && (
+    <div className="relative">
+      {selection && (
         <div
           role="toolbar"
           aria-label={t('editContent.formatSelection')}
-          className={cn(
-            'flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in',
-            alwaysShowToolbar
-              ? 'relative z-20 w-fit max-w-full flex-wrap shadow-2xs'
-              : 'absolute end-2 top-2 z-20 shadow-xl',
-          )}
+          className="absolute end-2 top-2 z-20 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
         >
           {ACTIONS.map(({ action, icon: Icon, labelKey }) => (
             <button

@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { hasMathSyntax, splitMathText } from '@/lib/text/math';
+import { renderKatexHtml } from '@/config/katex';
 
 type Side = 'before' | 'after';
 type Reorder = (sourceKey: string, targetKey: string, side: Side) => boolean;
@@ -174,9 +177,36 @@ export function useEditorRowReorder(
         ghostWidth = current.ghost.offsetWidth;
         ghostHeight = current.ghost.offsetHeight;
       }
-      const left = Math.max(vp.left + 8, Math.min(x + (touch ? -ghostWidth / 2 : 14), vp.left + vp.width - ghostWidth - 8));
-      const desiredTop = touch || y + ghostHeight + 20 > vp.top + vp.height ? y - ghostHeight - 32 : y + 16;
-      const top = Math.max(vp.top + 8, Math.min(desiredTop, vp.top + vp.height - ghostHeight - 8));
+      const isRtl = current.ghost.dir === 'rtl' || (typeof document !== 'undefined' && document.documentElement?.dir === 'rtl');
+      
+      let left: number;
+      let desiredTop: number;
+
+      if (touch) {
+        // Sur écran tactile mobile : centré sur le doigt, flottant au-dessus pour ne pas masquer le doigt ni la ligne de dépôt
+        const centeredLeft = x - ghostWidth / 2;
+        left = Math.max(vp.left + 12, Math.min(centeredLeft, vp.left + vp.width - ghostWidth - 12));
+        
+        // Au-dessus du doigt si possible (hauteur doigt ~44px + marge), sinon en-dessous
+        const aboveTop = y - ghostHeight - 38;
+        desiredTop = aboveTop >= vp.top + 10 ? aboveTop : y + 44;
+      } else {
+        // À la souris / stylet : placé intelligemment À CÔTÉ du curseur (à gauche en RTL, à droite en LTR)
+        const offset = 20;
+        if (isRtl) {
+          const toLeft = x - ghostWidth - offset;
+          left = toLeft >= vp.left + 12 ? toLeft : Math.min(x + offset, vp.left + vp.width - ghostWidth - 12);
+        } else {
+          const toRight = x + offset;
+          left = toRight + ghostWidth <= vp.left + vp.width - 12 ? toRight : Math.max(vp.left + 12, x - ghostWidth - offset);
+        }
+        
+        // Légèrement décalé vers le bas ou le haut selon la hauteur disponible
+        const belowTop = y + 14;
+        desiredTop = belowTop + ghostHeight <= vp.top + vp.height - 12 ? belowTop : y - ghostHeight - 14;
+      }
+
+      const top = Math.max(vp.top + 10, Math.min(desiredTop, vp.top + vp.height - ghostHeight - 10));
       current.ghost.style.transform = `translate3d(${left}px, ${top}px, 0)`;
       current.ghost.style.visibility = 'visible';
       updateTarget();
@@ -254,13 +284,35 @@ export function useEditorRowReorder(
       const ghost = document.createElement('div');
       ghost.className = 'editor-row-drag-ghost';
       ghost.style.visibility = 'hidden';
-      ghost.dir = source.closest('[dir]')?.getAttribute('dir') ?? 'auto';
+      const rawTitle = source.dataset.editorSortLabel || source.querySelector('[data-row-content]')?.textContent?.trim().slice(0, 110) || '';
+      const detail = source.dataset.editorSortDetail;
+      const detectedDir = textDirectionAttribute(rawTitle) ?? source.closest('[dir]')?.getAttribute('dir') ?? (typeof document !== 'undefined' && document.documentElement?.dir === 'rtl' ? 'rtl' : 'ltr');
+      ghost.dir = detectedDir;
       const title = document.createElement('div');
       title.className = 'editor-row-drag-ghost__title';
-      title.textContent = source.dataset.editorSortLabel || source.querySelector('[data-row-content]')?.textContent?.trim().slice(0, 110) || '';
-      if (source.dataset.editorSortDetail) title.textContent += ` · ${source.dataset.editorSortDetail}`;
+      title.dir = detectedDir;
+      
+      // Support intelligent LaTeX math, Arabic/French text orientation and date details
+      if (hasMathSyntax(rawTitle)) {
+        try {
+          const parts = splitMathText(rawTitle);
+          const mathHtml = parts.map(part => part.math
+            ? `<span class="math-text">${renderKatexHtml(part.text, false)}</span>`
+            : part.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          ).join('');
+          const detailHtml = detail ? ` <span class="editor-row-drag-ghost__detail" dir="ltr">· ${detail}</span>` : '';
+          title.innerHTML = `${mathHtml}${detailHtml}`;
+          if (!title.textContent) title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
+        } catch {
+          title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
+        }
+      } else {
+        title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
+      }
+
       const status = document.createElement('div');
       status.className = 'editor-row-drag-ghost__status';
+      status.dir = detectedDir;
       status.textContent = callbacks.current.messages.choose ?? callbacks.current.messages.started;
       ghost.append(title, status);
       const cancelButton = document.createElement('button');

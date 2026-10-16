@@ -237,7 +237,7 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
         </div>
       </div>
 
-      {/* Zone de saisie enrichie (gras, italique, souligné, puces, formules, couleurs, surlignage) avec compteur */}
+      {/* Zone de saisie enrichie avec menu contextuel de sélection identique à la création de contenu */}
       <div className="space-y-2">
         <div className="remark-textarea-wrapper">
           <ContextualDescriptionEditor
@@ -249,7 +249,6 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
             rows={4}
             placeholder={placeholder}
             className="remark-textarea !min-h-[125px]"
-            alwaysShowToolbar
           />
         </div>
         <div className="flex justify-end pe-1">
