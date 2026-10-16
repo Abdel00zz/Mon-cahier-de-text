@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { textDirectionAttribute } from '@/lib/text/textDirection';
-import { hasMathSyntax, splitMathText } from '@/lib/text/math';
-import { renderKatexHtml } from '@/config/katex';
 
 type Side = 'before' | 'after';
 type Reorder = (sourceKey: string, targetKey: string, side: Side) => boolean;
@@ -15,7 +12,6 @@ interface DragState {
   source: HTMLElement;
   sourceKey: string;
   ghost: HTMLElement | null;
-  status?: HTMLElement;
   target?: HTMLElement;
   targetKey?: string;
   side?: Side;
@@ -108,8 +104,6 @@ export function useEditorRowReorder(
     let previousTime = 0;
     let ended = false;
     let picked = false;
-    let ghostWidth = 0;
-    let ghostHeight = 0;
     let holdTimer: ReturnType<typeof setTimeout> | undefined;
     const current: DragState = { source, sourceKey, ghost: null };
     drag.current = current;
@@ -156,13 +150,6 @@ export function useEditorRowReorder(
         current.side = side;
       }
       if (current.ghost) current.ghost.dataset.valid = allowed ? 'true' : 'false';
-      if (current.status) {
-        const message = callbacks.current.messages;
-        const relation = inside ? message.inside : side === 'before' ? message.before : message.after;
-        current.status.textContent = allowed
-          ? `${relation ?? side} · ${candidate?.dataset.editorSortLabel ?? ''}`
-          : picked ? message.choose ?? message.started : message.unavailable ?? message.started;
-      }
     };
     const schedule = () => {
       if (!ended && current.ghost && !frame) frame = window.requestAnimationFrame(tick);
@@ -170,46 +157,8 @@ export function useEditorRowReorder(
     const tick = (time: number) => {
       frame = 0;
       if (ended || !current.ghost) return;
-      const vp = viewport();
-      const maxWidth = Math.max(80, Math.min(360, vp.width - 24)) + 'px';
-      if (current.ghost.style.maxWidth !== maxWidth) {
-        current.ghost.style.maxWidth = maxWidth;
-        ghostWidth = current.ghost.offsetWidth;
-        ghostHeight = current.ghost.offsetHeight;
-      }
-      const isRtl = current.ghost.dir === 'rtl' || (typeof document !== 'undefined' && document.documentElement?.dir === 'rtl');
-      
-      let left: number;
-      let desiredTop: number;
-
-      if (touch) {
-        // Sur écran tactile mobile : centré sur le doigt, flottant au-dessus pour ne pas masquer le doigt ni la ligne de dépôt
-        const centeredLeft = x - ghostWidth / 2;
-        left = Math.max(vp.left + 12, Math.min(centeredLeft, vp.left + vp.width - ghostWidth - 12));
-        
-        // Au-dessus du doigt si possible (hauteur doigt ~44px + marge), sinon en-dessous
-        const aboveTop = y - ghostHeight - 38;
-        desiredTop = aboveTop >= vp.top + 10 ? aboveTop : y + 44;
-      } else {
-        // À la souris / stylet : placé intelligemment À CÔTÉ du curseur (à gauche en RTL, à droite en LTR)
-        const offset = 20;
-        if (isRtl) {
-          const toLeft = x - ghostWidth - offset;
-          left = toLeft >= vp.left + 12 ? toLeft : Math.min(x + offset, vp.left + vp.width - ghostWidth - 12);
-        } else {
-          const toRight = x + offset;
-          left = toRight + ghostWidth <= vp.left + vp.width - 12 ? toRight : Math.max(vp.left + 12, x - ghostWidth - offset);
-        }
-        
-        // Légèrement décalé vers le bas ou le haut selon la hauteur disponible
-        const belowTop = y + 14;
-        desiredTop = belowTop + ghostHeight <= vp.top + vp.height - 12 ? belowTop : y - ghostHeight - 14;
-      }
-
-      const top = Math.max(vp.top + 10, Math.min(desiredTop, vp.top + vp.height - ghostHeight - 10));
-      current.ghost.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-      current.ghost.style.visibility = 'visible';
       updateTarget();
+      const vp = viewport();
       const toolbar = document.querySelector<HTMLElement>('.editor-toolbar-row')?.getBoundingClientRect();
       const selection = document.querySelector<HTMLElement>('.selection-bar')?.getBoundingClientRect();
       const upper = Math.max(vp.top + 12, toolbar && toolbar.bottom > vp.top && toolbar.top < vp.top + 120 ? toolbar.bottom + 8 : vp.top + 12);
@@ -283,46 +232,7 @@ export function useEditorRowReorder(
       surface.focus({ preventScroll: true });
       const ghost = document.createElement('div');
       ghost.className = 'editor-row-drag-ghost';
-      ghost.style.visibility = 'hidden';
-      const rawTitle = source.dataset.editorSortLabel || source.querySelector('[data-row-content]')?.textContent?.trim().slice(0, 110) || '';
-      const detail = source.dataset.editorSortDetail;
-      const detectedDir = textDirectionAttribute(rawTitle) ?? source.closest('[dir]')?.getAttribute('dir') ?? (typeof document !== 'undefined' && document.documentElement?.dir === 'rtl' ? 'rtl' : 'ltr');
-      ghost.dir = detectedDir;
-      const title = document.createElement('div');
-      title.className = 'editor-row-drag-ghost__title';
-      title.dir = detectedDir;
-      
-      // Support intelligent LaTeX math, Arabic/French text orientation and date details
-      if (hasMathSyntax(rawTitle)) {
-        try {
-          const parts = splitMathText(rawTitle);
-          const mathHtml = parts.map(part => part.math
-            ? `<span class="math-text">${renderKatexHtml(part.text, false)}</span>`
-            : part.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          ).join('');
-          const detailHtml = detail ? ` <span class="editor-row-drag-ghost__detail" dir="ltr">· ${detail}</span>` : '';
-          title.innerHTML = `${mathHtml}${detailHtml}`;
-          if (!title.textContent) title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
-        } catch {
-          title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
-        }
-      } else {
-        title.textContent = rawTitle + (detail ? ` · ${detail}` : '');
-      }
-
-      const status = document.createElement('div');
-      status.className = 'editor-row-drag-ghost__status';
-      status.dir = detectedDir;
-      status.textContent = callbacks.current.messages.choose ?? callbacks.current.messages.started;
-      ghost.append(title, status);
-      const cancelButton = document.createElement('button');
-      cancelButton.className = 'editor-row-drag-ghost__cancel';
-      cancelButton.type = 'button';
-      cancelButton.textContent = '×';
-      cancelButton.setAttribute('aria-label', callbacks.current.messages.cancel ?? callbacks.current.messages.cancelled);
-      cancelButton.addEventListener('click', cancel);
-      ghost.append(cancelButton);
-      current.status = status;
+      ghost.style.display = 'none';
       ghost.setAttribute('aria-hidden', 'true');
       document.body.append(ghost);
       current.ghost = ghost;
@@ -378,7 +288,6 @@ export function useEditorRowReorder(
           else schedule();
         };
         announce(callbacks.current.messages.choose ?? callbacks.current.messages.started);
-        if (current.status) current.status.textContent = callbacks.current.messages.choose ?? callbacks.current.messages.started;
         return;
       }
       let moved = false;
