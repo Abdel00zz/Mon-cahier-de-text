@@ -18,6 +18,8 @@
   --class-rule-ink: hsl(var(--foreground) / .025);
   --class-hole-offset: 12px;
   --class-radius: 16px;
+  --class-title-scale: 1;
+  --class-badge-scale: 1;
   --spring-out: cubic-bezier(0.22, 1, 0.36, 1);
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -138,7 +140,7 @@
   background: var(--class-pill-bg);
   color: var(--class-accent);
   font-family: var(--font-class-sheet);
-  font-size: .76em;
+  font-size: calc(.76em * var(--class-badge-scale));
   font-weight: 400;
   letter-spacing: 0.1px;
   line-height: 1.25;
@@ -206,7 +208,7 @@
   min-width: 0;
   margin: 0;
   font-family: var(--font-samsung-display, inherit);
-  font-size: var(--class-title-max);
+  font-size: calc(var(--class-title-max) * var(--class-title-scale));
   font-weight: 700;
   line-height: 1.38;
   letter-spacing: -0.015em;
@@ -388,7 +390,7 @@
   .class-card { min-height: 180px; }
   .class-card__body { padding-block: 16px 15px; padding-inline: 44px 18px; }
   .class-card__title { --class-title-max: 20px; }
-  .class-card__tier { font-size: .82em; }
+  .class-card__tier { font-size: calc(.82em * var(--class-badge-scale)); }
   .class-card__footer { margin-inline: 44px 18px; min-height: 38px; }
 }
 
@@ -397,7 +399,7 @@
   .class-card__body { padding-block: 22px 24px; padding-inline: 54px 24px; }
   .class-card__identity { flex: 1; align-items: center; padding-block-start: 0; }
   .class-card__title { --class-title-max: 24px; }
-  .class-card__tier { font-size: 14px; padding: 3px 10px; }
+  .class-card__tier { font-size: calc(14px * var(--class-badge-scale)); padding: 3px 10px; }
   .class-card__footer { margin-inline: 54px 24px; min-height: 40px; }
 }
 
@@ -406,6 +408,15 @@
   .class-card__body { padding-inline: 60px 32px; }
   .class-card__title { --class-title-max: 26px; }
   .class-card__footer { margin-inline: 60px 32px; }
+}
+
+/* Enlarge desktop typography proportionally at every card width. Touch devices
+   and native applications retain the existing container-based sizes. */
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
+  html:not([data-platform="android"]):not([data-platform="ios"]) .class-card {
+    --class-title-scale: 1.15;
+    --class-badge-scale: 1.05;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
