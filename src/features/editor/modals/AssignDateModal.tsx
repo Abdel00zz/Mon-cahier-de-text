@@ -259,7 +259,7 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
         {remark.trim() && (
           <div className="rounded-2xl border border-border/70 bg-muted/25 p-3 text-sm text-foreground shadow-2xs">
             <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              {t('editContent.mathPreview')}
+              {t('editContent.preview')}
             </p>
             <MathText source={remark} cacheKey={`remark-preview-${remark}`}>
               <div dir="auto" className="editor-type-remark space-y-1 text-start text-xs sm:text-sm leading-relaxed">

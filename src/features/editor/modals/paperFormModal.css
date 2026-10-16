@@ -28,15 +28,18 @@
 .paper-form-modal .content-category:disabled .content-category__icon { color: hsl(var(--muted-foreground)); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]) { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: 0 1px 2px hsl(var(--foreground) / .025); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]):focus-visible { border-color: hsl(var(--primary)); }
-.paper-form-modal .date-card { padding: 16px; border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: none; }
-.paper-form-modal .date-card-header { padding-bottom: 0; border-bottom: 0; }
-.paper-form-modal .date-header-left svg { color: var(--control-ink); }
-.paper-form-modal .date-card .btn-link-action { min-height: 44px; border-radius: 8px; padding-inline: 6px; font-size: 12px; }
-.paper-form-modal .date-card .btn-link-action:hover { background: var(--form-well); text-decoration: none; }
+.paper-form-modal .date-card { display: grid; gap: 2px; padding: 12px; border: 1px solid var(--form-line); border-radius: 12px; background: var(--form-surface); }
+.content-date-actions { display: flex; justify-content: flex-start; }
+.content-date-action { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 6px; border-radius: 8px; color: var(--control-ink); font-size: 12px; line-height: 1.4; text-align: start; cursor: pointer; touch-action: manipulation; transition: background-color 180ms ease, color 180ms ease; }
+.content-date-action:hover { background: var(--form-well); color: var(--control-ink-hover); }
+.content-date-action:focus-visible { outline: 2px solid var(--control-ink); outline-offset: -2px; }
+.content-date-action:active { background: var(--control-wash); }
+.content-date-action svg { width: 13px; height: 13px; flex-shrink: 0; }
 .paper-form-modal .content-fields input[type="date"] { padding-inline: 12px; background: var(--form-paper); font-variant-numeric: tabular-nums; }
 .content-date-fields { display: grid; gap: 10px; }
 .content-date-field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(144px, 1.35fr); align-items: center; gap: 12px; }
-.content-date-field .date-card-label { margin: 0; line-height: 1.5; text-align: start; }
+.content-date-field .date-card-label { display: flex; align-items: center; gap: 6px; margin: 0; line-height: 1.5; text-align: start; }
+.content-date-field .date-card-label svg { color: var(--control-ink); }
 .content-date-field input[type="date"] { min-width: 0; width: 100%; text-align: start; }
 .paper-form-modal .btn-cancel { background: var(--form-well); color: hsl(var(--foreground)); }
 .paper-form-modal :is(.btn-cancel, .btn-submit) { border-radius: 10px; box-shadow: none; }
@@ -45,6 +48,10 @@
 @media (min-width: 640px) {
   .paper-form-modal { border-radius: 18px; }
   .content-form-modal { max-width: 580px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-date-action { transition: none; }
 }
 
 @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {

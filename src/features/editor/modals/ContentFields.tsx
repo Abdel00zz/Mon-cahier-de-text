@@ -87,49 +87,12 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
       />
     </div>
     {canEditDate && (
-      <div className="date-card rounded-[18px] border border-[#e7e5df] dark:border-stone-800 bg-[#fcfbf9] dark:bg-stone-900/40 p-4.5 sm:p-5 space-y-3.5 shadow-2xs">
-        <div className="date-card-header flex flex-wrap items-center justify-between gap-2 border-b border-[#e7e5df]/70 dark:border-stone-800/70 pb-3">
-          <div className="date-header-left flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-            <CalendarDays className="h-4 w-4 text-primary stroke-[2.2]" />
-            <span>{isRange ? t('editor.dateRange') : t('editor.startDate')}</span>
-          </div>
-          {!isRange ? (
-            <button
-              type="button"
-              onClick={() => {
-                setShowRange(true);
-                if (!value.endDate && value.date) {
-                  onChange({ ...value, endDate: value.date });
-                }
-              }}
-              className="btn-link-action inline-flex items-center gap-1 text-[13.5px] font-medium text-primary hover:text-primary/90 hover:underline cursor-pointer transition-colors"
-            >
-              <Plus className="h-3.5 w-3.5 stroke-[2.4]" />
-              <span>{t('editor.defineRange')}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setShowRange(false);
-                const next = { ...value };
-                delete next.endDate;
-                onChange(next);
-              }}
-              className="inline-flex items-center gap-1 text-[13.5px] font-medium text-muted-foreground hover:text-destructive cursor-pointer transition-colors"
-              title={t('editor.removeRange')}
-              aria-label={t('editor.removeRange')}
-            >
-              <X className="h-3.5 w-3.5 stroke-[2.4]" />
-              <span>{t('editor.removeRange')}</span>
-            </button>
-          )}
-        </div>
-
+      <div className="date-card">
         <div className="content-date-fields">
           <div className="content-date-field">
             <label htmlFor={`${id}-date`} className="date-card-label text-[13.5px] font-medium text-foreground/80">
-              {isRange ? `${t('editor.startDate')} :` : `${t('assignDate.chooseDate')} :`}
+              <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{t('editor.startDate')} :</span>
             </label>
             <div className="date-input-wrap relative min-w-0">
               <Input
@@ -145,7 +108,8 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
           {isRange && (
             <div className="content-date-field">
               <label htmlFor={`${id}-end-date`} className="date-card-label text-[13.5px] font-medium text-foreground/80">
-                {t('editor.endDate')} :
+                <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{t('editor.endDate')} :</span>
               </label>
               <div className="date-input-wrap relative min-w-0">
                 <Input
@@ -160,8 +124,40 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
             </div>
           )}
         </div>
-
-
+        <div className="content-date-actions">
+          {!isRange ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowRange(true);
+                if (!value.endDate && value.date) {
+                  onChange({ ...value, endDate: value.date });
+                }
+              }}
+              className="content-date-action"
+              title={t('editor.defineRange')}
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[2.4]" />
+              <span>{t('editor.defineRangeCompact')}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setShowRange(false);
+                const next = { ...value };
+                delete next.endDate;
+                onChange(next);
+              }}
+              className="content-date-action"
+              title={t('editor.removeRange')}
+              aria-label={t('editor.removeRange')}
+            >
+              <X className="h-3.5 w-3.5 stroke-[2.4]" />
+              <span>{t('editor.removeRange')}</span>
+            </button>
+          )}
+        </div>
       </div>
     )}
     {!titleOnly && <div>
