@@ -232,23 +232,37 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
     });
   }, [onChange, textareaRef, value]);
 
+const TOOL_BTN_CLS = cn(
+  'tool-btn w-9 h-9 border-none bg-transparent rounded-[9px]',
+  'text-[#5e5e5a] dark:text-[#a8a8a2]',
+  'flex items-center justify-center cursor-pointer select-none',
+  'transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+  'hover:bg-white/90 hover:text-[#1c1c1a] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_#e4e4e0]',
+  'dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_0_0_1px_#383832]',
+  'active:scale-[0.92] active:bg-[#e8e8e4] dark:active:bg-[#242420]',
+  'motion-reduce:transition-none motion-reduce:active:scale-100',
+);
+
+const HIGHLIGHT_BTN_CLS = cn(
+  'tool-btn w-9 h-9 border-none bg-transparent rounded-[9px]',
+  'text-amber-600 dark:text-amber-400',
+  'flex items-center justify-center cursor-pointer select-none',
+  'transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+  'hover:bg-amber-50 hover:text-amber-700 hover:shadow-[0_1px_3px_rgba(217,119,6,0.12),0_0_0_1px_rgba(217,119,6,0.28)]',
+  'dark:hover:bg-amber-950/40 dark:hover:text-amber-300 dark:hover:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_0_0_1px_rgba(217,119,6,0.3)]',
+  'active:scale-[0.92] active:bg-amber-100/70 dark:active:bg-amber-950/60',
+  'motion-reduce:transition-none motion-reduce:active:scale-100',
+);
+
   return (
-    <div className="editor rounded-[14px] overflow-hidden bg-white dark:bg-[#1c1c1a] shadow-[0_0_0_1px_#e4e4e0] dark:shadow-[0_0_0_1px_#2e2e28] transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_hsl(var(--primary))]">
+    <div className="editor rounded-[14px] overflow-hidden bg-white dark:bg-[#1c1c1a] shadow-[0_0_0_1px_#e4e4e0] dark:shadow-[0_0_0_1px_#2e2e28]">
       {/* Barre d'outils cohérente inspirée du prototype */}
       <div
         role="toolbar"
         aria-label={t('editContent.formatSelection')}
-        className="toolbar flex items-center justify-between gap-1 flex-wrap px-3 py-2 bg-[#f0f0ec] dark:bg-[#1e1e1b] border-b border-[#e4e4e0] dark:border-[#2e2e28] select-none"
+        className="toolbar flex items-center justify-start gap-1 flex-wrap px-3 py-2 bg-[#f0f0ec] dark:bg-[#1e1e1b] border-b border-[#e4e4e0] dark:border-[#2e2e28] select-none"
       >
         <div className="flex items-center gap-1 flex-wrap">
-          {/* Mode toggle TeX · MD */}
-          <div className="mode-toggle inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white dark:bg-[#282824] shadow-[0_0_0_1px_#e4e4e0] dark:shadow-[0_0_0_1px_#383832] text-[12px] font-semibold text-[#5e5e5a] dark:text-[#a8a8a2] me-1">
-            <span>TeX</span>
-            <span className="opacity-35">·</span>
-            <span>MD</span>
-            <span className="mode-dot w-[7px] h-[7px] rounded-full bg-[#34d399]" />
-          </div>
-
           {/* Formule mathématique (Sigma) */}
           <button
             type="button"
@@ -256,7 +270,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               event.preventDefault();
               applyFormat('math');
             }}
-            className="tool-btn w-9 h-9 border-none bg-transparent rounded-[9px] text-[#5e5e5a] dark:text-[#a8a8a2] flex items-center justify-center cursor-pointer transition-all duration-150 hover:bg-white hover:text-[#1c1c1a] hover:shadow-[0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_0_0_1px_#383832] active:scale-95"
+            className={TOOL_BTN_CLS}
             aria-label={t('editContent.formatMath')}
             title={t('editContent.formatMath')}
           >
@@ -272,7 +286,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 event.preventDefault();
                 applyFormat(action);
               }}
-              className="tool-btn w-9 h-9 border-none bg-transparent rounded-[9px] text-[#5e5e5a] dark:text-[#a8a8a2] flex items-center justify-center cursor-pointer transition-all duration-150 hover:bg-white hover:text-[#1c1c1a] hover:shadow-[0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_0_0_1px_#383832] active:scale-95"
+              className={TOOL_BTN_CLS}
               aria-label={t(labelKey)}
               title={t(labelKey)}
             >
@@ -291,7 +305,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 event.preventDefault();
                 applyFormat(action);
               }}
-              className="tool-btn w-9 h-9 border-none bg-transparent rounded-[9px] text-[#5e5e5a] dark:text-[#a8a8a2] flex items-center justify-center cursor-pointer transition-all duration-150 hover:bg-white hover:text-[#1c1c1a] hover:shadow-[0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_0_0_1px_#383832] active:scale-95"
+              className={TOOL_BTN_CLS}
               aria-label={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
               title={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
             >
@@ -308,7 +322,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               event.preventDefault();
               applyColor('highlight');
             }}
-            className="tool-btn w-9 h-9 border-none bg-transparent rounded-[9px] text-amber-600 dark:text-amber-400 flex items-center justify-center cursor-pointer transition-all duration-150 hover:bg-amber-50 hover:text-amber-700 hover:shadow-[0_0_0_1px_rgba(217,119,6,0.3)] dark:hover:bg-amber-950/40 dark:hover:text-amber-300 active:scale-95"
+            className={HIGHLIGHT_BTN_CLS}
             aria-label={t('editContent.formatHighlight')}
             title={t('editContent.formatHighlight')}
           >
@@ -324,10 +338,10 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 setShowColorMenu(prev => !prev);
               }}
               className={cn(
-                'tool-btn w-9 h-9 border-none rounded-[9px] flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-95',
+                'tool-btn w-9 h-9 border-none rounded-[9px] flex items-center justify-center cursor-pointer select-none transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100',
                 showColorMenu
-                  ? 'bg-white text-[#1c1c1a] shadow-[0_0_0_1px_#e4e4e0] dark:bg-[#2c2c28] dark:text-white dark:shadow-[0_0_0_1px_#383832]'
-                  : 'bg-transparent text-[#5e5e5a] dark:text-[#a8a8a2] hover:bg-white hover:text-[#1c1c1a] hover:shadow-[0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white',
+                  ? 'bg-white text-[#1c1c1a] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_#e4e4e0] dark:bg-[#2c2c28] dark:text-white dark:shadow-[0_1px_3px_rgba(0,0,0,0.4),0_0_0_1px_#383832]'
+                  : 'bg-transparent text-[#5e5e5a] dark:text-[#a8a8a2] hover:bg-white/90 hover:text-[#1c1c1a] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_#e4e4e0] dark:hover:bg-[#2c2c28] dark:hover:text-white dark:hover:shadow-[0_0_0_1px_#383832]',
               )}
               aria-label={t('editContent.formatColor')}
               title={t('editContent.formatColor')}
@@ -342,7 +356,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               <div
                 role="menu"
                 aria-label={t('editContent.formatColor')}
-                className="absolute start-0 sm:start-auto sm:end-0 top-[calc(100%+6px)] z-30 flex items-center gap-1 rounded-[12px] border border-[#e4e4e0] dark:border-[#2e2e28] bg-white dark:bg-[#1e1e1b] p-1.5 shadow-xl backdrop-blur-xl animate-fade-in"
+                className="absolute start-0 sm:start-auto sm:end-0 top-[calc(100%+6px)] z-30 flex items-center gap-1 rounded-[12px] border border-[#e4e4e0] dark:border-[#2e2e28] bg-white/95 dark:bg-[#1e1e1b]/95 p-1.5 shadow-xl backdrop-blur-xl animate-fade-in"
               >
                 {COLOR_OPTIONS.map(({ id, nameKey, dotColor }) => (
                   <button
@@ -354,7 +368,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                       applyColor(id);
                       setShowColorMenu(false);
                     }}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5e5e5a] transition hover:bg-[#f2f2ef] dark:hover:bg-[#282824] active:scale-90"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5e5e5a] transition-all duration-150 hover:bg-[#f2f2ef] dark:hover:bg-[#282824] hover:scale-110 active:scale-90"
                     aria-label={t(nameKey)}
                     title={t(nameKey)}
                   >
@@ -372,7 +386,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                     applyColor('clear');
                     setShowColorMenu(false);
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5e5e5a] transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 active:scale-90"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5e5e5a] transition-all duration-150 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 active:scale-90"
                   aria-label={t('editContent.colorClear')}
                   title={t('editContent.colorClear')}
                 >

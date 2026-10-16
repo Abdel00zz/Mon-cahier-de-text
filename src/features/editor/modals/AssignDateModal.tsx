@@ -248,7 +248,7 @@ export const RemarqueSimplifiee: FC<RemarqueSimplifieeProps> = ({
             dir={fieldDir}
             rows={4}
             placeholder={placeholder}
-            className="remark-textarea !min-h-[125px]"
+            className="!min-h-[125px]"
           />
         </div>
         <div className="flex justify-end pe-1">
