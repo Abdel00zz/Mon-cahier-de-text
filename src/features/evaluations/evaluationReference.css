@@ -35,7 +35,7 @@
   --radius-item: 10px;
   /* Colonne des commandes écrites (« + Contenu », « Absents 2 », corbeille) :
      une largeur commune pour que les dates restent alignées d'une ligne à l'autre. */
-  --ev-actions-width: 15.5rem;
+  --ev-actions-width: 10.5rem;
 
   /* Jetons d'application */
   --eval-paper: var(--bg-page);
@@ -300,29 +300,82 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   background: var(--eval-row-hover);
 }
 
-/* Nom de l'élément */
-.evaluation-reference .ev-row__id button,
+/* Nom de l'élément : toujours aligné au début, jamais flottant au centre */
+.evaluation-reference .ev-row__id {
+  align-self: center;
+  justify-self: start;
+  width: 100%;
+  text-align: start;
+}
+
+.evaluation-reference .ev-row__id > button,
+.evaluation-reference .ev-row__id > span,
 .evaluation-reference .ev-row__id h4 {
-  font-size: 14.5px;
+  min-height: unset !important;
+  height: auto !important;
+  padding: 2px 0 !important;
+  margin: 0 !important;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1.38;
   color: var(--text-dark);
+  text-align: start;
+  justify-content: flex-start;
+  white-space: normal;
+}
+
+.evaluation-reference .ev-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px 10px;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-secondary);
 }
 
 /* Date de l'élément */
+.evaluation-reference .ev-row__date {
+  align-self: center;
+  justify-self: start;
+}
+
 .evaluation-reference .ev-row__date .ev-date-trigger {
-  font-size: 14px;
-  font-weight: 700;
+  width: auto;
+  justify-content: flex-start;
+  font-size: 13.5px;
+  font-weight: 650;
   color: var(--text-dark);
-  border: none !important;
-  background: transparent !important;
+  border: 1px solid var(--border-card) !important;
+  background: var(--header-row-bg) !important;
   box-shadow: none !important;
-  padding: 0;
-  height: auto;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  min-height: 32px !important;
+  height: 32px !important;
+}
+
+.evaluation-reference .ev-row__date .ev-date-empty {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  justify-content: flex-start;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--header-row-bg);
+  border: 1px dashed var(--border-card);
+  padding: 4px 10px;
+  border-radius: 8px;
+  min-height: 32px;
+  height: 32px;
 }
 
 .evaluation-reference .ev-row__date .ev-date-trigger:hover {
   color: var(--color-terracotta);
-  background: transparent !important;
+  border-color: color-mix(in srgb, var(--color-terracotta) 35%, var(--border-card)) !important;
 }
 
 /* Groupe des boutons d'actions */
@@ -330,19 +383,38 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 6px;
   flex-wrap: nowrap !important;
   white-space: nowrap !important;
 }
 
-/* Boutons d'action : des libellés courts, la corbeille seule reste une icône */
+/* Boutons d'action : icônes pures (libellé masqué visuellement mais conservé pour
+   l'accessibilité aria et l'infobulle). Seul le compteur numérique reste affiché. */
+.evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .evaluation-reference .ev-action {
-  width: auto;
-  padding-inline: 11px;
-  gap: 6px;
+  position: relative;
+  width: 38px;
+  padding-inline: 0;
+  gap: 5px;
   font-size: 12px;
   font-weight: 650;
   white-space: nowrap;
+}
+
+.evaluation-reference .ev-action:has(.ev-action__count) {
+  width: auto;
+  padding-inline: 9px;
 }
 
 .evaluation-reference .ev-icon-btn {
@@ -351,10 +423,10 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 
 .evaluation-reference .ev-action,
 .evaluation-reference .ev-icon-btn {
-  height: 38px;
-  min-height: 38px;
-  min-width: 38px;
-  border-radius: 9px;
+  height: 38px !important;
+  min-height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 10px;
   background: #ffffff;
   border: 1px solid #e7e5df;
   display: inline-flex;
@@ -388,16 +460,16 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   transform: translateY(-1px);
 }
 
-/* Bouton Document : vert = sujet associé, rouge = sujet requis manquant */
+/* Bouton Document : vert = contenu existant, rouge = contenu manquant */
 .evaluation-reference .ev-action[data-filled='ok'] {
   color: #15803d;
-  border-color: color-mix(in srgb, #15803d 32%, transparent);
-  background: color-mix(in srgb, #15803d 9%, transparent);
+  border-color: color-mix(in srgb, #15803d 35%, transparent);
+  background: color-mix(in srgb, #15803d 11%, transparent);
 }
 .dark .evaluation-reference .ev-action[data-filled='ok'] {
   color: #76d59a;
-  border-color: color-mix(in srgb, #76d59a 34%, transparent);
-  background: color-mix(in srgb, #76d59a 11%, transparent);
+  border-color: color-mix(in srgb, #76d59a 36%, transparent);
+  background: color-mix(in srgb, #76d59a 13%, transparent);
 }
 .evaluation-reference .ev-action[data-filled='missing'] {
   color: var(--danger-text);
@@ -444,37 +516,106 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   color: #fca5a5;
 }
 
-/* Adaptation mobile */
+/* Adaptation mobile moderne et structurée */
 @media (max-width: 680px) {
+  .evaluation-reference .modal-header {
+    padding: 12px 16px;
+  }
+  .evaluation-reference .main-title,
+  .evaluation-reference .modal-header [data-ui-title] {
+    font-size: 14.5px;
+    line-height: 1.35;
+  }
   .evaluation-reference .modal-body {
-    padding: 16px;
+    padding: 12px 14px 24px;
+  }
+  .evaluation-reference .evaluations-category-title {
+    font-size: 15.5px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+  }
+  .evaluation-reference .ev-accordion {
+    border-radius: 13px;
+    margin-bottom: 10px;
+  }
+  .evaluation-reference .ev-accordion__toggle {
+    min-height: 48px !important;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .evaluation-reference .ev-accordion__label {
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+  .evaluation-reference .ev-accordion__label-text {
+    font-size: 13.75px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: start;
+  }
+  .evaluation-reference .ev-accordion__toggle-icon {
+    width: 28px;
+    height: 28px;
+    min-height: 28px !important;
+    border-radius: 7px;
+    flex-shrink: 0;
   }
   .evaluation-reference .ev-board__head {
     display: none;
   }
   .evaluation-reference .ev-board__rows > .ev-row {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'id id'
+      'date actions';
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 8px;
+    padding: 12px 14px;
+    min-height: unset;
+  }
+  .evaluation-reference .ev-row__id {
+    grid-area: id;
+    align-self: start;
+    justify-self: start;
+    width: 100%;
+  }
+  .evaluation-reference .ev-row__id > button,
+  .evaluation-reference .ev-row__id > span,
+  .evaluation-reference .ev-row__id h4 {
+    font-size: 13.5px;
+    line-height: 1.35;
+  }
+  .evaluation-reference .ev-row__meta {
+    font-size: 11.5px;
+    margin-top: 2px;
+  }
+  .evaluation-reference .ev-row__date {
+    grid-area: date;
+    align-self: center;
+    justify-self: start;
+    width: auto;
   }
   .evaluation-reference .ev-row__actions {
-    width: 100%;
-    justify-content: flex-start;
-    margin-top: 4px;
+    grid-area: actions;
+    align-self: center;
+    justify-self: end;
+    width: auto;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 0;
   }
 }
 
-/* Pictogramme des commandes (Contenu, Absents, Élèves…) : neutre au repos, il prend
-   la teinte du bouton quand celui-ci porte un état (rédigé, absents consignés).
-   Le contour fin et la silhouette douce viennent de la famille d'icônes maison. */
+/* Pictogramme des commandes (Contenu, Absents, Élèves…) */
 .evaluation-reference .ev-action .ev-action__icon {
-  width: 16px;
-  height: 16px;
+  width: 16.5px;
+  height: 16.5px;
   flex: none;
-  stroke-width: 1.75;
-  opacity: 0.88;
+  stroke-width: 1.85;
+  opacity: 0.92;
   transition: opacity 150ms ease, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .evaluation-reference .ev-action:hover .ev-action__icon,
@@ -482,27 +623,11 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 @media (hover: hover) and (pointer: fine) {
   .evaluation-reference .ev-action:hover .ev-action__icon { transform: translateY(-1px); }
 }
-/* Sur téléphone étroit, quatre commandes avec libellé ne tiennent pas sur une ligne :
-   l'icône seule garde la cible de 44 px, le libellé reste lu par les lecteurs d'écran
-   (aria-label) et par l'infobulle. */
-@media (max-width: 420px) {
-  .evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  .evaluation-reference .ev-action:has(.ev-action__icon) { position: relative; min-width: 44px; min-height: 44px; padding-inline: 10px; }
-}
 @media (prefers-reduced-motion: reduce) {
   .evaluation-reference .ev-action .ev-action__icon { transition: none; transform: none !important; }
 }
 
-/* ── « Correction du devoir maison » : la seconde entrée du devoir, rangée sous lui ──
-   Même grille, même hauteur que la ligne du devoir. Un filet de départ la rattache à son
-   devoir (il suit le sens de lecture : à droite en arabe) sans ajouter de cadre ni de couleur. */
+/* ── « Correction du devoir maison » : la seconde entrée du devoir, rangée sous lui ── */
 .evaluation-reference .ev-board__rows > .ev-row.ev-row--correction {
   position: relative;
   padding-inline-start: 1.75rem;
@@ -511,12 +636,13 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-board__rows > .ev-row.ev-row--correction::before {
   content: '';
   position: absolute;
-  inset-inline-start: 0.9rem;
+  inset-inline-start: 0.85rem;
   top: 0;
-  bottom: 50%;
-  width: 0.55rem;
+  bottom: auto;
+  height: 1.55rem;
+  width: 0.5rem;
   border-inline-start: 1.5px solid hsl(var(--border));
   border-bottom: 1.5px solid hsl(var(--border));
-  border-end-start-radius: 0.5rem;
+  border-end-start-radius: 0.45rem;
   pointer-events: none;
 }

@@ -166,17 +166,17 @@ export const FolderTree = createIcon('FolderTree', [
   ['path', { d: 'M3 5v14a2 2 0 0 0 2 2h3M3 12h5' }],
 ]);
 
-/* Impression : l'imprimante, dans la recette maison — une silhouette douce
-   (icon-wash) doublée de son contour, deux feuilles (celle qui attend, celle qui
-   sort) et un seul voyant. Traits fins et extrémités rondes, sans détail qui
-   disparaîtrait à 18 px : même famille que `Save` ou `Trash2`. */
-const PRINTER_BODY = 'M6 8.5h12a2.5 2.5 0 0 1 2.5 2.5v3a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 14v-3A2.5 2.5 0 0 1 6 8.5Z';
+/* Impression : l'imprimante moderne — châssis latéral qui n'entrecoupe pas la
+   feuille de sortie, bac supérieur d'alimentation, feuille imprimée avec lignes
+   de texte et voyant lumineux d'état. */
+const PRINTER_WASH = 'M4 9h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2v-4H6v4H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Z';
 export const SheetPrinter = createIcon('SheetPrinter', [
-  ['path', { d: PRINTER_BODY, className: 'icon-wash', stroke: 'none' }],
-  ['path', { d: PRINTER_BODY, fill: 'none', stroke: 'currentColor' }],
-  ['path', { d: 'M7.5 8.5V4.75a1.25 1.25 0 0 1 1.25-1.25h6.5a1.25 1.25 0 0 1 1.25 1.25V8.5', fill: 'none', stroke: 'currentColor' }],
-  ['path', { d: 'M7.5 13.75h9v5.5a1.25 1.25 0 0 1-1.25 1.25h-6.5A1.25 1.25 0 0 1 7.5 19.25v-5.5Z', fill: 'none', stroke: 'currentColor' }],
-  ['circle', { cx: 17.25, cy: 11.25, r: 0.65, fill: 'currentColor', stroke: 'none' }],
+  ['path', { d: PRINTER_WASH, className: 'icon-wash', stroke: 'none' }],
+  ['path', { d: 'M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M6 14h12v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7Z', fill: 'none', stroke: 'currentColor' }],
+  ['path', { d: 'M9 17.25h6M9 19.5h4', fill: 'none', stroke: 'currentColor' }],
+  ['circle', { cx: 17.5, cy: 12, r: 0.75, fill: 'currentColor', stroke: 'none' }],
 ]);
 /* Commandes de la feuille d'évaluations — même recette que FileText / User :
    une silhouette douce (icon-wash) doublée de son contour, un seul détail qui

@@ -128,7 +128,7 @@ test('plus de colonne « État » : l’écart de date reste signalé et actionn
 
 test('le bouton document dit vrai : vert quand un sujet est associé, rouge quand il manque', () => {
   assert.match(view, /documentIndicator\(documentRequirementForAssessment\(a\.type, policy\), assessmentDocument\)/, 'une seule règle de besoin de document, celle de la direction');
-  assert.match(view, /data-filled=\{docIndicator === 'attached' \? 'ok' : docIndicator === 'missing' \? 'missing' : undefined\}/, 'deux états sémantiques');
+  assert.match(view, /data-filled=\{docIndicator === 'attached' \? 'ok' : 'missing'\}/, 'deux états sémantiques : vert si contenu existe, rouge sinon');
   // Pas de pictogramme : le LIBELLÉ double la couleur (« Contenu » rédigé, « + Contenu » à rédiger).
   assert.doesNotMatch(view, /FileCheck|FilePlus|FileText/, 'plus d’icône de document sur la ligne');
   assert.match(view, /docIndicator === 'attached' \? 'evaluations\.doc\.open' : 'evaluations\.action\.addContent'/, 'le libellé dit l’état, pas seulement la couleur');

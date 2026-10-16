@@ -415,7 +415,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   type="button"
                   onClick={() => setDocumentFor({ kind: 'assessment', link })}
                   className="ev-action shrink-0"
-                  data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
+                  data-filled={docIndicator === 'attached' ? 'ok' : 'missing'}
                   data-doc-state={docIndicator}
                   data-tippy-content={docTooltip}
                   aria-label={`${t('evaluations.doc.title', { activity: displayName })}${docStateSuffix}`}
@@ -527,7 +527,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               type="button"
               onClick={() => setDocumentFor({ kind: 'assessment', link, part: 'correction' })}
               className="ev-action shrink-0"
-              data-filled={correctionIndicator === 'attached' ? 'ok' : undefined}
+              data-filled={correctionIndicator === 'attached' ? 'ok' : 'missing'}
               data-doc-state={correctionIndicator}
               data-tippy-content={correctionTooltip}
               aria-label={`${t('evaluations.doc.title', { activity: correctionName })}${correctionIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : ''}`}
