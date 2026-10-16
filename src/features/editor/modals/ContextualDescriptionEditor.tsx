@@ -1,12 +1,12 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bold,
-  Braces,
   Highlighter,
   Italic,
   List,
   ListOrdered,
   Palette,
+  Sigma,
   Underline,
   X,
 } from '@/components/ui/icons';
@@ -17,11 +17,6 @@ import { useTextHistory } from '@/hooks/useTextHistory';
 import { findHighlightClose, highlightOpenAt, toggleHighlight } from '@/lib/text/highlightMarkers';
 
 type FormatAction = 'bold' | 'italic' | 'underline' | 'bullets' | 'numbered' | 'math';
-
-interface SelectionRange {
-  start: number;
-  end: number;
-}
 
 interface ContextualDescriptionEditorProps {
   id?: string;
@@ -34,13 +29,24 @@ interface ContextualDescriptionEditorProps {
   externalRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-const ACTIONS: Array<{ action: FormatAction; icon: React.ComponentType<{ className?: string }>; labelKey: string }> = [
-  { action: 'bold', icon: Bold, labelKey: 'editContent.formatBold' },
-  { action: 'italic', icon: Italic, labelKey: 'editContent.formatItalic' },
-  { action: 'underline', icon: Underline, labelKey: 'editContent.formatUnderline' },
+const TEXT_ACTIONS: Array<{
+  action: FormatAction;
+  icon: React.ComponentType<{ className?: string }>;
+  labelKey: string;
+  shortcut?: string;
+}> = [
+  { action: 'bold', icon: Bold, labelKey: 'editContent.formatBold', shortcut: 'Ctrl+B' },
+  { action: 'italic', icon: Italic, labelKey: 'editContent.formatItalic', shortcut: 'Ctrl+I' },
+  { action: 'underline', icon: Underline, labelKey: 'editContent.formatUnderline', shortcut: 'Ctrl+U' },
+];
+
+const LIST_ACTIONS: Array<{
+  action: FormatAction;
+  icon: React.ComponentType<{ className?: string }>;
+  labelKey: string;
+}> = [
   { action: 'bullets', icon: List, labelKey: 'editContent.formatBullets' },
   { action: 'numbered', icon: ListOrdered, labelKey: 'editContent.formatNumbered' },
-  { action: 'math', icon: Braces, labelKey: 'editContent.formatMath' },
 ];
 
 interface ColorOption {
@@ -106,31 +112,41 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
   const { t } = useLocale();
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalRef ?? internalRef;
-  // Annuler / rétablir sans bouton : la mise en forme posée par le code ne vide plus l'historique.
+  const colorMenuRef = useRef<HTMLDivElement>(null);
+
+  // Annuler / rétablir sans bouton : l'historique conserve chaque frappe et mise en forme.
   const history = useTextHistory({ value, setValue: onChange, textareaRef });
-  const [selection, setSelection] = useState<SelectionRange | null>(null);
   const [showColorMenu, setShowColorMenu] = useState(false);
 
-  const readSelection = useCallback((textarea: HTMLTextAreaElement) => {
-    const next = textarea.selectionEnd > textarea.selectionStart
-      ? { start: textarea.selectionStart, end: textarea.selectionEnd }
-      : null;
-    setSelection(next);
-    if (!next) setShowColorMenu(false);
-  }, []);
+  // Fermer le menu des couleurs au clic externe ou sur Échap
+  useEffect(() => {
+    if (!showColorMenu) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (colorMenuRef.current && !colorMenuRef.current.contains(e.target as Node)) {
+        setShowColorMenu(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowColorMenu(false);
+    };
+    document.addEventListener('pointerdown', handleOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showColorMenu]);
 
-  const applyFormat = useCallback((action: FormatAction, range = selection) => {
-    const activeRange = range && range.end > range.start
-      ? range
-      : (textareaRef.current && textareaRef.current.selectionEnd > textareaRef.current.selectionStart
-          ? { start: textareaRef.current.selectionStart, end: textareaRef.current.selectionEnd }
-          : null);
+  const applyFormat = useCallback((action: FormatAction) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? value.length;
+    const hasSelection = end > start;
 
-    if (!activeRange) {
-      const cursor = textareaRef.current?.selectionStart ?? value.length;
+    if (!hasSelection) {
       if (action === 'bullets' || action === 'numbered') {
-        const lineStart = value.lastIndexOf('\n', Math.max(0, cursor - 1)) + 1;
-        const lineEndIdx = value.indexOf('\n', cursor);
+        const lineStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+        const lineEndIdx = value.indexOf('\n', start);
         const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
         const currentLine = value.slice(lineStart, lineEnd);
         const prefix = action === 'bullets' ? '- ' : '1. ';
@@ -140,116 +156,165 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
         onChange(nextValue);
         const nextCursor = lineStart + nextLine.length;
         window.requestAnimationFrame(() => {
-          textareaRef.current?.focus();
-          textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+          textarea?.focus();
+          textarea?.setSelectionRange(nextCursor, nextCursor);
         });
         return;
       }
       const formatted = formatSelection(action, '');
-      const nextValue = `${value.slice(0, cursor)}${formatted.value}${value.slice(cursor)}`;
+      const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(start)}`;
       onChange(nextValue);
-      const nextCursor = cursor + formatted.inset;
+      const nextCursor = start + formatted.inset;
       window.requestAnimationFrame(() => {
-        textareaRef.current?.focus();
-        textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+        textarea?.focus();
+        textarea?.setSelectionRange(nextCursor, nextCursor);
       });
       return;
     }
 
-    const selectedText = value.slice(activeRange.start, activeRange.end);
+    const selectedText = value.slice(start, end);
     const formatted = formatSelection(action, selectedText);
-    const nextValue = `${value.slice(0, activeRange.start)}${formatted.value}${value.slice(activeRange.end)}`;
+    const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(end)}`;
     onChange(nextValue);
 
-    const nextStart = activeRange.start + formatted.inset;
+    const nextStart = start + formatted.inset;
     const nextEnd = action === 'bullets' || action === 'numbered'
-      ? activeRange.start + formatted.value.length
+      ? start + formatted.value.length
       : nextStart + selectedText.length;
     window.requestAnimationFrame(() => {
-      textareaRef.current?.focus();
-      textareaRef.current?.setSelectionRange(nextStart, nextEnd);
-      setSelection({ start: nextStart, end: nextEnd });
+      textarea?.focus();
+      textarea?.setSelectionRange(nextStart, nextEnd);
     });
-  }, [onChange, selection, textareaRef, value]);
+  }, [onChange, textareaRef, value]);
 
-  const applyColor = useCallback((colorId: string, range = selection) => {
-    const activeRange = range && range.end > range.start
-      ? range
-      : (textareaRef.current && textareaRef.current.selectionEnd > textareaRef.current.selectionStart
-          ? { start: textareaRef.current.selectionStart, end: textareaRef.current.selectionEnd }
-          : null);
+  const applyColor = useCallback((colorId: string) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? value.length;
+    const hasSelection = end > start;
 
-    if (!activeRange) {
+    if (!hasSelection) {
       if (colorId === 'clear') return;
-      const cursor = textareaRef.current?.selectionStart ?? value.length;
       const before = colorId === 'highlight' ? '==' : `[color:${colorId}]`;
       const after = colorId === 'highlight' ? '==' : '[/color]';
-      const nextValue = `${value.slice(0, cursor)}${before}${after}${value.slice(cursor)}`;
+      const nextValue = `${value.slice(0, start)}${before}${after}${value.slice(start)}`;
       onChange(nextValue);
-      const nextCursor = cursor + before.length;
+      const nextCursor = start + before.length;
       window.requestAnimationFrame(() => {
-        textareaRef.current?.focus();
-        textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+        textarea?.focus();
+        textarea?.setSelectionRange(nextCursor, nextCursor);
       });
       return;
     }
 
     if (colorId === 'highlight') {
-      // Un seul geste, jamais de `====` : on retire le surlignage s'il existe déjà, sinon on entoure le texte visible.
-      const edit = toggleHighlight(value, activeRange.start, activeRange.end);
+      const edit = toggleHighlight(value, start, end);
       if (edit.value === value) return;
       onChange(edit.value);
       window.requestAnimationFrame(() => {
-        textareaRef.current?.focus();
-        textareaRef.current?.setSelectionRange(edit.start, edit.end);
-        setSelection({ start: edit.start, end: edit.end });
+        textarea?.focus();
+        textarea?.setSelectionRange(edit.start, edit.end);
       });
       return;
     }
-    const selectedText = value.slice(activeRange.start, activeRange.end);
+
+    const selectedText = value.slice(start, end);
     const formatted = formatColorSelection(colorId, selectedText);
-    const nextValue = `${value.slice(0, activeRange.start)}${formatted.value}${value.slice(activeRange.end)}`;
+    const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(end)}`;
     onChange(nextValue);
 
-    const nextStart = activeRange.start + formatted.inset;
+    const nextStart = start + formatted.inset;
     const nextEnd = nextStart + formatted.coreLength;
 
     window.requestAnimationFrame(() => {
-      textareaRef.current?.focus();
-      textareaRef.current?.setSelectionRange(nextStart, nextEnd);
-      setSelection({ start: nextStart, end: nextEnd });
+      textarea?.focus();
+      textarea?.setSelectionRange(nextStart, nextEnd);
     });
-  }, [onChange, selection, textareaRef, value]);
+  }, [onChange, textareaRef, value]);
 
   return (
-    <div className="relative">
-      {selection && (
-        <div
-          role="toolbar"
-          aria-label={t('editContent.formatSelection')}
-          className="absolute end-2 top-2 z-20 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
-        >
-          {ACTIONS.map(({ action, icon: Icon, labelKey }) => (
-            <button
-              key={action}
-              type="button"
-              onPointerDown={event => {
-                event.preventDefault();
-                applyFormat(action);
-              }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
-              aria-label={t(labelKey)}
-              title={t(labelKey)}
-            >
-              <Icon className="h-3.5 w-3.5 stroke-[2.2]" />
-            </button>
-          ))}
+    <div className="editor-zone-box group relative flex flex-col rounded-xl border border-zinc-300/85 dark:border-zinc-800 bg-background shadow-xs transition-colors duration-150 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary overflow-hidden">
+      {/* Barre d'outils intégrée directement dans la zone - Style noir / obsidian élégant */}
+      <div
+        role="toolbar"
+        aria-label={t('editContent.formatSelection')}
+        className="editor-zone-toolbar relative z-10 flex items-center justify-between gap-1 border-b border-zinc-800/90 bg-[#0d0d10] dark:bg-black px-2.5 py-1.5 text-zinc-200 select-none shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+      >
+        <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto scrollbar-none py-0.5">
+          {/* Groupe typographie : Gras, Italique, Souligné */}
+          <div className="flex items-center gap-0.5">
+            {TEXT_ACTIONS.map(({ action, icon: Icon, labelKey, shortcut }) => (
+              <button
+                key={action}
+                type="button"
+                onPointerDown={event => {
+                  event.preventDefault();
+                  applyFormat(action);
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-all duration-150 hover:bg-zinc-800/90 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 active:scale-90 active:bg-zinc-700/80"
+                aria-label={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
+                title={`${t(labelKey)}${shortcut ? ` (${shortcut})` : ''}`}
+              >
+                <Icon className="h-3.5 w-3.5 stroke-[2.2]" />
+              </button>
+            ))}
+          </div>
 
-          {/* Séparateur élégant */}
-          <span className="mx-0.5 h-4 w-px bg-border select-none" aria-hidden="true" />
+          <span className="mx-1 h-3.5 w-px bg-zinc-800/80 select-none shrink-0" aria-hidden="true" />
 
-          {/* Bouton couleur du même style */}
-          <div className="relative">
+          {/* Groupe listes : Puces, Numérotée */}
+          <div className="flex items-center gap-0.5">
+            {LIST_ACTIONS.map(({ action, icon: Icon, labelKey }) => (
+              <button
+                key={action}
+                type="button"
+                onPointerDown={event => {
+                  event.preventDefault();
+                  applyFormat(action);
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-all duration-150 hover:bg-zinc-800/90 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 active:scale-90 active:bg-zinc-700/80"
+                aria-label={t(labelKey)}
+                title={t(labelKey)}
+              >
+                <Icon className="h-3.5 w-3.5 stroke-[2.2]" />
+              </button>
+            ))}
+          </div>
+
+          <span className="mx-1 h-3.5 w-px bg-zinc-800/80 select-none shrink-0" aria-hidden="true" />
+
+          {/* Formule mathématique TeX / KaTeX (Sigma) */}
+          <button
+            type="button"
+            onPointerDown={event => {
+              event.preventDefault();
+              applyFormat('math');
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-all duration-150 hover:bg-zinc-800/90 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 active:scale-90 active:bg-zinc-700/80"
+            aria-label={t('editContent.formatMath')}
+            title={t('editContent.formatMath')}
+          >
+            <Sigma className="h-3.5 w-3.5 stroke-[2.2]" />
+          </button>
+
+          <span className="mx-1 h-3.5 w-px bg-zinc-800/80 select-none shrink-0" aria-hidden="true" />
+
+          {/* Surlignage rapide */}
+          <button
+            type="button"
+            onPointerDown={event => {
+              event.preventDefault();
+              applyColor('highlight');
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-amber-400 transition-all duration-150 hover:bg-amber-400/15 hover:text-amber-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 active:scale-90"
+            aria-label={t('editContent.formatHighlight')}
+            title={t('editContent.formatHighlight')}
+          >
+            <Highlighter className="h-3.5 w-3.5 stroke-[2.2]" />
+          </button>
+
+          {/* Palette de couleurs */}
+          <div ref={colorMenuRef} className="relative">
             <button
               type="button"
               onPointerDown={event => {
@@ -257,8 +322,10 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 setShowColorMenu(prev => !prev);
               }}
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95',
-                showColorMenu ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                'flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 active:scale-90',
+                showColorMenu
+                  ? 'bg-zinc-800 text-white shadow-xs'
+                  : 'text-zinc-400 hover:bg-zinc-800/90 hover:text-white',
               )}
               aria-label={t('editContent.formatColor')}
               title={t('editContent.formatColor')}
@@ -268,12 +335,12 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               <Palette className="h-3.5 w-3.5 stroke-[2.2]" />
             </button>
 
-            {/* Menu déroulant des couleurs avec boutons du même style */}
+            {/* Menu déroulant des couleurs en noir obsidian */}
             {showColorMenu && (
               <div
                 role="menu"
                 aria-label={t('editContent.formatColor')}
-                className="absolute end-0 top-[calc(100%+6px)] z-30 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
+                className="absolute start-0 sm:start-auto sm:end-0 top-[calc(100%+6px)] z-30 flex items-center gap-1 rounded-xl border border-zinc-800 bg-[#0d0d10] p-1.5 text-zinc-100 shadow-2xl backdrop-blur-xl animate-fade-in"
               >
                 {COLOR_OPTIONS.map(({ id, nameKey, dotColor }) => (
                   <button
@@ -285,30 +352,15 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                       applyColor(id);
                       setShowColorMenu(false);
                     }}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-800 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 active:scale-90"
                     aria-label={t(nameKey)}
                     title={t(nameKey)}
                   >
-                    <span className={cn('h-3.5 w-3.5 rounded-full ring-1 ring-black/10 dark:ring-white/30', dotColor)} />
+                    <span className={cn('h-3.5 w-3.5 rounded-full ring-1 ring-white/20', dotColor)} />
                   </button>
                 ))}
 
-                <span className="mx-0.5 h-4 w-px bg-border select-none" aria-hidden="true" />
-
-                <button
-                  type="button"
-                  role="menuitem"
-                  onPointerDown={event => {
-                    event.preventDefault();
-                    applyColor('highlight');
-                    setShowColorMenu(false);
-                  }}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
-                  aria-label={t('editContent.formatHighlight')}
-                  title={t('editContent.formatHighlight')}
-                >
-                  <Highlighter className="h-3.5 w-3.5 stroke-[2.2] text-amber-500 dark:text-amber-400" />
-                </button>
+                <span className="mx-0.5 h-4 w-px bg-zinc-800 select-none" aria-hidden="true" />
 
                 <button
                   type="button"
@@ -318,7 +370,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                     applyColor('clear');
                     setShowColorMenu(false);
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/60 transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-95"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-rose-500/20 hover:text-rose-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-400 active:scale-90"
                   aria-label={t('editContent.colorClear')}
                   title={t('editContent.colorClear')}
                 >
@@ -328,20 +380,23 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
             )}
           </div>
         </div>
-      )}
+
+        {/* Badge innovant KaTeX / Markdown */}
+        <div className="hidden sm:flex items-center gap-2 pe-1 text-[11px] font-mono text-zinc-400 select-none">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            TeX · MD
+          </span>
+        </div>
+      </div>
+
+      {/* Zone de texte intégrée directement */}
       <Textarea
         ref={textareaRef}
         id={id}
         value={value}
         dir={dir}
         onChange={event => onChange(event.target.value)}
-        onSelect={event => readSelection(event.currentTarget)}
-        onMouseUp={event => readSelection(event.currentTarget)}
-        onKeyUp={event => readSelection(event.currentTarget)}
-        onBlur={() => window.setTimeout(() => {
-          setSelection(null);
-          setShowColorMenu(false);
-        }, 150)}
         onKeyDown={event => {
           history.onKeyDown(event);
           if (event.defaultPrevented || !(event.ctrlKey || event.metaKey)) return;
@@ -352,13 +407,13 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               : event.key.toLowerCase() === 'u'
                 ? 'underline'
                 : null;
-          if (!action || event.currentTarget.selectionEnd <= event.currentTarget.selectionStart) return;
+          if (!action) return;
           event.preventDefault();
-          applyFormat(action, { start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd });
+          applyFormat(action);
         }}
         rows={rows}
         className={cn(
-          'min-h-[230px] resize-y rounded-xl border border-border bg-background text-foreground px-4 py-4 text-start text-sm leading-7 shadow-xs focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary',
+          'w-full flex-1 resize-y border-0 bg-transparent px-3.5 py-3 text-start text-sm leading-6 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-0 focus-visible:border-0 shadow-none rounded-none',
           className,
         )}
         placeholder={placeholder}
