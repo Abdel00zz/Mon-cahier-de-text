@@ -355,7 +355,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               <span dir={textDirectionAttribute(item.title)} className="print-item-title"><HighlightedText text={item.title} /></span>
               {item.page && <span className="print-item-page"> p. {item.page}</span>}
               {allowDescription && (
-                <div dir={textDirectionAttribute(item.description)} className="print-item-description">
+                <div
+                  dir={textDirectionAttribute(item.description)}
+                  className="print-item-description"
+                  data-content-type={normalizedType}
+                >
                   {renderDescriptionWithBold(item.description)}
                 </div>
               )}
@@ -377,6 +381,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           <Badge
             variant="outline"
             className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
+            data-content-type={normalizedType}
             data-content-number={displayNumber ?? ''}
             data-tippy-content={fullTooltip}
           >
@@ -411,9 +416,13 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             )}
           </div>
 
-          {/* Description : encadré sobre sous le titre façon Google Keep (masqué si un document dédié existe pour éliminer tout sous-titre redondant) */}
+          {/* Description : encadré mathématique sobre sans arrondi sous le titre (masqué si un document dédié existe pour éliminer tout sous-titre redondant) */}
           {allowDescription && !itemDocumentPreview && (
-            <div className="col-start-2 editor-item-description editor-type-description text-start mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
+            <div
+              className="col-start-2 editor-item-description editor-type-description text-start mt-1.5 px-2.5 py-1 text-foreground whitespace-pre-wrap break-words"
+              data-content-type={normalizedType}
+              dir={textDirectionAttribute(item.description)}
+            >
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

@@ -57,6 +57,7 @@ import { appendJournal } from '@/infrastructure/storage/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
 import {
   EDITOR_MODAL_KEY,
+  EDITOR_NAVIGATION_EVENT,
   EditorModalPayload,
   SESSION_FOCUS_KEY,
   SessionFocusPayload,
@@ -789,21 +790,26 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    */
   useEffect(() => {
     if (isClassLoading) return;
-    let payload: EditorModalPayload | null = null;
-    try {
-      const raw = sessionStorage.getItem(EDITOR_MODAL_KEY);
-      payload = raw ? (JSON.parse(raw) as EditorModalPayload) : null;
-    } catch {
-      payload = null;
-    }
-    if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
-    try {
-      sessionStorage.removeItem(EDITOR_MODAL_KEY);
-    } catch { /* déjà consommé au prochain rendu grâce au retrait ci-dessus */ }
-    const modal = payload.modal;
-    if (modal === 'evaluations' || modal === 'dataTransfer' || modal === 'print') {
-      setEditorState(draft => { draft.activeModal = modal; });
-    }
+    const consumeModalRequest = () => {
+      let payload: EditorModalPayload | null = null;
+      try {
+        const raw = sessionStorage.getItem(EDITOR_MODAL_KEY);
+        payload = raw ? (JSON.parse(raw) as EditorModalPayload) : null;
+      } catch {
+        payload = null;
+      }
+      if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
+      try {
+        sessionStorage.removeItem(EDITOR_MODAL_KEY);
+      } catch { /* déjà consommé au prochain rendu grâce au retrait ci-dessus */ }
+      const modal = payload.modal;
+      if (modal === 'evaluations' || modal === 'dataTransfer' || modal === 'print') {
+        setEditorState(draft => { draft.activeModal = modal; });
+      }
+    };
+    consumeModalRequest();
+    window.addEventListener(EDITOR_NAVIGATION_EVENT, consumeModalRequest);
+    return () => window.removeEventListener(EDITOR_NAVIGATION_EVENT, consumeModalRequest);
   }, [classInfo.id, isClassLoading, setEditorState]);
 
   useEffect(() => {

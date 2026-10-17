@@ -82,7 +82,7 @@ export function homeworkDeadlines(config: AppConfig, classes: readonly ClassInfo
             const record = records?.[`${year}:${key}`] ?? records?.[item.id] ?? records?.[key];
             const names = namesWithRoster(record?.names ?? [], config.classRosters?.[classInfo.id]);
             const summary = countHomeworkOutcomes(names, record?.homeworkOutcomes);
-            return [{ classInfo, assessmentId: item.id, num: item.num, dueDate: item.dueDateISO,
+            return [{ classInfo, assessmentId: item.id, num: item.num, givenDate: item.dateISO, dueDate: item.dueDateISO,
                 inDays: daysBetweenISO(today, item.dueDateISO), total: names.length, ...summary,
                 missingNames: names.filter(name => Object.hasOwn(record?.homeworkOutcomes ?? {}, name) && record!.homeworkOutcomes![name] === 'missing'),
                 pendingNames: names.filter(name => !Object.hasOwn(record?.homeworkOutcomes ?? {}, name)),

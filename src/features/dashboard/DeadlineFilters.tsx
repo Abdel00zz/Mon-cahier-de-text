@@ -13,7 +13,7 @@ export function DeadlineFilters({ classes, classId, scope, onClassChange, onScop
 
   return (
     <div className="deadline-filters" role="search" aria-label={t('notifications.deadlines')}>
-      {classes.length > 1 && (
+      {classes.length > 0 && (
         <div className="deadline-filter-item">
           <label htmlFor={`${id}-class`} className="deadline-filter-label">
             <span>{t('followUp.classFilter')}</span>
@@ -25,7 +25,6 @@ export function DeadlineFilters({ classes, classId, scope, onClassChange, onScop
             value={classId}
             onChange={event => onClassChange(event.target.value)}
           >
-            <option value="">{t('followUp.allClasses')}</option>
             {classes.map(item => (
               <option key={item.id} value={item.id}>
                 {formatLocalizedClassDisplayName(item.name, locale)}

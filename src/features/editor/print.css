@@ -346,11 +346,34 @@
     margin-top: 3px !important;
     margin-bottom: 2px !important;
     margin-inline-start: 1.5em;
-    padding-inline-start: 0.7em;
-    color: #374151;
+    padding: 3px 6px !important;
+    border: 0.6pt solid #999;
+    border-radius: 0 !important;
+    background-color: #faf9f6;
+    color: #222;
     font-size: var(--print-size-description);
     line-height: var(--print-spacing-line);
     white-space: pre-wrap;
+}
+
+.print-item-description[data-content-type="définition"] {
+    border-color: #4a77b4;
+    background-color: #f7f9fe;
+    border-radius: 0 !important;
+}
+
+.print-item-description[data-content-type="théorème"],
+.print-item-description[data-content-type="proposition"],
+.print-item-description[data-content-type="propriété"],
+.print-item-description[data-content-type="lemme"],
+.print-item-description[data-content-type="corollaire"],
+.print-item-description[data-content-type="conséquence"],
+.print-item-description[data-content-type="règle"],
+.print-item-description[data-content-type="loi"],
+.print-item-description[data-content-type="principe"] {
+    border-color: #b33932;
+    background-color: #fef7f6;
+    border-radius: 0 !important;
 }
 
 /* Éléments nouvellement ajoutés : discret liseré or plutôt qu'un aplat criard */

@@ -169,5 +169,63 @@ export const mergeAdminAssessmentDates = (
         } as NonNullable<AppConfig['notificationSettings']>;
     }
     merged.classRosters = reconcileClassRosters(local.classRosters, remote.classRosters ?? local.classRosters);
-    return mergePedagogicalDocuments(merged, local);
+    return mergeStudentFollowUpRecords(mergePedagogicalDocuments(merged, local), local);
 };
+
+type StampedRecord = { updatedAt?: string };
+const recordStamp = (record?: StampedRecord) => (record?.updatedAt ? Date.parse(record.updatedAt) || 0 : -1);
+const latestRecord = <T extends StampedRecord>(preferred?: T, other?: T): T | undefined =>
+    recordStamp(other) > recordStamp(preferred) ? other : preferred;
+
+function mergeClassAssessmentMap<T extends StampedRecord>(
+    preferred: Record<string, Record<string, T>> | undefined,
+    other: Record<string, Record<string, T>> | undefined,
+    removedAssessments: AppConfig['removedAssessments'] | undefined,
+): Record<string, Record<string, T>> | undefined {
+    if (preferred === undefined && other === undefined) return undefined;
+    const out: Record<string, Record<string, T>> = {};
+    const classIds = new Set([...Object.keys(preferred ?? {}), ...Object.keys(other ?? {})]);
+    for (const classId of classIds) {
+        const first = preferred?.[classId] ?? {};
+        const second = other?.[classId] ?? {};
+        const removed = new Set(removedAssessments?.[classId]);
+        const values: Record<string, T> = {};
+        for (const id of new Set([...Object.keys(first), ...Object.keys(second)])) {
+            if (removed.has(id)) continue;
+            const picked = latestRecord(first[id], second[id]);
+            if (picked) values[id] = picked;
+        }
+        out[classId] = values;
+    }
+    return out;
+}
+
+/**
+ * Fusion granulaire par horodatage (`updatedAt`) des suivis d'élèves
+ * (`assessmentParticipants`, `assessmentAbsences` et `pedagogicalEvents[*].students`)
+ * afin que deux saisies sur des évaluations ou activités différentes ne s'écrasent pas.
+ */
+export function mergeStudentFollowUpRecords<
+    T extends Pick<Partial<AppConfig>, 'assessmentParticipants' | 'assessmentAbsences' | 'pedagogicalEvents' | 'removedAssessments'>,
+>(preferred: T, other: Pick<Partial<AppConfig>, 'assessmentParticipants' | 'assessmentAbsences' | 'pedagogicalEvents'>): T {
+    const merged: T = { ...preferred };
+    const participants = mergeClassAssessmentMap(preferred.assessmentParticipants, other.assessmentParticipants, preferred.removedAssessments);
+    if (participants !== undefined) merged.assessmentParticipants = participants;
+    const absences = mergeClassAssessmentMap(preferred.assessmentAbsences, other.assessmentAbsences, preferred.removedAssessments);
+    if (absences !== undefined) merged.assessmentAbsences = absences;
+    if (preferred.pedagogicalEvents) {
+        merged.pedagogicalEvents = Object.fromEntries(
+            Object.entries(preferred.pedagogicalEvents).map(([classId, events]) => {
+                const previousStudents = new Map((other.pedagogicalEvents?.[classId] ?? []).map(event => [event.id, event.students]));
+                return [
+                    classId,
+                    events.map(event => {
+                        const students = latestRecord(event.students, previousStudents.get(event.id));
+                        return students === event.students ? event : { ...event, students };
+                    }),
+                ];
+            }),
+        );
+    }
+    return merged;
+}

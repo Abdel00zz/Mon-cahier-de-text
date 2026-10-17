@@ -21,11 +21,11 @@ export function HomeworkDeadlines({ items, onOpen, embedded = false }: { embedde
                 {!embedded && <div className="homework-deadlines__date"><time dateTime={item.dueDate}>{dateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${item.dueDate}T12:00:00`))}</time><span>{t(`followUp.due.${status}`)}</span></div>}
                 <p className="homework-deadlines__summary">{item.total ? t('followUp.submissionSummary', { given: number.format(item.given), total: number.format(item.total), pending: number.format(item.pending), missing: number.format(item.missing) }) : t('followUp.noSubmissions')}</p>
                 {item.total > 0 && <div className="homework-deadlines__progress" aria-hidden="true"><span style={{ width: `${item.given / item.total * 100}%` }} /></div>}
-                {(item.missingNames.length > 0 || item.pendingNames.length > 0) && <details className="homework-deadlines__pupils"><summary>{t('followUp.submissionDetails')}</summary>
+                {(item.missingNames.length > 0 || item.pendingNames.length > 0) && <details className="homework-deadlines__pupils" onClick={e => e.stopPropagation()}><summary>{t('followUp.submissionDetails')}</summary>
                     {item.missingNames.length > 0 && <p>{t('evaluations.homework.missing')}<span dir="auto">{item.missingNames.join(locale === 'ar' ? '، ' : ', ')}</span></p>}
                     {item.pendingNames.length > 0 && <p>{t('followUp.toCheck')}<span dir="auto">{item.pendingNames.join(locale === 'ar' ? '، ' : ', ')}</span></p>}
                 </details>}
-                <button type="button" onClick={() => onOpen(item.classInfo.id)}>{t('notifications.action.openClass')}</button>
+                {!embedded && <button type="button" onClick={() => onOpen(item.classInfo.id)}>{t('notifications.action.openClass')}</button>}
             </article>;
         })}</div>
     </section>;

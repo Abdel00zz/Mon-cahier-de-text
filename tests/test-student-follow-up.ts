@@ -146,3 +146,66 @@ test('échéances : une date passée ne termine rien ; filtres par classe et rem
     assert.equal(selectFollowUpDeadlines(rows, '2026-10-15', 'b', 'all').length, 0);
     assert.equal(selectFollowUpDeadlines(rows, '2026-10-15', 'a', 'all').length, 4);
 });
+
+test('sync granulaire : les suivis élèves les plus récents par évaluation ou activité sont préservés', async () => {
+    const { mergeStudentFollowUpRecords } = await import('../src/infrastructure/sync/syncSettings');
+    const remote: Partial<AppConfig> = {
+        assessmentParticipants: {
+            a: {
+                c1: { names: ['Amine'], updatedAt: '2026-10-14T08:00:00Z', oralGrades: { Amine: '12' } },
+                c2: { names: ['Salma'], updatedAt: '2026-10-16T10:00:00Z', oralGrades: { Salma: '17' } },
+            },
+        },
+        pedagogicalEvents: {
+            a: [
+                { id: 'cahiers-1', type: 'controle_cahiers', title: 'Cahiers', date: '2026-10-15', status: 'done', createdAt: '', students: { names: ['Amine'], updatedAt: '2026-10-14T09:00:00Z', notebookConditions: { Amine: 'good' } } },
+            ],
+        },
+    };
+    const local: Partial<AppConfig> = {
+        assessmentParticipants: {
+            a: {
+                c1: { names: ['Amine'], updatedAt: '2026-10-15T14:00:00Z', oralGrades: { Amine: '16' } },
+            },
+        },
+        pedagogicalEvents: {
+            a: [
+                { id: 'cahiers-1', type: 'controle_cahiers', title: 'Cahiers', date: '2026-10-15', status: 'done', createdAt: '', students: { names: ['Amine', 'Salma'], updatedAt: '2026-10-16T11:00:00Z', notebookConditions: { Amine: 'good', Salma: 'needs_work' } } },
+            ],
+        },
+    };
+    const merged = mergeStudentFollowUpRecords(remote, local);
+    assert.equal(merged.assessmentParticipants?.a?.c1?.oralGrades?.Amine, '16', 'la note locale plus récente sur c1 est conservée');
+    assert.equal(merged.assessmentParticipants?.a?.c2?.oralGrades?.Salma, '17', 'la note distante plus récente sur c2 est conservée');
+    assert.deepEqual(merged.pedagogicalEvents?.a?.[0]?.students?.names, ['Amine', 'Salma'], 'le suivi des cahiers plus récent est conservé');
+});
+
+test('branchement Contrôle continu & Activités : seuls les éléments en cours ou terminés sont retenus, les éléments futurs sont écartés', async () => {
+    const { activeDeadlineState, filterActiveFollowUpDeadlines } = await import('../src/domain/evaluations/followUpDeadlines');
+    const config: AppConfig = {
+        ...base,
+        manualAssessments: {
+            a: [
+                { id: 'dm-ongoing', type: 'maison', num: 1, semestre: 1, dateISO: '2026-10-12', dueDateISO: '2026-10-20' },
+                { id: 'dm-future', type: 'maison', num: 2, semestre: 1, dateISO: '2026-10-22', dueDateISO: '2026-10-28' },
+            ],
+        },
+    };
+    const rows = buildFollowUpDeadlines([classInfo], {
+        homework: homeworkDeadlines(config, [classInfo], '2026-10-15'),
+        assessments: [
+            { ...planned('cc-today', '2026-10-15', 'controle'), classId: 'a', className: 'A', inDays: 0 } as UpcomingAssessment,
+            { ...planned('cc-future', '2026-10-25', 'controle'), classId: 'a', className: 'A', inDays: 10 } as UpcomingAssessment,
+        ],
+        activities: [
+            { classId: 'a', event: { id: 'cahiers-done', type: 'controle_cahiers', title: 'Contrôle des cahiers', date: '2026-10-10', status: 'done', createdAt: '' } },
+            { classId: 'a', event: { id: 'soutien-future', type: 'soutien', title: 'Soutien futur', date: '2026-10-24', status: 'planned', createdAt: '' } },
+        ],
+        official: [],
+    });
+    const active = filterActiveFollowUpDeadlines(rows, '2026-10-15');
+    assert.deepEqual(active.map(item => item.id), ['activity:a:cahiers-done', 'assessment:a:cc-today', 'homework:a:dm-ongoing']);
+    assert.deepEqual(active.map(item => activeDeadlineState(item, '2026-10-15')), ['complete', 'today', 'ongoing']);
+});
+
+

@@ -564,20 +564,27 @@ export const getFollowUpAssessments = (
     config: AppConfig,
     cal: HolidayCalendar,
     today: string,
-    derivedHorizonDays = 30
+    _derivedHorizonDays = 30
 ): UpcomingAssessment[] => {
     const emptyPlanning: PlanningFile = planning ?? { version: 1, plans: [] };
     const result: UpcomingAssessment[] = [];
     for (const classInfo of classes) {
         const dates = resolveClassAssessments(classInfo, emptyPlanning, config, cal, today);
         const manuals = config.manualAssessments?.[classInfo.id] ?? [];
+        const manualIds = new Set(manuals.map(item => item.id));
+        const assigned = config.assessmentDates?.[classInfo.id] ?? {};
         for (const assessment of dates) {
             if (!assessment.dateISO) continue;
+            // Branché strictement sur « Contrôle continu & Activités » : seules les évaluations réellement
+            // saisies ou datées par l'enseignant (et non les prévisions théoriques non programmées) remontent.
+            const isConfigured = manualIds.has(assessment.id)
+                || (assessment.legacyId ? manualIds.has(assessment.legacyId) : false)
+                || Boolean(assigned[assessment.id] || (assessment.legacyId && assigned[assessment.legacyId]));
+            if (!isConfigured) continue;
             // Les devoirs maison dotés d'une date limite sont déjà projetés avec leur jauge de remise dans homeworkDeadlines.
             const manualEntry = manuals.find(m => m.id === assessment.id || (assessment.legacyId && m.id === assessment.legacyId));
             if (assessment.type === 'maison' && manualEntry?.dueDateISO) continue;
             const inDays = daysBetweenISO(today, assessment.dateISO);
-            if (assessment.predictionStatus === 'derived' && (inDays < 0 || inDays > derivedHorizonDays)) continue;
             const hasAbsences = Boolean(
                 config.assessmentAbsences?.[classInfo.id]?.[assessment.id]
                 ?? (assessment.legacyId ? config.assessmentAbsences?.[classInfo.id]?.[assessment.legacyId] : undefined)
@@ -592,7 +599,7 @@ export const getFollowUpAssessments = (
                     || participants.names.length > 0
                 )
             );
-            const done = assessment.dateISO <= today && (hasAbsences || hasParticipants);
+            const done = hasAbsences || hasParticipants;
             result.push({
                 ...assessment,
                 classId: classInfo.id,

@@ -59,5 +59,47 @@ export function deadlineState(item: FollowUpDeadline, today: string): DeadlineSt
 
 export function selectFollowUpDeadlines(items: readonly FollowUpDeadline[], today: string, classId: string, scope: DeadlineScope) {
   return items.filter(item => (!classId || item.classIds.includes(classId))
-    && (scope === 'all' || (deadlineState(item, today) === 'complete') === (scope === 'complete')));
+    && (scope === 'all' || (activeDeadlineState(item, today) === 'complete') === (scope === 'complete')));
 }
+
+/**
+ * État opérationnel d'un élément de « Contrôle continu & Activités » :
+ * - Un élément complété (remises complètes, note saisie, statut done ou document joint) est `complete`.
+ * - Tout élément actif non terminé dont l'échéance est atteinte ou en cours s'affiche comme `today` ou `ongoing` (« قيد الإنجاز » / « En cours »).
+ * - Un élément purement futur non démarré reste `upcoming`.
+ */
+export function activeDeadlineState(item: FollowUpDeadline, today: string): DeadlineState {
+  const base = deadlineState(item, today);
+  if (base === 'complete') return 'complete';
+  if (item.kind === 'activity' && Boolean(item.value.event.document?.source?.trim())) {
+    return 'complete';
+  }
+  if (base === 'today' || base === 'ongoing') return base;
+  if (base === 'past') return 'ongoing';
+  if (item.kind === 'homework') {
+    const givenDate = (item.value as { givenDate?: string }).givenDate;
+    if (!givenDate || givenDate <= today || item.value.given > 0 || item.value.missing > 0) return 'ongoing';
+  }
+  if (item.kind === 'activity') {
+    const students = item.value.event.students;
+    const hasStartedTracking = Boolean(
+      students && (
+        Object.keys(students.notebookConditions ?? {}).length > 0
+        || Object.keys(students.oralOutcomes ?? {}).length > 0
+        || Object.keys(students.oralGrades ?? {}).length > 0
+      )
+    );
+    if (hasStartedTracking) return 'ongoing';
+  }
+  return 'upcoming';
+}
+
+/**
+ * Retient exclusivement les éléments en cours ou terminés issus de « Contrôle continu & Activités »
+ * et écarte les éléments futurs / à suivre non démarrés.
+ */
+export function filterActiveFollowUpDeadlines(items: readonly FollowUpDeadline[], today: string): FollowUpDeadline[] {
+  return items.filter(item => item.kind !== 'official' && activeDeadlineState(item, today) !== 'upcoming');
+}
+
+

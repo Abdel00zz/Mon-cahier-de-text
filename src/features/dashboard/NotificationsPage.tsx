@@ -40,7 +40,7 @@ import { ClassPedagogicalSummary } from './ClassPedagogicalSummary';
 import { ContinuousAssessmentStats } from './ContinuousAssessmentStats';
 import { DeadlineTimeline } from './DeadlineTimeline';
 import { DeadlineFilters } from './DeadlineFilters';
-import { buildFollowUpDeadlines, selectFollowUpDeadlines, type DeadlineScope } from '@/domain/evaluations/followUpDeadlines';
+import { buildFollowUpDeadlines, filterActiveFollowUpDeadlines, selectFollowUpDeadlines, type DeadlineScope } from '@/domain/evaluations/followUpDeadlines';
 import { reconcileClassesEvaluationConfig } from '@/domain/evaluations/notebookReconciliation';
 import { homeworkDeadlines } from '@/domain/evaluations/studentFollowUp';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
@@ -273,8 +273,33 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
-  const [deadlineClass, setDeadlineClass] = useState('');
-  const [deadlineScope, setDeadlineScope] = useState<DeadlineScope>('pending');
+  const resolveLastAccessedClassId = useCallback((): string => {
+    try {
+      const stored = localStorage.getItem('cdt_last_accessed_class_v1');
+      if (stored && classes.some(c => c.id === stored)) return stored;
+    } catch { /* ignore */ }
+    const opened = classes.filter(c => c.lastOpenedAt);
+    if (opened.length > 0) {
+      const sorted = [...opened].sort((a, b) => (b.lastOpenedAt ?? '').localeCompare(a.lastOpenedAt ?? ''));
+      if (sorted[0]) return sorted[0].id;
+    }
+    let best: { classId: string; at: string } | null = null;
+    for (const classInfo of classes) {
+      const last = readJournal(classInfo.id)[0];
+      if (last && (!best || last.at > best.at)) best = { classId: classInfo.id, at: last.at };
+    }
+    return best?.classId ?? classes[0]?.id ?? '';
+  }, [classes]);
+
+  const [deadlineClass, setDeadlineClass] = useState<string>(() => resolveLastAccessedClassId());
+  const [deadlineScope, setDeadlineScope] = useState<DeadlineScope>('all');
+
+  const handleDeadlineClassChange = useCallback((id: string) => {
+    setDeadlineClass(id);
+    try {
+      localStorage.setItem('cdt_last_accessed_class_v1', id);
+    } catch { /* ignore */ }
+  }, []);
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isModalOpen, setModalOpen] = useState(true);
@@ -296,12 +321,15 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   // Les repères réunissent les écarts d'emploi du temps et les informations transversales.
   const corrections = feed.insights;
   const ignoredCorrections = feed.ignoredInsights;
-  const deadlineItems = useMemo(() => buildFollowUpDeadlines(classes, {
+  const deadlineItems = useMemo(() => filterActiveFollowUpDeadlines(buildFollowUpDeadlines(classes, {
     homework: homeworkDue, assessments: feed.assessments,
-    activities: feed.pedagogicalEvents, official: feed.officialEvents,
-  }), [classes, homeworkDue, feed.assessments, feed.pedagogicalEvents, feed.officialEvents]);
-  const effectiveDeadlineClass = classes.some(item => item.id === deadlineClass) ? deadlineClass : '';
+    activities: feed.pedagogicalEvents, official: [],
+  }), today), [classes, homeworkDue, feed.assessments, feed.pedagogicalEvents, today]);
+  const effectiveDeadlineClass = classes.some(item => item.id === deadlineClass)
+    ? deadlineClass
+    : (resolveLastAccessedClassId() || classes[0]?.id || '');
   const visibleDeadlines = useMemo(() => selectFollowUpDeadlines(deadlineItems, today, effectiveDeadlineClass, deadlineScope), [deadlineItems, today, effectiveDeadlineClass, deadlineScope]);
+  const pendingDeadlineCount = useMemo(() => selectFollowUpDeadlines(deadlineItems, today, '', 'pending').length, [deadlineItems, today]);
   const classById = useMemo(() => new Map(classes.map((classInfo) => [classInfo.id, classInfo])), [classes]);
   const actionLabels: Record<ClassSignal['action'], string> = {
     class: t('notifications.action.openClass'),
@@ -384,7 +412,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       id: 'echeances',
       label: t('notifications.deadlines'),
       icon: CalendarCheck,
-      count: deadlineItems.length,
+      count: pendingDeadlineCount,
       group: 'alerts',
     },
     {
@@ -879,13 +907,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       </span>
                     </div>
 
-                    {deadlineItems.length > 0 && <DeadlineFilters classes={classes} classId={effectiveDeadlineClass} scope={deadlineScope} onClassChange={setDeadlineClass} onScopeChange={setDeadlineScope} />}
+                    {deadlineItems.length > 0 && <DeadlineFilters classes={classes} classId={effectiveDeadlineClass} scope={deadlineScope} onClassChange={handleDeadlineClassChange} onScopeChange={setDeadlineScope} />}
                     {deadlineItems.length === 0 ? (
                       <EmptyState title={t('notifications.noAssessmentTitle')} kind="schedule" description={t('notifications.noAssessmentDescription')} />
                     ) : visibleDeadlines.length === 0 ? (
                       <div className="deadline-filter-empty" role="status">
                         <p>{t('followUp.noFilteredDeadlines')}</p>
-                        <button type="button" onClick={() => { setDeadlineClass(''); setDeadlineScope('all'); }}>{t('followUp.resetFilters')}</button>
+                        <button type="button" onClick={() => setDeadlineScope('all')}>{t('followUp.resetFilters')}</button>
                       </div>
                     ) : (
                       <DeadlineTimeline items={visibleDeadlines} classes={classes} today={today} onOpen={openClassEvaluationsById} />

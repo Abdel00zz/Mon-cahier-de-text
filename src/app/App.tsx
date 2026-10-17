@@ -276,6 +276,7 @@ const App: React.FC = () => {
      */
     const openedAt = latestClassOpening(classInfo.lastOpenedAt, new Date().toISOString());
     if (openedAt && openedAt !== classInfo.lastOpenedAt) updateClass(classInfo.id, { lastOpenedAt: openedAt });
+    try { localStorage.setItem('cdt_last_accessed_class_v1', classInfo.id); } catch { /* ignore */ }
     setActiveClass(openedAt ? { ...classInfo, lastOpenedAt: openedAt } : classInfo);
     markSessionHandledFor(classInfo.id);
     setView('editor');

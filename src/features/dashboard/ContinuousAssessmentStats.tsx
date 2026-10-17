@@ -12,10 +12,10 @@ export function ContinuousAssessmentStats({ config, classInfo }: {
 }) {
     const { t, locale } = useLocale();
     const today = useMoroccoToday();
-    const { assessments, calendar, planning } = useClassAssessments(classInfo, config);
+    const { assessments, calendar } = useClassAssessments(classInfo, config);
     const stats = useMemo(() => summarizeContinuousStudents(config, classInfo.id, assessments, today), [config, classInfo.id, assessments, today]);
     const number = numberFormat(locale, { maximumFractionDigits: 1 });
-    const loading = !calendar || !planning;
+    const loading = !calendar;
     const coverage = stats.total ? stats.observed / stats.total * 100 : 0;
     const observedOutcomes = stats.outcomes.reduce((sum, item) => sum + item.count, 0);
     return <section className="student-stats" aria-label={t('followUp.continuous')} aria-busy={loading}>

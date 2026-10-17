@@ -2342,6 +2342,113 @@ html[data-keyboard='open'] .mobile-tab-bar {
 }
 
 /* ---------------------------------------------------------------------------
+   Cadres type Définition, Théorème, Proposition, Propriété, Lemme, Corollaire...
+   SANS ARRONDI (angles vifs, tradition mathématique et scientifique stricte).
+   --------------------------------------------------------------------------- */
+.editor-item-description {
+  border-radius: 0 !important;
+  border: 1px solid hsl(var(--border) / 0.85);
+  border-inline-start: 3.5px solid hsl(var(--primary));
+  background: color-mix(in srgb, hsl(var(--muted)) 35%, hsl(var(--card)));
+  padding: 0.35rem 0.65rem;
+}
+
+/* Famille Bleu : Définitions & Introduction */
+.editor-item-description[data-content-type="définition"],
+.editor-item-description[data-content-type="introduction"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #185abc 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #185abc;
+  background: color-mix(in srgb, #185abc 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="définition"],
+.dark .editor-item-description[data-content-type="introduction"] {
+  border-inline-start-color: #a8c7fa;
+  border-color: color-mix(in srgb, #1967d2 40%, hsl(var(--border)));
+  background: color-mix(in srgb, #1967d2 12%, hsl(var(--card)));
+}
+
+/* Famille Rouge/Brique : Théorèmes, Propositions, Propriétés, Lemmes, Corollaires, Règles, Lois, Principes */
+.editor-item-description[data-content-type="théorème"],
+.editor-item-description[data-content-type="proposition"],
+.editor-item-description[data-content-type="propriété"],
+.editor-item-description[data-content-type="lemme"],
+.editor-item-description[data-content-type="corollaire"],
+.editor-item-description[data-content-type="conséquence"],
+.editor-item-description[data-content-type="règle"],
+.editor-item-description[data-content-type="loi"],
+.editor-item-description[data-content-type="principe"],
+.editor-item-description[data-content-type="sécurité"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #b3261e 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #b3261e;
+  background: color-mix(in srgb, #b3261e 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="théorème"],
+.dark .editor-item-description[data-content-type="proposition"],
+.dark .editor-item-description[data-content-type="propriété"],
+.dark .editor-item-description[data-content-type="lemme"],
+.dark .editor-item-description[data-content-type="corollaire"],
+.dark .editor-item-description[data-content-type="conséquence"],
+.dark .editor-item-description[data-content-type="règle"],
+.dark .editor-item-description[data-content-type="loi"],
+.dark .editor-item-description[data-content-type="principe"],
+.dark .editor-item-description[data-content-type="sécurité"] {
+  border-inline-start-color: #f28b82;
+  border-color: color-mix(in srgb, #c5221f 40%, hsl(var(--border)));
+  background: color-mix(in srgb, #c5221f 12%, hsl(var(--card)));
+}
+
+/* Famille Verte : Activités, Applications, Exemples, Exercices */
+.editor-item-description[data-content-type="activité"],
+.editor-item-description[data-content-type="application"],
+.editor-item-description[data-content-type="exemple"],
+.editor-item-description[data-content-type="exercice"],
+.editor-item-description[data-content-type="expérience"],
+.editor-item-description[data-content-type="observation"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #146c2e 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #146c2e;
+  background: color-mix(in srgb, #146c2e 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="activité"],
+.dark .editor-item-description[data-content-type="application"],
+.dark .editor-item-description[data-content-type="exemple"],
+.dark .editor-item-description[data-content-type="exercice"],
+.dark .editor-item-description[data-content-type="expérience"],
+.dark .editor-item-description[data-content-type="observation"] {
+  border-inline-start-color: #81c995;
+  border-color: color-mix(in srgb, #137333 40%, hsl(var(--border)));
+  background: color-mix(in srgb, #137333 12%, hsl(var(--card)));
+}
+
+/* Famille Neutre : Remarques, Preuves, Méthodes */
+.editor-item-description[data-content-type="remarque"],
+.editor-item-description[data-content-type="preuve"],
+.editor-item-description[data-content-type="méthode"],
+.editor-item-description[data-content-type="protocole"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #5f6368 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #5f6368;
+  background: color-mix(in srgb, #5f6368 6%, hsl(var(--card)));
+}
+
+/* Pastilles de ces types sans arrondi dans l'en-tête de ligne */
+.editor-kind-badge[data-content-type="définition"],
+.editor-kind-badge[data-content-type="théorème"],
+.editor-kind-badge[data-content-type="proposition"],
+.editor-kind-badge[data-content-type="propriété"],
+.editor-kind-badge[data-content-type="lemme"],
+.editor-kind-badge[data-content-type="corollaire"],
+.editor-kind-badge[data-content-type="conséquence"],
+.editor-kind-badge[data-content-type="règle"],
+.editor-kind-badge[data-content-type="loi"],
+.editor-kind-badge[data-content-type="principe"] {
+  border-radius: 0 !important;
+}
+
+
+/* ---------------------------------------------------------------------------
    Le tableau des évaluations (devoirs et activités d'une classe) vit dans
    `features/evaluations/evaluationsBoard.css` : une surface, des colonnes
    alignées et des commandes de ligne, à la place des cartes bordées.

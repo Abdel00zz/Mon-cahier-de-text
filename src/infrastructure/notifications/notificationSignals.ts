@@ -63,15 +63,19 @@ export interface EditorModalPayload {
     expiresAt: number;
 }
 
+export const EDITOR_NAVIGATION_EVENT = 'cahier:editor-navigation';
+
 export const requestSessionFocus = (payload: SessionFocusPayload): void => {
     try {
         sessionStorage.setItem(SESSION_FOCUS_KEY, JSON.stringify(payload));
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event(EDITOR_NAVIGATION_EVENT));
     } catch { /* stockage indisponible : la navigation reste possible */ }
 };
 
 export const requestEditorModal = (payload: EditorModalPayload): void => {
     try {
         sessionStorage.setItem(EDITOR_MODAL_KEY, JSON.stringify(payload));
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event(EDITOR_NAVIGATION_EVENT));
     } catch { /* stockage indisponible : la navigation reste possible */ }
 };
 

@@ -29,7 +29,7 @@ import { collectSessionDates } from '@/infrastructure/printing/printMeta';
 import { readClassLessons } from '@/infrastructure/notifications/notificationSignals';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { loadPlanning, resolveClassAssessments, type PlanningFile } from '@/domain/evaluations/assessments';
-import { dateTimeFormat } from '@/lib/formatters';
+import { dateTimeFormat, numberFormat } from '@/lib/formatters';
 import {
   getOfficialStudentEventsFile,
   getOfficialStudentEventsForClass,
@@ -274,19 +274,40 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       });
     }
 
+    const effectivePlanning = planning ?? { version: 1, plans: [] };
+    const number = numberFormat(locale);
     for (const classInfo of relevantClasses) {
-      const assessments = planning ? resolveClassAssessments(classInfo, planning, config, calendar, today) : [];
+      const classLabel = formatLocalizedClassDisplayName(classInfo.name, locale);
+      const assessments = resolveClassAssessments(classInfo, effectivePlanning, config, calendar, today);
+      const manualById = new Map((config.manualAssessments?.[classInfo.id] ?? []).map(item => [item.id, item]));
       for (const assessment of assessments) {
-        result.push({
-          id: `assessment:${classInfo.id}:${assessment.id}:${assessment.dateISO}`,
-          kind: 'assessment',
-          title: t('calendar.plannedAssessment'),
-          start: assessment.dateISO,
-          end: assessment.dateISO,
-          detail: `${formatLocalizedClassDisplayName(classInfo.name, locale)} · ${assessment.label}`,
-          classId: classInfo.id,
-          className: formatLocalizedClassDisplayName(classInfo.name, locale),
-        });
+        const localizedLabel = `${t(`evaluations.type.${assessment.type}`)} ${number.format(assessment.num)}`;
+        if (assessment.dateISO) {
+          result.push({
+            id: `assessment:${classInfo.id}:${assessment.id}:${assessment.dateISO}`,
+            kind: 'assessment',
+            title: t('calendar.plannedAssessment'),
+            start: assessment.dateISO,
+            end: assessment.dateISO,
+            detail: `${classLabel} · ${localizedLabel}`,
+            classId: classInfo.id,
+            className: classLabel,
+          });
+        }
+        const manual = manualById.get(assessment.id) ?? (assessment.legacyId ? manualById.get(assessment.legacyId) : undefined);
+        const dueDateISO = manual?.dueDateISO;
+        if (assessment.type === 'maison' && dueDateISO && dueDateISO !== assessment.dateISO) {
+          result.push({
+            id: `assessment:${classInfo.id}:${assessment.id}:due:${dueDateISO}`,
+            kind: 'assessment',
+            title: localizedLabel,
+            start: dueDateISO,
+            end: dueDateISO,
+            detail: classLabel,
+            classId: classInfo.id,
+            className: classLabel,
+          });
+        }
       }
       for (const event of config.pedagogicalEvents?.[classInfo.id] ?? []) {
         if (!event.date) continue;

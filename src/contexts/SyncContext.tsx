@@ -25,7 +25,7 @@ import {
 } from '../infrastructure/sync/syncBus';
 import { useAuth } from './AuthContext';
 import { logger } from '../lib/logger';
-import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
+import { SyncableSettings, extractSyncableSettings, mergeStudentFollowUpRecords, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
 import { mergePedagogicalDocuments, pedagogicalDocumentsEqual } from '../domain/evaluations/documentSync';
 import { reconcileClassesEvaluationConfig } from '../domain/evaluations/notebookReconciliation';
 import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
@@ -822,10 +822,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     settingsNeedPush = true;
                 }
 
-                // Recover formerly local-only subjects and merge content even
+                // Recover formerly local-only subjects and merge content & student tracking even
                 // when the settings watermark itself did not change.
-                const withDocuments = removeDeletedClassReferences(mergePedagogicalDocuments(nextConfig, settings ?? {}), deletedIds).config;
-                if (!pedagogicalDocumentsEqual(nextConfig, withDocuments)) configChanged = true;
+                const withDocuments = removeDeletedClassReferences(
+                    mergeStudentFollowUpRecords(mergePedagogicalDocuments(nextConfig, settings ?? {}), settings ?? {}),
+                    deletedIds,
+                ).config;
+                if (
+                    !pedagogicalDocumentsEqual(nextConfig, withDocuments) ||
+                    JSON.stringify(nextConfig.assessmentParticipants ?? {}) !== JSON.stringify(withDocuments.assessmentParticipants ?? {}) ||
+                    JSON.stringify(nextConfig.assessmentAbsences ?? {}) !== JSON.stringify(withDocuments.assessmentAbsences ?? {})
+                ) {
+                    configChanged = true;
+                }
                 nextConfig = withDocuments;
                 if (!pedagogicalDocumentsEqual(nextConfig, settings ?? {})) settingsNeedPush = true;
 
