@@ -1,29 +1,104 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { dateTimeFormat, numberFormat } from '@/lib/formatters';
-import type { ClassInfo } from '@/types';
+import type { AppLocale, ClassInfo, PedagogicalEvent } from '@/types';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { activeDeadlineState, type FollowUpDeadline } from '@/domain/evaluations/followUpDeadlines';
 import { HomeworkDeadlines } from './HomeworkDeadlines';
 import './deadlineTimeline.css';
 
-// Helper to resolve the pedagogical milestone date (prevents future homework due date from floating above today)
+// Helper to resolve the pedagogical milestone date:
+// - Pour un devoir de maison, si le professeur a déjà saisi les élèves ayant rendu (ou non rendu),
+//   on capte la date réelle de rendu via la date de sa dernière sauvegarde (lastSavedDate).
+// - Sinon, l'échéance s'ancre sur la date de distribution pédagogique en classe (givenDate).
 function getItemMilestoneDate(item: FollowUpDeadline, today: string): string {
   if (item.kind === 'homework') {
-    const given = item.value.givenDate;
-    // Pédagogique : la distribution du devoir (séance en classe) est l'événement d'apprentissage réel.
-    // Si la date donnée est <= today, l'échéance s'ancre sur cette date pédagogique pour ne pas
-    // projeter la date limite future au-dessus d'aujourd'hui.
+    const hw = item.value;
+    const given = hw.givenDate;
+    const lastSaved = (hw as { lastSavedDate?: string }).lastSavedDate;
+    const hasSubmissions = (hw.given > 0 || hw.missing > 0);
+
+    // Capter le jour de la dernière sauvegarde où les élèves ayant rendu ont été saisis
+    if (hasSubmissions && lastSaved && lastSaved <= today) {
+      return lastSaved;
+    }
+
+    // Pédagogique : la distribution du devoir (séance en classe) est l'acte initial
     if (given && given <= today) {
       return given;
     }
-    // Si la date limite est passée ou aujourd'hui, elle est bornée à aujourd'hui au plus tard.
+
+    // Si la date limite est passée ou aujourd'hui, elle est bornée à aujourd'hui au plus tard
     if (item.date > today) {
-      return given || today;
+      return (hasSubmissions && lastSaved && lastSaved <= today)
+        ? lastSaved
+        : (given || today);
     }
     return item.date;
   }
   return item.date;
+}
+
+// Numérotation séquentielle des activités pédagogiques (ex. "1er contrôle des cahiers des élèves")
+function formatActivityTitle(
+  event: PedagogicalEvent,
+  classId: string,
+  allItems: readonly FollowUpDeadline[],
+  locale: AppLocale,
+  t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+  const baseLocalized = localizedActivityTitle(event.title, event.type, locale);
+
+  // Recherche d'un numéro déjà présent dans le titre de l'activité
+  const hasNumberMatch = /\b\d+\b|[\u0660-\u0669\u06F0-\u06F9]+/.exec(baseLocalized);
+  let num: number | undefined = hasNumberMatch ? parseInt(hasNumberMatch[0], 10) : undefined;
+
+  if (num === undefined || Number.isNaN(num)) {
+    // Calcul automatique du numéro d'ordre séquentiel dans la classe pour ce type d'activité
+    const sameTypeActivities = allItems
+      .filter((it): it is FollowUpDeadline & { kind: 'activity' } =>
+        it.kind === 'activity' && it.value.classId === classId && it.value.event.type === event.type
+      )
+      .map(it => it.value.event)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+
+    const index = sameTypeActivities.findIndex(e => e.id === event.id);
+    num = index >= 0 ? index + 1 : 1;
+  }
+
+  if (event.type === 'controle_cahiers') {
+    if (locale === 'ar') {
+      const arOrdinals: Record<number, string> = {
+        1: 'المراقبة الأولى لدفاتر التلاميذ',
+        2: 'المراقبة الثانية لدفاتر التلاميذ',
+        3: 'المراقبة الثالثة لدفاتر التلاميذ',
+        4: 'المراقبة الرابعة لدفاتر التلاميذ',
+      };
+      return arOrdinals[num] ?? `مراقبة دفاتر التلاميذ (${num})`;
+    }
+    if (locale === 'fr') {
+      const frOrdinal = num === 1 ? '1er' : `${num}ème`;
+      return `${frOrdinal} contrôle des cahiers des élèves`;
+    }
+    // en
+    const enOrdinal = num === 1 ? '1st' : num === 2 ? '2nd' : num === 3 ? '3rd' : `${num}th`;
+    return `${enOrdinal} student notebook check`;
+  }
+
+  if (!hasNumberMatch && num !== undefined) {
+    const typeLabel = t(`evaluations.event.${event.type}`);
+    if (locale === 'fr') {
+      const isFem = event.type === 'remediation' || event.type === 'evaluation_diagnostic';
+      const ord = isFem ? (num === 1 ? '1ère' : `${num}ème`) : (num === 1 ? '1er' : `${num}ème`);
+      return `${ord} ${typeLabel.toLowerCase()}`;
+    }
+    if (locale === 'ar') {
+      return `${typeLabel} (${num})`;
+    }
+    return `${typeLabel} ${num}`;
+  }
+
+  return baseLocalized;
 }
 
 export function DeadlineTimeline({ items, classes, today, onOpen }: {
@@ -118,16 +193,6 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
       aria-label={t('notifications.deadlines')}
       onPointerLeave={() => setHoveredIndex(null)}
     >
-      {/* ── Start Terminal Badge (Le haut contient les dernières échéances) ── */}
-      <div className="deadline-timeline__start" aria-hidden="true">
-        <span className="deadline-timeline__start-badge">
-          <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__start-icon">
-            <path d="M8 13.25V3.75M4.75 7 8 3.75 11.25 7" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span>{locale === 'ar' ? 'أحدث المحطات' : 'Dernières échéances'}</span>
-        </span>
-      </div>
-
       {/* ── Central Spine (Track + Animated Fill + Traveling Marker) ── */}
       <div className="deadline-timeline__spine" aria-hidden="true">
         <span className="deadline-timeline__spine-track" />
@@ -143,7 +208,7 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
       {sortedItems.map((item, index) => {
         const title = item.kind === 'assessment' ? `${t(`evaluations.type.${item.value.type}`)} ${number.format(item.value.num)}`
           : item.kind === 'homework' ? ''
-          : item.kind === 'activity' ? localizedActivityTitle(item.value.event.title, item.value.event.type, locale)
+          : item.kind === 'activity' ? formatActivityTitle(item.value.event, item.value.classId, items, locale, t)
           : item.value.event.title;
         const status = states[index];
         const side = index % 2 === 0 ? 'start' : 'end';

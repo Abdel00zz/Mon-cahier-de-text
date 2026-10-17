@@ -82,7 +82,11 @@ export function homeworkDeadlines(config: AppConfig, classes: readonly ClassInfo
             const record = records?.[`${year}:${key}`] ?? records?.[item.id] ?? records?.[key];
             const names = namesWithRoster(record?.names ?? [], config.classRosters?.[classInfo.id]);
             const summary = countHomeworkOutcomes(names, record?.homeworkOutcomes);
+            const lastSavedDate = record?.updatedAt && /^\d{4}-\d{2}-\d{2}/.test(record.updatedAt)
+                ? record.updatedAt.slice(0, 10)
+                : undefined;
             return [{ classInfo, assessmentId: item.id, num: item.num, givenDate: item.dateISO, dueDate: item.dueDateISO,
+                lastSavedDate,
                 inDays: daysBetweenISO(today, item.dueDateISO), total: names.length, ...summary,
                 missingNames: names.filter(name => Object.hasOwn(record?.homeworkOutcomes ?? {}, name) && record!.homeworkOutcomes![name] === 'missing'),
                 pendingNames: names.filter(name => !Object.hasOwn(record?.homeworkOutcomes ?? {}, name)),
