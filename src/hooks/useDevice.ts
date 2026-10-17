@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 type DeviceType = 'phone' | 'tablet' | 'desktop';
 
@@ -7,6 +8,8 @@ interface DeviceInfo {
     isPortrait: boolean;
     isLandscape: boolean;
     isTouch: boolean;
+    isPhone: boolean;
+    isNative: boolean;
 }
 
 const PHONE_MAX = 767;
@@ -30,7 +33,8 @@ export const useDevice = (): DeviceInfo => {
                 frame = null;
                 const next = readDevice();
                 setInfo(current => current.type === next.type && current.isPortrait === next.isPortrait
-                    && current.isTouch === next.isTouch ? current : next);
+                    && current.isTouch === next.isTouch && current.isPhone === next.isPhone
+                    && current.isNative === next.isNative ? current : next);
             });
         };
         queries.forEach(q => q.addEventListener('change', update));
@@ -50,7 +54,7 @@ export const useDevice = (): DeviceInfo => {
 };
 
 const readDevice = (): DeviceInfo => {
-    if (typeof window === 'undefined') return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false };
+    if (typeof window === 'undefined') return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false, isPhone: false, isNative: false };
     const isTouch = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
     const visualWidth = window.visualViewport?.width ?? window.innerWidth;
     const screenMin = Math.min(window.screen?.width || visualWidth, window.screen?.height || visualWidth);
@@ -62,5 +66,12 @@ const readDevice = (): DeviceInfo => {
     if (w <= PHONE_MAX) type = 'phone';
     else if (w <= TABLET_MAX && isTouch) type = 'tablet';
     else if (w <= TABLET_MAX) type = 'desktop';
-    return { type, isPortrait, isLandscape: !isPortrait, isTouch };
+
+    const isNative = typeof window !== 'undefined' && (
+        Capacitor.isNativePlatform() ||
+        (typeof document !== 'undefined' && (document.documentElement.dataset.platform === 'android' || document.documentElement.dataset.platform === 'ios'))
+    );
+    const isPhone = type === 'phone';
+
+    return { type, isPortrait, isLandscape: !isPortrait, isTouch, isPhone, isNative };
 };

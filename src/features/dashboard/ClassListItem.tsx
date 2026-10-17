@@ -11,6 +11,8 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
+import { useDevice } from '@/hooks/useDevice';
+import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -20,6 +22,7 @@ interface ClassListItemProps {
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     isActiveSession?: boolean;
+    scheduleStatus?: SessionScheduleStatus;
 }
 
 const ClassListItemComponent: FC<ClassListItemProps> = ({
@@ -29,9 +32,11 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     onDelete,
     onOpenEvaluations,
     isActiveSession,
+    scheduleStatus,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
+    const { isPhone, isNative } = useDevice();
     /* Une seule matière ne se distingue de rien : ligne masquée (règle partagée). */
     const showsSubjectLabels = useShowsSubjectLabels();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
@@ -48,6 +53,8 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
             dir={isRtl ? 'rtl' : 'ltr'}
             {...classColorAttributes(classInfo)}
             data-session-active={isActiveSession ? 'true' : undefined}
+            data-device-phone={isPhone ? 'true' : undefined}
+            data-platform-native={isNative ? 'true' : undefined}
             className={cn(
                 // A shared minimum keeps short rows aligned; long bilingual
                 // names and enlarged text can grow without being clipped.
@@ -77,14 +84,25 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                 {label.group && <>{'\u00a0'}<bdi className="class-list-item__group" dir="ltr">{label.group}</bdi></>}
                             </span>
                     </h3>
-                    {(isActiveSession || (showsSubjectLabels && classInfo.subject)) && (
+                    {(isActiveSession || (showsSubjectLabels && classInfo.subject) || (scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel)) && (
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
-                            {isActiveSession && (
+                            {isActiveSession ? (
                                 <span className="class-card__live">
                                     <span className="class-card__live-dot" aria-hidden="true" />
-                                    {t('dashboard.welcome.nowTitle')}
+                                    <span>{t('dashboard.welcome.nowTitle')}</span>
+                                    {scheduleStatus?.remainingMinutes ? (
+                                        <span className="class-card__live-remaining">
+                                            {' · '}
+                                            {locale === 'ar' ? `متبقي ${scheduleStatus.remainingMinutes} د` : `reste ${scheduleStatus.remainingMinutes} min`}
+                                        </span>
+                                    ) : null}
                                 </span>
-                            )}
+                            ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
+                                <span className="class-card__schedule" title={scheduleStatus.label}>
+                                    <span className="class-card__schedule-dot" aria-hidden="true" />
+                                    <span>{scheduleStatus.shortLabel}</span>
+                                </span>
+                            ) : null}
                             {showsSubjectLabels && classInfo.subject && (
                                 <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>
                                     {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
@@ -113,7 +131,9 @@ const areEqual = (previous: ClassListItemProps, next: ClassListItemProps) =>
     && previous.classInfo.name === next.classInfo.name
     && previous.classInfo.subject === next.classInfo.subject
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
-    && previous.isActiveSession === next.isActiveSession;
+    && previous.isActiveSession === next.isActiveSession
+    && previous.scheduleStatus?.label === next.scheduleStatus?.label
+    && previous.scheduleStatus?.remainingMinutes === next.scheduleStatus?.remainingMinutes;
 
 ClassListItemComponent.displayName = 'ClassListItem';
 

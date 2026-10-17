@@ -274,6 +274,38 @@
   line-height: 1.5;
 }
 
+.class-card__live-remaining {
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.class-card__schedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--class-accent) 9%, transparent);
+  color: var(--class-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent);
+}
+
+.class-card__schedule-dot {
+  flex: 0 0 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--class-accent);
+  opacity: 0.75;
+}
+
 .class-card__live-dot {
   position: relative;
   flex: 0 0 6px;
@@ -410,10 +442,24 @@
   .class-card__footer { margin-inline: 60px 32px; }
 }
 
+/* Version APK (Android / native) et téléphone : +5% de taille sur le nom de classe */
+@media (max-width: 767px), ((max-height: 500px) and (pointer: coarse)) {
+  .class-card {
+    --class-title-scale: 1.05;
+  }
+}
+
+html[data-platform="android"] .class-card,
+html[data-platform="ios"] .class-card,
+.class-card[data-device-phone="true"],
+.class-card[data-platform-native="true"] {
+  --class-title-scale: 1.05;
+}
+
 /* Enlarge desktop typography proportionally at every card width. Touch devices
    and native applications retain the existing container-based sizes. */
 @media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
-  html:not([data-platform="android"]):not([data-platform="ios"]) .class-card {
+  html:not([data-platform="android"]):not([data-platform="ios"]) .class-card:not([data-device-phone="true"]):not([data-platform-native="true"]) {
     --class-title-scale: 1.15;
     --class-badge-scale: 1.05;
   }
@@ -523,6 +569,25 @@
   text-wrap: pretty;
 }
 .class-list-item[dir="rtl"] .class-list-item__title { font-size: 16px; line-height: 1.65; }
+
+@media (max-width: 767px), ((max-height: 500px) and (pointer: coarse)) {
+  .class-list-item__title { font-size: calc(15px * 1.05); }
+  .class-list-item[dir="rtl"] .class-list-item__title { font-size: calc(16px * 1.05); }
+}
+
+html[data-platform="android"] .class-list-item__title,
+html[data-platform="ios"] .class-list-item__title,
+.class-list-item[data-device-phone="true"] .class-list-item__title,
+.class-list-item[data-platform-native="true"] .class-list-item__title {
+  font-size: calc(15px * 1.05);
+}
+
+html[data-platform="android"] .class-list-item[dir="rtl"] .class-list-item__title,
+html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
+.class-list-item[data-device-phone="true"][dir="rtl"] .class-list-item__title,
+.class-list-item[data-platform-native="true"][dir="rtl"] .class-list-item__title {
+  font-size: calc(16px * 1.05);
+}
 .class-list-item__group { color: var(--control-ink); font-variant-numeric: tabular-nums; }
 .class-list-item__actions {
   display: flex;

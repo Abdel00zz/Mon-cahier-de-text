@@ -38,7 +38,8 @@ import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
 import { MathTitle } from '../../components/ui/math-title';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, EvaluationPolicy, LessonsData, TeacherSnapshot } from '../../types';
+import type { AbsencePeriod, AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, EvaluationPolicy, LessonsData, TeacherSnapshot, TimetableClockPolicy, TimetableEntry } from '../../types';
+import { computeClassSessionSchedule } from '../../domain/calendar/sessionScheduleStatus';
 import { PrintView } from '../../features/editor/PrintView';
 import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
 import { collectSessionDates, createPrintSelection } from '../../infrastructure/printing/printMeta';
@@ -146,7 +147,13 @@ const buildPrintConfig = (settings: TeacherPrintSettings | null | undefined, cla
  * chargé qu'au clic), puis chaque chapitre révèle sa dernière séance -
  * date, contenu exact et horodatage de synchronisation.
  */
-const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, classId }) => {
+const ClassChapters: React.FC<{
+    phone: string;
+    classId: string;
+    timetable?: TimetableEntry[];
+    timetableClock?: TimetableClockPolicy;
+    absences?: AbsencePeriod[];
+}> = ({ phone, classId, timetable, timetableClock, absences }) => {
     const [open, setOpen] = useState(false);
     const [chapters, setChapters] = useState<ChapterSummary[] | null>(null);
     const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -154,6 +161,11 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
     const [loading, setLoading] = useState(false);
     const [expanded, setExpanded] = useState<number | null>(null);
     const contentId = `class-chapters-${classId}`;
+
+    const scheduleStatus = useMemo(
+        () => computeClassSessionSchedule(timetable, timetableClock, classId, { locale: 'fr', absences }),
+        [timetable, timetableClock, classId, absences]
+    );
 
     const toggle = async () => {
         const next = !open;
@@ -192,11 +204,33 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
                     {loading && <p className="text-xs text-muted-foreground">Chargement du cahier…</p>}
                     {error && <p className="rounded-md bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">{error}</p>}
 
-                    {updatedAt && (
-                        <p className="text-[11px] text-muted-foreground">
-                            Cahier synchronisé le <b>{formatDateTimeFr(updatedAt)}</b>
-                        </p>
-                    )}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        {updatedAt && (
+                            <p className="text-[11px] text-muted-foreground">
+                                Cahier synchronisé le <b>{formatDateTimeFr(updatedAt)}</b>
+                            </p>
+                        )}
+                        {scheduleStatus && scheduleStatus.state !== 'none' && (
+                            <span
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                    scheduleStatus.state === 'in_progress'
+                                        ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                        : 'border border-primary/20 bg-primary/10 text-primary'
+                                }`}
+                                title={scheduleStatus.label}
+                            >
+                                <span
+                                    className={`h-1.5 w-1.5 rounded-full ${
+                                        scheduleStatus.state === 'in_progress'
+                                            ? 'bg-emerald-500 animate-pulse'
+                                            : 'bg-primary/70'
+                                    }`}
+                                    aria-hidden="true"
+                                />
+                                {scheduleStatus.label}
+                            </span>
+                        )}
+                    </div>
 
                     {chapters !== null && chapters.length === 0 && (
                         <p className="text-xs text-muted-foreground">Cahier vide.</p>
@@ -211,9 +245,16 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
                                 className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/40"
                             >
                                 <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground"><MathTitle text={ch.title} /></span>
-                                <span className="shrink-0 text-[11px] text-muted-foreground">
-                                    {ch.datedCount}/{ch.totalItems} datés
-                                    {ch.lastDate && <> · dernière séance {ch.lastDate}</>}
+                                <span className="shrink-0 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    {scheduleStatus.state === 'in_progress' && ch.lastDate && (
+                                        <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                            En cours
+                                        </span>
+                                    )}
+                                    <span>
+                                        {ch.datedCount}/{ch.totalItems} datés
+                                        {ch.lastDate && <> · dernière séance {ch.lastDate}</>}
+                                    </span>
                                 </span>
                             </button>
 
@@ -1230,27 +1271,66 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                                 style={{ width: `${snapshot?.completionRate ?? 0}%` }}
                                             />
                                         </div>
-                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                                            <span>
-                                                {snapshot ? `${snapshot.sessionsCount} séance(s) · dernière saisie ${snapshot.lastDate ?? 'Non renseignée'}` : 'En attente de la première synchronisation'}
-                                            </span>
-                                            {lateness && lateness.severity !== 'ok' && (
-                                                <span
-                                                    className={`rounded-full border px-2 py-0.5 font-semibold ${
-                                                        lateness.severity === 'critical'
-                                                            ? 'border-destructive/25 bg-destructive/15 text-destructive'
-                                                            : lateness.severity === 'warning'
-                                                              ? 'border-warning/30 bg-warning/20 text-warning-strong'
-                                                              : 'border-warning/20 bg-warning/10 text-warning-strong'
-                                                    }`}
-                                                >
-                                                    {lateness.gapSessions > 0
-                                                        ? `~${lateness.gapSessions} séance(s) de retard`
-                                                        : 'À mettre à jour'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <ClassChapters key={`${cls.id}-${lessonRevisions[cls.id] ?? 0}`} phone={phone} classId={cls.id} />
+                                        {(() => {
+                                            const scheduleStatus = computeClassSessionSchedule(
+                                                data?.printSettings?.timetable,
+                                                data?.printSettings?.timetableClock,
+                                                cls.id,
+                                                { locale: 'fr', absences: data?.printSettings?.absences ?? data?.snapshot?.absences }
+                                            );
+                                            return (
+                                                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <span>
+                                                            {snapshot ? `${snapshot.sessionsCount} séance(s) · dernière saisie ${snapshot.lastDate ?? 'Non renseignée'}` : 'En attente de la première synchronisation'}
+                                                        </span>
+                                                        {scheduleStatus && scheduleStatus.state !== 'none' && (
+                                                            <span
+                                                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${
+                                                                    scheduleStatus.state === 'in_progress'
+                                                                        ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                                                        : 'border border-primary/20 bg-primary/10 text-primary'
+                                                                }`}
+                                                                title={scheduleStatus.label}
+                                                            >
+                                                                <span
+                                                                    className={`h-1.5 w-1.5 rounded-full ${
+                                                                        scheduleStatus.state === 'in_progress'
+                                                                            ? 'bg-emerald-500 animate-pulse'
+                                                                            : 'bg-primary/70'
+                                                                    }`}
+                                                                    aria-hidden="true"
+                                                                />
+                                                                {scheduleStatus.label}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {lateness && lateness.severity !== 'ok' && (
+                                                        <span
+                                                            className={`rounded-full border px-2 py-0.5 font-semibold ${
+                                                                lateness.severity === 'critical'
+                                                                    ? 'border-destructive/25 bg-destructive/15 text-destructive'
+                                                                    : lateness.severity === 'warning'
+                                                                      ? 'border-warning/30 bg-warning/20 text-warning-strong'
+                                                                      : 'border-warning/20 bg-warning/10 text-warning-strong'
+                                                            }`}
+                                                        >
+                                                            {lateness.gapSessions > 0
+                                                                ? `~${lateness.gapSessions} séance(s) de retard`
+                                                                : 'À mettre à jour'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
+                                        <ClassChapters
+                                            key={`${cls.id}-${lessonRevisions[cls.id] ?? 0}`}
+                                            phone={phone}
+                                            classId={cls.id}
+                                            timetable={data?.printSettings?.timetable}
+                                            timetableClock={data?.printSettings?.timetableClock}
+                                            absences={data?.printSettings?.absences ?? data?.snapshot?.absences}
+                                        />
                                         <ClassProgression
                                             key={`progression-${cls.id}-${lessonRevisions[cls.id] ?? 0}`}
                                             phone={phone}

@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
+import { useDevice } from '@/hooks/useDevice';
+import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import './classCardLoading.css';
 
 interface ClassCardProps {
@@ -22,13 +24,15 @@ interface ClassCardProps {
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
     isActiveSession?: boolean;
+    scheduleStatus?: SessionScheduleStatus;
 }
 
 const ClassCardComponent: FC<ClassCardProps> = ({
-    classInfo, onSelect, onConfigure, onDelete, onOpenEvaluations, isActiveSession,
+    classInfo, onSelect, onConfigure, onDelete, onOpenEvaluations, isActiveSession, scheduleStatus,
 }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
+    const { isPhone, isNative } = useDevice();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
     const { surfaceRef, rippleRef, surfaceHandlers } = useCardSurface();
@@ -57,6 +61,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {...color}
             data-session-active={isActiveSession ? 'true' : undefined}
             data-preparing={preparing ? 'true' : undefined}
+            data-device-phone={isPhone ? 'true' : undefined}
+            data-platform-native={isNative ? 'true' : undefined}
             className={cn('class-card group', isActiveSession && 'class-card--active')}
         >
             <button
@@ -88,14 +94,27 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </h3>
                 </div>
             </div>
-            {isActiveSession && (
+            {isActiveSession ? (
                 <div className="class-card__footer">
                     <span className="class-card__live">
                         <span className="class-card__live-dot" aria-hidden="true" />
-                        {t('dashboard.welcome.nowTitle')}
+                        <span>{t('dashboard.welcome.nowTitle')}</span>
+                        {scheduleStatus?.remainingMinutes ? (
+                            <span className="class-card__live-remaining">
+                                {' · '}
+                                {locale === 'ar' ? `متبقي ${scheduleStatus.remainingMinutes} د` : `reste ${scheduleStatus.remainingMinutes} min`}
+                            </span>
+                        ) : null}
                     </span>
                 </div>
-            )}
+            ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
+                <div className="class-card__footer class-card__footer--schedule">
+                    <span className="class-card__schedule" title={scheduleStatus.label}>
+                        <span className="class-card__schedule-dot" aria-hidden="true" />
+                        <span>{scheduleStatus.shortLabel}</span>
+                    </span>
+                </div>
+            ) : null}
         </article></div>
     );
 };
@@ -108,6 +127,8 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && previous.index === next.index
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
+    && previous.scheduleStatus?.label === next.scheduleStatus?.label
+    && previous.scheduleStatus?.remainingMinutes === next.scheduleStatus?.remainingMinutes
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 
 ClassCardComponent.displayName = 'ClassCard';

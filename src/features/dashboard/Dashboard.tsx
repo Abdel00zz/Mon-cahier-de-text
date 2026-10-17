@@ -27,6 +27,7 @@ import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/cl
 import { computeDynamicCanvasStyle } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { computeClassSessionSchedule, type SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 
 const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
 
@@ -68,8 +69,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     /** Classe dont la suppression est demandée depuis le menu d'une carte. */
     const [classPendingDelete, setClassPendingDelete] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
-    const { type: deviceType } = useDevice();
-    const isMobile = deviceType === 'phone';
+    const { isPhone, isNative } = useDevice();
+    const isMobile = isPhone || isNative;
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'double' : 'triple';
     const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
@@ -272,6 +273,41 @@ export const Dashboard: React.FC<DashboardProps> = ({
         [classDisplayMode, filteredClasses, activeSessionIds],
     );
 
+    const [scheduleClockNow, setScheduleClockNow] = useState(() => new Date());
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+                setScheduleClockNow(new Date());
+            }
+        }, 30000);
+        const onVisibility = () => {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+                setScheduleClockNow(new Date());
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, []);
+
+    const scheduleStatusByClassId = useMemo(() => {
+        const map = new Map<string, SessionScheduleStatus>();
+        for (const classInfo of classes) {
+            map.set(
+                classInfo.id,
+                computeClassSessionSchedule(
+                    config.timetable,
+                    config.timetableClock,
+                    classInfo.id,
+                    { now: scheduleClockNow, locale, absences: config.absences }
+                )
+            );
+        }
+        return map;
+    }, [classes, config.timetable, config.timetableClock, config.absences, locale, scheduleClockNow]);
+
     if (isLoading) {
         return <DashboardSkeleton />;
     }
@@ -416,6 +452,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onOpenEvaluations={entry => onOpenEvaluations(classInfo, entry)}
                                                     onDelete={() => setClassPendingDelete(classInfo)}
                                                     isActiveSession={isActiveSession}
+                                                    scheduleStatus={scheduleStatusByClassId.get(classInfo.id)}
                                                 />
                                             </motion.div>
                                         )})}
@@ -442,6 +479,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onDelete={() => setClassPendingDelete(classInfo)}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
+                                                    scheduleStatus={scheduleStatusByClassId.get(classInfo.id)}
                                                 />
                                             </motion.div>
                                         )})}
