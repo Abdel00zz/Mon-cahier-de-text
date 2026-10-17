@@ -151,7 +151,7 @@ type AxisId = NotificationsAxisId;
 
 const AXIS_MODAL_WIDTH: Record<AxisId, string> = {
   priorites: 'sm:max-w-4xl',
-  echeances: 'sm:max-w-4xl',
+  echeances: 'sm:max-w-5xl',
   calendrier: 'sm:max-w-6xl',
   classes: 'sm:max-w-5xl',
   activite: 'sm:max-w-5xl',

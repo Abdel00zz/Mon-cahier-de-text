@@ -1,12 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { dateTimeFormat, numberFormat } from '@/lib/formatters';
-import { formatLocalizedClassDisplayName } from '@/constants';
 import type { ClassInfo } from '@/types';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { activeDeadlineState, type FollowUpDeadline } from '@/domain/evaluations/followUpDeadlines';
 import { HomeworkDeadlines } from './HomeworkDeadlines';
 import './deadlineTimeline.css';
+
+// Helper to resolve the pedagogical milestone date (prevents future homework due date from floating above today)
+function getItemMilestoneDate(item: FollowUpDeadline, today: string): string {
+  if (item.kind === 'homework') {
+    const given = item.value.givenDate;
+    // Pédagogique : la distribution du devoir (séance en classe) est l'événement d'apprentissage réel.
+    // Si la date donnée est <= today, l'échéance s'ancre sur cette date pédagogique pour ne pas
+    // projeter la date limite future au-dessus d'aujourd'hui.
+    if (given && given <= today) {
+      return given;
+    }
+    // Si la date limite est passée ou aujourd'hui, elle est bornée à aujourd'hui au plus tard.
+    if (item.date > today) {
+      return given || today;
+    }
+    return item.date;
+  }
+  return item.date;
+}
 
 export function DeadlineTimeline({ items, classes, today, onOpen }: {
   items: readonly FollowUpDeadline[]; classes: readonly ClassInfo[]; today: string; onOpen: (id: string) => void;
@@ -15,10 +33,14 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
   const root = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Inverser du bas vers le haut : le haut contient les dernières mises à jour (plus récentes en premier)
+  // Inverser du bas vers le haut : le haut contient les dernières échéances pédagogiques (plus récentes en premier)
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-  }, [items]);
+    return [...items].sort((a, b) => {
+      const dateA = getItemMilestoneDate(a, today);
+      const dateB = getItemMilestoneDate(b, today);
+      return dateB.localeCompare(dateA) || b.id.localeCompare(a.id);
+    });
+  }, [items, today]);
 
   const states = useMemo(() => sortedItems.map(item => activeDeadlineState(item, today)), [sortedItems, today]);
 
@@ -87,9 +109,7 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
   }, [sortedItems, states, hoveredIndex]);
 
   const number = numberFormat(locale);
-  const dateFormat = dateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' });
-  const formatDate = (date: string) => dateFormat.format(new Date(`${date}T12:00:00`));
-  const names = new Map(classes.map(item => [item.id, formatLocalizedClassDisplayName(item.name, locale)]));
+  const monthFormatter = dateTimeFormat(locale, { month: 'short' });
 
   return (
     <div
@@ -98,7 +118,7 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
       aria-label={t('notifications.deadlines')}
       onPointerLeave={() => setHoveredIndex(null)}
     >
-      {/* ── Start Terminal Badge (Le haut contient les dernières mises à jour) ── */}
+      {/* ── Start Terminal Badge (Le haut contient les dernières échéances) ── */}
       <div className="deadline-timeline__start" aria-hidden="true">
         <span className="deadline-timeline__start-badge">
           <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__start-icon">
@@ -125,10 +145,12 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
           : item.kind === 'homework' ? ''
           : item.kind === 'activity' ? localizedActivityTitle(item.value.event.title, item.value.event.type, locale)
           : item.value.event.title;
-        const end = item.endDate;
         const status = states[index];
         const side = index % 2 === 0 ? 'start' : 'end';
-        const dayNumber = parseInt(item.date.slice(8, 10), 10);
+
+        const milestoneDate = getItemMilestoneDate(item, today);
+        const dayNumber = parseInt(milestoneDate.slice(8, 10), 10) || 1;
+        const monthShort = monthFormatter.format(new Date(`${milestoneDate}T12:00:00`));
 
         const activityStudents = item.kind === 'activity' ? item.value.event.students : undefined;
         const activityTotal = activityStudents?.names.length ?? 0;
@@ -150,18 +172,20 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
             onFocus={() => setHoveredIndex(index)}
             onBlur={() => setHoveredIndex(null)}
           >
-            {/* ── Milestone Node (on the spine) ── */}
+            {/* ── Milestone Node (Day + Month directly on the spine) ── */}
             <div
               className="deadline-timeline__node"
               aria-hidden="true"
               onClick={() => setHoveredIndex(index)}
             >
-              {status === 'complete' ? (
-                <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__node-check">
-                  <path d="M3.5 8.25 6.5 11.25 12.5 5.25" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              ) : (
-                <span className="deadline-timeline__node-day">{number.format(dayNumber)}</span>
+              <span className="deadline-timeline__node-day">{number.format(dayNumber)}</span>
+              <span className="deadline-timeline__node-month">{monthShort}</span>
+              {status === 'complete' && (
+                <span className="deadline-timeline__node-badge" title={t('followUp.when.complete')}>
+                  <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__node-badge-icon">
+                    <path d="M3.5 8.25 6.5 11.25 12.5 5.25" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               )}
             </div>
 
@@ -180,36 +204,21 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
                   }
                 }}
               >
-                <div className="deadline-timeline__meta">
-                  <p className="deadline-timeline__context" dir="auto">
-                    {item.classIds.map(id => names.get(id)).filter(Boolean).join(locale === 'ar' ? '، ' : ' · ')}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <time className="deadline-timeline__date" dateTime={item.date}>
-                      {formatDate(item.date)}
-                      {end && end > item.date && ` – ${formatDate(end)}`}
-                    </time>
-                    {status === 'complete' && (
-                      <span className="deadline-timeline__status-badge">
-                        <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__status-badge-icon">
-                          <path d="M3.5 8.25 6.5 11.25 12.5 5.25" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {t('followUp.when.complete')}
-                      </span>
-                    )}
-                    {status === 'today' && (
-                      <span className="deadline-timeline__status-badge">
-                        {t('followUp.when.today')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
                 {item.kind === 'homework' ? (
                   <HomeworkDeadlines items={[item.value]} embedded onOpen={onOpen} />
                 ) : (
                   <>
-                    <h3>{title}</h3>
+                    <div className="deadline-timeline__card-header">
+                      <h3>{title}</h3>
+                      {status === 'complete' && (
+                        <span className="deadline-timeline__status-badge">
+                          <svg viewBox="0 0 16 16" fill="none" className="deadline-timeline__status-badge-icon">
+                            <path d="M3.5 8.25 6.5 11.25 12.5 5.25" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          {t('followUp.when.complete')}
+                        </span>
+                      )}
+                    </div>
                     {activityTotal > 0 && (
                       <div className="deadline-timeline__activity-progress">
                         <div className="deadline-timeline__activity-progress-meta">

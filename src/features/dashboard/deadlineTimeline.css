@@ -246,17 +246,19 @@
   --item-surface: color-mix(in srgb, hsl(var(--primary)) 4%, hsl(var(--card)));
 }
 
-/* ── Milestone Node on the Spine (Compact 28px) ─────────────────────────── */
+/* ── Milestone Node on the Spine (Day + Month 48px Badge) ────────────────── */
 .deadline-timeline__node {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 48px;
+  height: 48px;
+  padding: 2px;
   border-radius: 999px;
   border: 2px solid hsl(var(--background));
   background: hsl(var(--card));
@@ -264,6 +266,7 @@
   box-shadow: 0 0 0 2.5px hsl(var(--border));
   cursor: pointer;
   z-index: 4;
+  user-select: none;
   transition:
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
     background-color 180ms ease,
@@ -272,42 +275,82 @@
 }
 
 .deadline-timeline__node-day {
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
-.deadline-timeline__node-check {
-  width: 13px;
-  height: 13px;
+.deadline-timeline__node-month {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+[dir="rtl"] .deadline-timeline__node-month {
+  font-size: 0.62rem;
+  letter-spacing: normal;
+}
+
+.deadline-timeline__node-badge {
+  position: absolute;
+  top: -3px;
+  inset-inline-end: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgb(16 185 129);
+  border: 2px solid hsl(var(--background));
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.4);
+}
+
+.deadline-timeline__node-badge-icon {
+  width: 10px;
+  height: 10px;
 }
 
 .deadline-timeline__article[data-reached="true"] .deadline-timeline__node {
   border-color: hsl(var(--background));
   box-shadow:
     0 0 0 2.5px var(--item-accent),
-    0 0 8px color-mix(in srgb, var(--item-accent) 28%, transparent);
+    0 0 10px color-mix(in srgb, var(--item-accent) 28%, transparent);
 }
 
 .deadline-timeline__article[data-status="complete"] .deadline-timeline__node {
-  background: rgb(16 185 129);
-  color: #ffffff;
-  box-shadow: 0 0 0 2.5px color-mix(in srgb, rgb(16 185 129) 30%, transparent);
+  border-color: hsl(var(--background));
+  box-shadow:
+    0 0 0 2.5px rgb(16 185 129),
+    0 0 10px color-mix(in srgb, rgb(16 185 129) 25%, transparent);
+}
+
+.deadline-timeline__article[data-status="complete"] .deadline-timeline__node-day {
+  color: rgb(16 185 129);
 }
 
 .deadline-timeline__article[data-status="today"] .deadline-timeline__node,
 .deadline-timeline__article[data-status="ongoing"] .deadline-timeline__node {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--background));
   box-shadow:
     0 0 0 2.5px hsl(var(--primary)),
-    0 0 10px hsl(var(--primary) / 0.35);
+    0 0 12px hsl(var(--primary) / 0.35);
+}
+
+.deadline-timeline__article[data-status="today"] .deadline-timeline__node-day,
+.deadline-timeline__article[data-status="ongoing"] .deadline-timeline__node-day {
+  color: hsl(var(--primary));
 }
 
 .deadline-timeline__article:hover .deadline-timeline__node,
 .deadline-timeline__article[data-active="true"] .deadline-timeline__node {
-  transform: translate(-50%, -50%) scale(1.15);
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 /* ── Alternating Columns on Desktop (>= 768px) ───────────────────────────── */
@@ -321,7 +364,7 @@
   }
 
   .deadline-timeline__card-wrapper {
-    width: calc(50% - 28px);
+    width: calc(50% - 38px);
     max-width: 410px;
     position: relative;
   }
@@ -330,12 +373,12 @@
   .deadline-timeline__article[data-side="start"] .deadline-timeline__card-arrow {
     position: absolute;
     top: 50%;
-    inset-inline-end: -7px;
+    inset-inline-end: -8px;
     transform: translateY(-50%);
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-start: 7px solid var(--item-border);
+    border-block: 7px solid transparent;
+    border-inline-start: 8px solid var(--item-border);
     pointer-events: none;
     z-index: 3;
     transition: border-color 160ms ease;
@@ -344,23 +387,23 @@
   .deadline-timeline__article[data-side="start"] .deadline-timeline__card-arrow::after {
     content: "";
     position: absolute;
-    top: -6px;
-    inset-inline-start: -8px;
+    top: -7px;
+    inset-inline-start: -9px;
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-start: 7px solid var(--item-surface);
+    border-block: 7px solid transparent;
+    border-inline-start: 8px solid var(--item-surface);
   }
 
   .deadline-timeline__article[data-side="end"] .deadline-timeline__card-arrow {
     position: absolute;
     top: 50%;
-    inset-inline-start: -7px;
+    inset-inline-start: -8px;
     transform: translateY(-50%);
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-end: 7px solid var(--item-border);
+    border-block: 7px solid transparent;
+    border-inline-end: 8px solid var(--item-border);
     pointer-events: none;
     z-index: 3;
     transition: border-color 160ms ease;
@@ -369,12 +412,12 @@
   .deadline-timeline__article[data-side="end"] .deadline-timeline__card-arrow::after {
     content: "";
     position: absolute;
-    top: -6px;
-    inset-inline-end: -8px;
+    top: -7px;
+    inset-inline-end: -9px;
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-end: 7px solid var(--item-surface);
+    border-block: 7px solid transparent;
+    border-inline-end: 8px solid var(--item-surface);
   }
 
   .deadline-timeline__article:hover .deadline-timeline__card-arrow {
@@ -387,12 +430,12 @@
 @media (max-width: 767px) {
   .deadline-timeline__start {
     justify-content: flex-start;
-    padding-inline-start: 6px;
+    padding-inline-start: 3px;
   }
 
   .deadline-timeline__spine {
     left: auto;
-    inset-inline-start: 22px;
+    inset-inline-start: 24px;
     transform: translateX(-50%);
   }
 
@@ -401,9 +444,19 @@
   }
 
   .deadline-timeline__node {
+    width: 42px;
+    height: 42px;
     left: auto;
-    inset-inline-start: 22px;
+    inset-inline-start: 24px;
     transform: translate(-50%, -50%);
+  }
+
+  .deadline-timeline__node-day {
+    font-size: 0.88rem;
+  }
+
+  .deadline-timeline__node-month {
+    font-size: 0.58rem;
   }
 
   [dir="rtl"] .deadline-timeline__node {
@@ -412,29 +465,29 @@
 
   .deadline-timeline__article:hover .deadline-timeline__node,
   .deadline-timeline__article[data-active="true"] .deadline-timeline__node {
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translate(-50%, -50%) scale(1.08);
   }
 
   [dir="rtl"] .deadline-timeline__article:hover .deadline-timeline__node,
   [dir="rtl"] .deadline-timeline__article[data-active="true"] .deadline-timeline__node {
-    transform: translate(50%, -50%) scale(1.15);
+    transform: translate(50%, -50%) scale(1.08);
   }
 
   .deadline-timeline__card-wrapper {
-    width: calc(100% - 44px);
-    margin-inline-start: 44px;
+    width: calc(100% - 56px);
+    margin-inline-start: 56px;
     position: relative;
   }
 
   .deadline-timeline__card-arrow {
     position: absolute;
     top: 50%;
-    inset-inline-start: -7px;
+    inset-inline-start: -8px;
     transform: translateY(-50%);
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-end: 7px solid var(--item-border);
+    border-block: 7px solid transparent;
+    border-inline-end: 8px solid var(--item-border);
     pointer-events: none;
     z-index: 3;
     transition: border-color 160ms ease;
@@ -443,12 +496,17 @@
   .deadline-timeline__card-arrow::after {
     content: "";
     position: absolute;
-    top: -6px;
-    inset-inline-end: -8px;
+    top: -7px;
+    inset-inline-end: -9px;
     width: 0;
     height: 0;
-    border-block: 6px solid transparent;
-    border-inline-end: 7px solid var(--item-surface);
+    border-block: 7px solid transparent;
+    border-inline-end: 8px solid var(--item-surface);
+  }
+
+  .deadline-timeline__end {
+    justify-content: flex-start;
+    padding-inline-start: 19px;
   }
 }
 
@@ -504,36 +562,20 @@
 }
 
 /* Card Header: Context, Date & Completion status */
-.deadline-timeline__meta {
+/* Card Header: Title & Completion status */
+.deadline-timeline__card-header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.35rem 0.65rem;
-  margin-bottom: 0.25rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.deadline-timeline__context {
-  margin: 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.72rem;
-  font-weight: 650;
-  line-height: 1.3;
-}
-
-.deadline-timeline__date {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: hsl(var(--foreground));
-  opacity: 0.85;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 .deadline-timeline__status-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.1rem 0.42rem;
+  padding: 0.12rem 0.45rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--item-accent) 26%, transparent);
   font-size: 0.65rem;

@@ -15,7 +15,7 @@ export function HomeworkDeadlines({ items, onOpen, embedded = false }: { embedde
             const status = complete ? 'complete' : item.inDays < 0 ? 'past' : item.inDays === 0 ? 'today' : 'upcoming';
             return <article key={`${item.classInfo.id}:${item.assessmentId}`} className="homework-deadlines__item" data-status={status}>
                 <div className="homework-deadlines__identity">
-                    <p dir="auto">{formatLocalizedClassDisplayName(item.classInfo.name, locale)}</p>
+                    {!embedded && <p dir="auto">{formatLocalizedClassDisplayName(item.classInfo.name, locale)}</p>}
                     <h4>{t('evaluations.homework.title')} {number.format(item.num)}</h4>
                 </div>
                 {!embedded && <div className="homework-deadlines__date"><time dateTime={item.dueDate}>{dateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${item.dueDate}T12:00:00`))}</time><span>{t(`followUp.due.${status}`)}</span></div>}
