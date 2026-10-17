@@ -1,4 +1,6 @@
 import { acceptRosterEdits } from '../../src/domain/evaluations/classRosterSync';
+import { mergeClassMetadata } from '../../src/domain/classes/classMetadata';
+import type { ClassInfo } from '../../src/types';
 import type express from 'express';
 
 import { getBundledCalendar, validateHolidayCalendar } from '../../src/domain/calendar/calendar';
@@ -224,11 +226,11 @@ export function setupMockApi(app: express.Express) {
                         if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
                     }
                     for (const classInfo of requestedClasses) {
-                        if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
+                        if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, mergeClassMetadata(classesById.get(classInfo.id) as ClassInfo | undefined, classInfo));
                     }
                     const classes = Array.from(classesById.entries())
                         .filter(([classId]) => !deletedIds.has(classId))
-                        .map(([classId, classInfo]) => adminClassOverrides[classId] ?? classInfo);
+                        .map(([classId, classInfo]) => mergeClassMetadata(undefined, classInfo as ClassInfo, adminClassOverrides[classId] as ClassInfo | undefined));
                     for (const entry of body.lessons ?? []) {
                         if (deletedIds.has(entry.classId)) continue;
                         const entryUpdatedAt = typeof entry.updatedAt === 'string' ? entry.updatedAt : now;
@@ -415,12 +417,13 @@ export function setupMockApi(app: express.Express) {
                             cycle: ['college', 'lycee', 'prepa'].includes(String(input?.cycle)) ? input?.cycle : (existing?.cycle ?? 'college'),
                             teacherName: `${DEV_USER.prenom} ${DEV_USER.nom}`,
                             createdAt: existing?.createdAt ?? now,
+                            metadataUpdatedAt: now,
                             color: '',
                         };
                         const classes = existing
                             ? existingClasses.map(item => item.id === classInfo.id ? classInfo : item)
                             : [...existingClasses, classInfo];
-                        const classMeta = { ...((classesBlob?.classMeta as Record<string, unknown>) ?? {}), [classInfo.id]: { updatedAt: now } };
+                        const classMeta = { ...((classesBlob?.classMeta as Record<string, unknown>) ?? {}), ...(!existing ? { [classInfo.id]: { updatedAt: now } } : {}) };
                         const adminClassOverrides = { ...((classesBlob?.adminClassOverrides as Record<string, unknown>) ?? {}), [classInfo.id]: classInfo };
                         classesBlob = {
                             ...(classesBlob ?? {}),

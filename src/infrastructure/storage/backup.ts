@@ -124,7 +124,7 @@ export function validateBackup(value: unknown): FullBackup {
             throw new Error(`Classe ${index + 1} invalide ou identifiant dupliqué.`);
         }
         ids.add(info.id);
-        for (const key of ['teacherName', 'subject', 'createdAt', 'lastOpenedAt', 'color', 'level', 'branch', 'group']) {
+        for (const key of ['teacherName', 'subject', 'createdAt', 'metadataUpdatedAt', 'lastOpenedAt', 'color', 'level', 'branch', 'group']) {
             if (info[key] !== undefined && typeof info[key] !== 'string') throw new Error(`Champ « ${key} » invalide dans la classe ${index + 1}.`);
         }
         if (!Array.isArray(entry.lessonsData)) throw new Error(`Cahier manquant ou invalide pour la classe ${index + 1}.`);
@@ -167,7 +167,11 @@ export const restoreBackup = (input: unknown): number => {
     entries.set('appConfig_v1', JSON.stringify(data.config));
 
     // 2) Liste des classes
-    const allClassInfo: ClassInfo[] = assignClassColors(classes.map(c => c.classInfo));
+    const restoredAt = Date.now();
+    const allClassInfo: ClassInfo[] = assignClassColors(classes.map(c => ({ ...c.classInfo,
+        metadataUpdatedAt: new Date(Math.max(restoredAt,
+            (Date.parse(previousClasses.find(previous => previous.id === c.classInfo.id)?.metadataUpdatedAt ?? '') || 0) + 1)).toISOString(),
+    })));
     entries.set('classManager_v1', JSON.stringify(allClassInfo));
     entries.set('app_first_launch_v1', 'true');
 

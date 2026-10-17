@@ -12,6 +12,20 @@ const classInfo = { id: 'a', name: '1AC 1', subject: 'Mathématiques', cycle: 'c
 const base: AppConfig = { establishmentName: '', defaultTeacherName: '', printShowDescriptions: true, schoolYearStart: '2026-09-01', classRosters: { a: { names: ['Amine', 'Salma', 'Lina'], version: 1, updatedAt: '2026-10-14T08:00:00Z' } } };
 const planned = (id: string, dateISO: string, type = 'oral') => ({ id, dateISO, type }) as PlannedAssessment;
 
+test('les graphies proches ne fusionnent ni les élèves ni leurs notes', () => {
+    const names = ['أحمد', 'احمد', 'André', 'Andre'];
+    const config: AppConfig = { ...base,
+        classRosters: { a: { names, version: 1, updatedAt: '2026-10-14' } },
+        assessmentParticipants: { a: { oral: { names, updatedAt: '2026-10-14',
+            oralGrades: { 'أحمد': '4', 'احمد': '16', 'André': '8', 'Andre': '20' } } } },
+    };
+    const stats = summarizeContinuousStudents(config, 'a', [planned('oral', '2026-10-14')], '2026-10-14');
+    assert.equal(stats.total, 4);
+    assert.equal(stats.graded, 4);
+    assert.equal(stats.average, 12);
+    assert.deepEqual(stats.support.map(pupil => pupil.name), ['أحمد', 'André']);
+});
+
 test('notes : zéro réel, décimales françaises et chiffres arabes ; une valeur absente ou ambiguë ne devient pas zéro', () => {
     for (const [value, expected] of [['0', 0], ['12,5/20', 12.5], ['١٥٫٥ /٢٠', 15.5], ['20', 20]] as const) assert.equal(studentGrade(value), expected);
     for (const value of [undefined, '', 'absent', '-1', '21', '12/10', '2e1', '12abc']) assert.equal(studentGrade(value), null);

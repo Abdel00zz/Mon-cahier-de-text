@@ -76,6 +76,19 @@ test('an unreadable stored notebook is quarantined before being replaced', conte
   assert.equal(JSON.parse(storage.getItem('classData_v1_b')!).lessonsData[0].title, 'Nouveau');
 });
 
+test('une sauvegarde identique ne réécrit pas le stockage et ne relance pas le cloud', context => {
+  const storage = memoryStorage();
+  installGlobal(context, storage);
+  const lessons: LessonsData = [{ type: 'chapter', title: 'Stable' }];
+  saveNotebook('same', lessons, 'ltr');
+  clearPendingWork(getPendingWork());
+  const meta = readSyncMeta();
+  storage.full = true;
+  assert.doesNotThrow(() => saveNotebook('same', structuredClone(lessons), 'ltr'));
+  assert.deepEqual(getPendingWork().dirtyClassIds, []);
+  assert.deepEqual(readSyncMeta(), meta);
+});
+
 test('the save is aborted when even the quarantine copy cannot be stored', context => {
   const corrupt = '{"lessonsData": [ broken ' + 'x'.repeat(200);
   const storage = memoryStorage(corrupt.length + 'classData_v1_c'.length + 10);

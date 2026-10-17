@@ -1,5 +1,4 @@
 import { rostersForClasses } from '../domain/evaluations/studentRoster';
-import { readStoredClasses } from '../infrastructure/storage/localClassStorage';
 import { reconcileClassRosters } from '../domain/evaluations/classRosterSync';
 import type { ClassRoster } from '../types';
 import { apiFetch } from '@/platform/nativeHttp';
@@ -36,7 +35,7 @@ import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storag
 import { bootstrapStore } from '../infrastructure/sync/bootstrapStore';
 import { notifySyncProgress } from '../infrastructure/sync/syncBus';
 import { measurements, MEASURES } from '../platform/performanceMarks';
-import { withCurriculumSettings } from '../domain/classes/classCurriculumSettings';
+import { mergeClassMetadata } from '../domain/classes/classMetadata';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
 import { requestSyncJson, requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError, planPushBatches } from '../infrastructure/sync/syncTransport';
@@ -372,8 +371,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
                 if (!isCurrent()) return;
                 if (data.classRosters) {
-                    const latest = readCachedConfig();
-                    const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), readStoredClasses().map(item => item.id));
+                    // Do not turn a malformed local configuration into an empty one on acknowledgement.
+                    const snapshot = readLocalSyncSnapshot(localStorage, { includeNotebooks: false });
+                    const latest = snapshot.config;
+                    const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), snapshot.classes.map(item => item.id));
                     localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
                     notifyPullApplied();
                 }
@@ -616,6 +617,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 const mergedClasses = [...localVisibleClasses];
                 let localChanged = mergedClasses.length !== localClasses.length;
+                let metadataNeedsPush = false;
+                // Receive a renamed group even when its notebook has not changed.
+                for (const remote of server.classes ?? []) {
+                    const index = mergedClasses.findIndex(item => item.id === remote.id);
+                    if (index < 0) continue;
+                    const previous = mergedClasses[index];
+                    const merged = mergeClassMetadata(previous, remote, server.adminClassOverrides?.[remote.id], 'incoming');
+                    if (JSON.stringify(previous) !== JSON.stringify(merged)) {
+                        mergedClasses[index] = merged;
+                        localChanged = true;
+                    }
+                    if (merged === previous && previous.metadataUpdatedAt !== remote.metadataUpdatedAt) metadataNeedsPush = true;
+                }
                 const conflictNames: string[] = [];
                 const commits: Array<() => void> = [];
 
@@ -726,12 +740,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         }
                         if (localIndex === -1) {
                             mergedClasses.push(serverClass);
-                        } else {
-                            const localClass = mergedClasses[localIndex];
-                            mergedClasses[localIndex] = withCurriculumSettings(
-                                { ...localClass, ...serverClass },
-                                serverIsNewer ? serverClass : localClass,
-                            );
                         }
                         if (localIndex === -1 || JSON.stringify(mergedClasses[localIndex]) !== JSON.stringify(localClasses.find(c => c.id === serverClass.id))) localChanged = true;
                     } else if (action === 'requeue') {
@@ -875,6 +883,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 notifySyncProgress({ state: 'ready', total: coloredClasses.length, done: 0, classId: null });
 
                 setLastSyncAt(server.updatedAt || null);
+                if (metadataNeedsPush) markClassesListDirty();
                 if (hasPendingWork()) {
                     setSyncStatus('pending');
                     schedulePush(500);
@@ -933,6 +942,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             lastSettingsPushRef.current = now + delay;
             schedulePush(delay);
         });
+        const unsubscribeClasses = subscribe('classes-changed', () => {
+            if (getPendingWork().classesListDirty) schedulePush(300);
+        });
 
         const handleOnline = () => {
             if (isForegroundOnline() && hasPendingWork()) schedulePush(1_000);
@@ -953,6 +965,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             unsubscribeDirty();
             unsubscribeConfig();
+            unsubscribeClasses();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('native-resume', handleOnline);
             document.removeEventListener('visibilitychange', handleOnline);

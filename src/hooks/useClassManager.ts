@@ -6,6 +6,7 @@ import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspac
 import { CLASS_STORAGE_KEY, readStoredClasses } from '../infrastructure/storage/localClassStorage';
 import { assignClassColors } from '../domain/classes/classColors';
 import { removeQuarantine } from '../infrastructure/storage/safeStorage';
+import { updateClassMetadata } from '../domain/classes/classMetadata';
 
 const DATA_PREFIX = 'classData_v1_';
 
@@ -71,7 +72,7 @@ export const useClassManager = () => {
         if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
         const newClass: ClassInfo = {
             ...details, cycle: details.cycle ?? 'college', id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(), color: '',
+            createdAt: new Date().toISOString(), metadataUpdatedAt: new Date().toISOString(), color: '',
         };
         const next = assignClassColors([...readStoredClasses(), newClass]);
         // Initialiser le cahier avant d'exposer sa carte et de réveiller le cloud.
@@ -102,7 +103,7 @@ export const useClassManager = () => {
         try {
             const latest = readStoredClasses();
             if (!latest.some(c => c.id === classId)) return false;
-            return persistClassesNow(latest.map(c => c.id === classId ? { ...c, ...updates } : c));
+            return persistClassesNow(latest.map(c => c.id === classId ? updateClassMetadata(c, updates) : c));
         } catch (error) { logger.error('Failed to update local class', error); return false; }
     }, [persistClassesNow, workspaceIsActive]);
 

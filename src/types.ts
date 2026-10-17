@@ -9,6 +9,8 @@ export interface ClassInfo {
   teacherName: string;
   subject: string;
   createdAt: string;
+  /** Version des paramètres de classe, indépendante du contenu du cahier. */
+  metadataUpdatedAt?: string;
   lastOpenedAt?: string;
   color: string;
   cycle?: Cycle; // optional for backward compatibility
@@ -24,7 +26,7 @@ export interface ClassInfo {
 
 /** Classe en cours de création : le gestionnaire complète l'identifiant, la
     date de création et la couleur. Source unique du contrat `addClass`. */
-export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color'>;
+export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color' | 'metadataUpdatedAt'>;
 
 /** Identité d'une classe saisie par l'assistant de création (professeur comme
     direction). `level`, `branch` et `group` sont transmis en plus du nom
@@ -180,7 +182,7 @@ export interface ClassRoster {
     updatedAt: string;
     version: number;
     /** Modification locale en attente : base stable pour fusionner sans écraser la direction. */
-    edit?: { id: string; baseNames: string[] };
+    edit?: { id: string; baseNames: string[]; addedNames?: string[]; removedNames?: string[] };
     /** Reçus de synchronisation ; une relance réseau ne rejoue pas une modification. */
     appliedEdits?: string[];
 }

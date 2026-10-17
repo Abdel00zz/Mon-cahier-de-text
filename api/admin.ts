@@ -546,7 +546,7 @@ const handleSaveClassRoster = async (body: AdminBody, res: ApiResponse) => {
     if (!blob?.classes.some(item => item.id === classId) || blob.deletedClasses?.[classId]) throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
     const current = blob.settings?.classRosters?.[classId];
     if ((current?.version ?? 0) !== body.expectedRosterVersion) throw new HttpError(409, 'La liste a été modifiée. Rechargez la fiche avant de publier.');
-    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1, appliedEdits: current?.appliedEdits };
+    const roster = { names, updatedAt: new Date().toISOString(), version: (current?.version ?? 0) + 1, ...(current?.appliedEdits ? { appliedEdits: current.appliedEdits } : {}) };
     write.set(KEYS.classes(phone), {
         ...blob, updatedAt: roster.updatedAt,
         settings: { ...blob.settings, classRosters: { ...blob.settings?.classRosters, [classId]: roster } },
@@ -626,13 +626,14 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         // doit porter le même nom que celui affiché partout pour ce professeur.
         teacherName: storedBlob?.settings?.defaultTeacherName?.trim() || `${user.prenom} ${user.nom}`.trim(),
         createdAt: existing?.createdAt ?? now,
+        metadataUpdatedAt: new Date(Math.max(Date.now(), Date.parse(existing?.metadataUpdatedAt ?? '') + 1 || 0)).toISOString(),
         color: '',
     };
     const classes = existing
         ? existingClasses.map(item => item.id === classInfo.id ? classInfo : item)
         : [...existingClasses, classInfo];
     const adminClassOverrides = { ...(storedBlob?.adminClassOverrides ?? {}), [classInfo.id]: classInfo };
-    const classMeta = { ...(storedBlob?.classMeta ?? {}), [classInfo.id]: { updatedAt: now } };
+    const classMeta = { ...(storedBlob?.classMeta ?? {}), ...(!existing ? { [classInfo.id]: { updatedAt: now } } : {}) };
     const deletedClasses = { ...(storedBlob?.deletedClasses ?? {}) };
     delete deletedClasses[classInfo.id];
 

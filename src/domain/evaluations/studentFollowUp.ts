@@ -4,7 +4,7 @@ import { daysBetweenISO } from './assessments';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { resolveKindPolicy } from './evaluationPolicy';
 import { countHomeworkOutcomes } from './homeworkSubmissions';
-import { namesWithRoster, retainOralOutcomes, studentSearchKey } from './studentRoster';
+import { namesWithRoster, retainOralOutcomes, studentIdentityKey } from './studentRoster';
 
 /** A free-form grade is counted only when it unambiguously represents a mark out of twenty. */
 export function studentGrade(value: string | undefined): number | null {
@@ -35,11 +35,11 @@ export function summarizeContinuousStudents(config: AppConfig, classId: string, 
     }
     records.sort((a, b) => a.date.localeCompare(b.date) || a.record.updatedAt.localeCompare(b.record.updatedAt));
     const pupils = new Map<string, { name: string; grade: number | null; previousGrade?: number; outcome?: string }>();
-    for (const name of config.classRosters?.[classId]?.names ?? []) pupils.set(studentSearchKey(name), { name, grade: null });
+    for (const name of config.classRosters?.[classId]?.names ?? []) pupils.set(studentIdentityKey(name), { name, grade: null });
     for (const { record } of records) {
         const outcomes = retainOralOutcomes(record.names, record.oralOutcomes);
         for (const name of record.names) {
-            const key = studentSearchKey(name);
+            const key = studentIdentityKey(name);
             const current = pupils.get(key) ?? { name, grade: null };
             const grade = studentGrade(Object.hasOwn(record.oralGrades ?? {}, name) ? record.oralGrades![name] : undefined);
             pupils.set(key, { ...current, grade: grade ?? current.grade,

@@ -37,6 +37,36 @@ const store = new FirestoreStore();
 const client = store as unknown as RedisClient;
 const phone = '0611111111';
 
+test('class group and notebook changes cross devices independently; stale metadata cannot undo a rename', async () => {
+  process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
+  const owner = '0617779944';
+  const registered = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', phone: owner, nom: 'Metadata', prenom: 'QA', password: 'Test-password-123' } });
+  assert.equal(registered.status, 201);
+  const headers = { cookie: String(registered.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': owner };
+  const at = (offset: number) => new Date(Date.now() + offset).toISOString();
+  const original: ClassInfo = { id: 'group-sync', name: '1AC 1', group: '1', subject: 'Mathématiques', teacherName: 'QA', color: '', createdAt: at(-10000), metadataUpdatedAt: at(-9000) };
+  const lessonsData = [{ type: 'chapter', title: 'Avant' }];
+  const post = (info: ClassInfo, lessons?: unknown[]) => call(syncHandler, { method: 'POST', headers, body: { classes: [info], schedules: [], timetable: [], lessons } });
+  assert.equal((await post(original, [{ classId: original.id, lessonsData, updatedAt: at(-8000) }])).status, 200);
+  const renamed = { ...original, name: '1AC 2', group: '2', metadataUpdatedAt: at(-7000) };
+  assert.equal((await post(renamed)).status, 200);
+  const nextContent = [{ type: 'chapter', title: 'Contenu depuis un autre appareil' }];
+  assert.equal((await post(original, [{ classId: original.id, lessonsData: nextContent, updatedAt: at(-5000) }])).status, 200);
+  const restored = (await call(syncHandler, { method: 'GET', headers })).body as { classes: ClassInfo[]; classMeta: unknown };
+  assert.equal(restored.classes[0].group, '2');
+  const notebook = await call(syncHandler, { method: 'GET', headers, query: { classId: original.id } });
+  assert.deepEqual((notebook.body as { lessonsData: unknown }).lessonsData, nextContent);
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'upsertTeacherClass', phone: owner,
+    classInfo: { ...renamed, group: '3', name: '1AC 3' } } })).status, 200);
+  const afterAdmin = (await call(syncHandler, { method: 'GET', headers })).body as { classes: ClassInfo[]; classMeta: unknown };
+  assert.equal(afterAdmin.classes[0].group, '3');
+  assert.deepEqual(afterAdmin.classMeta, restored.classMeta, 'an admin rename is not a notebook edit');
+  const inbox = await call(messagesHandler, { method: 'GET', headers, query: { wait: '8000', since: 'unchanged' } });
+  assert.equal(inbox.status, 200);
+  assert.equal((inbox.body as { signature?: string }).signature, undefined, 'Firestore uses foreground refresh and FCM, not continuous paid probes');
+});
+
 test('pedagogical text survives two devices, legacy clients, deletion and account isolation through the real sync API', async () => {
   process.env.AUTH_SECRET = 'emulator-only-secret-with-sufficient-length';
   const owner = '0617779955';
@@ -161,7 +191,7 @@ test('email accounts work without phone across authentication, sync, messages, p
   assert.equal((await call(messagesHandler, { method: 'GET', headers })).status, 200);
   const completed = await call(authHandler, { method: 'POST', headers, body: { action: 'completeWelcome' } });
   assert.equal(completed.status, 200);
-  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id } })).status, 200);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id, blocked: true } })).status, 200);
   assert.equal((await firebaseAuth().getUser(identity.uid)).disabled, true);
   assert.equal((await call(authHandler, { method: 'GET', headers, query: { action: 'me' } })).status, 403);
   assert.equal((await call(authHandler, { method: 'POST', headers: {}, body: { action: 'login', email, password } })).status, 403);
@@ -195,7 +225,7 @@ test('Google provisions one account, preserves profiles, rejects non-Google toke
   const forged = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'google', idToken: password.idToken } });
   assert.equal(forged.status, 401);
   const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
-  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id } })).status, 200);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: user.id, blocked: true } })).status, 200);
   assert.equal((await call(authHandler, { method: 'POST', headers: {}, body: { action: 'google', idToken: firebase.idToken } })).status, 401);
   assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'deleteTeacher', phone: user.id } })).status, 200);
   await assert.rejects(firebaseAuth().getUser(firebase.localId!));
@@ -231,7 +261,7 @@ test('existing HTTP contracts work across registration, sync, admin messages, bl
   const adminHeaders = { cookie: adminCookie };
   assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'notifyTeacher', phone: number, message: 'Votre cahier est à jour.' } })).status, 200);
   assert.equal((await call(messagesHandler, { method: 'GET', headers })).status, 200);
-  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: number } })).status, 200);
+  assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: number, blocked: true } })).status, 200);
   assert.equal((await call(syncHandler, { method: 'GET', headers })).status, 403);
   assert.equal((await firebaseAuth().getUser(teacherUid(number))).disabled, true);
   assert.equal((await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'blockTeacher', phone: number, blocked: false } })).status, 200);
@@ -401,6 +431,15 @@ test('admin class rosters reach the right email account and survive stale pushes
   assert.equal((await postAdmin({ ...request, studentNames: ['تلميذ مصحح', 'إضافة الإدارة'], expectedRosterVersion: restored.classRosters![x.id].version })).status, 200);
   assert.equal((await push({ classRosters: { [x.id]: teacherDraft } })).status, 200);
   assert.deepEqual((await pull()).settings.classRosters?.[x.id]?.names, ['تلميذ مصحح', 'إضافة الإدارة'], 'retry does not resurrect names removed by admin');
+  const currentRoster = (await pull()).settings.classRosters![x.id];
+  const adding = { ...currentRoster, names: [...currentRoster.names, 'إضافة مؤقتة'],
+    edit: { id: 'teacher-inflight-add', baseNames: currentRoster.names } };
+  const undoing = { ...currentRoster,
+    edit: { id: 'teacher-inflight-undo', baseNames: currentRoster.names, removedNames: ['إضافة مؤقتة'] } };
+  assert.equal((await push({ classRosters: { [x.id]: adding } })).status, 200);
+  assert.equal((await push({ classRosters: { [x.id]: undoing } })).status, 200);
+  assert.deepEqual((await pull()).settings.classRosters?.[x.id]?.names, currentRoster.names, 'a late acknowledgement cannot restore an addition already undone locally');
+  assert.deepEqual((await pull()).settings.assessmentParticipants, observations.assessmentParticipants);
   assert.equal((await postAdmin({ action: 'deleteTeacherClass', phone: owner, classId: x.id })).status, 200);
   restored = (await pull()).settings;
   assert.equal(restored.classRosters?.[x.id], undefined);

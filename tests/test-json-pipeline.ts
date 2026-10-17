@@ -164,6 +164,8 @@ test('restauration : pas de synchro sur échec ; direction et métadonnées corr
   const storage = new MemoryStorage();
   Object.defineProperty(globalThis, 'localStorage', { value: storage, configurable: true });
   storage.values.set('appConfig_v1', '{"old":true}');
+  const previousMetadataTime = new Date(Date.now() + 60_000).toISOString();
+  storage.values.set('classManager_v1', JSON.stringify([{ ...info, metadataUpdatedAt: previousMetadataTime }]));
   storage.values.set(`printMeta_v1_${info.id}`, '{"lastPrintedAt":"old"}');
   const before = new Map(storage.values);
   let events = 0;
@@ -174,6 +176,9 @@ test('restauration : pas de synchro sur échec ; direction et métadonnées corr
     assert.deepEqual(storage.values, before);
     assert.equal(events, 0);
     assert.equal(restoreBackup(backup()), 1);
+    const restoredClass = JSON.parse(storage.getItem('classManager_v1')!)[0];
+    assert.equal(restoredClass.id, info.id);
+    assert.ok(Date.parse(restoredClass.metadataUpdatedAt) > Date.parse(previousMetadataTime));
     assert.equal(JSON.parse(storage.getItem(`classData_v1_${info.id}`)!).contentDirection, 'rtl');
     assert.equal(storage.getItem(`printMeta_v1_${info.id}`), null);
     assert.ok(events > 0);

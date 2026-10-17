@@ -15,6 +15,9 @@ export function saveNotebook(classId: string, lessonsData: LessonsData, contentD
     storage: NotebookStorage = localStorage): void {
     const key = `classData_v1_${classId}`;
     const previous = storage.getItem(key);
+    const serialized = JSON.stringify({ lessonsData, contentDirection });
+    // Re-saving identical content must not write storage, advance its clock or trigger a paid cloud write.
+    if (previous === serialized) return;
     // Skip re-validating what this session just wrote (avoids a full parse per autosave).
     if (previous !== null && lastWritten.get(key) !== previous) {
         try {
@@ -25,7 +28,6 @@ export function saveNotebook(classId: string, lessonsData: LessonsData, contentD
             quarantineRaw(classId, previous, storage);
         }
     }
-    const serialized = JSON.stringify({ lessonsData, contentDirection });
     writeDurably(key, serialized, storage);
     lastWritten.set(key, serialized);
     if (lastWritten.size > 24) lastWritten.delete(lastWritten.keys().next().value!);

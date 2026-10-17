@@ -10,7 +10,7 @@ import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, EvaluationPolicy, EvaluationPolicyAssignment, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../src/types.js';
 import { normalizeEvaluationAssignment, normalizeEvaluationPolicy, resolveEvaluationPolicy } from '../src/domain/evaluations/evaluationPolicy.js';
-import { withCurriculumSettings } from '../src/domain/classes/classCurriculumSettings.js';
+import { mergeClassMetadata } from '../src/domain/classes/classMetadata.js';
 import { assignClassColors } from '../src/domain/classes/classColors.js';
 import { mergeAdminAssessmentDates } from '../src/infrastructure/sync/syncSettings.js';
 import { mergePedagogicalDocuments } from '../src/domain/evaluations/documentSync.js';
@@ -148,17 +148,15 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const requestedById = new Map(requestedClasses.map(classInfo => [classInfo.id, classInfo]));
     const existingById = new Map((existing.classes ?? []).map(classInfo => [classInfo.id, classInfo]));
     const adminClassOverrides = { ...(existing.adminClassOverrides ?? {}) };
-    // La liste locale peut être périmée lorsqu'un administrateur vient d'ajouter
-    // ou d'éditer une classe. On conserve donc toutes les classes serveur non
-    // supprimées, puis l'override administratif garde ses champs prioritaires.
+    // Keep server classes missing from stale devices; merge identity on its own clock.
     const classIds = new Set([...existingById.keys(), ...requestedById.keys()]);
     const classes = assignClassColors(Array.from(classIds)
         .filter(classId => !deletedClassIds.has(classId))
         .map(classId => {
             const teacherClass = requestedById.get(classId) ?? existingById.get(classId);
             const adminClass = adminClassOverrides[classId];
-            // The direction owns class identity, not the teacher's course start or links.
-            return adminClass ? withCurriculumSettings(adminClass, teacherClass ?? adminClass) : teacherClass!;
+            // An old notebook upload cannot replace newer identity fields.
+            return mergeClassMetadata(existingById.get(classId), teacherClass!, adminClass);
         })
         .filter(Boolean));
 

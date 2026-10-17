@@ -290,8 +290,10 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
     }
     if (item.courseStartDate !== undefined && (!ISO_DATE.test(item.courseStartDate) || !Number.isFinite(Date.parse(item.courseStartDate)) || new Date(item.courseStartDate).toISOString().slice(0, 10) !== item.courseStartDate)) throw new HttpError(400, 'Début de cours invalide.');
     if (item.curriculumSourceId !== undefined && (typeof item.curriculumSourceId !== 'string' || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(item.curriculumSourceId))) throw new HttpError(400, 'Référence de programme invalide.');
+    if (item.metadataUpdatedAt !== undefined && (typeof item.metadataUpdatedAt !== 'string' || item.metadataUpdatedAt.length > 40 || !Number.isFinite(Date.parse(item.metadataUpdatedAt)))) throw new HttpError(400, 'Version des paramètres de classe invalide.');
     return {
       id,
+      ...(item.metadataUpdatedAt ? { metadataUpdatedAt: new Date(item.metadataUpdatedAt).toISOString() } : {}),
       name: assertStringField(item.name, 'Nom de classe', 120),
       teacherName: typeof item.teacherName === 'string' ? item.teacherName.slice(0, 120) : '',
       subject: assertStringField(item.subject, 'Matière', 120),
@@ -461,6 +463,7 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
   const rosters = rosterInput ? { ...rosterInput } : undefined;
   if (rosters) result.classRosters = rosters;
   for (const [classId, raw] of Object.entries(rosters ?? {})) {
+    if (['__proto__', 'constructor', 'prototype'].includes(classId)) throw new HttpError(400, 'Identifiant de classe invalide.');
     assertStudentNames(raw, `classRosters.${classId}`);
     const roster = raw as Record<string, unknown>;
     if (!Number.isSafeInteger(roster.version) || Number(roster.version) < 0) throw new HttpError(400, 'Version de liste invalide.');
@@ -468,6 +471,8 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       const edit = roster.edit as Record<string, unknown>;
       if (!isPlainObject(edit) || typeof edit.id !== 'string' || !/^[a-zA-Z0-9-]{1,80}$/.test(edit.id)) throw new HttpError(400, 'Modification de liste invalide.');
       assertStudentNames({ names: edit.baseNames, updatedAt: roster.updatedAt }, `classRosters.${classId}.base`);
+      if (edit.removedNames !== undefined) assertStudentNames({ names: edit.removedNames, updatedAt: roster.updatedAt }, `classRosters.${classId}.removed`);
+      if (edit.addedNames !== undefined) assertStudentNames({ names: edit.addedNames, updatedAt: roster.updatedAt }, `classRosters.${classId}.added`);
     }
     // Receipts are server-owned; clients cannot acknowledge their own writes.
     rosters![classId] = { names: roster.names, version: roster.version, updatedAt: roster.updatedAt,

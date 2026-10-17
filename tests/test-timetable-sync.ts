@@ -39,8 +39,9 @@ test('emploi du temps modifié : l’envoi cloud part tout de suite, une rafale 
   assert.equal(settingsPushDelay(now + SETTINGS_PUSH_MIN_INTERVAL_MS + 50, scheduled), SETTINGS_PUSH_DELAY_MS);
 });
 
-test('seules les clés de l’emploi du temps déclenchent l’envoi immédiat', () => {
+test('emploi du temps et liste de classe déclenchent l’envoi immédiat', () => {
   assert.equal(touchesImmediateSettings(['timetable']), true);
+  assert.equal(touchesImmediateSettings(['classRosters']), true);
   assert.equal(touchesImmediateSettings(['schedules', 'theme']), true);
   assert.equal(touchesImmediateSettings(['theme', 'appTextSize']), false);
   assert.equal(touchesImmediateSettings([]), false);

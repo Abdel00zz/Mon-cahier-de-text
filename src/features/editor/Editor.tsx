@@ -1,5 +1,6 @@
 import { assignHomeworkPatch, restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
 import { homeworkMoments } from '@/domain/evaluations/homeworkCycle';
+import { updateClassMetadata } from '@/domain/classes/classMetadata';
 import type { AppConfig } from '@/types';
 import { buildAbsenceSessions, groupRowsWithAbsences } from '@/domain/notebook/absenceSessions';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -666,11 +667,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       : newInfo;
     setEditorState(draft => {
         if (!workspaceIsActive()) return;
-        Object.assign(draft.classInfo, normalizedInfo);
+        Object.assign(draft.classInfo, updateClassMetadata(draft.classInfo as ClassInfo, normalizedInfo));
         try {
             const allClasses: ClassInfo[] = JSON.parse(localStorage.getItem('classManager_v1') || '[]');
             const updatedClasses = allClasses.map(c =>
-                c.id === draft.classInfo.id ? { ...c, ...normalizedInfo } : c
+                c.id === draft.classInfo.id ? updateClassMetadata(c, normalizedInfo) : c
             );
             localStorage.setItem('classManager_v1', JSON.stringify(updatedClasses));
             markClassesListDirty();

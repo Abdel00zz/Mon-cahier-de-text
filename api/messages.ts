@@ -2,7 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
-import { getRedis, KEYS } from './_lib/redis.js';
+import { getRedis, isFirestoreStore, KEYS } from './_lib/redis.js';
 import type { AdminMessage } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import { waitUntil } from '@vercel/functions';
@@ -40,7 +40,9 @@ const inboxSignature = (messages: AdminMessage[]): string => {
  */
 const handleList = async (res: ApiResponse, phone: string, wait: number, since: string) => {
     const redis = await getRedis();
-    if (wait > 0 && since) {
+    // Firestore bills each read: keep Redis long polling, use foreground refresh + FCM on Firestore.
+    const longPolling = !isFirestoreStore(redis);
+    if (longPolling && wait > 0 && since) {
         const deadline = Date.now() + wait;
         for (;;) {
             const current = inboxSignature(normalizeAdminMessages(await redis.get<AdminMessage[]>(KEYS.adminMessages(phone))));
@@ -53,7 +55,8 @@ const handleList = async (res: ApiResponse, phone: string, wait: number, since: 
     const { messages, unreadCount, badgeUpdatedAt } = await readInboxSnapshot(redis, phone);
     // L'enseignant ne reçoit que les messages qui nécessitent encore son accusé.
     const pending = messages.filter(message => !message.acknowledgedAt);
-    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt, signature: inboxSignature(messages) });
+    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt,
+        ...(longPolling ? { signature: inboxSignature(messages) } : {}) });
 };
 
 const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: string) => {

@@ -32,6 +32,7 @@ test('class rosters accept Arabic and Latin separators, retain full names and en
   assert.throws(() => parseStudentNames(Array.from({ length: 201 }, (_, index) => `Student ${index}`).join('\n')));
   assert.equal(studentSearchKey('أَحْمَد العـلوي'), studentSearchKey('احمد العلوي'));
   assert.equal(studentSearchKey('Éléonore'), studentSearchKey('eleonore'));
+  assert.deepEqual(parseStudentNames('أحمد؛احمد؛André;Andre'), ['أحمد', 'احمد', 'André', 'Andre'], 'la recherche tolérante ne doit pas servir à fusionner des identités');
 });
 
 test('a roster fills a session, preserves recorded names and is isolated to its class', () => {

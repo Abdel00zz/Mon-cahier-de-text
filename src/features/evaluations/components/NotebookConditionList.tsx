@@ -57,6 +57,14 @@ function StudentRowView<T extends string>({ name, value, options, pendingLabel, 
             {onGrade && <label className="grade-chip notebook-grade">
                 <span className="sr-only">{gradeLabel}</span>
                 <input type="text" inputMode="decimal" dir="ltr" value={grade ?? ''}
+                    enterKeyHint="next" autoComplete="off" autoCorrect="off" spellCheck={false}
+                    onKeyDown={event => {
+                        if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+                        event.preventDefault();
+                        const inputs = Array.from(event.currentTarget.closest('[role="dialog"]')?.querySelectorAll<HTMLInputElement>('.notebook-grade__input') ?? []);
+                        const next = inputs[inputs.indexOf(event.currentTarget) + 1];
+                        if (next) next.focus(); else event.currentTarget.blur();
+                    }}
                     onChange={event => onGrade(name, event.target.value)} placeholder={gradePlaceholder}
                     aria-label={gradeLabel} className="grade-chip__input notebook-grade__input" maxLength={5} />
             </label>}
