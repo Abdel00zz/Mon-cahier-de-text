@@ -282,28 +282,43 @@
 .class-card__schedule {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   max-width: 100%;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--class-accent) 9%, transparent);
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
   color: var(--class-muted);
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1.4;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent);
+  opacity: 0.85;
+  transition: opacity 180ms ease, color 180ms ease;
 }
 
-.class-card__schedule-dot {
-  flex: 0 0 5px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--class-accent);
-  opacity: 0.75;
+.class-card__schedule-icon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.8;
+  opacity: 0.8;
+  color: var(--class-accent);
+  transition: opacity 180ms ease, color 180ms ease;
+}
+
+.class-card:hover .class-card__schedule,
+.class-list-item:hover .class-card__schedule {
+  opacity: 1;
+  color: var(--class-ink);
+}
+
+.class-card:hover .class-card__schedule-icon,
+.class-list-item:hover .class-card__schedule-icon {
+  opacity: 1;
 }
 
 .class-card__live-dot {

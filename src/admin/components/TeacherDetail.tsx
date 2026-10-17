@@ -211,24 +211,23 @@ const ClassChapters: React.FC<{
                             </p>
                         )}
                         {scheduleStatus && scheduleStatus.state !== 'none' && (
-                            <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                                    scheduleStatus.state === 'in_progress'
-                                        ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                        : 'border border-primary/20 bg-primary/10 text-primary'
-                                }`}
-                                title={scheduleStatus.label}
-                            >
+                            scheduleStatus.state === 'in_progress' ? (
                                 <span
-                                    className={`h-1.5 w-1.5 rounded-full ${
-                                        scheduleStatus.state === 'in_progress'
-                                            ? 'bg-emerald-500 animate-pulse'
-                                            : 'bg-primary/70'
-                                    }`}
-                                    aria-hidden="true"
-                                />
-                                {scheduleStatus.label}
-                            </span>
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400"
+                                    title={scheduleStatus.label}
+                                >
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+                                    {scheduleStatus.label}
+                                </span>
+                            ) : (
+                                <span
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground/80 hover:text-foreground transition-colors"
+                                    title={scheduleStatus.label}
+                                >
+                                    <Clock className="h-3 w-3 text-primary/70 shrink-0" aria-hidden="true" />
+                                    <span>{scheduleStatus.label}</span>
+                                </span>
+                            )
                         )}
                     </div>
 
@@ -1285,24 +1284,23 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                                             {snapshot ? `${snapshot.sessionsCount} séance(s) · dernière saisie ${snapshot.lastDate ?? 'Non renseignée'}` : 'En attente de la première synchronisation'}
                                                         </span>
                                                         {scheduleStatus && scheduleStatus.state !== 'none' && (
-                                                            <span
-                                                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${
-                                                                    scheduleStatus.state === 'in_progress'
-                                                                        ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                                                        : 'border border-primary/20 bg-primary/10 text-primary'
-                                                                }`}
-                                                                title={scheduleStatus.label}
-                                                            >
+                                                            scheduleStatus.state === 'in_progress' ? (
                                                                 <span
-                                                                    className={`h-1.5 w-1.5 rounded-full ${
-                                                                        scheduleStatus.state === 'in_progress'
-                                                                            ? 'bg-emerald-500 animate-pulse'
-                                                                            : 'bg-primary/70'
-                                                                    }`}
-                                                                    aria-hidden="true"
-                                                                />
-                                                                {scheduleStatus.label}
-                                                            </span>
+                                                                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-600 dark:text-emerald-400"
+                                                                    title={scheduleStatus.label}
+                                                                >
+                                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+                                                                    {scheduleStatus.label}
+                                                                </span>
+                                                            ) : (
+                                                                <span
+                                                                    className="inline-flex items-center gap-1 font-medium text-muted-foreground/80 hover:text-foreground transition-colors"
+                                                                    title={scheduleStatus.label}
+                                                                >
+                                                                    <Clock className="h-3 w-3 text-primary/70 shrink-0" aria-hidden="true" />
+                                                                    <span>{scheduleStatus.label}</span>
+                                                                </span>
+                                                            )
                                                         )}
                                                     </div>
                                                     {lateness && lateness.severity !== 'ok' && (

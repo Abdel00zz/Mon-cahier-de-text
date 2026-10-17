@@ -1,4 +1,5 @@
 import { memo, useMemo, type FC } from 'react';
+import { Clock } from 'lucide-react';
 import { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
@@ -99,7 +100,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                 </span>
                             ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
                                 <span className="class-card__schedule" title={scheduleStatus.label}>
-                                    <span className="class-card__schedule-dot" aria-hidden="true" />
+                                    <Clock className="class-card__schedule-icon" aria-hidden="true" />
                                     <span>{scheduleStatus.shortLabel}</span>
                                 </span>
                             ) : null}

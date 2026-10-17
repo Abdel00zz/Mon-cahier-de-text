@@ -1,4 +1,5 @@
 import { memo, useMemo, type FC } from 'react';
+import { Clock } from 'lucide-react';
 import type { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
@@ -110,7 +111,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
                 <div className="class-card__footer class-card__footer--schedule">
                     <span className="class-card__schedule" title={scheduleStatus.label}>
-                        <span className="class-card__schedule-dot" aria-hidden="true" />
+                        <Clock className="class-card__schedule-icon" aria-hidden="true" />
                         <span>{scheduleStatus.shortLabel}</span>
                     </span>
                 </div>
