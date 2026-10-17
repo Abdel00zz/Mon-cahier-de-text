@@ -3,6 +3,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { dateTimeFormat, numberFormat } from '@/lib/formatters';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import type { ClassInfo } from '@/types';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { deadlineState, type FollowUpDeadline } from '@/domain/evaluations/followUpDeadlines';
 import { HomeworkDeadlines } from './HomeworkDeadlines';
 import './deadlineTimeline.css';
@@ -31,7 +32,9 @@ export function DeadlineTimeline({ items, classes, today, onOpen }: {
   return <ol ref={root} className="deadline-timeline" aria-label={t('notifications.deadlines')}>
     {items.map(item => {
       const title = item.kind === 'assessment' ? `${t(`evaluations.type.${item.value.type}`)} ${number.format(item.value.num)}`
-        : item.kind === 'homework' ? '' : item.value.event.title;
+        : item.kind === 'homework' ? ''
+        : item.kind === 'activity' ? localizedActivityTitle(item.value.event.title, item.value.event.type, locale)
+        : item.value.event.title;
       const end = item.endDate;
       const status = deadlineState(item, today);
       const indicative = item.kind === 'assessment' ? item.value.predictionStatus === 'derived'

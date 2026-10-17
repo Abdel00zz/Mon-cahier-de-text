@@ -27,6 +27,7 @@ import { useAuth } from './AuthContext';
 import { logger } from '../lib/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
 import { mergePedagogicalDocuments, pedagogicalDocumentsEqual } from '../domain/evaluations/documentSync';
+import { reconcileClassesEvaluationConfig } from '../domain/evaluations/notebookReconciliation';
 import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
 import { normalizeEvaluationPolicy } from '../domain/evaluations/evaluationPolicy';
 import { translateLocaleMessage } from '../i18n/messages';
@@ -799,7 +800,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     !!nextConfig.establishmentName ||
                     Object.keys(nextConfig.assessmentDates ?? {}).length > 0 ||
                     Object.keys(nextConfig.assessmentDocuments ?? {}).length > 0 ||
-                    Object.keys(nextConfig.pedagogicalEvents ?? {}).length > 0;
+                    Object.keys(nextConfig.pedagogicalEvents ?? {}).length > 0 ||
+                    Object.keys(nextConfig.manualAssessments ?? {}).length > 0 ||
+                    Object.keys(nextConfig.assessmentParticipants ?? {}).length > 0 ||
+                    Object.keys(nextConfig.assessmentAbsences ?? {}).length > 0 ||
+                    Object.keys(nextConfig.classRosters ?? {}).length > 0;
                 const shouldApplyRemoteSettings =
                     !!settings &&
                     (
@@ -853,6 +858,20 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         configChanged = true;
                     }
                 }
+
+                // Réconcilier les remarques et blocs des cahiers tirés avec les activités et évaluations
+                // afin que « Contrôle des cahiers » et le contrôle continu soient immédiatement visibles dans le suivi.
+                const reconciledNotebooks = reconcileClassesEvaluationConfig(
+                    mergedClasses,
+                    nextConfig,
+                    classId => readStoredNotebook(classId).lessonsData,
+                );
+                if (reconciledNotebooks.updated) {
+                    nextConfig = reconciledNotebooks.config;
+                    configChanged = true;
+                    settingsNeedPush = true;
+                }
+
                 if (configChanged) {
                     // A failed local write must not acknowledge a cloud version.
                     localStorage.setItem('appConfig_v1', JSON.stringify(nextConfig));

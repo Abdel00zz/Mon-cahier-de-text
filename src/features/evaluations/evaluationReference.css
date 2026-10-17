@@ -9,10 +9,10 @@
    ══════════════════════════════════════════════════════════════ */
 
 .evaluation-reference {
-  --bg-page: color-mix(in srgb, hsl(var(--background)) 96%, hsl(var(--primary)) 4%);
+  --bg-page: color-mix(in srgb, hsl(39 38% 97%) 95%, hsl(var(--primary)) 5%);
   --text-dark: #1c1c1e;
-  --text-secondary: #636366;
-  --text-muted: #8e8e93;
+  --text-secondary: #5c5b57;
+  --text-muted: #8a8882;
   --color-terracotta: hsl(var(--primary));
 
   /* Tons d'accent iOS 18 */
@@ -20,16 +20,16 @@
   --badge-green-text: #15803d;
   --icon-blue-bg: hsl(var(--primary) / 0.1);
   --icon-blue-fg: hsl(var(--primary));
-  --icon-gray-bg: rgba(118, 118, 128, 0.1);
-  --icon-gray-fg: #3a3a3c;
+  --icon-gray-bg: rgba(118, 114, 106, 0.09);
+  --icon-gray-fg: #3a3937;
   --danger-bg: rgba(225, 29, 72, 0.09);
   --danger-border: rgba(225, 29, 72, 0.24);
   --danger-text: #be123c;
 
   /* Bordures et séparateurs ultra fins style iOS Inset Grouped */
-  --border-card: rgba(60, 60, 67, 0.11);
-  --border-subtle: rgba(60, 60, 67, 0.07);
-  --header-row-bg: rgba(118, 118, 128, 0.07);
+  --border-card: rgba(72, 64, 52, 0.11);
+  --border-subtle: rgba(72, 64, 52, 0.07);
+  --header-row-bg: rgba(118, 114, 106, 0.065);
 
   --radius-card: 16px;
   --radius-item: 10px;
@@ -41,15 +41,15 @@
   --eval-ink: var(--text-dark);
   --eval-muted: var(--text-secondary);
   --eval-accent: var(--color-terracotta);
-  --eval-card: #ffffff;
-  --eval-row-hover: rgba(118, 118, 128, 0.05);
+  --eval-card: hsl(40 42% 99.2%);
+  --eval-row-hover: rgba(118, 114, 106, 0.045);
 
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
   color: var(--text-dark);
 }
 
 .dark .evaluation-reference {
-  --bg-page: hsl(var(--background));
+  --bg-page: color-mix(in srgb, hsl(var(--background)) 92%, hsl(224 28% 15%));
   --text-dark: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
   --text-muted: hsl(var(--muted-foreground) / 0.72);
@@ -69,12 +69,12 @@
   --border-subtle: rgba(255, 255, 255, 0.06);
   --header-row-bg: rgba(255, 255, 255, 0.05);
 
-  --eval-paper: hsl(var(--background));
+  --eval-paper: var(--bg-page);
   --eval-border: var(--border-card);
   --eval-ink: var(--text-dark);
   --eval-muted: var(--text-secondary);
   --eval-accent: var(--color-terracotta);
-  --eval-card: hsl(var(--card));
+  --eval-card: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 25% 20%));
   --eval-row-hover: rgba(255, 255, 255, 0.04);
 }
 
@@ -83,14 +83,21 @@
   max-width: 980px;
   border-radius: var(--radius-card);
   border: 1px solid var(--border-card);
-  background: var(--bg-page);
-  box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.16);
+  background-color: var(--bg-page);
+  background-image: radial-gradient(
+    115% 65% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 5%, transparent) 0%,
+    transparent 70%
+  );
+  box-shadow:
+    inset 0 1px 0.5px 0 rgb(255 255 255 / 0.72),
+    0 24px 52px -12px rgb(28 24 18 / 0.18);
 }
 
 .evaluation-reference .modal-header {
   padding: 14px 22px;
   border-bottom: 1px solid var(--border-card);
-  background: color-mix(in srgb, var(--eval-card) 88%, transparent);
+  background: color-mix(in srgb, var(--eval-card) 90%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
@@ -402,8 +409,8 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   white-space: nowrap !important;
 }
 
-/* Boutons d'action : icônes seules style iOS Squircle */
-.evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count) {
+/* Boutons d'action : icônes seules style iOS Squircle, sauf quand la date limite est renseignée */
+.evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count):not(.ev-action__date) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -428,6 +435,19 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-action:has(.ev-action__count) {
   width: auto;
   padding-inline: 8px;
+}
+
+.evaluation-reference .ev-action:has(.ev-action__date) {
+  width: auto;
+  padding-inline: 10px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.evaluation-reference .ev-action:has(.ev-action__date) .ev-action__icon {
+  display: none;
 }
 
 .evaluation-reference .ev-icon-btn {

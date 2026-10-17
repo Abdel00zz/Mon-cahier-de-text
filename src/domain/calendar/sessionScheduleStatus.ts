@@ -1,5 +1,5 @@
 import type { AbsencePeriod, TimetableClockPolicy, TimetableEntry } from '../../types';
-import { getDaySessionBlocks, type SessionBlock } from './timetable';
+import { getDaySessionBlocks } from './timetable';
 import { getBundledCalendar, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 

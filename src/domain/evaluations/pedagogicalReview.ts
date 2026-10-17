@@ -7,8 +7,8 @@ import { retainOralOutcomes } from './studentRoster';
 export function summarizeClassStudentReviews(config: AppConfig, classId: string) {
     const roster = config.classRosters?.[classId];
     const notebook = [...(config.pedagogicalEvents?.[classId] ?? [])]
-        .filter(event => event.type === 'controle_cahiers' && event.students)
-        .sort((left, right) => right.date.localeCompare(left.date) || right.students!.updatedAt.localeCompare(left.students!.updatedAt))[0];
+        .filter(event => event.type === 'controle_cahiers' && (event.students || (roster?.names.length ?? 0) > 0))
+        .sort((left, right) => right.date.localeCompare(left.date) || (right.students?.updatedAt ?? '').localeCompare(left.students?.updatedAt ?? ''))[0];
     const oral = Object.entries(config.assessmentParticipants?.[classId] ?? {})
         .filter(([, record]) => !record.homeworkOutcomes || record.oralOutcomes || record.oralGrades)
         .sort((left, right) => right[1].updatedAt.localeCompare(left[1].updatedAt))[0];
@@ -20,10 +20,10 @@ export function summarizeClassStudentReviews(config: AppConfig, classId: string)
             priorityNames: names.filter(name => Object.hasOwn(values, name) && priorities.includes(values[name])),
         };
     };
-    const notebookNames = notebook ? namesWithRoster(notebook.students!.names, roster) : [];
+    const notebookNames = notebook ? namesWithRoster(notebook.students?.names ?? [], roster) : [];
     const oralNames = oral ? namesWithRoster(oral[1].names, roster) : [];
     return {
-        notebook: notebook ? describe(notebookNames, retainNotebookConditions(notebookNames, notebook.students!.notebookConditions), ['needs_work', 'missing'], notebook.date) : null,
+        notebook: notebook ? describe(notebookNames, retainNotebookConditions(notebookNames, notebook.students?.notebookConditions), ['needs_work', 'missing'], notebook.date) : null,
         oral: oral ? describe(oralNames, retainOralOutcomes(oralNames, oral[1].oralOutcomes), ['developing', 'needs_support'],
             config.assessmentDates?.[classId]?.[oral[0]] ?? config.manualAssessments?.[classId]?.find(item => item.id === oral[0])?.dateISO ?? oral[1].updatedAt.slice(0, 10)) : null,
     };

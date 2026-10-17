@@ -2,15 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppConfig, AppLocale, ClassInfo, PedagogicalEvent } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { translateLocaleMessage } from '@/i18n/messages';
-import { useRecentPastAssessments, useUpcomingAssessments } from '@/hooks/useAssessments';
+import { useFollowUpAssessments, useRecentPastAssessments } from '@/hooks/useAssessments';
 import { useUpcomingOfficialStudentEvents, UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
 import { daysBetweenISO, UpcomingAssessment } from '@/domain/evaluations/assessments';
+import { getBundledCalendar, getEffectiveSchoolYear } from '@/domain/calendar/calendar';
+import { resolveKindPolicy } from '@/domain/evaluations/evaluationPolicy';
+import { reconcileClassesEvaluationConfig } from '@/domain/evaluations/notebookReconciliation';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import {
   ClassSignal,
   collectClassSignals,
   collectCrossClassSignals,
   formatDateFR,
+  readClassLessons,
   readIgnoredActionIds,
   sortSignals,
 } from '@/infrastructure/notifications/notificationSignals';
@@ -43,8 +47,13 @@ export const useNotificationFeed = (
 ): NotificationFeed => {
   const [storageVersion, setStorageVersion] = useState(0);
   const today = useMoroccoToday();
-  const assessments = useUpcomingAssessments(classes, config, 14);
-  const pastAssessments = useRecentPastAssessments(classes, config, 10);
+  const effectiveConfig = useMemo(
+    () => reconcileClassesEvaluationConfig(classes, config, readClassLessons).config,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [classes, config, storageVersion],
+  );
+  const assessments = useFollowUpAssessments(classes, effectiveConfig, 30);
+  const pastAssessments = useRecentPastAssessments(classes, effectiveConfig, 10);
   const officialEvents = useUpcomingOfficialStudentEvents(classes, 30);
 
   useEffect(() => {
@@ -69,16 +78,14 @@ export const useNotificationFeed = (
   return useMemo(() => {
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const classNameById = new Map(classes.map(c => [c.id, formatLocalizedClassDisplayName(c.name, locale)]));
-    const inAppEnabled = config.notificationSettings?.enabled ?? true;
-    const assessmentLabel = (item: Pick<UpcomingAssessment, 'type' | 'num'>): string => t(
-      item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework',
-      { number: item.num },
-    );
+    const inAppEnabled = effectiveConfig.notificationSettings?.enabled ?? true;
+    const assessmentLabel = (item: Pick<UpcomingAssessment, 'type' | 'num'>): string =>
+      `${t(`evaluations.type.${item.type}`)} ${item.num}`;
     // Le réglage « Alertes dans l'application » coupe réellement les signaux
     // et leur badge d'attention. Le calendrier et les échéances restent
     // consultables : ce sont des données, pas des interruptions.
     const classSignals: ClassSignal[] = inAppEnabled
-      ? classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale))
+      ? classes.flatMap(classInfo => collectClassSignals(classInfo, effectiveConfig, locale))
       : [];
     const globalSignals = inAppEnabled ? collectCrossClassSignals(classes, locale) : [];
 
@@ -94,9 +101,9 @@ export const useNotificationFeed = (
       return set;
     };
 
-    for (const item of (inAppEnabled ? pastAssessments : []).filter(a => a.type === 'controle')) {
-      const saisi = config.assessmentAbsences?.[item.classId]?.[item.id]
-        ?? (item.legacyId ? config.assessmentAbsences?.[item.classId]?.[item.legacyId] : undefined);
+    for (const item of (inAppEnabled ? pastAssessments : []).filter(a => a.type !== 'maison' && resolveKindPolicy(effectiveConfig.evaluationPolicy, a.type).absences)) {
+      const saisi = effectiveConfig.assessmentAbsences?.[item.classId]?.[item.id]
+        ?? (item.legacyId ? effectiveConfig.assessmentAbsences?.[item.classId]?.[item.legacyId] : undefined);
       if (saisi) continue;
       const id = `absences:${item.classId}:${item.id}:${item.dateISO}`;
       const whenLabel = item.daysAgo === 0
@@ -130,16 +137,16 @@ export const useNotificationFeed = (
     const insights = sortSignals(globalSignals.filter(signal => !signal.ignored));
     const ignoredInsights = sortSignals(globalSignals.filter(signal => signal.ignored));
     const urgentOfficial = officialEvents.filter(item => item.inDays <= 3).length;
+    const schoolYear = getEffectiveSchoolYear(getBundledCalendar(), effectiveConfig.schoolYearStart, today);
     const pedagogicalEvents: UpcomingPedagogicalEvent[] = classes
-      .flatMap(classInfo => (config.pedagogicalEvents?.[classInfo.id] ?? []).map(event => ({ classInfo, event })))
-      .filter(({ event }) => event.status === 'planned' && (event.endDate ?? event.date) >= today)
+      .flatMap(classInfo => (effectiveConfig.pedagogicalEvents?.[classInfo.id] ?? []).map(event => ({ classInfo, event })))
+      .filter(({ event }) => Boolean(event.date) && event.date >= schoolYear.debut && event.date <= schoolYear.fin)
       .map(({ classInfo, event }) => ({
         classId: classInfo.id,
         className: classNameById.get(classInfo.id) ?? classInfo.name,
         event,
-        inDays: Math.max(0, daysBetweenISO(today, event.date)),
+        inDays: daysBetweenISO(today, event.date),
       }))
-      .filter(item => item.inDays <= 30)
       .sort((a, b) => a.inDays - b.inDays || a.event.title.localeCompare(b.event.title));
     return {
       corrections,
@@ -151,5 +158,5 @@ export const useNotificationFeed = (
       officialEvents,
       attentionCount: inAppEnabled ? insights.length + urgentOfficial : 0,
     };
-  }, [classes, config, assessments, pastAssessments, officialEvents, locale, storageVersion, today]);
+  }, [classes, effectiveConfig, assessments, pastAssessments, officialEvents, locale, storageVersion, today]);
 };

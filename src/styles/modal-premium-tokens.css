@@ -25,11 +25,23 @@
   --modal-shadow-mid: 0 12px 32px -12px rgb(0 0 0 / 0.18);
   --modal-shadow-high: 0 24px 56px -16px rgb(0 0 0 / 0.28);
 
-  /* ── Timing Orchestration ──────────────────────────────────────────────── */
+  /* ── Timing Orchestration (150ms–300ms Tactile Spring) ─────────────────── */
   --modal-timing-backdrop: 200ms;
-  --modal-timing-surface: 320ms;
-  --modal-timing-content: 240ms;
-  --modal-timing-stagger: 60ms;
+  --modal-timing-surface: 250ms;
+  --modal-timing-content: 220ms;
+  --modal-timing-stagger: 50ms;
+
+  /* ── Palette Artistique des Surfaces Modales (60-30-10 & Color Tinting) ── */
+  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 93%, hsl(39 48% 96%) 7%);
+  --modal-surface-tint: radial-gradient(
+    120% 70% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 4.5%, hsla(38, 70%, 92%, 0.45)) 0%,
+    transparent 72%
+  );
+  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 90%, hsl(40 50% 98%) 10%);
+  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(38 38% 95%) 8%);
+  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 82%, hsl(35 28% 80%) 18%);
+  --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.42) 92%, hsl(var(--primary) / 0.08));
 
   /* ── Magnetic & Ambient Breath Tokens ──────────────────────────────────── */
   --modal-magnetic-glow: 0 0 34px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
@@ -48,6 +60,18 @@
   --modal-shadow-low: 0 6px 16px -4px rgb(0 0 0 / 0.40);
   --modal-shadow-mid: 0 16px 40px -10px rgb(0 0 0 / 0.60);
   --modal-shadow-high: 0 28px 68px -20px rgb(0 0 0 / 0.72);
+
+  /* Palette Artistique Sombre (Gris ardoise profond étagé, zéro noir pur) */
+  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(224 28% 15%) 6%);
+  --modal-surface-tint: radial-gradient(
+    120% 65% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 7%, hsla(222, 35%, 22%, 0.35)) 0%,
+    transparent 70%
+  );
+  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(224 25% 18%) 8%);
+  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(224 28% 14%) 6%);
+  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 88%, hsl(220 25% 32%) 12%);
+  --modal-scrim-bg: hsl(224 32% 6% / 0.74);
 
   /* Magnetic & Ambient Sombre */
   --modal-magnetic-glow: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);

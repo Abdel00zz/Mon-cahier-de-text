@@ -523,6 +523,8 @@ export interface UpcomingAssessment extends PlannedAssessment {
     className: string;
     /** jours restants (0 = aujourd'hui) */
     inDays: number;
+    /** Indique si l'évaluation est complétée (absences ou suivi élèves consignés). */
+    done?: boolean;
 }
 
 /**
@@ -549,6 +551,58 @@ export const getUpcomingAssessments = (
         }
     }
     return upcoming.sort((a, b) => a.inDays - b.inDays);
+};
+
+/**
+ * Évaluations du suivi pédagogique (« محطات » / Échéances) :
+ * inclut l'ensemble des évaluations programmées ou saisies par l'enseignant sur l'année scolaire active,
+ * ainsi que les évaluations indicatives proches, et marque comme complétées celles dont le suivi est renseigné.
+ */
+export const getFollowUpAssessments = (
+    classes: ClassInfo[],
+    planning: PlanningFile | null,
+    config: AppConfig,
+    cal: HolidayCalendar,
+    today: string,
+    derivedHorizonDays = 30
+): UpcomingAssessment[] => {
+    const emptyPlanning: PlanningFile = planning ?? { version: 1, plans: [] };
+    const result: UpcomingAssessment[] = [];
+    for (const classInfo of classes) {
+        const dates = resolveClassAssessments(classInfo, emptyPlanning, config, cal, today);
+        const manuals = config.manualAssessments?.[classInfo.id] ?? [];
+        for (const assessment of dates) {
+            if (!assessment.dateISO) continue;
+            // Les devoirs maison dotés d'une date limite sont déjà projetés avec leur jauge de remise dans homeworkDeadlines.
+            const manualEntry = manuals.find(m => m.id === assessment.id || (assessment.legacyId && m.id === assessment.legacyId));
+            if (assessment.type === 'maison' && manualEntry?.dueDateISO) continue;
+            const inDays = daysBetweenISO(today, assessment.dateISO);
+            if (assessment.predictionStatus === 'derived' && (inDays < 0 || inDays > derivedHorizonDays)) continue;
+            const hasAbsences = Boolean(
+                config.assessmentAbsences?.[classInfo.id]?.[assessment.id]
+                ?? (assessment.legacyId ? config.assessmentAbsences?.[classInfo.id]?.[assessment.legacyId] : undefined)
+            );
+            const participants = config.assessmentParticipants?.[classInfo.id]?.[assessment.id]
+                ?? (assessment.legacyId ? config.assessmentParticipants?.[classInfo.id]?.[assessment.legacyId] : undefined);
+            const hasParticipants = Boolean(
+                participants && (
+                    Object.keys(participants.oralOutcomes ?? {}).length > 0
+                    || Object.keys(participants.oralGrades ?? {}).length > 0
+                    || Object.keys(participants.homeworkOutcomes ?? {}).length > 0
+                    || participants.names.length > 0
+                )
+            );
+            const done = assessment.dateISO <= today && (hasAbsences || hasParticipants);
+            result.push({
+                ...assessment,
+                classId: classInfo.id,
+                className: classInfo.name,
+                inDays,
+                ...(done ? { done: true } : {}),
+            });
+        }
+    }
+    return result.sort((a, b) => a.inDays - b.inDays || a.dateISO.localeCompare(b.dateISO));
 };
 
 export interface PastAssessment extends PlannedAssessment {

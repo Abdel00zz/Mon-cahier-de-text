@@ -1,11 +1,14 @@
 import { produce } from 'immer';
-import type { AppConfig, Indices, LessonsData } from '../../types';
+import type { AppConfig, Indices, LessonsData, PedagogicalEvent } from '../../types';
 import { findItem } from '../notebook/dataUtils';
 import { applySessionEdit, type SessionPatch } from '../notebook/sessionEditing';
 import { sessionDateKey, sessionDateKeys } from './homeworkPlacement';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import type { SessionRemarkEntry } from './sessionActivityRemarks';
 import { homeworkAssessmentId } from './homeworkCycle';
+import { buildLessonRows } from '../notebook/lessonRows';
+import { detectEventsFromRemarks } from './notebookReconciliation';
+import { normalizeActivityText } from './pedagogicalActivities';
 
 export { homeworkAssessmentId };
 
@@ -70,8 +73,62 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
   const overrides = { ...config.sessionRemarkOverrides?.[classId] };
   for (const [id, text] of Object.entries(changes)) overrides[id] = text === null || !text.trim()
     ? { hidden: true } : { text: text.trim(), hidden: false };
-  const result: Partial<AppConfig> = Object.keys(changes).length
-    ? { sessionRemarkOverrides: { ...config.sessionRemarkOverrides, [classId]: overrides } } : {};
+  let overridesModified = Object.keys(changes).length > 0;
+  const result: Partial<AppConfig> = {};
+
+  // Réconcilier les activités pédagogiques de séance (Contrôle des cahiers, Remédiation, Soutien, Rattrapage)
+  // dès l'édition de la remarque ou de la date, pour alimenter immédiatement la feuille d'évaluations et le suivi.
+  const beforeRemarkEvents = buildLessonRows(source).flatMap(row => detectEventsFromRemarks(row, classId, config.evaluationPolicy));
+  const afterRemarkEvents = buildLessonRows(next).flatMap(row => detectEventsFromRemarks(row, classId, config.evaluationPolicy));
+  if (beforeRemarkEvents.length > 0 || afterRemarkEvents.length > 0) {
+    const baseEvents = config.pedagogicalEvents?.[classId] ?? [];
+    const nextEvents: PedagogicalEvent[] = [...baseEvents];
+    const matchedIds = new Set<string>();
+    for (const rev of afterRemarkEvents) {
+      const explicitDuplicate = nextEvents.find(e =>
+        !e.id.startsWith('remark-')
+        && (e.type === rev.type || normalizeActivityText(e.title).includes(normalizeActivityText(rev.title)))
+        && e.date === rev.date
+      );
+      if (explicitDuplicate) {
+        if (overrides[`event:${explicitDuplicate.id}`]?.hidden) {
+          delete overrides[`event:${explicitDuplicate.id}`];
+          overridesModified = true;
+        }
+        continue;
+      }
+      const existing = nextEvents.find(e => e.id === rev.id);
+      const mergedEvent: PedagogicalEvent = {
+        ...existing,
+        ...rev,
+        createdAt: existing?.createdAt ?? rev.createdAt,
+        status: existing?.status ?? rev.status,
+      };
+      const idx = nextEvents.findIndex(e => e.id === rev.id);
+      if (idx >= 0) nextEvents[idx] = mergedEvent;
+      else nextEvents.push(mergedEvent);
+      matchedIds.add(rev.id);
+      if (overrides[`event:${rev.id}`]?.hidden) {
+        delete overrides[`event:${rev.id}`];
+        overridesModified = true;
+      }
+    }
+    const beforeIds = new Set(beforeRemarkEvents.map(e => e.id));
+    for (let i = nextEvents.length - 1; i >= 0; i--) {
+      const ev = nextEvents[i];
+      if (ev.id.startsWith('remark-') && beforeIds.has(ev.id) && !matchedIds.has(ev.id)) {
+        nextEvents.splice(i, 1);
+      }
+    }
+    if (JSON.stringify(nextEvents) !== JSON.stringify(baseEvents)) {
+      result.pedagogicalEvents = { ...config.pedagogicalEvents, [classId]: nextEvents };
+    }
+  }
+
+  if (overridesModified && JSON.stringify(overrides) !== JSON.stringify(config.sessionRemarkOverrides?.[classId] ?? {})) {
+    result.sessionRemarkOverrides = { ...config.sessionRemarkOverrides, [classId]: overrides };
+  }
+
   const nextDates = sessionDateKeys(patch.date);
   /*
    * La pastille « Devoir maison N donné » se pose depuis la REMARQUE, sans

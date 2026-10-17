@@ -13,7 +13,19 @@ export const SETTINGS_PUSH_DELAY_MS = 300;
 export const SETTINGS_PUSH_MIN_INTERVAL_MS = 2_000;
 
 /** Clés dont la modification déclenche l'envoi immédiat. */
-const IMMEDIATE_SETTINGS_KEYS: ReadonlySet<string> = new Set(['timetable', 'schedules', 'classRosters']);
+const IMMEDIATE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
+    'timetable',
+    'schedules',
+    'classRosters',
+    'pedagogicalEvents',
+    'manualAssessments',
+    'assessmentDates',
+    'assessmentParticipants',
+    'assessmentDocuments',
+    'assessmentAbsences',
+    'removedAssessments',
+    'sessionRemarkOverrides',
+]);
 
 export const touchesImmediateSettings = (keys: readonly string[] | undefined): boolean =>
     Boolean(keys?.some(key => IMMEDIATE_SETTINGS_KEYS.has(key)));

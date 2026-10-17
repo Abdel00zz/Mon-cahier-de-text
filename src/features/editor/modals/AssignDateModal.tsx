@@ -368,7 +368,38 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const activeDate = selectedDate || (selection.date ? extractDateRange(selection.date).startDate : '');
   const resolvedDocs = sessionDocuments ?? (activeDate ? getSessionDocuments?.(activeDate) : undefined);
 
-  const appliesDate = dateChanged || (intent === 'date' && !selection.mixedDates);
+  // Détection et synchronisation avancée du numéro de devoir maison (إعطاء الفرض المنزلي).
+  // Attribution et correction sont DEUX lignes distinctes du même devoir :
+  // chaque détection ignore l'autre temps pour que les pastilles ne se confondent pas.
+  const detectedHomeworkNum = useMemo(() => extractHomeworkAssignmentNumber(remark), [remark]);
+  const hasHomework = useMemo(() => Boolean(detectedHomeworkNum !== null || hasHomeworkAssignmentMention(remark)), [detectedHomeworkNum, remark]);
+  const hasPedagogicalActivity = useMemo(
+    () => PEDAGOGICAL_ACTIVITIES.some(activity => remarkHasActivity(remark, activity)),
+    [remark],
+  );
+  const chronologicalNumForDate = useMemo(() => {
+    /*
+     * Les devoirs déjà donnés vivent dans la FEUILLE d'évaluations
+     * (`manualAssessments` + `assessmentDates`) : la mention de séance est un
+     * badge, plus une ligne de texte dans la remarque. Sans ces sources, le
+     * calcul ne voyait aucun jalon et chaque nouveau devoir valait « 1 ».
+     */
+    const moments = homeworkMoments ?? [];
+    return getChronologicalHomeworkNumber({
+      lessons: lessonsData as LessonsData,
+      targetDate: selectedDate,
+      manualAssessments: moments.map(moment => ({
+        id: moment.id, type: 'maison', num: moment.num, dateISO: moment.givenDateISO,
+      })),
+      assessmentDates: Object.fromEntries(moments.map(moment => [moment.id, moment.givenDateISO ?? ''])),
+    });
+  }, [homeworkMoments, lessonsData, selectedDate]);
+  const activeHomeworkNum = useMemo(() => {
+    if (detectedHomeworkNum !== null && detectedHomeworkNum > 0) return detectedHomeworkNum;
+    return chronologicalNumForDate;
+  }, [detectedHomeworkNum, chronologicalNumForDate]);
+
+  const appliesDate = dateChanged || ((intent === 'date' || (!selection.date && (hasHomework || hasPedagogicalActivity))) && !selection.mixedDates);
   const chooseDate = (newDate: string) => {
     const prevDate = selectedDate;
     setSelectedDate(newDate);
@@ -449,33 +480,6 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     }, 280);
   };
 
-  // Détection et synchronisation avancée du numéro de devoir maison (إعطاء الفرض المنزلي).
-  // Attribution et correction sont DEUX lignes distinctes du même devoir :
-  // chaque détection ignore l'autre temps pour que les pastilles ne se confondent pas.
-  const detectedHomeworkNum = useMemo(() => extractHomeworkAssignmentNumber(remark), [remark]);
-  const hasHomework = useMemo(() => Boolean(detectedHomeworkNum !== null || hasHomeworkAssignmentMention(remark)), [detectedHomeworkNum, remark]);
-  const chronologicalNumForDate = useMemo(() => {
-    /*
-     * Les devoirs déjà donnés vivent dans la FEUILLE d'évaluations
-     * (`manualAssessments` + `assessmentDates`) : la mention de séance est un
-     * badge, plus une ligne de texte dans la remarque. Sans ces sources, le
-     * calcul ne voyait aucun jalon et chaque nouveau devoir valait « 1 ».
-     */
-    const moments = homeworkMoments ?? [];
-    return getChronologicalHomeworkNumber({
-      lessons: lessonsData as LessonsData,
-      targetDate: selectedDate,
-      manualAssessments: moments.map(moment => ({
-        id: moment.id, type: 'maison', num: moment.num, dateISO: moment.givenDateISO,
-      })),
-      assessmentDates: Object.fromEntries(moments.map(moment => [moment.id, moment.givenDateISO ?? ''])),
-    });
-  }, [homeworkMoments, lessonsData, selectedDate]);
-  const activeHomeworkNum = useMemo(() => {
-    if (detectedHomeworkNum !== null && detectedHomeworkNum > 0) return detectedHomeworkNum;
-    return chronologicalNumForDate;
-  }, [detectedHomeworkNum, chronologicalNumForDate]);
-
   const renderRemarque = () => (
     <RemarqueSimplifiee
       remark={remark}
@@ -524,7 +528,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {selectedDate && intent !== 'remark' && (
+            {selectedDate && (
               <div className="relative inline-flex items-center">
                 <button
                   type="button"

@@ -34,7 +34,7 @@
   .ev-row__id { align-self: center; justify-self: start; min-width: 0; width: 100%; }
   .ev-row__date { align-self: center; justify-self: center; width: auto; }
   .ev-row__actions { align-self: center; justify-self: end; flex-wrap: nowrap; width: auto; }
-  .ev-action:has(.ev-action__icon) > span:not(.ev-action__count) {
+  .ev-action:has(.ev-action__icon) > span:not(.ev-action__count):not(.ev-action__date) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -47,6 +47,8 @@
   }
   .ev-action { position: relative; min-height: 34px; min-width: 34px; width: 34px; height: 34px; padding-inline: 0; flex: none; text-align: center; }
   .ev-action:has(.ev-action__count) { width: auto; padding-inline: 8px; }
+  .ev-action:has(.ev-action__date) { width: auto; padding-inline: 9px; font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .ev-action:has(.ev-action__date) .ev-action__icon { display: none; }
   .ev-icon-btn { width: 34px; height: 34px; min-height: 34px; min-width: 34px; flex: 0 0 34px; }
   .ev-accordion__toggle {
     grid-template-columns: minmax(0, 1fr) auto;

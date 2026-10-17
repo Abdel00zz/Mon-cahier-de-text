@@ -44,7 +44,15 @@ export type DeadlineScope = 'pending' | 'complete' | 'all';
 /** Completion comes from the saved record, never from the passage of time. */
 export function deadlineState(item: FollowUpDeadline, today: string): DeadlineState {
   if ((item.kind === 'homework' && item.value.total > 0 && item.value.given === item.value.total)
-    || (item.kind === 'activity' && item.value.event.status === 'done')) return 'complete';
+    || (item.kind === 'activity' && (
+      item.value.event.status === 'done'
+      || Boolean(
+        item.value.event.students?.names.length
+        && item.value.event.students.names.every(name =>
+          Boolean(item.value.event.students?.notebookConditions?.[name] || item.value.event.students?.oralOutcomes?.[name] || item.value.event.students?.oralGrades?.[name]))
+      )
+    ))
+    || (item.kind === 'assessment' && Boolean((item.value as { done?: boolean }).done))) return 'complete';
   if (item.endDate && item.date < today && item.endDate >= today) return 'ongoing';
   return item.date < today ? 'past' : item.date === today ? 'today' : 'upcoming';
 }

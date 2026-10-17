@@ -41,6 +41,7 @@ import { ContinuousAssessmentStats } from './ContinuousAssessmentStats';
 import { DeadlineTimeline } from './DeadlineTimeline';
 import { DeadlineFilters } from './DeadlineFilters';
 import { buildFollowUpDeadlines, selectFollowUpDeadlines, type DeadlineScope } from '@/domain/evaluations/followUpDeadlines';
+import { reconcileClassesEvaluationConfig } from '@/domain/evaluations/notebookReconciliation';
 import { homeworkDeadlines } from '@/domain/evaluations/studentFollowUp';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
@@ -263,7 +264,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 }) => {
   const { locale, t, isRtl } = useLocale();
   const today = useMoroccoToday();
-  const homeworkDue = useMemo(() => homeworkDeadlines(config, classes, today), [config, classes, today]);
+  const effectiveConfig = useMemo(
+    () => reconcileClassesEvaluationConfig(classes, config, readClassLessons).config,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [classes, config, feed],
+  );
+  const homeworkDue = useMemo(() => homeworkDeadlines(effectiveConfig, classes, today), [effectiveConfig, classes, today]);
   const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
@@ -416,6 +422,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const openClassById = (classId: string) => {
     const classInfo = classes.find(item => item.id === classId);
     if (!classInfo) return;
+    onSelectClass(classInfo);
+  };
+
+  const openClassEvaluationsById = (classId: string) => {
+    const classInfo = classes.find(item => item.id === classId);
+    if (!classInfo) return;
+    requestEditorModal({ classId, modal: 'evaluations', expiresAt: Date.now() + 120_000 });
     onSelectClass(classInfo);
   };
 
@@ -875,7 +888,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         <button type="button" onClick={() => { setDeadlineClass(''); setDeadlineScope('all'); }}>{t('followUp.resetFilters')}</button>
                       </div>
                     ) : (
-                      <DeadlineTimeline items={visibleDeadlines} classes={classes} today={today} onOpen={openClassById} />
+                      <DeadlineTimeline items={visibleDeadlines} classes={classes} today={today} onOpen={openClassEvaluationsById} />
                     )}
                   </div>
                 )}
@@ -891,7 +904,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         </h2>
                       </div>
                     </div>
-                    <NotificationCalendar classes={classes} config={config} selectedClassId="all" />
+                    <NotificationCalendar classes={classes} config={effectiveConfig} selectedClassId="all" />
                   </div>
                 )}
 
@@ -933,7 +946,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                               <h3 className="truncate text-xs font-extrabold text-foreground transition-colors group-hover:text-primary">
                                 {overview.className}
                               </h3>
-                              <CurriculumProgressLabel classInfo={overview.classInfo} config={config} lessonsData={readClassLessons(overview.classInfo.id)} />
+                              <CurriculumProgressLabel classInfo={overview.classInfo} config={effectiveConfig} lessonsData={readClassLessons(overview.classInfo.id)} />
 
                               <div className="mt-2 flex items-center gap-2.5">
                                 <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-[3px] bg-muted dark:bg-zinc-800">
@@ -972,8 +985,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 </li>)}
                               </ul>
                             </details>}
-                            <ContinuousAssessmentStats config={config} classInfo={overview.classInfo} />
-                            <ClassPedagogicalSummary config={config} classId={overview.classInfo.id} includeOral={false} />
+                            <ContinuousAssessmentStats config={effectiveConfig} classInfo={overview.classInfo} />
+                            <ClassPedagogicalSummary config={effectiveConfig} classId={overview.classInfo.id} includeOral={false} />
                             </article>
                           );
                         })}

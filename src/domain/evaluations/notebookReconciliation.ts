@@ -304,3 +304,36 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
 export function syncNotebookSessionToEvaluations(classId: string, config: AppConfig, _item: unknown, lessons: LessonsData) {
   return syncNotebookToEvaluations(classId, config, lessons);
 }
+
+/**
+ * Réconcilie les cahiers stockés de toutes les classes avec la configuration
+ * des évaluations et activités pédagogiques (contrôle des cahiers, remédiation,
+ * soutien, rattrapage, devoirs, etc.).
+ */
+export function reconcileClassesEvaluationConfig<T extends Partial<AppConfig>>(
+  classes: readonly { id: string }[],
+  config: T,
+  readLessons: (classId: string) => LessonsData,
+): { config: T; patch: Partial<AppConfig>; updated: boolean } {
+  let current = config;
+  const combinedPatch: Partial<AppConfig> = {};
+  let anyUpdated = false;
+  for (const classInfo of classes) {
+    let lessons: LessonsData;
+    try {
+      lessons = readLessons(classInfo.id);
+    } catch {
+      continue;
+    }
+    if (!Array.isArray(lessons) || lessons.length === 0) continue;
+    const { patch, updated } = syncNotebookToEvaluations(classInfo.id, current as AppConfig, lessons, {
+      policy: current.evaluationPolicy,
+    });
+    if (updated) {
+      current = { ...current, ...patch };
+      Object.assign(combinedPatch, patch);
+      anyUpdated = true;
+    }
+  }
+  return { config: current, patch: combinedPatch, updated: anyUpdated };
+}

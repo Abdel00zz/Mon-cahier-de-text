@@ -16,6 +16,10 @@ const LOCALES: readonly AppLocale[] = ['fr', 'en', 'ar'];
 const GENERATED_BASES: Readonly<Record<string, readonly string[]>> = {
   evaluation_diagnostic: ['التقويم التشخيصي', 'Evaluation diagnostique'],
   correction_controle_continu: ['تصحيح الفرض المحروس'],
+  controle_cahiers: ['Contrôle des cahiers', 'Controle des cahiers', 'مراقبة الدفاتر', 'Notebook check', 'Cahiers vérifiés'],
+  remediation: ['Remédiation', 'Remediation', 'معالجة التعثرات', 'معالجة'],
+  soutien: ['Soutien', 'Support', 'دعم تربوي', 'دعم'],
+  rattrapage: ['Rattrapage', 'Make-up', 'حصة استدراك', 'حصّة استدراك', 'استدراك'],
 };
 
 const ARABIC_INDIC = /[\u0660-\u0669]/g;

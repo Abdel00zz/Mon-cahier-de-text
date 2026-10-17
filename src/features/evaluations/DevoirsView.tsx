@@ -27,6 +27,7 @@ import {
   removeEventFromNotebook,
   removeAssessmentFromNotebook,
   removeHomeworkCorrectionFromNotebook,
+  syncNotebookToEvaluations,
 } from '@/domain/evaluations/notebookSyncBridge';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useEvaluationModals } from './hooks/useEvaluationModals';
@@ -61,7 +62,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const number = useMemo(() => numberFormat(locale), [locale]);
   const selectedClass = classInfo;
   const selectedClassDisplayName = selectedClass ? formatLocalizedClassDisplayName(selectedClass.name, locale) : '';
-  const { assessments } = useClassAssessments(selectedClass, config);
+  const effectiveConfig = useMemo(() => {
+    if (!selectedClass || activeLessons.length === 0) return config;
+    const { patch, updated } = syncNotebookToEvaluations(selectedClass.id, config, activeLessons, {
+      policy: config.evaluationPolicy,
+    });
+    return updated ? { ...config, ...patch } : config;
+  }, [selectedClass, config, activeLessons]);
+  const { assessments } = useClassAssessments(selectedClass, effectiveConfig);
   const evaluationModals = useEvaluationModals();
   const {
     editingAssessment,
@@ -69,7 +77,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setEditingAssessment,
     setDeletingAssessment, setDeletingEvent, setEditingDateAssessment, setDeletingCorrection,
   } = evaluationModals;
-  const actions = useEvaluationActions(classInfo.id, config, onConfigChange);
+  const actions = useEvaluationActions(classInfo.id, effectiveConfig, onConfigChange);
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -79,8 +87,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
     const allLinks = linkAssessments(assessments, notebookEntries, today);
     // Afficher STRICTEMENT les devoirs qui existent sur le table editor (saisis par l'utilisateur)
-    const manualIds = new Set(config.manualAssessments?.[classInfo.id]?.map(item => item.id));
-    const assigned = config.assessmentDates?.[classInfo.id] ?? {};
+    const manualIds = new Set(effectiveConfig.manualAssessments?.[classInfo.id]?.map(item => item.id));
+    const assigned = effectiveConfig.assessmentDates?.[classInfo.id] ?? {};
     const linked = allLinks.filter(link => link.entry !== undefined || manualIds.has(link.planned.id)
       || !!assigned[link.planned.id] || !!(link.planned.legacyId && assigned[link.planned.legacyId]));
 
@@ -105,14 +113,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     }));
 
     return [...linked, ...syntheticLinks];
-  }, [assessments, selectedClass, today, activeLessons, t, number, config.manualAssessments, config.assessmentDates, classInfo.id]);
+  }, [assessments, selectedClass, today, activeLessons, t, number, effectiveConfig.manualAssessments, effectiveConfig.assessmentDates, classInfo.id]);
 
   const pedagogicalEvents = useMemo(
     () =>
       selectedClass
-        ? [...(config.pedagogicalEvents?.[selectedClass.id] ?? [])].sort((a, b) => a.date.localeCompare(b.date))
+        ? [...(effectiveConfig.pedagogicalEvents?.[selectedClass.id] ?? [])].sort((a, b) => a.date.localeCompare(b.date))
         : [],
-    [config.pedagogicalEvents, selectedClass]
+    [effectiveConfig.pedagogicalEvents, selectedClass]
   );
 
   const conflictSlots = useMemo(() => evaluationSlots(activeLessons, assessments, pedagogicalEvents), [activeLessons, assessments, pedagogicalEvents]);
@@ -474,7 +482,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     : `${t('evaluations.action.dueDate')} — ${displayName}`}
                 >
                   <ActionIcon name="deadline" />
-                  <span>{dueDateISO ? <bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi> : t('evaluations.action.dueDate')}</span>
+                  <span className={dueDateISO ? 'ev-action__date' : undefined}>{dueDateISO ? <bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi> : t('evaluations.action.dueDate')}</span>
                 </button>
               )}
 

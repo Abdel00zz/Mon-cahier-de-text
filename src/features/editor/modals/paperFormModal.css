@@ -1,23 +1,38 @@
-/* Warm, quiet form surfaces inspired by the supplied content/date dialog. */
+/* Warm, artistic stationery surfaces inspired by fine editorial paper and liquid glass. */
 .paper-form-modal {
-  --form-paper: hsl(40 30% 97%);
-  --form-surface: hsl(42 32% 99%);
-  --form-well: hsl(38 24% 94%);
-  --form-line: hsl(35 18% 85%);
-  background: var(--form-paper);
+  --form-paper: color-mix(in srgb, hsl(39 36% 97.2%) 96%, hsl(var(--primary)) 4%);
+  --form-surface: hsl(41 42% 99.2%);
+  --form-well: color-mix(in srgb, hsl(38 28% 93.8%) 96%, hsl(var(--primary)) 4%);
+  --form-line: hsl(35 20% 85.5%);
+  background-color: var(--form-paper);
+  background-image: radial-gradient(
+    120% 65% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 4.5%, hsla(38, 70%, 92%, 0.4)) 0%,
+    transparent 70%
+  );
   border-color: var(--form-line);
-  box-shadow: 0 24px 48px -12px hsl(var(--foreground) / .18);
+  box-shadow:
+    inset 0 1px 0.5px 0 rgb(255 255 255 / .8),
+    0 24px 48px -12px hsl(var(--foreground) / .18);
 }
 .dark .paper-form-modal {
-  --form-paper: hsl(var(--background));
-  --form-surface: hsl(var(--card));
-  --form-well: hsl(var(--muted) / .45);
-  --form-line: hsl(var(--border));
-  box-shadow: 0 24px 48px -12px hsl(var(--background) / .6);
+  --form-paper: color-mix(in srgb, hsl(var(--background)) 92%, hsl(224 28% 15%));
+  --form-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(224 25% 19%));
+  --form-well: hsl(var(--muted) / .48);
+  --form-line: color-mix(in srgb, hsl(var(--border)) 88%, hsl(220 25% 30%));
+  background-color: var(--form-paper);
+  background-image: radial-gradient(
+    120% 65% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 6.5%, transparent) 0%,
+    transparent 70%
+  );
+  box-shadow:
+    inset 0 1px 0.5px 0 rgb(240 245 255 / .14),
+    0 24px 52px -12px hsl(var(--background) / .65);
 }
 .paper-form-modal .modal-pro-header,
-.paper-form-modal > .modal-footer { background: var(--form-surface); border-color: var(--form-line); backdrop-filter: none; }
-.paper-form-modal .modal-body { background: var(--form-paper); }
+.paper-form-modal > .modal-footer { background: color-mix(in srgb, var(--form-surface) 92%, transparent); border-color: var(--form-line); backdrop-filter: blur(12px); }
+.paper-form-modal .modal-body { background: transparent; }
 .paper-form-modal :is(.dialog-close, .btn-back, .remark-close-btn) { color: var(--control-ink); }
 .paper-form-modal :is(.dialog-close, .btn-back, .remark-close-btn):hover { background: var(--control-wash); color: var(--control-ink-hover); }
 .paper-form-modal .insertion-point-box { padding: 12px 16px; border-radius: 12px; background: var(--form-well); border-color: var(--form-line); box-shadow: none; }

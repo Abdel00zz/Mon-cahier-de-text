@@ -10,34 +10,35 @@
 
 /* Le voile suit la palette du thème et s'anime avec la surface. */
 .modal-motion-overlay {
-  --modal-scrim-blur: 5px;
-  background: hsl(var(--foreground) / .44);
-  -webkit-backdrop-filter: blur(var(--modal-scrim-blur));
-  backdrop-filter: blur(var(--modal-scrim-blur));
+  --modal-scrim-blur: 7px;
+  background: var(--modal-scrim-bg, hsl(var(--foreground) / .42));
+  -webkit-backdrop-filter: blur(var(--modal-scrim-blur)) saturate(135%);
+  backdrop-filter: blur(var(--modal-scrim-blur)) saturate(135%);
 }
 .dark .modal-motion-overlay { 
-  background: hsl(var(--background) / .76);
+  background: var(--modal-scrim-bg, hsl(var(--background) / .76));
 }
-.modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 240ms ease-out both; }
-.modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 220ms ease-in both; }
+.modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 210ms var(--modal-spring-smooth) both; }
+.modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 180ms ease-in both; }
 
 /* Surface modale avec architecture Liquid Glass et ombres GPU */
 .modal-motion-surface {
   --modal-visible-height: var(--app-viewport-height, 100dvh);
   --modal-visible-top: var(--app-viewport-offset-top, 0px);
   --modal-keyboard-inset: max(0px, calc(100dvh - var(--modal-visible-height) - var(--modal-visible-top)));
-  border-color: hsl(var(--border) / .85);
-  background: hsl(var(--card) / .96);
-  -webkit-backdrop-filter: blur(var(--modal-blur-medium)) saturate(150%);
-  backdrop-filter: blur(var(--modal-blur-medium)) saturate(150%);
+  border-color: var(--modal-border-artistic, hsl(var(--border) / .85));
+  background-color: var(--modal-surface-bg, hsl(var(--card) / .96));
+  background-image: var(--modal-surface-tint);
+  -webkit-backdrop-filter: blur(var(--modal-blur-medium)) saturate(155%);
+  backdrop-filter: blur(var(--modal-blur-medium)) saturate(155%);
   font-family: var(--font-sans);
   isolation: isolate;
   box-shadow: 
-    inset 0 1px 0.5px 0 rgb(255 255 255 / .65),
+    inset 0 1px 0.5px 0 rgb(255 255 255 / .72),
     var(--modal-elevation-shadow, var(--modal-shadow-mid)),
     var(--modal-glow, 0 0 0 0 transparent);
   transform: translate3d(0, var(--sheet-drag-y, 0px), 0);
-  transition: backdrop-filter 320ms var(--modal-spring-smooth), box-shadow 280ms ease;
+  transition: backdrop-filter 250ms var(--modal-spring-smooth), box-shadow 240ms ease, background-color 220ms ease;
 }
 
 /* Élévation Z dynamique */
@@ -57,9 +58,11 @@
 .modal-motion-surface[data-glow="danger"] { --modal-glow: var(--glow-danger); }
 
 .dark .modal-motion-surface { 
-  background: hsl(var(--card) / .94);
+  border-color: var(--modal-border-artistic, hsl(var(--border) / .85));
+  background-color: var(--modal-surface-bg, hsl(var(--card) / .94));
+  background-image: var(--modal-surface-tint);
   box-shadow: 
-    inset 0 1px 0.5px 0 rgb(240 245 255 / .12),
+    inset 0 1px 0.5px 0 rgb(240 245 255 / .14),
     var(--modal-elevation-shadow, var(--modal-shadow-high)),
     var(--modal-glow, 0 0 0 0 transparent); 
 }
@@ -181,7 +184,7 @@
 
 /* Animations entrée/sortie avec spring physics */
 .modal-motion-surface[data-state="open"] { 
-  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: modal-dialog-in 250ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 /* ── Concept 4 : Breath & Pulse Ambient (Halo Ambiant Vivant) ─────────── */
@@ -216,29 +219,29 @@
 }
 
 .modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
-  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
-             modal-ambient-breathe-light 4.2s 280ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: modal-dialog-in 250ms cubic-bezier(0.22, 1, 0.36, 1) backwards,
+             modal-ambient-breathe-light 4.2s 250ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 .dark .modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
-  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
-             modal-ambient-breathe-dark 4.2s 280ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: modal-dialog-in 250ms cubic-bezier(0.22, 1, 0.36, 1) backwards,
+             modal-ambient-breathe-dark 4.2s 250ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .modal-motion-surface[data-state="open"][data-ambient="true"] {
-    animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards !important;
+    animation: modal-dialog-in 250ms cubic-bezier(0.22, 1, 0.36, 1) backwards !important;
   }
 }
 
 .modal-motion-surface[data-state="closed"] { 
-  animation: modal-dialog-out 220ms cubic-bezier(0.4, 0, 1, 1) both; 
+  animation: modal-dialog-out 190ms cubic-bezier(0.4, 0, 1, 1) both; 
   pointer-events: none; 
 }
 
-/* Header avec bordure discrète */
+/* Header avec bordure discrète et teinte harmonisée */
 .modal-motion-surface .modal-pro-header {
-  border-bottom: 1px solid hsl(var(--border));
-  background: hsl(var(--card));
+  border-bottom: 1px solid var(--modal-border-artistic, hsl(var(--border)));
+  background: var(--modal-header-bg, hsl(var(--card)));
   gap: 4px;
 }
 .modal-motion-surface .modal-pro-header [data-ui-title] {
@@ -276,11 +279,11 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Footer avec ombre remontante subtile */
+/* Footer avec ombre remontante subtile et teinte harmonisée */
 .modal-motion-surface .modal-pro-footer {
-  background: hsl(var(--card));
-  border-top: 1px solid hsl(var(--border));
-  box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .18); 
+  background: var(--modal-footer-bg, hsl(var(--card)));
+  border-top: 1px solid var(--modal-border-artistic, hsl(var(--border)));
+  box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .15); 
 }
 
 /* Bouton X avec position haute et dégagement garanti de la ligne séparatrice */

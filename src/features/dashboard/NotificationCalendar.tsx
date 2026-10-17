@@ -289,7 +289,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         });
       }
       for (const event of config.pedagogicalEvents?.[classInfo.id] ?? []) {
-        if (event.status !== 'planned') continue;
+        if (!event.date) continue;
         result.push({
           id: `pedagogical:${classInfo.id}:${event.id}`,
           kind: 'pedagogical',

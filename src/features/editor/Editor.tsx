@@ -531,6 +531,17 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       evaluationsBaseline.current = normalizedLessons;
       setEditorState(draft => { draft.contentDirection = nextDirection; });
 
+      if (normalizedLessons.length > 0 && workspaceIsActive()) {
+        const latest = evaluationContext.current;
+        (latest.config.pedagogicalEvents?.[classInfo.id] ?? []).forEach(event => eventArchive.current.set(event.id, event));
+        const { patch, updated } = syncNotebookToEvaluations(classInfo.id, latest.config, normalizedLessons, {
+          planned: latest.assessments,
+          eventArchive: eventArchive.current,
+          policy: latest.config.evaluationPolicy,
+        });
+        if (updated) updateConfig(patch);
+      }
+
       // Répare une fois les cahiers existants créés avant cette règle. La
       // correction est persistée immédiatement afin qu'elle survive au retour
       // Dashboard et soit propagée aux autres appareils.
