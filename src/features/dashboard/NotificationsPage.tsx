@@ -523,6 +523,77 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const isEffectiveCollapsed = isSidebarCollapsed;
 
+  const renderSidebarItem = (item: AxisMenuItem) => {
+    const isActive = activeAxis === item.id;
+    const Icon = item.icon;
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => handleSelectAxis(item.id)}
+        title={item.label}
+        className={cn(
+          'w-full flex items-center transition-all duration-150 cursor-pointer group rounded-xl min-h-[44px]',
+          isEffectiveCollapsed
+            ? 'justify-center p-2'
+            : 'gap-3 px-3 py-2 text-start',
+          isActive
+            ? 'bg-primary/12 text-primary font-bold shadow-2xs'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 font-medium'
+        )}
+      >
+        <div className="relative flex shrink-0 items-center justify-center">
+          <Icon
+            className={cn(
+              'size-[22px] transition-transform duration-200 ease-out group-hover:scale-110 motion-reduce:transition-none',
+              isActive
+                ? 'text-primary stroke-[2.25]'
+                : 'text-muted-foreground/85 group-hover:text-foreground stroke-[1.9]'
+            )}
+          />
+          {isEffectiveCollapsed && item.count > 0 && (
+            <span
+              className={cn(
+                'absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8.5px] font-bold border border-card shadow-xs',
+                item.emphasize
+                  ? 'bg-destructive/20 text-destructive'
+                  : 'bg-warning/25 text-warning-strong'
+              )}
+            >
+              {item.count}
+            </span>
+          )}
+        </div>
+        {!isEffectiveCollapsed && (
+          <>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1.5">
+                <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-semibold text-foreground')}>
+                  {item.label}
+                </span>
+                {item.count > 0 && (
+                  <span
+                    className={cn(
+                      'flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[9px] font-bold',
+                      item.emphasize
+                        ? 'bg-destructive/20 text-destructive'
+                        : isActive
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {item.count}
+                  </span>
+                )}
+              </div>
+            </div>
+            <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-all duration-150', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100 translate-x-0' : 'text-muted-foreground/40 opacity-0 group-hover:opacity-100 group-hover:text-foreground')} />
+          </>
+        )}
+      </button>
+    );
+  };
+
   const renderSidebar = (
     <div className="space-y-4 transition-all duration-300">
       {/* Top Toggle Header */}
@@ -552,78 +623,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           </h3>
         )}
         <div className="space-y-1">
-          {alertsGroup.map(item => {
-            const isActive = activeAxis === item.id;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  handleSelectAxis(item.id);
-                }}
-                title={item.label}
-                className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-start',
-                  isActive
-                    ? 'bg-primary/10 text-primary font-bold'
-                    : 'text-muted-foreground hover:text-primary'
-                )}
-              >
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
-                    isActive
-                      ? 'bg-primary/15 text-primary scale-105'
-                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
-                  )}
-                >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                  {isEffectiveCollapsed && item.count > 0 && (
-                    <span
-                      className={cn(
-                        'absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold border border-card',
-                        item.emphasize
-                          ? 'bg-destructive/20 text-destructive'
-                          : 'bg-warning/25 text-warning-strong'
-                      )}
-                    >
-                      {item.count}
-                    </span>
-                  )}
-                </div>
-                {!isEffectiveCollapsed && (
-                  <>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
-                          {item.label}
-                        </span>
-                        {item.count > 0 && (
-                          <span
-                            className={cn(
-                              'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
-                              item.emphasize
-                                ? 'bg-destructive/20 text-destructive'
-                                : isActive
-                                  ? 'bg-warning/25 text-warning-strong'
-                                  : 'bg-primary/12 text-primary'
-                            )}
-                          >
-                            {item.count}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
-                  </>
-                )}
-              </button>
-            );
-          })}
+          {alertsGroup.map(renderSidebarItem)}
         </div>
       </div>
 
@@ -635,62 +635,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           </h3>
         )}
         <div className="space-y-1">
-          {planningGroup.map(item => {
-            const isActive = activeAxis === item.id;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  handleSelectAxis(item.id);
-                }}
-                title={item.label}
-                className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-start',
-                  isActive
-                    ? 'bg-primary/10 text-primary font-bold'
-                    : 'text-muted-foreground hover:text-primary'
-                )}
-              >
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
-                    isActive
-                      ? 'bg-primary/15 text-primary scale-105'
-                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
-                  )}
-                >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                  {isEffectiveCollapsed && item.count > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-1 text-[8px] font-bold border border-white dark:border-zinc-900">
-                      {item.count}
-                    </span>
-                  )}
-                </div>
-                {!isEffectiveCollapsed && (
-                  <>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
-                          {item.label}
-                        </span>
-                        {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
-                            {item.count}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
-                  </>
-                )}
-              </button>
-            );
-          })}
+          {planningGroup.map(renderSidebarItem)}
         </div>
       </div>
 
@@ -702,62 +647,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           </h3>
         )}
         <div className="space-y-1">
-          {historyGroup.map(item => {
-            const isActive = activeAxis === item.id;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  handleSelectAxis(item.id);
-                }}
-                title={item.label}
-                className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-start',
-                  isActive
-                    ? 'bg-primary/10 text-primary font-bold'
-                    : 'text-muted-foreground hover:text-primary'
-                )}
-              >
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
-                    isActive
-                      ? 'bg-primary/15 text-primary scale-105'
-                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
-                  )}
-                >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                  {isEffectiveCollapsed && item.count > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-1 text-[8px] font-bold border border-white dark:border-zinc-900">
-                      {item.count}
-                    </span>
-                  )}
-                </div>
-                {!isEffectiveCollapsed && (
-                  <>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
-                          {item.label}
-                        </span>
-                        {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
-                            {item.count}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
-                  </>
-                )}
-              </button>
-            );
-          })}
+          {historyGroup.map(renderSidebarItem)}
         </div>
       </div>
     </div>
@@ -765,8 +655,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const modalTitle = (
     <div className="flex min-w-0 items-center gap-2.5 pe-1">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center text-muted-foreground">
-        <AlarmBell className="h-4 w-4" />
+      <span className="flex shrink-0 items-center justify-center text-primary">
+        <AlarmBell className="size-5.5 stroke-[2.2]" />
       </span>
       <span className={cn('min-w-0 font-semibold text-foreground', isRtl && 'text-lg leading-tight')}>
         {t('notifications.centerTitle')}

@@ -37,20 +37,20 @@ const NAV_COPY: Record<AppLocale, {
 }> = {
   fr: {
     brand: 'Cahier de textes', teacherSpace: 'ESPACE ENSEIGNANT',
-    dashboard: 'Classes', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
-    dashboardMobile: 'Classes', notificationsMobile: 'Pilotage', settingsMobile: 'Paramètres',
+    dashboard: 'Classes', notifications: 'Suivi pédagogique', settings: 'Paramètres', help: 'Guide',
+    dashboardMobile: 'Classes', notificationsMobile: 'Suivi', settingsMobile: 'Paramètres',
     collapse: 'Réduire', expand: 'Développer', mainNav: 'Navigation principale', mobileNav: 'Navigation mobile',
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'الأقسام', notifications: 'المتابعة', settings: 'الإعدادات', help: 'الدليل',
-    dashboardMobile: 'الأقسام', notificationsMobile: 'المتابعة', settingsMobile: 'الإعدادات',
+    dashboard: 'الأقسام', notifications: 'التتبع التربوي', settings: 'الإعدادات', help: 'الدليل',
+    dashboardMobile: 'الأقسام', notificationsMobile: 'التتبع', settingsMobile: 'الإعدادات',
     collapse: 'طي القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
   en: {
     brand: 'Lesson Notebook', teacherSpace: 'TEACHER SPACE',
-    dashboard: 'Classes', notifications: 'Dashboard', settings: 'Settings', help: 'Pedagogical Guide',
-    dashboardMobile: 'Classes', notificationsMobile: 'Dashboard', settingsMobile: 'Settings',
+    dashboard: 'Classes', notifications: 'Teaching Overview', settings: 'Settings', help: 'Pedagogical Guide',
+    dashboardMobile: 'Classes', notificationsMobile: 'Overview', settingsMobile: 'Settings',
     collapse: 'Collapse', expand: 'Expand', mainNav: 'Main navigation', mobileNav: 'Mobile navigation',
   },
 };
@@ -293,10 +293,10 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon
                     className={cn(
                       'shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none',
-                      'size-[20.5px] max-xl:size-[22.5px] aspect-square',
+                      'size-[22px] max-xl:size-[23.5px] aspect-square',
                       isActive
-                        ? 'text-foreground stroke-[2]'
-                        : 'text-muted-foreground group-hover:text-foreground stroke-[2]'
+                        ? 'text-foreground stroke-[2.2]'
+                        : 'text-muted-foreground group-hover:text-foreground stroke-[1.9]'
                     )}
                   />
                   {count ? (
