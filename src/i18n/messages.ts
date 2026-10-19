@@ -2331,7 +2331,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'language.settings.description': 'لغة الواجهة. العربية تفعّل تلقائياً اتجاه القراءة من اليمين.',
     'language.settings.active': 'لغة الواجهة',
     'dashboard.ready': 'دفاتر النصوص جاهزة',
-    'dashboard.classes': 'أقسامي',
+    'dashboard.classes': 'أقسامي الدراسية',
     'addContent.free': 'عنصر حر', 'addContent.freeHint': 'عنصر حر — جاهز للكتابة', 'addContent.freeHelp': 'أي محتوى غير مدرج: تمرين، ملاحظة، نشاط… يدعم النص وصيغ LaTeX.', 'contentType.free': 'نص حر',
     'dashboard.notebook': 'دفتر النصوص',
     'dashboard.welcome.greeting': 'مرحباً{teacher}',

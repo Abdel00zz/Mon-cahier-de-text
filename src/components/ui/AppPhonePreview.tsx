@@ -14,7 +14,7 @@ const COPY = {
   },
   ar: {
     label: 'معاينة توضيحية للتطبيق على هاتف', brand: 'دفتر نصوصي', greeting: 'يوم جميل للتدريس.',
-    classes: 'أقسامي', notebook: 'دفتري', schedule: 'الجدول', settings: 'الإعدادات',
+    classes: 'أقسامي الدراسية', notebook: 'دفتري', schedule: 'الجدول', settings: 'الإعدادات',
     today: 'اليوم', date: 'الاثنين 14 شتنبر', subject: 'الرياضيات', current: 'حصة جارية',
     lesson: 'الأعداد الجذرية', next: 'الحصة المقبلة', nextLesson: 'الحساب الحرفي',
     readyDetail: 'حصصك في متناول يدك.',

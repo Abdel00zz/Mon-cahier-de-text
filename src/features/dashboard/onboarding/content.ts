@@ -83,7 +83,7 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         brand: 'دفتر النصوص',
         title: 'مرحباً',
         subtitle: 'لنأخذ بضع لحظات لإعداد مساحة العمل الخاصة بك.',
-        start: 'الانتقال إلى أقسامي',
+        start: 'الانتقال إلى أقسامي الدراسية',
         finishing: 'جارٍ الإنهاء…',
         configurationCompleted: 'تم حفظ الإعدادات.',
         configurationError: 'تعذّر إنهاء الإعداد. حاول مرة أخرى.',

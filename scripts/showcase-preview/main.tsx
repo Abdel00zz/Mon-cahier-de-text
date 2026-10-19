@@ -79,7 +79,7 @@ function PreviewTable() {
  useNotebookOpeningFocus('showcase', rows, params.has('resume'), priorityFocus, setFocusKey);
  return <MainTable lessonsData={lessons} visibleRows={rows} absenceSessions={buildAbsenceSessions(config, classes[0].id, lessons)} contentDirection={ar?'rtl':'ltr'} onClearSearch={noop} onOpenAddContentModal={noop} showDescriptions={false} selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} focusKey={focusKey} getSessionAnnotation={date => annotations.get(date ?? '')}/>;
 }
-const tabs = [{ id: 'classes', label: ar ? 'أقسامي' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }, { id: 'motion', label: ar ? 'شريط الحركة' : 'Film & Motion', icon: Sparkles }];
+const tabs = [{ id: 'classes', label: ar ? 'أقسامي الدراسية' : 'Mes classes', icon: LayoutGrid }, { id: 'editor', label: ar ? 'دفتر النصوص' : 'Mon cahier', icon: BookOpen }, { id: 'schedule', label: ar ? 'استعمال الزمن' : 'Emploi du temps', icon: CalendarDays }, { id: 'motion', label: ar ? 'شريط الحركة' : 'Film & Motion', icon: Sparkles }];
 function Capture() {
  const [search, setSearch] = useState('');
  const [opening, setOpening] = useState(0);
