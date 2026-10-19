@@ -214,7 +214,7 @@ const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
   .sort((left, right) => right.length - left.length);
 
-export const formatClassDisplayName = (name: string): string => {
+const formatClassDisplayName = (name: string): string => {
   const normalized = normalizeOfficialClassName(toDisplayText(name)).trim().replace(/\s+/g, ' ');
   const level = DISPLAY_LEVEL_KEYS.find(key =>
     normalized === key || normalized.startsWith(`${key} `)
@@ -385,19 +385,6 @@ export const formatStreamSigla = (code: string, locale: AppLocale): string => {
     .map(word => word[0]);
   return letters.length > 1 ? letters.join('.') : label.replace(/^(?:ال|و)/, '');
 };
-
-/**
- * Libellé accessible du groupe (« Groupe 3 »), employé en info-bulle et pour
- * les lecteurs d'écran : à l'écran, seule la valeur du groupe est affichée.
- */
-const CLASS_GROUP_LABELS: Record<AppLocale, string> = {
-  fr: 'Groupe {group}',
-  ar: 'الفوج {group}',
-  en: 'Group {group}',
-};
-
-export const formatClassGroupLabel = (group: string, locale: AppLocale): string =>
-  CLASS_GROUP_LABELS[locale].replace('{group}', group);
 
 /**
  * Libellés de filières, indexés par code neutre — ceux produits par

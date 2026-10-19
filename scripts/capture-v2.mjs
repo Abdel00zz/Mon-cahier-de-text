@@ -23,7 +23,6 @@ const targets = [
   { cat: 'pages', label: 'editor', screen: 'editor', extra: '&toolbar&activities&absences', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
   { cat: 'pages', label: 'schedule', screen: 'schedule', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
   { cat: 'pages', label: 'checks', screen: 'checks', extra: '&roster-live', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
-  { cat: 'pages', label: 'tracking', screen: 'tracking', extra: '&roster-live', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
   { cat: 'pages', label: 'print', screen: 'print', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
   { cat: 'pages', label: 'activities', screen: 'activities', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },
   { cat: 'pages', label: 'class-menu', screen: 'class-menu', extra: '&roster-live', langs: ['ar', 'fr'], devices: ['desktop', 'phone'] },

@@ -3,12 +3,12 @@ const terms = [
   'Enregistrer le profil', 'Évaluation diagnostique 1', 'Paramètres → Profil',
   'Paramètres → Emploi du temps', 'Paramètres → Notifications', 'Paramètres → Apparence',
   'Paramètres → Données', 'Paramètres → Archives', 'Paramètres → Assistance',
-  'centre de pilotage', 'emploi du temps', 'notifications système', 'synchronisation',
-  'sauvegarde globale', 'remplacement', 'Ne plus avertir pour cette date',
+  'emploi du temps', 'notifications système', 'synchronisation',
+  'sauvegarde globale', 'remplacement', 'Élèves de la classe', 'Ajouter ou gérer les élèves',
   'Évaluations', 'Cyber Tech & Clean', 'JSON', 'LaTeX', 'KaTeX', 'PDF',
-  'حفظ الملف الشخصي', 'التقويم التشخيصي 1', 'مركز القيادة', 'استعمال الزمن',
+  'حفظ الملف الشخصي', 'التقويم التشخيصي 1', 'استعمال الزمن',
   'إشعارات النظام', 'المزامنة', 'النسخة الشاملة', 'الاستبدال',
-  'عدم التنبيه إلى هذا التاريخ مجدداً', 'الإعدادات', 'الملف الشخصي',
+  'لائحة التلاميذ', 'الإعدادات', 'الملف الشخصي',
 ];
 const pattern = new RegExp(`(\\$\\$?[^$]+\\$\\$?|${terms.sort((a, b) => b.length - a.length)
   .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');

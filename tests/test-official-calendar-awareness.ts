@@ -121,9 +121,6 @@ test('tous les niveaux du collège et du lycée sont couverts par le bulletin ; 
 });
 
 test('les séances manquées ne sont plus réclamées après la fin des cours', () => {
-    const signals = readFileSync('src/infrastructure/notifications/notificationSignals.ts', 'utf8');
-    assert.match(signals, /const teachingEnd = getClassTeachingEnd\(classInfo, year\) \?\? year\.fin;/);
-    assert.match(signals, /iso > year\.fin \|\| iso > teachingEnd/);
     for (const file of ['TeacherList', 'TeacherDetail', 'ClassProgression']) {
         assert.match(readFileSync(`src/admin/components/${file}.tsx`, 'utf8'), /getClassTeachingEndForYear\(/, file);
     }

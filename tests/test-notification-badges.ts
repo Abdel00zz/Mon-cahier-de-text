@@ -63,7 +63,7 @@ test('native unsubscribe retries are bounded, account-scoped and binding-specifi
 });
 
 test('Web Push: count is independent of the monochrome status-bar icon and reminder deliveries', () => {
-  const payload = { title: 'Direction', body: 'Message', kind: 'admin' as const, url: '/#/notifications', badgeCount: 4, badgeOwner: '212600000001' };
+  const payload = { title: 'Direction', body: 'Message', kind: 'admin' as const, url: '/#/', badgeCount: 4, badgeOwner: '212600000001' };
   const serialized = JSON.parse(serializePushNotification(payload));
   assert.equal(serialized.badgeCount, 4);
   assert.equal(serialized.notification.badge, '/icons/notification-badge-96.png');

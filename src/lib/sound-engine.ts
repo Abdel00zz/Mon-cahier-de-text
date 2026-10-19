@@ -10,9 +10,9 @@
  * 5. sync_chime : Accord harmonique double onde (440 Hz & 659 Hz).
  */
 
-export type SoundEvent = 'glide' | 'card_open' | 'key_tap' | 'validate_click' | 'sync_chime';
+type SoundEvent = 'glide' | 'card_open' | 'key_tap' | 'validate_click' | 'sync_chime';
 
-export class SoundEngine {
+class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private muted: boolean = false;

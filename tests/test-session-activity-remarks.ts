@@ -132,3 +132,21 @@ test('examen_blanc, olympiade, and concours are valid top-level cell content blo
   assert.equal(TOP_LEVEL_TYPE_CONFIG.olympiade.autoNumber, true);
   assert.equal(TOP_LEVEL_TYPE_CONFIG.concours.autoNumber, true);
 });
+
+
+test('automatic remark labels follow the screen language while personal titles stay intact', () => {
+  const settings: Partial<AppConfig> = { pedagogicalEvents: { A: [
+    { ...event('check', 'controle_cahiers'), title: 'Contrôle des cahiers' },
+    { ...event('support', 'soutien'), title: 'Soutien' },
+    { ...event('remediate', 'remediation'), title: 'معالجة التعثرات' },
+    { ...event('custom', 'rattrapage'), title: 'Révision personnelle : fractions' },
+  ] } };
+  const before = JSON.stringify(settings);
+  for (const locale of ['fr', 'ar', 'en'] as const) {
+    const remarks = buildSessionActivityRemarks(settings, 'A', (key, values) => translateLocaleMessage(locale, key, values), ', ');
+    const text = remarks.get('2026-10-01')!;
+    for (const type of ['controle_cahiers', 'soutien', 'remediation']) assert.ok(text.includes(translateLocaleMessage(locale, `evaluations.event.${type}`)));
+    assert.ok(text.includes('Révision personnelle : fractions'));
+  }
+  assert.equal(JSON.stringify(settings), before, 'display translations never rewrite stored content');
+});

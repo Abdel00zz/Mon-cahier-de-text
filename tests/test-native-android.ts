@@ -148,7 +148,7 @@ test('un test de notification interrompu par un changement de compte n’est pas
       return { display: 'granted' };
     }
   });
-  assert.equal(await showNativeNotification('Test', 'Rappel', 'test', '/#/notifications'), false);
+  assert.equal(await showNativeNotification('Test', 'Rappel', 'test', '/#/'), false);
   assert.equal(calls.mock.calls.some(call => call.arguments[1] === 'schedule'), false);
 });
 

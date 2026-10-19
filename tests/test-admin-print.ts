@@ -223,43 +223,7 @@ test('le panneau de progression s’appuie sur le domaine et ne charge qu’à l
   assert.match(progression, /Sérénité pédagogique\./, 'état vide valorisé');
 });
 
-test('les encarts de dates du calendrier n’ont plus de filet vertical', () => {
-  const calendar = sourceOf('src/features/dashboard/NotificationCalendar.tsx');
-  assert.doesNotMatch(calendar, /absolute inset-y-4 start-2 w-1/, 'filet vertical supprimé');
-  assert.match(calendar, /calendar-day-card flex items-start gap-3 p-3\.5/, 'encart retravaillé');
-  assert.match(calendar, /calendar-day-card__title/, 'titre en sérif éditoriale');
-  assert.match(calendar, /import '\.\/calendarDayCard\.css';/, 'styles dédiés chargés');
-});
-
-test('les icônes du calendrier sont celles de la navigation', () => {
-  const calendar = sourceOf('src/features/dashboard/NotificationCalendar.tsx');
-  // chapitre → cahier, évaluation → onglet Évaluations, absence → réglages Absences,
-  // emploi du temps → carte Emploi du temps, férié → école fermée.
-  assert.match(calendar, /if \(event\.kind === 'lesson'\) return BookOpen;/);
-  assert.match(calendar, /if \(event\.kind === 'assessment'\) return CalendarCheck;/);
-  assert.match(calendar, /if \(event\.kind === 'pedagogical'\) return ListChecks;/);
-  assert.match(calendar, /if \(event\.kind === 'official'\) return CalendarRange;/);
-  assert.match(calendar, /if \(event\.kind === 'holiday'\) return CalendarX;/);
-  assert.match(calendar, /if \(event\.kind === 'vacation'\) return CalendarDays;/);
-  assert.match(calendar, /return FileSignature;/, 'absence justifiée = icône des certificats');
-  assert.doesNotMatch(calendar, /return Clock;/, 'l’ancienne icône horloge ne sert plus de repère de date');
-});
-
-test('l’encart de date assume le langage visuel du thème', () => {
-  const css = sourceOf('src/features/dashboard/calendarDayCard.css');
-  assert.match(css, /\.calendar-day-card \{/, 'encart');
-  assert.doesNotMatch(css, /border-(inline-)?(left|right|start|end)/, 'aucun filet vertical');
-  assert.match(css, /font-family: var\(--font-display\)/, 'sérif éditoriale');
-  assert.match(css, /html\[lang='ar'\] \.calendar-day-card__title/, 'arabe traité à part');
-  assert.match(css, /prefers-reduced-motion/, 'animations respectueuses');
-});
-
-/* ══════════════════════════════════════════════════════════════════════════
-   6. Textes et formules : la direction lit le cahier comme l'enseignant
-   ══════════════════════════════════════════════════════════════════════════ */
-
 const progressionPanel = sourceOf('src/admin/components/ClassProgression.tsx');
-
 const katexCount = (html: string) => (html.match(/class="katex/g) ?? []).length;
 
 test('MathText et MathTitle composent réellement les formules, sans LaTeX résiduel', () => {

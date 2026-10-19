@@ -188,10 +188,10 @@ export const sendTestNotification = async (): Promise<PushTestResult> => {
     if (Capacitor.isNativePlatform()) {
         const remote = await (await import('../../platform/nativePush')).testNativePush();
         if (remote) return remote;
-        const ok = await (await import('../../platform/nativeNotifications')).showNativeNotification(title, body, 'native-test', '/#/notifications');
+        const ok = await (await import('../../platform/nativeNotifications')).showNativeNotification(title, body, 'native-test', '/#/');
         return { ok, sent: ok ? 1 : 0 };
     }
-    const ok = await showLocalNotification(title, body, 'local-test', '/#/notifications', 'test' as PushNotificationKind, true, () => true, locale);
+    const ok = await showLocalNotification(title, body, 'local-test', '/#/', 'test' as PushNotificationKind, true, () => true, locale);
     return { ok, sent: ok ? 1 : 0 };
 };
 

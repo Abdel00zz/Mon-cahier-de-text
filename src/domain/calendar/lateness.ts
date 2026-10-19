@@ -128,7 +128,7 @@ export const summarizeForTeacher = (
     }
     const names = flagged.slice(0, 2).map(label).join(locale === 'ar' ? '، ' : ', ');
     const suffix = flagged.length > 2 ? ` (+${flagged.length - 2})` : '';
-    const url = '/#/notifications';
+    const url = '/#/';
     if (locale === 'ar') {
         return {
             title: `${flagged.length} أقسام تحتاج إلى التحيين`,

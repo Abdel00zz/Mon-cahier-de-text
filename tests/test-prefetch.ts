@@ -20,7 +20,7 @@ const recorder = () => {
 };
 
 test('préchargement : l’accueil précède l’éditeur, puis viennent les autres onglets', () => {
-  assert.deepEqual([...PREFETCH_ORDER], ['dashboard', 'editor', 'settings', 'notifications', 'evaluations', 'guide']);
+  assert.deepEqual([...PREFETCH_ORDER], ['dashboard', 'editor', 'settings', 'evaluations', 'guide']);
 });
 
 test('préchargement : la préparation est différée, jamais immédiate', () => {

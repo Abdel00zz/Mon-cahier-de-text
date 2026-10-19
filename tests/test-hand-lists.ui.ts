@@ -68,14 +68,13 @@ test('le mot d’attente est sous le spinner, sans toucher au chargement, et se 
   assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*animation: none/);
 });
 
-test('le guide reste accessible directement depuis les actions du tableau de bord', async () => {
+test('le guide s’ouvre depuis la navigation et quitte les actions du tableau de bord', async () => {
   const { readFileSync } = await import('node:fs');
-  const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
   const actions = readFileSync('src/features/dashboard/DashboardActions.tsx', 'utf8');
-  const css = readFileSync('src/features/dashboard/dashboardActions.css', 'utf8');
-  assert.match(dashboard, /<DashboardActions[\s\S]*?onOpenGuide=\{onOpenGuide\}/, 'le guide est transmis aux actions');
-  assert.match(actions, /onOpenGuide && \([\s\S]*?onClick=\{\(\) => \{ impact\('light'\); onOpenGuide\(\); \}\}/, 'l’action ouvre le guide');
-  assert.match(actions, /t\('toolbar\.help'\)/, 'libellé traduit');
-  assert.match(css, /\.dashboard-actions-bar__icon \{[\s\S]*?width: 44px;[\s\S]*?height: 44px;/, 'cible de 44 px');
-  assert.match(readFileSync('src/app/App.tsx', 'utf8'), /<Dashboard[\s\S]{0,200}onOpenGuide=\{\(\) => setGuideOpen\(true\)\}/);
+  const sidebar = readFileSync('src/components/navigation/DesktopSidebar.tsx', 'utf8');
+  const app = readFileSync('src/app/App.tsx', 'utf8');
+  assert.doesNotMatch(actions, /onOpenGuide|CircleHelp|dashboard-actions-bar__help/);
+  assert.match(sidebar, /mt-auto[\s\S]*?<NavigationButton tab="help"/);
+  assert.doesNotMatch(sidebar, /<hr|role="separator"|border-t/);
+  assert.match(app, /tab === 'help'[\s\S]{0,80}setGuideOpen\(true\)/);
 });

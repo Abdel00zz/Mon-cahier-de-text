@@ -33,7 +33,7 @@ export interface Point2D {
   y: number;
 }
 
-export const DEFAULT_SPRING_CONFIG: SpringConfig = {
+const DEFAULT_SPRING_CONFIG: SpringConfig = {
   zeta: 0.72,
   omegaN: 14.72,
   settleFrames: 30,
@@ -45,7 +45,7 @@ export const DEFAULT_SPRING_CONFIG: SpringConfig = {
  * @param progress Fraction normalisée du temps [0 .. 1]
  * @param config Configuration des ressorts
  */
-export function evaluateUnderdampedSpring(progress: number, config: SpringConfig = DEFAULT_SPRING_CONFIG): number {
+function evaluateUnderdampedSpring(progress: number, config: SpringConfig = DEFAULT_SPRING_CONFIG): number {
   if (progress <= 0) return 0;
   if (progress >= 1) return 1;
 
@@ -88,23 +88,6 @@ export function springValue(
   const progress = (frame - startFrame) / durationFrames;
   const springProgress = evaluateUnderdampedSpring(progress, config);
   return from + (to - from) * springProgress;
-}
-
-/**
- * Évalue une transition 2D (point x, y) avec physique spring.
- */
-export function springPoint2D(
-  from: Point2D,
-  to: Point2D,
-  frame: number,
-  startFrame: number,
-  durationFrames: number = DEFAULT_SPRING_CONFIG.settleFrames,
-  config: SpringConfig = DEFAULT_SPRING_CONFIG
-): Point2D {
-  return {
-    x: springValue(from.x, to.x, frame, startFrame, durationFrames, config),
-    y: springValue(from.y, to.y, frame, startFrame, durationFrames, config),
-  };
 }
 
 /**

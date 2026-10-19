@@ -182,7 +182,7 @@ test('le serveur valide la date limite et la clé du corrigé', () => {
 test('les fenêtres relient chaque bouton à SON enregistrement', () => {
   const modals = read('src/features/evaluations/components/DevoirsModals.tsx');
   assert.match(modals, /documentFor\.part === 'correction'\) return forClass\?\.\[homeworkCorrectionDocumentId\(/, 'le corrigé se lit sous sa clé');
-  assert.match(modals, /actions\.saveAssessmentDocument\(homeworkCorrectionDocumentId\(documentFor\.link\.planned\.id\), source\)/, 'et s’écrit sous sa clé');
+  assert.match(modals, /actions\.saveAssessmentDocument\(homeworkCorrectionDocumentId\(documentFor\.link\.planned\.id\), source, documentFor\.link\.planned\.legacyId/, 'et s’écrit sous sa clé');
   assert.match(modals, /if \(editingDateAssessment\.field\) setHomeworkDate\(/, 'date limite et correction passent par setHomeworkDate');
   assert.match(modals, /deleteHomeworkCorrection\(deletingCorrection\)/, 'la corbeille de la correction est confirmée');
   assert.match(modals, /title=\{t\('evaluations\.homework\.notReturnedTitle'\)\}/, 'la fenêtre des élèves se dit « non rendus »');

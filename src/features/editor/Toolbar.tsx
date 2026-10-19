@@ -114,9 +114,6 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               {t('toolbar.actions')}
             </DropdownMenuLabel>
 
-            {/* Les notifications vivent UNIQUEMENT dans le centre global de
-                l'accueil (cloche), aucune entrée ici, à la demande du prof. */}
-
             <DropdownMenuItem onClick={onOpenEvaluations}>
               <CalendarCheck className="h-5 w-5" />
               <span>{t('toolbar.evaluations')}</span>

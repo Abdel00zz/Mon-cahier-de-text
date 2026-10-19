@@ -8,7 +8,6 @@ import { translateLocaleMessage } from '../../src/i18n/messages';
 import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
-import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
 import { UiGallery } from './UiGallery';
 import App from '../../src/app/App';
 import { AuthProvider } from '../../src/contexts/AuthContext';
@@ -97,8 +96,7 @@ function Capture() {
    setEvaluationClasses(detail.classes);
    setPreviewConfig(previous => ({ ...previous, classRosters: detail.classRosters,
     pedagogicalEvents: { [classId]: [{ id: 'notebook-check', type: 'controle_cahiers', title: ar ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers', date: '2026-10-08', status: 'planned', createdAt: '2026-10-08T08:00:00Z',
-      students: screen === 'tracking' ? { names: rosterNames, updatedAt: '2026-10-08T08:00:00Z', notebookConditions: Object.fromEntries(rosterNames.slice(0, 4).map((name, index) => [name, (['good', 'average', 'needs_work', 'missing'] as const)[index]])) } : undefined }] },
-    assessmentParticipants: screen === 'tracking' ? { [classId]: { 'oral-roster': { names: rosterNames, updatedAt: '2026-10-08T09:00:00Z', oralOutcomes: Object.fromEntries(rosterNames.slice(0, 3).map((name, index) => [name, (['mastered', 'developing', 'needs_support'] as const)[index]])) } } } : undefined,
+       }] },
     manualAssessments: { [classId]: [{ id: 'oral-roster', type: 'oral', num: 1, semestre: 1, dateISO: '2026-10-08' }] },
    }));
   }).catch(() => {});
@@ -115,7 +113,6 @@ function Capture() {
   {screen==='checks'&&<DevoirsView key={evaluationClasses[0].id} classInfo={evaluationClasses[0]} config={previewConfig} onConfigChange={patch => setPreviewConfig(previous => ({...previous,...patch}))}/>}
   {screen==='class-menu'&&evaluationClasses.slice(0,2).map(classInfo => <ClassCard key={classInfo.id} classInfo={classInfo} onConfigure={noop} onSelect={noop} onDelete={noop} onOpenEvaluations={entry => setEvaluationTarget({ classInfo, entry, open: true })}/>)}
   {evaluationTarget&&<ClassEvaluationsSheet key={`${evaluationTarget.classInfo.id}-${evaluationTarget.entry}`} classInfo={evaluationTarget.classInfo} entry={evaluationTarget.entry} open={evaluationTarget.open} onOpenChange={open=>setEvaluationTarget(previous=>previous ? {...previous,open} : null)} config={previewConfig} onConfigChange={patch=>setPreviewConfig(previous=>({...previous,...patch}))}/>}
-  {screen==='tracking'&&<NotificationsPage classes={evaluationClasses} config={previewConfig} feed={{ corrections: [], ignoredCorrections: [], insights: [], ignoredInsights: [], assessments: [], pedagogicalEvents: [], officialEvents: [], attentionCount: 0 }} onSelectClass={noop} onOpenSettings={noop} onBack={noop}/>}
   {screen==='admin-roster'&&<TeacherDetail phone="0600000000" onBack={noop} onManageTimetable={noop}/>}
   {screen==='schedule'&&<div className="rounded-2xl bg-white border border-stone-200 p-5 shadow-sm"><ScheduleTab classes={classes} config={config} onChange={noop}/></div>}
   {screen==='gallery'&&<UiGallery page={params.get('page') ?? 'landing'} config={config} classes={evaluationClasses} lessons={lessons}/>}

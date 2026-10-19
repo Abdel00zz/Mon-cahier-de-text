@@ -23,8 +23,8 @@ const COPY = {
 
 export function notificationTarget(value: unknown): string {
   return typeof value === 'string' && value.length <= 400
-    && /^\/#\/(?:classe\/[^/?#]+|notifications(?:\?[^#]*)?|parametres)$/.test(value)
-    ? value : '/#/notifications';
+    && /^\/#\/(?:classe\/[^/?#]+|parametres|)$/.test(value)
+    ? value : '/#/';
 }
 
 /** One presentation contract for local reminders and server push. */

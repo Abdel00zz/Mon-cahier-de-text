@@ -8,13 +8,12 @@
  * Une connexion économe (hors ligne, « économiseur de données », 2G) ne
  * précharge rien : le bénéfice serait annulé par le coût.
  */
-export type PrefetchTarget = 'dashboard' | 'editor' | 'settings' | 'notifications' | 'evaluations' | 'guide';
+export type PrefetchTarget = 'dashboard' | 'editor' | 'settings' | 'evaluations' | 'guide';
 
 export const PREFETCH_ORDER: readonly PrefetchTarget[] = [
     'dashboard',
     'editor',
     'settings',
-    'notifications',
     'evaluations',
     'guide',
 ];
@@ -23,7 +22,6 @@ const loaders: Record<PrefetchTarget, () => Promise<unknown>> = {
     dashboard: () => import('../features/dashboard/Dashboard'),
     editor: () => import('../features/editor/Editor'),
     settings: () => import('../features/settings/SettingsPage'),
-    notifications: () => import('../features/dashboard/NotificationsPage'),
     evaluations: () => import('../features/evaluations/ClassEvaluationsSheet'),
     guide: () => import('../features/guide/GuideModal'),
 };

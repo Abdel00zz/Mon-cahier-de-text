@@ -592,14 +592,14 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   .evaluation-reference .ev-board__head {
     display: none !important;
   }
-  /* UNE SEULE LIGNE : Titre | Date | Boutons */
+  /* Identity and date remain readable; actions have their own touch row. */
   .evaluation-reference .ev-board__rows > .ev-row {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto auto !important;
-    grid-template-areas: 'id date actions' !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: 'id date' 'actions actions' !important;
     align-items: center !important;
     column-gap: 6px !important;
-    row-gap: 0 !important;
+    row-gap: 8px !important;
     padding: 9px 10px !important;
     min-height: 48px !important;
   }
@@ -638,8 +638,8 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   }
   .evaluation-reference .ev-row__date .ev-date-trigger,
   .evaluation-reference .ev-row__date .ev-date-empty {
-    min-height: 26px !important;
-    height: 26px !important;
+    min-height: 44px !important;
+    height: auto !important;
     padding: 0 7px !important;
     font-size: 11px !important;
     border-radius: 999px !important;
@@ -650,18 +650,21 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
     justify-self: end !important;
     width: auto !important;
     justify-content: flex-end !important;
-    gap: 4px !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    max-width: 100%;
     margin-top: 0 !important;
   }
   .evaluation-reference .ev-action,
   .evaluation-reference .ev-icon-btn {
-    width: 32px !important;
-    min-width: 32px !important;
-    height: 32px !important;
-    min-height: 32px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     border-radius: 9px !important;
   }
-  .evaluation-reference .ev-action:has(.ev-action__count) {
+  .evaluation-reference .ev-action:has(.ev-action__count),
+  .evaluation-reference .ev-action:has(.ev-action__date) {
     width: auto !important;
     padding-inline: 6px !important;
   }
@@ -707,4 +710,12 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   border-bottom: 1.5px solid hsl(var(--border));
   border-end-start-radius: 0.4rem;
   pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    height: auto !important;
+  }
 }

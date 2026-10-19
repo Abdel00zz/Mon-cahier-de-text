@@ -6,7 +6,6 @@ Le système comporte trois couches qui ne doivent pas être confondues :
 
 | Couche | Déclencheur | Peut fonctionner application fermée ? | Autorité |
 | --- | --- | --- | --- |
-| Alerte dans l’application | `useNotificationFeed` + préférences locales | Non | `notificationSettings.enabled` |
 | Rappel local de séance | `useSessionAlerts` + `setTimeout` + Service Worker | Seulement tant que la page reste vivante (ou reprend rapidement) | appareil courant |
 | Push serveur (APK) | `/api/notify` (routes natives) + FCM HTTP v1 | Oui, appareil inscrit | `push:native-owners`, `push:native:<téléphone>` |
 
@@ -14,6 +13,8 @@ La permission du navigateur, l’abonnement présent dans `PushManager` et
 l’enregistrement du endpoint côté serveur sont trois états distincts. L’écran
 des paramètres les affiche séparément et l’action `status` les réconcilie sans
 redemander la permission.
+
+Le centre enseignant « Suivi pédagogique » a été supprimé le 18 octobre 2026. Les notifications générales ouvrent désormais les classes ; les rappels ciblés ouvrent leur cahier.
 
 ## Flux d’activation
 

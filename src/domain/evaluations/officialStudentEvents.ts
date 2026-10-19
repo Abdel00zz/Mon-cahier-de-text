@@ -206,7 +206,7 @@ export const getOfficialStudentEventsForClass = (
         .sort((a, b) => a.start.localeCompare(b.start) || a.title.localeCompare(b.title));
 };
 
-export const getOfficialEventEffectiveEnd = (event: OfficialStudentEvent): string => event.end ?? event.start;
+const getOfficialEventEffectiveEnd = (event: OfficialStudentEvent): string => event.end ?? event.start;
 
 /**
  * Les événements « école » sont de deux sortes : la rentrée, puis la fin des

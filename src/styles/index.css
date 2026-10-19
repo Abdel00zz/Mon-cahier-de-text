@@ -7,7 +7,6 @@
 @import "../components/ui/action-tile.css";
 @import "../components/ui/icons.css";
 @import "../components/ui/AnimatedTrashButton.css";
-@import "../components/ui/AnimatedDropdown.css";
 @import "../features/dashboard/classCards.css";
 @import "../features/dashboard/dashboardCanvas.css";
 @import "../features/evaluations/evaluationsBoard.css";
@@ -575,8 +574,6 @@ html[lang="ar"] .keep-class-title {
   html[lang="ar"] [data-settings-ui] h3,
   html[lang="ar"] [data-dashboard-root] h1,
   html[lang="ar"] [data-dashboard-root] h2,
-  html[lang="ar"] [data-pilotage-root] h1,
-  html[lang="ar"] [data-pilotage-root] h2,
 html[lang="ar"] .modal-header h2,
   html[lang="ar"] .modal-header h3 {
     font-family: var(--font-arabic-display);
@@ -1499,14 +1496,14 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
   box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 30px -10px rgba(0, 0, 0, 0.65);
 }
 [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
-[data-app-sidebar] [aria-current='page'] :is(svg, .sidebar-tab-label) { color: inherit; }
-[data-app-sidebar] .sidebar-active-surface {
+[data-app-sidebar] [aria-current='page'] :is(svg, .workspace-nav-label) { color: inherit; }
+[data-app-sidebar] .workspace-nav-active {
   background: #ffffff;
   border: 1px solid color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--border) / 0.7));
   box-shadow: 0 3px 10px -2px rgba(45, 35, 25, 0.07), inset 0 1px 0 #ffffff;
 }
 .dark [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
-.dark [data-app-sidebar] .sidebar-active-surface {
+.dark [data-app-sidebar] .workspace-nav-active {
   background: #2a2b2e;
   border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, rgba(255, 255, 255, 0.12));
   box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -1749,15 +1746,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   outline: 0;
   box-shadow: var(--ui-focus-ring);
   }
-
-  /* Centre de pilotage : autorité calme, navigation lisible, aucune surcharge. */
-  .pilotage-sidebar .absolute.-top-1 { border: 0; background: var(--app-accent-soft) !important; color: var(--app-accent) !important; }
-  @media (max-width: 639px) {
-  }
-  .pilotage-sidebar button[aria-current="true"], .pilotage-sidebar button[data-active="true"] { background: hsl(var(--primary) / 0.12); }
-  [data-pilotage-root] { font-family: var(--font-sans); }
-  [data-pilotage-root] :is(h1, h2, h3) { letter-spacing: -0.015em; text-wrap: balance; }
-  [data-pilotage-root] .rounded-2xl, [data-pilotage-root] .rounded-\[16px\] { border-radius: var(--ui-radius-surface); }
 
   /* Fondation Swiss mobile : hiérarchie stricte, surfaces calmes et densité maîtrisée. */
   :root {

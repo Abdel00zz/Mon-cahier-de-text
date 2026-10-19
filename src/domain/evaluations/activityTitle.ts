@@ -31,8 +31,8 @@ const latinDigits = (value: string): string => value
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** « Évaluation diagnostique1 », « diagnostic assessment 2 », « التقويم التشخيصي ١ » : base générée + numéro facultatif. */
-export function localizedActivityTitle(title: string | undefined, type: string, locale: AppLocale): string {
-  const label = translateLocaleMessage(locale, `evaluations.event.${type}`);
+export function localizedActivityTitle(title: string | undefined, type: string, locale: AppLocale | ((key: string) => string)): string {
+  const label = typeof locale === 'function' ? locale(`evaluations.event.${type}`) : translateLocaleMessage(locale, `evaluations.event.${type}`);
   const text = (title ?? '').normalize('NFKC').trim().replace(/\s+/g, ' ');
   if (!text) return label;
   const bases = [...LOCALES.map(code => translateLocaleMessage(code, `evaluations.event.${type}`)), ...(GENERATED_BASES[type] ?? [])];

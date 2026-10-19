@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ClassGroupWatermark } from '../src/features/dashboard/ClassLevelBadge';
+import { ClassGroupWatermark } from '../src/features/dashboard/ClassGroupWatermark';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 
 /*

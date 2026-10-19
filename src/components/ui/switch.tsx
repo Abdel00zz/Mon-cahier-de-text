@@ -55,7 +55,7 @@ const WOBBLE_OUT = [
   { x: 0, rotate: 0, scale: 1.0 },
 ]
 
-export interface SwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
+interface SwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
   activeBaseColor?: string
   inactiveBaseColor?: string
 }

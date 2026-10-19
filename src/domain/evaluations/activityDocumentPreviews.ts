@@ -1,3 +1,4 @@
+import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
 import { buildLessonRows } from '../notebook/lessonRows';
 import { coveredDates } from './notebookCheckRemarks';
@@ -22,7 +23,7 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
     for (const event of config.pedagogicalEvents?.[classId] ?? []) {
         if (config.sessionRemarkOverrides?.[classId]?.[`event:${event.id}`]?.hidden) continue;
         if (!event.document?.source.trim()) continue;
-        const preview = { document: event.document, title: event.title.trim() || translate(`evaluations.event.${event.type}`), assessmentId: `event:${event.id}` };
+        const preview = { document: event.document, title: localizedActivityTitle(event.title, event.type, translate), assessmentId: `event:${event.id}` };
         const exactId = notebook.find(row => row.data._tempId === 'event-' + event.id);
         const candidates = notebook.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-')
             && !!event.date && (row.data.date === event.date || row.data.date?.includes(event.date)));

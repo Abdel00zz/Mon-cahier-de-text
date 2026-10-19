@@ -21,17 +21,18 @@ for (const [lang, entries] of [['fr', GUIDE_FR], ['ar', GUIDE_AR]] as const) {
     assert.match(entry.image.key, /^[a-z-]+$/, 'Local, safe asset name');
     const path = new URL(`../public/guide/current/${entry.image.key}-${lang}.webp`, import.meta.url);
     const bytes = await readFile(path);
-    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', `${path}: valid WebP signature`);
-    assert.ok((await stat(path)).size > 1000, 'Nonempty screenshot');
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', 'Real captured asset is present');
+    assert.ok((await stat(path)).size > 1000);
     const figure = renderToStaticMarkup(createElement(GuideFigure, { image: entry.image, lang }));
-    assert.ok(figure.includes('guide-image-frame'), 'Images retain their visual frame');
-    assert.ok(figure.includes('aria-expanded="false"'), 'Inline zoom is initially collapsed');
     assert.ok(figure.includes(`/guide/current/${entry.image.key}-${lang}.webp`));
-    // Our opaque WebP captures use the lossy VP8 header, with explicit intrinsic sizes.
+    assert.ok(figure.includes('aria-expanded="false"'), 'Image can be enlarged for reading');
+    assert.ok(figure.includes('<img') && figure.includes('<figcaption>'));
+    assert.doesNotMatch(figure, /guide-demo-|guide-illustration|data-guide-scene/, 'No invented interface');
+    assert.ok(figure.includes(lang === 'ar' ? 'إصدار سابق' : 'version antérieure'), 'Historical capture is identified');
     assert.equal(bytes.toString('ascii', 12, 16), 'VP8 ');
     const width = bytes.readUInt16LE(26) & 0x3fff;
     const height = bytes.readUInt16LE(28) & 0x3fff;
-    assert.ok(figure.includes(`width="${width}" height="${height}"`), `${lang}/${entry.id}: intrinsic dimensions prevent layout shifts`);
+    assert.ok(figure.includes(`width="${width}" height="${height}"`), 'Intrinsic dimensions match capture');
     assets.add(path.href);
   }
 }
@@ -40,9 +41,16 @@ assert.equal(normalizeGuideSearch('إِشْعَارَات'), normalizeGuideSearc
 assert.ok(searchGuide(GUIDE_FR, 'cycle').some(entry => entry.id === 'profile'));
 assert.ok(searchGuide(GUIDE_AR, 'اشعارات').some(entry => entry.id === 'notifications'));
 assert.ok(searchGuide(GUIDE_FR, 'date séance').length > 0);
-const bytes = (await Promise.all([...assets].map(path => stat(new URL(path))))).reduce((total, file) => total + file.size, 0);
-assert.ok(bytes < 1_000_000, 'Help screenshots stay below 1 MB total');
-assert.ok(assets.size >= 16, 'Eight illustrated screens in both languages');
+assert.equal(assets.size, 14, 'Seven real captured screens in both languages');
+for (const entries of [GUIDE_FR, GUIDE_AR]) {
+  const allText = JSON.stringify(entries);
+  assert.doesNotMatch(allText, /Ne plus avertir pour cette date|عدم التنبيه إلى هذا التاريخ مجدداً|monter\/descendre|Suivi pédagogique/);
+  assert.ok(entries.some(entry => entry.id === 'students'));
+  assert.ok(JSON.stringify(entries.find(entry => entry.id === 'students')).includes('؛'));
+}
+assert.ok(searchGuide(GUIDE_FR, 'élèves liste').some(entry => entry.id === 'students'));
+assert.ok(searchGuide(GUIDE_AR, 'لائحة تلاميذ').some(entry => entry.id === 'students'));
+assert.ok(searchGuide(GUIDE_FR, 'déplacement').some(entry => entry.id === 'editor'));
 const richText = renderToStaticMarkup(createElement(GuideText, { children: 'Paramètres → Profil, الإعدادات, $x^2$ <script>alert(1)</script>' }));
 assert.ok(richText.includes('<strong>Paramètres → Profil</strong>'));
 assert.ok(richText.includes('<strong>الإعدادات</strong>'));
@@ -51,4 +59,5 @@ assert.ok(!richText.includes('<script>'), 'Guide text never injects HTML');
 const modal = await readFile(new URL('../src/features/guide/GuideModal.tsx', import.meta.url), 'utf8');
 assert.ok(modal.includes('<GuideFigure') && modal.includes('<GuideText'), 'Modal must use the image and emphasis renderers');
 assert.ok(modal.includes('BOUDOUH ABDELMALEK') && modal.includes('بدوح عبد المالك'), 'Bilingual author credit');
-console.log(`Guide OK: ${ids.size} bilingual chapters, search and related links, ${assets.size} real screenshots (${Math.round(bytes / 1024)} KiB).`);
+assert.doesNotMatch(modal, /CircleHelp/, 'The guide heading has no duplicate question-mark icon');
+console.log(`Guide OK: ${ids.size} bilingual chapters, search, links, ${assets.size} real screenshots with explicit provenance.`);

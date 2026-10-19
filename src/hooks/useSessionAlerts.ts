@@ -1,3 +1,4 @@
+import { sessionNotificationCopy } from '../domain/notifications/sessionNotificationCopy';
 import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
@@ -7,14 +8,10 @@ import { getBundledCalendar, loadHolidayCalendar } from '../domain/calendar/cale
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
 import { subscribe } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease, readWorkspaceScope } from '../infrastructure/storage/accountWorkspace';
-import { readClassLessons } from '../infrastructure/notifications/notificationSignals';
+import { readCachedLessons } from '../infrastructure/storage/notebookStorage';
 import { collectSessionDates } from '../infrastructure/printing/printMeta';
 import { showLocalNotification } from '../infrastructure/push/push';
-import { translateLocaleMessage } from '../i18n/messages';
 import type { ClassInfo } from '../types';
-import { scheduleClassLabel } from '../domain/classes/classAbbreviation';
-import { classIdentityFor } from '../domain/classes/classIdentity';
-import { conciseNotificationText } from '../domain/notifications/notificationPresentation';
 
 const claimsKey = 'session_alert_claims_v2';
 const memoryClaims = new Map<string, number>();
@@ -93,7 +90,7 @@ export function useSessionAlerts(enabled = true) {
     void (async () => {
       const calendar = await loadHolidayCalendar().catch(() => getBundledCalendar());
       if (!fresh()) return;
-      const snapshot = detectSessionAlerts(config, classes, calendar, new Date(), (id, date) => collectSessionDates(readClassLessons(id)).includes(date));
+      const snapshot = detectSessionAlerts(config, classes, calendar, new Date(), (id, date) => collectSessionDates(readCachedLessons(id)).includes(date));
       // Wake only at the next session boundary/reminder or local midnight.
       timer = window.setTimeout(() => setTick(value => value + 1), snapshot.nextCheckDelay);
       const classIds = [...new Set(snapshot.current.map(block => block.classId))].sort();
@@ -103,21 +100,12 @@ export function useSessionAlerts(enabled = true) {
       for (const event of snapshot.events) {
         await claimAlert(`${scope}:${event.id}`, fresh, async () => {
         // Locks/network may have delayed dispatch: recheck both the time and the date evidence.
-        const stillDue = detectSessionAlerts(readCachedConfig(), classes, calendar, new Date(), (id, date) => collectSessionDates(readClassLessons(id)).includes(date)).events.find(candidate => candidate.id === event.id);
+        const stillDue = detectSessionAlerts(readCachedConfig(), classes, calendar, new Date(), (id, date) => collectSessionDates(readCachedLessons(id)).includes(date)).events.find(candidate => candidate.id === event.id);
         if (!stillDue || !fresh()) return false;
         const latestConfig = readCachedConfig();
-        const t = (key: string, values: Record<string, string | number> = {}) => translateLocaleMessage(latestConfig.applicationLocale ?? 'ar', key, values);
         const locale = latestConfig.applicationLocale ?? 'ar';
-        const names = event.classIds.slice(0, 2).map(id => {
-          const name = classes.find(item => item.id === id)?.name ?? t('sessionAlert.classFallback');
-          return conciseNotificationText(scheduleClassLabel(classIdentityFor(name, locale), locale, true), 38);
-        }).join(locale === 'ar' ? '، ' : ', ') + (event.classIds.length > 2 ? ` (+${event.classIds.length - 2})` : '');
-        const message = event.kind === 'end'
-          ? t('sessionAlert.endSoonBody', { classes: names, minutes: stillDue.remainingMinutes ?? 1 })
-          : event.classIds.length === 1 ? t('sessionAlert.missingDateOne', { className: names })
-          : t('sessionAlert.missingDateMany', { count: event.classIds.length, classes: names });
-        const title = t(event.kind === 'end' ? 'sessionAlert.endSoonTitle' : 'sessionAlert.missingDateTitle');
-        const url = event.classIds.length === 1 ? `/#/classe/${encodeURIComponent(event.classIds[0])}` : '/#/notifications';
+        const { title, body: message } = sessionNotificationCopy(event.kind, stillDue.classIds, classes, locale, stillDue.remainingMinutes ?? 1);
+        const url = stillDue.classIds.length === 1 ? `/#/classe/${encodeURIComponent(stillDue.classIds[0])}` : '/#/';
         if (document.visibilityState === 'visible') {
           toast(title, {
             id: event.id, description: message, duration: 10000,

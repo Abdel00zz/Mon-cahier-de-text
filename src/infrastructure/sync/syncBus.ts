@@ -2,7 +2,7 @@
 // (Editor, useClassManager, ConfigModal) du consommateur (useCloudSync).
 // État module-level : les marqueurs "dirty" survivent aux démontages de composants.
 
-export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed' | 'notifications-changed';
+export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed';
 
 /**
  * Avancement du rapatriement cloud, publié pour l'interface.
@@ -239,9 +239,6 @@ export const notifyConfigChanged = (source?: symbol, keys?: readonly string[]): 
 
 /** Rafraîchit les projections de notifications après une mutation locale
  *  (ignoré/restauré, métadonnée d'impression, etc.) sans coupler l'UI au stockage. */
-export const notifyNotificationsChanged = (): void => {
-    emit('notifications-changed');
-};
 
 /** Restore the queue belonging to the newly activated account, without deleting it. */
 export const reloadSyncState = (): void => {

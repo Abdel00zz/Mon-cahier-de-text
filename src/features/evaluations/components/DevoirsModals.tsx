@@ -111,12 +111,18 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         ?? (absencesFor.planned.legacyId ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.legacyId] : undefined)
       : undefined;
 
+  const submissionsRecord = submissionsFor
+    ? config.assessmentParticipants?.[classInfo.id]?.[submissionsFor.planned.id]
+      ?? (submissionsFor.planned.legacyId ? config.assessmentParticipants?.[classInfo.id]?.[submissionsFor.planned.legacyId] : undefined)
+    : undefined;
+
   const documentOf = (() => {
     if (!documentFor || !selectedClass) return undefined;
     if (documentFor.kind === 'event') return pedagogicalEvents.find(event => event.id === documentFor.event.id)?.document;
     const forClass = config.assessmentDocuments?.[selectedClass.id];
-    // Le corrigé d'un devoir maison a sa propre clé ; il n'existe pas d'ancien identifiant à lire.
-    if (documentFor.part === 'correction') return forClass?.[homeworkCorrectionDocumentId(documentFor.link.planned.id)];
+    // Le corrigé suit la même identité annuelle et le même repli historique que le devoir.
+    if (documentFor.part === 'correction') return forClass?.[homeworkCorrectionDocumentId(documentFor.link.planned.id)]
+      ?? (documentFor.link.planned.legacyId ? forClass?.[homeworkCorrectionDocumentId(documentFor.link.planned.legacyId)] : undefined);
     return forClass?.[documentFor.link.planned.id]
       ?? (documentFor.link.planned.legacyId ? forClass?.[documentFor.link.planned.legacyId] : undefined);
   })();
@@ -215,7 +221,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         document={documentOf}
         onSave={(source) => {
           if (documentFor?.kind === 'event') actions.saveEventDocument(documentFor.event.id, source);
-          else if (documentFor?.kind === 'assessment' && documentFor.part === 'correction') actions.saveAssessmentDocument(homeworkCorrectionDocumentId(documentFor.link.planned.id), source);
+          else if (documentFor?.kind === 'assessment' && documentFor.part === 'correction') actions.saveAssessmentDocument(homeworkCorrectionDocumentId(documentFor.link.planned.id), source, documentFor.link.planned.legacyId ? homeworkCorrectionDocumentId(documentFor.link.planned.legacyId) : undefined);
           else if (documentFor?.kind === 'assessment') actions.saveAssessmentDocument(documentFor.link.planned.id, source, documentFor.link.planned.legacyId);
           setDocumentFor(null);
         }}
@@ -248,7 +254,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
               const previous = (config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.id] ?? (oralFor.planned.legacyId ? config.assessmentParticipants?.[selectedClass.id]?.[oralFor.planned.legacyId] : undefined));
               actions.saveOral(oralFor.planned.id, names,
                 oralOutcomes ?? retainOralOutcomes(names, previous?.oralOutcomes),
-                oralGrades ?? retainOralGrades(names, previous?.oralGrades));
+                oralGrades ?? retainOralGrades(names, previous?.oralGrades), oralFor.planned.legacyId);
               setOralFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
                 count: number.format(names.length), activity: oralTitle,
@@ -272,14 +278,14 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
             key={`homework-${selectedClass.id}-${submissionsFor.planned.id}`}
             variant="checked"
             trackHomework={Boolean(homeworkPolicy?.feedback)}
-            initialNames={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.names ?? []}
-            initialHomeworkOutcomes={config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id]?.homeworkOutcomes}
+            initialNames={submissionsRecord?.names ?? []}
+            initialHomeworkOutcomes={submissionsRecord?.homeworkOutcomes}
             roster={config.classRosters?.[selectedClass.id]}
             reportContext={`${selectedClassDisplayName} · ${submissionsLabel} · ${formatLongDate(submissionsFor.planned.dateISO, locale)}`}
             onCancel={() => setSubmissionsFor(null)}
             onSave={(names, _notebook, _oral, homeworkOutcomes) => {
-              const previous = config.assessmentParticipants?.[selectedClass.id]?.[submissionsFor.planned.id];
-              actions.saveHomework(submissionsFor.planned.id, names, homeworkOutcomes ?? retainHomeworkOutcomes(names, previous?.homeworkOutcomes));
+              const previous = submissionsRecord;
+              actions.saveHomework(submissionsFor.planned.id, names, homeworkOutcomes ?? retainHomeworkOutcomes(names, previous?.homeworkOutcomes), submissionsFor.planned.legacyId);
               setSubmissionsFor(null);
               toast.success(t(names.length ? 'evaluations.students.savedMany' : 'evaluations.students.cleared', {
                 count: number.format(names.length), activity: `${t('evaluations.homework.title')} · ${submissionsLabel}`,

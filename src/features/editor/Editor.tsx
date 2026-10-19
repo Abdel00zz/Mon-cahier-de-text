@@ -52,19 +52,8 @@ import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { dateTimeFormat } from '@/lib/formatters';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/infrastructure/sync/syncBus';
 import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs, sessionPrintSignatures } from '@/infrastructure/printing/printMeta';
-import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
-import { appendJournal } from '@/infrastructure/storage/journal';
+import { toDisplayWarnings, validateSessionDate } from '@/domain/calendar/dateValidation';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/domain/curriculum/predefinedContent';
-import {
-  EDITOR_MODAL_KEY,
-  EDITOR_NAVIGATION_EVENT,
-  EditorModalPayload,
-  SESSION_FOCUS_KEY,
-  SessionFocusPayload,
-  dateActionId,
-  readIgnoredActionIds,
-  writeIgnoredActionIds,
-} from '@/infrastructure/notifications/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/infrastructure/printing/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, ContentDirection } from '@/types';
@@ -128,7 +117,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // chargement différé et son écran d'attente, jamais sur un cahier vide.
   const [initialNotebook] = useState(() => readInitialNotebook({ classId: initialClassInfo.id, locale }));
   const initialNotebookRef = useRef<{ classId: string } | null>(initialNotebook ? { classId: initialClassInfo.id } : null);
-  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
+  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
@@ -166,7 +155,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
-  const consumedSessionFocusRef = useRef<string | null>(null);
   const placementTimerRef = useRef<number | null>(null);
   const [printMetaVersion, setPrintMetaVersion] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -349,29 +337,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
   }, [predefinedOffer, setState, setEditorState, t, workspaceIsActive]);
 
-  /*
-   * Journal des actions : chaque opération d'édition (operationType du
-   * useHistoryState) est consignée avec son horodatage → alimente la ligne
-   * « Dernière modification » et le centre global d’activité.
-   */
-  useEffect(() => {
-    if (!workspaceIsActive()) return;
-    const journalOp = historyAction === 'undo'
-      ? 'undo'
-      : historyAction === 'redo'
-        ? 'redo'
-        : historyAction === 'edit'
-          ? operationType
-          : null;
-    if (journalOp && journalOp !== 'initial' && journalOp !== 'initial-load') {
-      appendJournal(classInfo.id, journalOp);
-    }
-    // La donnée change à chaque édition/annulation/rétablissement. Ne pas
-    // dépendre de classInfo.id : lors d'un changement de classe, l'ancien
-    // snapshot ne doit jamais être journalisé dans le nouveau cahier.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonsData]);
-
   // Échap : efface la sélection (si aucune modale/édition n'est ouverte, elles gèrent leur propre Échap)
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -487,18 +452,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     const targets = sessionTargets.get(indicesKey(indices)) ?? [indices];
     openSession(targets, 'remark');
   }, [sessionTargets, openSession]);
-
-  /*
-   * Exception de date : « Ignorer » dans la vérification de date enregistre
-   * le point dans la même mémoire que le centre de notifications de
-   * l'accueil (mêmes identifiants), il y devient réactivable.
-   */
-  const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
-    if (!workspaceIsActive()) return;
-    const ids = readIgnoredActionIds(classInfo.id);
-    ids.add(dateActionId(classInfo.id, date, warnings));
-    writeIgnoredActionIds(classInfo.id, ids);
-  }, [classInfo.id, workspaceIsActive]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -664,7 +617,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        appendJournal(classInfo.id, 'export-data');
         showNotification(t('editorNotice.exportSuccess'), "success");
     } catch (error) {
         logger.error("Failed to export data", error);
@@ -732,43 +684,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return () => unsubscribers.forEach(unsubscribe => unsubscribe());
   }, [reloadStoredNotebook]);
 
-  useEffect(() => {
-    if (isClassLoading) return;
-
-    let payload: SessionFocusPayload | null = null;
-    try {
-      const raw = sessionStorage.getItem(SESSION_FOCUS_KEY);
-      payload = raw ? (JSON.parse(raw) as SessionFocusPayload) : null;
-    } catch {
-      payload = null;
-    }
-
-    if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
-
-    const focusKey = indicesKey(payload.targetIndices);
-    if (consumedSessionFocusRef.current === focusKey) return;
-
-    const { item } = findItem(lessonsData, payload.targetIndices);
-    if (!item) return;
-
-    consumedSessionFocusRef.current = focusKey;
-    setSelectionState(createSelectionState(payload.targetIndices));
-    setSessionFocusKey(focusKey);
-    toast.info(payload.message, { id: 'session-assistant-focus', duration: 9000 });
-
-    try {
-      sessionStorage.removeItem(SESSION_FOCUS_KEY);
-    } catch {
-      // aucune consequence : la garde consumedSessionFocusRef evite les boucles
-    }
-
-    const clearTimer = window.setTimeout(() => {
-      setSessionFocusKey(current => (current === focusKey ? null : current));
-    }, 3500);
-
-    return () => window.clearTimeout(clearTimer);
-  }, [classInfo.id, isClassLoading, lessonsData]);
-
   /*
    * Ouverture d'un cahier : on se place directement sur le DERNIER CONTENU
    * DATÉ — le bas de la dernière séance — plutôt qu'en haut d'un cahier de
@@ -778,39 +693,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    */
   useNotebookOpeningFocus(classInfo.id, allRows,
     !isClassLoading && !isConfigLoading && initialMathTypesetComplete,
-    consumedSessionFocusRef, setSessionFocusKey);
+    setSessionFocusKey);
 
   useEffect(() => () => {
     if (placementTimerRef.current !== null) window.clearTimeout(placementTimerRef.current);
   }, []);
-
-  /*
-   * Deep-link du centre de notifications : ouvre directement la modale visée
-   * (évaluations, impression, import/export) à l'arrivée dans le cahier.
-   */
-  useEffect(() => {
-    if (isClassLoading) return;
-    const consumeModalRequest = () => {
-      let payload: EditorModalPayload | null = null;
-      try {
-        const raw = sessionStorage.getItem(EDITOR_MODAL_KEY);
-        payload = raw ? (JSON.parse(raw) as EditorModalPayload) : null;
-      } catch {
-        payload = null;
-      }
-      if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
-      try {
-        sessionStorage.removeItem(EDITOR_MODAL_KEY);
-      } catch { /* déjà consommé au prochain rendu grâce au retrait ci-dessus */ }
-      const modal = payload.modal;
-      if (modal === 'evaluations' || modal === 'dataTransfer' || modal === 'print') {
-        setEditorState(draft => { draft.activeModal = modal; });
-      }
-    };
-    consumeModalRequest();
-    window.addEventListener(EDITOR_NAVIGATION_EVENT, consumeModalRequest);
-    return () => window.removeEventListener(EDITOR_NAVIGATION_EVENT, consumeModalRequest);
-  }, [classInfo.id, isClassLoading, setEditorState]);
 
   useEffect(() => {
     if (config.defaultTeacherName && config.defaultTeacherName !== classInfo.teacherName) {
@@ -1532,13 +1419,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           });
         }}
         onConfirm={sessionAssignment.confirm}
-        onIgnore={() => {
-          const pending = sessionAssignment.review;
-          if (!pending) return;
-          ignoreDateException(pending.date, pending.warnings);
-          sessionAssignment.confirm();
-          toast.info(t('editorNotice.exceptionKept'));
-        }}
       />
 
       <TimetableNudgeModal

@@ -2,10 +2,8 @@ import type { AppConfig, ClassInfo } from '../../types';
 import { getBundledCalendar, todayInMorocco } from '../calendar/calendar';
 import { getDaySessionBlocks } from '../calendar/timetable';
 import { detectSessionAlerts } from './sessionAlertEngine';
-import { translateLocaleMessage } from '../../i18n/messages';
-import { formatLocalizedClassDisplayName } from '../../constants/class-levels';
 import { dateTimeFormat } from '../../lib/formatters';
-import { conciseNotificationText } from './notificationPresentation';
+import { sessionNotificationCopy } from './sessionNotificationCopy';
 import { sessionReminderMinutes } from './sessionReminderTiming';
 
 /** Convert school wall time through Casablanca's DST changes, independently of the phone zone. */
@@ -52,14 +50,11 @@ export function buildNativeReminderPlan(config: AppConfig, classes: ClassInfo[],
       if (!at || at.getTime() <= now.getTime()) continue;
       const { events } = detectSessionAlerts(config, classes, calendar, at, () => true);
       for (const event of events.filter(event => event.kind === 'end')) {
-        const names = event.classIds.slice(0, 2).map(id => conciseNotificationText(
-          formatLocalizedClassDisplayName(classes.find(item => item.id === id)?.name ?? '', locale), 38,
-        )).join(locale === 'ar' ? '، ' : ', ') + (event.classIds.length > 2 ? ` (+${event.classIds.length - 2})` : '');
+        const copy = sessionNotificationCopy('end', event.classIds, classes, locale, lead);
         planned.push({
           key: event.id, at,
-          title: translateLocaleMessage(locale, 'sessionAlert.endSoonTitle'),
-          body: translateLocaleMessage(locale, 'sessionAlert.endSoonBody', { classes: names, minutes: lead }),
-          url: event.classIds.length === 1 ? `/#/classe/${encodeURIComponent(event.classIds[0])}` : '/#/notifications',
+          ...copy,
+          url: event.classIds.length === 1 ? `/#/classe/${encodeURIComponent(event.classIds[0])}` : '/#/',
         });
       }
     }

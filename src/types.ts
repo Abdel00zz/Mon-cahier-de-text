@@ -446,7 +446,7 @@ export type TopLevelType =
     /** La « colle » : interrogation orale hebdomadaire des classes préparatoires. */
     | 'colle';
 
-export type EmbeddableTopLevelType = Exclude<TopLevelType, 'chapter'>;
+type EmbeddableTopLevelType = Exclude<TopLevelType, 'chapter'>;
 
 export type ElementType =
     | TopLevelType

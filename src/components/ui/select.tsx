@@ -138,4 +138,3 @@ export {
   SelectContent,
   SelectItem,
 };
-export { AnimatedDropdown, type AnimatedDropdownProps, type AnimatedDropdownItem } from "./AnimatedDropdown";

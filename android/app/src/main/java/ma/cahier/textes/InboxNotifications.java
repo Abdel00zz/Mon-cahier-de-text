@@ -63,9 +63,11 @@ final class InboxNotifications {
         channels(context);
         String locale = prefs.getString("locale", "ar");
         String title = "ar".equals(locale) ? "رسائل الإدارة" : "en".equals(locale) ? "Messages from administration" : "Messages de l’administration";
-        String body = "ar".equals(locale) ? count + " من الرسائل غير المقروءة. افتح التطبيق لقراءتها."
-            : "en".equals(locale) ? count + (count == 1 ? " unread message. " : " unread messages. ") + "Open the app to read."
-            : count + (count == 1 ? " message non lu. " : " messages non lus. ") + "Ouvrez l’application pour lire.";
+        String body = "ar".equals(locale) ? (count == 1 ? "لديك رسالة غير مقروءة. اطّلع عليها حين يتاح لك."
+                : count == 2 ? "لديك رسالتان غير مقروءتين. اطّلع عليهما حين يتاح لك."
+                : "لديك " + count + (count <= 10 ? " رسائل غير مقروءة." : " رسالة غير مقروءة.") + " اطّلع عليها حين يتاح لك.")
+            : "en".equals(locale) ? count + (count == 1 ? " unread message awaits you." : " unread messages await you.")
+            : count + (count == 1 ? " message non lu vous attend." : " messages non lus vous attendent.");
         Intent intent = new Intent(context, MainActivity.class).setAction(Intent.ACTION_VIEW)
             .setData(Uri.parse("cahier://notifications")).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(context, ID, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

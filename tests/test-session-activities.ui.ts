@@ -64,3 +64,17 @@ test('a multi-session course prints an oral assessment on its second date withou
   assert.match(html, /تقويم شفهي/);
   assert.equal(html.split('تقويم شفهي').length - 1, 1);
 });
+
+
+test('printed absence names follow the exact assessment, including a partial print', () => {
+  const data: LessonsData = [
+    { type: 'controle_continu', title: 'Contrôle 2', date: '2026-10-04' },
+    { type: 'controle_continu', title: 'Contrôle personnel', date: '2026-10-05', _tempId: 'dev-block-2026-2027:s1-controle1' },
+  ];
+  const settings: AppConfig = { ...config, assessmentAbsences: { A: { '2026-2027:s1-controle1': { names: ['Élève absent'], updatedAt: 'now' } } } };
+  const print = (lessons: LessonsData) => render(React.createElement(PrintView, { lessonsData: lessons, annotationLessons: data, config: settings,
+    classInfo: { id: 'A', name: 'Classe' } as ClassInfo, contentDirection: 'rtl', newlyAddedIds: [], preview: true }));
+  assert.doesNotMatch(print(createPrintSelection(data, ['2026-10-04'])), /Élève absent/);
+  assert.match(print(createPrintSelection(data, ['2026-10-05'])), /Élève absent/);
+  assert.equal(print(data).split('Élève absent').length - 1, 1);
+});

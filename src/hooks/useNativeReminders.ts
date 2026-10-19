@@ -18,7 +18,7 @@ export function useNativeReminders(config: AppConfig, classes: ClassInfo[], owne
       }, 250);
     };
     refresh();
-    const unsubscribe = ['dirty', 'pull-applied', 'notifications-changed'].map(event => subscribe(event as 'dirty' | 'pull-applied' | 'notifications-changed', refresh));
+    const unsubscribe = ['dirty', 'pull-applied', 'config-changed'].map(event => subscribe(event as 'dirty' | 'pull-applied' | 'config-changed', refresh));
     window.addEventListener('native-resume', refresh);
     return () => {
       cancelled = true;

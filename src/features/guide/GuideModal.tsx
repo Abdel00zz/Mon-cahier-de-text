@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Modal } from '@/components/ui/modal';
-import { Search, X, CircleHelp, ChevronRight, ChevronLeft, Menu } from '@/components/ui/icons';
+import { Search, X, ChevronRight, ChevronLeft, Menu } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
@@ -28,14 +28,15 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
     if (!isOpen) return;
     setQuery('');
     setChapterId('start');
+    setSidebarOpen(true);
   }, [isOpen, locale]);
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [active?.id, lang, isOpen]);
+  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, [chapterId]);
 
   const openChapter = (id: string, clearSearch = false) => {
     if (clearSearch) setQuery('');
     setChapterId(id);
-    headingRef.current?.focus({ preventScroll: true });
   };
   const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
 
@@ -55,12 +56,12 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
               className="guide-sidebar-toggle"
               aria-label={isSidebarOpen ? (isAr ? 'إخفاء الفهرس' : 'Masquer le sommaire') : (isAr ? 'إظهار الفهرس' : 'Afficher le sommaire')}
               title={isSidebarOpen ? (isAr ? 'إخفاء الفهرس' : 'Masquer le sommaire') : (isAr ? 'إظهار الفهرس' : 'Afficher le sommaire')}
-              aria-pressed={isSidebarOpen}
+              aria-expanded={isSidebarOpen}
+              aria-controls="guide-navigation"
             >
               <Menu size={16} aria-hidden="true" />
             </button>
             <span className="guide-title">{isAr ? 'دليل الاستخدام' : 'Guide d’utilisation'}</span>
-            <CircleHelp size={16} className="text-primary shrink-0 opacity-80" aria-hidden="true" />
           </div>
         </div>
       }>
@@ -71,14 +72,14 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
         lang={lang}
       >
         {isSidebarOpen && (
-          <aside className="guide-navigation" aria-label={toc}>
+          <aside id="guide-navigation" className="guide-navigation" aria-label={toc}>
             <label className="guide-search">
               <Search size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" aria-hidden="true" />
               <input type="search" value={query} onChange={event => setQuery(event.target.value)}
                 aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الدليل…' : 'Rechercher…'} />
               {query.trim() && (
-                <button type="button" onClick={() => setQuery('')} className="p-0.5 text-muted-foreground hover:text-foreground cursor-pointer">
+                <button type="button" onClick={() => setQuery('')} aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} className="guide-search-clear text-muted-foreground hover:text-foreground cursor-pointer">
                   <X size={12} aria-hidden="true" />
                 </button>
               )}

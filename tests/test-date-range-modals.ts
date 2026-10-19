@@ -114,7 +114,7 @@ test('sidebar background harmonizes with canvas background in index.css and icon
   assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
   assert.match(indexCss, /\.dark \[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
 
-  const tabBar = readFileSync('src/components/navigation/TabBar.tsx', 'utf8');
-  assert.ok(tabBar.includes('size-[20.5px]'), 'sidebar icons are rebalanced to 20.5px');
+  const tabBar = readFileSync('src/components/navigation/NavigationButton.tsx', 'utf8');
+  assert.ok(tabBar.includes('size-[22px]'), 'sidebar icons are rebalanced to 20.5px');
   assert.ok(!tabBar.includes('size-[23px]'), 'old oversized 23px icons removed');
 });

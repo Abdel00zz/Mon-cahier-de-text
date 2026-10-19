@@ -3,7 +3,7 @@ import type { GuideChapter } from '@/constants/guides';
 
 const captureSizes: Record<string, readonly [number, number]> = {
   classes: [1120, 260], schedule: [1120, 800], editor: [1120, 800],
-  add: [1120, 800], pilotage: [1120, 800], notifications: [1110, 793],
+  add: [1120, 800],  notifications: [1110, 793],
   dates: [704, 446], appearance: [1060, 644],
 };
 
@@ -24,10 +24,10 @@ export function GuideFigure({ image, lang }: { image: NonNullable<GuideChapter['
       aria-label={`${image.caption} — ${zoomed ? (isAr ? 'تصغير الصورة' : 'Réduire l’image') : (isAr ? 'تكبير الصورة' : 'Agrandir l’image')}`}>
       <img src={src} alt={image.caption}
         width={width} height={height}
-        decoding="async" onError={() => setFailed(true)} />
+        loading="lazy" decoding="async" onError={() => setFailed(true)} />
     </button>}</div>
     <figcaption><strong>{image.caption}</strong><span>{isAr
-      ? (zoomed ? 'اسحب لمشاهدة التفاصيل · اضغط على الصورة لتصغيرها' : 'لقطة من التطبيق ببيانات توضيحية · اضغط للتكبير')
-      : (zoomed ? 'Faites défiler pour lire les détails · Touchez pour réduire' : 'Capture de l’application · Données d’exemple · Touchez pour agrandir')}</span></figcaption>
+      ? (zoomed ? 'إصدار سابق · اسحب للتفاصيل · اضغط للتصغير' : 'لقطة حقيقية من إصدار سابق · بيانات توضيحية · اضغط للتكبير')
+      : (zoomed ? 'Version antérieure · Faites défiler pour lire les détails · Touchez pour réduire' : 'Capture réelle d’une version antérieure · Données d’exemple · Touchez pour agrandir')}</span></figcaption>
   </figure>;
 }

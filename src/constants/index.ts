@@ -16,7 +16,6 @@ export {
 export {
   CLASS_LEVELS_BY_CYCLE,
   classLevelGroupsForCycle,
-  formatClassDisplayName,
   formatClassLevelGroupLabel,
   formatLocalizedClassDisplayName,
   normalizeOfficialClassName,

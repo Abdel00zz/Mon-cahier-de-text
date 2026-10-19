@@ -34,8 +34,6 @@ const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEva
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     onEvaluationVisibilityChange?: (visible: boolean) => void;
-    /** Ouvre le guide depuis les actions du tableau de bord. */
-    onOpenGuide?: () => void;
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
@@ -46,7 +44,6 @@ const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mas
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     onEvaluationVisibilityChange,
-    onOpenGuide,
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
@@ -369,7 +366,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <DashboardActions
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}
-                            onOpenGuide={onOpenGuide}
                             showDisplayModes={classes.length > 0}
                         />
                         {classes.length > 0 && (

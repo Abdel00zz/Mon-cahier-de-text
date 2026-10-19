@@ -462,7 +462,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             </SettingsSection>
 
             <SettingsSection title={l('Rappels', 'التذكيرات', 'Reminders')}>
-                <Toggle label={t('notifications.inApp')} checked={settings.enabled} onChange={v => patch({ enabled: v })} icon={Bell} />
+                <Toggle label={t('notifications.enabled')} checked={settings.enabled} onChange={v => patch({ enabled: v })} icon={Bell} />
                 <Toggle
                     label={t('notifications.vibration')}
                     hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Rappels de cet appareil uniquement.', 'لتذكيرات هذا الجهاز فقط.', 'Reminders on this device only.')}
@@ -484,7 +484,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     disabled={!settings.enabled || !settings.sessionEndReminderEnabled}
                     onChange={value => patch({ sessionReminderMinutes: value, sessionReminderTimingVersion: 1 })} />
                 <Toggle label={l('Rappel si aucune date', 'تذكير إن لم يُسجَّل تاريخ', 'Reminder if no date')}
-                    hint={l('Une date ne confirme pas chaque séance du jour.', 'التاريخ الواحد لا يؤكد كل حصص اليوم.', 'One date does not confirm every session that day.')}
+                    hint={l('Si aucune séance n’est datée aujourd’hui, lorsque l’application est active.', 'عند غياب حصة مؤرّخة اليوم، والتطبيق مفتوح.', 'When no session is dated today and the app is active.')}
                     checked={settings.missingDateReminderEnabled}
                     onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} icon={CalendarCheck} />
                 <SelectRow label={l('Minutes après la séance', 'الدقائق بعد الحصة', 'Minutes after the session')}
@@ -516,7 +516,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         <p className="mt-0.5 text-[13px] leading-snug">{t('notifications.nativeDescription')}</p>
                         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <NotificationKind icon={TriangleAlert} label={t('notifications.kindDelay')} detail={t('notifications.smartCheck')} />
-                            <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={t('notifications.localReminder')} />
+                            <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={pushState.delivery === 'local' ? t('notifications.nativeRemindersDescription') : t('notifications.localReminder')} />
                             <NotificationKind icon={CalendarCheck} label={t('notifications.kindMissingDate')} detail={t('notifications.afterClass')} />
                             <NotificationKind icon={Bell} label={t('notifications.kindAdmin')} detail={t('notifications.directMessage')} />
                         </div>
@@ -531,7 +531,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     </div>
                     <div>
                         <p className="font-medium text-foreground">Android</p>
-                        <p className="mt-0.5 text-[13px] leading-snug">{l('Le mode économie d’énergie peut retarder les alertes. Les rappels locaux demandent une application active.', 'قد يؤخر وضع توفير الطاقة التنبيهات. تتطلب التذكيرات المحلية تطبيقاً نشطاً.', 'Battery Saver may delay alerts. Local reminders need an active app.')}</p>
+                        <p className="mt-0.5 text-[13px] leading-snug">{l('Le mode économie d’énergie peut retarder les alertes. Dans l’APK, les rappels de fin de séance sont programmés même application fermée. Le contrôle des dates se fait application active.', 'قد يؤخر وضع توفير الطاقة التنبيهات. في تطبيق Android، تُبرمج تذكيرات نهاية الحصة حتى والتطبيق مغلق. تُراجع التواريخ عند فتح التطبيق.', 'Battery Saver may delay alerts. In the Android app, end-of-session reminders are scheduled even when it is closed. Date checks run while the app is active.')}</p>
                     </div>
                 </div>
             </details>

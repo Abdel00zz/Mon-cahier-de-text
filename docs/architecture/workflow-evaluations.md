@@ -226,3 +226,22 @@ avec le cloud (Redis ou Firestore stockent le même blob JSON, octet pour octet)
 - **Direction** : la fiche enseignant montre la date limite, la correction et son corrigé en lecture seule.
 - **Compatibilité** : un appareil plus ancien ignore `dueDateISO` et la clé `:correction`, sans les perdre (le blob
   est conservé tel quel côté serveur).
+
+## Vérification des liaisons — octobre 2026
+
+- Les suivis d'élèves (oral et remises) relisent l'identifiant historique si
+  l'identifiant annuel n'existe pas encore. Une sauvegarde migre vers la clé
+  annuelle et retire l'ancienne ; vider le suivi ne peut donc pas le restaurer
+  au prochain affichage. Les autres classes restent inchangées.
+- Effacer une date ou supprimer une évaluation traite également son entrée
+  manuelle historique, afin de ne pas recréer une annotation de séance.
+- Les sous-modales lisent la même configuration réconciliée que la liste.
+- Les intitulés générés des activités dans les remarques suivent la langue de
+  l'écran. Les titres personnels, les noms d'élèves et les remarques rédigées
+  restent intacts. Cette traduction est une projection, sans écriture cloud.
+- Sur téléphone, les commandes occupent une ligne distincte, avec des cibles
+  de 44 px ; le titre et la date disposent de leur propre espace.
+- Le report imprimé des absents utilise l'identité exacte du devoir et les
+  dates enregistrées. Il ne recherche plus un chiffre du titre dans une clé
+  contenant l'année. Plusieurs listes le même jour sont réunies sans doublon,
+  y compris pour une impression partielle.

@@ -1,7 +1,6 @@
-import React, { useEffect, useId, useState } from 'react';
+import React from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { TriangleAlert } from '@/components/ui/icons';
 
@@ -12,33 +11,17 @@ interface DateReviewModalProps {
   /** Revient exactement au formulaire qui a proposé la date, sans perdre la saisie. */
   onModify: () => void;
   onConfirm: () => void;
-  /** Enregistre l'exception et retire uniquement ce contrôle du centre d'actions. */
-  onIgnore?: () => void;
 }
 
 /** Étape unique avant toute écriture d'une date qui mérite une vérification. */
-export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, warnings, onModify, onConfirm, onIgnore }) => {
+export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, warnings, onModify, onConfirm }) => {
   const { t, locale } = useLocale();
-  const ignoreChoiceId = useId();
-  const [ignoreWarning, setIgnoreWarning] = useState(false);
   const selectedDate = new Date(`${date}T12:00:00Z`);
   const validDate = Number.isFinite(selectedDate.getTime());
   const blocked = warnings.some(warning => warning.blocking);
   const distinctWarnings = warnings.filter(
     (warning, index, all) => all.findIndex(item => item.message === warning.message) === index,
   );
-
-  // Chaque contrôle de date repart d'un choix explicite. L'exception n'est
-  // enregistrée qu'avec « Confirmer », comme les autres données de la modale.
-  useEffect(() => {
-    if (isOpen) setIgnoreWarning(false);
-  }, [date, isOpen]);
-
-  const handleConfirm = () => {
-    if (blocked) return;
-    if (ignoreWarning && onIgnore) onIgnore();
-    else onConfirm();
-  };
 
   return (
     <Modal
@@ -67,7 +50,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
           <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl min-h-11 px-4 text-xs font-semibold sm:text-sm">
             {t('dateReview.modify')}
           </Button>
-          <Button type="button" onClick={handleConfirm} disabled={!validDate || blocked} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
+          <Button type="button" onClick={onConfirm} disabled={!validDate || blocked} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm" aria-label={t('dateReview.confirmAria')}>
             {t('dateReview.confirmAria')}
           </Button>
         </div>
@@ -88,21 +71,6 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
             {t('dateReview.hint')}
           </p>
         </div>
-        {onIgnore && !blocked && (
-          <label
-            htmlFor={ignoreChoiceId}
-            dir={locale === 'ar' ? 'rtl' : 'ltr'}
-            className="mt-3 flex min-h-11 cursor-pointer items-center gap-2.5 text-start text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Checkbox
-              id={ignoreChoiceId}
-              checked={ignoreWarning}
-              onCheckedChange={checked => setIgnoreWarning(checked === true)}
-              className="border-muted-foreground/50 bg-background shadow-none data-[state=checked]:border-primary data-[state=checked]:bg-primary"
-            />
-            <span className="min-w-0 leading-relaxed">{t('dateReview.ignore')}</span>
-          </label>
-        )}
       </div>
     </Modal>
   );

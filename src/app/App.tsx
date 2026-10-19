@@ -4,7 +4,7 @@ import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
 import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkeleton';
 import { SyncStrip } from '../components/ui/SyncStrip';
-import { AppLocale, ClassInfo } from '../types';
+import { AppLocale } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useSessionAlerts } from '../hooks/useSessionAlerts';
 import { useBootstrapProgress } from '../hooks/useBootstrapProgress';
@@ -16,88 +16,31 @@ import { accountOwner } from '../domain/auth/accountIdentity';
 import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
 import { AUTH_REQUIRED } from '../config/features';
-import { normalizeOfficialClassName } from '../constants';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
-import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { useAdminMessages } from '../hooks/useAdminMessages';
 
 import { useClassManager } from '../hooks/useClassManager';
 import { useTheme } from '../hooks/useTheme';
+import { useDevice } from '../hooks/useDevice';
 import { TabBar, TabType } from '../components/navigation/TabBar';
 import { DeferredMount } from '../components/ui/DeferredMount';
-import { latestClassOpening } from '../infrastructure/storage/classOpening';
 import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
+import { useAppNavigation } from './navigation/useAppNavigation';
 import { computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('../features/editor/Editor').then(module => ({ default: module.Editor })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
-const NotificationsPage = lazy(() => import('../features/dashboard/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const GuideModal = lazy(() => import('../features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
 
-type View = 'dashboard' | 'editor' | 'settings' | 'notifications';
-
-interface RouteSnapshot {
-  view: View;
-  activeClass: ClassInfo | null;
-}
-
-const DASHBOARD_HASH = '#/';
-const SETTINGS_HASH = '#/parametres';
-const NOTIFICATIONS_HASH = '#/notifications';
-
-const getClassRoute = (classId: string) => `#/classe/${encodeURIComponent(classId)}`;
-const readStoredClass = (classId: string): ClassInfo | null => {
-  try {
-    const classes = JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[];
-    const classInfo = classes.find(item => item.id === classId) ?? null;
-    if (!classInfo) return null;
-    const normalizedName = normalizeOfficialClassName(classInfo.name);
-    return normalizedName === classInfo.name ? classInfo : { ...classInfo, name: normalizedName };
-  } catch {
-    return null;
-  }
-};
-
-const readRouteSnapshot = (): RouteSnapshot => {
-  if (window.location.hash === SETTINGS_HASH) return { view: 'settings', activeClass: null };
-  if (window.location.hash.startsWith(NOTIFICATIONS_HASH)) return { view: 'notifications', activeClass: null };
-  const match = window.location.hash.match(/^#\/classe\/([^/]+)$/);
-  if (!match) return { view: 'dashboard', activeClass: null };
-
-  const classInfo = readStoredClass(decodeURIComponent(match[1]));
-  return classInfo
-    ? { view: 'editor', activeClass: classInfo }
-    : { view: 'dashboard', activeClass: null };
-};
-
-const getScrollKey = (view: View, activeClass: ClassInfo | null) =>
-  view === 'editor' && activeClass ? `editor:${activeClass.id}` : 'dashboard';
-
 const App: React.FC = () => {
-  const initialRouteRef = useRef<RouteSnapshot | null>(null);
-  if (initialRouteRef.current === null) {
-    initialRouteRef.current = readRouteSnapshot();
-  }
-
-  const [view, setView] = useState<View>(initialRouteRef.current.view);
-  const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
-  const [settingsOrigin, setSettingsOrigin] = useState<RouteSnapshot>(() =>
-    initialRouteRef.current?.view === 'settings'
-      ? { view: 'dashboard', activeClass: null }
-      : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
-  );
-  const [notificationsOrigin, setNotificationsOrigin] = useState<RouteSnapshot>(() =>
-    initialRouteRef.current?.view === 'notifications'
-      ? { view: 'dashboard', activeClass: null }
-      : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
-  );
+  const { isPhone } = useDevice();
   const [isClassActivitiesOpen, setClassActivitiesOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -150,6 +93,8 @@ const App: React.FC = () => {
     if (!sessionClaimedByClass(classId, session)) return;
     markCurrentSessionHandled(session.scope, session.key);
   }, []);
+  const { view, activeClass, backgroundRoute, initialView, handleSelectClass, handleBackToDashboard,
+    handleOpenSettings, handleBackFromSettings, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor);
   /*
    * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
    * clic sur la carte, ouverture automatique, lien profond d'une notification
@@ -162,7 +107,6 @@ const App: React.FC = () => {
     if (view !== 'editor') return;
     markSessionHandledFor(activeClass?.id);
   }, [activeClass, markSessionHandledFor, view]);
-  const scrollPositionsRef = useRef<Record<string, number>>({});
   /*
    * Une seule matière ne se distingue de rien : ses libellés et badges sont
    * masqués dans toute l'application (emploi du temps, liste, évaluations,
@@ -198,14 +142,12 @@ const App: React.FC = () => {
     firstLoadComplete: bootProgress.complete,
   });
 
-  const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
-
   useEffect(() => {
     if (typeof window === 'undefined' || authStatus !== 'authenticated') return;
     // Tous les écrans sont préparés pendant l'inactivité : la navigation ne doit
     // plus afficher d'écran de chargement (voir app/prefetch).
-    return startIdlePrefetch({ initialView: initialRouteRef.current?.view });
-  }, [authStatus]);
+    return startIdlePrefetch({ initialView });
+  }, [authStatus, initialView]);
 
   // Une authentification déclenchée depuis une ancienne vue (par exemple les
   // paramètres après une déconnexion) doit reprendre à l'accueil. Cela permet
@@ -218,129 +160,8 @@ const App: React.FC = () => {
 
     setClassActivitiesOpen(false);
     setOnboardingVisible(false);
-    setActiveClass(null);
-    setSettingsOrigin({ view: 'dashboard', activeClass: null });
-    setNotificationsOrigin({ view: 'dashboard', activeClass: null });
-    setView('dashboard');
-    window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-  }, [authStatus]);
-
-  const saveCurrentScroll = useCallback(() => {
-    const visibleRoute = view === 'settings'
-      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
-      : view === 'notifications'
-        ? notificationsOrigin
-        : { view, activeClass };
-    scrollPositionsRef.current[getScrollKey(visibleRoute.view, visibleRoute.activeClass)] = window.scrollY;
-  }, [activeClass, notificationsOrigin, settingsOrigin, view]);
-
-  useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-  }, []);
-
-  useEffect(() => {
-    const visibleRoute = view === 'settings'
-      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
-      : view === 'notifications'
-        ? notificationsOrigin
-        : { view, activeClass };
-    const key = getScrollKey(visibleRoute.view, visibleRoute.activeClass);
-    const remembered = scrollPositionsRef.current[key];
-    const top = remembered ?? 0;
-    const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
-    /*
-     * Une ouverture depuis une carte laisse Editor rejoindre le dernier
-     * contenu daté. Les retours depuis les paramètres conservent leur position.
-     */
-    if (visibleRoute.view === 'editor' && remembered === undefined) {
-      return () => window.cancelAnimationFrame(animationFrame);
-    }
-    const settleTimer = window.setTimeout(() => window.scrollTo(0, top), 220);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      window.clearTimeout(settleTimer);
-    };
-  }, [activeClass, notificationsOrigin, settingsOrigin, view]);
-
-  const handleSelectClass = useCallback((classInfo: ClassInfo) => {
-    saveCurrentScroll();
-    delete scrollPositionsRef.current[getScrollKey('editor', classInfo)];
-    /*
-     * « Dernière ouverture » : la carte affiche « prêt pour votre première
-     * séance » tant que la classe n'a jamais été ouverte. La date ne recule
-     * jamais (`latestClassOpening`) : une synchronisation plus ancienne, ou
-     * une horloge décalée, ne peut pas réécrire un passé plus récent.
-     */
-    const openedAt = latestClassOpening(classInfo.lastOpenedAt, new Date().toISOString());
-    if (openedAt && openedAt !== classInfo.lastOpenedAt) updateClass(classInfo.id, { lastOpenedAt: openedAt });
-    try { localStorage.setItem('cdt_last_accessed_class_v1', classInfo.id); } catch { /* ignore */ }
-    setActiveClass(openedAt ? { ...classInfo, lastOpenedAt: openedAt } : classInfo);
-    markSessionHandledFor(classInfo.id);
-    setView('editor');
-    window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
-  }, [markSessionHandledFor, saveCurrentScroll, updateClass]);
-
-  const handleBackToDashboard = useCallback(() => {
-    // Quitter le cahier DE LA SÉANCE vaut pour la séance entière : un retour
-    // natif supplémentaire ne doit pas renvoyer dans la classe. Sortir d'un
-    // autre cahier ne consomme rien (voir `markSessionHandledFor`).
-    markSessionHandledFor(activeClass?.id);
-    saveCurrentScroll();
-    setActiveClass(null);
-    setView('dashboard');
-    window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-  }, [activeClass, markSessionHandledFor, saveCurrentScroll]);
-
-  const handleOpenSettings = useCallback(() => {
-    if (view === 'settings') return;
-    saveCurrentScroll();
-    setSettingsOrigin({ view, activeClass });
-    setView('settings');
-    window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
-  }, [activeClass, saveCurrentScroll, view]);
-
-  const handleOpenNotifications = useCallback(() => {
-    if (view === 'notifications') return;
-    saveCurrentScroll();
-    const origin = view === 'settings'
-      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
-      : { view, activeClass };
-    setNotificationsOrigin(
-      origin.view === 'settings' || origin.view === 'notifications'
-        ? { view: 'dashboard', activeClass: null }
-        : origin,
-    );
-    setView('notifications');
-    window.history.pushState({ route: 'notifications' }, '', NOTIFICATIONS_HASH);
-  }, [activeClass, notificationsOrigin, saveCurrentScroll, settingsOrigin, view]);
-
-  const handleBackFromNotifications = useCallback(() => {
-    if (window.history.state?.route === 'notifications') {
-      window.history.back();
-    } else {
-      // Chargement direct de #/notifications : aucun écran précédent fiable.
-      setActiveClass(null);
-      setView('dashboard');
-      window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-    }
-  }, []);
-
-  // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
-  // de bord) via l'historique, et non systématiquement au tableau de bord.
-  // Garde : sur un chargement direct de #/parametres, aucun état poussé par
-  // l'app → history.back() sortirait du site ; on retombe alors sur l'accueil.
-  const handleBackFromSettings = useCallback(() => {
-    if (window.history.state?.route === 'settings' && window.history.state?.settingsSubView) {
-      window.history.go(-2); // sous-rubrique mobile + sheet Paramètres
-    } else if (window.history.state?.route === 'settings' || window.history.state?.route === 'notifications') {
-      window.history.back(); // popstate → syncRouteFromLocation restaure la vue précédente
-    } else {
-      handleBackToDashboard();
-    }
-  }, [handleBackToDashboard]);
+    resetNavigation();
+  }, [authStatus, resetNavigation]);
 
   /*
    * Quitter les Réglages envoie tout de suite les réglages modifiés : l'emploi
@@ -356,57 +177,6 @@ const App: React.FC = () => {
     flushPush();
   }, [flushPush, view]);
 
-  useEffect(() => {
-    const back = (event: Event) => {
-      if (view === 'editor') { event.preventDefault(); handleBackToDashboard(); }
-      else if (view === 'settings') { event.preventDefault(); handleBackFromSettings(); }
-      else if (view === 'notifications') { event.preventDefault(); handleBackFromNotifications(); }
-    };
-    window.addEventListener('native-back', back);
-    return () => window.removeEventListener('native-back', back);
-  }, [view, handleBackToDashboard, handleBackFromSettings, handleBackFromNotifications]);
-
-  // Handle browser back / forward buttons
-  useEffect(() => {
-    if (!window.location.hash) {
-      window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-    }
-
-    const syncRouteFromLocation = () => {
-      saveCurrentScroll();
-      const snapshot = readRouteSnapshot();
-      if (snapshot.view === 'settings' && view !== 'settings') {
-        setSettingsOrigin({ view, activeClass });
-      }
-      if (snapshot.view === 'notifications' && view !== 'notifications') {
-        const origin = view === 'settings'
-          ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
-          : { view, activeClass };
-        setNotificationsOrigin(
-          origin.view === 'settings' || origin.view === 'notifications'
-            ? { view: 'dashboard', activeClass: null }
-            : origin,
-        );
-      }
-      setActiveClass(snapshot.activeClass);
-      setView(snapshot.view);
-    };
-    window.addEventListener('popstate', syncRouteFromLocation);
-    window.addEventListener('hashchange', syncRouteFromLocation);
-    return () => {
-      window.removeEventListener('popstate', syncRouteFromLocation);
-      window.removeEventListener('hashchange', syncRouteFromLocation);
-    };
-  }, [activeClass, notificationsOrigin, saveCurrentScroll, settingsOrigin, view]);
-
-  const requestedBackgroundRoute = view === 'settings'
-    ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
-    : view === 'notifications'
-      ? notificationsOrigin
-      : { view, activeClass };
-  const backgroundRoute = requestedBackgroundRoute.view === 'settings' || requestedBackgroundRoute.view === 'notifications'
-    ? { view: 'dashboard' as const, activeClass: null }
-    : requestedBackgroundRoute;
   const backgroundView = backgroundRoute.view;
   const backgroundClass = backgroundRoute.activeClass;
 
@@ -427,7 +197,6 @@ const App: React.FC = () => {
       <Dashboard
         onSelectClass={handleSelectClass}
         onEvaluationVisibilityChange={setClassActivitiesOpen}
-        onOpenGuide={() => setGuideOpen(true)}
         activeSessionClassIds={currentSession.classIds}
           accountTeacherName={teacherName}
         onOnboardingVisibilityChange={setOnboardingVisible}
@@ -440,25 +209,20 @@ const App: React.FC = () => {
     : backgroundView;
   const routeFallback = <PageTransitionLoader />;
 
-  const activeTab: TabType = view === 'settings'
-    ? 'settings'
-    : view === 'notifications'
-    ? 'notifications'
-    : 'dashboard';
+  const activeTab: TabType = view === 'settings' ? 'settings' : 'dashboard';
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (tab === 'dashboard') {
       if (view !== 'dashboard') {
         handleBackToDashboard();
       }
-    } else if (tab === 'notifications') {
-      handleOpenNotifications();
+
     } else if (tab === 'settings') {
       handleOpenSettings();
     } else if (tab === 'help') {
       setGuideOpen(true);
     }
-  }, [view, handleBackToDashboard, handleOpenNotifications, handleOpenSettings]);
+  }, [view, handleBackToDashboard, handleOpenSettings]);
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
 
@@ -500,7 +264,8 @@ const App: React.FC = () => {
 
   const appSurface = (
     <div
-      className="relative min-h-dvh overflow-x-clip text-foreground bg-background"
+      className="workspace-shell relative min-h-dvh overflow-x-clip text-foreground bg-background"
+      data-phone-navigation={isPhone ? 'true' : 'false'}
       style={backgroundView === 'dashboard' ? dynamicCanvasStyle : undefined}
       /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
       data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
@@ -509,7 +274,6 @@ const App: React.FC = () => {
         <TabBar
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          notificationsCount={notificationFeed.attentionCount}
           isExpanded={isSidebarExpanded}
           onToggleExpanded={() => setSidebarExpanded(expanded => {
             const next = !expanded;
@@ -522,9 +286,11 @@ const App: React.FC = () => {
         />
       )}
       <div
-        data-settings-sheet-open={view === 'settings' || view === 'notifications' ? 'true' : 'false'}
+        data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
         data-workspace-navigation={showNavigation ? 'true' : 'false'}
-        className={`app-settings-parent relative min-h-dvh overflow-x-clip transition-[padding] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
+        data-sidebar-expanded={isSidebarExpanded ? 'true' : 'false'}
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="app-settings-parent relative min-h-dvh overflow-x-clip"
       >
         <div key={routeKey} className="relative z-10 min-h-dvh">
           <Suspense fallback={routeFallback}>
@@ -534,18 +300,6 @@ const App: React.FC = () => {
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>
-      {view === 'notifications' && !isAuthView && !isBooting && (
-        <Suspense fallback={<PageTransitionLoader overlay />}>
-          <NotificationsPage
-            classes={classes}
-            config={config}
-            feed={notificationFeed}
-            onSelectClass={handleSelectClass}
-            onOpenSettings={handleOpenSettings}
-            onBack={handleBackFromNotifications}
-          />
-        </Suspense>
-      )}
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={<PageTransitionLoader overlay />}>
           <SettingsPage

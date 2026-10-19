@@ -3,7 +3,7 @@ import { getDaySessionBlocks } from './timetable';
 import { getBundledCalendar, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 
-export type SessionScheduleState =
+type SessionScheduleState =
     | 'in_progress'
     | 'starting_soon'
     | 'today_later'
@@ -26,7 +26,7 @@ export interface SessionScheduleStatus {
     dayOffset?: number;
 }
 
-export const formatHourMinute = (minutes: number, locale = 'fr'): string => {
+const formatHourMinute = (minutes: number, locale = 'fr'): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     const pad = (n: number) => String(n).padStart(2, '0');

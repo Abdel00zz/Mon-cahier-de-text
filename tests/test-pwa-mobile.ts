@@ -203,7 +203,7 @@ test('clic natif : fenêtre fermée/échec du focus ouvre une nouvelle fenêtre 
   const calls: string[] = [];
   const dead: NotificationWindow = { url: 'https://app.test/', focused: true, visibilityState: 'visible', focus: async () => { throw Error('closed'); }, postMessage: () => {} };
   await openNotificationTarget('https://evil.test/', 'https://app.test', [dead], async url => { calls.push(url); });
-  assert.deepEqual(calls, ['https://app.test/#/notifications']);
+  assert.deepEqual(calls, ['https://app.test/#/']);
 });
 
 test('mémoire des cahiers : cache borné, éviction sans suppression du stockage, contenu changé relu', context => {

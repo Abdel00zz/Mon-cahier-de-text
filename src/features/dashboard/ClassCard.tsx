@@ -11,7 +11,7 @@ import { useClassPress } from '@/features/dashboard/hooks/useClassPress';
 import { useCardSurface } from './hooks/useCardSurface';
 import { cn } from '@/lib/utils';
 import { classTitleStyle } from '@/constants/classTitleTypography';
-import { ClassGroupWatermark } from './ClassLevelBadge';
+import { ClassGroupWatermark } from './ClassGroupWatermark';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 import { useDevice } from '@/hooks/useDevice';
 import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';

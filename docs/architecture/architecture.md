@@ -55,11 +55,11 @@ Connexion, inscription, validation locale du formulaire et présentation des err
 
 ### `src/features/dashboard`
 
-Accueil **Mes classes**, indicateurs compacts, notifications, cartes, création de cahier et onboarding. Le calendrier mensuel (`NotificationCalendar.tsx`) croise vacances, jours fériés, bulletin officiel, évaluations, absences et emploi du temps. Les calculs proviennent de `src/domain` et des hooks ; ils ne sont pas redéfinis ici.
+Accueil **Mes classes**, cartes, création de cahier et onboarding. Le centre « Suivi pédagogique » et ses calculs globaux ont été retirés. La navigation et la restauration du défilement résident dans `src/app/navigation`, les barres bureau/mobile dans `src/components/navigation`.
 
 ### `src/features/editor`
 
-Éditeur du cahier, tableau, lignes, sélection, impression, centre d’actions et modales propres à la saisie. Le journal d’activité est consultable depuis le centre de notifications global. Les modales sont chargées à la demande depuis `EditorModals.tsx`.
+Éditeur du cahier, tableau, lignes, sélection, impression et modales propres à la saisie. Les modales sont chargées à la demande depuis `EditorModals.tsx`.
 
 ### `src/features/evaluations`
 

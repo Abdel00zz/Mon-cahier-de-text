@@ -1,3 +1,4 @@
+import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
 import { findNotebookAssessments } from './assessmentSync';
@@ -26,16 +27,16 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
   for (const event of config.pedagogicalEvents?.[classId] ?? []) {
     if (event.type === 'controle_cahiers') {
       for (const [date, mark] of buildNotebookCheckRemarks([event])) {
-        add(date, notebookCheckRemarkText({ ...mark, title: mark.title || translate('evaluations.event.controle_cahiers') }, translate, separator), `event:${event.id}`);
+        add(date, notebookCheckRemarkText({ ...mark, title: localizedActivityTitle(mark.title, event.type, translate) }, translate, separator), `event:${event.id}`);
       }
     } else if (event.type === 'remediation') {
-      const title = event.title.trim() || translate('evaluations.event.remediation');
+      const title = localizedActivityTitle(event.title, event.type, translate);
       coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
     } else if (event.type === 'soutien') {
-      const title = event.title.trim() || translate('evaluations.event.soutien');
+      const title = localizedActivityTitle(event.title, event.type, translate);
       coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
     } else if (event.type === 'rattrapage') {
-      const title = event.title.trim() || translate('evaluations.event.rattrapage');
+      const title = localizedActivityTitle(event.title, event.type, translate);
       coveredDates(event).forEach(date => add(date, title, `event:${event.id}`));
     }
   }

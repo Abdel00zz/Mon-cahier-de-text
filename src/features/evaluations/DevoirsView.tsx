@@ -349,6 +349,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : '';
     const correctionDocument = a.type === 'maison'
       ? config.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.id)]
+        ?? (a.legacyId ? config.assessmentDocuments?.[selectedClass!.id]?.[homeworkCorrectionDocumentId(a.legacyId)] : undefined)
       : undefined;
     const correctionIndicator = documentIndicator(documentRequirementForHomeworkCorrection(policy), correctionDocument);
     const correctionName = `${t('manageLessons.type.correction_devoir_maison')} ${number.format(a.num)}`;
@@ -662,7 +663,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onConfigChange={onConfigChange}
         classInfo={classInfo}
         classDisplayName={selectedClassDisplayName}
-        config={config}
+        config={effectiveConfig}
         today={today}
         assessments={assessments}
         modals={evaluationModals}

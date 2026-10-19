@@ -19,7 +19,6 @@ import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
 import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
 import { dashboardTitleStyle } from '../../src/constants/classTitleTypography';
-import { NotificationsPage } from '../../src/features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../src/features/settings/components/NotificationsTab';
 import { AppearanceTab } from '../../src/features/settings/components/AppearanceTab';
@@ -36,7 +35,6 @@ import { ModalGallery } from './ModalGallery';
 import { LandingPage } from '../../src/features/auth/LandingPage';
 import { AuthPage } from '../../src/features/auth/AuthPage';
 import { AuthProvider } from '../../src/contexts/AuthContext';
-import { useNotificationFeed } from '../../src/hooks/useNotificationFeed';
 import { defaultNotificationSettings } from '../../src/hooks/useConfigManager';
 import { buildLessonRows, indicesKey, filterLessonRows } from '../../src/domain/notebook/lessonRows';
 import { buildContentMoveTargets } from '../../src/domain/notebook/contentEditing';
@@ -161,21 +159,19 @@ function Preview() {
     return next;
   });
   const onChange = (patch: Partial<AppConfig>) => setConfig(current => ({ ...current, ...patch }));
-  const feed = useNotificationFeed(classes, config, locale);
   return <>
     {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} /></>}
-    {screen === 'pilotage' && <NotificationsPage classes={classes} config={config} feed={feed} onSelectClass={noop} onOpenSettings={noop} onBack={noop} />}
     {screen === 'loading' && <PageTransitionLoader />}
     {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
-    {screen !== 'guide' && screen !== 'pilotage' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
+    {screen !== 'guide' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'absences' && <AbsencesTab config={config} classes={classes} onConfigChange={onChange} visible />}
       {screen === 'evaluations' && <DevoirsView classInfo={classes[0]} config={config} onConfigChange={onChange} lessonsData={previewLessons} onLessonsChange={setPreviewLessons} />}
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
       {screen === 'dashboard' && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, params.get('active') === '1' ? [classes[0]?.id] : [])} >
           <div className="dashboard-heading mb-4" data-layout={display}>
-            <DashboardActions mode={display} onModeChange={setDisplay} onCreateClass={() => setDashboardCreateOpen(true)} onOpenGuide={() => setDashboardGuideOpen(true)} />
+            <DashboardActions mode={display} onModeChange={setDisplay} />
             <h1 className="dashboard-heading__title text-2xl sm:text-3xl" style={dashboardTitleStyle(locale)}>{t('dashboard.classes')}<span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>
           <div className="dashboard-class-section">
@@ -191,7 +187,7 @@ function Preview() {
           )}
           {display === 'list' && <div className="dashboard-class-create-row"><AddClassCard variant="row" onCreate={() => setDashboardCreateOpen(true)} /></div>}
           </div>
-          <TabBar activeTab="dashboard" onTabChange={noop} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
+          <TabBar activeTab="dashboard" onTabChange={tab => { if (tab === 'help') setDashboardGuideOpen(true); }} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
           <CreateClassModal isOpen={dashboardCreateOpen || !!editingClass} onClose={() => { setDashboardCreateOpen(false); setEditingClass(null); }} onCreate={() => setDashboardCreateOpen(false)}
             defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} editingClass={editingClass}
             onUpdate={(id, updates) => setClasses(current => current.map(item => item.id === id ? { ...item, ...updates } : item))}

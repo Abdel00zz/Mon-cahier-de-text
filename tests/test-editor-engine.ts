@@ -4,7 +4,7 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { produce } from 'immer';
-import type { AppConfig, ClassInfo, Indices, LessonsData } from '../src/types';
+import type { ClassInfo, Indices, LessonsData } from '../src/types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../src/domain/notebook/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings, selectionDateOrder } from '../src/domain/calendar/dateOrder';
 import { applySessionEdit, readSessionSelection } from '../src/domain/notebook/sessionEditing';
@@ -29,11 +29,9 @@ import { titleDirection } from '../src/domain/notebook/contentDirection';
 import { listViewport, visibleRange } from '../src/platform/virtualGeometry';
 import { MainTable } from '../src/features/editor/MainTable';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
-import { useNotificationFeed, type NotificationFeed } from '../src/hooks/useNotificationFeed';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '../src/domain/notebook/starterDiagnostic';
 import { validateSessionDate, toDisplayWarnings } from '../src/domain/calendar/dateValidation';
 import { countExpectedSessions, countSchoolDaysBetween, isWeeklyRestDay, type HolidayCalendar } from '../src/domain/calendar/calendar';
-import { collectClassSignals, dateActionId } from '../src/infrastructure/notifications/notificationSignals';
 import { SelectionBar } from '../src/features/editor/SelectionBar';
 import { assignClassColors, classColorAttributes, isClassColor } from '../src/domain/classes/classColors';
 import { insertFreeContent } from '../src/domain/notebook/freeContent';
@@ -281,32 +279,6 @@ test('dimanche : aucun retard fictif avec un ancien horaire dimanche, samedi con
   const slots = [{ weekday: 0 }, { weekday: 6 }];
   assert.equal(countExpectedSessions('2026-09-12', '2026-09-13', slots, dateCalendar), 1);
   assert.equal(countSchoolDaysBetween('2026-09-12', '2026-09-13', [0, 6], dateCalendar), 1);
-});
-
-test('dimanche : la même alerte alimente le cahier et les notifications, sans retard fictif', context => {
-  context.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-09-14T12:00:00Z') });
-  const storage = new Map<string, string>();
-  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: (key: string) => storage.get(key) ?? null } });
-  try {
-    const date = '2026-09-13';
-    const config = { schedules: [{ classId: dateClass.id, slots: [{ weekday: 0 }] }], notificationSettings: { enabled: true } } as unknown as AppConfig;
-    storage.set(`classData_v1_${dateClass.id}`, JSON.stringify([{ type: 'chapter', title: 'Test', date }]));
-    const warnings = validateSessionDate(date, dateClass, config);
-    const id = dateActionId(dateClass.id, date, warnings);
-    const signal = collectClassSignals(dateClass, config).find(item => item.id === id);
-    assert.ok(signal);
-    assert.match(signal.detail, /dimanche/);
-    assert.equal(signal.date, date);
-    assert.equal(signal.dismissible, true);
-    storage.set('appConfig_v1', JSON.stringify({ notificationDismissals: { [dateClass.id]: [id] } }));
-    assert.equal(collectClassSignals(dateClass, config).find(item => item.id === id)?.ignored, true);
-    storage.delete(`classData_v1_${dateClass.id}`);
-    assert.equal(collectClassSignals(dateClass, config).some(item => item.kind === 'missed-session'), false);
-  } finally {
-    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
-  }
 });
 
 test('barre de sélection : ni compteur ni bouton fermer, actions adaptées et verrouillées pendant le calcul', () => {
@@ -887,28 +859,6 @@ test('le ciblage conserve la fusion du contenu strictement identique', () => {
   assert.ok(plan);
   const moved = produce(data, draft => { applyContentDrop(draft, plan); });
   assert.deepEqual(moved[1].items, data[0].items);
-});
-
-test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {
-  const classes: ClassInfo[] = [{ id: 'schedule-test', name: 'Classe test', subject: 'Test', cycle: 'lycee', teacherName: 'Test', createdAt: '2026-09-01', color: 'blue' }];
-  const capture = (config: AppConfig) => {
-    let result: NotificationFeed | undefined;
-    function Probe() { result = useNotificationFeed(classes, config, 'fr'); return null; }
-    renderToStaticMarkup(React.createElement(Probe));
-    return result!;
-  };
-  const config = { timetable: [], notificationSettings: { enabled: true } } as unknown as AppConfig;
-  const feed = capture(config);
-  assert.equal(feed.corrections.some(signal => signal.kind === 'schedule'), false);
-  const schedule = feed.insights.filter(signal => signal.kind === 'schedule');
-  assert.equal(schedule.length, 1);
-  assert.equal(schedule[0].action, 'timetable');
-  assert.equal(schedule[0].classId, classes[0].id);
-  const resolved = capture({ ...config, timetable: [{ classId: classes[0].id, day: 1, slot: 0 }] });
-  assert.equal(resolved.insights.some(signal => signal.kind === 'schedule'), false);
-  const settings = config.notificationSettings!;
-  const disabled = capture({ ...config, notificationSettings: { ...settings, enabled: false } });
-  assert.equal(disabled.insights.length, 0);
 });
 
 test('évaluations identiques : un titre commun et toutes les dates reliées par et', () => {

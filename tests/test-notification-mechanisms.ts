@@ -135,7 +135,7 @@ test('notification mobile : badge distinct, texte borné, langue, actions et des
   assert.equal(view.options.actions[1].action, 'dismiss');
   assert.equal(view.options.data.url, payload.url);
   assert.equal(view.options.timestamp, 100);
-  assert.equal(notificationPresentation({ url: 'https://external.test', timestamp: Infinity }, false, 200).options.data.url, '/#/notifications');
+  assert.equal(notificationPresentation({ url: 'https://external.test', timestamp: Infinity }, false, 200).options.data.url, '/#/');
   assert.equal(notificationPresentation(null).options.tag, 'cdt-lateness');
   assert.ok(notificationPresentation(payload, true).options.vibrate.length > 0);
   const badge = readFileSync(`public${NOTIFICATION_BADGE}`);
@@ -166,7 +166,7 @@ test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
 });
 
 test('push déclaratif : secours Safari et format ancien identiques, navigation limitée, Unicode borné', () => {
-  const payload = { title: 'دفتر نصوصي', body: 'راجع دفتر القسم.', kind: 'admin' as const, locale: 'ar' as const, url: '/#/notifications', messageId: 'message-1' };
+  const payload = { title: 'دفتر نصوصي', body: 'راجع دفتر القسم.', kind: 'admin' as const, locale: 'ar' as const, url: '/#/', messageId: 'message-1' };
   const message = JSON.parse(serializePushNotification(payload));
   assert.equal(message.web_push, 8030);
   assert.equal(message.mutable, true);
@@ -176,7 +176,7 @@ test('push déclaratif : secours Safari et format ancien identiques, navigation 
   assert.equal(message.notification.dir, 'rtl');
   assert.equal(message.notification.data.messageId, 'message-1');
   const untrusted = JSON.parse(serializePushNotification({ ...payload, url: 'https://external.test', body: '🧑🏽‍🏫'.repeat(1000), tag: 'ع'.repeat(1000) }));
-  assert.equal(untrusted.url, '/#/notifications');
+  assert.equal(untrusted.url, '/#/');
   assert.ok(Buffer.byteLength(JSON.stringify(untrusted)) < 3900);
 });
 

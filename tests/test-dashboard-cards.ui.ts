@@ -109,15 +109,15 @@ test('les actions sont visibles, compactes et accessibles dans les trois langues
   for (const locale of ['fr', 'ar', 'en'] as const) {
     const html = renderToStaticMarkup(React.createElement(LocaleProvider, {
       locale,
-      children: React.createElement(DashboardActions, { mode: 'double', onModeChange: () => {}, onCreateClass: () => {}, onOpenGuide: () => {} }),
+      children: React.createElement(DashboardActions, { mode: 'double', onModeChange: () => {} }),
     }));
-    assert.equal((html.match(/<button/g) ?? []).length, 2, `${locale} : disposition combinée et aide`);
+    assert.equal((html.match(/<button/g) ?? []).length, 1, `${locale} : disposition seule, aide déplacée vers la navigation`);
     assert.doesNotMatch(html, /aria-haspopup="menu"/, `${locale} : plus de menu caché`);
     assert.match(html, /data-mode="double"/, `${locale} : disposition courante`);
     assert.match(html, /role="status" aria-live="polite"/, `${locale} : disposition active annoncée`);
   }
   const css = readFileSync('src/features/dashboard/dashboardActions.css', 'utf8');
-  assert.match(css, /\.dashboard-actions-bar__icon \{[\s\S]*?width: 44px;[\s\S]*?height: 44px;/, 'cible tactile de 44 px');
+  assert.match(css, /\.dashboard-actions-bar__mode \{[\s\S]*?width: 44px;[\s\S]*?height: 44px;/, 'cible tactile de 44 px');
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|rgb\(|rgba\(/i, 'aucune teinte codée en dur : tout vient du thème');
   assert.match(css, /prefers-reduced-motion: reduce\)/, 'mouvement réduit respecté');
 });

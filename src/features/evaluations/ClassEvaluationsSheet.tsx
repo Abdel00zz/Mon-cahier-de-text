@@ -44,10 +44,10 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             className="evaluation-modal evaluation-reference sm:max-w-5xl sm:rounded-xl"
             headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
             title={
-                <span className="main-title inline-flex items-baseline flex-nowrap sm:flex-wrap gap-x-2 gap-y-0.5 max-w-full">
+                <span className="main-title inline-flex items-baseline flex-wrap gap-x-2 gap-y-0.5 max-w-full">
                     {/* « : » précédé d'une espace insécable en français seulement. */}
                     <span className="shrink-0">{t('evaluationsSheet.title')}{t('evaluationsSheet.separator')}</span>
-                    <span className="class-tag font-bold truncate sm:whitespace-normal" dir="auto">{className}</span>
+                    <span className="class-tag min-w-0 font-bold break-words" dir="auto">{className}</span>
                 </span>
             }
             description={showsSubjectLabels && classInfo.subject ? `${className} · ${classInfo.subject}` : className}

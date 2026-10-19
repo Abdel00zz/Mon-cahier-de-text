@@ -88,3 +88,61 @@ test('natures proposées : la colle en prépa, l’examen blanc aux années d’
   assert.equal(isKindOffered('controle', { cycle: 'prepa' }), true);
   assert.equal(documentRequirementForEvent('controle_cahiers'), 'none');
 });
+
+
+test('legacy student records migrate on save and cannot reappear after clearing', () => {
+  const id = '2026-2027:s1-oral1';
+  const legacyId = 's1-oral1';
+  const original = { names: ['Amine'], oralOutcomes: { Amine: 'mastered' }, oralGrades: { Amine: '15' }, updatedAt: 'old' };
+  let state = { assessmentParticipants: { c: { [legacyId]: original }, other: { [legacyId]: original } } } as unknown as AppConfig;
+  const apply = (patch: Partial<AppConfig>) => { state = { ...state, ...patch }; };
+  useEvaluationActions('c', state, apply).saveOral(id, ['Amine'], { Amine: 'developing' }, { Amine: '12' }, legacyId);
+  assert.equal(state.assessmentParticipants?.c[id]?.oralGrades?.Amine, '12');
+  assert.equal(state.assessmentParticipants?.c[legacyId], undefined);
+  assert.deepEqual(state.assessmentParticipants?.other[legacyId], original);
+  useEvaluationActions('c', state, apply).saveOral(id, [], {}, {}, legacyId);
+  assert.deepEqual(state.assessmentParticipants?.c, {});
+
+  state = { assessmentParticipants: { c: { [legacyId]: { names: ['Amine'], homeworkOutcomes: { Amine: 'missing' }, updatedAt: 'old' } } } } as unknown as AppConfig;
+  useEvaluationActions('c', state, apply).saveHomework(id, ['Amine'], { Amine: 'given' }, legacyId);
+  assert.equal(state.assessmentParticipants?.c[id]?.homeworkOutcomes?.Amine, 'given');
+  assert.equal(state.assessmentParticipants?.c[legacyId], undefined);
+  useEvaluationActions('c', state, apply).saveHomework(id, [], {}, legacyId);
+  assert.deepEqual(state.assessmentParticipants?.c, {});
+});
+
+test('clearing an official assessment date also clears its legacy manual date and remark', () => {
+  const id = '2026-2027:s1-oral1', legacyId = 's1-oral1';
+  let state = { manualAssessments: { c: [{ id: legacyId, type: 'oral', num: 1, semestre: 1, dateISO: '2026-10-14' }] },
+    assessmentDates: { c: { [legacyId]: '2026-10-14' } } } as unknown as AppConfig;
+  useEvaluationActions('c', state, patch => { state = { ...state, ...patch }; }).setAssessmentDate(id, '', legacyId);
+  assert.equal(state.manualAssessments?.c[0].dateISO, '');
+  assert.equal(state.manualAssessments?.c[0].id, legacyId);
+  const remarks = buildSessionActivityRemarks(state, 'c', key => translateLocaleMessage('fr', key), ', ');
+  assert.equal(remarks.size, 0);
+});
+
+test('deleting a canonical assessment removes its legacy manual entry without touching other classes', () => {
+  const id = '2026-2027:s1-maison1', legacyId = 's1-maison1';
+  const manual = { id: legacyId, type: 'maison', num: 1, semestre: 1, dateISO: '2026-10-14' };
+  let state = { manualAssessments: { c: [manual], other: [manual] }, assessmentOrder: { c: [legacyId, id, 'keep'] } } as unknown as AppConfig;
+  useEvaluationActions('c', state, patch => { state = { ...state, ...patch }; }).deleteAssessment(id, legacyId);
+  assert.deepEqual(state.manualAssessments?.c, []);
+  assert.deepEqual(state.manualAssessments?.other, [manual]);
+  assert.deepEqual(state.assessmentOrder?.c, ['keep']);
+});
+
+
+test('saving a legacy correction keeps its subject separate and clearing prevents fallback', () => {
+  const id = '2026-2027:s1-maison1:correction', legacyId = 's1-maison1:correction';
+  const subject = { source: 'Sujet', updatedAt: 'old' };
+  let state = { assessmentDocuments: { c: { '2026-2027:s1-maison1': subject, [legacyId]: { source: 'Ancien corrigé', updatedAt: 'old' } } } } as unknown as AppConfig;
+  const apply = (patch: Partial<AppConfig>) => { state = { ...state, ...patch }; };
+  useEvaluationActions('c', state, apply).saveAssessmentDocument(id, 'Corrigé actualisé', legacyId);
+  assert.equal(state.assessmentDocuments?.c[id]?.source, 'Corrigé actualisé');
+  assert.equal(state.assessmentDocuments?.c[legacyId]?.source, '');
+  assert.deepEqual(state.assessmentDocuments?.c['2026-2027:s1-maison1'], subject);
+  useEvaluationActions('c', state, apply).saveAssessmentDocument(id, '', legacyId);
+  assert.equal(state.assessmentDocuments?.c[id]?.source, '');
+  assert.equal(state.assessmentDocuments?.c[legacyId]?.source, '');
+});

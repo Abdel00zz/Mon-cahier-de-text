@@ -1,3 +1,4 @@
+import { assessmentAbsencesByDate } from '@/domain/evaluations/assessmentAbsences';
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
 import { buildAbsenceSessions, withAbsenceRows, absenceRemarkGroups, type AbsenceSession } from '@/domain/notebook/absenceSessions';
 import { normalizeDateForMerge } from '@/domain/notebook/classSessionDates';
@@ -198,60 +199,8 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
     );
 
-    // Table de correspondance pour le report du غياب المتعلمين في الفروض المحروسة بدفتر النصوص (المذكرة 255)
-    const absencesLookup = useMemo(() => {
-        const dateMap = new Map<string, string[]>();
-        const classAbsences = config.assessmentAbsences?.[classInfo.id];
-        if (!classAbsences || Object.keys(classAbsences).length === 0) return dateMap;
-
-        // 1. Dates explicites enregistrées
-        for (const [assessmentId, record] of Object.entries(classAbsences)) {
-            if (!record?.names || record.names.length === 0) continue;
-            const customDate = config.assessmentDates?.[classInfo.id]?.[assessmentId];
-            if (customDate) {
-                dateMap.set(customDate, record.names);
-            }
-            const manual = config.manualAssessments?.[classInfo.id]?.find((m) => m.id === assessmentId);
-            if (manual?.dateISO) {
-                dateMap.set(manual.dateISO, record.names);
-            }
-        }
-
-        // 2. Recherche dans les devoirs du cahier
-        try {
-            const visitItemForDate = (type: string, title: string | undefined, date?: string) => {
-                if (!date || dateMap.has(date)) return;
-                const isAssessment = ['controle_continu', 'controle_court', 'controle_global', 'oral', 'devoir_maison'].includes(type);
-                if (!isAssessment) return;
-
-                for (const [assessmentId, record] of Object.entries(classAbsences)) {
-                    if (!record?.names || record.names.length === 0) continue;
-                    const matchNum = title?.match(/(\d+)/);
-                    if (matchNum && assessmentId.includes(matchNum[1])) {
-                        dateMap.set(date, record.names);
-                        break;
-                    }
-                }
-            };
-
-            for (const top of lessonsData) {
-                visitItemForDate(top.type, top.title, top.date);
-                for (const s of top.sections ?? []) {
-                    for (const item of s.items ?? []) visitItemForDate(item.type, item.title, item.date);
-                    for (const ss of s.subsections ?? []) {
-                        for (const item of ss.items ?? []) visitItemForDate(item.type, item.title, item.date);
-                        for (const sss of ss.subsubsections ?? []) {
-                            for (const item of sss.items ?? []) visitItemForDate(item.type, item.title, item.date);
-                        }
-                    }
-                }
-            }
-        } catch {
-            // Silently continue if lessonsData format is unexpected
-        }
-
-        return dateMap;
-    }, [config.assessmentAbsences, config.assessmentDates, config.manualAssessments, classInfo.id, lessonsData]);
+    const absencesLookup = useMemo(() => assessmentAbsencesByDate(config, classInfo.id, annotationLessons ?? sourceLessons),
+        [config.assessmentAbsences, config.assessmentDates, config.manualAssessments, config.removedAssessments, classInfo.id, annotationLessons, sourceLessons]);
 
     /*
      * Contrôle des cahiers, remédiation et oral : les activités se lisent dans la REMARQUE de la

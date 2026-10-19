@@ -16,8 +16,8 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             else { delete dates[id]; if (legacyId) delete dates[legacyId]; }
             const current = config.manualAssessments?.[classId];
             onChange({ assessmentDates: { ...config.assessmentDates, [classId]: dates },
-                ...(current?.some(item => item.id === id) ? { manualAssessments: { ...config.manualAssessments,
-                    [classId]: current.map(item => item.id === id ? { ...item, schoolYear: item.schoolYear ?? schoolYearLabelFromDate(item.dateISO), dateISO: date } : item) } } : {}) });
+                ...(current?.some(item => item.id === id || item.id === legacyId) ? { manualAssessments: { ...config.manualAssessments,
+                    [classId]: current.map(item => item.id === id || item.id === legacyId ? { ...item, schoolYear: item.schoolYear ?? schoolYearLabelFromDate(item.dateISO), dateISO: date } : item) } } : {}) });
         },
         addEvent: (event: PedagogicalEvent) => { if (!events.some(item => item.id === event.id)) saveEvents([...events, event]); },
         updateEvent: (event: PedagogicalEvent) => saveEvents(events.map(item => item.id === event.id ? event : item)),
@@ -53,20 +53,22 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                     ...(grades && Object.keys(grades).length ? { oralGrades: grades } : {}) } };
             }));
         },
-        saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>, oralGrades?: Record<string, string>) {
+        saveOral(id: string, names: string[], oralOutcomes: Record<string, OralOutcome>, oralGrades?: Record<string, string>, legacyId?: string) {
             const records = { ...config.assessmentParticipants?.[classId] };
-            const existing = records[id];
+            const existing = records[id] ?? (legacyId ? records[legacyId] : undefined);
+            if (legacyId && legacyId !== id) delete records[legacyId];
             // Même règle que la remise d'un devoir : une liste vidée efface le suivi.
             if (!names.length) delete records[id];
             else records[id] = { names, oralOutcomes, ...(oralGrades && Object.keys(oralGrades).length ? { oralGrades } : {}), ...(existing?.homeworkOutcomes ? { homeworkOutcomes: existing.homeworkOutcomes } : {}), updatedAt: new Date().toISOString() };
             onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: records } });
         },
         /** Remise d'un devoir maison : rendu ou non rendu, élève par élève. */
-        saveHomework(id: string, names: string[], homeworkOutcomes: Record<string, HomeworkOutcome>) {
+        saveHomework(id: string, names: string[], homeworkOutcomes: Record<string, HomeworkOutcome>, legacyId?: string) {
             const records = { ...config.assessmentParticipants?.[classId] };
+            const existing = records[id] ?? (legacyId ? records[legacyId] : undefined);
+            if (legacyId && legacyId !== id) delete records[legacyId];
             if (!names.length) delete records[id];
             else {
-                const existing = records[id];
                 records[id] = { names, ...(existing?.oralOutcomes ? { oralOutcomes: existing.oralOutcomes } : {}), homeworkOutcomes, updatedAt: new Date().toISOString() };
             }
             onChange({ assessmentParticipants: { ...config.assessmentParticipants, [classId]: records } });
@@ -136,9 +138,9 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                 delete documents[homeworkCorrectionDocumentId(key)];
             }
             onChange({
-                manualAssessments: { ...config.manualAssessments, [classId]: (config.manualAssessments?.[classId] ?? []).filter(item => item.id !== id) },
+                manualAssessments: { ...config.manualAssessments, [classId]: (config.manualAssessments?.[classId] ?? []).filter(item => item.id !== id && item.id !== legacyId) },
                 removedAssessments: { ...config.removedAssessments, [classId]: [...new Set([...(config.removedAssessments?.[classId] ?? []), id])] },
-                assessmentOrder: { ...config.assessmentOrder, [classId]: (config.assessmentOrder?.[classId] ?? []).filter(item => item !== id) },
+                assessmentOrder: { ...config.assessmentOrder, [classId]: (config.assessmentOrder?.[classId] ?? []).filter(item => item !== id && item !== legacyId) },
                 assessmentParticipants: { ...config.assessmentParticipants, [classId]: participants },
                 assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents },
                 assessmentAbsences: { ...config.assessmentAbsences, [classId]: absences },
