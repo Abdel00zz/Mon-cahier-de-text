@@ -39,6 +39,14 @@ export const preparePrintContent = async (root: HTMLElement, timeoutMs = 12000):
     const prepare = (async () => {
       if (!root.isConnected || root.getBoundingClientRect().width === 0) throw new Error('Print surface is not measurable');
       // This also loads ordinary text fonts when the document contains no formula.
+      if (document.fonts?.load) {
+        await Promise.all([
+          document.fonts.load('400 10pt "Latin Modern Sans"', 'Cours Équation'),
+          document.fonts.load('700 10pt "Latin Modern Sans"', 'Cours Équation'),
+          document.fonts.load('italic 400 10pt "Latin Modern Sans"', 'Cours Équation'),
+          document.fonts.load('400 10pt "SamsungOne Arabic"', 'الدرس'),
+        ]);
+      }
       await document.fonts?.ready;
       // KaTeX has already composed the formula during React's render. There is
       // no global typesetPromise to wait for. Ignore its MathML TeX annotations

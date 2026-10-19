@@ -17,6 +17,8 @@ type PrintTextSize = 's' | 'm' | 'l';
 type PrintLineSpacing = 'compact' | 'normal' | 'aere';
 export interface PrintOptions {
   pageNumbers: boolean;
+  /** conserver les couleurs pédagogiques des badges et repères */
+  colorContent?: boolean;
   /** affichage de l'en-tête administratif dans le document imprimé */
   headerMode: PrintHeaderMode;
   /** taille du texte du document imprimé */
@@ -87,6 +89,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const recommendNew = historyKnown && hasHistory && newDates.length > 0;
   const [mode, setMode] = useState<PrintMode>(recommendNew ? 'new' : 'all');
   const [pageNumbers, setPageNumbers] = useState(savedPrefs?.pageNumbers ?? true);
+  const [colorContent, setColorContent] = useState(savedPrefs?.colorContent ?? false);
   const [headerMode, setHeaderMode] = useState<PrintHeaderMode>(savedPrefs?.headerMode ?? 'first');
   const [textSize, setTextSize] = useState<PrintTextSize>(savedPrefs?.textSize ?? 'm');
   const [lineSpacing, setLineSpacing] = useState<PrintLineSpacing>(savedPrefs?.lineSpacing ?? 'normal');
@@ -114,6 +117,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     setSelectedDates(new Set(newDates.length > 0 ? newDates : allDates));
     if (savedPrefs) {
       setPageNumbers(savedPrefs.pageNumbers);
+      setColorContent(savedPrefs.colorContent ?? false);
       setHeaderMode(savedPrefs.headerMode ?? 'first');
       setTextSize(savedPrefs.textSize);
       setLineSpacing(savedPrefs.lineSpacing);
@@ -121,6 +125,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       // Évite de réutiliser silencieusement les préférences d'une autre
       // classe lorsque celle-ci n'a encore aucune préférence enregistrée.
       setPageNumbers(true);
+      setColorContent(false);
       setHeaderMode('first');
       setTextSize('m');
       setLineSpacing('normal');
@@ -192,7 +197,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         </div>
       }
       maxWidth="2xl"
-      className="sm:max-w-3xl sm:rounded-2xl"
+      className="print-settings-modal sm:max-w-3xl sm:rounded-2xl"
       headerClassName="border-b-0 bg-background"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5 [&_button]:min-h-11"
       footerClassName="border-t-0 bg-background"
@@ -204,7 +209,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}
-            onClick={() => onPrint(mode, { pageNumbers, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
+            onClick={() => onPrint(mode, { pageNumbers, colorContent, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
             className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]"
           >
             {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
@@ -216,7 +221,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         </div>
       }
     >
-      <div className="space-y-4">
+      <fieldset disabled={isPrinting} aria-label={t('print.title')} aria-busy={isPrinting} className="min-w-0 space-y-4">
         {/* Sortie physique du document inspirée du motif Receipt Printer #1 */}
         {isPrinting && (
           <div className="receipt-slot-container flex flex-col items-center justify-center py-4 px-3 rounded-2xl bg-[#fafaf8] dark:bg-[#181816] border border-[#e4e4e0] dark:border-[#2e2e28] shadow-xs animate-in fade-in duration-200">
@@ -381,7 +386,15 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Options d'impression regroupées pour éviter l'empilement de grandes cartes. */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
+          <label className="print-option-row">
+            <span>
+              <span className="block text-xs font-bold text-foreground">{t('print.colorContent')}</span>
+              <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">{t('print.colorContentHint')}</span>
+            </span>
+            <Switch checked={colorContent} disabled={isPrinting} aria-label={t('print.colorContent')}
+              onCheckedChange={setColorContent} className="print-option-switch" />
+          </label>
+          <label className="print-option-row">
             <div>
               <span className="block text-xs font-bold text-foreground">{t('print.pageNumbers')}</span>
               <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
@@ -390,9 +403,10 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             </div>
             <Switch
               checked={pageNumbers}
+              disabled={isPrinting}
               aria-label={t('print.pageNumbers')}
               onCheckedChange={setPageNumbers}
-              className="data-[state=checked]:bg-primary shrink-0"
+              className="print-option-switch"
             />
           </label>
 
@@ -410,7 +424,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             />
           </div>
         </div>
-      </div>
+      </fieldset>
     </Modal>
   );
 };

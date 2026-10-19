@@ -16,6 +16,7 @@ export interface PrintPrefs {
     textSize: 's' | 'm' | 'l';
     lineSpacing: 'compact' | 'normal' | 'aere';
     pageNumbers: boolean;
+    colorContent?: boolean;
     /** en-tête administratif : première page, toutes les pages ou masqué */
     headerMode: 'first' | 'all' | 'none';
 }
@@ -48,7 +49,8 @@ const normalizePrintPrefs = (value: unknown): PrintPrefs | undefined => {
     const lineSpacing = prefs.lineSpacing === 'compact' || prefs.lineSpacing === 'normal' || prefs.lineSpacing === 'aere' ? prefs.lineSpacing : 'normal';
     const headerMode = prefs.headerMode === 'all' || prefs.headerMode === 'none' ? prefs.headerMode : 'first';
     if (typeof prefs.pageNumbers !== 'boolean') return undefined;
-    return { textSize, lineSpacing, pageNumbers: prefs.pageNumbers, headerMode };
+    return { textSize, lineSpacing, pageNumbers: prefs.pageNumbers, headerMode,
+        ...(typeof prefs.colorContent === 'boolean' ? { colorContent: prefs.colorContent } : {}) };
 };
 
 export const readPrintMeta = (classId: string): PrintMeta => {

@@ -1,7 +1,13 @@
 .pedagogical-print-root {
+  --font-document: 'Latin Modern Sans', 'SamsungOne Arabic', sans-serif;
+  --font-arabic-body: 'SamsungOne Arabic', sans-serif;
+  --font-arabic-display: 'SamsungOne Arabic', sans-serif;
   position: fixed; inset-inline-start: -10000px; top: 0;
   width: 140mm; color: #24231f; background: #fff;
   font-size: 10pt; line-height: 1.38;
+}
+.pedagogical-print-root :is(.doc-title, .doc-heading, .doc-subheading, .doc-sheet-header__title) {
+  font-family: var(--font-document);
 }
 body[data-document-print] .pedagogical-print-root .devoir-document {
   --doc-title-ink: #1f3a5f; --doc-fs-title: 14pt; --doc-fs-heading: 10pt; --doc-fs-bareme: 9.5pt;

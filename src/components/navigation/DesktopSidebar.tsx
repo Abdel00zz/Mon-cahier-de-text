@@ -1,5 +1,4 @@
 import { Menu } from '@/components/ui/icons';
-import { cn } from '@/lib/utils';
 import { NavigationButton } from './NavigationButton';
 import { useSidebarGesture } from './useNavigationGestures';
 import type { NavigationCopy, TabType } from './navigationConfig';
@@ -9,14 +8,11 @@ export function DesktopSidebar({ activeTab, goTo, copy, teacherName, expanded, t
   expanded: boolean; toggle: () => void; isRtl: boolean;
 }) {
   const gestures = useSidebarGesture(expanded, isRtl, toggle);
-  return <nav {...gestures} data-app-sidebar aria-label={copy.mainNav}
-    className={cn(
-      'workspace-sidebar fixed inset-y-0 start-0 z-40 h-dvh flex-col overflow-x-hidden overflow-y-auto py-3.5 lg:py-5 font-sans print:hidden',
-      expanded ? 'w-[204px] lg:w-[252px]' : 'w-[68px] lg:w-[84px]'
-    )}>
+  return <nav {...gestures} data-app-sidebar data-expanded={expanded} aria-label={copy.mainNav}
+    className="workspace-sidebar fixed inset-y-0 start-0 z-40 h-dvh flex-col overflow-x-hidden overflow-y-auto py-3.5 lg:py-5 font-sans print:hidden">
     <div className="flex min-h-10 lg:min-h-11 items-center gap-2.5 lg:gap-3 px-2.5 lg:px-4">
       <button type="button" onClick={toggle} aria-expanded={expanded} aria-label={expanded ? copy.collapse : copy.expand}
-        className="workspace-menu-toggle flex size-10 lg:size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground">
+        className="workspace-menu-toggle flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground">
         <Menu className="size-5 lg:size-[22px]" aria-hidden />
       </button>
       {expanded && <div className="min-w-0"><p className="truncate text-xs lg:text-sm font-semibold text-foreground" dir="auto">{teacherName}</p>

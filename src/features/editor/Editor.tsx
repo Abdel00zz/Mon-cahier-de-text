@@ -1017,6 +1017,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       textSize: options.textSize,
       lineSpacing: options.lineSpacing,
       pageNumbers: options.pageNumbers,
+      colorContent: options.colorContent ?? false,
       headerMode: options.headerMode,
       });
 

@@ -2,6 +2,35 @@
    PrintModal – Micro-interaction de sortie ticket (Receipt Printer #1)
    ══════════════════════════════════════════════════════════════ */
 
+.print-settings-modal .print-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid hsl(var(--border) / .7);
+  border-radius: 16px;
+  background: hsl(var(--background));
+  cursor: pointer;
+}
+/* Only the SVG rail changes color. Painting the outer touch target creates
+   a second pill around the switch and obscures its on/off state. */
+.print-settings-modal .print-option-switch {
+  flex-shrink: 0;
+  min-width: 58px;
+  min-height: 44px;
+  background: transparent;
+}
+.print-settings-modal .print-option-row:has([data-state='checked']) {
+  border-color: hsl(var(--primary) / .35);
+}
+.print-settings-modal .paper-segments { min-width: 0; }
+.print-settings-modal .paper-segments [role='tab'] { white-space: normal; min-width: 0; flex: 1; }
+.print-settings-modal .paper-segments [role='tab'][aria-selected='true'] {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / .3);
+}
+
 .receipt-slot {
   position: relative;
   overflow: hidden;

@@ -45,6 +45,7 @@ interface PrintViewProps {
     newlyAddedIds: string[];
     /** numéroter les pages en bas (moteurs compatibles avec les boîtes de marge CSS) */
     pageNumbers?: boolean;
+    colorContent?: boolean;
     /** Development/preview surface using the exact same print composition. */
     preview?: boolean;
     /** en-tête administratif : première page (défaut), toutes les pages ou masqué */
@@ -108,7 +109,7 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, annotationLessons, sessionAnnotations, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: sourceLessons, annotationLessons, sessionAnnotations, absenceSessions: suppliedAbsences, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, colorContent = false, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
     const lessonsData = useMemo(() => hasOnlyPristineStarterDiagnostic(sourceLessons) ? [] : sourceLessons, [sourceLessons]);
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
@@ -300,10 +301,10 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
 
 
     return (
-        <div className={`print-document ${preview ? 'print-preview' : 'print-only'}`} dir={isRtlPrint ? 'rtl' : 'ltr'} aria-hidden={preview ? undefined : true} style={printLayoutStyle(textSize, lineSpacing)}>
+        <div className={`print-document ${preview ? 'print-preview' : 'print-only'}`} data-print-color={colorContent ? 'color' : 'mono'} dir={isRtlPrint ? 'rtl' : 'ltr'} aria-hidden={preview ? undefined : true} style={printLayoutStyle(textSize, lineSpacing)}>
             <style>{`@media print { @page cahier { @bottom-center {
                 content: ${pageNumbers ? (isRtlPrint ? '\"الصفحة \" counter(page) \" / \" counter(pages)' : '\"Page \" counter(page) \" / \" counter(pages)') : 'none'};
-                font-family: Arial, sans-serif; font-size: 8pt; color: #515a63;
+                font-family: 'Latin Modern Sans', 'SamsungOne Arabic', sans-serif; font-size: 8pt; color: #515a63;
             } } }`}</style>
 
             {/* En-tête administratif : les champs choisis dans Paramètres sont

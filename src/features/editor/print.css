@@ -2,6 +2,12 @@
 /* Le plan se lit aussi sur le papier : un cran de marge par niveau.
    Aucun filet vertical : le retrait suffit à marquer la profondeur. */
 .print-document {
+    --content-font-latin: 'Latin Modern Sans', 'SamsungOne Arabic', sans-serif;
+    --content-font-arabic: 'Latin Modern Sans', 'SamsungOne Arabic', sans-serif;
+    --font-sans: var(--content-font-latin);
+    --font-document: var(--content-font-latin);
+    --font-arabic-body: 'SamsungOne Arabic', sans-serif;
+    --font-arabic-display: var(--font-arabic-body);
     --editor-indent-1: 4mm;
     --editor-indent-2: 8mm;
     --editor-indent-3: 12mm;
@@ -440,4 +446,34 @@
   border-radius: 8px;
   padding-inline: 8px;
   padding-block: 4px;
+}
+
+/* Paper uses a light semantic palette even when the editor is dark. */
+.print-document[data-print-color='color'] [data-content-tone] {
+  --print-tone-ink: #3c4043;
+  --print-tone-fill: #f1f3f4;
+}
+.print-document[data-print-color='color'] [data-content-tone='blue'] {
+  --print-tone-ink: #185abc; --print-tone-fill: #e8f0fe;
+}
+.print-document[data-print-color='color'] [data-content-tone='red'] {
+  --print-tone-ink: #b3261e; --print-tone-fill: #fce8e6;
+}
+.print-document[data-print-color='color'] [data-content-tone='green'] {
+  --print-tone-ink: #146c2e; --print-tone-fill: #e6f4ea;
+}
+.print-document[data-print-color='color'] .print-item-kind {
+  color: var(--print-tone-ink);
+  background-color: var(--print-tone-fill);
+  border-color: var(--print-tone-ink);
+}
+.print-document[data-print-color='color'] .print-item-description {
+  border-color: var(--print-tone-ink);
+  background-color: color-mix(in srgb, var(--print-tone-fill) 35%, white);
+}
+.print-document[data-print-color='mono'] :is(.print-col-content, .print-col-remark, .print-header),
+.print-document[data-print-color='mono'] :is(.print-col-content, .print-col-remark, .print-header) * {
+  color: var(--print-ink) !important;
+  background-color: transparent !important;
+  border-color: var(--print-rule) !important;
 }

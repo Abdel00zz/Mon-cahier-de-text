@@ -135,6 +135,12 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
     'grandeur': BADGE_GREEN,
 };
 
+/** Same semantic family on paper, with a light palette independent of the screen theme. */
+export const contentBadgeTone = (type: string): 'blue' | 'red' | 'green' | 'neutral' => {
+  const color = BADGE_COLOR_MAP[type];
+  return color === BADGE_BLUE ? 'blue' : color === BADGE_RED ? 'red' : color === BADGE_GREEN ? 'green' : 'neutral';
+};
+
 /**
  * Forme commune des pastilles de type (Déf., Th., Ex.…).
  *

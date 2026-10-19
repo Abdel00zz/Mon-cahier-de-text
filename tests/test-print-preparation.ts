@@ -55,6 +55,26 @@ test('impression : formule invalide bloquée avant impression', async context =>
   assert.equal(document.decoded(), false); assert.equal(document.timers.size, 0);
 });
 
+test('impression : les fontes PDF embarquées sont chargées avant la composition finale', async context => {
+  const document = fixture(context);
+  const requested: string[] = [];
+  let finish = () => {};
+  const fontReady = new Promise<void>(resolve => { finish = resolve; });
+  Object.assign(globalThis.document.fonts, { load: async (font: string) => {
+    requested.push(font);
+    await fontReady;
+    return [];
+  } });
+  const preparation = preparePrintContent(document.root);
+  await Promise.resolve();
+  assert.equal(document.decoded(), false);
+  assert.deepEqual(requested, ['400 10pt "Latin Modern Sans"', '700 10pt "Latin Modern Sans"',
+    'italic 400 10pt "Latin Modern Sans"', '400 10pt "SamsungOne Arabic"']);
+  finish();
+  await preparation;
+  assert.equal(document.decoded(), true);
+});
+
 test('impression : syntaxe non composée bloquée, sans attente d’un moteur absent', async context => {
   const document = fixture(context, { rawMath: true });
   await assert.rejects(preparePrintContent(document.root), /Unrendered print formula/);

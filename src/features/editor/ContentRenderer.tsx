@@ -6,6 +6,7 @@ import { toDisplayText } from '@/lib/text/textValue';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
 import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
 import { Badge } from '@/components/ui/badge';
+import { contentBadgeTone } from '@/constants/type-keys';
 import { logger } from '@/lib/logger';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
@@ -349,7 +350,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         return (
           <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div dir={textDirectionAttribute(item.title || item.description)} className={`print-lesson-item ${lessonIndentClass} text-start`}>
-              <span className="print-item-kind">{badgeText}{displayNumber ? <> <bdi dir="ltr">{displayNumber}</bdi></> : null}</span>
+              <span className="print-item-kind" data-content-tone={contentBadgeTone(normalizedType)}>{badgeText}{displayNumber ? <> <bdi dir="ltr">{displayNumber}</bdi></> : null}</span>
               {/* Même composition que l'écran : un titre « Limite $x^2$ » ne
                   doit jamais partir en TeX brut sur le papier. */}
               <span dir={textDirectionAttribute(item.title)} className="print-item-title"><HighlightedText text={item.title} /></span>
@@ -359,6 +360,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   dir={textDirectionAttribute(item.description)}
                   className="print-item-description"
                   data-content-type={normalizedType}
+                  data-content-tone={contentBadgeTone(normalizedType)}
                 >
                   {renderDescriptionWithBold(item.description)}
                 </div>

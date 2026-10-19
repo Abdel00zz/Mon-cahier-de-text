@@ -48,6 +48,18 @@ test('impression : les réglages et une annulation ne créent aucun historique',
   assert.equal(readPrintMeta('class').lastPrintedAt, null);
 });
 
+test('impression : le choix couleur reste propre à chaque classe sans modifier son historique', context => {
+  storage(context);
+  const prefs = { textSize: 'm', lineSpacing: 'normal', pageNumbers: true, headerMode: 'first' } as const;
+  savePrintPrefs('A', { ...prefs, colorContent: true });
+  savePrintPrefs('B', { ...prefs, colorContent: false });
+  assert.equal(readPrintMeta('A').prefs?.colorContent, true);
+  assert.equal(readPrintMeta('B').prefs?.colorContent, false);
+  assert.deepEqual(readPrintMeta('A').printedDates, []);
+  savePrintPrefs('A', { ...prefs, colorContent: false });
+  assert.equal(readPrintMeta('A').prefs?.colorContent, false);
+});
+
 test('impression : confirmation tardive conserve le snapshot et un cahier sans dates reste sans filtre', context => {
   storage(context);
   const frozen = sessionPrintSignatures(notebook);
