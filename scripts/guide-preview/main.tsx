@@ -129,9 +129,15 @@ const timetable = [
   { day: 6, slot: 3, classId: fixtureClasses[3].id },
 ];
 
-const studentNames = isAr
-  ? ['أمين العلمي', 'سلمى الفاسي', 'يوسف الناجي', 'لينا الإدريسي', 'آدم برادة', 'مهدي الشرايبي', 'كنزة بنجلون']
-  : ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'Mehdi Chraibi', 'Kenza Benjelloun'];
+const studentNames = [
+  'أمين العلمي',
+  'سلمى الفاسي',
+  'يوسف الناجي',
+  'لينا الإدريسي',
+  'آدم برادة',
+  'مهدي الشرايبي',
+  'كنزة بنجلون',
+];
 
 const initialConfig: AppConfig = {
   establishmentName: isAr ? 'ثانوية ابن خلدون التأهيلية' : 'Lycée Ibn Khaldoun',
