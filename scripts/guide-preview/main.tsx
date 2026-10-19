@@ -46,101 +46,278 @@ import { applySessionEdit, readSessionSelection } from '../../src/domain/noteboo
 import type { SessionEditorState } from '../../src/features/editor/hooks/useSessionAssignment';
 import { deriveSchedules } from '../../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
-import { KEEP_TONES } from '../../src/platform/keepTheme';
 
 const params = new URLSearchParams(location.search);
 const locale = params.get('lang') === 'ar' ? 'ar' : params.get('lang') === 'en' ? 'en' : 'fr';
 const screen = params.get('screen') ?? 'guide';
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
-const fixtureNames = params.get('fixture') === 'palette' ? KEEP_TONES.map((_, i) => `2BAC PC ${i + 1}`) : params.get('fixture') === 'long-names'
-  ? ['2BAC Sciences Mathématiques A 12', 'TC Sciences Option Français 3', 'Classe de consolidation et approfondissement 7']
-  : params.get('fixture') === 'paper-cards' ? ['2BAC SVT 2', '2BAC PC 3', '2BAC PC 4', 'TCL 6']
-  : ['1AC 1', '2AC 2', '3AC 1'];
-const fixtureClasses: ClassInfo[] = fixtureNames.map((name, i) => ({
-  id: `guide-demo-${i}`, name, cycle: 'college', teacherName: '', subject: 'Mathématiques',
-  createdAt: '2026-09-01T08:00:00Z', color: params.get('fixture') === 'palette' ? KEEP_TONES[i]
-    : params.get('fixture') === 'paper-cards' ? ['mint', 'coral', 'indigo', 'mint'][i] : '',
-}));
-const classes = fixtureClasses;
-const timetable = [
-  { day: 1, slot: 0, classId: classes[0].id }, { day: 1, slot: 1, classId: classes[0].id },
-  { day: 1, slot: 4, classId: classes[1].id }, { day: 2, slot: 2, classId: classes[2].id },
-  { day: 3, slot: 0, classId: classes[1].id }, { day: 3, slot: 1, classId: classes[1].id },
-  { day: 4, slot: 4, classId: classes[0].id }, { day: 5, slot: 2, classId: classes[2].id },
-];
-const initialConfig: AppConfig = {
-  establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
-  applicationLocale: locale, selectedCycles: ['college'], selectedSubjects: ['Mathématiques'],
-  schoolYearStart: '2026-09-01', timetable, schedules: deriveSchedules(timetable),
-  notificationSettings: { ...defaultNotificationSettings }, theme: 'light',
-};
-if (['student-followup', 'content-assessments'].includes(params.get('fixture') ?? '')) {
-  const names = ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'سلمى العلوي'];
-  initialConfig.classRosters = { [classes[0].id]: { names, version: 1, updatedAt: '2026-10-14T08:00:00Z' } };
-  initialConfig.manualAssessments = { [classes[0].id]: [
-    { id: 'review-previous', type: 'oral', num: 2, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-05' },
-    { id: 'review-oral', type: 'oral', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' },
-    { id: 'review-complete', type: 'maison', num: 2, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-08', dueDateISO: '2026-10-10' },
-    { id: 'review-written', type: 'controle', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-20' },
-    { id: 'review-homework', type: 'maison', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-07', dueDateISO: '2026-10-14' },
-  ] };
-  initialConfig.pedagogicalEvents = { [classes[0].id]: [{ id: 'review-activity', type: 'soutien', title: locale === 'ar' ? 'دعم في الأعداد النسبية' : 'Soutien · nombres rationnels', date: '2026-10-18', status: 'planned', createdAt: '2026-10-14T08:00:00Z' }] };
-  initialConfig.assessmentParticipants = { [classes[0].id]: {
-    'review-complete': { names, updatedAt: '2026-10-10T08:00:00Z', homeworkOutcomes: Object.fromEntries(names.map(name => [name, 'given' as const])) },
-    'review-previous': { names: names.slice(0, 5), updatedAt: '2026-10-05T10:00:00Z', oralGrades: { 'Amine Alami': '13', 'Salma Fassi': '14', 'Youssef Naji': '7', 'Lina Idrissi': '16', 'Adam Berrada': '10' } },
-    'review-oral': { names, updatedAt: '2026-10-12T10:00:00Z', oralOutcomes: { 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }, oralGrades: { 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' } },
-    'review-homework': { names, updatedAt: '2026-10-14T08:00:00Z', homeworkOutcomes: { 'Amine Alami': 'given', 'Salma Fassi': 'given', 'Youssef Naji': 'missing' } },
-  } };
-}
-if (params.get('fixture') === 'content-assessments') {
-  classes[0].cycle = 'prepa';
-  classes[0].name = 'MPSI 1';
-  initialConfig.manualAssessments![classes[0].id].push({ id: 'review-colle', type: 'colle', num: 1,
-    semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' });
-  initialConfig.manualAssessments![classes[0].id].find(item => item.id === 'review-homework')!.correctionDateISO = '2026-10-15';
-}
 const isAr = locale === 'ar';
-// Course direction is independent of interface language: a French course stays LTR.
-const lessons: LessonsData = [{ type: 'chapter', title: 'Nombres rationnels', items: [
-  { type: 'définition', title: 'Nombre rationnel', description: '$\\displaystyle\\frac{a}{b},\\quad b\\ne0$', date: '2026-09-14' },
-  { type: 'propriété', title: 'Égalité de deux quotients', description: '$\\displaystyle\\frac{a}{b}=\\frac{ka}{kb},\\quad k\\ne0$', date: '2026-09-14' },
-  { type: 'exemple', title: 'Simplifier une fraction', description: '$\\displaystyle\\frac{12}{18}=\\frac{2}{3}$' },
-  { type: 'application', title: 'S’entraîner', description: 'Simplifier des fractions et justifier les étapes.' },
-  { type: 'remarque', title: 'Vérifier le dénominateur', description: '' },
-] }];
+
+const fixtureClasses: ClassInfo[] = [
+  {
+    id: 'demo-class-0',
+    name: isAr ? '2 باك علوم فيزيائية 1' : '2BAC Sciences Physiques 1',
+    cycle: 'lycee',
+    teacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
+    subject: isAr ? 'الرياضيات' : 'Mathématiques',
+    createdAt: '2026-09-01T08:00:00Z',
+    color: 'indigo',
+  },
+  {
+    id: 'demo-class-1',
+    name: isAr ? '1 باك علوم رياضية 2' : '1BAC Sciences Mathématiques 2',
+    cycle: 'lycee',
+    teacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
+    subject: isAr ? 'الرياضيات' : 'Mathématiques',
+    createdAt: '2026-09-01T08:00:00Z',
+    color: 'mint',
+  },
+  {
+    id: 'demo-class-2',
+    name: isAr ? 'جذع مشترك علمي 3' : 'Tronc Commun Scientifique 3',
+    cycle: 'lycee',
+    teacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
+    subject: isAr ? 'الرياضيات' : 'Mathématiques',
+    createdAt: '2026-09-01T08:00:00Z',
+    color: 'coral',
+  },
+  {
+    id: 'demo-class-3',
+    name: isAr ? 'الثالثة إعدادي 1' : '3ème Année Collégiale 1',
+    cycle: 'college',
+    teacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
+    subject: isAr ? 'الرياضيات' : 'Mathématiques',
+    createdAt: '2026-09-01T08:00:00Z',
+    color: 'amber',
+  },
+];
+
+const timetable = [
+  // Lundi / الإثنين
+  { day: 1, slot: 0, classId: fixtureClasses[0].id },
+  { day: 1, slot: 1, classId: fixtureClasses[0].id },
+  { day: 1, slot: 2, classId: fixtureClasses[1].id },
+  { day: 1, slot: 3, classId: fixtureClasses[1].id },
+  { day: 1, slot: 4, classId: fixtureClasses[2].id },
+  { day: 1, slot: 5, classId: fixtureClasses[2].id },
+  // Mardi / الثلاثاء
+  { day: 2, slot: 0, classId: fixtureClasses[2].id },
+  { day: 2, slot: 1, classId: fixtureClasses[2].id },
+  { day: 2, slot: 2, classId: fixtureClasses[3].id },
+  { day: 2, slot: 3, classId: fixtureClasses[3].id },
+  // Mercredi / الأربعاء
+  { day: 3, slot: 0, classId: fixtureClasses[1].id },
+  { day: 3, slot: 1, classId: fixtureClasses[1].id },
+  { day: 3, slot: 2, classId: fixtureClasses[0].id },
+  { day: 3, slot: 3, classId: fixtureClasses[0].id },
+  // Jeudi / الخميس
+  { day: 4, slot: 0, classId: fixtureClasses[3].id },
+  { day: 4, slot: 1, classId: fixtureClasses[3].id },
+  { day: 4, slot: 2, classId: fixtureClasses[2].id },
+  { day: 4, slot: 3, classId: fixtureClasses[2].id },
+  { day: 4, slot: 4, classId: fixtureClasses[0].id },
+  { day: 4, slot: 5, classId: fixtureClasses[0].id },
+  // Vendredi / الجمعة
+  { day: 5, slot: 0, classId: fixtureClasses[0].id },
+  { day: 5, slot: 1, classId: fixtureClasses[0].id },
+  { day: 5, slot: 2, classId: fixtureClasses[1].id },
+  { day: 5, slot: 3, classId: fixtureClasses[1].id },
+  // Samedi / السبت
+  { day: 6, slot: 0, classId: fixtureClasses[2].id },
+  { day: 6, slot: 1, classId: fixtureClasses[2].id },
+  { day: 6, slot: 2, classId: fixtureClasses[3].id },
+  { day: 6, slot: 3, classId: fixtureClasses[3].id },
+];
+
+const studentNames = isAr
+  ? ['أمين العلمي', 'سلمى الفاسي', 'يوسف الناجي', 'لينا الإدريسي', 'آدم برادة', 'مهدي الشرايبي', 'كنزة بنجلون']
+  : ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'Mehdi Chraibi', 'Kenza Benjelloun'];
+
+const initialConfig: AppConfig = {
+  establishmentName: isAr ? 'ثانوية ابن خلدون التأهيلية' : 'Lycée Ibn Khaldoun',
+  defaultTeacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
+  printShowDescriptions: true,
+  applicationLocale: locale,
+  selectedCycles: ['college', 'lycee'],
+  selectedSubjects: ['Mathématiques'],
+  schoolYearStart: '2026-09-01',
+  timetable,
+  schedules: deriveSchedules(timetable),
+  notificationSettings: { ...defaultNotificationSettings, morningBriefing: true, sessionReminders: true },
+  theme: 'light',
+  classRosters: {
+    [fixtureClasses[0].id]: { names: studentNames, version: 1, updatedAt: '2026-10-14T08:00:00Z' },
+  },
+  manualAssessments: {
+    [fixtureClasses[0].id]: [
+      { id: 'eval-written-1', type: 'controle', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-24' },
+      { id: 'eval-homework-1', type: 'maison', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-09-16', dueDateISO: '2026-10-02', correctionDateISO: '2026-10-05' },
+      { id: 'eval-oral-1', type: 'oral', num: 1, semestre: 1, schoolYear: '2026-2027', dateISO: '2026-10-12' },
+    ],
+  },
+  assessmentDates: {
+    [fixtureClasses[0].id]: {
+      'eval-written-1': '2026-10-24',
+      'eval-homework-1': '2026-09-16',
+      'eval-oral-1': '2026-10-12',
+    },
+  },
+  pedagogicalEvents: {
+    [fixtureClasses[0].id]: [
+      {
+        id: 'event-notebook',
+        type: 'controle_cahiers',
+        title: isAr ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers des élèves',
+        date: '2026-09-14',
+        status: 'planned',
+        createdAt: '2026-09-01T08:00:00Z',
+        students: {
+          names: studentNames,
+          notebookConditions: {
+            [studentNames[0]]: 'good',
+            [studentNames[1]]: 'good',
+            [studentNames[2]]: 'average',
+            [studentNames[3]]: 'needs_work',
+          },
+          updatedAt: '2026-09-14T08:00:00Z',
+        },
+      },
+      {
+        id: 'event-soutien',
+        type: 'soutien',
+        title: isAr ? 'دعم في حساب النهايات وتطبيقات الاتصال' : 'Soutien · calcul de limites et continuité',
+        date: '2026-10-18',
+        status: 'planned',
+        createdAt: '2026-10-14T08:00:00Z',
+      },
+    ],
+  },
+  assessmentParticipants: {
+    [fixtureClasses[0].id]: {
+      'eval-oral-1': {
+        names: studentNames,
+        updatedAt: '2026-10-12T10:00:00Z',
+        oralOutcomes: {
+          [studentNames[0]]: 'mastered',
+          [studentNames[1]]: 'developing',
+          [studentNames[2]]: 'needs_support',
+          [studentNames[3]]: 'mastered',
+          [studentNames[4]]: 'developing',
+          [studentNames[5]]: 'mastered',
+          [studentNames[6]]: 'developing',
+        },
+        oralGrades: {
+          [studentNames[0]]: '17',
+          [studentNames[1]]: '14',
+          [studentNames[2]]: '11',
+          [studentNames[3]]: '18',
+          [studentNames[4]]: '13',
+          [studentNames[5]]: '16',
+          [studentNames[6]]: '15',
+        },
+      },
+      'eval-homework-1': {
+        names: studentNames,
+        updatedAt: '2026-10-02T08:00:00Z',
+        homeworkOutcomes: {
+          [studentNames[0]]: 'given',
+          [studentNames[1]]: 'given',
+          [studentNames[2]]: 'missing',
+          [studentNames[3]]: 'given',
+          [studentNames[4]]: 'given',
+          [studentNames[5]]: 'given',
+          [studentNames[6]]: 'given',
+        },
+      },
+    },
+  },
+};
+
+const lessons: LessonsData = isAr ? [{
+  type: 'chapter',
+  title: 'الفصل 1: اتصال ونهايات الدوال العددية',
+  items: [
+    {
+      type: 'cours',
+      title: 'الاتصال في نقطة',
+      description: 'لتكن $f$ دالة معرفة على مجال مفتوح مركزه $x_0$. نقول إن $f$ متصلة في $x_0$ إذا كان: $\\displaystyle\\lim_{x \\to x_0} f(x) = f(x_0)$',
+      date: '2026-09-14',
+    },
+    {
+      type: 'propriété',
+      title: 'العمليات على الدوال المتصلة',
+      description: 'إذا كانت $f$ و $g$ متصلتين في $x_0$، فإن $f+g$ و $f \\times g$ و $\\frac{f}{g}$ ($g(x_0) \\ne 0$) متصلة في $x_0$.',
+      date: '2026-09-14',
+      remark: 'مراقبة دفاتر التلاميذ',
+    },
+    {
+      type: 'exercice',
+      title: 'تطبيق تطبيقي 1',
+      description: 'ادرس في النقطة $0$ اتصال الدالة $f$ المعرفة بـ: $f(x) = \\frac{\\sqrt{1+x}-1}{x}$ لكل $x \\ne 0$ و $f(0) = \\frac{1}{2}$.',
+      date: '2026-09-16',
+      remark: 'واجب منزلي رقم 1 مُسند للتلاميذ',
+    },
+    {
+      type: 'théorème',
+      title: 'مبرهنة القيم الوسيطية',
+      description: 'إذا كانت $f$ دالة متصلة على قطعة $[a, b]$ وكان $f(a) \\times f(b) < 0$، فإن المعادلة $f(x) = 0$ تقبل على الأقل حلاً في $]a, b[$.',
+      date: '2026-09-18',
+    },
+  ],
+}] : [{
+  type: 'chapter',
+  title: 'Chapitre 1 : Continuité et limites d’une fonction numérique',
+  items: [
+    {
+      type: 'cours',
+      title: 'Continuité en un point',
+      description: 'Soit $f$ une fonction définie sur un intervalle ouvert centré en $x_0$. On dit que $f$ est continue en $x_0$ si : $\\displaystyle\\lim_{x \\to x_0} f(x) = f(x_0)$',
+      date: '2026-09-14',
+    },
+    {
+      type: 'propriété',
+      title: 'Opérations sur les fonctions continues',
+      description: 'Si $f$ et $g$ sont continues en $x_0$, alors $f+g$, $f \\times g$ et $\\frac{f}{g}$ ($g(x_0) \\ne 0$) sont continues en $x_0$.',
+      date: '2026-09-14',
+      remark: 'Contrôle des cahiers des élèves',
+    },
+    {
+      type: 'exercice',
+      title: 'Exercice d’application 1',
+      description: 'Étudier la continuité en $0$ de la fonction $f$ définie par : $f(x) = \\frac{\\sqrt{1+x}-1}{x}$ pour $x \\ne 0$ et $f(0) = \\frac{1}{2}$.',
+      date: '2026-09-16',
+      remark: 'Devoir à la maison 1 assigné aux élèves',
+    },
+    {
+      type: 'théorème',
+      title: 'Théorème des valeurs intermédiaires (TVI)',
+      description: 'Si $f$ est continue sur un segment $[a, b]$ et si $f(a) \\times f(b) < 0$, alors l’équation $f(x) = 0$ admet au moins une solution dans $]a, b[$.',
+      date: '2026-09-18',
+    },
+  ],
+}];
+
 const noop = () => {};
 
 function Preview() {
-  const [classes, setClasses] = useState(fixtureClasses);
+  const [classes, setClasses] = useState<ClassInfo[]>(fixtureClasses);
   const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
   const { t } = useLocale();
   const [config, setConfig] = useState(initialConfig);
   const [display, setDisplay] = useState<ClassDisplayMode>('triple');
   const [dashboardCreateOpen, setDashboardCreateOpen] = useState(false);
   const [dashboardGuideOpen, setDashboardGuideOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(true);
   const [add, setAdd] = useState(screen === 'add');
   const [selectedKeys, setSelectedKeys] = useState(() => new Set([
     indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0, itemIndex: 1 }),
   ]));
   const [searchQuery, setSearchQuery] = useState('');
-  const [previewLessons, setPreviewLessons] = useState<LessonsData>(() => params.get('fixture') === 'long-notebook'
-    ? [{ type: 'chapter', title: 'Cahier de vérification', items: Array.from({ length: 240 }, (_, i) => ({ type: 'exercice', title: `Exercice ${i + 1}`, description: 'Un contenu pédagogique à réordonner.' })) }]
-    : params.get('fixture') === 'reorder-combined' ? [
-      { type: 'chapter', title: 'Chapitre A', items: [
-        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-14' },
-        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-15' },
-        { type: 'exercice', title: 'Exercice combiné', description: 'Énoncé identique', date: '2026-09-16' },
-      ] },
-      { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', subsections: [{ name: 'Sous-paragraphe', subsubsections: [{ name: 'Ultime' }] }] }] },
-    ] : params.get('fixture') === 'reorder' ? [
-      { type: 'chapter', title: 'Chapitre A', items: [{ type: 'definition', title: 'Rappel', date: '2026-09-14' }, { type: 'exercice', title: 'Exercice à déplacer', description: 'Énoncé à conserver', date: '2026-09-14', remark: 'À revoir' }], sections: [{ name: 'Paragraphe vide' }] },
-      { type: 'chapter', title: 'Chapitre B', sections: [{ name: 'Paragraphe B', items: [{ type: 'definition', title: 'Repère B' }] }] },
-    ]
-    : materializeContentAssessments(lessons, initialConfig, classes[0].id, locale));
+  const [previewLessons, setPreviewLessons] = useState<LessonsData>(() =>
+    materializeContentAssessments(lessons, initialConfig, classes[0].id, locale));
   const previewTargets = buildContentMoveTargets(buildLessonRows(previewLessons));
   const [previewDate, setPreviewDate] = useState<SessionEditorState | null>(null);
+
   const openPreviewDate = (indices: Parameters<typeof indicesKey>[0]) => {
     const targets = previewTargets.get(indicesKey(indices)) ?? [indices];
     const selection = readSessionSelection(previewLessons, targets);
@@ -162,37 +339,54 @@ function Preview() {
     return next;
   });
   const onChange = (patch: Partial<AppConfig>) => setConfig(current => ({ ...current, ...patch }));
+
+  const renderEditorBase = () => (
+    <>
+      <Header classInfo={classes[0]} teacherName={config.defaultTeacherName} establishmentName={config.establishmentName} onClassInfoChange={noop} onBack={noop} />
+      <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
+        <div className="min-w-0 flex-1">
+          <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop}
+            onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
+            onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        </div>
+      </div>
+      <div className="pb-32 sm:pb-20">
+        <MainTable lessonsData={previewLessons} visibleRows={filterLessonRows(buildLessonRows(previewLessons), searchQuery)} contentDirection={isAr ? 'rtl' : 'ltr'}
+          onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
+          showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]}
+          onOpenDateModal={openPreviewDate}
+          onReorder={previewReorder} canReorder={canPreviewReorder} />
+      </div>
+      <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit
+        onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />
+    </>
+  );
+
   return <>
     {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} /></>}
     {screen === 'loading' && <PageTransitionLoader />}
     {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
-    {screen !== 'guide' && screen !== 'loading' && <main className="mx-auto max-w-[1120px] p-4 sm:p-8" dir={isAr ? 'rtl' : 'ltr'}>
+    {screen !== 'guide' && screen !== 'loading' && <main className="mx-auto w-full max-w-[1280px] p-4 sm:p-6 min-h-[720px] bg-background text-foreground" dir={isAr ? 'rtl' : 'ltr'}>
       {screen === 'absences' && <AbsencesTab config={config} classes={classes} onConfigChange={onChange} visible />}
       {screen === 'evaluations' && <DevoirsView classInfo={classes[0]} config={config} onConfigChange={onChange} lessonsData={previewLessons} onLessonsChange={setPreviewLessons} />}
       {screen === 'modals' && <ModalGallery config={config} classes={classes} lessons={lessons} onChange={onChange} />}
-      {screen === 'dashboard' && <AuthProvider>
-        <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, params.get('active') === '1' ? [classes[0]?.id] : [])} >
+
+      {(screen === 'dashboard' || screen === 'classes') && <AuthProvider>
+        <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, [classes[0]?.id])} >
           <div className="dashboard-heading mb-4" data-layout={display}>
             <DashboardActions mode={display} onModeChange={setDisplay} />
             <h1 className="dashboard-heading__title text-2xl sm:text-3xl" style={dashboardTitleStyle(locale)}>{t('dashboard.classes')}<span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>
           <div className="dashboard-class-section">
-          {display === 'list' ? (
-            <div key={display} className="dashboard-class-collection dashboard-class-list" role="list" aria-label={t('dashboard.classList')}>
-              {classes.map((classInfo, i) => <div key={classInfo.id} role="listitem"><ClassListItem classInfo={classInfo} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={params.get('active') === '1' && i === 0} /></div>)}
-            </div>
-          ) : (
-            <div key={display} data-layout={display} className="dashboard-class-collection dashboard-class-grid">
-              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={params.get('active') === '1' && i === 0} />)}
+            <div data-layout={display} className="dashboard-class-collection dashboard-class-grid">
+              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={i === 0} />)}
               <AddClassCard onCreate={() => setDashboardCreateOpen(true)} />
             </div>
-          )}
-          {display === 'list' && <div className="dashboard-class-create-row"><AddClassCard variant="row" onCreate={() => setDashboardCreateOpen(true)} /></div>}
           </div>
-          <TabBar activeTab="dashboard" onTabChange={tab => { if (tab === 'help') setDashboardGuideOpen(true); }} isExpanded={expanded} onToggleExpanded={() => setExpanded(value => !value)} />
+          <TabBar activeTab="dashboard" onTabChange={tab => { if (tab === 'help') setDashboardGuideOpen(true); }} isExpanded={false} onToggleExpanded={noop} />
           <CreateClassModal isOpen={dashboardCreateOpen || !!editingClass} onClose={() => { setDashboardCreateOpen(false); setEditingClass(null); }} onCreate={() => setDashboardCreateOpen(false)}
-            defaultCycle="college" teacherSubjects={['Mathématiques']} teacherCycles={['college']} existingClasses={classes} editingClass={editingClass}
+            defaultCycle="lycee" teacherSubjects={['Mathématiques']} teacherCycles={['college', 'lycee']} existingClasses={classes} editingClass={editingClass}
             onUpdate={(id, updates) => setClasses(current => current.map(item => item.id === id ? { ...item, ...updates } : item))}
             roster={editingClass ? config.classRosters?.[editingClass.id] : undefined}
             suggestedStudentNames={editingClass ? historicalStudentNames(config, editingClass.id) : undefined}
@@ -200,54 +394,81 @@ function Preview() {
           <GuideModal isOpen={dashboardGuideOpen} onClose={() => setDashboardGuideOpen(false)} />
         </div>
       </AuthProvider>}
-      {screen === 'classes' && <>
-        <h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} />)}</div>
-      </>}
-      {screen === 'schedule' && <ScheduleTab config={config} classes={classes} onChange={onChange} />}
-      {screen === 'notifications' && <NotificationsTab config={config} onChange={onChange} />}
-      {screen === 'feedback' && <FeedbackPreview />}
-      {screen === 'appearance' && <AppearanceTab config={config} onConfigChange={onChange} />}
-      {screen === 'dates' && <AssignDateModal isOpen={open} onClose={() => setOpen(false)} onApply={noop}
-        session={{ source: lessons, intent: 'date', selection: {
-          targets: [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }],
-          date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false,
-        } }} />}
-      {screen === 'print' && <PrintModal isOpen={open} onClose={() => setOpen(false)} classId={classes[0].id} totalDates={2} newDates={['2026-09-14']} allDates={['2026-09-07', '2026-09-14']} printedDates={['2026-09-07']} lastPrintedAt="2026-09-07T10:00:00Z" config={config} onConfigChange={onChange} onPrint={noop} />}
-      {screen === 'students' && <StudentReviewDialog isOpen={open} onClose={() => setOpen(false)} tracking title={isAr ? 'تقويم شفهي' : 'Évaluation orale'} context={classes[0].name}>
-        <StudentNamesEditor onManageStudents={noop} variant="checked" trackOral
-          roster={config.classRosters?.[classes[0].id] ?? { names: ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'سلمى العلوي'], version: 1, updatedAt: '2026-10-14T08:00:00Z' }}
-          initialNames={['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada']}
-          initialOralOutcomes={{ 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }}
-          initialOralGrades={{ 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' }}
-          onCancel={noop} onSave={noop} />
-      </StudentReviewDialog>}
-      {(screen === 'editor' || screen === 'add') && <>
-        <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
-        <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">
-          {new URLSearchParams(location.search).has('back') && <EditorBackButton onBack={noop} />}
-          <div className="min-w-0 flex-1">
-        <Toolbar canUndo={false} canRedo={false} saveStatus="saved" onUndo={noop} onRedo={noop}
-          onOpenDataTransfer={noop} onOpenManageLessons={noop} onOpenGuide={noop} onOpenAnalyse={noop}
-          onOpenEvaluations={noop} onPrint={noop} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+      {screen === 'schedule' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{isAr ? 'استعمال الزمن الأسبوعي' : 'Emploi du temps hebdomadaire'}</h1>
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">{config.establishmentName} · {config.defaultTeacherName}</span>
           </div>
+          <ScheduleTab config={config} classes={classes} onChange={onChange} />
         </div>
-        <div className="pb-40 sm:pb-24">
-          <MainTable lessonsData={previewLessons} visibleRows={filterLessonRows(buildLessonRows(previewLessons), searchQuery)} contentDirection="ltr"
-            onClearSearch={() => setSearchQuery('')} onOpenAddContentModal={() => setAdd(true)} searchQuery={searchQuery}
-            showDescriptions selectedKeys={selectedKeys} onToggleSelect={toggleSelection} onOpenContentEditor={noop} newlyAddedIds={[]}
-            onOpenDateModal={openPreviewDate}
-            onReorder={previewReorder} canReorder={canPreviewReorder} />
+      )}
+
+      {screen === 'notifications' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{isAr ? 'التذكيرات والإشعارات التلقائية' : 'Rappels et notifications automatiques'}</h1>
+          </div>
+          <NotificationsTab config={config} onChange={onChange} />
         </div>
-        {!add && <SelectionBar count={selectedKeys.size} hasDate canAdd canAssignDate canEdit
-          onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={() => setSelectedKeys(new Set())} />}
-        <ContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
-          selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />
-        {previewDate && <AssignDateModal isOpen onClose={() => setPreviewDate(null)} session={previewDate}
-          onApply={patch => {
-            setPreviewLessons(current => produce(current, draft => { applySessionEdit(draft, previewDate.selection.targets, patch); }));
-            setPreviewDate(null);
-          }} />}
+      )}
+
+      {screen === 'feedback' && <FeedbackPreview />}
+
+      {screen === 'appearance' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{isAr ? 'المظهر وراحة الاستخدام' : 'Apparence et confort de lecture'}</h1>
+          </div>
+          <AppearanceTab config={config} onConfigChange={onChange} />
+        </div>
+      )}
+
+      {screen === 'editor' && renderEditorBase()}
+
+      {screen === 'add' && <>
+        {renderEditorBase()}
+        <ContentModal isOpen={true} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={previewLessons}
+          selectedIndices={null} subject={classes[0].subject} contentDirection={isAr ? 'rtl' : 'ltr'} />
+      </>}
+
+      {screen === 'dates' && <>
+        {renderEditorBase()}
+        <AssignDateModal isOpen={open} onClose={() => setOpen(false)} onApply={noop}
+          session={{ source: previewLessons, intent: 'date', selection: {
+            targets: [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }],
+            date: '2026-09-14', remark: isAr ? 'مراقبة دفاتر التلاميذ' : 'Contrôle des cahiers des élèves', mixedDates: false, mixedRemarks: false,
+          } }} />
+      </>}
+
+      {screen === 'print' && <>
+        {renderEditorBase()}
+        <PrintModal isOpen={open} onClose={() => setOpen(false)} classId={classes[0].id} totalDates={3} newDates={['2026-09-14', '2026-09-16']} allDates={['2026-09-14', '2026-09-16', '2026-09-18']} printedDates={['2026-09-07']} lastPrintedAt="2026-09-07T10:00:00Z" config={config} onConfigChange={onChange} onPrint={noop} />
+      </>}
+
+      {screen === 'students' && <>
+        <DevoirsView classInfo={classes[0]} config={config} onConfigChange={onChange} lessonsData={previewLessons} onLessonsChange={setPreviewLessons} />
+        <StudentReviewDialog isOpen={open} onClose={() => setOpen(false)} tracking title={isAr ? 'تقويم شفهي رقم 1' : 'Évaluation orale 1'} context={classes[0].name}>
+          <StudentNamesEditor onManageStudents={noop} variant="checked" trackOral
+            roster={config.classRosters?.[classes[0].id] ?? { names: studentNames, version: 1, updatedAt: '2026-10-14T08:00:00Z' }}
+            initialNames={studentNames.slice(0, 5)}
+            initialOralOutcomes={{
+              [studentNames[0]]: 'mastered',
+              [studentNames[1]]: 'developing',
+              [studentNames[2]]: 'needs_support',
+              [studentNames[3]]: 'mastered',
+              [studentNames[4]]: 'developing',
+            }}
+            initialOralGrades={{
+              [studentNames[0]]: '17',
+              [studentNames[1]]: '14',
+              [studentNames[2]]: '11',
+              [studentNames[3]]: '18',
+              [studentNames[4]]: '13',
+            }}
+            onCancel={noop} onSave={noop} />
+        </StudentReviewDialog>
       </>}
     </main>}
   </>;
@@ -258,4 +479,3 @@ if (import.meta.env.DEV) {
   root.render(<LocaleProvider locale={locale}><Preview /></LocaleProvider>);
   import.meta.hot?.dispose(() => root.unmount());
 }
-

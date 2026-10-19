@@ -9,22 +9,20 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
 const BASE_URL = 'http://localhost:3000';
 
 const specs = [
-  { key: 'classes', size: [1120, 260], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=classes&lang=${lang}`, w: 1200, h: 600 },
-  { key: 'schedule', size: [1120, 620], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=schedule&lang=${lang}`, w: 1200, h: 850 },
-  { key: 'editor', size: [1120, 920], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=editor&lang=${lang}`, w: 1200, h: 950 },
-  { key: 'add', size: [1120, 940], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=add&lang=${lang}`, w: 1200, h: 950 },
-  { key: 'dates', size: [704, 880], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=dates&lang=${lang}`, w: 1200, h: 950 },
-  { key: 'notifications', size: [1140, 910], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=notifications&lang=${lang}`, w: 1200, h: 900 },
-  { key: 'appearance', size: [1060, 500], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=appearance&lang=${lang}`, w: 1200, h: 700 },
-  { key: 'assessments', size: [1120, 460], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=evaluations&fixture=student-followup&lang=${lang}`, w: 1200, h: 700 },
-  { key: 'print', size: [930, 900], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=print&lang=${lang}`, w: 1200, h: 950 },
-  { key: 'students', size: [800, 760], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=students&lang=${lang}`, w: 1200, h: 950 },
+  { key: 'classes', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=classes&lang=${lang}` },
+  { key: 'schedule', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=schedule&lang=${lang}` },
+  { key: 'editor', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=editor&lang=${lang}` },
+  { key: 'add', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=add&lang=${lang}` },
+  { key: 'dates', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=dates&lang=${lang}` },
+  { key: 'notifications', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=notifications&lang=${lang}` },
+  { key: 'appearance', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=appearance&lang=${lang}` },
+  { key: 'assessments', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=evaluations&lang=${lang}` },
+  { key: 'print', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=print&lang=${lang}` },
+  { key: 'students', size: [1280, 720], url: lang => `${BASE_URL}/scripts/guide-preview/index.html?screen=students&lang=${lang}` },
 ];
 
-const BG_COLOR = { r: 250, g: 249, b: 245, alpha: 1 }; // #FAF9F5
-
 async function main() {
-  console.log(`Starting generation of ${specs.length * 2} WebP guide screenshots...`);
+  console.log(`Starting generation of ${specs.length * 2} WebP guide screenshots (16:9 Landscape 1280x720, Retina 2x)...`);
   const captureSizesMap = {};
 
   for (const spec of specs) {
@@ -40,8 +38,10 @@ async function main() {
       const res = spawnSync(EDGE_PATH, [
         '--headless=new',
         '--disable-gpu',
-        '--virtual-time-budget=3500',
-        `--window-size=${spec.w},${spec.h}`,
+        '--force-device-scale-factor=2',
+        '--hide-scrollbars',
+        '--window-size=1280,720',
+        '--virtual-time-budget=4000',
         `--screenshot=${tmpPng}`,
         targetUrl,
       ]);
@@ -51,11 +51,10 @@ async function main() {
         continue;
       }
 
-      // Trim outer margin, then fit inside exact target dimensions with canvas background
-      const trimmedBuffer = await sharp(tmpPng).trim().toBuffer();
-      const webpBuffer = await sharp(trimmedBuffer)
-        .resize(targetW, targetH, { fit: 'contain', background: BG_COLOR })
-        .webp({ quality: 86, effort: 6 })
+      // Downscale 2x retina (2560x1440) directly to 1280x720 WebP with Lanczos3 anti-aliasing
+      const webpBuffer = await sharp(tmpPng)
+        .resize(targetW, targetH, { fit: 'fill', kernel: 'lanczos3' })
+        .webp({ quality: 88, effort: 6 })
         .toBuffer();
 
       fs.writeFileSync(outPath, webpBuffer);

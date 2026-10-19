@@ -2,16 +2,16 @@ import { useState } from 'react';
 import type { GuideChapter } from '@/constants/guides';
 
 const captureSizes: Record<string, readonly [number, number]> = {
-  classes: [1120, 260],
-  schedule: [1120, 620],
-  editor: [1120, 920],
-  add: [1120, 940],
-  dates: [704, 880],
-  notifications: [1140, 910],
-  appearance: [1060, 500],
-  assessments: [1120, 460],
-  print: [930, 900],
-  students: [800, 760],
+  classes: [1280, 720],
+  schedule: [1280, 720],
+  editor: [1280, 720],
+  add: [1280, 720],
+  dates: [1280, 720],
+  notifications: [1280, 720],
+  appearance: [1280, 720],
+  assessments: [1280, 720],
+  print: [1280, 720],
+  students: [1280, 720],
 };
 
 export function GuideFigure({ image, lang }: { image: NonNullable<GuideChapter['image']>; lang: 'fr' | 'ar' }) {
