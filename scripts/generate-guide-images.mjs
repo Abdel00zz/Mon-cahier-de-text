@@ -37,11 +37,15 @@ async function main() {
       const targetUrl = spec.url(lang);
       const res = spawnSync(EDGE_PATH, [
         '--headless=new',
-        '--disable-gpu',
+        // GPU activé → rendu des polices subpixel antialiasé (comme dans le vrai navigateur)
+        '--use-gl=swiftshader',
+        '--font-render-hinting=full',
+        '--enable-font-antialiasing',
         '--force-device-scale-factor=2',
         '--hide-scrollbars',
         '--window-size=1280,720',
-        '--virtual-time-budget=4000',
+        // Temps augmenté pour laisser les web fonts (inter, noto-arabic) se charger complètement
+        '--virtual-time-budget=6000',
         `--screenshot=${tmpPng}`,
         targetUrl,
       ]);
