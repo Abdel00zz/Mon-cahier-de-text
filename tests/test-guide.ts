@@ -28,7 +28,7 @@ for (const [lang, entries] of [['fr', GUIDE_FR], ['ar', GUIDE_AR]] as const) {
     assert.ok(figure.includes('aria-expanded="false"'), 'Image can be enlarged for reading');
     assert.ok(figure.includes('<img') && figure.includes('<figcaption>'));
     assert.doesNotMatch(figure, /guide-demo-|guide-illustration|data-guide-scene/, 'No invented interface');
-    assert.ok(figure.includes(lang === 'ar' ? 'إصدار سابق' : 'version antérieure'), 'Historical capture is identified');
+    assert.ok(figure.includes(lang === 'ar' ? 'بيانات توضيحية' : 'Données d’exemple'), 'Authentic capture is identified');
     assert.equal(bytes.toString('ascii', 12, 16), 'VP8 ');
     const width = bytes.readUInt16LE(26) & 0x3fff;
     const height = bytes.readUInt16LE(28) & 0x3fff;
@@ -41,7 +41,7 @@ assert.equal(normalizeGuideSearch('إِشْعَارَات'), normalizeGuideSearc
 assert.ok(searchGuide(GUIDE_FR, 'cycle').some(entry => entry.id === 'profile'));
 assert.ok(searchGuide(GUIDE_AR, 'اشعارات').some(entry => entry.id === 'notifications'));
 assert.ok(searchGuide(GUIDE_FR, 'date séance').length > 0);
-assert.equal(assets.size, 14, 'Seven real captured screens in both languages');
+assert.equal(assets.size, 20, 'Ten real captured screens in both languages');
 for (const entries of [GUIDE_FR, GUIDE_AR]) {
   const allText = JSON.stringify(entries);
   assert.doesNotMatch(allText, /Ne plus avertir pour cette date|عدم التنبيه إلى هذا التاريخ مجدداً|monter\/descendre|Suivi pédagogique/);

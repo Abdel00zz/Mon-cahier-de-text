@@ -1,3 +1,4 @@
+import { isNetworkOnline } from '../platform/networkStatus';
 /**
  * Préchargement des écrans pendant l'inactivité.
  *
@@ -46,7 +47,7 @@ const browserEnvironment = (): PrefetchEnvironment => {
         cancelIdleCallback?: (handle: number) => void;
     };
     return {
-        online: navigator.onLine,
+        online: isNetworkOnline(),
         saveData: connection?.saveData === true,
         effectiveType: connection?.effectiveType ?? '',
         visible: document.visibilityState === 'visible',

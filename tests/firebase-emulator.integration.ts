@@ -347,7 +347,7 @@ test('Firestore admin/user circuits preserve imports, dates, acknowledgements an
   assert.deepEqual(restored.settings.pedagogicalEvents, activitySettings.pedagogicalEvents);
   assert.equal(buildSessionActivityRemarks(restored.settings, classInfo.id,
     (key, values) => translateLocaleMessage('ar', key, values), '، ').get('2026-10-03'),
-  'مراقبة الدفاتر: أمين، سلمى\nجيد: 1، لم يُحضَر: 1\nمعالجة التعثرات\nتقويم شفهي');
+  'مراقبة دفاتر التلاميذ\nجيد: 1، لم يُحضَر: 1\nمعالجة التعثرات\nتقويم شفهي');
   assert.deepEqual((await call(syncHandler, {method: 'GET', headers: teacherHeaders, query: {classId: classInfo.id}})).body, imported.body,
     'syncing activities keeps the imported course hierarchy intact');
   const notification = await postAdmin({action: 'notifyTeacher', phone: number, message: 'Votre cahier est prêt.'});

@@ -4,6 +4,7 @@ import { notificationTarget } from '../domain/notifications/notificationPresenta
 import { readWorkspaceScope } from '../infrastructure/storage/accountWorkspace';
 import { startSafePwaAction } from './safeUpdate';
 import { readThemeBackground } from './themeColor';
+import { startNativeNetworkMonitoring } from './networkStatus';
 
 const NativeShell = registerPlugin<{
   setAppearance(options: { background: string; dark: boolean }): Promise<void>;
@@ -68,7 +69,7 @@ export async function initNativeRuntime(): Promise<void> {
       window.dispatchEvent(new Event(isActive ? 'native-resume' : 'native-pause'));
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await Network.addListener('networkStatusChange', ({ connected }) => window.dispatchEvent(new Event(connected ? 'online' : 'offline')));
+    startNativeNetworkMonitoring(Network);
     await LocalNotifications.addListener('localNotificationActionPerformed', ({ notification }) => {
       const extra = notification.extra as { owner?: string; url?: string } | undefined;
       if (!extra?.owner || extra.owner !== readWorkspaceScope()?.owner) return;

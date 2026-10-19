@@ -96,22 +96,18 @@ export const buildNotebookCheckRemarks = (
 };
 
 /**
- * Texte de l'annotation. Les noms sont cités jusqu'à `REMARK_NAME_LIMIT`, puis
- * résumés — une cellule de remarque mesure quelques centimètres de large.
+ * Texte de l'annotation. Les noms d'élèves ne sont pas affichés dans la cellule
+ * de remarque de la table pour préserver la clarté et la compacité : seul le titre
+ * de l'activité (suivi du résumé compact des états si présent) est inscrit.
  */
 export const notebookCheckRemarkText = (
     remark: NotebookCheckRemark,
     translate: (key: string, values?: Record<string, string | number>) => string,
     separator: string,
 ): string => {
-    if (remark.names.length === 0) return remark.title;
-    const shown = remark.names.slice(0, REMARK_NAME_LIMIT).join(separator);
-    const remaining = remark.names.length - REMARK_NAME_LIMIT;
-    const namesText = remaining > 0
-        ? translate('remark.checkNamesMore', { names: shown, more: remaining })
-        : translate('remark.checkNames', { names: shown });
+    const title = remark.title?.trim() || translate('evaluations.event.controle_cahiers');
     const counts = countNotebookConditions(remark.names, remark.conditions);
     const summary = NOTEBOOK_CONDITIONS.filter(condition => counts[condition] > 0)
         .map(condition => `${translate(`evaluations.notebook.${condition}`)}: ${counts[condition]}`);
-    return summary.length ? `${namesText}\n${summary.join(separator)}` : namesText;
+    return summary.length ? `${title}\n${summary.join(separator)}` : title;
 };

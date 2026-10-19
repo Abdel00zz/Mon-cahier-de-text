@@ -1,3 +1,4 @@
+import { isNetworkOnline } from '../platform/networkStatus';
 import { rostersForClasses } from '../domain/evaluations/studentRoster';
 import { reconcileClassRosters } from '../domain/evaluations/classRosterSync';
 import type { ClassRoster } from '../types';
@@ -221,7 +222,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const scope = readWorkspaceScope();
         if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== accountOwner(currentUser) || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
         if (!options?.keepalive && !isForegroundOnline()) {
-            if (!navigator.onLine) setSyncStatus('offline');
+            if (!isNetworkOnline()) setSyncStatus('offline');
             return;
         }
 
@@ -544,7 +545,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let associationOffered = false;
         const unsubscribeDirty = subscribe('dirty', () => pullAbortRef.current?.abort());
         const refresh = async () => {
-            if (cancelled || inFlight || pushingRef.current || document.visibilityState === 'hidden' || !navigator.onLine) return;
+            if (cancelled || inFlight || pushingRef.current || !isForegroundOnline()) return;
             inFlight = true;
             const controller = new AbortController();
             pullAbortRef.current = controller;

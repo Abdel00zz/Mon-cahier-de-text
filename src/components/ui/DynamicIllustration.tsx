@@ -294,13 +294,17 @@ export function TeacherTeamIllustration(props: IllustrationProps) {
     <rect x="26" y="28" width="188" height="146" rx="14" className="figure-paper" />
     <path d="M48 54H104M48 68H86" className="figure-line figure-muted-line" />
     <rect x="160" y="47" width="32" height="32" rx="8" className="figure-soft" />
-    <path d="M168 63L175 69L186 56" className="figure-line" />
+    <path d="M168 63L175 69L186 56" pathLength="1" className="figure-line team-validation" />
     <Person x={-17} y={48} scale={.75} look={TEACHER_A} face="joy" breathe
       back={<g className="figure-wave"><Arm d="M84 172Q50 154 46 124" hand={[46, 112]} look={TEACHER_A} /></g>} />
     <Person x={87} y={48} scale={.75} look={COLLEAGUE} face="calm" breathe
       front={<Arm d="M84 172Q88 186 114 187" hand={[124, 187]} look={COLLEAGUE} front />} />
     <path d="M76 184Q98 177 120 187Q142 177 164 184V217Q142 210 120 220Q98 210 76 217Z" className="figure-book-pages" />
     <path d="M120 188V219M87 193L109 196M131 196L153 193M87 202L109 205M131 205L153 202" className="figure-book-page-lines" />
+    <g className="team-turning-page">
+      <path d="M120 187Q142 177 164 184V217Q142 210 120 220Z" className="figure-book-pages" />
+      <path d="M131 196L153 193M131 205L153 202" className="figure-book-page-lines" />
+    </g>
     <path d="M22 224H218" className="figure-muted-line" />
   </Figure>;
 }

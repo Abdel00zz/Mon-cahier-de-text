@@ -1,5 +1,4 @@
-import { CalendarDays } from '@/components/ui/icons';
-import { Cloud, PenLine } from '@/components/ui/icons';
+import { BookOpen, CalendarDays, Cloud } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { TeacherTeamIllustration } from '@/components/ui/DynamicIllustration';
 import type { AppLocale } from '@/types';
@@ -8,29 +7,29 @@ import './landing.css';
 const COPY = {
   fr: {
     eyebrow: 'Pensé pour votre quotidien d’enseignant', title: 'Votre journée,', emphasis: 'plus simplement.',
-    detail: 'Vos classes, vos séances et votre planning. Un cahier clair, toujours à portée de main.',
-    start: 'Préparez votre classe, puis créez votre compte pour la conserver.',
-    login: 'Se connecter', register: 'Préparer mon cahier',
+    detail: 'Vos classes, vos séances, votre planning. Tout votre cahier à portée de main.',
+    start: 'Votre classe d’abord. Votre compte ensuite.',
+    login: 'Se connecter', register: 'Créer mon cahier',
     reassurance: 'Sur téléphone, tablette et ordinateur', preview: 'Enseigner, préparer, avancer ensemble',
     features: [
-      { title: 'Rédigez sans effort', detail: 'Des contenus prêts à adapter à vos séances.' },
-      { title: 'Gardez le bon rythme', detail: 'Un planning lié au calendrier scolaire officiel.' },
-      { title: 'Retrouvez votre travail', detail: 'Vos cahiers synchronisés entre vos appareils.' },
+      { title: 'Contenus prêts', detail: 'À adapter à vos séances.' },
+      { title: 'Séances datées', detail: 'Sélectionnez le contenu, puis sa date.' },
+      { title: 'Cahier synchronisé', detail: 'Entre vos appareils, avec votre compte.' },
     ],
   },
   ar: {
     eyebrow: 'مصمّم ليومك كأستاذ', title: 'يومك الدراسي،', emphasis: 'بكل بساطة.',
     detail: 'أقسامك وحصصك وجدولك. دفتر واضح، دائماً في متناول يدك.',
-    start: 'أعدّ قسمك، ثم أنشئ حسابك لحفظه.', login: 'تسجيل الدخول', register: 'إعداد دفتري',
+    start: 'قسمك أولاً، ثم حسابك لحفظه.', login: 'تسجيل الدخول', register: 'إعداد دفتري',
     reassurance: 'على الهاتف والجهاز اللوحي والحاسوب', preview: 'نحضّر ونتقدّم معاً',
     features: [
-      { title: 'دوّن بسهولة', detail: 'محتويات جاهزة لتكييفها مع حصصك.' },
-      { title: 'نظّم حصصك', detail: 'جدول مرتبط بالتقويم المدرسي الرسمي.' },
-      { title: 'عملك معك دائماً', detail: 'مزامنة دفاترك بين أجهزتك.' },
+      { title: 'محتوى جاهز', detail: 'تكيّفه مع حصصك.' },
+      { title: 'حصص مؤرّخة', detail: 'حدّد المحتوى وأسند إليه تاريخاً.' },
+      { title: 'دفتر متزامن', detail: 'بين أجهزتك، عبر حسابك.' },
     ],
   },
 } as const;
-const FEATURE_ICONS = [PenLine, CalendarDays, Cloud];
+const FEATURE_ICONS = [BookOpen, CalendarDays, Cloud];
 
 export function LandingPage({ locale, onLogin, onRegister }: {
   locale: AppLocale; onLogin: () => void; onRegister: () => void;
@@ -49,7 +48,7 @@ export function LandingPage({ locale, onLogin, onRegister }: {
         </div>
         <p className="landing-start">{copy.start}</p>
       </section>
-      <section className="landing-gallery" aria-label={copy.preview}><TeacherTeamIllustration size={360} /><p>{copy.reassurance}</p></section>
+      <section className="landing-gallery" aria-label={copy.preview}><TeacherTeamIllustration size={360} className="landing-teachers" /><p>{copy.reassurance}</p></section>
       <ul className="landing-features">
         {copy.features.map((feature, index) => {
           const Icon = FEATURE_ICONS[index];

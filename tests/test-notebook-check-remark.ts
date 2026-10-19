@@ -85,23 +85,23 @@ test('deux contrôles le même jour : le premier posé l’emporte', () => {
     assert.equal(marks.get('2026-09-14')?.title, 'الأولى');
 });
 
-test('les noms consignés restent bornés, le reste est résumé', () => {
+test('les noms consignés ne sont pas affichés dans la cellule remarque (titre seul)', () => {
     const marks = buildNotebookCheckRemarks([
         event({ date: '2026-09-14', students: names('أمين', 'سلمى', 'ياسين', 'هند', 'عمر') }),
     ]);
     const remark = marks.get('2026-09-14')!;
     assert.equal(remark.names.length, 5);
     const text = notebookCheckRemarkText(remark, echo, '، ');
-    assert.equal(text, 'remark.checkNamesMore|أمين، سلمى، ياسين|2');
+    assert.equal(text, 'مراقبة دفاتر التلاميذ');
     assert.equal(remark.names.slice(0, REMARK_NAME_LIMIT).length, 3);
 });
 
-test('jusqu’à trois noms : liste complète, séparateur de la langue', () => {
+test('jusqu’à trois noms : pas de liste de noms dans la cellule remarque', () => {
     const marks = buildNotebookCheckRemarks([
         event({ date: '2026-09-14', students: names('Amin', 'Salma', 'Yassine') }),
     ]);
     const remark = marks.get('2026-09-14')!;
-    assert.equal(notebookCheckRemarkText(remark, echo, ', '), 'remark.checkNames|Amin, Salma, Yassine|');
+    assert.equal(notebookCheckRemarkText(remark, echo, ', '), 'مراقبة دفاتر التلاميذ');
     // Un nom vide (saisie interrompue) ne compte pas comme un élève.
     const trimmed = buildNotebookCheckRemarks([
         event({ date: '2026-09-15', students: names('Amin', '   ', '') }),

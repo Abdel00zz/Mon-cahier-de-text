@@ -19,13 +19,12 @@ notifications système ni utiliser un compte enseignant pour réaliser les captu
    reporter leurs dimensions exactes dans `GuideFigure.tsx`.
 6. Exécuter `npm run test:guide`, `npm run check:architecture` et `npm run build`.
 
-Les textes ont été révisés le 18 octobre 2026. Les schémas de remplacement ont été
-retirés : le guide réutilise les captures réelles historiques déjà versionnées
-(décrites dans la documentation précédente comme renouvelées le 14 septembre 2026).
-Elles portent explicitement la mention « version antérieure ». Elles n’ont pas été
-recapturées lors de cette correction : l’accès navigateur était bloqué.
-Les rubriques Élèves et Évaluations conservent leurs explications actualisées sans
-image de substitution. De nouvelles captures de ces écrans restent à réaliser.
+Les captures réelles de l'application ont été entièrement renouvelées en haute résolution
+le 19 octobre 2026 via `scripts/generate-guide-images.mjs`. Elles sont fidèles à l'interface
+actuelle (cartes de classes, grille d'emploi du temps, éditeur avec cartes de notions sans arrondi,
+modale d'ajout, calendrier et date, paramètres de notifications et d'apparence).
+De nouvelles captures ont été intégrées pour les rubriques majeures : Évaluations et activités
+(`assessments`), Gestion des élèves (`students`) et Impression officielle du cahier (`print`).
 
 ## Maintenance
 

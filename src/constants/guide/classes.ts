@@ -6,7 +6,7 @@ export const classes = chapter('classes', ["students", "content", "schedule"], {
     "keywords": "dashboard carte liste grille trois deux groupe paramètres aide",
     "image": {
         "key": "classes",
-        "caption": "Les cartes ouvrent le cahier de chaque classe. Capture d’une version antérieure."
+        "caption": "Les cartes ouvrent le cahier de chaque classe."
     },
     "sections": [
         {
@@ -33,7 +33,7 @@ export const classes = chapter('classes', ["students", "content", "schedule"], {
     "keywords": "لوحة التحكم بطاقات قائمة شبكة مجموعة فوج إعدادات مساعدة",
     "image": {
         "key": "classes",
-        "caption": "تفتح البطاقات دفاتر الأقسام. لقطة من إصدار سابق."
+        "caption": "تفتح البطاقات دفاتر الأقسام."
     },
     "sections": [
         {

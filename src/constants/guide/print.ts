@@ -3,6 +3,7 @@ import { chapter } from './model';
 export const print = chapter('print', ['dates', 'appearance', 'backup'], {
     title: 'Imprimer ou exporter en PDF',
     summary: 'Génération des états d’impression du cahier de textes conformes aux exigences administratives et d’inspection.',
+    image: { key: 'print', caption: 'Options d’impression du cahier et export officiel.' },
     keywords: 'impression cahier de textes PDF visa administratif inspection contrôle signature directeur censeur marges',
     sections: [
       {
@@ -27,6 +28,7 @@ export const print = chapter('print', ['dates', 'appearance', 'backup'], {
   }, {
     title: 'الطباعة والتصدير بصيغة PDF',
     summary: 'استخراج وثيقة دفتر النصوص الورقية مطابقة للمواصفات الرسمية لغايات التأشير الإداري والمراقبة التربوية.',
+    image: { key: 'print', caption: 'خيارات طباعة الدفتر والتصدير الرسمي.' },
     keywords: 'طباعة دفتر النصوص تصدير PDF تأشير إداري تفتيش تربوي توقيع المدير الناظر المفتش ترويسة رسمية',
     sections: [
       {

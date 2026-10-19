@@ -12,7 +12,7 @@ export interface GuideChapter {
   keywords: string;
   sections: GuideSection[];
   tip?: string;
-  image?: { key: 'classes' | 'schedule' | 'editor' | 'add' | 'dates' | 'notifications' | 'appearance'; caption: string };
+  image?: { key: 'classes' | 'schedule' | 'editor' | 'add' | 'dates' | 'notifications' | 'appearance' | 'assessments' | 'print' | 'students'; caption: string };
   related: string[];
 }
 type Content = Omit<GuideChapter, 'id' | 'related'>;

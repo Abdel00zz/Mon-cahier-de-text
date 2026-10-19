@@ -1,3 +1,4 @@
+import { isNetworkOnline } from './networkStatus';
 import { startSafePwaAction } from './safeUpdate';
 
 /*
@@ -24,7 +25,7 @@ export interface WebUpdateEnvironment {
 declare const __APP_VERSION__: string;
 
 const browserEnvironment = (): WebUpdateEnvironment => ({
-    online: () => navigator.onLine,
+    online: () => isNetworkOnline(),
     publishedVersion: async () => {
         const response = await fetch('/version.json', { cache: 'no-store' });
         if (!response.ok) return null;
@@ -89,7 +90,7 @@ const webUpdates = createWebUpdateControl();
  */
 export function startAppUpdateChecks(env?: { active: () => boolean; now: () => number; subscribe: (check: () => void) => () => void }, control: { check: () => Promise<void> | void } = webUpdates) {
     const environment = env ?? {
-        active: () => document.visibilityState === 'visible' && navigator.onLine
+        active: () => document.visibilityState === 'visible' && isNetworkOnline()
             && !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
         now: () => Date.now(),
         subscribe: (check: () => void) => {

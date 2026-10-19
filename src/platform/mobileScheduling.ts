@@ -1,4 +1,5 @@
 import { getBundledCalendar, todayInMorocco, type HolidayCalendar } from '../domain/calendar/calendar.js';
+import { isNetworkOnline } from './networkStatus';
 
 /** Local midnight, including Morocco's Ramadan offset changes; never assumes a 24h day. */
 export function millisecondsUntilNextMoroccoDay(now = new Date(), calendar: HolidayCalendar = getBundledCalendar()): number {
@@ -23,7 +24,7 @@ export interface ForegroundSchedulerEnvironment {
 }
 
 export const isForegroundOnline = (): boolean => document.visibilityState === 'visible'
-  && document.documentElement?.dataset.nativeActive !== 'false' && navigator.onLine;
+  && document.documentElement?.dataset.nativeActive !== 'false' && isNetworkOnline();
 
 const browserEnvironment = (): ForegroundSchedulerEnvironment => ({
   active: isForegroundOnline,

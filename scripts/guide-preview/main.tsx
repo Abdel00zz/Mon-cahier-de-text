@@ -29,6 +29,9 @@ import { Header } from '../../src/features/editor/Header';
 import { EditorBackButton } from '../../src/features/editor/EditorBackButton';
 import { Toolbar } from '../../src/features/editor/Toolbar';
 import { ContentModal } from '../../src/features/editor/modals/ContentModal';
+import { PrintModal } from '../../src/features/editor/modals/PrintModal';
+import { StudentReviewDialog } from '../../src/features/evaluations/components/StudentReviewDialog';
+import { StudentNamesEditor } from '../../src/features/evaluations/components/StudentNamesEditor';
 import { PageTransitionLoader } from '../../src/components/ui/PageSkeleton';
 import { FeedbackPreview } from './FeedbackPreview';
 import { ModalGallery } from './ModalGallery';
@@ -210,6 +213,15 @@ function Preview() {
           targets: [{ chapterIndex: 0, itemIndex: 0 }, { chapterIndex: 0, itemIndex: 1 }],
           date: '2026-09-14', remark: '', mixedDates: false, mixedRemarks: false,
         } }} />}
+      {screen === 'print' && <PrintModal isOpen={open} onClose={() => setOpen(false)} classId={classes[0].id} totalDates={2} newDates={['2026-09-14']} allDates={['2026-09-07', '2026-09-14']} printedDates={['2026-09-07']} lastPrintedAt="2026-09-07T10:00:00Z" config={config} onConfigChange={onChange} onPrint={noop} />}
+      {screen === 'students' && <StudentReviewDialog isOpen={open} onClose={() => setOpen(false)} tracking title={isAr ? 'تقويم شفهي' : 'Évaluation orale'} context={classes[0].name}>
+        <StudentNamesEditor onManageStudents={noop} variant="checked" trackOral
+          roster={config.classRosters?.[classes[0].id] ?? { names: ['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada', 'سلمى العلوي'], version: 1, updatedAt: '2026-10-14T08:00:00Z' }}
+          initialNames={['Amine Alami', 'Salma Fassi', 'Youssef Naji', 'Lina Idrissi', 'Adam Berrada']}
+          initialOralOutcomes={{ 'Amine Alami': 'mastered', 'Salma Fassi': 'developing', 'Youssef Naji': 'needs_support', 'Lina Idrissi': 'mastered', 'Adam Berrada': 'developing' }}
+          initialOralGrades={{ 'Amine Alami': '17', 'Salma Fassi': '12', 'Youssef Naji': '8', 'Lina Idrissi': '16', 'Adam Berrada': '11' }}
+          onCancel={noop} onSave={noop} />
+      </StudentReviewDialog>}
       {(screen === 'editor' || screen === 'add') && <>
         <Header classInfo={classes[0]} teacherName="Enseignant" establishmentName="Collège" onClassInfoChange={noop} onBack={noop} />
         <div className="editor-toolbar-row sticky top-0 z-[50] flex items-center gap-2 print:hidden">

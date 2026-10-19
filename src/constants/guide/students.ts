@@ -3,6 +3,10 @@ import { chapter } from './model';
 export const students = chapter('students', ['classes', 'assessments', 'devices'], {
     "title": "Gérer les élèves de la classe",
     "summary": "Une liste commune aux évaluations, aux activités et à l’administration.",
+    "image": {
+        "key": "students",
+        "caption": "Suivi des élèves et saisie des observations."
+    },
     "keywords": "élèves liste noms import administration notes roster",
     "sections": [
         {
@@ -26,6 +30,10 @@ export const students = chapter('students', ['classes', 'assessments', 'devices'
 }, {
     "title": "تدبير لائحة تلاميذ القسم",
     "summary": "لائحة مشتركة للتقويمات والأنشطة والإدارة.",
+    "image": {
+        "key": "students",
+        "caption": "تتبع التلاميذ وتدوين الملاحظات والنقط."
+    },
     "keywords": "تلاميذ لائحة أسماء استيراد إدارة نقط مزامنة",
     "sections": [
         {

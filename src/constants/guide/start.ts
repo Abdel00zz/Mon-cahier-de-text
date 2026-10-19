@@ -3,7 +3,7 @@ import { chapter } from './model';
 export const start = chapter('start', ['profile', 'schedule', 'content'], {
     title: 'Créer votre premier cahier',
     summary: 'Préparez votre profil, ajoutez une classe, puis enregistrez votre première séance.',
-    image: { key: 'classes', caption: 'Les cartes ouvrent le cahier de chaque classe. Capture d’une version antérieure.' },
+    image: { key: 'classes', caption: 'Les cartes ouvrent le cahier de chaque classe.' },
     keywords: 'démarrage début cahier de textes professeur classe niveau filière emploi du temps séance inspection pédagogique',
     sections: [
       {
@@ -25,7 +25,7 @@ export const start = chapter('start', ['profile', 'schedule', 'content'], {
   }, {
     title: 'أنشئ أول دفتر نصوص',
     summary: 'أعدّ ملفك الشخصي، أضف قسماً، ثم سجّل أول حصة.',
-    image: { key: 'classes', caption: 'تفتح البطاقات دفاتر الأقسام. لقطة من إصدار سابق.' },
+    image: { key: 'classes', caption: 'تفتح البطاقات دفاتر الأقسام.' },
     keywords: 'بداية انطلاقة دفتر النصوص أستاذ قسم مستوى سلك مؤسسة تفتيش توجيهات تربوية مقرر وزاري مسك حصة إسناد تاريخ',
     sections: [
       {

@@ -54,7 +54,8 @@ test('the dated remark includes a compact condition summary and changing it upda
   const settings = config();
   const remarks = () => buildSessionActivityRemarks(settings, 'A', (key, values) => translateLocaleMessage('fr', key, values), ', ');
   const text = remarks().get('2026-10-08')!;
-  assert.match(text, /Contrôle des cahiers : Amine, Salma, Ali \+2/);
+  assert.doesNotMatch(text, /Amine|Salma|Ali/);
+  assert.match(text, /Contrôle des cahiers/);
   assert.match(text, /Bon: 1, Moyen: 1, À améliorer: 1, Non apporté: 1/);
   const lessons: LessonsData = [{ type: 'chapter', title: 'Cours', items: [{ type: 'cours', title: 'Lesson', date: '2026-10-08' }] }];
   const before = JSON.stringify(lessons);

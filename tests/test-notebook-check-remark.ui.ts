@@ -19,7 +19,7 @@ import { translateLocaleMessage } from '../src/i18n/messages';
  */
 
 const noop = () => {};
-const ANNOTATION = 'Contrôle des cahiers : Amin, Salma';
+const ANNOTATION = 'Contrôle des cahiers';
 
 /** Séance partageant une seule cellule de remarque (deux contenus sans note). */
 const mergedData: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
@@ -58,7 +58,7 @@ const occurrences = (html: string, needle: string) => html.split(needle).length 
 test('la remarque de la séance affiche le tracé du contrôle des cahiers', () => {
     const html = renderTable(mergedData, date => (date === '2026-09-14' ? ANNOTATION : undefined));
     assert.match(html, /data-session-annotation="true"/);
-    assert.match(html, /Contrôle des cahiers : Amin, Salma/);
+    assert.match(html, /Contrôle des cahiers/);
     assert.doesNotMatch(html, /editor-type-remark[^>]*>—</, 'a populated activity cell has no empty dash');
     // La règle en amont fournit bien le texte attendu, dans la langue demandée.
     const marks = buildNotebookCheckRemarks([
@@ -92,11 +92,11 @@ test('sans contrôle des cahiers, la cellule de remarque reste nue', () => {
 });
 
 test('l’annotation suit la direction de son texte, en texte simple sans infobulle', () => {
-    const html = renderTable(mergedData, () => 'مراقبة الدفاتر: أمين، سلمى');
+    const html = renderTable(mergedData, () => 'مراقبة الدفاتر');
     assert.match(html, /data-session-annotation="true"[^>]*dir="rtl"/);
     // Une seule famille d'infobulles (data-tippy-content) : ces lignes
     // automatiques se lisent d'elles-mêmes, sans bulle ni cadre.
-    assert.doesNotMatch(html, /title="مراقبة الدفاتر: أمين، سلمى"/);
+    assert.doesNotMatch(html, /title="مراقبة الدفاتر"/);
     assert.match(html, /editor-session-note/);
     assert.doesNotMatch(html, /data-session-annotation="true"[^>]*bg-primary/,
         'plus de pastille : le texte porte le sens, pas un cadre');

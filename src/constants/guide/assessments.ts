@@ -3,6 +3,10 @@ import { chapter } from './model';
 export const assessments = chapter('assessments', ["students", "editor", "dates"], {
     "title": "Contrôle continu et activités",
     "summary": "Ouvrez les évaluations de la classe et utilisez les actions adaptées à chaque type.",
+    "image": {
+        "key": "assessments",
+        "caption": "Devoirs, évaluations et activités de la classe."
+    },
     "keywords": "contrôle continu évaluation activités oral colle correction devoir maison absences note remise cahiers",
     "sections": [
         {
@@ -29,6 +33,10 @@ export const assessments = chapter('assessments', ["students", "editor", "dates"
 }, {
     "title": "المراقبة المستمرة والأنشطة",
     "summary": "افتح تقويمات القسم واستعمل الإجراءات المناسبة لكل نوع.",
+    "image": {
+        "key": "assessments",
+        "caption": "الفروض والتقويمات والأنشطة التربوية للقسم."
+    },
     "keywords": "مراقبة مستمرة تقويم أنشطة شفهي كول تصحيح فرض منزلي غياب نقط تسليم دفاتر",
     "sections": [
         {

@@ -1,3 +1,4 @@
+import { isNetworkOnline } from '../platform/networkStatus';
 import { apiFetch } from '@/platform/nativeHttp';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, notifyConfigChanged, reloadSyncState, touchClassSyncMeta, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
@@ -178,7 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         if (!readWorkspaceScope() && cached) switchAccountWorkspace(accountOwner(cached), { legacyOwner: accountOwner(cached) });
-        if (!navigator.onLine) throw new TypeError('Offline');
+        if (!isNetworkOnline()) throw new TypeError('Offline');
         const data = await requestSyncJson<{ user: AuthUser }>('/api/auth?action=me', {
           credentials: 'same-origin', signal: controller.signal,
         }, 8_000);
@@ -196,7 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           reloadSyncState();
           setUser(cached);
           setStatus('offline');
-          if (navigator.onLine) retryTimer = setTimeout(() => { void verifySession(); }, retryDelayMs(failures++));
+          if (isNetworkOnline()) retryTimer = setTimeout(() => { void verifySession(); }, retryDelayMs(failures++));
         } else {
           void clearInboxBadge();
           setUser(null);
@@ -213,7 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     void verifySession();
     const resume = () => {
-      if (needsValidation && current() && navigator.onLine && document.visibilityState !== 'hidden') void verifySession();
+      if (needsValidation && current() && isNetworkOnline() && document.visibilityState !== 'hidden') void verifySession();
     };
     window.addEventListener('online', resume);
     document.addEventListener('visibilitychange', resume);

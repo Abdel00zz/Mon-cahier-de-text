@@ -543,7 +543,7 @@ Ce type d'activité **n'accepte aucun document** : il n'y a pas de sujet à
 joindre, et le bouton *Contenu* n'est donc pas proposé. Sa trace pédagogique est
 la **date** du contrôle, reportée automatiquement dans la **cellule « remarque »
 de la séance du même jour** — sur l'écran comme à l'impression, sous la forme
-« Contrôle des cahiers : Amine R., Salma B. » (jusqu'à trois noms, puis « +N »).
+du titre de l'activité (la liste des élèves reste consultable dans la fiche de suivi sans encombrer la remarque).
 
 À retenir :
 
