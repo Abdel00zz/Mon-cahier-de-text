@@ -1,4 +1,5 @@
 import React, { useId, useMemo, useState } from 'react';
+import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MathText } from '@/components/ui/math-text';
@@ -46,7 +47,7 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
   // Les libellés suivent la langue de l'interface. Seul le texte saisi suit le contenu :
   // un champ vide garde le sens de l'interface pour que le repère d'aide soit bien orienté.
   const uiDir = isRtl ? 'rtl' : 'ltr';
-  const fieldDir = (text: string) => (text ? 'auto' : uiDir);
+  const fieldDir = (text: string) => textDirectionAttribute(text) ?? contentDirection ?? uiDir;
   const [showRange, setShowRange] = useState(Boolean(value.endDate || value.type === 'evaluation_diagnostic'));
   const isRange = Boolean(showRange || value.endDate || value.type === 'evaluation_diagnostic');
   const labelClass = 'mb-2 block text-[14px] font-medium text-foreground/90';
@@ -168,8 +169,8 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
     </div>}
     {hasMathSyntax(source) && <section className="rounded-xl border border-border bg-muted/40 p-3" aria-label="Aperçu">
       <div className="overflow-x-auto whitespace-pre-wrap break-words text-sm">
-        <MathText source={source}>{title && <div dir="auto">{title}</div>}
-          {!titleOnly && description && <div dir="auto">{renderDescriptionWithBold(description)}</div>}</MathText>
+        <MathText source={source}>{title && <div dir={fieldDir(title)}>{title}</div>}
+          {!titleOnly && description && <div dir={fieldDir(description)}>{renderDescriptionWithBold(description)}</div>}</MathText>
       </div>
     </section>}
   </div>;

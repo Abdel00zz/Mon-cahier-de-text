@@ -1,4 +1,4 @@
-import { splitMathText } from './math';
+import { directionProse } from './directionProse';
 
 /** Direction d'écriture déduite d'un texte : `rtl` (arabe, hébreu…), `ltr`, ou
  *  `null` quand rien ne permet de trancher (texte vide, chiffres seuls). */
@@ -24,10 +24,7 @@ const ANY_LETTER = /\p{L}/u;
  */
 export function detectTextDirection(text?: unknown): TextDirection | null {
   if (!text) return null;
-  const plain = splitMathText(text)
-    .filter(part => !part.math)
-    .map(part => part.text)
-    .join(' ');
+  const plain = directionProse(text);
   for (const char of plain) {
     if (!ANY_LETTER.test(char)) continue;
     return RTL_SCRIPTS.test(char) ? 'rtl' : 'ltr';

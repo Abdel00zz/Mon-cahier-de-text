@@ -1,0 +1,84 @@
+/* A single moving surface keeps the two existing modes visually connected. */
+.content-document-tabs {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 4px;
+  border: 1px solid hsl(var(--border) / .8);
+  border-radius: 12px;
+  background: hsl(var(--muted) / .65);
+}
+
+.content-document-tabs::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset-block: 4px;
+  inset-inline-start: 4px;
+  width: calc((100% - 8px) / 2);
+  border: 1px solid hsl(var(--primary) / .24);
+  border-radius: 8px;
+  background: hsl(var(--card));
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .06);
+  transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+}
+
+.content-document-tabs[data-tab='source']::before { transform: translateX(100%); }
+.content-document-tabs[dir='rtl'][data-tab='source']::before { transform: translateX(-100%); }
+
+.content-document-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.content-document-tab[aria-selected='true'] {
+  color: color-mix(in srgb, hsl(var(--primary)) 78%, hsl(var(--foreground)));
+}
+
+@media (hover: hover) {
+  .content-document-tab:hover { color: hsl(var(--foreground)); }
+}
+.content-document-tab:active { transform: scale(.98); }
+.content-document-tab:focus-visible,
+.content-document-panel:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.content-document-panel {
+  min-width: 0;
+  border-radius: 8px;
+  animation: content-document-reveal 180ms ease-out both;
+}
+@keyframes content-document-reveal {
+  from { opacity: .6; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-document-tabs::before,
+  .content-document-tab { transition: none; }
+  .content-document-tab:active { transform: none; }
+  .content-document-panel { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .content-document-tabs::before { border-color: Highlight; }
+  .content-document-tab[aria-selected='true'] { color: Highlight; }
+}

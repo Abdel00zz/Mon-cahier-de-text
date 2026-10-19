@@ -26,9 +26,9 @@ const render = (source: string) => renderToStaticMarkup(
 
 test('un titre de document est centré, une barre par exercice', () => {
   const html = render('# Devoir surveillé 3\n\n## Exercice 1\n\nUne urne contient 10 boules.\n\n## Exercice 2\n\nOn considère les points A et B.');
-  assert.match(html, /<span class="doc-title">Devoir surveillé 3\u00A0:<\/span>/);
-  assert.match(html, /<span class="doc-heading" data-tone="1">Exercice 1\u00A0:<\/span>/);
-  assert.match(html, /<span class="doc-heading" data-tone="2">Exercice 2\u00A0:<\/span>/);
+  assert.match(html, /<span class="doc-title"[^>]*>Devoir surveillé 3\u00A0:<\/span>/);
+  assert.match(html, /<span class="doc-heading"[^>]* data-tone="1">Exercice 1\u00A0:<\/span>/);
+  assert.match(html, /<span class="doc-heading"[^>]* data-tone="2">Exercice 2\u00A0:<\/span>/);
   // Le titre n'est pas un paragraphe : aucun saut de ligne parasite autour.
   assert.equal(/doc-title">[^<]*\n/.test(html), false);
 });
@@ -38,14 +38,14 @@ test('la teinte suit le NUMÉRO de l’exercice, dans toutes les écritures', ()
   // exercice garde donc sa couleur dans l'énoncé comme dans son corrigé.
   for (const [number, tone] of [[1, 1], [2, 2], [3, 3], [4, 4], [5, 1], [8, 4]] as const) {
     const html = render(`## Exercice ${number}\n\nQuestion.`);
-    assert.match(html, new RegExp(`class="doc-heading" data-tone="${tone}">Exercice ${number}`));
+    assert.match(html, new RegExp(`class="doc-heading"[^>]* data-tone="${tone}">Exercice ${number}`));
   }
   // Chiffres arabo-indiens : le numéro reste un numéro.
   assert.match(render('## التمرين ٣\n\nنص.'), /data-tone="3">التمرين ٣/);
   // Sans numéro, la première teinte — jamais une barre sans couleur.
   assert.match(render('## Corrigé\n\nTexte.'), /data-tone="1">Corrigé/);
   // Les trois niveaux de titre se distinguent.
-  assert.match(render('### Partie A\n\nTexte.'), /class="doc-subheading">Partie A<\/span>/);
+  assert.match(render('### Partie A\n\nTexte.'), /class="doc-subheading"[^>]*>Partie A<\/span>/);
 });
 
 test('le barème se pose au bord de la ligne, dans la liste comme dans le texte', () => {
@@ -70,9 +70,9 @@ test('les titres et le barème ne cassent pas la structure existante', () => {
   assert.equal((html.match(/class="editor-item-marker"/g) ?? []).length, 1);
   // Un titre n'est jamais absorbé par l'item précédent.
   const withHeading = render('1. Question.\n\n## Exercice 2\n\nAutre énoncé.');
-  assert.match(withHeading, /doc-heading" data-tone="2"/);
+  assert.match(withHeading, /doc-heading"[^>]* data-tone="2"/);
   // Le texte courant garde ses fins de paragraphe.
-  assert.match(render('Première ligne.\nDeuxième ligne.'), /Première ligne\.\nDeuxième ligne\./);
+  assert.match(render('Première ligne.\nDeuxième ligne.'), /Première ligne\.<\/bdi>\n<bdi dir="ltr">Deuxième ligne\./);
 });
 
 test('la feuille de style porte la mise en page, hors @layer', () => {
@@ -138,13 +138,13 @@ test('les titres principaux sont un peu plus gras et finissent par deux points, 
   const css = readFileSync('src/styles/index.css', 'utf8');
   assert.match(css, /\.devoir-document \.doc-title \{[^}]*font-weight: 700/, 'titre : un peu plus de gras');
   // Ajoutés à l'affichage seulement : espace insécable en français, rien en arabe.
-  assert.match(render('# Fiche de cours'), /<span class="doc-title">Fiche de cours\u00A0:<\/span>/);
-  assert.match(render('# ورقة تمارين'), /<span class="doc-title">ورقة تمارين:<\/span>/);
+  assert.match(render('# Fiche de cours'), /<span class="doc-title"[^>]*>Fiche de cours\u00A0:<\/span>/);
+  assert.match(render('# ورقة تمارين'), /<span class="doc-title"[^>]*>ورقة تمارين:<\/span>/);
   assert.match(render('## Exercice 2'), />Exercice 2\u00A0:<\/span>/);
   // Rien derrière une ponctuation finale ni derrière une formule.
   for (const title of ['Fiche : étude de fonctions :', 'Quelle limite ?', 'Résumé.', 'Étude de $f(x)=x^2$']) {
     assert.doesNotMatch(render(`# ${title}`), /:<\/span>[^]*:<\/span>|\u00A0:<\/span>/, title);
   }
   // Les sous-titres (###) ne reçoivent pas de deux points.
-  assert.match(render('### Remarque'), /<span class="doc-subheading">Remarque<\/span>/);
+  assert.match(render('### Remarque'), /<span class="doc-subheading"[^>]*>Remarque<\/span>/);
 });

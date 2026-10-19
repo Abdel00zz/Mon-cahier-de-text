@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createWebUpdateControl } from '../src/platform/appUpdates';
+import { createWebUpdateControl, readPublishedWebVersion } from '../src/platform/appUpdates';
 import { trustedApkUrl, validateNativeRelease } from '../src/platform/nativeRelease';
 
 const installed = { state: 'manual' as const, source: 'apk' as const, versionCode: 6, signatureSha256: 'a'.repeat(64) };
@@ -73,4 +73,28 @@ test('mise à jour web : un échec de vérification peut être retenté', async 
   const f = fixture({ fail: true });
   await f.control.check(); assert.equal(f.control.getSnapshot(), 'error');
   f.recover(); await f.control.check(); assert.equal(f.control.getSnapshot(), 'downloaded');
+});
+
+test('mise à jour web : un réveil réseau ne remplace pas un rechargement déjà en attente', async () => {
+  const f = fixture();
+  await f.control.check(); f.control.apply();
+  await f.control.check();
+  assert.equal(f.control.getSnapshot(), 'pending');
+  f.control.cancel();
+  assert.equal(f.control.getSnapshot(), 'downloaded');
+  f.activate(); assert.equal(f.reloads(), 0);
+});
+
+test('mise à jour web : le délai couvre un corps de réponse bloqué après les headers', async () => {
+  const fetcher: typeof fetch = async (_input, options) => ({
+    ok: true,
+    json: () => new Promise((_resolve, reject) => {
+      options!.signal!.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+    }),
+  } as Response);
+  await assert.rejects(readPublishedWebVersion(fetcher, 10), { name: 'AbortError' });
+  assert.equal(await readPublishedWebVersion(async (_input, options) => {
+    assert.equal(options?.cache, 'no-store');
+    return Response.json({ version: '1.2.17' });
+  }), '1.2.17');
 });

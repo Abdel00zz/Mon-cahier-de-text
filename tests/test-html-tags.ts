@@ -30,9 +30,16 @@ test('les blocs HTML deviennent des lignes du moteur', () => {
   assert.equal(expandHtmlTags('a<br>b'), 'a\nb');
   assert.equal(expandHtmlTags('a<br/>b'), 'a\nb');
   assert.equal(expandHtmlTags('<p>un</p>'), 'un\n\n');
-  assert.equal(expandHtmlTags('<ul><li>un</li><li>deux</li></ul>'), '\n- un\n- deux\n\n');
-  // Le moteur reconnaît « - » en début de ligne : la liste est donc réelle.
-  assert.match(expandHtmlTags('<li>seul</li>'), /^- seul/m);
+  assert.equal(expandHtmlTags('<ul><li>un</li><li>deux</li></ul>'), '\n\\begin{itemize}\n\\item un\n\\item deux\n\n\\end{itemize}\n');
+  // Une liste HTML emploie le même arbre structurel qu'une liste LaTeX.
+  assert.match(expandHtmlTags('<li>seul</li>'), /^\\item seul/m);
+});
+
+test('HTML : les attributs entre guillemets ne débordent pas dans le contenu', () => {
+  assert.equal(expandHtmlTags('<strong title="A > B" onclick="evil()">texte</strong>'), '**texte**');
+  assert.equal(expandHtmlTags("<mark title='A > B'> mot </mark>"), ' ==mot== ');
+  assert.equal(expandHtmlTags('<b-custom>texte</b-custom>'), '<b-custom>texte</b-custom>');
+  assert.equal(expandHtmlTags('&lt;b&gt;texte&lt;/b&gt;'), '<b>texte</b>');
 });
 
 test('les entités courantes sont rendues en caractères', () => {

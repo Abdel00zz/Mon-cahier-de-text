@@ -45,6 +45,7 @@ const readGroup = (tex: string, start: number): { content: string; end: number }
   if (tex[start] !== '{') return null;
   let depth = 0;
   for (let index = start; index < tex.length; index += 1) {
+    if (tex[index] === '\\') { index += 1; continue; }
     if (tex[index] === '{') depth += 1;
     else if (tex[index] === '}') {
       depth -= 1;
@@ -54,21 +55,25 @@ const readGroup = (tex: string, start: number): { content: string; end: number }
   return null;
 };
 
-/** Étend les commandes de confort d'une formule, sans jamais ré-étendre. */
-const expandComfortMacros = (tex: string): string => {
+/** Étend les arguments imbriqués, sans réinterpréter les remplacements générés. */
+const expandComfortMacros = (tex: string, depth = 0): string => {
+  if (depth >= 32) return tex;
   let out = '';
   for (let index = 0; index < tex.length; index += 1) {
     if (tex[index] !== '\\') {
       out += tex[index];
       continue;
     }
-    const match = /^\\\\([a-zA-Z]+)/.exec(tex.slice(index));
+    if (tex[index + 1] === '\\') { out += '\\\\'; index += 1; continue; }
+    const match = /^\\([a-zA-Z]+)/.exec(tex.slice(index));
     if (!match) {
       out += tex[index];
       continue;
     }
     const name = match[1];
     const after = index + match[0].length;
+    let argumentStart = after;
+    while (/\s/.test(tex[argumentStart] ?? '') && argumentStart < tex.length) argumentStart++;
 
     if (KATEX_SETS[name]) {
       out += KATEX_SETS[name];
@@ -81,13 +86,16 @@ const expandComfortMacros = (tex: string): string => {
     }
 
     if (name === 'ang' || name === 'unit' || name === 'vspace') {
-      const first = readGroup(tex, after);
+      const first = readGroup(tex, argumentStart);
       if (first) {
-        if (name === 'ang') out += `${first.content}^\\circ`;
+        if (name === 'ang') out += `${expandComfortMacros(first.content, depth + 1)}^\\circ`;
         else if (name === 'vspace') out += '';
         else {
-          const second = readGroup(tex, first.end);
-          out += second ? `${first.content}\\,\\text{${second.content}}` : first.content;
+          let secondStart = first.end;
+          while (/\s/.test(tex[secondStart] ?? '') && secondStart < tex.length) secondStart++;
+          const second = readGroup(tex, secondStart);
+          const value = expandComfortMacros(first.content, depth + 1);
+          out += second ? `${value}\\,\\text{${second.content}}` : value;
           index = (second?.end ?? first.end) - 1;
           continue;
         }
@@ -98,9 +106,9 @@ const expandComfortMacros = (tex: string): string => {
 
     const wrapper = WRAPPERS[name];
     if (wrapper) {
-      const group = readGroup(tex, after);
+      const group = readGroup(tex, argumentStart);
       if (group) {
-        out += wrapper(group.content);
+        out += wrapper(expandComfortMacros(group.content, depth + 1));
         index = group.end - 1;
         continue;
       }
@@ -119,6 +127,8 @@ const BASE_OPTIONS = {
   errorColor: '#b91c1c',
   strict: false,
   trust: false,
+  maxExpand: 1000,
+  maxSize: 20,
   // HTML + MathML : les lecteurs d'écran et la copie restent corrects.
   output: 'htmlAndMathml' as const,
 };
@@ -147,14 +157,16 @@ export const renderKatexHtml = (tex: string, displayMode?: boolean): string => {
   const trimmed = tex.trim();
   // Sans indication, c'est le délimiteur qui décide de l'affichage en bloc.
   const display = displayMode ?? (trimmed.startsWith('$$') || trimmed.startsWith('\\['));
-  const value = highlightMathSource(expandComfortMacros(stripMathDelimiters(tex)), display);
-  if (!value) return '';
   try {
+    const value = highlightMathSource(expandComfortMacros(stripMathDelimiters(tex)), display);
+    if (!value) return '';
     return katex.renderToString(value, {
       ...BASE_OPTIONS,
       displayMode: display,
     });
   } catch {
-    return '';
+    // A rendering failure must never silently erase the teacher's formula.
+    const escaped = tex.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<span class="katex-error">${escaped}</span>`;
   }
 };

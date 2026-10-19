@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
@@ -14,6 +14,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { useTextHistory } from '@/hooks/useTextHistory';
 import type { ContentDocument } from '@/types';
+import './contentDocument.css';
 
 /*
  * Document pédagogique rédigé par le professeur : sujet de devoir surveillé,
@@ -65,6 +66,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   onSave,
 }) => {
   const { t, isRtl } = useLocale();
+  const tabsId = useId();
   const [tab, setTab] = useState<'source' | 'preview'>('preview');
   const [source, setSource] = useState('');
   const [showHelp, setShowHelp] = useState(false);
@@ -90,8 +92,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     setConflictOpen(false);
   }, [isOpen, saved, resetHistory]);
 
-  /* Sens du document d'après sa première lettre hors formules : un sujet arabe
-     qui s'ouvre sur « $f(x)=…$ » ou « Exercice 1 » reste de droite à gauche. */
+  /* Première lettre de prose, sans les formules ni les commandes de formatage. */
   const documentDir = textDirectionAttribute(source) ?? (isRtl ? 'rtl' : 'ltr');
   // Un document qui s'ouvre par son propre titre le dit déjà : l'en-tête ne le répète pas.
   const headerTitle = headerTitleFor(sheetTitle, source);
@@ -100,7 +101,9 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   const isTight = length > CONTENT_DOCUMENT_WARN_CHARS;
 
   useEffect(() => {
-    if (isOpen && tab === 'source') textareaRef.current?.focus({ preventScroll: true });
+    if (isOpen && tab === 'source' && !window.document.activeElement?.closest('[role="tablist"]')) {
+      textareaRef.current?.focus({ preventScroll: true });
+    }
   }, [isOpen, tab]);
 
   // L'aperçu n'est composé QUE lorsque son onglet est visible : écrire ne
@@ -144,21 +147,29 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
-        <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-muted/50 p-1">
+        <div role="tablist" aria-label={heading ?? t('documentPreview.heading')}
+          dir={isRtl ? 'rtl' : 'ltr'} data-tab={tab} className="content-document-tabs">
           {(['preview', 'source'] as const).map((value) => {
             const isActive = tab === value;
             return (
               <button
                 key={value}
                 type="button"
+                role="tab"
+                id={`${tabsId}-${value}`}
+                aria-controls={`${tabsId}-panel`}
+                aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => setTab(value)}
-                aria-pressed={isActive}
-                className={cn(
-                  'inline-flex min-h-11 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 motion-reduce:transition-none cursor-pointer',
-                  isActive
-                    ? 'bg-card text-foreground shadow-xs ring-1 ring-border/70'
-                    : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
-                )}
+                onKeyDown={event => {
+                  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                  event.preventDefault();
+                  const next = event.key === 'Home' ? 'preview' : event.key === 'End' ? 'source'
+                    : value === 'preview' ? 'source' : 'preview';
+                  window.document.getElementById(`${tabsId}-${next}`)?.focus();
+                  setTab(next);
+                }}
+                className="content-document-tab"
               >
                 {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
               </button>
@@ -166,6 +177,8 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           })}
         </div>
 
+        <div key={tab} id={`${tabsId}-panel`} role="tabpanel" className="content-document-panel"
+          aria-labelledby={`${tabsId}-${tab}`} tabIndex={tab === 'preview' ? 0 : -1}>
         {tab === 'source' ? (
           <div className="space-y-2.5">
             <Textarea
@@ -174,8 +187,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               onChange={(event) => setSource(event.target.value)}
               onKeyDown={history.onKeyDown}
               rows={12}
-              /* Le sens est celui de CHAQUE ligne (première lettre de la ligne) : effacer le haut du texte ne retourne
-                 plus les autres lignes. Un champ vide suit la langue de l'interface. */
+              /* Source uses native per-paragraph bidi; preview excludes syntax when detecting prose. */
               dir={source.trim() ? 'auto' : (isRtl ? 'rtl' : 'ltr')}
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
@@ -240,6 +252,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         )}
+        </div>
 
         <div className="document-editor-actions sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur-sm">
           <div className="flex items-center">

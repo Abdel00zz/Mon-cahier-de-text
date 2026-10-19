@@ -73,7 +73,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                     {page ? (
                         <div dir={textDirectionAttribute(source) ?? 'ltr'}>
                             <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} />
-                            <div className="devoir-document mx-auto max-w-[56rem]" dir="auto">{page}</div>
+                            <div className="devoir-document mx-auto max-w-[56rem]" dir={textDirectionAttribute(source)}>{page}</div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3 py-10 text-center">

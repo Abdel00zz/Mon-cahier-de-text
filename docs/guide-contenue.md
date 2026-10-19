@@ -110,7 +110,7 @@ pouvez donc coller un document écrit en HTML sans le réécrire.
 | `<mark>` | surlignage |
 | `<br>`, `<br/>` | retour à la ligne |
 | `<p>…</p>` | paragraphe (respiration entre deux blocs) |
-| `<ul>`, `<ol>`, `<li>` | liste ; chaque `<li>` devient un item |
+| `<ul>`, `<ol>`, `<li>` | liste à puces ou numérotée ; chaque `<li>` devient un item, avec conservation des listes imbriquées |
 | `<div>` | conteneur transparent |
 
 Entités reconnues : `&nbsp;` `&amp;` `&lt;` `&gt;` `&quot;` `&times;` `&middot;` `&hellip;`.

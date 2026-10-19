@@ -24,15 +24,25 @@ export interface WebUpdateEnvironment {
 
 declare const __APP_VERSION__: string;
 
+/** Bound the complete response, including its body, on slow mobile networks. */
+export async function readPublishedWebVersion(fetcher: typeof fetch = fetch, timeoutMs = 8_000): Promise<string | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetcher('/version.json', { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) return null;
+        const payload: unknown = await response.json();
+        if (controller.signal.aborted) throw new DOMException('Version request timed out', 'AbortError');
+        const version = payload && typeof payload === 'object' ? (payload as { version?: unknown }).version : null;
+        return typeof version === 'string' && version.trim() ? version.trim() : null;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
 const browserEnvironment = (): WebUpdateEnvironment => ({
     online: () => isNetworkOnline(),
-    publishedVersion: async () => {
-        const response = await fetch('/version.json', { cache: 'no-store' });
-        if (!response.ok) return null;
-        const payload: unknown = await response.json().catch(() => null);
-        const version = payload && typeof payload === 'object' ? (payload as { version?: unknown }).version : null;
-        return typeof version === 'string' && version ? version : null;
-    },
+    publishedVersion: () => readPublishedWebVersion(),
     currentVersion: () => (typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0'),
     reload: () => window.location.reload(),
     schedule: action => startSafePwaAction(action),
@@ -54,6 +64,8 @@ export function createWebUpdateControl(environment: WebUpdateEnvironment = brows
         subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
         check(): Promise<void> {
             if (inFlight) return inFlight;
+            // A focus/network event must not overwrite a queued reload's state.
+            if (state === 'pending' || state === 'applying') return Promise.resolve();
             if (!environment.online()) { set('offline'); return Promise.resolve(); }
             set('checking');
             inFlight = environment.publishedVersion()

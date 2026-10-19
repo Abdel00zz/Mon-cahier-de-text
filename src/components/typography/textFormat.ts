@@ -5,6 +5,7 @@ import { renderKatexHtml } from '../../config/katex';
 import { toDisplayText } from '../../lib/text/textValue';
 import { findHighlightClose, findHighlightOpen } from '../../lib/text/highlightMarkers';
 import { nestHandTypedLists } from '../../lib/text/handLists';
+import { textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
  * Moteur de mise en page des descriptions, hors segments mathématiques :
@@ -332,11 +333,13 @@ const LATEX_TEXT_COMMANDS: ReadonlyArray<readonly [RegExp, string]> = [
 
 function expandLatexTextCommands(source: string): string {
   let out = source;
-  // Trois passes couvrent les imbrications usuelles (\textbf{\emph{…}}).
-  for (let pass = 0; pass < 3; pass += 1) {
+  // Stop as soon as stable; cap malformed/deep nesting without losing the source.
+  for (let pass = 0; pass < 32; pass += 1) {
+    const previous = out;
     for (const [pattern, replacement] of LATEX_TEXT_COMMANDS) {
       out = out.replace(pattern, replacement);
     }
+    if (out === previous) break;
   }
   out = out
     // Fins de ligne (\\ ou \\[2mm]) et paragraphes.
@@ -613,10 +616,11 @@ function baremeNode(value: string, key: string): React.ReactNode {
  */
 function renderLine(text: string, baremes: string[], key: string): React.ReactNode[] {
   const body = applyInlineFormatting(text, `${key}-text`);
-  if (baremes.length === 0) return body;
+  const dir = textDirectionAttribute(text);
+  if (baremes.length === 0) return dir ? [React.createElement('bdi', { key, dir }, ...body)] : body;
   return [React.createElement(
     'span',
-    { key, className: 'doc-line' },
+    { key, className: 'doc-line', dir },
     React.createElement('span', { key: `${key}-body`, className: 'doc-line__text' }, ...body),
     ...baremes.map((value, position) => baremeNode(value, `${key}-b${position}`))
   )];
@@ -646,6 +650,7 @@ function renderHeading(level: number, text: string, key: string): React.ReactNod
     {
       key,
       className,
+      dir: textDirectionAttribute(text),
       ...(level === 2 ? { 'data-tone': String(headingTone(text)) } : {}),
     },
     ...applyInlineFormatting(level <= 2 ? text.trimEnd() + titleColon(text) : text, `${key}-text`)

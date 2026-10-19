@@ -73,3 +73,14 @@ test('préchargement : l’annulation retire la tâche planifiée', () => {
   cancel();
   assert.deepEqual(harness.cancelled, [1]);
 });
+
+test('préchargement : une déconnexion ou économie de données survenue pendant l’attente annule les téléchargements', () => {
+  for (const change of [{ online: false }, { visible: false }, { saveData: true }, { effectiveType: '2g' }]) {
+    const harness = environment();
+    const { loaded, load } = recorder();
+    startIdlePrefetch({ environment: harness.value, load });
+    Object.assign(harness.value, change);
+    harness.scheduled[0]();
+    assert.deepEqual(loaded, []);
+  }
+});

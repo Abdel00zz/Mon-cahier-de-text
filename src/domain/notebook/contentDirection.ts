@@ -1,5 +1,6 @@
 import type { AppLocale, ContentDirection } from '../../types.js';
-import { toDisplayText } from '../../lib/text/textValue.js';
+import { detectTextDirection } from '../../lib/text/textDirection.js';
+import { directionProse } from '../../lib/text/directionProse.js';
 
 export interface ContentDirectionDetection {
   direction: ContentDirection;
@@ -9,19 +10,12 @@ export interface ContentDirectionDetection {
   detected: boolean;
 }
 
-const ARABIC_CHARACTER = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
+const ARABIC_CHARACTER = /\p{Script=Arabic}/u;
 const LATIN_CHARACTER = /[A-Za-zÀ-ÖØ-öø-ÿ]/u;
 
 /** Direction d’un intitulé : ignorer nombres et formules, puis lire la première lettre. */
 export const titleDirection = (input: unknown, fallback: ContentDirection = 'ltr'): ContentDirection => {
-  const text = toDisplayText(input);
-  const prose = text.replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g, '');
-  for (const character of prose) {
-    if (!/\p{Letter}/u.test(character)) continue;
-    if (/\p{Script=Arabic}/u.test(character)) return 'rtl';
-    if (LATIN_CHARACTER.test(character)) return 'ltr';
-  }
-  return fallback;
+  return detectTextDirection(input) ?? fallback;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -100,7 +94,8 @@ export const detectContentDirection = (
   let firstStrongDirection: ContentDirection | undefined;
 
   for (const text of texts) {
-    for (const character of Array.from(text)) {
+    for (const character of directionProse(text)) {
+      if (!/\p{L}/u.test(character)) continue;
       if (ARABIC_CHARACTER.test(character)) {
         arabicCount += 1;
         firstStrongDirection ??= 'rtl';

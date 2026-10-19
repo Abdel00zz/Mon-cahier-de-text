@@ -30,31 +30,29 @@ const ENTITIES: ReadonlyArray<readonly [RegExp, string]> = [
   [/&hellip;/gi, '…'],
 ];
 
-/** Traductions : chaque entrée est [balise ouvrante, balise fermante]. */
-const PAIRS: ReadonlyArray<readonly [RegExp, string, RegExp, string]> = [
-  [/<strong\b[^>]*>/gi, '**', /<\/strong\s*>/gi, '**'],
-  [/<b\b[^>]*>/gi, '**', /<\/b\s*>/gi, '**'],
-  [/<em\b[^>]*>/gi, '*', /<\/em\s*>/gi, '*'],
-  [/<i\b[^>]*>/gi, '*', /<\/i\s*>/gi, '*'],
-  [/<u\b[^>]*>/gi, '++', /<\/u\s*>/gi, '++'],
-  [/<mark\b[^>]*>/gi, '==', /<\/mark\s*>/gi, '=='],
-];
+/** A quoted `>` belongs to an attribute, never to the end of the tag.
+ * Only the existing allowlist is translated; all attributes are discarded. */
+const HTML_TAG = /<\/?([a-z][a-z0-9]*)(?=[\s/>])(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi;
+const INLINE_TAGS: Readonly<Record<string, string>> = {
+  strong: '**', b: '**', em: '*', i: '*', u: '++', mark: '==',
+};
 
-/** Sauts et blocs : un paragraphe devient une respiration, une puce une ligne. */
-const BLOCKS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/<br\s*\/?>/gi, '\n'],
-  [/<\/p\s*>/gi, '\n\n'],
-  [/<p\b[^>]*>/gi, ''],
-  [/<\/div\s*>/gi, '\n'],
-  [/<div\b[^>]*>/gi, ''],
-  [/<\/?(?:ul|ol)\b[^>]*>/gi, '\n'],
-  [/<li\b[^>]*>/gi, '- '],
-  [/<\/li\s*>/gi, '\n'],
-];
+function translateTag(tag: string, rawName: string): string {
+  const name = rawName.toLowerCase();
+  const close = tag.startsWith('</');
+  if (Object.hasOwn(INLINE_TAGS, name)) return INLINE_TAGS[name];
+  if (name === 'br') return '\n';
+  if (name === 'p') return close ? '\n\n' : '';
+  if (name === 'div') return close ? '\n' : '';
+  // Reuse the structural list parser: ordered and nested HTML lists must not
+  // collapse into a flat list of bullets. Works across protected math fragments.
+  if (name === 'ul' || name === 'ol') return `\n\\${close ? 'end' : 'begin'}{${name === 'ol' ? 'enumerate' : 'itemize'}}\n`;
+  if (name === 'li') return close ? '\n' : '\\item ';
+  return tag;
+}
 
 /**
- * Traduit les balises reconnues. Idempotent sur un texte déjà converti (une
- * chaîne sans chevron ressort identique), et sans effet sur les formules
+ * Traduit les balises reconnues. Sans effet sur les formules
  * mathématiques : l'appelant ne lui présente que les segments NON mathématiques.
  */
 export function expandHtmlTags(source: string): string {
@@ -62,19 +60,14 @@ export function expandHtmlTags(source: string): string {
   // c'est le cas de la quasi-totalité des descriptions déjà enregistrées.
   if (!source || (!source.includes('<') && !source.includes('&'))) return source;
   // `<mark> texte </mark>` : les espaces de bord restent dehors, un `==` doit toucher le texte qu'il entoure.
-  let out = source.replace(/<mark\b[^>]*>([^<]*)<\/mark\s*>/gi, (_match, inner: string) => {
+  let out = source.replace(/<mark(?=[\s/>])(?:[^"'<>]|"[^"]*"|'[^']*')*>([^<]*)<\/mark\s*>/gi, (_match, inner: string) => {
     const core = inner.trim();
     return core ? `${inner.slice(0, inner.indexOf(core))}==${core}==${inner.slice(inner.indexOf(core) + core.length)}` : inner;
   });
-  for (const [open, openReplacement, close, closeReplacement] of PAIRS) {
-    out = out.replace(open, openReplacement).replace(close, closeReplacement);
-  }
-  for (const [pattern, replacement] of BLOCKS) {
-    out = out.replace(pattern, replacement);
-  }
+  out = out.replace(HTML_TAG, translateTag);
   for (const [pattern, replacement] of ENTITIES) {
     out = out.replace(pattern, replacement);
   }
-  // Trois sauts de suite au maximum : un document collé en contient souvent cinq.
+  // Deux sauts de suite au maximum : un document collé en contient souvent cinq.
   return out.replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n');
 }

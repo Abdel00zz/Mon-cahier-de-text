@@ -1106,7 +1106,7 @@ test('math et listes : formule et texte restent ensemble dans la puce', () => {
   const html = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(source)));
   assert.ok(html.includes('Calculer <span class="math-text">'), 'La formule suit le texte');
   assert.equal((html.match(/class="katex"/g) ?? []).length, 2, 'Les deux formules sont composées par KaTeX');
-  assert.match(html, /puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
+  assert.match(html, /puis <strong[^>]*>conclure<\/strong>\.<\/bdi><\/span>/);
   assert.ok(!html.includes('<em>'));
 });
 
@@ -1330,7 +1330,7 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   // 11. Une formule EN LIGNE ne supprime pas le retour à la ligne du texte :
   //     seule une formule display occupe sa propre ligne.
   const inlineKeepsBreak = render('Voir $x$ ici\nPuis la suite.');
-  assert.ok(inlineKeepsBreak.includes('Voir ') && inlineKeepsBreak.includes(' ici\nPuis la suite.'), 'Le saut de ligne du texte doit rester');
+  assert.ok(inlineKeepsBreak.includes('Voir ') && inlineKeepsBreak.includes(' ici</bdi>\n<bdi dir="ltr">Puis la suite.'), 'Le saut de ligne du texte doit rester');
 
   // 12. Numérotation arabo-indienne (`١.`) : reconnue comme une liste, donc le
   //     texte replié reste aligné sous le texte et non au début de la ligne.

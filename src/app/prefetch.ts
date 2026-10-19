@@ -47,10 +47,10 @@ const browserEnvironment = (): PrefetchEnvironment => {
         cancelIdleCallback?: (handle: number) => void;
     };
     return {
-        online: isNetworkOnline(),
-        saveData: connection?.saveData === true,
-        effectiveType: connection?.effectiveType ?? '',
-        visible: document.visibilityState === 'visible',
+        get online() { return isNetworkOnline(); },
+        get saveData() { return connection?.saveData === true; },
+        get effectiveType() { return connection?.effectiveType ?? ''; },
+        get visible() { return document.visibilityState === 'visible' && document.documentElement.dataset.nativeActive !== 'false'; },
         // `requestIdleCallback` et `cancelIdleCallback` exigent que `this` soit
         // `window` : appelées détachées, elles lèvent « Illegal invocation »
         // (contrairement à setTimeout, qui tolère un appel direct).
@@ -80,7 +80,8 @@ export const startIdlePrefetch = (options: PrefetchOptions = {}): (() => void) =
         ? ['dashboard', ...PREFETCH_ORDER.filter(target => target !== 'dashboard')]
         : [...PREFETCH_ORDER];
     const handle = environment.requestIdle(() => {
-        if (!environment.visible) return;
+        // Conditions can change between scheduling and the idle callback.
+        if (!environment.visible || !environment.online || environment.saveData || /^(?:slow-)?2g$/.test(environment.effectiveType)) return;
         for (const target of order) void load(target);
     });
     return () => environment.cancelIdle(handle);

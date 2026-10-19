@@ -19,6 +19,14 @@ const render = (source: string) => renderToStaticMarkup(
   React.createElement(React.Fragment, null, ...renderDescriptionWithBold(source)),
 );
 
+test('document bilingue : chaque ligne et chaque titre conserve son sens, formules exclues', () => {
+  const html = render('# ملخص\n\n## Exercice 1\n\n$\\frac{a}{b}$ احسب النتيجة.\nCalculer la limite.');
+  assert.match(html, /class="doc-title" dir="rtl"/);
+  assert.match(html, /class="doc-heading" dir="ltr"/);
+  assert.match(html, /<bdi dir="rtl"><span class="math-text">/);
+  assert.match(html, /<bdi dir="ltr">Calculer la limite\.<\/bdi>/);
+});
+
 test('les balises acceptées composent vraiment (gras, liste, formule)', () => {
   const bold = render('<b>Théorème</b>');
   assert.match(bold, /<strong>Théorème<\/strong>/, 'le gras HTML devient du gras composé');
@@ -30,6 +38,15 @@ test('les balises acceptées composent vraiment (gras, liste, formule)', () => {
   const math = render('Soit $\\frac{a}{b}$ avec $b\\ne0$.');
   assert.ok(math.includes('class="katex"'), 'la formule est composée par KaTeX');
   assert.doesNotMatch(math, /\$\\frac/, 'aucun TeX brut à l’écran');
+});
+
+test('HTML : numérotation et imbrication sont conservées autour des formules', () => {
+  const html = render('<ol><li>Calculer $x^2$.<ul><li>Justifier.</li></ul></li><li>Conclure.</li></ol>');
+  assert.equal((html.match(/editor-item-marker/g) ?? []).length, 3);
+  assert.match(html, /editor-item-marker">1\./);
+  assert.match(html, /editor-item-marker">2\./);
+  assert.match(html, /class="katex"/);
+  assert.doesNotMatch(html, /\\begin|\\item|&lt;li/);
 });
 
 test('un document ne peut pas exécuter de code', () => {
