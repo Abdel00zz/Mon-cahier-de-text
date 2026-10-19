@@ -17,7 +17,7 @@
   --class-rule-step: 28px;
   --class-rule-ink: hsl(var(--foreground) / .025);
   --class-hole-offset: 12px;
-  --class-radius: 16px;
+  --class-radius: 18px;
   --class-title-scale: 1;
   --class-badge-scale: 1;
   --spring-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -36,7 +36,7 @@
   color: var(--class-ink);
   font-family: var(--font-samsung, var(--font-class-sheet));
   font-synthesis: weight;
-  box-shadow: 0 4px 14px hsl(var(--foreground) / 0.04);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--class-accent) 12%, transparent), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
   transition: transform 240ms var(--spring-out);
 }
 
@@ -46,37 +46,50 @@
   inset: 0;
   overflow: hidden;
   border: 1px solid var(--class-border, var(--class-accent));
-  border-inline-end: 5px solid var(--class-accent);
+  border-inline-end: 4px solid var(--class-accent);
   border-radius: inherit;
   background: var(--class-surface, var(--class-paper));
   pointer-events: none;
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
   transition:
     border-inline-end-width 240ms var(--spring-bounce),
     border-color 300ms ease,
     background-color 300ms ease;
 }
 
-/* Perforations authentiques révélant le canevas en arrière-plan */
-@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
-  .class-card__sheet {
-    -webkit-mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 40%, transparent 0);
-    -webkit-mask-size: 100% 100%, 15px var(--class-rule-step);
-    -webkit-mask-position: 0 0, var(--class-hole-offset) 8px;
-    -webkit-mask-repeat: no-repeat, repeat-y;
-    -webkit-mask-composite: xor;
-    mask-image: linear-gradient(#000 0 0), radial-gradient(circle, #000 40%, transparent 0);
-    mask-size: 100% 100%, 15px var(--class-rule-step);
-    mask-position: 0 0, var(--class-hole-offset) 8px;
-    mask-repeat: no-repeat, repeat-y;
-    mask-composite: exclude;
-  }
-  .class-card[dir="rtl"] .class-card__sheet {
-    -webkit-mask-position: 0 0, calc(100% - var(--class-hole-offset)) 8px;
-    mask-position: 0 0, calc(100% - var(--class-hole-offset)) 8px;
-  }
+/* Cercles de marge modernes, doux, sans contour, aux teintes harmonisées avec la carte */
+.class-card__sheet::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle 4.25px at center,
+    color-mix(in srgb, var(--class-accent) 24%, var(--class-surface)) 0 4.25px,
+    transparent 5px
+  );
+  background-size: 14px var(--class-rule-step);
+  background-position: left var(--class-hole-offset) top 8px;
+  background-repeat: repeat-y;
+  opacity: 0.92;
+  transition: opacity 240ms ease;
 }
 
-/* Quiet notebook ruling: the resting paper stays neutral across class colours. */
+.class-card[dir="rtl"] .class-card__sheet::after {
+  background-position: right var(--class-hole-offset) top 8px;
+}
+
+.dark .class-card__sheet::after {
+  background-image: radial-gradient(
+    circle 4.25px at center,
+    color-mix(in srgb, var(--class-accent) 26%, var(--class-surface)) 0 4.25px,
+    transparent 5px
+  );
+  opacity: 0.95;
+}
+
+/* Lignes de carnet douces et harmonieuses */
 .class-card__sheet::before {
   content: '';
   position: absolute;
@@ -84,6 +97,7 @@
   background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--class-rule-step) - 1px), var(--class-rule-ink) calc(var(--class-rule-step) - 1px) var(--class-rule-step));
   background-position: 0 10px;
   pointer-events: none;
+  opacity: 0.7;
 }
 
 .class-card__open {
@@ -115,8 +129,8 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding-block: 16px;
-  padding-inline: 40px 16px;
+  padding-block: 18px;
+  padding-inline: 36px 18px;
   gap: 8px;
 }
 
@@ -256,7 +270,7 @@
   align-items: center;
   gap: 10px;
   min-height: 36px;
-  margin-inline: 40px 16px;
+  margin-inline: 36px 18px;
   padding-block: 6px 10px;
   color: var(--class-muted);
 }
@@ -434,34 +448,34 @@
 
 @container (max-width: 240px) {
   .class-card { min-height: 154px; --class-radius: 14px; }
-  .class-card__body { padding-block: 12px; padding-inline: 34px 12px; }
+  .class-card__body { padding-block: 12px; padding-inline: 28px 12px; }
   .class-card__header { gap: 4px; }
   .class-card__title { --class-title-max: 16px; }
-  .class-card__footer { margin-inline: 34px 12px; }
+  .class-card__footer { margin-inline: 28px 12px; }
 }
 
 @container (min-width: 300px) {
   .class-card { min-height: 180px; }
-  .class-card__body { padding-block: 16px 15px; padding-inline: 44px 18px; }
+  .class-card__body { padding-block: 16px 15px; padding-inline: 38px 18px; }
   .class-card__title { --class-title-max: 20px; }
   .class-card__tier { font-size: calc(.82em * var(--class-badge-scale)); }
-  .class-card__footer { margin-inline: 44px 18px; min-height: 38px; }
+  .class-card__footer { margin-inline: 38px 18px; min-height: 38px; }
 }
 
 @container (min-width: 420px) {
-  .class-card { min-height: 208px; --class-radius: 18px; --class-rule-step: 32px; --class-hole-offset: 18px; }
-  .class-card__body { padding-block: 22px 24px; padding-inline: 54px 24px; }
+  .class-card { min-height: 208px; --class-radius: 18px; --class-rule-step: 32px; }
+  .class-card__body { padding-block: 22px 24px; padding-inline: 44px 22px; }
   .class-card__identity { flex: 1; align-items: center; padding-block-start: 0; }
   .class-card__title { --class-title-max: 24px; }
   .class-card__tier { font-size: calc(14px * var(--class-badge-scale)); padding: 3px 10px; }
-  .class-card__footer { margin-inline: 54px 24px; min-height: 40px; }
+  .class-card__footer { margin-inline: 44px 22px; min-height: 40px; }
 }
 
 @container (min-width: 520px) {
   .class-card { min-height: 224px; --class-radius: 20px; }
-  .class-card__body { padding-inline: 60px 32px; }
+  .class-card__body { padding-inline: 48px 26px; }
   .class-card__title { --class-title-max: 26px; }
-  .class-card__footer { margin-inline: 60px 32px; }
+  .class-card__footer { margin-inline: 48px 26px; }
 }
 
 /* Version APK (Android / native) et téléphone : +5% de taille sur le nom de classe */
