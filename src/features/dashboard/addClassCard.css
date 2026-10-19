@@ -35,13 +35,15 @@
   display: none !important;
 }
 
-/* Mode sombre verre liquide */
+/* Mode sombre verre fumé (Glassmorphism) */
 .dark .class-card--create .class-card__sheet {
-  background: var(--class-paper);
-  border: 1.5px solid color-mix(in srgb, hsl(var(--primary) / 0.45) 40%, hsl(var(--border) / 0.8));
-  border-inline-end: 1.5px solid color-mix(in srgb, hsl(var(--primary) / 0.55) 40%, hsl(var(--border) / 0.8));
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    inset 0 1px 0.5px 0 hsl(0 0% 100% / 0.22),
+    inset 0 1px 0.5px 0 hsl(0 0% 100% / 0.15),
     inset 0 -1px 1px 0 hsl(0 0% 0% / 0.3),
     0 10px 30px -10px hsl(var(--background) / 0.28);
 }

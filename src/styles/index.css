@@ -87,15 +87,15 @@
      Arabe        : Arabswell 3 pour la lecture, Maghribi Font 3 pour les
      titres. Les deux polices arabes sont embarquées dans public/ : une
      seule paire par langue, aucun choix exposé au professeur. */
-  --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'One UI Sans App VF', 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-latin-body: 'Inter', 'Readex Pro', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'One UI Sans App VF', 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   /* Feuille de devoir : la fonte de composition LaTeX d'abord (Latin Modern
      Sans), sa remplaçante libre ensuite. Les deux ne portent que le latin (voir
      `fonts.css`) : l'arabe du document retombe donc seul sur la fonte arabe du
      carnet, sans règle de langue. */
   --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
-  --font-latin-display: 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif;
-  --font-arabic-body: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-arabic-display: 'SamsungOne Arabic', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'Maghribi Font 3', sans-serif;
+  --font-latin-display: 'Readex Pro', 'Inter', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif;
+  --font-arabic-body: 'Amiri', 'Readex Pro', 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic-display: 'Aref Ruqaa', 'Maghribi Font 3', 'SamsungOne Arabic', 'Samsung Sharp Sans', 'Amiri', serif;
   --font-lato: 'SamsungOne', 'Samsung Sans', 'Lato', 'DM Sans', system-ui, sans-serif;
   --font-sans: var(--font-latin-body);
   --font-display: var(--font-latin-display);
@@ -757,8 +757,10 @@ html[lang="ar"] .modal-header h2,
 
 
   .dark .glass-card {
-    background: hsl(var(--card) / 0.72);
-    border: 1px solid hsl(var(--border) / 0.85);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   
@@ -1488,8 +1490,8 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 .dark [data-app-sidebar] {
   background:
-    linear-gradient(180deg, #222325 0%, #1a1b1d 60%, #151617 100%);
-  border-inline-end: 1px solid rgba(255, 255, 255, 0.07);
+    linear-gradient(180deg, #18171d 0%, #131217 60%, #0e0d12 100%);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 30px -10px rgba(0, 0, 0, 0.65);
 }
 .dark[dir='rtl'] [data-app-sidebar] {
@@ -1504,8 +1506,8 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 .dark [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
 .dark [data-app-sidebar] .workspace-nav-active {
-  background: #2a2b2e;
-  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, rgba(255, 255, 255, 0.15));
   box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1519,9 +1521,11 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
   backdrop-filter: blur(12px);
 }
 .dark .mobile-tab-bar {
-  background: hsl(var(--card) / .97);
-  border-color: hsl(var(--foreground) / .14);
-  box-shadow: 0 8px 24px -10px rgb(0 0 0 / .45), inset 0 1px 0 rgb(236 235 224 / .05);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px -10px rgb(0 0 0 / .45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* ── Fin de la feuille : aucune couleur hors palette ─────────────────── */

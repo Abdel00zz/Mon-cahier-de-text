@@ -1,6 +1,24 @@
-/* One local variable file per family; no external stylesheet or font request. */
+/* One local variable file per family; offline fallbacks preserved. */
 :root {
-  --font-class-sheet: 'Special Elite', 'SamsungOne Arabic', system-ui, sans-serif;
+  --font-class-sheet: 'Readex Pro', 'Inter', 'Special Elite', 'SamsungOne Arabic', system-ui, sans-serif;
+}
+@font-face {
+  font-family: 'Aref Ruqaa';
+  src: local('Aref Ruqaa'), local('ArefRuqaa'), local('ArefRuqaa-Regular'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
+  font-style: normal; font-weight: 400 700; font-display: swap;
+}
+@font-face {
+  font-family: 'Amiri';
+  src: local('Amiri'), local('Amiri-Regular'),
+       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
+  font-style: normal; font-weight: 400 700; font-display: swap;
+}
+@font-face {
+  font-family: 'Readex Pro';
+  src: local('Readex Pro'), local('ReadexPro'), local('ReadexPro-Regular'),
+       url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2');
+  font-style: normal; font-weight: 300 700; font-display: swap;
 }
 @font-face {
   font-family: 'Outfit';

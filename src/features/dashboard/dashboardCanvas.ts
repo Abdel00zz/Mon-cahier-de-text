@@ -6,7 +6,7 @@ import { hueOf } from '@/domain/classes/classColors';
 /** Neutral shell fallback while the classes are loading. */
 export const DASHBOARD_CANVAS_STYLE = Object.freeze({
     '--canvas-base': 'hsl(var(--background))',
-    '--canvas-base-dark': 'hsl(var(--background))',
+    '--canvas-base-dark': '#0e0d12',
 } as CSSProperties);
 
 interface HarmonicColorPoint {
@@ -178,7 +178,7 @@ export function computeDynamicCanvasStyle(
     const palette = computeHarmonicCanvasPalette(classes, activeSessionClassIds);
     return {
         '--canvas-base': 'hsl(var(--background))',
-        '--canvas-base-dark': 'hsl(var(--background))',
+        '--canvas-base-dark': '#0e0d12',
         '--canvas-zenith-hue': `${palette.zenith.hue.toFixed(1)}`,
         '--canvas-zenith-sat': `${palette.zenith.sat.toFixed(1)}%`,
         '--canvas-nadir-hue': `${palette.nadir.hue.toFixed(1)}`,

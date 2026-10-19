@@ -10,8 +10,8 @@
   --class-accent: var(--keep-accent, #754c04);
   --class-vivid: var(--keep-vivid, #f59e0b);
   --class-border: color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border)));
-  --class-ink: hsl(var(--foreground));
-  --class-muted: hsl(var(--muted-foreground));
+  --class-ink: var(--class-accent, hsl(var(--foreground)));
+  --class-muted: color-mix(in srgb, var(--class-ink) 72%, transparent);
   --class-paper: hsl(42 46% 96%);
   --class-pill-bg: color-mix(in srgb, var(--class-vivid) 13%, var(--class-paper));
   --class-rule-step: 28px;
@@ -45,10 +45,10 @@
   z-index: 0;
   inset: 0;
   overflow: hidden;
-  border: 1px solid var(--class-accent);
+  border: 1px solid var(--class-border, var(--class-accent));
   border-inline-end: 5px solid var(--class-accent);
   border-radius: inherit;
-  background: var(--class-paper);
+  background: var(--class-surface, var(--class-paper));
   pointer-events: none;
   transition:
     border-inline-end-width 240ms var(--spring-bounce),
@@ -139,7 +139,8 @@
   border-radius: 6px;
   background: var(--class-pill-bg);
   color: var(--class-accent);
-  font-family: var(--font-class-sheet);
+  font-family: 'Readex Pro', 'Inter', var(--font-class-sheet);
+  font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(.76em * var(--class-badge-scale));
   font-weight: 400;
   letter-spacing: 0.1px;
@@ -233,7 +234,7 @@
   padding: 0;
   color: var(--class-ink);
   opacity: 1;
-  font-family: inherit;
+  font-family: 'Readex Pro', 'Inter', inherit;
   font-size: inherit;
   font-weight: inherit;
   font-style: normal;
@@ -390,9 +391,9 @@
 /* Palette de tons optimisée façon Google Pixel Material You */
 .class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e3f5ec; --class-border: #b3e2cb; --class-accent: #1d5c3f; --class-vivid: #10b981; }
 .class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eef6d4; --class-border: #d0e698; --class-accent: #3f5e15; --class-vivid: #84cc16; }
-.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e2f1fc; --class-border: #b3daf7; --class-accent: #165682; --class-vivid: #38bdf8; }
-.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf2d4; --class-border: #f6dc9a; --class-accent: #784d06; --class-vivid: #f59e0b; }
-.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f3e5f9; --class-border: #e0c0ed; --class-accent: #682a80; --class-vivid: #c084fc; }
+.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #c2f0ff; --class-border: #9ee0f7; --class-accent: #0f3554; --class-vivid: #38bdf8; }
+.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #ffd56b; --class-border: #f2c759; --class-accent: #5c3a00; --class-vivid: #f59e0b; }
+.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #feedfe; --class-border: #eecfee; --class-accent: #4a184e; --class-vivid: #c084fc; }
 .class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #e8eafa; --class-border: #c6cbf2; --class-accent: #3b4285; --class-vivid: #6366f1; }
 .class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #ffe5d8; --class-border: #fdc3a9; --class-accent: #8c3814; --class-vivid: #f97316; }
 .class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fce3ea; --class-border: #f6bccb; --class-accent: #881e3f; --class-vivid: #f43f5e; }
@@ -421,8 +422,14 @@
 
 .dark .class-card {
   --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
+  --class-ink: hsl(var(--foreground));
+  --class-muted: hsl(var(--muted-foreground));
   --class-rule-ink: hsl(var(--foreground) / .055);
   box-shadow: 0 4px 12px hsl(var(--background) / 0.28);
+}
+
+.dark .class-card__sheet {
+  background: var(--class-paper);
 }
 
 @container (max-width: 240px) {

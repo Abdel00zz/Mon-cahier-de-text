@@ -41,12 +41,16 @@
 .dark [data-dashboard-root],
 .dark .keep-dashboard-canvas,
 .dark .keep-futuristic-surface {
-    background-color: var(--canvas-base-dark, hsl(var(--background)));
+    background-color: var(--canvas-base-dark, #0e0d12);
     --canvas-dot-lightness: 78%;
     --canvas-dot-alpha: 0.085;
     --canvas-dot-subtle-alpha: 0.03;
     --canvas-dot-micro-alpha: 0.038;
     background-image:
+        /* Halos lumineux diffus (glows) qui rappellent subtilement les couleurs pastel des cartes */
+        radial-gradient(circle 600px at 15% 10%, hsl(var(--canvas-zenith-hue, 204) 75% 65% / 0.045), transparent 70%),
+        radial-gradient(circle 500px at 85% 35%, hsl(var(--canvas-horizon-hue, 43) 75% 65% / 0.04), transparent 70%),
+        radial-gradient(circle 550px at 50% 85%, hsl(var(--canvas-nadir-hue, 276) 70% 65% / 0.035), transparent 70%),
         radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.1px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.5px, transparent 1.6px),
         radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px);
 }
