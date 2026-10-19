@@ -3,6 +3,44 @@
   --font-class-sheet: 'Readex Pro', 'Inter', 'Special Elite', 'SamsungOne Arabic', system-ui, sans-serif;
 }
 @font-face {
+  font-family: 'KOMission Black';
+  src: local('KOMission Black'),
+       local('KOMission-Black'),
+       url('/fonts/KOMission-Black.otf') format('opentype'),
+       url('/KOMission-Black.otf') format('opentype'),
+       url('/fonts/KOMission-Black.ttf') format('truetype'),
+       url('/KOMission-Black.ttf') format('truetype');
+  font-style: normal; font-weight: 400 900; font-display: swap;
+}
+@font-face {
+  font-family: 'KOMission';
+  src: local('KOMission Black'),
+       local('KOMission-Black'),
+       url('/fonts/KOMission-Black.otf') format('opentype'),
+       url('/KOMission-Black.otf') format('opentype'),
+       url('/fonts/KOMission-Black.ttf') format('truetype'),
+       url('/KOMission-Black.ttf') format('truetype');
+  font-style: normal; font-weight: 400 900; font-display: swap;
+}
+@font-face {
+  font-family: 'Elgharib Hayyakum Allah';
+  src: local('Elgharib- Hayyakum Allah-Taweel Medium'),
+       local('Elgharib-Hayyakum-Allah-Taweel-Medium'),
+       local('Elgharib-'),
+       url('/fonts/Elgharib-Hayyakum-Allah-Taweel-Medium.ttf') format('truetype'),
+       url('/Elgharib-Hayyakum-Allah-Taweel-Medium.ttf') format('truetype');
+  font-style: normal; font-weight: 300 700; font-display: swap;
+}
+@font-face {
+  font-family: 'Elgharib';
+  src: local('Elgharib- Hayyakum Allah-Taweel Medium'),
+       local('Elgharib-Hayyakum-Allah-Taweel-Medium'),
+       local('Elgharib-'),
+       url('/fonts/Elgharib-Hayyakum-Allah-Taweel-Medium.ttf') format('truetype'),
+       url('/Elgharib-Hayyakum-Allah-Taweel-Medium.ttf') format('truetype');
+  font-style: normal; font-weight: 300 700; font-display: swap;
+}
+@font-face {
   font-family: 'Aref Ruqaa';
   src: local('Aref Ruqaa'), local('ArefRuqaa'), local('ArefRuqaa-Regular'),
        url('/fonts/SamsungOneArabic-400.ttf') format('truetype');

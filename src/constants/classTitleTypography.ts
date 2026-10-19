@@ -26,10 +26,10 @@ type TitleScript = 'latin' | 'arabic';
 /** Rôle du titre, du plus discret au plus affirmé. */
 export type TitleFontRole = 'card' | 'list' | 'page';
 
-/** Readex Pro / Inter pour les caractères latins géométriques ; Aref Ruqaa pour la calligraphie arabe des titres. */
+/** Readex Pro / Inter pour les caractères latins géométriques ; KOMission Black pour les titres arabes. */
 const TITLE_FAMILIES: Record<TitleScript, string> = {
     latin: "'Readex Pro', 'Inter', 'Samsung Sharp Sans', 'Outfit', system-ui, sans-serif",
-    arabic: "'Aref Ruqaa', 'Maghribi Font 3', 'SamsungOne Arabic', 'Amiri', serif",
+    arabic: "'KOMission Black', 'KOMission', 'Aref Ruqaa', 'Elgharib Hayyakum Allah', 'Maghribi Font 3', 'SamsungOne Arabic', 'Amiri', serif",
 };
 
 /** Graisse par rôle, sans gras synthétique en arabe. */

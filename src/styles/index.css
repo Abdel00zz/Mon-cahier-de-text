@@ -94,8 +94,8 @@
      carnet, sans règle de langue. */
   --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
   --font-latin-display: 'Readex Pro', 'Inter', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif;
-  --font-arabic-body: 'Amiri', 'Readex Pro', 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-arabic-display: 'Aref Ruqaa', 'Maghribi Font 3', 'SamsungOne Arabic', 'Samsung Sharp Sans', 'Amiri', serif;
+  --font-arabic-body: 'Elgharib Hayyakum Allah', 'Elgharib', 'Amiri', 'Readex Pro', 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic-display: 'KOMission Black', 'KOMission', 'Aref Ruqaa', 'Maghribi Font 3', 'SamsungOne Arabic', 'Samsung Sharp Sans', 'Amiri', serif;
   --font-lato: 'SamsungOne', 'Samsung Sans', 'Lato', 'DM Sans', system-ui, sans-serif;
   --font-sans: var(--font-latin-body);
   --font-display: var(--font-latin-display);
