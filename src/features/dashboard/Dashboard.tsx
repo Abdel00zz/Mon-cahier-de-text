@@ -372,7 +372,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <h1
                                 id="classes-heading"
                                 style={dashboardTitleStyle(locale)}
-                                className="dashboard-heading__title text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
+                                className="dashboard-heading__title text-lg sm:text-xl md:text-2xl lg:text-3xl text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
                             >
                                 {t('dashboard.classes')}
                                 <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>

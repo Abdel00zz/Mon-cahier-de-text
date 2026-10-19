@@ -1497,6 +1497,11 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 .dark[dir='rtl'] [data-app-sidebar] {
   box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 30px -10px rgba(0, 0, 0, 0.65);
 }
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-app-sidebar] {
+    --sidebar-radius: 16px;
+  }
+}
 [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
 [data-app-sidebar] [aria-current='page'] :is(svg, .workspace-nav-label) { color: inherit; }
 [data-app-sidebar] .workspace-nav-active {

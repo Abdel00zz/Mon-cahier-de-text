@@ -72,7 +72,15 @@ const FRENCH_DASHBOARD_TITLE: CSSProperties = Object.freeze({
     letterSpacing: '0',
 });
 
-/** The French dashboard heading follows the course-sheet typography. */
+const ARABIC_DASHBOARD_TITLE: CSSProperties = Object.freeze({
+    fontFamily: "'Elgharib Hayyakum Allah', 'Elgharib', 'Aref Ruqaa', 'Readex Pro', 'Amiri', serif",
+    fontWeight: 400,
+    letterSpacing: '0',
+});
+
+/** The dashboard heading follows a slender, elegant typography. */
 export function dashboardTitleStyle(locale: AppLocale): CSSProperties {
-    return locale === 'fr' ? FRENCH_DASHBOARD_TITLE : classTitleStyle(locale === 'ar', 'page');
+    if (locale === 'fr') return FRENCH_DASHBOARD_TITLE;
+    if (locale === 'ar') return ARABIC_DASHBOARD_TITLE;
+    return classTitleStyle(false, 'page');
 }
