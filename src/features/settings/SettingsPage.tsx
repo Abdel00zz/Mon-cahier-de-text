@@ -17,6 +17,8 @@ interface SettingsPageProps {
     onConfigChange: (config: Partial<AppConfig>) => void;
     classes: ClassInfo[];
     addClass: (details: ClassDraft) => ClassInfo;
+    asPage?: boolean;
+    initialSection?: 'emploi';
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
@@ -27,6 +29,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     onConfigChange: updateConfig,
     classes,
     addClass,
+    asPage = true,
+    initialSection,
 }) => {
     const { t } = useLocale();
     const [isImportOpen, setImportOpen] = useState(false);
@@ -34,13 +38,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     const closeTimerRef = useRef<number | null>(null);
 
     const requestClose = useCallback((afterClose?: () => void) => {
+        if (asPage) {
+            onBack();
+            afterClose?.();
+            return;
+        }
         if (!isSheetOpen) return;
         setSheetOpen(false);
         closeTimerRef.current = window.setTimeout(() => {
             onBack();
             afterClose?.();
         }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
-    }, [isSheetOpen, onBack]);
+    }, [asPage, isSheetOpen, onBack]);
 
     useEffect(() => () => {
         if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
@@ -79,6 +88,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         <>
             <ConfigModal
                 isOpen={isSheetOpen}
+                asPage={asPage}
+                initialSection={initialSection}
                 onClose={requestClose}
                 onOpenGuide={() => requestClose(onOpenGuide)}
                 config={config}

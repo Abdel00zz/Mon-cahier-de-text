@@ -370,6 +370,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             <div className="ev-row__id min-w-0">
               <button
                 type="button"
+                dir="auto"
                 onClick={() => openEditAssessment(a)}
                 className="-ms-1 inline-flex max-w-full cursor-pointer items-center truncate rounded-md px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground transition-colors hover:bg-primary/8 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
               >
@@ -424,7 +425,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   type="button"
                   onClick={() => setDocumentFor({ kind: 'assessment', link })}
                   className="ev-action shrink-0"
-                  data-filled={docIndicator === 'attached' ? 'ok' : 'missing'}
+                  data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                   data-doc-state={docIndicator}
                   data-tippy-content={docTooltip}
                   aria-label={`${t('evaluations.doc.title', { activity: displayName })}${docStateSuffix}`}
@@ -483,7 +484,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     : `${t('evaluations.action.dueDate')} — ${displayName}`}
                 >
                   <ActionIcon name="deadline" />
-                  <span className={dueDateISO ? 'ev-action__date' : undefined}>{dueDateISO ? <bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi> : t('evaluations.action.dueDate')}</span>
+                  <span>{t('evaluations.action.dueDate')}</span>
+                  {dueDateISO && <span className="ev-action__date"><bdi dir="ltr">{formatSingleDate(dueDateISO)}</bdi></span>}
                 </button>
               )}
 
@@ -511,7 +513,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         data-tone={kindStyle.tone}
       >
         <div className="ev-row__id min-w-0">
-          <span className="-ms-1 inline-flex max-w-full items-center truncate px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground">{correctionName}</span>
+          <span dir="auto" className="-ms-1 inline-flex max-w-full items-center truncate px-1.5 py-0.5 text-start text-[13px] font-bold text-foreground">{correctionName}</span>
         </div>
         <div className="ev-row__date">
           <button
@@ -536,7 +538,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               type="button"
               onClick={() => setDocumentFor({ kind: 'assessment', link, part: 'correction' })}
               className="ev-action shrink-0"
-              data-filled={correctionIndicator === 'attached' ? 'ok' : 'missing'}
+              data-filled={correctionIndicator === 'attached' ? 'ok' : correctionIndicator === 'missing' ? 'missing' : undefined}
               data-doc-state={correctionIndicator}
               data-tippy-content={correctionTooltip}
               aria-label={`${t('evaluations.doc.title', { activity: correctionName })}${correctionIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : ''}`}
@@ -576,7 +578,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   });
 
   return (
-    <div className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
+    <div lang={locale} className="evaluation-workspace space-y-4 font-sans sm:space-y-5">
       {conflicts.dialog}
       <div className="evaluation-class-meta flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2.5">

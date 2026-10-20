@@ -92,7 +92,7 @@ export function ModalBottomSheet({
   ambient = true,
   magneticSnap = true,
 }: ModalBottomSheetProps) {
-  const { isRtl, t } = useLocale();
+  const { isRtl, t, locale } = useLocale();
   const haptics = useModalHaptics();
   const effectiveDir = dir ?? (isRtl ? 'rtl' : 'ltr');
   const effectiveIsRtl = effectiveDir === 'rtl';
@@ -224,6 +224,7 @@ export function ModalBottomSheet({
         <DialogPrimitive.Content
           ref={contentRef}
           dir={effectiveDir}
+          lang={locale}
           {...(!description ? { 'aria-describedby': undefined } : {})}
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',

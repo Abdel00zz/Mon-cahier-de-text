@@ -5,12 +5,12 @@ import type { AppLocale } from '@/types';
  *  SOURCE UNIQUE de la typographie des titres de classe.
  *
  *  Pour changer la police des titres, tout se passe ici :
- *    1. `TITLE_FAMILIES` — la pile de caractères par écriture ;
+ *    1. `styles/typography.css` — la famille par langue ;
  *    2. `TITLE_RECIPES`  — la graisse et l'interlettrage par rôle.
  *
  *  Après un changement de famille, mettre à jour le CHARGEMENT de la police :
  *    • latin  : les polices locales dans `styles/fonts.css` ;
- *    • arabe  : le fichier dans `public/` + son `@font-face` dans `index.css`.
+ *    • arabe  : le fichier dans `public/` + son `@font-face` dans `fonts.css`.
  *
  *  Les composants (`ClassCard`, `ClassListItem`, `Dashboard`) n'écrivent JAMAIS
  *  de famille, de graisse ni d'interlettrage de titre : ils appellent
@@ -26,12 +26,6 @@ type TitleScript = 'latin' | 'arabic';
 /** Rôle du titre, du plus discret au plus affirmé. */
 export type TitleFontRole = 'card' | 'list' | 'page';
 
-/** Readex Pro / Inter pour les caractères latins géométriques ; KOMission Black pour les titres arabes. */
-const TITLE_FAMILIES: Record<TitleScript, string> = {
-    latin: "'Readex Pro', 'Inter', 'Samsung Sharp Sans', 'Outfit', system-ui, sans-serif",
-    arabic: "'KOMission Black', 'KOMission', 'Aref Ruqaa', 'Elgharib Hayyakum Allah', 'Maghribi Font 3', 'SamsungOne Arabic', 'Amiri', serif",
-};
-
 /** Graisse par rôle, sans gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
@@ -44,12 +38,12 @@ const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number;
     },
     page: {
         latin: { weight: 600, tracking: '-0.024em' },
-        arabic: { weight: 700, tracking: '0.015em' },
+        arabic: { weight: 700, tracking: '0' },
     },
 };
 
 const buildStyle = (script: TitleScript, role: TitleFontRole): CSSProperties => Object.freeze({
-    fontFamily: script === 'latin' && role !== 'page' ? 'var(--font-class-sheet)' : TITLE_FAMILIES[script],
+    fontFamily: 'var(--font-display)',
     fontWeight: TITLE_RECIPES[role][script].weight,
     letterSpacing: TITLE_RECIPES[role][script].tracking,
 });
@@ -67,18 +61,18 @@ export function classTitleStyle(isRtl: boolean, role: TitleFontRole = 'card'): C
 }
 
 const FRENCH_DASHBOARD_TITLE: CSSProperties = Object.freeze({
-    fontFamily: 'var(--font-class-sheet)',
+    fontFamily: 'var(--font-display)',
     fontWeight: 400,
     letterSpacing: '0',
 });
 
 const ARABIC_DASHBOARD_TITLE: CSSProperties = Object.freeze({
-    fontFamily: "'Elgharib Hayyakum Allah', 'Elgharib', 'Aref Ruqaa', 'Readex Pro', 'Amiri', serif",
+    fontFamily: 'var(--font-display)',
     fontWeight: 400,
     letterSpacing: '0',
 });
 
-/** The dashboard heading follows a slender, elegant typography. */
+/** Même rôle de titre pour le tableau de bord et les cartes, par langue. */
 export function dashboardTitleStyle(locale: AppLocale): CSSProperties {
     if (locale === 'fr') return FRENCH_DASHBOARD_TITLE;
     if (locale === 'ar') return ARABIC_DASHBOARD_TITLE;

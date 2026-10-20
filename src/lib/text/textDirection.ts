@@ -1,4 +1,4 @@
-import { directionProse } from './directionProse';
+import { directionProse } from './directionProse.js';
 
 /** Direction d'écriture déduite d'un texte : `rtl` (arabe, hébreu…), `ltr`, ou
  *  `null` quand rien ne permet de trancher (texte vide, chiffres seuls). */

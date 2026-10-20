@@ -1,0 +1,283 @@
+.assistant-anchor {
+  --assistant-safe-top: env(safe-area-inset-top, 0px);
+  --assistant-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --assistant-safe-left: env(safe-area-inset-left, 0px);
+  --assistant-safe-right: env(safe-area-inset-right, 0px);
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  text-align: start;
+  font-family: var(--font-sans);
+}
+
+.assistant-trigger {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 180ms ease-out, transform 180ms cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.assistant-trigger[aria-expanded='true'] {
+  background: var(--control-wash);
+}
+
+@media (hover: hover) and (pointer: fine) { .assistant-trigger:hover { background: var(--control-wash); } }
+
+/* The button is the only hit target; nested shadow-DOM gestures cannot steal taps. */
+.assistant-trigger > .bloub-avatar { pointer-events: none; }
+
+.assistant-trigger:active {
+  transform: scale(.95);
+}
+
+/* Badge compteur d'attention immédiat sur le déclencheur */
+.assistant-trigger__badge {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-end: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--card));
+  font-family: var(--font-secondary, sans-serif);
+  font-size: .57rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+  animation: assistant-badge-pop 200ms cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.assistant-anchor[dir="rtl"] .assistant-trigger__badge {
+  inset-inline-end: auto;
+  inset-inline-start: 1px;
+}
+
+.assistant-trigger__badge--alert {
+  background: #dc2626;
+}
+
+.assistant-trigger__badge--minor {
+  background: #a95309;
+}
+
+.assistant-trigger__badge--serene {
+  background: #16a34a;
+}
+
+/* Zone popover fluide, compacte et serrée (Cohérente avec le bot et l'interface) */
+.assistant-panel {
+  position: absolute;
+  z-index: 80;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-end: auto;
+  width: min(290px, calc(100vw - 28px));
+  max-height: min(400px, calc(100svh - 130px));
+  max-height: min(400px, calc(100dvh - 130px - env(safe-area-inset-bottom, 0px)));
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px;
+  border: 1px solid hsl(var(--border) / 0.85);
+  border-radius: 14px 4px 14px 14px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: 0 12px 32px -12px rgb(55 43 32 / .18), 0 2px 6px rgb(55 43 32 / .04);
+  transform-origin: top right;
+  animation: assistant-message-in 200ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.assistant-anchor[dir="rtl"] .assistant-panel {
+  border-radius: 4px 14px 14px 14px;
+  transform-origin: top left;
+  text-align: right;
+}
+
+.assistant-panel[hidden] {
+  display: none;
+}
+
+.assistant-panel__heading {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.assistant-panel__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.assistant-panel__title {
+  margin: 0;
+  font-family: var(--font-sans, sans-serif);
+  font-size: .92rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: hsl(var(--foreground));
+  overflow-wrap: anywhere;
+}
+
+.assistant-panel__title-action {
+  display: block;
+  font-family: var(--font-secondary, sans-serif);
+  font-size: .75rem;
+  font-weight: var(--font-secondary-weight, 400);
+  color: hsl(var(--muted-foreground));
+}
+
+.assistant-panel__title-subject {
+  display: block;
+  margin-block-start: 3px;
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.assistant-panel__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -2px -2px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.assistant-anchor[dir="rtl"] .assistant-panel__close {
+  margin: -2px 0 0 -2px;
+}
+
+.assistant-panel__close:hover {
+  background: hsl(var(--muted) / 80%);
+  color: hsl(var(--foreground));
+}
+
+.assistant-panel .assistant-panel__detail {
+  margin: 6px 0 10px;
+  font-family: var(--font-sans, sans-serif);
+  font-size: .84rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+  overflow-wrap: anywhere;
+}
+
+/* Bouton d'action compact, cohérent avec l'esthétique du robot avatar */
+.assistant-panel__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #725b47;
+  color: #faf7f2;
+  font-family: var(--font-sans, sans-serif);
+  font-size: .84rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .08);
+  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1), background-color 180ms ease;
+}
+
+.assistant-panel__action:hover {
+  background: #806852;
+}
+
+.assistant-panel__action:active {
+  transform: scale(0.97);
+}
+
+.dark .assistant-panel__action {
+  background: #d8c5b4;
+  color: #302921;
+}
+
+.dark .assistant-panel__action:hover {
+  background: #e1d0c0;
+}
+
+.assistant-trigger:focus-visible,
+.assistant-panel:focus-visible,
+.assistant-panel button:focus-visible {
+  outline: 2px solid var(--control-ink);
+  outline-offset: 3px;
+}
+
+@keyframes assistant-message-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes assistant-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-panel, .assistant-trigger__badge { animation: none; }
+  .assistant-trigger, .assistant-panel__action, .assistant-panel__close { transition: none; transform: none; }
+}
+
+@media (max-width: 480px) {
+  .assistant-panel {
+    padding: 14px;
+    width: min(320px, calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  }
+}
+
+@media print {
+  .assistant-anchor { display: none; }
+}
+
+@media (forced-colors: active) {
+  .assistant-panel { border-color: CanvasText; }
+  .assistant-panel__action { color: ButtonText; border-color: ButtonText; }
+}
+
+.assistant-panel[data-placement="above"] { transform-origin: bottom right; border-radius: 14px 14px 4px 14px; }
+.assistant-anchor[dir="rtl"] .assistant-panel[data-placement="above"] { transform-origin: bottom left; border-radius: 14px 14px 14px 4px; }
+@media (pointer: coarse) {
+  .assistant-panel { width: min(320px, calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); }
+  .assistant-panel__title { line-height: 1.5; }
+}

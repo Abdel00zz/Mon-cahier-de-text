@@ -1,0 +1,59 @@
+/* Politique commune à toute l'application. Les composants choisissent un rôle,
+   jamais une famille locale : titres, interface, sous-titres ou contenu. */
+:root {
+  --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Latin Modern Sans', 'Inter';
+  --font-latin-display: 'Roboto Slab', 'Samsung Sharp Sans', 'Latin Modern Sans';
+  --font-latin-reading: 'Latin Modern Sans', 'SamsungOne', 'Inter';
+  --font-arabic-body: 'Elgharib Hayyakum Allah', 'SamsungOne Arabic';
+  --font-arabic-display: 'KOMission Black', 'SamsungOne Arabic';
+  --font-arabic-secondary: 'Elgharib Hayyakum Allah Light', 'SamsungOne Arabic';
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --content-font-latin: var(--font-latin-reading);
+  --content-font-arabic: var(--font-arabic-body);
+  --ui-font-ar: var(--font-arabic-body);
+  --ui-font-latin: var(--font-latin-body);
+}
+
+/* Recalculer les alias sur chaque frontière de langue empêche une fenêtre
+   française de conserver les alias hérités d'un parent arabe, et inversement. */
+:root, :where([lang]) {
+  --font-sans: var(--font-latin-body), var(--font-arabic-body), system-ui, sans-serif;
+  --font-display: var(--font-latin-display), var(--font-arabic-display), serif;
+  --font-secondary: var(--font-sans);
+  --font-secondary-weight: 400;
+  --font-content: var(--font-latin-reading), var(--font-arabic-body), sans-serif;
+}
+
+:root:lang(ar), :where([lang|='ar' i]) {
+  --font-sans: var(--font-arabic-body), var(--font-latin-body), sans-serif;
+  --font-display: var(--font-arabic-display), var(--font-latin-display), serif;
+  --font-secondary: var(--font-arabic-secondary), var(--font-latin-body), sans-serif;
+  --font-secondary-weight: 300;
+  --font-content: var(--font-arabic-body), var(--font-latin-reading), sans-serif;
+}
+
+/* Alias historiques partagés par les cartes et les utilitaires existants. */
+:root, :where([lang]) {
+  --font-class-sheet: var(--font-display);
+  --font-samsung: var(--font-sans);
+  --font-samsung-display: var(--font-display);
+  --font-lato: var(--font-sans);
+  --font-french-body: var(--font-latin-body);
+  --font-french-display: var(--font-latin-display);
+  --font-serif: var(--font-display);
+  --font-maghribi: var(--font-display);
+  --font-maghribi-ar: var(--font-arabic-display);
+  --font-arabswell: var(--font-arabic-body);
+}
+
+@layer base {
+  body, [lang] { font-family: var(--font-sans); }
+  :where(h1, h2, h3, h4, h5, h6, [data-ui-title]) { font-family: var(--font-display); }
+  :where(button, input, select, textarea, optgroup, [role='button'], [role='menuitem']) {
+    font-family: var(--font-sans);
+  }
+  table { font-family: var(--font-content); }
+  :where(label, legend, th, th button, .form-hint, [data-description], [data-slot='description'], [data-slot='badge'], .tone-chip) {
+    font-family: var(--font-secondary);
+  }
+}

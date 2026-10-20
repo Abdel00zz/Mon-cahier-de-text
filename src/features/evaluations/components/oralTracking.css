@@ -1,7 +1,7 @@
 /* Oral review follows the supplied compact form; all touch targets remain 44px. */
 .tracking-dialog:has([data-review-mode='oral']),
 .choice-content--oral {
-  font-family: 'Inter', 'SamsungOne Arabic', system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 .tracking-dialog:has([data-review-mode='oral']) {
   max-width: 768px;
@@ -13,7 +13,8 @@
   border-bottom: 1px solid hsl(var(--border) / .7);
   background: hsl(var(--card));
 }
-.tracking-dialog:has([data-review-mode='oral']) .header-titles { font-family: 'Inter', 'SamsungOne Arabic', system-ui, sans-serif; }
+.tracking-dialog:has([data-review-mode='oral']) .header-titles { font-family: var(--font-display); }
+.tracking-dialog:has([data-review-mode='oral']) .header-titles > p { font-family: var(--eval-font-secondary, var(--font-sans)); }
 .tracking-dialog:has([data-review-mode='oral']) .header-titles > span { font-size: 18px; font-weight: 700; }
 .tracking-dialog:has([data-review-mode='oral']) .header-titles > p { font-size: 12px; font-weight: 500; }
 .evaluation-modal .notebook-tracker[data-review-mode='oral'] {

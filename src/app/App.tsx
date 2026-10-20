@@ -34,15 +34,15 @@ import { computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('../features/editor/Editor').then(module => ({ default: module.Editor })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const GuidePage = lazy(() => import('../features/guide/GuidePage').then(module => ({ default: module.GuidePage })));
 const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
-const GuideModal = lazy(() => import('../features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
 
 const App: React.FC = () => {
   const { isPhone } = useDevice();
   const [isClassActivitiesOpen, setClassActivitiesOpen] = useState(false);
-  const [isGuideOpen, setGuideOpen] = useState(false);
+  const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | undefined>();
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
     try {
@@ -94,7 +94,17 @@ const App: React.FC = () => {
     markCurrentSessionHandled(session.scope, session.key);
   }, []);
   const { view, activeClass, backgroundRoute, initialView, handleSelectClass, handleBackToDashboard,
-    handleOpenSettings, handleBackFromSettings, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor);
+    handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor);
+  useEffect(() => {
+    setAssistantSettingsSection(undefined);
+  }, [authOwner]);
+  useEffect(() => {
+    if (view !== 'settings') setAssistantSettingsSection(undefined);
+  }, [view]);
+  const handleOpenSchedule = useCallback(() => {
+    setAssistantSettingsSection('emploi');
+    handleOpenSettings();
+  }, [handleOpenSettings]);
   /*
    * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
    * clic sur la carte, ouverture automatique, lien profond d'une notification
@@ -189,12 +199,35 @@ const App: React.FC = () => {
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
+    if (view === 'settings') {
+      return (
+        <SettingsPage
+          asPage
+          initialSection={assistantSettingsSection}
+          onBack={handleBackFromSettings}
+          onOpenGuide={handleOpenHelp}
+          config={config}
+          onConfigChange={updateConfig}
+          classes={classes}
+          addClass={addClass}
+        />
+      );
+    }
+    if (view === 'help') {
+      return (
+        <GuidePage
+          onBack={handleBackFromHelp}
+          onClose={handleBackFromHelp}
+        />
+      );
+    }
     if (backgroundView === 'editor' && backgroundClass) {
       // Le Web propose un retour visible ; Android utilise son bouton système.
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
     }
     return (
       <Dashboard
+        onOpenSchedule={handleOpenSchedule}
         onSelectClass={handleSelectClass}
         onEvaluationVisibilityChange={setClassActivitiesOpen}
         activeSessionClassIds={currentSession.classIds}
@@ -204,12 +237,12 @@ const App: React.FC = () => {
     );
   };
 
-  const routeKey = backgroundView === 'editor' && backgroundClass
-    ? `editor-${backgroundClass.id}`
-    : backgroundView;
+  const routeKey = view === 'editor' && activeClass
+    ? `editor-${activeClass.id}`
+    : view;
   const routeFallback = <PageTransitionLoader />;
 
-  const activeTab: TabType = view === 'settings' ? 'settings' : 'dashboard';
+  const activeTab: TabType = view === 'settings' ? 'settings' : view === 'help' ? 'help' : 'dashboard';
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (tab === 'dashboard') {
@@ -220,20 +253,20 @@ const App: React.FC = () => {
     } else if (tab === 'settings') {
       handleOpenSettings();
     } else if (tab === 'help') {
-      setGuideOpen(true);
+      handleOpenHelp();
     }
-  }, [view, handleBackToDashboard, handleOpenSettings]);
+  }, [view, handleBackToDashboard, handleOpenSettings, handleOpenHelp]);
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
 
   // Une classe ajoutée pendant la préparation ne termine pas le parcours.
   const shouldBootOnboarding =
-    backgroundView === 'dashboard' &&
+    view === 'dashboard' &&
     !hasCompletedOnboarding(config, authUser);
   const isCurrentlyOnboarding =
     isOnboardingVisible || shouldBootOnboarding;
 
-  const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
+  const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   // Ouvre une séance non ambiguë une seule fois. Le créneau est réclamé avant
@@ -245,7 +278,6 @@ const App: React.FC = () => {
       isBooting ||
       isCurrentlyOnboarding ||
       isClassActivitiesOpen ||
-      isGuideOpen ||
       currentSession.classIds.length !== 1 ||
       !currentSession.key ||
       document.querySelector('[role="dialog"]')
@@ -256,7 +288,7 @@ const App: React.FC = () => {
 
     if (!claimCurrentSessionAutoOpen(authOwner ?? 'local', currentSession.key)) return;
     handleSelectClass(classInfo);
-  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isClassActivitiesOpen, isGuideOpen, view]);
+  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isClassActivitiesOpen, view]);
 
   const dynamicCanvasStyle = useMemo(() => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
@@ -266,9 +298,9 @@ const App: React.FC = () => {
     <div
       className="workspace-shell relative min-h-dvh overflow-x-clip text-foreground bg-background"
       data-phone-navigation={isPhone ? 'true' : 'false'}
-      style={backgroundView === 'dashboard' ? dynamicCanvasStyle : undefined}
+      style={view === 'dashboard' ? dynamicCanvasStyle : undefined}
       /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
-      data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
+      data-dashboard-surface={view === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
     >
       {showNavigation && (
         <TabBar
@@ -286,7 +318,7 @@ const App: React.FC = () => {
         />
       )}
       <div
-        data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
+        data-settings-sheet-open="false"
         data-workspace-navigation={showNavigation ? 'true' : 'false'}
         data-sidebar-expanded={isSidebarExpanded ? 'true' : 'false'}
         dir={isRtl ? 'rtl' : 'ltr'}
@@ -300,18 +332,6 @@ const App: React.FC = () => {
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>
-      {view === 'settings' && !isAuthView && !isBooting && (
-        <Suspense fallback={<PageTransitionLoader overlay />}>
-          <SettingsPage
-            onBack={handleBackFromSettings}
-            onOpenGuide={() => setGuideOpen(true)}
-            config={config}
-            onConfigChange={updateConfig}
-            classes={classes}
-            addClass={addClass}
-          />
-        </Suspense>
-      )}
     </div>
   );
 
@@ -326,11 +346,6 @@ const App: React.FC = () => {
         </Suspense>
 
 
-        <DeferredMount active={isGuideOpen}>
-          <Suspense fallback={null}>
-            <GuideModal isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} />
-          </Suspense>
-        </DeferredMount>
 
         <DeferredMount active={isCommandPaletteOpen}>
           <Suspense fallback={null}>
@@ -347,7 +362,7 @@ const App: React.FC = () => {
                 setCommandPaletteOpen(false);
               }}
               onOpenGuide={() => {
-                setGuideOpen(true);
+                handleOpenHelp();
                 setCommandPaletteOpen(false);
               }}
               isDarkMode={config.theme === 'dark'}

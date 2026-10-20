@@ -1,4 +1,6 @@
 .dashboard-actions-bar {
+  position: relative;
+  z-index: 30;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -9,18 +11,15 @@
   direction: ltr;
 }
 
-[dir="rtl"] .dashboard-actions-bar,
-html[dir="rtl"] .dashboard-actions-bar,
-html[lang="ar"] .dashboard-actions-bar {
-  justify-content: flex-start;
+.dashboard-actions-bar[dir="rtl"] {
+  direction: rtl;
+  justify-content: flex-end;
   margin-block-start: -8px;
-  margin-inline-start: -6px;
+  margin-inline-start: 0;
 }
 
 @media (max-width: 639px) {
-  [dir="rtl"] .dashboard-actions-bar,
-  html[dir="rtl"] .dashboard-actions-bar,
-  html[lang="ar"] .dashboard-actions-bar {
+  .dashboard-actions-bar[dir="rtl"] {
     margin-block-start: -10px;
   }
 }

@@ -1,0 +1,12 @@
+/* Les rôles typographiques sont indépendants de la mise en page.
+   :lang() suit la langue du panneau, y compris dans un portail ou une vue embarquée. */
+:where(.evaluation-modal, .evaluation-workspace) {
+  --eval-font-row: var(--font-content);
+  --eval-font-secondary: var(--font-secondary);
+  --eval-secondary-weight: var(--font-secondary-weight);
+  font-family: var(--font-sans);
+}
+
+.evaluation-modal .modal-header [data-ui-title] {
+  font-family: var(--font-display);
+}

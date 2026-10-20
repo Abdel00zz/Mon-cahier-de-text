@@ -28,6 +28,8 @@ import { computeDynamicCanvasStyle } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { computeClassSessionSchedule, type SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
+import { ClassAssistant } from '@/features/assistant/ClassAssistant';
+import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
 
 const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
 
@@ -37,9 +39,11 @@ interface DashboardProps {
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
+    onOpenSchedule?: () => void;
 }
 
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
+const readAssistantLessons = (classId: string) => readStoredNotebook(classId).lessonsData;
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
@@ -47,6 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
+    onOpenSchedule,
 }) => {
     const { locale, t } = useLocale();
     const reduceMotion = useReducedMotion();
@@ -74,6 +79,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = hasCompletedOnboarding(config, accountUser);
+    const preferredClassId = activeSessionClassIds.length === 1 ? activeSessionClassIds[0] : undefined;
 
     // Si le cloud sait que l'accueil est terminé (config.hasCompletedWelcome) mais que
     // le profil Redis/Local ne l'est pas (vieux compte), on répare l'état Redis.
@@ -92,6 +98,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // Les cartes ne sont révélées qu'avec leur cycle et leur disposition réels,
     // ce qui évite un flash dans le mauvais filtre ou le mauvais nombre de colonnes.
     const isLoading = isClassesLoading || isConfigLoading || isCycleLoading || isDisplayModeLoading;
+
 
     useEffect(() => {
         if (isConfigLoading) return;
@@ -367,14 +374,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}
                             showDisplayModes={classes.length > 0}
-                        />
+                        >
+                          <ClassAssistant
+                            locale={locale}
+                            classes={classes}
+                            config={config}
+                            preferredClassId={preferredClassId}
+                            activeSessionClassIds={activeSessionClassIds}
+                            readLessons={readAssistantLessons}
+                            onCreateClass={() => setCreateModalOpen(true)}
+                            onOpenSchedule={onOpenSchedule}
+                            onOpenClass={openNotebook}
+                          />
+                        </DashboardActions>
                         {classes.length > 0 && (
                             <h1
                                 id="classes-heading"
+                                tabIndex={-1}
                                 style={dashboardTitleStyle(locale)}
-                                className="dashboard-heading__title text-lg sm:text-xl md:text-2xl lg:text-3xl text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
+                                className="dashboard-heading__title flex items-center gap-2 sm:gap-2.5 text-lg sm:text-xl md:text-2xl lg:text-3xl text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
                             >
-                                {t('dashboard.classes')}
+                                <span>{t('dashboard.classes')}</span>
                                 <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
                             </h1>
                         )}
@@ -386,7 +406,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
 
                                         <div className="max-w-md space-y-1.5 px-2">
-                                            <h3 id="classes-heading" className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
+                                            <h3 id="classes-heading" tabIndex={-1} className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
                                             <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">

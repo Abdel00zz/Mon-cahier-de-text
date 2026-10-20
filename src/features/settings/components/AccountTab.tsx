@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSync } from '@/contexts/SyncContext';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { teacherDisplayName } from '@/domain/classes/teacherIdentity';
-import { RefreshCw, TriangleAlert, CircleCheck, Clock, CircleAlert, LogOut } from '@/components/ui/icons';
+import { RefreshCw, TriangleAlert, CircleCheck, Clock, CircleAlert, LogOut, User } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -76,7 +76,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
   const StatusIcon = status.icon;
 
   return (
-    <SettingsSection title={t('account.title')}>
+    <SettingsSection title={t('account.title')} icon={User}>
       {user && (
         <SettingsRow
           label={teacherDisplayName(config.defaultTeacherName, user)}

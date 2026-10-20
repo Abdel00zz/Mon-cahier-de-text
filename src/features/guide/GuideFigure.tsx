@@ -33,8 +33,11 @@ export function GuideFigure({ image, lang }: { image: NonNullable<GuideChapter['
         width={width} height={height}
         loading="lazy" decoding="async" onError={() => setFailed(true)} />
     </button>}</div>
-    <figcaption><strong>{image.caption}</strong><span>{isAr
-      ? (zoomed ? 'اسحب للتفاصيل · اضغط للتصغير' : 'لقطة حقيقية من التطبيق · بيانات توضيحية · اضغط للتكبير')
-      : (zoomed ? 'Faites d\u00e9filer pour lire les d\u00e9tails \u00b7 Touchez pour r\u00e9duire' : 'Capture r\u00e9elle de l\u2019application \u00b7 Donn\u00e9es d\u2019exemple \u00b7 Touchez pour agrandir')}</span></figcaption>
+    <figcaption>
+      <strong>{image.caption}</strong>
+      <span>{isAr
+        ? (zoomed ? 'اضغط للتصغير' : 'بيانات توضيحية · اضغط للتكبير')
+        : (zoomed ? 'Touchez pour réduire' : 'Données d’exemple · Touchez pour agrandir')}</span>
+    </figcaption>
   </figure>;
 }

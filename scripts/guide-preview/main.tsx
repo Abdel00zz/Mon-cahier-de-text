@@ -1,11 +1,13 @@
 import { classRosterPatch, historicalStudentNames } from '../../src/domain/evaluations/classRosterSync';
 /** Development-only capture entry. Real components and fictitious teaching data. */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { produce } from 'immer';
 import { createRoot } from 'react-dom/client';
 import '../../src/styles/index.css';
 import { LocaleProvider, useLocale } from '../../src/i18n/LocaleProvider';
 import { GuideModal } from '../../src/features/guide/GuideModal';
+import { GuidePage } from '../../src/features/guide/GuidePage';
+import { SettingsPage } from '../../src/features/settings/SettingsPage';
 import { AbsencesTab } from '../../src/features/settings/components/AbsencesTab';
 import { DevoirsView } from '../../src/features/evaluations/DevoirsView';
 import { materializeContentAssessments } from '../../src/domain/evaluations/homeworkCorrectionContent';
@@ -19,6 +21,8 @@ import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
 import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
 import { dashboardTitleStyle } from '../../src/constants/classTitleTypography';
+import { ClassAssistant } from '../../src/features/assistant/ClassAssistant';
+import type { GuidanceAction } from '../../src/domain/assistant/classGuidance';
 import { ScheduleTab } from '../../src/features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../src/features/settings/components/NotificationsTab';
 import { AppearanceTab } from '../../src/features/settings/components/AppearanceTab';
@@ -50,6 +54,10 @@ import type { AppConfig, ClassInfo, LessonsData } from '../../src/types';
 const params = new URLSearchParams(location.search);
 const locale = params.get('lang') === 'ar' ? 'ar' : params.get('lang') === 'en' ? 'en' : 'fr';
 const screen = params.get('screen') ?? 'guide';
+const tab = params.get('tab');
+if (tab) {
+  try { sessionStorage.setItem('config_initial_tab_v1', tab); } catch {}
+}
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
 const isAr = locale === 'ar';
 
@@ -139,6 +147,9 @@ const studentNames = [
   'كنزة بنجلون',
 ];
 
+const alertTimetable = timetable.filter(entry => entry.classId === fixtureClasses[0].id || entry.classId === fixtureClasses[1].id);
+const effectiveTimetable = params.get('assistant') === 'alert' ? alertTimetable : timetable;
+
 const initialConfig: AppConfig = {
   establishmentName: isAr ? 'ثانوية ابن خلدون التأهيلية' : 'Lycée Ibn Khaldoun',
   defaultTeacherName: isAr ? 'ذ. محمد العلمي' : 'Prof. M. Alami',
@@ -147,8 +158,8 @@ const initialConfig: AppConfig = {
   selectedCycles: ['college', 'lycee'],
   selectedSubjects: ['Mathématiques'],
   schoolYearStart: '2026-09-01',
-  timetable,
-  schedules: deriveSchedules(timetable),
+  timetable: effectiveTimetable,
+  schedules: deriveSchedules(effectiveTimetable),
   notificationSettings: { ...defaultNotificationSettings, morningBriefing: true, sessionReminders: true },
   theme: 'light',
   classRosters: {
@@ -308,11 +319,28 @@ const noop = () => {};
 function Preview() {
   const [classes, setClasses] = useState<ClassInfo[]>(fixtureClasses);
   const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
+
+  useEffect(() => {
+    if (params.get('assistant') === 'open') {
+      setTimeout(() => {
+        document.querySelector<HTMLButtonElement>('.assistant-trigger')?.click();
+      }, 600);
+    }
+  }, []);
   const { t } = useLocale();
   const [config, setConfig] = useState(initialConfig);
   const [display, setDisplay] = useState<ClassDisplayMode>('triple');
   const [dashboardCreateOpen, setDashboardCreateOpen] = useState(false);
   const [dashboardGuideOpen, setDashboardGuideOpen] = useState(false);
+  const assist = (action: GuidanceAction) => {
+    setDashboardGuideOpen(false);
+    if (action.type === 'create-class') setDashboardCreateOpen(true);
+    else {
+      const url = new URL(location.href);
+      url.searchParams.set('screen', action.type === 'schedule' ? 'schedule' : 'editor');
+      location.assign(url.href);
+    }
+  };
   const [open, setOpen] = useState(true);
   const [add, setAdd] = useState(screen === 'add');
   const [selectedKeys, setSelectedKeys] = useState(() => new Set([
@@ -381,8 +409,12 @@ function Preview() {
       {(screen === 'dashboard' || screen === 'classes') && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, [classes[0]?.id])} >
           <div className="dashboard-heading mb-4" data-layout={display}>
-            <DashboardActions mode={display} onModeChange={setDisplay} />
-            <h1 className="dashboard-heading__title text-2xl sm:text-3xl" style={dashboardTitleStyle(locale)}>{t('dashboard.classes')}<span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
+            <DashboardActions mode={display} onModeChange={setDisplay}>
+              <ClassAssistant locale={locale} classes={classes} config={config}
+                onCreateClass={() => assist({ type: 'create-class' })} onOpenSchedule={() => assist({ type: 'schedule' })}
+                onOpenClass={item => assist({ type: 'open-class', classId: item.id })} />
+            </DashboardActions>
+            <h1 className="dashboard-heading__title text-2xl sm:text-3xl flex items-center gap-2.5" style={dashboardTitleStyle(locale)}><span>{t('dashboard.classes')}</span><span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>
           <div className="dashboard-class-section">
             <div data-layout={display} className="dashboard-class-collection dashboard-class-grid">
@@ -429,6 +461,24 @@ function Preview() {
           </div>
           <AppearanceTab config={config} onConfigChange={onChange} />
         </div>
+      )}
+
+      {screen === 'settings-page' && (
+        <AuthProvider>
+          <div className="pb-24 sm:ps-[84px] max-w-6xl mx-auto">
+            <TabBar activeTab="settings" onTabChange={noop} isExpanded={false} onToggleExpanded={noop} />
+            <SettingsPage asPage onBack={noop} onOpenGuide={noop} config={config} onConfigChange={onChange} classes={classes} addClass={() => classes[0]} />
+          </div>
+        </AuthProvider>
+      )}
+
+      {screen === 'guide-page' && (
+        <AuthProvider>
+          <div className="pb-24 sm:ps-[84px] max-w-6xl mx-auto">
+            <TabBar activeTab="help" onTabChange={noop} isExpanded={false} onToggleExpanded={noop} />
+            <GuidePage onBack={noop} onClose={noop} />
+          </div>
+        </AuthProvider>
       )}
 
       {screen === 'editor' && renderEditorBase()}

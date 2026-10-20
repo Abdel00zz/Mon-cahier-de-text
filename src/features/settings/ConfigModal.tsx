@@ -50,7 +50,9 @@ const TabLoadingSkeleton: FC = () => (
 const SETTINGS_MOBILE_DETENTS = [0.72, 0.94];
 
 interface ConfigModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  asPage?: boolean;
+  initialSection?: 'emploi';
   onClose: () => void;
   onOpenGuide: () => void;
   config: AppConfig;
@@ -100,7 +102,7 @@ const TAB_ALIASES: Record<string, SettingsCategory> = {
 };
 
 export const ConfigModal: React.FC<ConfigModalProps> = ({
-  isOpen,
+  isOpen = true,
   onClose,
   onOpenGuide,
   config,
@@ -109,6 +111,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   onOpenImport,
   classes = [],
   onCreateClass,
+  asPage = false,
+  initialSection,
 }) => {
   const { isRtl, t } = useLocale();
   // Seuls les champs de profil réellement modifiés attendent « Enregistrer ».
@@ -132,21 +136,63 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     setProfileDraft(previous => ({ ...previous, ...patch }));
   };
   const wasOpenRef = useRef(false);
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('emploi');
+  const [activeCategory, setActiveCategory] = useState<SettingsCategory>(initialSection ?? 'emploi');
   // Téléphone et tablette : l'accueil est une grille de cartes, une rubrique s'ouvre en plein cadre.
   // Sur grand écran (lg), le menu latéral reste affiché et cet état n'a aucun effet visuel.
-  const [sectionOpen, setSectionOpen] = useState(false);
+  const [sectionOpen, setSectionOpen] = useState(Boolean(initialSection));
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const inSection = sectionOpen && !isDesktop;
   const openSection = useCallback((id: SettingsCategory) => { setActiveCategory(id); setSectionOpen(true); }, []);
 
+  const horizontalNavRef = useRef<HTMLElement>(null);
+  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    ready: boolean;
+  }>({ left: 0, top: 0, width: 0, height: 0, ready: false });
+
+  React.useLayoutEffect(() => {
+    if (!asPage) return;
+    const updateIndicator = () => {
+      const activeBtn = tabButtonRefs.current[activeCategory];
+      const nav = horizontalNavRef.current;
+      if (!activeBtn || !nav) return;
+
+      setIndicatorStyle({
+        left: activeBtn.offsetLeft,
+        top: activeBtn.offsetTop,
+        width: activeBtn.offsetWidth,
+        height: activeBtn.offsetHeight,
+        ready: true,
+      });
+    };
+
+    updateIndicator();
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(updateIndicator);
+    }
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [asPage, activeCategory]);
+
+  const handleSelectTab = (tabId: SettingsCategory) => {
+    setActiveCategory(tabId);
+    const btn = tabButtonRefs.current[tabId];
+    if (btn && typeof btn.scrollIntoView === 'function') {
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  };
+
   useEffect(() => {
-    if (isOpen && !wasOpenRef.current) {
+    if ((isOpen || asPage) && !wasOpenRef.current) {
       setProfileDraft({});
       setPendingExit(null);
     }
-    wasOpenRef.current = isOpen;
-  }, [isOpen, config]);
+    wasOpenRef.current = Boolean(isOpen || asPage);
+  }, [isOpen, asPage, config]);
 
   // Consomme d'éventuels liens directs (ex. « compléter l'emploi du temps »).
   useEffect(() => {
@@ -164,7 +210,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   // Téléphone et tablette : Échap / retour Android revient d'abord à la grille de cartes, puis ferme.
   // Un menu, un sélecteur ou une fenêtre ouverte par-dessus garde la main sur sa propre touche.
   useEffect(() => {
-    if (!isOpen || !sectionOpen) return;
+    if ((!isOpen && !asPage) || !sectionOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || isDesktop) return;
       if (document.querySelector('[role="listbox"], [role="menu"]')) return;
@@ -175,7 +221,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     };
     window.addEventListener('keydown', onKeyDown, true);
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen, sectionOpen, isDesktop]);
+  }, [isOpen, asPage, sectionOpen, isDesktop]);
 
   const applyLive = useCallback((patch: Partial<AppConfig>) => {
     onConfigChange(patch);
@@ -283,6 +329,168 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       : 'font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground',
   );
 
+  const settingsShell = (
+    <div data-settings-ui className="settings-shell rtl-config-split">
+      {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
+      <div className={cn('settings-home lg:hidden', sectionOpen && 'hidden')}>
+        <ul className="hub-grid" aria-label={t('settings.title')}>
+          {SETTING_ITEMS.map(item => {
+            const Icon = item.icon;
+            return (
+              <li key={item.id} className="contents">
+                <button
+                  type="button"
+                  data-tone={item.tone}
+                  onClick={() => openSection(item.id)}
+                  onPointerEnter={() => preloadTabComponent(item.id)}
+                  onFocus={() => preloadTabComponent(item.id)}
+                  className="hub-card"
+                >
+                  <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
+                  <span className="hub-card__title">{t(item.titleKey)}</span>
+                  <span className="hub-card__hint">{t(item.hintKey)}</span>
+                </button>
+              </li>
+            );
+          })}
+          <li className="contents">
+            <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
+              <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
+              <span className="hub-card__title">{t('settings.item.support')}</span>
+              <span className="hub-card__hint">{t('settings.card.support')}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <nav aria-label={t('settings.title')} className="settings-nav hidden lg:flex">
+        <ul className="space-y-0.5">
+          {SETTING_ITEMS.map(item => {
+            const active = activeCategory === item.id;
+            const Icon = item.icon;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  aria-current={active ? 'page' : undefined}
+                  onClick={() => setActiveCategory(item.id)}
+                  onPointerEnter={() => preloadTabComponent(item.id)}
+                  onFocus={() => preloadTabComponent(item.id)}
+                  className={navRowClass(active)}
+                >
+                  <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'stroke-[1.75]' : 'stroke-[1.5]')} />
+                  <span className="truncate">{t(item.titleKey)}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="settings-nav-footer mt-auto pt-2">
+          <button type="button" onClick={() => requestExit('guide')} className={navRowClass(false)}>
+            <BookOpen className="h-[18px] w-[18px] shrink-0 stroke-[1.5]" />
+            <span className="truncate">{t('settings.item.support')}</span>
+          </button>
+        </div>
+      </nav>
+
+      <div className={cn('settings-scroll modern-scrollbar', !sectionOpen && 'max-lg:hidden')}>
+        <section
+          key={activeCategory}
+          aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
+          className="settings-page-content"
+        >
+          {renderCategoryContent()}
+        </section>
+      </div>
+    </div>
+  );
+
+  if (asPage) {
+    return (
+      <div className="settings-page-root w-full max-w-5xl mx-auto py-5 sm:py-8 px-3.5 sm:px-6">
+        {/* Barre d'onglets horizontale en haut : encadrée avec fond dock feutré et indicateur glissant */}
+        <nav
+          ref={horizontalNavRef}
+          aria-label={t('settings.title')}
+          className="settings-horizontal-nav relative flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar p-1.5 sm:p-2 mb-6 sm:mb-8 rounded-2xl border border-border/70 bg-card/75 dark:bg-card/50 shadow-xs backdrop-blur-sm"
+        >
+          {/* Indicateur actif glissant inspiré de .tabs__nav-decoration */}
+          <div
+            aria-hidden="true"
+            className="tabs__nav-decoration absolute top-0 left-0 rounded-xl bg-primary shadow-sm pointer-events-none z-0"
+            style={{
+              transform: `translate3d(${indicatorStyle.left}px, ${indicatorStyle.top}px, 0)`,
+              width: indicatorStyle.width ? `${indicatorStyle.width}px` : undefined,
+              height: indicatorStyle.height ? `${indicatorStyle.height}px` : undefined,
+              opacity: indicatorStyle.ready ? 1 : 0,
+              transition: indicatorStyle.ready
+                ? 'transform 0.22s cubic-bezier(0.2, 0, 0, 1), width 0.22s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s ease-out'
+                : 'none',
+            }}
+          />
+
+          {SETTING_ITEMS.map(item => {
+            const active = activeCategory === item.id;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                ref={el => { tabButtonRefs.current[item.id] = el; }}
+                type="button"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => handleSelectTab(item.id)}
+                onPointerEnter={() => preloadTabComponent(item.id)}
+                onFocus={() => preloadTabComponent(item.id)}
+                className={cn(
+                  'relative z-10 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium shrink-0 cursor-pointer select-none transition-colors duration-200',
+                  active
+                    ? (indicatorStyle.ready
+                        ? 'text-primary-foreground font-semibold'
+                        : 'bg-primary text-primary-foreground font-semibold shadow-sm')
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                )}
+              >
+                <Icon className={cn('size-4 shrink-0 transition-transform duration-200', active ? 'stroke-[2] scale-105' : 'stroke-[1.5]')} />
+                <span className="whitespace-nowrap">{t(item.titleKey)}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Zone de contenu sous les onglets : encadrée et arrière-plan différent */}
+        <main className="settings-page-main min-w-0">
+          <div className="settings-page-panel rounded-2xl sm:rounded-3xl border border-border/80 bg-card/90 dark:bg-card/70 shadow-sm p-5 sm:p-7 md:p-8 backdrop-blur-sm">
+            <section
+              key={activeCategory}
+              aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
+              className="settings-page-section"
+            >
+              {renderCategoryContent()}
+            </section>
+          </div>
+        </main>
+
+        {/* Sauvegarde flottante si profil modifié */}
+        {hasProfileChanges && (
+          <div className="sticky bottom-4 z-20 mt-8 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl shadow-xl">
+            {footer}
+          </div>
+        )}
+
+        <ConfirmDialog
+          open={pendingExit !== null}
+          onOpenChange={open => { if (!open) setPendingExit(null); }}
+          title={t('settings.discardProfileTitle')}
+          description={t('settings.discardProfileDescription')}
+          confirmLabel={t('settings.discardProfile')}
+          cancelLabel={t('settings.keepEditing')}
+          onConfirm={() => { if (pendingExit) finishExit(pendingExit); }}
+          variant="destructive"
+        />
+      </div>
+    );
+  }
+
   return (
     <>
     <Modal
@@ -304,79 +512,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       bodyClassName="hub-modal-body settings-modal-body"
       footer={hasProfileChanges ? footer : undefined}
     >
-      <div data-settings-ui className="settings-shell rtl-config-split">
-        {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
-        <div className={cn('settings-home lg:hidden', sectionOpen && 'hidden')}>
-          <ul className="hub-grid" aria-label={t('settings.title')}>
-            {SETTING_ITEMS.map(item => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id} className="contents">
-                  <button
-                    type="button"
-                    data-tone={item.tone}
-                    onClick={() => openSection(item.id)}
-                    onPointerEnter={() => preloadTabComponent(item.id)}
-                    onFocus={() => preloadTabComponent(item.id)}
-                    className="hub-card"
-                  >
-                    <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
-                    <span className="hub-card__title">{t(item.titleKey)}</span>
-                    <span className="hub-card__hint">{t(item.hintKey)}</span>
-                  </button>
-                </li>
-              );
-            })}
-            <li className="contents">
-              <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
-                <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
-                <span className="hub-card__title">{t('settings.item.support')}</span>
-                <span className="hub-card__hint">{t('settings.card.support')}</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <nav aria-label={t('settings.title')} className="settings-nav hidden lg:flex">
-          <ul className="space-y-0.5">
-            {SETTING_ITEMS.map(item => {
-              const active = activeCategory === item.id;
-              const Icon = item.icon;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    aria-current={active ? 'page' : undefined}
-                    onClick={() => setActiveCategory(item.id)}
-                    onPointerEnter={() => preloadTabComponent(item.id)}
-                    onFocus={() => preloadTabComponent(item.id)}
-                    className={navRowClass(active)}
-                  >
-                    <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'stroke-[1.75]' : 'stroke-[1.5]')} />
-                    <span className="truncate">{t(item.titleKey)}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="settings-nav-footer mt-auto pt-2">
-            <button type="button" onClick={() => requestExit('guide')} className={navRowClass(false)}>
-              <BookOpen className="h-[18px] w-[18px] shrink-0 stroke-[1.5]" />
-              <span className="truncate">{t('settings.item.support')}</span>
-            </button>
-          </div>
-        </nav>
-
-        <div className={cn('settings-scroll modern-scrollbar', !sectionOpen && 'max-lg:hidden')}>
-          <section
-            key={activeCategory}
-            aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
-            className="settings-page-content"
-          >
-            {renderCategoryContent()}
-          </section>
-        </div>
-      </div>
+      {settingsShell}
     </Modal>
     <ConfirmDialog
       open={pendingExit !== null}

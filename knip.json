@@ -31,6 +31,7 @@
     "scripts/benchmarks/benchmark-*.ts",
     "scripts/benchmarks/baseline.mjs",
     "scripts/guide-preview/main.tsx",
+    "scripts/generate-guide-images.mjs",
     "scripts/auth-preview/main.tsx",
     "scripts/print-preview/main.tsx",
     "scripts/showcase-preview/main.tsx",

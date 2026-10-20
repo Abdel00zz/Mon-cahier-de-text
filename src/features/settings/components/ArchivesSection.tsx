@@ -66,6 +66,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
             <SettingsSection
                 title={t('archives.title')}
                 hint={t('archives.description')}
+                icon={FolderArchive}
                 action={
                     <button type="button" onClick={handleCreate} className={settingsButtonClass}>
                         <CalendarCheck className="h-[18px] w-[18px] stroke-[1.5]" />

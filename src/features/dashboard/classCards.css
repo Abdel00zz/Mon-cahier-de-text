@@ -34,7 +34,7 @@
   height: 100%;
   border-radius: var(--class-radius);
   color: var(--class-ink);
-  font-family: var(--font-samsung, var(--font-class-sheet));
+  font-family: var(--font-sans);
   font-synthesis: weight;
   box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--class-accent) 12%, transparent), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
   transition: transform 240ms var(--spring-out);
@@ -153,7 +153,7 @@
   border-radius: 6px;
   background: var(--class-pill-bg);
   color: var(--class-accent);
-  font-family: 'Readex Pro', 'Inter', var(--font-class-sheet);
+  font-family: var(--font-secondary);
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(.76em * var(--class-badge-scale));
   font-weight: 400;
@@ -222,7 +222,7 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-family: var(--font-samsung-display, inherit);
+  font-family: var(--font-display);
   font-size: calc(var(--class-title-max) * var(--class-title-scale));
   font-weight: 700;
   line-height: 1.38;
@@ -248,7 +248,7 @@
   padding: 0;
   color: var(--class-ink);
   opacity: 1;
-  font-family: 'Readex Pro', 'Inter', inherit;
+  font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
   font-style: normal;
@@ -553,7 +553,7 @@ html[data-platform="ios"] .class-card,
   border-radius: 16px;
   background: hsl(42 38% 98%);
   box-shadow: 0 2px 8px hsl(var(--foreground) / .025);
-  font-family: var(--font-samsung, inherit);
+  font-family: var(--font-sans);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 .dark .class-list-item { background: hsl(var(--card)); }
@@ -582,13 +582,12 @@ html[data-platform="ios"] .class-card,
   border-radius: 12px;
   background: var(--class-pill-bg);
   color: var(--class-accent);
-  font-family: var(--font-latin-body, sans-serif);
+  font-family: var(--font-secondary);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
   text-align: center;
 }
-.class-list-item[dir="rtl"] .class-list-item__level { font-family: var(--font-sans); }
 .class-list-item__copy { flex: 1; min-width: 0; }
 @media (hover: hover) and (pointer: fine) {
   .class-list-item:hover {

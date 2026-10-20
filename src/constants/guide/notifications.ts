@@ -4,7 +4,7 @@ export const notifications = chapter('notifications', ['schedule', 'devices'], {
     title: 'Activer les rappels et notifications',
     summary: 'Paramétrer les rappels de fin de séance, les alertes d’oubli de datation et les notifications système.',
     keywords: 'notifications alertes rappels fin de séance oubli de datation seuils de retard vibration push PWA',
-    image: { key: 'notifications', caption: 'Réglages des notifications ; l’exemple montre une autorisation bloquée.' },
+    image: { key: 'notifications', caption: 'Gestion des rappels et autorisations de notifications.' },
     sections: [
       {
         title: 'Activer les notifications sur votre appareil',
@@ -34,7 +34,7 @@ export const notifications = chapter('notifications', ['schedule', 'devices'], {
     title: 'تفعيل التذكيرات والإشعارات',
     summary: 'ضبط تذكيرات اختتام الحصة، تنبيهات استدراك التدوين، وإشعارات النظام على الهواتف واللوحات.',
     keywords: 'إشعارات تنبيهات تذكير اختتام الحصة تأريخ الحصص تدوين إشعار فوري اهتزاز هاتف PWA',
-    image: { key: 'notifications', caption: 'إعدادات الإشعارات؛ يعرض المثال إذناً محظوراً.' },
+    image: { key: 'notifications', caption: 'تدبير التذكيرات وتراخيص الإشعارات.' },
     sections: [
       {
         title: 'تفعيل الإشعارات على جهازك المستخدم',

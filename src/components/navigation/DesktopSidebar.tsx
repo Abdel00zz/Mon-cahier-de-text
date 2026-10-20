@@ -18,12 +18,12 @@ export function DesktopSidebar({ activeTab, goTo, copy, teacherName, expanded, t
       {expanded && <div className="min-w-0"><p className="truncate text-xs lg:text-sm font-semibold text-foreground" dir="auto">{teacherName}</p>
         <p className="mt-0.5 truncate text-[9px] lg:text-[10px] text-muted-foreground">{copy.teacherSpace}</p></div>}
     </div>
-    <div className="mt-5 lg:mt-8 space-y-1 px-2.5 lg:px-4">
+    <div className="mt-5 lg:mt-8 space-y-1.5 px-2.5 lg:px-3">
       <NavigationButton tab="dashboard" active={activeTab === 'dashboard'} onSelect={goTo} copy={copy} expanded={expanded} />
       <NavigationButton tab="settings" active={activeTab === 'settings'} onSelect={goTo} copy={copy} expanded={expanded} />
     </div>
-    <div className="mt-auto px-2.5 lg:px-4 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] lg:pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))]">
-      <NavigationButton tab="help" active={false} onSelect={goTo} copy={copy} expanded={expanded} />
+    <div className="mt-auto px-2.5 lg:px-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] lg:pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))]">
+      <NavigationButton tab="help" active={activeTab === 'help'} onSelect={goTo} copy={copy} expanded={expanded} />
     </div>
   </nav>;
 }

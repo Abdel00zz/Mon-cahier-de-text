@@ -20,7 +20,7 @@ export const AccountDataTab: React.FC<AccountDataTabProps> = ({ config, onExport
     <SettingsPanel title={t('settings.item.account')}>
       <AccountTab config={config} />
 
-      <SettingsSection title={t('settings.backupTitle')}>
+      <SettingsSection title={t('settings.backupTitle')} icon={HardDriveDownload}>
         <SettingsRow label={t('settings.exportTitle')} hint={t('settings.exportAction')}>
           <button type="button" onClick={onExport} className={settingsButtonClass}>
             <HardDriveDownload className="h-[18px] w-[18px] stroke-[1.5]" />

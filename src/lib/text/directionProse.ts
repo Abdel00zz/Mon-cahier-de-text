@@ -1,4 +1,4 @@
-import { splitMathText } from './math';
+import { splitMathText } from './math.js';
 
 /** Analyse only readable prose, never formatting commands or formula variables.
  * This is a detection view: it never changes the saved source or rendered text. */

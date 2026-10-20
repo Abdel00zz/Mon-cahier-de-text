@@ -21,41 +21,6 @@
 .evaluation-modal .modal-body button:not([role='tab']) { min-height: 44px; }
 .evaluation-workspace .ev-row__id button { white-space: normal; overflow: visible; }
 
-/* A tablet or phone container keeps every evaluation row on a single horizontal line (Title | Date | Actions). */
-@container (max-width: 56rem) {
-  .ev-board__head { display: none; }
-  .ev-board__rows > .ev-row {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas: 'id date actions';
-    align-items: center;
-    gap: 6px 8px;
-    padding: 10px 12px;
-  }
-  .ev-row__id { align-self: center; justify-self: start; min-width: 0; width: 100%; }
-  .ev-row__date { align-self: center; justify-self: center; width: auto; }
-  .ev-row__actions { align-self: center; justify-self: end; flex-wrap: nowrap; width: auto; }
-  .ev-action:has(.ev-action__icon) > span:not(.ev-action__count):not(.ev-action__date) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-  .ev-action { position: relative; min-height: 34px; min-width: 34px; width: 34px; height: 34px; padding-inline: 0; flex: none; text-align: center; }
-  .ev-action:has(.ev-action__count) { width: auto; padding-inline: 8px; }
-  .ev-action:has(.ev-action__date) { width: auto; padding-inline: 9px; font-variant-numeric: tabular-nums; font-size: 11.5px; }
-  .ev-action:has(.ev-action__date) .ev-action__icon { display: none; }
-  .ev-icon-btn { width: 34px; height: 34px; min-height: 34px; min-width: 34px; flex: 0 0 34px; }
-  .ev-accordion__toggle {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'id actions';
-    gap: 6px 10px;
-  }
-}
 @media (max-width: 639px) {
   .evaluation-modal.document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'],
   .evaluation-modal.modal-motion-surface[data-mobile-presentation='sheet'] { border-radius: 24px 24px 0 0; }

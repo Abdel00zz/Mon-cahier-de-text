@@ -24,7 +24,7 @@ const loaders: Record<PrefetchTarget, () => Promise<unknown>> = {
     editor: () => import('../features/editor/Editor'),
     settings: () => import('../features/settings/SettingsPage'),
     evaluations: () => import('../features/evaluations/ClassEvaluationsSheet'),
-    guide: () => import('../features/guide/GuideModal'),
+    guide: () => Promise.all([import('../features/guide/GuidePage'), import('../features/guide/GuideModal')]),
 };
 
 /** Charge un écran ; un module indisponible ne doit jamais casser la préparation. */

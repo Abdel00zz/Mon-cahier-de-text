@@ -4,6 +4,7 @@ import { reconcileClassRosters } from '../domain/evaluations/classRosterSync';
 import type { ClassRoster } from '../types';
 import { apiFetch } from '@/platform/nativeHttp';
 import { accountOwner } from '../domain/auth/accountIdentity';
+import { needsProfilePhoneSync } from '../domain/auth/profilePhone';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, ContentDirection, EvaluationPolicy, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
@@ -822,6 +823,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } else if (settings && localHasSettings && !settingsMeta.localUpdatedAt && remoteSettingsAt) {
                     settingsNeedPush = true;
                 }
+
+                // Réparer les profils des versions où le contact était local seulement,
+                // après avoir reçu les réglages cloud pour préserver leur priorité.
+                if (needsProfilePhoneSync(nextConfig.teacherPhone, settings?.teacherPhone)) settingsNeedPush = true;
 
                 // Recover formerly local-only subjects and merge content & student tracking even
                 // when the settings watermark itself did not change.

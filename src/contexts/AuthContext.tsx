@@ -9,6 +9,7 @@ import { unsubscribeFromPush } from '../infrastructure/push/push';
 import { clearInboxBadge, enableInboxBadge } from '../infrastructure/push/appBadge';
 import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../infrastructure/sync/syncTransport';
 import { accountOwner, isAccountId } from '../domain/auth/accountIdentity';
+import { accountPhoneForEmptyProfile } from '../domain/auth/profilePhone';
 import { clearGoogleSignIn, googleSignIn } from '../platform/googleAuth';
 
 interface AuthUser {
@@ -105,6 +106,13 @@ const applyProfileToConfig = (user: AuthUser): void => {
     const hasLocalProfile = typeof config.defaultTeacherName === 'string' && config.defaultTeacherName.trim().length > 0;
     let changed = false;
 
+    // Valeur initiale, sans avancer l'horloge des réglages avant le premier pull cloud.
+    const phone = accountPhoneForEmptyProfile(config.teacherPhone, user.phone);
+    if (phone !== undefined) {
+      config.teacherPhone = phone;
+      changed = true;
+    }
+
     if (!hasLocalProfile && (user.nom || user.prenom)) {
       const fullName = `${user.prenom ?? ''} ${user.nom ?? ''}`.trim();
       if (fullName !== 'Prof Dev' && fullName !== 'Dev Prof') {
@@ -195,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // La session locale permet de travailler, jamais d'autoriser un push cloud.
         if (isRetryableSyncError(error) && cached && readWorkspaceScope()?.owner === accountOwner(cached)) {
           reloadSyncState();
+          applyProfileToConfig(cached);
           setUser(cached);
           setStatus('offline');
           if (isNetworkOnline()) retryTimer = setTimeout(() => { void verifySession(); }, retryDelayMs(failures++));

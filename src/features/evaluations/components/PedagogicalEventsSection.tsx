@@ -148,7 +148,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       type="button"
                       onClick={() => onOpenDocument(event)}
                       className="ev-action shrink-0"
-                      data-filled={docIndicator === 'attached' ? 'ok' : 'missing'}
+                      data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                       data-doc-state={docIndicator}
                       aria-label={`${t('evaluations.doc.title', { activity: title })}${docStateSuffix}`}
                       data-tippy-content={eventDocTooltip}

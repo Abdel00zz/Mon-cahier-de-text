@@ -1,28 +1,14 @@
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { MotionSurface } from './MotionSurface';
 import './dynamic-illustrations.css';
 
 interface IllustrationProps { className?: string; size?: number; }
 
 /** One transparent canvas, a shared geometric grid and theme-aware flat colors. */
 function Figure({ children, className, size = 140 }: IllustrationProps & { children: ReactNode }) {
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const element = root.current;
-    if (!element) return;
-    let visible = false;
-    const sync = () => { element.dataset.motion = visible && !document.hidden ? 'on' : 'off'; };
-    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
-      sync();
-    });
-    if (observer) observer.observe(element);
-    else { visible = true; sync(); }
-    document.addEventListener('visibilitychange', sync);
-    return () => { observer?.disconnect(); document.removeEventListener('visibilitychange', sync); };
-  }, []);
   return (
-    <div ref={root} data-motion="off"
+    <MotionSurface
       aria-hidden="true"
       className={cn('dynamic-illustration', className)}
       style={{ '--illustration-size': `${size}px` } as CSSProperties}
@@ -30,7 +16,7 @@ function Figure({ children, className, size = 140 }: IllustrationProps & { child
       <svg viewBox="0 0 240 240" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
         <g className="figure-scene">{children}</g>
       </svg>
-    </div>
+    </MotionSurface>
   );
 }
 

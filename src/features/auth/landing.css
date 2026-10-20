@@ -3,7 +3,7 @@
 .landing-copy { min-width: 0; padding-block: 12px; }
 .landing-eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 22px; font-size: 12px; font-weight: 600; color: hsl(var(--muted-foreground)); }
 .landing-eyebrow > span { width: 6px; height: 6px; border-radius: 50%; background: hsl(var(--primary)); flex-shrink: 0; }
-.landing-copy h1 { margin: 0; font-family: var(--font-sans); font-size: clamp(40px, 4.6vw, 58px); line-height: 1.12; letter-spacing: -.05em; font-weight: 650; }
+.landing-copy h1 { margin: 0; font-family: var(--font-display); font-size: clamp(40px, 4.6vw, 58px); line-height: 1.12; letter-spacing: -.05em; font-weight: 650; }
 .landing-copy h1 > span { color: hsl(var(--primary)); }
 [dir='rtl'] .landing-copy h1 { line-height: 1.5; letter-spacing: 0; }
 .landing-detail { max-width: 410px; margin: 22px 0 0; font-size: 15px; line-height: 1.75; color: hsl(var(--muted-foreground)); text-wrap: pretty; }
@@ -23,7 +23,7 @@
 .dark .landing-features li:nth-child(3) { --feature-tone: #a6c4d7; }
 .landing-feature-icon { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 8px; background: color-mix(in srgb, var(--feature-tone) 9%, transparent); color: hsl(var(--muted-foreground)); }
 .landing-feature-icon svg { width: 19px; height: 19px; stroke-width: 1.7; }
-.landing-features h2 { margin: 0; font-family: var(--font-sans); font-size: 13px; line-height: 1.6; font-weight: 600; color: var(--feature-tone); text-wrap: balance; }
+.landing-features h2 { margin: 0; font-family: var(--font-display); font-size: 13px; line-height: 1.6; font-weight: 600; color: var(--feature-tone); text-wrap: balance; }
 .landing-features p { margin: 4px 0 0; color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 1.65; }
 /* A page turns, then the session is validated. Only transform and opacity animate.
    The shared Figure observer pauses the sequence off screen and in background tabs. */

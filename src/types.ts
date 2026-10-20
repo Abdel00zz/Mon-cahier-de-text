@@ -95,6 +95,8 @@ export interface AppConfig {
   applicationLocale?: AppLocale;
   establishmentName: string;
   defaultTeacherName: string;
+  /** Contact synchronisé ; une chaîne vide est un effacement explicite. Ne définit jamais le propriétaire du compte. */
+  teacherPhone?: string;
   /** Référentiel administratif marocain utilisé dans l'en-tête imprimé. */
   academyRegion?: string;
   educationProvince?: string;

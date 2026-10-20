@@ -17,6 +17,7 @@ export type SyncableSettings = Pick<
     AppConfig,
     | 'establishmentName'
     | 'defaultTeacherName'
+    | 'teacherPhone'
     | 'academyRegion'
     | 'educationProvince'
     | 'applicationLocale'
@@ -59,6 +60,7 @@ export type SyncableSettings = Pick<
 export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'establishmentName',
     'defaultTeacherName',
+    'teacherPhone',
     'academyRegion',
     'educationProvince',
     'applicationLocale',

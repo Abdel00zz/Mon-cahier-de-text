@@ -430,10 +430,10 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const minuteOptions = (values: number[]) => values.map(value => ({ value, label: String(value) }));
 
     return (
-        <div className="space-y-7">
+        <div className="space-y-6">
             {/* Activation explicite des rappels sur cet appareil */}
-            <SettingsSection title={l('Cet appareil', 'هذا الجهاز', 'This device')} hint={t('notifications.intro')}>
-                <div className="space-y-3 py-3.5">
+            <SettingsSection title={l('Cet appareil', 'هذا الجهاز', 'This device')} hint={t('notifications.intro')} icon={Bell}>
+                <div className="space-y-3 pt-0.5">
                     <PushActivationCard
                         state={pushState}
                         checking={checking}
@@ -461,7 +461,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 </div>
             </SettingsSection>
 
-            <SettingsSection title={l('Rappels', 'التذكيرات', 'Reminders')}>
+            <SettingsSection title={l('Rappels', 'التذكيرات', 'Reminders')} icon={Clock}>
                 <Toggle label={t('notifications.enabled')} checked={settings.enabled} onChange={v => patch({ enabled: v })} icon={Bell} />
                 <Toggle
                     label={t('notifications.vibration')}
@@ -494,7 +494,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 <Toggle label={t('notifications.quiet')} checked={settings.quietDuringVacations} onChange={v => patch({ quietDuringVacations: v })} icon={CalendarDays} />
             </SettingsSection>
 
-            <SettingsSection title={l('Seuils d’alerte', 'عتبات التنبيه', 'Alert thresholds')}>
+            <SettingsSection title={l('Seuils d’alerte', 'عتبات التنبيه', 'Alert thresholds')} icon={TriangleAlert}>
                 <SelectRow label={t('notifications.delayThreshold')} value={settings.gapThreshold}
                     options={[1, 2, 3].map(count => ({
                         value: count,

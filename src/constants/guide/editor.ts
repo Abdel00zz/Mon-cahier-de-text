@@ -6,7 +6,7 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
     "keywords": "déplacement glisser appui long contenu regroupé même date exercice chapitre paragraphe",
     "image": {
         "key": "editor",
-        "caption": "Dates, contenu et remarques dans le cahier. Capture d’une version antérieure."
+        "caption": "Tableau du cahier : dates, contenus et remarques de séance."
     },
     "sections": [
         {
@@ -36,7 +36,7 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
     "keywords": "نقل سحب ضغط مطول محتويات مجمعة تاريخ تمرين فصل فقرة",
     "image": {
         "key": "editor",
-        "caption": "التاريخ والمحتوى والملاحظات في الدفتر. لقطة من إصدار سابق."
+        "caption": "جدول الحصص: التواريخ والمحتويات والملاحظات."
     },
     "sections": [
         {

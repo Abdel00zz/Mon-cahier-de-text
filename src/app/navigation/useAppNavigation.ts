@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClassInfo } from '../../types';
 import { latestClassOpening } from '../../infrastructure/storage/classOpening';
-import { classRoute, DASHBOARD_HASH, DASHBOARD_ROUTE, readAppRoute, scrollKey, SETTINGS_HASH } from './appRoutes';
+import { classRoute, DASHBOARD_HASH, DASHBOARD_ROUTE, HELP_HASH, readAppRoute, scrollKey, SETTINGS_HASH } from './appRoutes';
 
 /** Routes, settings overlay history and scroll restoration share one owner. */
 export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassInfo>) => boolean,
@@ -43,9 +43,21 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
     window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
   }, [route, saveScroll]);
 
+  const handleOpenHelp = useCallback(() => {
+    if (route.view === 'help') return;
+    saveScroll();
+    setRoute({ view: 'help', activeClass: null });
+    window.history.pushState({ route: 'help' }, '', HELP_HASH);
+  }, [route, saveScroll]);
+
   const handleBackFromSettings = useCallback(() => {
     if (window.history.state?.route === 'settings' && window.history.state?.settingsSubView) window.history.go(-2);
     else if (window.history.state?.route === 'settings') window.history.back();
+    else handleBackToDashboard();
+  }, [handleBackToDashboard]);
+
+  const handleBackFromHelp = useCallback(() => {
+    if (window.history.state?.route === 'help') window.history.back();
     else handleBackToDashboard();
   }, [handleBackToDashboard]);
 
@@ -53,10 +65,11 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
     const back = (event: Event) => {
       if (route.view === 'editor') { event.preventDefault(); handleBackToDashboard(); }
       else if (route.view === 'settings') { event.preventDefault(); handleBackFromSettings(); }
+      else if (route.view === 'help') { event.preventDefault(); handleBackFromHelp(); }
     };
     window.addEventListener('native-back', back);
     return () => window.removeEventListener('native-back', back);
-  }, [route.view, handleBackToDashboard, handleBackFromSettings]);
+  }, [route.view, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp]);
 
   useEffect(() => {
     const restoreRoute = () => {
@@ -87,5 +100,5 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
   }, [backgroundRoute]);
 
   return { ...route, backgroundRoute, initialView: initial.view, resetNavigation,
-    handleSelectClass, handleBackToDashboard, handleOpenSettings, handleBackFromSettings };
+    handleSelectClass, handleBackToDashboard, handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp };
 }

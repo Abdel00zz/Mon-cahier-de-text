@@ -76,5 +76,5 @@ test('le guide s’ouvre depuis la navigation et quitte les actions du tableau d
   assert.doesNotMatch(actions, /onOpenGuide|CircleHelp|dashboard-actions-bar__help/);
   assert.match(sidebar, /mt-auto[\s\S]*?<NavigationButton tab="help"/);
   assert.doesNotMatch(sidebar, /<hr|role="separator"|border-t/);
-  assert.match(app, /tab === 'help'[\s\S]{0,80}setGuideOpen\(true\)/);
+  assert.match(app, /tab === 'help'[\s\S]{0,80}handleOpenHelp/);
 });

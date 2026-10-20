@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./reset.css";
 @import "./fonts.css";
+@import "./typography.css";
 @import "katex/dist/katex.min.css";
 @import "../components/ui/modal-motion.css";
 @import "../components/ui/paper-controls.css";
@@ -81,35 +82,9 @@
   --radius-2xl: 24px;
   --radius-3xl: 28px;
 
-  /* ── Typographie : deux paires, une par langue ────────────────────────
-     Latin (fr/en) : DM Sans pour l'interface, Newsreader (sérif éditoriale,
-     échelle optique variable) pour les titres, dans l'esprit de Claude.
-     Arabe        : Arabswell 3 pour la lecture, Maghribi Font 3 pour les
-     titres. Les deux polices arabes sont embarquées dans public/ : une
-     seule paire par langue, aucun choix exposé au professeur. */
-  --font-latin-body: 'Inter', 'Readex Pro', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'One UI Sans App VF', 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  /* Feuille de devoir : la fonte de composition LaTeX d'abord (Latin Modern
-     Sans), sa remplaçante libre ensuite. Les deux ne portent que le latin (voir
-     `fonts.css`) : l'arabe du document retombe donc seul sur la fonte arabe du
-     carnet, sans règle de langue. */
+  /* Les rôles et les langues sont centralisés dans typography.css.
+     La composition des documents garde sa pile dédiée. */
   --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
-  --font-latin-display: 'Readex Pro', 'Inter', 'Samsung Sharp Sans', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Newsreader', Georgia, sans-serif;
-  --font-arabic-body: 'Elgharib Hayyakum Allah', 'Elgharib', 'Amiri', 'Readex Pro', 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'Arabswell 3', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-arabic-display: 'KOMission Black', 'KOMission', 'Aref Ruqaa', 'Maghribi Font 3', 'SamsungOne Arabic', 'Samsung Sharp Sans', 'Amiri', serif;
-  --font-lato: 'SamsungOne', 'Samsung Sans', 'Lato', 'DM Sans', system-ui, sans-serif;
-  --font-sans: var(--font-latin-body);
-  --font-display: var(--font-latin-display);
-  --content-font-latin: var(--font-latin-body);
-  --content-font-arabic: var(--font-arabic-body);
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  /* Alias historiques : pointes vers la paire courante le temps que tous les
-     composants migrent vers --font-display / --font-sans. */
-  --font-french-body: var(--font-latin-body);
-  --font-french-display: var(--font-latin-display);
-  --font-serif: var(--font-display);
-  --font-maghribi: var(--font-latin-display);
-  --font-maghribi-ar: var(--font-arabic-display);
-  --font-arabswell: var(--font-arabic-body);
 
   /* La densité de texte ne redimensionne jamais les espacements ou les cibles. */
   --text-xs: calc(0.75rem * var(--app-text-scale, 1));
@@ -138,8 +113,6 @@
   --ease-spring-snappy: cubic-bezier(0.2, 1.4, 0.5, 1);
 
   /* Design system mobile : une seule échelle, une seule profondeur, une seule voix fonctionnelle. */
-  --ui-font-ar: var(--font-arabic-body);
-  --ui-font-latin: var(--font-latin-body);
   --ui-radius-control: 0.75rem;
   --ui-radius-surface: 1.25rem;
   --ui-shadow-surface: 0 14px 34px -26px hsl(var(--foreground) / 0.32);
@@ -166,14 +139,6 @@ html {
   --app-text-scale: calc(var(--app-text-scale-base, 1) * var(--app-text-density, 1));
 }
 
-/* ── Séparation stricte des deux langues ─────────────────────────────────
-   Tout conteneur marqué `lang="ar"` bascule sur la paire arabe ; fr et en
-   restent sur la paire latine. Une même classe ne peut servir les deux. */
-html[lang='ar'],
-[lang='ar'] {
-  --font-sans: var(--font-arabic-body);
-  --font-display: var(--font-arabic-display);
-}
 /* Hauteur de ligne de la liste des classes (3e affichage) : une seule valeur,
    partagée, pour que les lignes restent alignées entre elles. La géométrie
    des CARTES, elle, vit dans `features/dashboard/classCards.css`. */
@@ -301,12 +266,12 @@ html[lang='ar'],
   font-family: var(--font-lato);
 }
 
-/* Titres arabes : Maghribi Font 3 (embarquée), sans repli distant. */
+/* Alias historique : la famille du titre suit désormais la langue du panneau. */
 html[lang="ar"] .font-maghribi,
 html[lang="ar"] .keep-class-title {
-  font-family: var(--font-arabic-display);
+  font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: 0.015em;
+  letter-spacing: 0;
 }
 
 /* Lecture latine : interlignage optique des titres sans serif. Les titres de
@@ -462,33 +427,38 @@ html[lang="ar"] .keep-class-title {
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Latin (fr/en), dans l'esprit de Claude : DM Sans pour l'interface et les
-     actions, Newsreader (sérif éditoriale) pour les titres de page et de modale. */
+  /* Les familles sont définies par rôle dans typography.css. */
   html[lang="fr"] body {
-    font-family: var(--font-french-body);
+    font-family: var(--font-sans);
     font-variant-numeric: proportional-nums;
   }
   html:not([lang="ar"]) :is(h1, h2, h3, .keep-class-title, [data-ui-title]) {
-    font-family: var(--font-latin-display);
+    font-family: var(--font-display);
     font-optical-sizing: auto;
     font-feature-settings: 'opsz' 36, 'liga', 'kern';
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
-  html:not([lang="ar"]) :is(h4, h5, h6, button, [role="button"], .workspace-nav-label) {
-    font-family: var(--font-latin-body);
+  html:not([lang="ar"]) :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) :is(button, [role="button"], .workspace-nav-label) {
+    font-family: var(--font-sans);
   }
   html[lang="fr"] .workspace-nav,
   html[lang="fr"] .dashboard-artisan-nav,
   html[lang="fr"] .onboarding-artisan-shell,
   html[lang="fr"] [role="dialog"] {
-    font-family: var(--font-french-body);
+    font-family: var(--font-sans);
   }
   html:not([lang="ar"]) [role="dialog"] :is(h1, h2, h3, [data-ui-title]) {
-    font-family: var(--font-latin-display);
+    font-family: var(--font-display);
   }
-  html:not([lang="ar"]) [role="dialog"] :is(h4, h5, h6, button, [role="button"]) {
-    font-family: var(--font-latin-body);
+  html:not([lang="ar"]) [role="dialog"] :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(button, [role="button"]) {
+    font-family: var(--font-sans);
   }
 
   /* Détails de finition : paragraphes sans ligne orpheline, sélection et
@@ -497,8 +467,7 @@ html[lang="ar"] .keep-class-title {
   ::selection { background: hsl(var(--primary) / 0.22); color: inherit; }
   input, textarea, [contenteditable="true"] { caret-color: hsl(var(--primary)); }
 
-  /* Interface arabe : la paire embarquée (Arabswell 3 pour la lecture,
-     Maghribi Font 3 pour les titres) remplace tout repli distant. */
+  /* Les contrôles héritent de la langue locale, même dans une fenêtre traduite. */
   html[lang="ar"] body,
   html[lang="ar"] button,
   html[lang="ar"] input,
@@ -576,7 +545,7 @@ html[lang="ar"] .keep-class-title {
   html[lang="ar"] [data-dashboard-root] h2,
 html[lang="ar"] .modal-header h2,
   html[lang="ar"] .modal-header h3 {
-    font-family: var(--font-arabic-display);
+    font-family: var(--font-display);
     letter-spacing: normal;
     line-height: 1.35;
   }
@@ -589,7 +558,7 @@ html[lang="ar"] .modal-header h2,
   }
 
   html[lang="ar"] .keep-class-title {
-    font-family: var(--font-arabic-display);
+    font-family: var(--font-display);
     font-size: 1.3em;
     line-height: 1.25;
     font-weight: 600;
@@ -646,10 +615,6 @@ html[lang="ar"] .modal-header h2,
     font-family: var(--font-sans);
   }
 
-  .auth-page-shell[lang="ar"] {
-    --font-sans: var(--font-arabic-body);
-    --font-display: var(--font-arabic-display);
-  }
 
   [data-dashboard-root] {
     font-family: var(--font-sans);
@@ -922,7 +887,7 @@ html[lang="ar"] .modal-header h2,
       color-mix(in srgb, hsl(var(--primary)) 15%, transparent) 100%
     );
     color: hsl(var(--primary));
-    font-family: 'Newsreader', var(--font-display), Georgia, serif;
+    font-family: var(--font-display);
     font-style: italic;
     font-size: 1rem;
     font-weight: 700;
@@ -964,7 +929,7 @@ html[lang="ar"] .modal-header h2,
     outline-offset: 3px;
   }
   html[lang='ar'] .editor-document-highlight {
-    font-family: 'Maghribi Font 3', 'Arabswell 3', var(--font-arabic-display), 'Amiri', serif;
+    font-family: var(--font-display);
     font-style: normal;
     font-weight: 800;
     font-size: 1.05rem;
@@ -1436,16 +1401,26 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
  * Material, et rien du tout si l'utilisateur préfère moins de mouvement.
  */
 @keyframes settings-panel-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: scale(0.99) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-.settings-page-content {
-  animation: settings-panel-in 180ms cubic-bezier(0.2, 0, 0, 1) both;
+.settings-page-content,
+.settings-page-section {
+  animation: settings-panel-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .settings-page-content { animation: none; }
+  .settings-page-content,
+  .settings-page-section {
+    animation: none;
+  }
 }
 
 /* Style des modales inspiré de Sketch.com */
@@ -1476,26 +1451,28 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
    Surface opaque et liseré logique RTL/LTR, sans flou pendant le défilement. */
 [data-app-sidebar] {
   --sidebar-shadow-x: 5px;
-  --sidebar-radius: 22px;
+  --sidebar-radius: 20px;
+  --sidebar-body-bg: #f8f8fb;
   background:
-    linear-gradient(180deg, #fdfcf9 0%, #f9f6ef 50%, #f4f0e6 100%);
-  border-inline-end: 1px solid color-mix(in srgb, hsl(var(--border)) 55%, #e2dcd0);
+    linear-gradient(180deg, #ffffff 0%, #f9f9fc 60%, #f4f4f8 100%);
+  border-inline-end: 1px solid rgba(0, 0, 0, 0.07);
   border-start-end-radius: var(--sidebar-radius);
   border-end-end-radius: var(--sidebar-radius);
-  box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 30px -10px rgba(35, 30, 22, 0.05);
+  box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 24px -6px rgba(20, 30, 60, 0.05);
 }
 [dir='rtl'] [data-app-sidebar] {
   --sidebar-shadow-x: -5px;
-  box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 30px -10px rgba(35, 30, 22, 0.05);
+  box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.9), var(--sidebar-shadow-x) 0 24px -6px rgba(20, 30, 60, 0.05);
 }
 .dark [data-app-sidebar] {
+  --sidebar-body-bg: #141419;
   background:
-    linear-gradient(180deg, #18171d 0%, #131217 60%, #0e0d12 100%);
+    linear-gradient(180deg, #18181f 0%, #141419 60%, #0f0f14 100%);
   border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 30px -10px rgba(0, 0, 0, 0.65);
+  box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 24px -6px rgba(0, 0, 0, 0.65);
 }
 .dark[dir='rtl'] [data-app-sidebar] {
-  box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 30px -10px rgba(0, 0, 0, 0.65);
+  box-shadow: inset 1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 24px -6px rgba(0, 0, 0, 0.65);
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   [data-app-sidebar] {
@@ -1505,32 +1482,47 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
 [data-app-sidebar] [aria-current='page'] :is(svg, .workspace-nav-label) { color: inherit; }
 [data-app-sidebar] .workspace-nav-active {
-  background: #ffffff;
-  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--border) / 0.7));
-  box-shadow: 0 3px 10px -2px rgba(45, 35, 25, 0.07), inset 0 1px 0 #ffffff;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.8);
+  border-radius: 0.875rem;
+  box-shadow: 0 2px 8px -2px rgba(20, 30, 60, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+[dir='rtl'] [data-app-sidebar] .workspace-nav-active {
+  box-shadow: 0 2px 8px -2px rgba(20, 30, 60, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .dark [data-app-sidebar] [aria-current='page'] { color: hsl(var(--primary)); }
 .dark [data-app-sidebar] .workspace-nav-active {
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, rgba(255, 255, 255, 0.15));
-  box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: hsl(var(--card) / 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.875rem;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
+}
+.dark[dir='rtl'] [data-app-sidebar] .workspace-nav-active {
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
 }
 @media (prefers-reduced-motion: reduce) {
   [data-app-sidebar], [data-app-sidebar] * { transition: none !important; animation: none !important; }
 }
 .mobile-tab-bar {
-  background: hsl(var(--card) / .97);
-  border-color: hsl(var(--foreground) / .12);
-  box-shadow: 0 8px 24px -10px rgb(20 20 19 / .16), inset 0 1px 0 rgb(255 255 255 / .65);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 12px 32px rgba(20, 40, 80, 0.10),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
 }
 .dark .mobile-tab-bar {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 24px -10px rgb(0 0 0 / .45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: rgba(20, 19, 25, 0.82);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 12px 36px rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
 }
 
 /* ── Fin de la feuille : aucune couleur hors palette ─────────────────── */
@@ -1914,7 +1906,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   min-height: 2.1rem;
   margin-inline-start: 0.35rem;
   padding: 0.15rem 0.1rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(1.45rem, 3.2vw, 1.9rem);
   font-weight: 900;
   line-height: 1;
@@ -1963,7 +1955,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   /* Accent artisanal sur les actions : relief léger et ligne intérieure. */
   /* Direction arabe : palette fès/vert zellige et géométrie andalouse plus calme. */
   body:has(.card-andalusian[dir="rtl"]) .keep-class-title {
-  font-family: var(--font-arabic-display);
+  font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.65;
   letter-spacing: 0;
@@ -2522,7 +2514,7 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
 .class-choice__group {
   flex: none;
   color: hsl(var(--muted-foreground));
-  font-family: var(--font-latin-display);
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1;
@@ -2564,7 +2556,7 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
    feuille d'énoncé, lisible à l'écran comme sur le papier. */
 .devoir-document {
   --doc-title-ink: #1f3a5f;
-  --doc-title-font: 'Newsreader', var(--font-arabic-display), Georgia, serif;
+  --doc-title-font: var(--font-display);
   --doc-fs: 14px;
   --doc-lh: 1.72;
   --doc-fs-title: clamp(1.5rem, 1.3rem + 0.6vw, 1.8rem);
@@ -2691,7 +2683,7 @@ mark.doc-hl .katex-display > .katex {
 
 /* Academic document headings remain legible independently of the app accent. */
 .document-preview-title {
-  font-family: 'Newsreader', var(--font-arabic-display), Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.3;

@@ -38,6 +38,13 @@ const renderSheet = (events: PedagogicalEvent[], locale: 'fr' | 'ar' = 'fr') => 
 
 const occurrences = (html: string, needle: string) => html.split(needle).length - 1;
 
+test('la langue du tableau suit le contexte de traduction même sans document global', () => {
+  for (const locale of ['fr', 'ar'] as const) {
+    const html = renderSheet([event('e1', 'olympiade', 'Olympiade', '2026-09-14')], locale);
+    assert.match(html, new RegExp(`^<div lang="${locale}" class="evaluation-workspace`));
+  }
+});
+
 test('les neuf types affichent leur titre sans répéter la nature ou la note', () => {
   const types: PedagogicalEventType[] = ['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'autre'];
   for (const locale of ['fr', 'ar'] as const) {
@@ -80,6 +87,9 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.doesNotMatch(olympiade, /ev-row__kind|hub-card__icon|ev-row__state/, 'aucune pastille d’icône de nature ni colonne d’état dans la zone');
   // Document : facultatif pour une olympiade (neutre), inexistant pour un contrôle des cahiers.
   assert.match(olympiade, /data-doc-state="idle"/, 'olympiade : document facultatif, absent = neutre');
+  assert.doesNotMatch(olympiade, /data-filled="missing" data-doc-state="idle"/, 'un support facultatif ne devient pas une alerte');
+  const diagnostic = renderSheet([event('d1', 'evaluation_diagnostic', 'Diagnostic', '2026-09-14')]);
+  assert.match(diagnostic, /data-filled="missing" data-doc-state="missing"/, 'le sujet obligatoire manquant conserve son état');
   assert.doesNotMatch(cahiers, /data-doc-state/, 'contrôle des cahiers : jamais de bouton document');
   // Une teinte par nature : ambre pour l'olympiade, ardoise pour le contrôle des
   // cahiers (une vérification administrative, pas une épreuve). On vise la ligne

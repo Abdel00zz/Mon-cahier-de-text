@@ -1,3 +1,5 @@
+@import './evaluationTypography.css';
+
 /* ══════════════════════════════════════════════════════════════
    Modale "Contrôle continu et activités" - Design System Épuré
    Inspiré du prototype HTML / CSS :
@@ -12,7 +14,7 @@
   --bg-page: color-mix(in srgb, hsl(39 38% 97%) 95%, hsl(var(--primary)) 5%);
   --text-dark: #1c1c1e;
   --text-secondary: #5c5b57;
-  --text-muted: #8a8882;
+  --text-muted: #69675f;
   --color-terracotta: hsl(var(--primary));
 
   /* Tons d'accent iOS 18 */
@@ -33,7 +35,7 @@
 
   --radius-card: 16px;
   --radius-item: 10px;
-  --ev-actions-width: 9.5rem;
+  --ev-actions-width: minmax(17rem, 1.3fr);
 
   /* Jetons d'application */
   --eval-paper: var(--bg-page);
@@ -44,15 +46,29 @@
   --eval-card: hsl(40 42% 99.2%);
   --eval-row-hover: rgba(118, 114, 106, 0.045);
 
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
+  line-height: 1.6;
   color: var(--text-dark);
+}
+
+/* Les documents et les formules conservent leur propre typographie. */
+.evaluation-reference :is(.evaluation-workspace, .ev-board, .ev-accordion__toggle) {
+  font-family: var(--font-sans);
+}
+
+.evaluation-reference .ev-row__id {
+  font-family: var(--eval-font-row);
+}
+
+.evaluation-reference :is(.ev-row__id, .ev-row__date, .ev-row__actions) button {
+  font-family: inherit;
 }
 
 .dark .evaluation-reference {
   --bg-page: color-mix(in srgb, hsl(var(--background)) 92%, hsl(224 28% 15%));
   --text-dark: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
-  --text-muted: hsl(var(--muted-foreground) / 0.72);
+  --text-muted: hsl(var(--muted-foreground));
   --color-terracotta: hsl(var(--primary));
 
   --badge-green-bg: rgba(74, 222, 128, 0.14);
@@ -113,9 +129,9 @@
 
 .evaluation-reference .main-title {
   font-family: var(--font-display);
-  font-size: 17.5px;
-  font-weight: 800;
-  letter-spacing: -0.022em;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 .evaluation-reference .class-tag {
@@ -136,15 +152,15 @@
 
 /* Titre de famille (« Devoirs et évaluations », « Activités pédagogiques ») */
 .evaluation-reference .evaluations-category-title {
-  font-family: var(--font-display);
+  font-family: var(--eval-font-secondary);
   font-size: 18px;
-  font-weight: 800;
-  line-height: 1.3;
+  font-weight: var(--eval-secondary-weight);
+  line-height: 1.6;
   color: var(--text-dark);
   margin-bottom: 10px;
   margin-top: 8px;
   padding-inline: 4px;
-  letter-spacing: -0.022em;
+  letter-spacing: normal;
 }
 
 .evaluation-reference .kind-group {
@@ -152,10 +168,11 @@
 }
 
 .evaluation-reference .kind-group__count {
+  font-family: var(--eval-font-secondary);
   padding: 3px 10px;
   border-radius: 9999px;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: var(--eval-secondary-weight);
   background: var(--header-row-bg);
   color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
@@ -207,20 +224,21 @@
 
 .evaluation-reference .ev-accordion__label-text {
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 750;
-  letter-spacing: -0.014em;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: normal;
   color: var(--text-dark);
   text-align: start;
 }
 
 /* Arabe : ni approche négative ni capitales ; lisibilité optimale */
-html[lang='ar'] .evaluation-reference :is(.main-title, .evaluations-category-title, .ev-accordion__label-text) {
+html[lang='ar'] .evaluation-reference :is(.main-title, .ev-accordion__label-text) {
   letter-spacing: normal;
   font-weight: 700;
 }
 html[lang='ar'] .evaluation-reference .evaluations-category-title { font-size: 18.5px; line-height: 1.4; }
-html[lang='ar'] .evaluation-reference .ev-accordion__label-text { font-size: 15.5px; line-height: 1.45; }
+html[lang='ar'] .evaluation-reference .ev-accordion__label-text { font-size: 17px; line-height: 1.6; }
 html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-transform: none; font-size: 12px; }
 
 /* Bouton toggle flèche doux style iOS */
@@ -265,24 +283,25 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 
 /* En-tête du tableau */
 .evaluation-reference .ev-board__head {
+  font-family: var(--eval-font-secondary);
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) var(--ev-actions-width);
+  grid-template-columns: minmax(0, 1fr) 9rem var(--ev-actions-width);
   grid-template-areas: 'id date actions';
   align-items: center;
   padding: 8px 16px;
   background: var(--header-row-bg);
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: var(--eval-secondary-weight);
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--text-muted);
 }
 
-/* Lignes du tableau : toujours sur une seule ligne horizontale (id | date | actions) */
+/* Colonnes stables sur grand écran ; repli selon la largeur réelle du tableau. */
 .evaluation-reference .ev-board__rows > .ev-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) var(--ev-actions-width);
+  grid-template-columns: minmax(0, 1fr) 9rem var(--ev-actions-width);
   grid-template-areas: 'id date actions';
   align-items: center;
   column-gap: 10px;
@@ -314,31 +333,47 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-row__id > button,
 .evaluation-reference .ev-row__id > span,
 .evaluation-reference .ev-row__id h4 {
-  min-height: unset !important;
+  font-family: var(--eval-font-row);
+  min-height: 44px;
   height: auto !important;
   padding: 1px 0 !important;
   margin: 0 !important;
-  font-size: 13.75px;
-  font-weight: 650;
-  line-height: 1.32;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.65;
   color: var(--text-dark);
   text-align: start;
   justify-content: flex-start;
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
+  overflow-wrap: anywhere;
 }
 
 .evaluation-reference .ev-row__meta {
+  font-family: var(--eval-font-secondary);
+  font-weight: var(--eval-secondary-weight);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   gap: 2px 8px;
   margin-top: 2px;
-  font-size: 11.5px;
-  line-height: 1.3;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--text-secondary);
+}
+
+.evaluation-reference .ev-row__note {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+.evaluation-reference .ev-row__date button > span {
+  font-size: inherit;
+  font-weight: inherit;
+  white-space: normal;
 }
 
 /* Date de l'élément : capsule iOS cohérente */
@@ -351,6 +386,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 
 .evaluation-reference .ev-row__date .ev-date-trigger {
   width: auto;
+  max-width: 100%;
   justify-content: center;
   font-size: 12.5px;
   font-weight: 650;
@@ -360,8 +396,8 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   box-shadow: none !important;
   padding: 3px 10px !important;
   border-radius: 999px !important;
-  min-height: 30px !important;
-  height: 30px !important;
+  min-height: 44px !important;
+  height: auto !important;
   white-space: nowrap;
   transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
@@ -405,60 +441,59 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  flex-wrap: nowrap !important;
-  white-space: nowrap !important;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
-/* Boutons d'action : icônes seules style iOS Squircle, sauf quand la date limite est renseignée */
-.evaluation-reference .ev-action:has(.ev-action__icon) > span:not(.ev-action__count):not(.ev-action__date) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
+/* Icône + verbe court : chaque commande reste compréhensible sans survol. */
 .evaluation-reference .ev-action {
   position: relative;
-  width: 36px;
-  padding-inline: 0;
-  gap: 4px;
-  font-size: 11.5px;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.evaluation-reference .ev-action:has(.ev-action__count) {
   width: auto;
-  padding-inline: 8px;
-}
-
-.evaluation-reference .ev-action:has(.ev-action__date) {
-  width: auto;
-  padding-inline: 10px;
-  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+  padding: 8px 10px;
+  gap: 6px;
   font-size: 12px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: start;
+  touch-action: manipulation;
 }
 
-.evaluation-reference .ev-action:has(.ev-action__date) .ev-action__icon {
-  display: none;
+.evaluation-reference .ev-action > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.evaluation-reference .ev-action__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 21px;
+  min-height: 21px;
+  padding-inline: 4px;
+  border-radius: 5px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+}
+
+.evaluation-reference .ev-action__date {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .evaluation-reference .ev-icon-btn {
-  width: 36px;
+  width: 44px;
+  flex: 0 0 44px;
 }
 
 .evaluation-reference .ev-action,
 .evaluation-reference .ev-icon-btn {
-  height: 36px !important;
-  min-height: 36px !important;
-  min-width: 36px !important;
+  height: auto;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 10px;
   background: var(--icon-gray-bg);
   border: 1px solid var(--border-card);
@@ -489,10 +524,15 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 
 .evaluation-reference .ev-action:active,
 .evaluation-reference .ev-icon-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.97);
 }
 
-/* Bouton Document : vert = contenu existant, rouge = contenu manquant */
+.evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger, .ev-accordion__toggle):focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+/* Document disponible : vert ; document obligatoire manquant : rouge. */
 .evaluation-reference .ev-action[data-filled='ok'] {
   color: #15803d;
   border-color: rgba(22, 163, 74, 0.28);
@@ -536,143 +576,43 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   transform: translateY(-1px);
 }
 
-/* Adaptation mobile iOS 18 : Titre + Date + Boutons sur LA MÊME LIGNE, zone élargie */
-@media (max-width: 680px) {
-  .evaluation-reference .modal-header {
-    padding: 10px 14px;
-    min-height: 3.25rem;
-  }
-  .evaluation-reference .main-title,
-  .evaluation-reference .modal-header [data-ui-title] {
-    font-size: 14.5px;
-    line-height: 1.3;
-  }
-  .evaluation-reference .modal-body {
-    padding: 10px 8px 22px !important;
-  }
-  .evaluation-reference .evaluations-category-title {
-    font-size: 15px;
-    margin-top: 2px;
-    margin-bottom: 8px;
-    padding-inline: 6px;
-  }
-  html[lang='ar'] .evaluation-reference .evaluations-category-title {
-    font-size: 16px;
-  }
-  .evaluation-reference .ev-accordion {
-    border-radius: 14px;
-    margin-bottom: 8px;
-  }
-  .evaluation-reference .ev-accordion__toggle {
-    min-height: 46px !important;
-    padding: 9px 12px;
-    gap: 8px;
-  }
-  .evaluation-reference .ev-accordion__label {
-    gap: 8px;
-    min-width: 0;
-    flex: 1;
-  }
-  .evaluation-reference .ev-accordion__label-text {
-    font-size: 13.5px;
-    font-weight: 700;
-    line-height: 1.3;
-    text-align: start;
-  }
-  html[lang='ar'] .evaluation-reference .ev-accordion__label-text {
-    font-size: 14.5px;
-  }
-  .evaluation-reference .ev-accordion__toggle-icon {
-    width: 26px;
-    height: 26px;
-    min-height: 26px !important;
-    border-radius: 999px;
-    flex-shrink: 0;
-  }
-  .evaluation-reference .ev-board__head {
-    display: none !important;
-  }
-  /* Identity and date remain readable; actions have their own touch row. */
+/* La disposition dépend du panneau, y compris sur tablette et en écran partagé. */
+@container (max-width: 50rem) {
+  .evaluation-reference .ev-board__head { display: none; }
   .evaluation-reference .ev-board__rows > .ev-row {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    grid-template-areas: 'id date' 'actions actions' !important;
-    align-items: center !important;
-    column-gap: 6px !important;
-    row-gap: 8px !important;
-    padding: 9px 10px !important;
-    min-height: 48px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    grid-template-areas: 'id date' 'actions actions';
+    gap: 8px 12px;
+    padding: 12px;
   }
-  .evaluation-reference .ev-row__id {
-    grid-area: id !important;
-    align-self: center !important;
-    justify-self: start !important;
-    width: 100%;
-    min-width: 0;
-  }
-  .evaluation-reference .ev-row__id > button,
-  .evaluation-reference .ev-row__id > span,
-  .evaluation-reference .ev-row__id h4 {
-    font-size: 12.5px !important;
-    font-weight: 650 !important;
-    line-height: 1.25 !important;
-    letter-spacing: -0.01em;
-  }
-  html[lang='ar'] .evaluation-reference .ev-row__id > button,
-  html[lang='ar'] .evaluation-reference .ev-row__id > span,
-  html[lang='ar'] .evaluation-reference .ev-row__id h4 {
-    font-size: 13px !important;
-    letter-spacing: normal;
-  }
-  .evaluation-reference .ev-row__meta {
-    font-size: 10.5px;
-    line-height: 1.2;
-    margin-top: 1.5px;
-    gap: 2px 6px;
-  }
-  .evaluation-reference .ev-row__date {
-    grid-area: date !important;
-    align-self: center !important;
-    justify-self: center !important;
-    width: auto !important;
-  }
-  .evaluation-reference .ev-row__date .ev-date-trigger,
-  .evaluation-reference .ev-row__date .ev-date-empty {
-    min-height: 44px !important;
-    height: auto !important;
-    padding: 0 7px !important;
-    font-size: 11px !important;
-    border-radius: 999px !important;
-  }
+  .evaluation-reference .ev-row__date { justify-self: end; max-width: 100%; }
   .evaluation-reference .ev-row__actions {
-    grid-area: actions !important;
-    align-self: center !important;
-    justify-self: end !important;
-    width: auto !important;
-    justify-content: flex-end !important;
-    gap: 6px !important;
-    flex-wrap: wrap !important;
-    max-width: 100%;
-    margin-top: 0 !important;
+    justify-self: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 8px;
   }
-  .evaluation-reference .ev-action,
-  .evaluation-reference .ev-icon-btn {
-    width: 44px !important;
-    min-width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    border-radius: 9px !important;
+  .evaluation-reference .ev-icon-btn[data-danger='true'] { margin-inline-start: auto; }
+}
+
+/* À très faible largeur, un titre long ou une période ne comprime aucun contrôle. */
+@container (max-width: 23rem) {
+  .evaluation-reference .ev-board__rows > .ev-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'id' 'date' 'actions';
   }
-  .evaluation-reference .ev-action:has(.ev-action__count),
-  .evaluation-reference .ev-action:has(.ev-action__date) {
-    width: auto !important;
-    padding-inline: 6px !important;
-  }
-  .evaluation-reference .ev-action .ev-action__icon,
-  .evaluation-reference .ev-icon-btn svg {
-    width: 15px !important;
-    height: 15px !important;
-  }
+  .evaluation-reference .ev-row__date { justify-self: start; }
+}
+
+@media (max-width: 680px) {
+  .evaluation-reference .modal-header { padding: 12px 14px; }
+  .evaluation-reference .main-title { font-size: 17px; line-height: 1.6; }
+  .evaluation-reference .modal-body { padding: 12px 8px 22px; }
+  .evaluation-reference .evaluations-category-title { font-size: 17px; }
+  .evaluation-reference .ev-accordion { border-radius: 14px; }
+  .evaluation-reference .ev-accordion__toggle { padding: 12px; gap: 8px; }
+  .evaluation-reference .ev-accordion__label-text { font-size: 15px; }
+  html[lang='ar'] .evaluation-reference .ev-accordion__label-text { font-size: 16px; }
 }
 
 /* Pictogramme des commandes (Contenu, Absents, Élèves…) */
@@ -690,7 +630,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   .evaluation-reference .ev-action:hover .ev-action__icon { transform: translateY(-1px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .evaluation-reference .ev-action .ev-action__icon { transition: none; transform: none !important; }
+  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger, .ev-accordion__toggle-icon, .ev-action__icon) { transition: none; animation: none; transform: none !important; }
 }
 
 /* ── « Correction du devoir maison » : la seconde entrée du devoir, rangée sous lui ── */

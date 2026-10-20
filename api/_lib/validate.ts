@@ -433,6 +433,9 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
   if (settings === undefined) return undefined;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) throw new HttpError(400, 'Réglages synchronisés invalides.');
   const result = { ...(settings as Record<string, unknown>) };
+  if (result.teacherPhone !== undefined && (typeof result.teacherPhone !== 'string' || result.teacherPhone.length > 64)) {
+    throw new HttpError(400, 'Numéro de téléphone du profil invalide (64 caractères maximum).');
+  }
   if (result.contentNumbering !== undefined) {
     const numbering = result.contentNumbering;
     if (!isPlainObject(numbering) || typeof numbering.enabled !== 'boolean'

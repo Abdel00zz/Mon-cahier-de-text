@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import type { AppConfig, ClassInfo } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import './absencesTab.css';
-import { X } from '@/components/ui/icons';
+import { X, FileSignature } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { StatusNotice } from '@/components/ui/status-notice';
 import { SettingsSection } from './SettingsPrimitives';
@@ -44,6 +44,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
         <SettingsSection
             title={t('notifications.absences')}
             hint={t('notifications.absenceHint')}
+            icon={FileSignature}
             separators={false}
         >
             {absences.length > 0 && (

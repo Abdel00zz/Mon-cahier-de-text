@@ -6,7 +6,7 @@ export const dates = chapter('dates', ["editor", "schedule", "notifications"], {
     "keywords": "date début fin répartition plusieurs séances calendrier avertissement",
     "image": {
         "key": "dates",
-        "caption": "Sélection d’une date pour le contenu. Capture d’une version antérieure."
+        "caption": "Attribution d’une date et vérification des alertes."
     },
     "sections": [
         {
@@ -33,7 +33,7 @@ export const dates = chapter('dates', ["editor", "schedule", "notifications"], {
     "keywords": "تاريخ بداية نهاية توزيع حصص تقويم تنبيه",
     "image": {
         "key": "dates",
-        "caption": "اختيار تاريخ للمحتوى. لقطة من إصدار سابق."
+        "caption": "إسناد تاريخ الحصة والتحقق من التنبيهات."
     },
     "sections": [
         {

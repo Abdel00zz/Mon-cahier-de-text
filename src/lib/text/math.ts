@@ -1,4 +1,4 @@
-import { toDisplayText } from './textValue';
+import { toDisplayText } from './textValue.js';
 
 /**
  * Détection de syntaxe mathématique (LaTeX) dans une saisie : $…$, $$…$$,

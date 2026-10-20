@@ -223,8 +223,14 @@
 .guide-article {
   max-width: 860px;
   margin-inline: auto;
-  padding: 24px clamp(18px, 3vw, 40px) 32px;
   overflow-wrap: anywhere;
+}
+.guide-reader .guide-article {
+  padding: 24px clamp(18px, 3vw, 40px) 32px;
+}
+.guide-page-panel .guide-article {
+  padding: 0;
+  max-width: 100%;
 }
 .guide-eyebrow {
   display: inline-block;
@@ -254,44 +260,60 @@
   color: var(--guide-muted);
 }
 .guide-article section {
-  margin-top: 14px;
+  margin-top: 12px;
 }
 .guide-article h3 {
-  margin-bottom: 6px;
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.4;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
   color: var(--guide-ink);
 }
 .guide-article section p,
 .guide-steps,
 .guide-terms,
 .guide-tip {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13.5px;
+  line-height: 1.55;
   color: var(--guide-muted);
 }
 .guide-steps {
   padding-inline-start: 18px;
   list-style: decimal;
+  margin-top: 4px;
 }
 .guide-steps li {
   padding-inline-start: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .guide-steps li::marker {
   color: var(--guide-accent);
-  font-weight: 600;
+  font-weight: 700;
+}
+.guide-terms {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
 }
 .guide-terms > div {
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  line-height: 1.5;
 }
 .guide-terms dt {
+  display: inline;
   color: var(--guide-ink);
-  font-weight: 600;
+  font-weight: 700;
+}
+.guide-terms dt::after {
+  content: ' : ';
+  font-weight: 700;
+  color: var(--guide-ink);
 }
 .guide-terms dd {
-  margin: 2px 0 0;
+  display: inline;
+  margin: 0;
+  color: var(--guide-muted);
 }
 .guide-tip {
   margin-top: 14px;
@@ -306,7 +328,8 @@
   font-weight: 700;
 }
 .guide-figure {
-  margin: 12px 0;
+  margin: 14px auto;
+  max-width: 780px;
 }
 .guide-image-frame {
   padding: 4px;
@@ -357,19 +380,26 @@
   }
 }
 .guide-figure figcaption {
-  margin-top: 4px;
-  font-size: 10.5px;
-  line-height: 1.4;
+  margin-top: 8px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.45;
   color: var(--guide-muted);
 }
 .guide-figure figcaption strong {
-  font-size: 11px;
-  font-weight: 600;
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--guide-ink);
+  text-align: center;
+  margin-bottom: 2px;
 }
 .guide-figure figcaption span {
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--guide-muted);
 }
 .guide-image-fallback {
   padding: 12px;

@@ -31,7 +31,7 @@
   aspect-ratio: 1;
   flex-shrink: 0;
   user-select: none;
-  pointer-events: none;
+  pointer-events: auto;
   background: none;
   border: 0;
   box-shadow: none;
@@ -59,6 +59,7 @@
   --figure-outfit-3-shade: color-mix(in srgb, var(--figure-outfit-3) 80%, #000);
 }
 .dynamic-illustration svg { display: block; width: 100%; height: 100%; stroke-linecap: round; stroke-linejoin: round; }
+.dynamic-illustration > .motion-surface__layer { position: absolute; inset: 0; }
 .figure-paper { fill: var(--figure-paper); }
 .figure-neutral { fill: var(--figure-neutral); }
 .figure-soft { fill: var(--figure-soft); }
@@ -91,12 +92,12 @@
 .figure-face-dot { fill: var(--figure-face-ink); }.figure-face-line { stroke: var(--figure-face-ink); stroke-width: 2.6; fill: none; }
 .figure-face-eyes { stroke-width: 3.4; }
 
-.figure-scene { animation: figure-enter 220ms cubic-bezier(.2,.8,.2,1) both; transform-origin: center; }
+.figure-scene { animation: figure-enter 260ms cubic-bezier(.34,1.56,.64,1) both; transform-origin: center; }
 /* Gentle breathing and twinkling: alive without drawing attention. */
-.figure-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: figure-breathe 3.6s ease-in-out infinite; }
+.figure-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: figure-breathe 3.6s cubic-bezier(.45,0,.55,1) infinite; }
 .figure-sparkle { animation: figure-twinkle 2.4s ease-in-out infinite; } /* opacity only: a CSS transform would override the SVG position attribute */
-@keyframes figure-enter { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-@keyframes figure-breathe { 50% { transform: translateY(-2px) scale(1.012); } }
+@keyframes figure-enter { from { opacity: 0; transform: translate3d(0, 5px, 0) scale(.97); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes figure-breathe { 50% { transform: translate3d(0, -2px, 0) scale(1.012); } }
 @keyframes figure-twinkle { 50% { opacity: .3; } }
 @media (prefers-reduced-motion: reduce) { .figure-scene, .figure-breathe, .figure-sparkle { animation: none; } }
 @media (forced-colors: active) {
@@ -106,10 +107,9 @@
 
 /* Small gestures share a long resting phase so the content keeps priority. */
 .figure-wave, .figure-point { transform-box: fill-box; transform-origin: 50% 100%; }
-.figure-wave { animation: figure-wave 5.8s ease-in-out infinite; }
-.figure-point { animation: figure-point 6.2s ease-in-out infinite; }
+.figure-wave { animation: figure-wave 5.8s cubic-bezier(.34,1.56,.64,1) infinite; }
+.figure-point { animation: figure-point 6.2s cubic-bezier(.34,1.56,.64,1) infinite; }
 .figure-face-dot, .figure-face-eyes { transform-box: fill-box; transform-origin: center; animation: figure-blink 6.8s ease-in-out infinite; }
-.dynamic-illustration[data-motion="off"] * { animation-play-state: paused; }
 @keyframes figure-wave { 8%, 20% { transform: rotate(-7deg); } 14%, 26% { transform: rotate(5deg); } 32%, 100% { transform: rotate(0); } }
 @keyframes figure-point { 12%, 24% { transform: rotate(-4deg); } 36%, 100% { transform: rotate(0); } }
 @keyframes figure-blink { 0%, 44%, 48%, 100% { transform: scaleY(1); } 46% { transform: scaleY(.12); } }
