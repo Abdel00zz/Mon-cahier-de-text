@@ -1,0 +1,106 @@
+[
+  {
+    "title": "Module 1 : Les principes comptables et les états de synthèse selon le PCGM",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les fondements et postulats comptables",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le rôle légal, fiscal et managérial de la comptabilité selon le Plan Comptable Général Marocain (PCGM)",
+            "description": "Normalisation comptable nationale, transparence financière et obligations du Code de Commerce."
+          },
+          {
+            "type": "loi",
+            "title": "Les sept principes comptables fondamentaux du PCGM",
+            "description": "Continuité d'exploitation, permanence des méthodes, coût historique, spécialisation des exercices, prudence, clarté, importance significative."
+          },
+          {
+            "type": "definition",
+            "title": "Le Bilan comptable : Actif (emplois) et Passif (ressources) - L'équilibre financier fondamental",
+            "description": "Actif immobilisé, actif circulant, trésorerie-actif face au financement permanent, passif circulant et trésorerie-passif."
+          },
+          {
+            "type": "cours",
+            "title": "Le Compte de Produits et Charges (CPC) et formation du résultat net",
+            "description": "Produits d'exploitation, charges d'exploitation, résultat financier, résultat non courant et impôt sur les sociétés (IS)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : L'organisation comptable normalisée et la partie double",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "De la pièce justificative aux livres légaux",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La notion de compte et le principe universel de la partie double (Débit = Crédit)",
+            "description": "Fonctionnement des comptes d'actif, de passif, de charges et de produits."
+          },
+          {
+            "type": "cours",
+            "title": "La nomenclature comptable marocaine : plan de comptes à 5 classes de bilan et 3 classes de gestion",
+            "description": "Structure décimale des numéros de comptes normalisés."
+          },
+          {
+            "type": "methode",
+            "title": "Le processus d'enregistrement : Pièce justificative, Livre-Journal, Grand-Livre et Balance générale",
+            "description": "Contrôle d'exactitude par la balance avant inventaire (égalité des sommes et des soldes)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Les opérations courantes de facturation et de règlement",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Factures d'achats et de ventes avec réductions et TVA",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Enregistrement des factures de 'Doit' et d'Avoir' comportant des réductions commerciales et financières",
+            "description": "Rabais, remises, ristournes (calcul en cascade du Net Commercial) et escompte de règlement (Net Financier)."
+          },
+          {
+            "type": "cours",
+            "title": "La Taxe sur la Valeur Ajoutée (TVA) : TVA facturée, TVA récupérable sur charges et immobilisations, TVA due",
+            "description": "Mécanisme de déduction, prorata de déduction et déclaration fiscale périodique."
+          },
+          {
+            "type": "methode",
+            "title": "Comptabilisation des moyens de règlement : espèces, chèques bancaires et effets de commerce",
+            "description": "Lettre de change (traite) et billet à ordre : création, acceptation, endossement, remise à l'encaissement et à l'escompte."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Initiation aux mathématiques financières",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'intérêt simple et le calcul d'escompte",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Calcul de l'intérêt simple : formule générale I = (C * t * n) / 36000 et valeur acquise",
+            "description": "Prêts et emprunts à court terme, placement bancaire."
+          },
+          {
+            "type": "methode",
+            "title": "L'escompte commercial d'un effet de commerce et calcul des agios bancaires",
+            "description": "Escompte, commissions bancaires, TVA sur agios et valeur nette encaissée par l'entreprise."
+          }
+        ]
+      }
+    ]
+  }
+]

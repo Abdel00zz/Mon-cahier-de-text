@@ -1,0 +1,101 @@
+[
+  {
+    "title": "Unidad 1 : Identidad, Relaciones Interpersonales y Vida Cotidiana",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Comunicación oral y escrita en contexto personal",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Presentarse, hablar de la familia, aficiones y describir el carácter y físico de las personas",
+            "description": "Adjetivos calificativos de personalidad, nacionalidades y profesiones comunes."
+          },
+          {
+            "type": "cours",
+            "title": "Diferencia fundamental y contrastes de uso entre los verbos 'Ser' y 'Estar'",
+            "description": "Ser para características permanentes, identidad y origen ; Estar para estados temporales, localización y estado anímico."
+          },
+          {
+            "type": "cours",
+            "title": "El Presente de Indicativo : verbos regulares de las tres conjugaciones (-ar, -er, -ir) y reflexivos",
+            "description": "Verbos con irregularidades comunes : diptongación (e->ie, o->ue), cambio vocálico (e->i) y primera persona irregular (hacer, salir, poner)."
+          },
+          {
+            "type": "cours",
+            "title": "Construcción y uso de verbos de afección psíquica : Gustar, Encantar, Interesar, Parecer",
+            "description": "Estructura con pronombre de objeto indirecto : 'A mí me gusta / A nosotros nos encanta'."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unidad 2 : La Escuela, el Tiempo Libre y el Entorno Social",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Vida escolar y actividades de ocio",
+        "items": [
+          {
+            "type": "cours",
+            "title": "El sistema educativo en España y en el mundo hispano : asignaturas, horarios y proyectos",
+            "description": "Vocabulario del aula, deberes, biblioteca y exámenes."
+          },
+          {
+            "type": "cours",
+            "title": "La perífrasis de obligación y futuro próximo : Tener que + infinitivo, Ir a + infinitivo, Hay que + infinitivo",
+            "description": "Expresar deberes personales, planes a corto plazo y obligaciones impersonales."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unidad 3 : Memoria, Biografías y los Tiempos del Pasado",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Narrar acontecimientos en el pasado",
+        "items": [
+          {
+            "type": "cours",
+            "title": "El Pretérito Indefinido (Pasado Simple) : conjugación regular y formas irregulares clave",
+            "description": "Verbos fui, estuve, tuve, hice, dije, pude, puse, quise y marcadores temporales (ayer, el año pasado, en 1999)."
+          },
+          {
+            "type": "cours",
+            "title": "El Pretérito Imperfecto : descripción de costumbres del pasado y del marco de la acción",
+            "description": "Terminaciones en -aba y -ía, verbos irregulares ser, ir, ver."
+          },
+          {
+            "type": "cours",
+            "title": "Contraste fundamental en la narración : Pretérito Indefinido vs Pretérito Imperfecto",
+            "description": "Acciones puntuales que hacen avanzar el relato frente a descripciones y acciones habituales simultáneas."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unidad 4 : Ciudades, Viajes y el Mundo Hispanoamericano",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Cultura y patrimonio cultural en España y América Latina",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Geografía, tradiciones, fiestas populares y gastronomía de España e Hispanoamérica",
+            "description": "La herencia andalusí compartida entre Marruecos y España (Córdoba, Granada, Sevilla)."
+          },
+          {
+            "type": "methode",
+            "title": "Redacción guiada de una carta formal o un correo electrónico para organizar un viaje cultural",
+            "description": "Fórmulas de cortesía en español, coherencia en los párrafos y despedidas formales."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -66,8 +66,32 @@ test('findPredefinedFor : reconnaît les classes et matières en arabe et en fra
   assert.ok(entry7, 'Doit supporter le préfixe قسم');
   assert.equal(entry7.fichier, '1bac-sm-mathematiques.json');
 
-  // 8. Classe sans correspondance (matière ou niveau hors catalogue)
-  const unknown = makeClass('c8', 'Classe Musique libre', 'Musique');
-  const entry8 = await findPredefinedFor(unknown);
-  assert.equal(entry8, null, 'Doit retourner null pour une matière ou niveau non répertorié');
+  // 8. Collège 1AC Physique-Chimie en arabe ("الأولى إعدادي", "الفيزياء والكيمياء")
+  const ar1AcPc = makeClass('c8', 'الأولى إعدادي 3', 'الفيزياء والكيمياء');
+  const entry8 = await findPredefinedFor(ar1AcPc);
+  assert.ok(entry8, 'Doit trouver le programme de physique-chimie pour 1AC');
+  assert.equal(entry8.fichier, '1ac-physique-chimie.json');
+
+  // 9. Tronc Commun Scientifique SVT en arabe ("جذع مشترك علمي", "علوم الحياة والأرض")
+  const arTcSvt = makeClass('c9', 'جذع مشترك علمي 1', 'علوم الحياة والأرض');
+  const entry9 = await findPredefinedFor(arTcSvt);
+  assert.ok(entry9, 'Doit trouver le programme SVT pour Tronc Commun Scientifique');
+  assert.equal(entry9.fichier, 'tc-sciences-svt.json');
+
+  // 10. 1er Bac Sciences Économiques et Gestion Maths ("1er Bac Sciences Économiques et Gestion", "Mathématiques")
+  const fr1BacEco = makeClass('c10', '1er Bac Sciences Économiques et Gestion 1', 'Mathématiques');
+  const entry10 = await findPredefinedFor(fr1BacEco);
+  assert.ok(entry10, 'Doit trouver le programme de maths pour 1er Bac Sciences Économiques et Gestion');
+  assert.equal(entry10.fichier, '1bac-eco-mathematiques.json');
+
+  // 11. CPGE 1re année MPSI Mathématiques
+  const cpgeMpsiMath = makeClass('c11', '1re année MPSI 1', 'Mathématiques');
+  const entry11 = await findPredefinedFor(cpgeMpsiMath);
+  assert.ok(entry11, 'Doit trouver le programme de maths pour 1re année MPSI');
+  assert.equal(entry11.fichier, 'cpge-mpsi-mathematiques.json');
+
+  // 12. Classe sans correspondance (matière ou niveau hors catalogue)
+  const unknown = makeClass('c12', 'Classe Musique libre', 'Musique');
+  const entry12 = await findPredefinedFor(unknown);
+  assert.equal(entry12, null, 'Doit retourner null pour une matière ou niveau non répertorié');
 });

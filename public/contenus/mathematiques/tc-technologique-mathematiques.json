@@ -1,0 +1,282 @@
+[
+  {
+    "title": "Chapitre 1 : Notions d'arithmétique dans N",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Multiples, diviseurs et nombres premiers",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Ensemble $\\mathbb{N}$, parité des entiers, multiples et diviseurs",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Nombres premiers et décomposition en facteurs premiers",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calcul du PGCD et PPCM par décomposition et algorithme d'Euclide",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Calcul vectoriel dans le plan",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Vecteurs et opérations",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Égalité vectorielle, relation de Chasles, colinéarité de deux vecteurs",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Milieu d'un segment, centre de gravité d'un triangle",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Démontrer l'alignement de trois points et le parallélisme de deux droites",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : La projection dans le plan",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Théorème de Thalès et projection",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Définition de la projection sur une droite selon une direction donnée",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Thalès direct et réciproque",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Conservation du coefficient de colinéarité par projection",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Ensembles de nombres et calcul numérique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Ensembles et intervalles",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Inclusions $\\mathbb{N} \\subset \\mathbb{Z} \\subset \\mathbb{D} \\subset \\mathbb{Q} \\subset \\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Intervalles de $\\mathbb{R}$, encadrements et valeur absolue $|x|$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Règles de puissances, racines carrées et identités remarquables",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : La droite dans le plan",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Repère et équations cartésiennes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Coordonnées d'un point et d'un vecteur dans un repère orthonormé",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Vecteur directeur et équation cartésienne $ax+by+c=0$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Coefficient directeur (pente) et équation réduite $y = mx+p$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Positions relatives de deux droites (parallélisme, sécantes, perpendicularité)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Polynômes et factorisation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Degré et racines",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition d'un polynôme, monôme et degré",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Division euclidienne d'un polynôme par $x-a$ et schéma de Horner",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Racine d'un polynôme et factorisation",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Équations, inéquations et systèmes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Résolution algébrique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Équations et inéquations du premier degré à une inconnue",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Trinôme du second degré $ax^2+bx+c$, discriminant $\\Delta$ et tableau de signes",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résolution de systèmes linéaires de deux équations à deux inconnues par déterminant de Cramer",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Trigonométrie dans le cercle unité",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Angles orientés et lignes trigonométriques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le cercle trigonométrique, enroulement de la droite numérique et radian",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Définition de $\\cos(x), \\sin(x)$ et $\\tan(x)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formules de symétrie : $\\cos(-x), \\sin(\\pi-x), \\cos(\\pi/2-x)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Identité fondamentale $\\cos^2(x)+\\sin^2(x)=1$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résolution d'équations trigonométriques élémentaires $\\cos(x)=a, \\sin(x)=b$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Généralités sur les fonctions numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Domaine de définition et variations",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Ensemble de définition $D_f$, image et antécédent",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Parité (fonction paire, fonction impaire) et symétries graphiques",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Sens de variation (croissance, décroissance, extremums locaux)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Étude et représentation des fonctions de référence : $x\\mapsto ax^2$ et $x\\mapsto a/x$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Statistiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Séries statistiques à une variable",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Effectifs, fréquences et effectifs cumulés",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Paramètres de position : moyenne arithmétique $\\bar{x}$, médiane $Me$, mode",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Paramètres de dispersion : variance $V$, écart-type $\\sigma$, étendue",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "title": "Module 1 : Lois fondamentales des circuits électriques et théorèmes de réseaux",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Courant continu et méthodes d'analyse des réseaux",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Grandeurs électriques fondamentales : potentiel, tension, intensité, énergie et puissance électrique",
+            "description": "Dipôles passifs linéaires (résistances) et dipôles actifs (générateurs de tension et de courant idéaux et réels)."
+          },
+          {
+            "type": "loi",
+            "title": "Lois de Kirchhoff dans les circuits à mailles multiples : loi des nœuds et loi des mailles",
+            "description": "Établissement rigoureux des équations de circuits."
+          },
+          {
+            "type": "cours",
+            "title": "Théorème de Thévenin et théorème de Norton : modélisation équivalente des dipôles actifs",
+            "description": "Calcul de la f.é.m. de Thévenin Eth, du courant de court-circuit Icc et de la résistance interne Rth."
+          },
+          {
+            "type": "cours",
+            "title": "Théorème de superposition et théorème de Millman",
+            "description": "Résolution rapide des potentiels de nœuds dans les réseaux à plusieurs sources indépendantes."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Régime alternatif sinusoïdal monophasé et puissances",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Analyse fréquentielle et bilan de puissance",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Grandeurs sinusoïdales : valeur instantanée, amplitude, valeur efficace, période, fréquence et phase",
+            "description": "Relation fondamentale : Ueff = Umax / racine(2)."
+          },
+          {
+            "type": "cours",
+            "title": "Représentation vectorielle de Fresnel et méthode des nombres complexes appliquée aux impédances",
+            "description": "Impédance complexe d'une résistance (R), d'une inductance pure (j*L*omega) et d'un condensateur (1 / (j*C*omega))."
+          },
+          {
+            "type": "cours",
+            "title": "Bilan des puissances en alternatif : puissance active P (Watts), réactive Q (VAR) et apparente S (VA)",
+            "description": "Triangle des puissances, théorème de Boucherot et calcul du facteur de puissance cos(phi)."
+          },
+          {
+            "type": "application",
+            "title": "Compensation de l'énergie réactive et relèvement du facteur de puissance par batterie de condensateurs",
+            "description": "Diminution des pertes par effet Joule en ligne et réduction des factures électriques industrielles."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Électronique analogique et composants discrets",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Semi-conducteurs et amplification",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La diode à jonction PN et la diode Zener : caractéristiques I=f(U) et applications",
+            "description": "Redressement simple et double alternance, stabilisation et régulation de tension continue."
+          },
+          {
+            "type": "cours",
+            "title": "Le transistor bipolaire (NPN et PNP) : régimes de fonctionnement (bloqué, saturé, amplificateur)",
+            "description": "Point de fonctionnement au repos, droite de charge statique et coefficient d'amplification en courant beta."
+          },
+          {
+            "type": "cours",
+            "title": "L'Amplificateur Opérationnel (AOP) en régime linéaire : montages fondamentaux",
+            "description": "Montage suiveur, amplificateur inverseur, non inverseur, sommateur et soustracteur différentiel."
+          },
+          {
+            "type": "cours",
+            "title": "L'AOP en régime de saturation : comparateurs simples et comparateur à hystérésis (Trigger de Schmitt)",
+            "description": "Élimination des parasites de commutation et mise en forme de signaux analogiques en signaux TOR."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Logique combinatoire et séquentielle",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Systèmes logiques et traitement numérique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Systèmes de numération (Binaire, Hexadécimal, BCD) et codes pondérés / non pondérés",
+            "description": "Conversions de bases et opérations arithmétiques binaires de base."
+          },
+          {
+            "type": "cours",
+            "title": "Algèbre de Boole : théorèmes de De Morgan et simplification des fonctions logiques par tableaux de Karnaugh",
+            "description": "Recherche de la forme disjonctive minimale (somme de produits)."
+          },
+          {
+            "type": "cours",
+            "title": "Circuits logiques combinatoires intégrés : multiplexeurs, démultiplexeurs, décodeurs et afficheurs 7 segments",
+            "description": "Aiguillage des données et affichage numérique."
+          },
+          {
+            "type": "cours",
+            "title": "Circuits logiques séquentiels : bascules RS, D et JK synchrones et asynchrones",
+            "description": "Fonction mémoire, chronogrammes temporels, compteurs binaires et registres à décalage."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,147 @@
+[
+  {
+    "title": "Chapitre 1 : Les phénomènes géologiques externes et paléogéographie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Reconstitution des paysages anciens",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Étude des figures sédimentaires : rides de courant, fentes de dessiccation, stratification",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Granulométrie et morphoscopie des grains de quartz (émoussés luisants, ronds mats)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Conditions et milieux de sédimentation continentaux, intermédiaires et marins",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Reconstitution paléogéographique d'un bassin sédimentaire phosphaté marocain",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Principes stratigraphiques et échelle des temps géologiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Chronologie relative et absolue",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Principes stratigraphiques : superposition, continuité, recoupement, inclusion et identité paléontologique",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Notion de fossile stratigraphique et fossile de faciès",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Établissement de la carte géologique et réalisation de coupes géologiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Production de matière organique par les végétaux chlorophylliens",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Absorption et photosynthèse",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Mécanismes d'absorption de l'eau et des sels minéraux : osmose, pression osmotique, poils absorbants",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Échanges gazeux chlorophylliens et stomates",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Pigments chlorophylliens : spectre d'absorption et spectre d'action photosynthétique",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Phase photochimique (dépendante de la lumière) et phase thermochimique (cycle de Calvin)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : La communication nerveuse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le message nerveux",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Structure du système nerveux : neurone, axone, gaine de myéline et nerf",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Potentiel de repos membranaire (environ $-70\\text{ mV}$) et répartition ionique ($Na^+/K^+$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Potentiel d'action : dépolarisation, repolarisation, hyperpolarisation et loi du tout ou rien",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Transmission synaptique : synapse chimique, neurotransmetteurs (acétylcholine), PPSE et PPSI",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : La communication hormonale : régulation de la glycémie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Homéostasie glycémique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de la glycémie et valeur de consigne ($1\\text{ g/L}$)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Rôle du pancréas endocrine : îlots de Langerhans, cellules $\\alpha$ (glucagon) et cellules $\\beta$ (insuline)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Action de l'insuline (hormone hypoglycémiante) et du glucagon (hormone hyperglycémiante) sur les organes cibles",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

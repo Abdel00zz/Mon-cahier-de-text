@@ -1,0 +1,94 @@
+[
+  {
+    "title": "Module 1 : Le droit commercial et le statut légal du commerçant",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les actes de commerce et les obligations du commerçant",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La qualification des actes de commerce : par nature, par la forme (lettre de change) et par accessoire",
+            "description": "Différence fondamentale de régime juridique entre acte civil et acte commercial (solidarité des débiteurs, preuve libre)."
+          },
+          {
+            "type": "cours",
+            "title": "L'acquisition de la qualité de commerçant et les incompatibilités légales",
+            "description": "Exercice d'actes de commerce à titre de profession habituelle en son nom et pour son propre compte."
+          },
+          {
+            "type": "cours",
+            "title": "Les obligations professionnelles du commerçant : immatriculation au Registre du Commerce (RC) et tenue des livres comptables",
+            "description": "Rôle d'opposabilité du RC, conservation décennale des livres légaux (journal et grand-livre) et valeur probante."
+          },
+          {
+            "type": "cours",
+            "title": "Le fonds de commerce : éléments constitutifs corporels (matériel, marchandises) et incorporels (clientèle, achalandage, nom commercial, droit au bail)",
+            "description": "Nature juridique du fonds comme bien meuble incorporel et opérations juridiques : vente, apport en société, nantissement et location-gérance."
+          }
+        ]
+      },
+      {
+        "name": "Le droit des sociétés commerciales au Maroc",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Typologie des sociétés commerciales : sociétés de capitaux (Société Anonyme SA) vs sociétés de personnes / hybrides (SARL, SNC)",
+            "description": "Caractéristiques de la SARL (responsabilité limitée aux apports, capital minimum librement fixé) et de la SA (conseil d'administration, directoire, appel public à l'épargne)."
+          },
+          {
+            "type": "cours",
+            "title": "Constitution, fonctionnement, assemblées générales ordinaires/extraordinaires et dissolution des sociétés",
+            "description": "Droits financiers des associés (dividendes, boni de liquidation) et droits politiques (droit de vote, droit d'information)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Le droit du travail et de la sécurité sociale (Code du Travail)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La relation individuelle de travail",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le contrat de travail : définition, critères constitutifs (prestation de travail, rémunération, lien de subordination juridique)",
+            "description": "Formes de contrats : Contrat à Durée Indéterminée (CDI), Contrat à Durée Déterminée (CDD - cas limitatifs), contrat intérimaire et période d'essai."
+          },
+          {
+            "type": "cours",
+            "title": "Les obligations légales de l'employeur et du salarié : durée légale du travail, repos hebdomadaire, congés payés et SMIG",
+            "description": "Réglementation marocaine : 44 heures par semaine (2288 heures/an), sécurité et hygiène au travail."
+          },
+          {
+            "type": "cours",
+            "title": "La cessation du contrat de travail : démission, départ à la retraite et licenciement",
+            "description": "Distinction capitale entre licenciement pour faute grave (sans préavis ni indemnités) et licenciement abusif (indemnité de préavis, de licenciement, et dommages-intérêts)."
+          }
+        ]
+      },
+      {
+        "name": "Les relations collectives et la protection sociale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La représentation collective du personnel et le dialogue social",
+            "description": "Délégués des salariés, comité d'entreprise, liberté syndicale, négociation des conventions collectives de travail et exercice encadré du droit de grève."
+          },
+          {
+            "type": "cours",
+            "title": "Le rôle de l'Inspection du Travail dans le contrôle et la conciliation des conflits",
+            "description": "Visites de contrôle dans les entreprises et procès-verbaux d'infraction."
+          },
+          {
+            "type": "cours",
+            "title": "Le régime marocain de Sécurité Sociale (CNSS) et l'Assurance Maladie Obligatoire (AMO)",
+            "description": "Affiliation de l'entreprise, immatriculation des salariés, prestations familiales, indemnités journalières de maladie, pension de retraite et couverture médicale universelle."
+          }
+        ]
+      }
+    ]
+  }
+]

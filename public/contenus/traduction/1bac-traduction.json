@@ -1,0 +1,105 @@
+[
+  {
+    "title": "Module 1 : Théories fondamentales et procédés techniques de traduction",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les démarches de transfert linguistique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La traduction : science, art et acte de communication interculturelle",
+            "description": "Différence fondamentale entre fidélité au sens (traduction idiomatique) et littéralisme excessif (mot à mot stérile)."
+          },
+          {
+            "type": "cours",
+            "title": "Les procédés de traduction directe selon Vinay et Darbelnet",
+            "description": "L'Emprunt (conservation du terme source, ex: Tajine, Caftan), le Calque (traduction littérale d'une expression) et la Traduction littérale."
+          },
+          {
+            "type": "cours",
+            "title": "Les procédés de traduction oblique",
+            "description": "La Transposition (changement de catégorie grammaticale), la Modulation (changement de point de vue), l'Équivalence (proverbes et locutions idiomatiques) et l'Adaptation culturelle."
+          }
+        ]
+      },
+      {
+        "name": "Les pièges de la traduction arabe-français",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Traitement des faux-amis, des barbarismes et des calques syntaxiques fautifs",
+            "description": "Exemples de divergences lexicales et sémantiques entre le français et l'arabe standard contemporain."
+          },
+          {
+            "type": "cours",
+            "title": "Les particularités stylistiques des deux langues : nominalisation française vs verbalisation arabe",
+            "description": "La phrase française à dominante nominale face à la phrase arabe à dynamique verbale prépondérante."
+          },
+          {
+            "type": "application",
+            "title": "Traduction comparée de phrases idiomatiques et proverbes du patrimoine marocain",
+            "description": "Passage de la métaphore arabe vers son équivalent poétique ou discursif en langue française."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Traduction thématique spécialisée (Presse, Économie et Droit)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Traduction journalistique et géopolitique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le lexique des relations internationales, de la diplomatie et des institutions politiques",
+            "description": "Conventions de titrage de presse en arabe et en français, formules protocolaires et comptes rendus officiels."
+          },
+          {
+            "type": "application",
+            "title": "Version (arabe vers français) : Articles de fond sur le rôle géopolitique du Maroc en Afrique",
+            "description": "Précision terminologique, respect du ton journalistique neutre et élégance syntaxique."
+          }
+        ]
+      },
+      {
+        "name": "Traduction économique, commerciale et juridique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Terminologie de l'économie de marché, de la finance et du commerce extérieur",
+            "description": "Vocabulaire des bourses, des banques centrales, des accords de libre-échange et de l'inflation."
+          },
+          {
+            "type": "application",
+            "title": "Thème (français vers arabe) : Extraits de contrats commerciaux et statuts juridiques d'entreprises",
+            "description": "Rigueur des termes de droit, respect des formules impératives et clarté des clauses d'obligations."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Traduction littéraire et esthétique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Fidélité au style et musicalité du texte",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La traduction littéraire : traduire une voix, un souffle narratif et un imaginaire poétique",
+            "description": "Défis de la traduction de métaphores culturelles spécifiques et de l'implicite littéraire."
+          },
+          {
+            "type": "application",
+            "title": "Version et thème littéraires : extraits de romans maghrébins d'expression française et de prose arabe moderne",
+            "description": "Travail minutieux sur le rythme de la phrase, les sonorités et l'émotion du lecteur cible."
+          }
+        ]
+      }
+    ]
+  }
+]

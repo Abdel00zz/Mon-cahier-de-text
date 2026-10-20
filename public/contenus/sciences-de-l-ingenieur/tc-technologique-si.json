@@ -1,0 +1,152 @@
+[
+  {
+    "title": "Module 1 : Analyse fonctionnelle et structurelle des systèmes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Expression du besoin et cahier des charges fonctionnel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le produit et son cycle de vie : de l'expression du besoin au recyclage",
+            "description": "Normes AFNOR de la démarche de projet industriel et respect de l'environnement."
+          },
+          {
+            "type": "methode",
+            "title": "L'outil 'Bête à cornes' : formulation du besoin fondamental du client",
+            "description": "À qui le produit rend-il service ? Sur quoi agit-il ? Dans quel but ?"
+          },
+          {
+            "type": "methode",
+            "title": "Analyse fonctionnelle du besoin : le diagramme 'Pieuvre' (APTE)",
+            "description": "Identification des Fonctions Principales (FP) et des Fonctions Contraintes (FC)."
+          },
+          {
+            "type": "methode",
+            "title": "Analyse fonctionnelle technique : l'outil FAST (Fonction, Action, Solution Technique)",
+            "description": "Décomposition arborescente des fonctions de service en fonctions techniques élémentaires et composants réels."
+          },
+          {
+            "type": "methode",
+            "title": "Analyse structurelle et flux de matières : le diagramme SADT (niveau A-0 et niveaux descendants)",
+            "description": "Modélisation de la valeur ajoutée, des matières d'œuvre (matière, énergie, information) et des données de contrôle."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Représentation graphique normalisée et modélisation géométrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dessin technique normalisé et lecture de plans",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Normalisation internationale ISO du dessin industriel : formats, cartouche, échelle et types de traits",
+            "description": "Trait continu fort pour les arêtes visibles, trait interrompu court pour les arêtes cachées, trait mixte fin pour les axes."
+          },
+          {
+            "type": "cours",
+            "title": "Méthode des projections orthogonales : disposition européenne des six vues normalisées",
+            "description": "Correspondance géométrique étroite entre vue de face, vue de gauche, vue de droite, vue de dessus et vue de dessous."
+          },
+          {
+            "type": "cours",
+            "title": "Représentation des formes intérieures : coupes simples, demi-coupes et sections sorties",
+            "description": "Règles de hachures selon la nature du matériau (aciers, alliages d'aluminium, matières plastiques)."
+          },
+          {
+            "type": "application",
+            "title": "Initiation à la Conception Assistée par Ordinateur (CAO 3D)",
+            "description": "Création d'esquisses 2D contraintes, extrusion volumique, perçage, congé et assemblage de pièces virtuelles."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Solutions constructives d'assemblage et de guidage",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Liaisons mécaniques et organes associés",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Typologie des liaisons mécaniques normalisées (degrés de liberté en translation et rotation)",
+            "description": "Liaisons encastrement, pivot, glissière, hélicoïdale, appui-plan, linéaire rectiligne, et rotule."
+          },
+          {
+            "type": "cours",
+            "title": "Solutions d'assemblage démontable et indémontable",
+            "description": "Vis, boulons, goujons, goupilles, clavettes, rivets, emmanchement fretté et soudage."
+          },
+          {
+            "type": "cours",
+            "title": "Guidage en rotation : solutions par contact direct (coussinets autolubrifiants) et par roulements",
+            "description": "Roulements rigides à billes, à rouleaux coniques : règles de montage et arrêts axiaux."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : La chaîne d'énergie d'un système pluritechnologique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Alimenter, Distribuer, Convertir et Transmettre l'énergie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Fonction Alimenter : sources d'énergie électrique (réseau ONEE, batteries) et pneumatique (compresseur)",
+            "description": "Grandeurs associées : tension, intensité, pression en bar, débit volumique en L/min."
+          },
+          {
+            "type": "cours",
+            "title": "Fonction Distribuer : les préactionneurs électriques (relais, contacteurs) et pneumatiques (distributeurs)",
+            "description": "Distributeurs 3/2 et 5/2 à commande électrique ou pneumatique."
+          },
+          {
+            "type": "cours",
+            "title": "Fonction Convertir : les actionneurs (moteurs électriques, vérins pneumatiques simple et double effet)",
+            "description": "Transformation de l'énergie en puissance mécanique de translation ou de rotation."
+          },
+          {
+            "type": "cours",
+            "title": "Fonction Transmettre et Adapter : transmission sans et avec transformation de mouvement",
+            "description": "Poulies-courroies, engrenages droits, pignon-crémaillère, système vis-écrou et calcul du rapport de transmission."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 5 : La chaîne d'information et automatisme",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Acquérir, Traiter et Communiquer",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Fonction Acquérir : capteurs de position Tout-Ou-Rien (TOR), mécaniques, inductifs, capacitifs et optiques",
+            "description": "Principe de détection de présence, de fin de course et d'obstacle."
+          },
+          {
+            "type": "cours",
+            "title": "Fonction Traiter : l'unité de commande programmable (microcontrôleur, automate programmable)",
+            "description": "Exécution séquentielle des consignes de pilotage."
+          },
+          {
+            "type": "cours",
+            "title": "Modélisation des cycles de fonctionnement par GRAFCET niveau 1 (point de vue système)",
+            "description": "Étapes actives, transitions, réceptivités logiques associées et actions élémentaires."
+          }
+        ]
+      }
+    ]
+  }
+]

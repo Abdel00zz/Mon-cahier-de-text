@@ -1,0 +1,79 @@
+[
+  {
+    "title": "Module 1 : Les composantes plastiques fondamentales",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le langage de la ligne, de la forme et de la texture",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le point et la ligne comme éléments structurants de la composition plastique",
+            "description": "Variations expressives du trait : continu, haché, épais, effilé, dynamique ou statique."
+          },
+          {
+            "type": "cours",
+            "title": "Les formes géométriques et organiques et leur pouvoir évocateur",
+            "description": "Équilibre, symétrie, dissymétrie, répétition et rythme visuel dans l'espace bidimensionnel."
+          },
+          {
+            "type": "cours",
+            "title": "La matière et les textures : effets de surfaces lisses, rugueuses, en relief et collages",
+            "description": "Exploration des médiums : gouache, fusain, pastels secs et gras, encre de Chine."
+          }
+        ]
+      },
+      {
+        "name": "La couleur et les harmonies chromatiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le cercle chromatique : couleurs primaires, secondaires, tertiaires et complémentaires",
+            "description": "Les trois couleurs primaires soustractives (cyan, magenta, jaune) et les contrastes thermiques chaud / froid."
+          },
+          {
+            "type": "cours",
+            "title": "Nuances de valeurs et dégradés : la lumière et l'ombre portée dans le modelé",
+            "description": "Clair-obscur, dégradés tonals et création de l'illusion du relief et du volume sur une surface plane."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Espace, perspective et patrimoine artistique marocain",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Représentation de l'espace en trois dimensions",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Initiation aux règles de la perspective conique frontale à un point de fuite",
+            "description": "Ligne d'horizon, point de fuite, lignes de fuite et diminution progressive de la taille des objets avec la distance."
+          },
+          {
+            "type": "application",
+            "title": "Dessin en perspective d'un couloir, d'une rue marocaine ou d'une pièce intérieure",
+            "description": "Application rigoureuse des règles de géométrie descriptive au dessin d'art."
+          }
+        ]
+      },
+      {
+        "name": "L'art et le patrimoine traditionnel marocain",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'art du Zellige marocain : rosaces géométriques, symétries et imbrications mathématiques",
+            "description": "Histoire du décor architectural mauresque à Fès, Marrakech et Meknès."
+          },
+          {
+            "type": "cours",
+            "title": "La calligraphie arabe traditionnelle (Koufi, Maghrebi, Diwani) et ses réinventions contemporaines",
+            "description": "Outils traditionnels (calame en roseau, encre de suie) et gestuelle calligraphique sacrée."
+          }
+        ]
+      }
+    ]
+  }
+]

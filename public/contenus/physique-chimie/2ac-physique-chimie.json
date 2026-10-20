@@ -1,0 +1,358 @@
+[
+  {
+    "title": "Chapitre 1 : L'air qui nous entoure",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les couches de l'atmosphère terrestre",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Structure de l'atmosphère : troposphère, stratosphère, mésosphère, thermosphère",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le rôle protecteur de la couche d'ozone contre les rayonnements ultraviolets",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Origine des vents : mouvements de masses d'air entre zones de haute et basse pression",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Propriétés de l'air et composition",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Mise en évidence de la masse de l'air (pesée d'un ballon gonflé et dégonflé)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Composition volumique de l'air : environ $78\\%$ diazote, $21\\%$ dioxygène, $1\\%$ autres gaz",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Les molécules et les atomes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Structure microscopique de la matière",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de l'atome et symboles chimiques ($H, C, O, N, Cl, Fe$)",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Définition de la molécule comme assemblage d'atomes liés",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Formules chimiques usuelles ($H_2O, CO_2, O_2, N_2, CH_4$) et modèles moléculaires compacts",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Corps purs simples et composés",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Distinction entre corps pur simple (atomes identiques) et composé (atomes différents)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Les combustions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Combustions dans le dioxygène",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Combustion du carbone dans l'air et dans le dioxygène pur",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Test au dioxyde de carbone à l'eau de chaux",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Combustion complète et incomplète du butane",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Dangers du monoxyde de carbone $CO$ et consignes de sécurité",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : La réaction chimique et ses lois",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Notion de transformation chimique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition d'une réaction chimique : réactifs consommés et produits formés",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Distinction entre transformation physique et réaction chimique",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Lois de la réaction chimique",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Loi de Lavoisier : conservation de la masse au cours d'une réaction",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation du type et du nombre d'atomes entre réactifs et produits",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Écrire et équilibrer des équations chimiques simples ($C+O_2\\rightarrow CO_2$, $2H_2+O_2\\rightarrow 2H_2O$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Les sources et les récepteurs de lumière",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lumière et vision",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Sources primaires et secondaires de lumière",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Récepteurs de lumière : l'œil, les cellules photovoltaïques, le papier photographique",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Conditions pour qu'un objet soit visible par un observateur",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Propagation rectiligne de la lumière",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Rayons lumineux et ombres",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Principe de la propagation rectiligne de la lumière dans un milieu transparent homogène",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Faisceaux lumineux (convergents, divergents, parallèles)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Formation des ombres : ombre propre, ombre portée, zone de pénombre et éclipses",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Les lentilles minces et formation d'images",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Caractéristiques des lentilles minces",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Classification optique : lentilles convergentes à bords minces et divergentes à bords épais",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Centre optique $O$, axe optique, foyer principal image $F'$ et distance focale $f'$)",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vergence d'une lentille $C = \\frac{1}{f'}$ en dioptries ($\\delta$)",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Construction géométrique de l'image",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Tracé des trois rayons particuliers passant par $O$, parallèle à l'axe, ou passant par $F$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Conditions de netteté de Gauss et nature de l'image (réelle, renversée, virtuelle)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Dispersion de la lumière et couleurs",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Décomposition de la lumière blanche",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Dispersion de la lumière par un prisme ou un réseau",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Spectre continu de la lumière blanche et phénomène de l'arc-en-ciel",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Lumière monochromatique et lumière polychromatique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Le courant électrique continu",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Intensité du courant continu",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Sens conventionnel du courant : de la borne positive vers la borne négative",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Intensité du courant électrique $I$, unité Ampère ($A$)",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation et branchement de l'ampèremètre en série",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi d'unicité de l'intensité en série et loi des nœuds en dérivation",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : La tension électrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Tension électrique et lois",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Notion de tension électrique $U$, unité Volt ($V$)",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Branchement du voltmètre en dérivation aux bornes d'un dipôle",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi d'additivité des tensions en série et d'égalité des tensions en dérivation",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : La résistance électrique et la loi d'Ohm",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le conducteur ohmique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Rôle modérateur d'une résistance dans un circuit électrique",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Mesure à l'ohmmètre et lecture par le code des couleurs",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi d'Ohm pour un conducteur ohmique : $U = R\\cdot I$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Tracer et exploiter la caractéristique intensité-tension d'un résistor",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,195 @@
+[
+  {
+    "title": "Module 1 : Le roman autobiographique (Ahmed Sefrioui - La Boîte à merveilles)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Pacte autobiographique et mémoire de l'enfance",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le pacte autobiographique selon Philippe Lejeune et la spécificité du roman autobiographique marocain",
+            "description": "Identité auteur-narrateur-personnage, écriture rétrospective à la première personne et souvenir d'enfance à Fès."
+          },
+          {
+            "type": "activity",
+            "title": "Analyse du premier chapitre : le préambule de la solitude et la mémoire des objets",
+            "description": "L'évocation de Dar Chouafa, le rituel du bain maure (Hammam), la solitude de Sidi Mohammed et le refuge dans la Boîte."
+          },
+          {
+            "type": "cours",
+            "title": "La Boîte à merveilles comme métaphore de l'imaginaire et du salut psychologique",
+            "description": "Inventaire poétique des boutons, billes de verre et clous : transformation du réel médiocre en féerie intime."
+          },
+          {
+            "type": "cours",
+            "title": "Tableau ethnographique de la société fassie traditionnelle des années 1920",
+            "description": "Rites religieux, superstitions (visite de Sidi Ali Boughaleb, Chouafa), solidarité de voisinage et conflits domestiques."
+          }
+        ]
+      },
+      {
+        "name": "Langue, énonciation et figures du style",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le système de la double énonciation dans l'autobiographie : 'Je' narrant vs 'Je' narré",
+            "description": "Distinction temporelle et psychologique entre la voix de l'adulte qui écrit et le regard de l'enfant qui vit les événements."
+          },
+          {
+            "type": "cours",
+            "title": "Le champ lexical de la solitude, de l'angoisse et de l'enchantement",
+            "description": "Analyse lexicale des états d'âme du narrateur enfant face au monde incompréhensible des adultes."
+          },
+          {
+            "type": "cours",
+            "title": "Les figures d'insistance et d'amplification : anaphore, hyperbole, gradation",
+            "description": "Repérage des figures récurrentes dans l'évocation des scènes dramatiques (la dispute de Rahma et Zoubida)."
+          }
+        ]
+      },
+      {
+        "name": "Production écrite d'argumentation",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Méthodologie du sujet d'argumentation à l'Examen Régional : plan dialectique et concessif",
+            "description": "Compréhension du sujet, formulation de la thèse, recherche d'arguments illustrés d'exemples précis tirés de l'œuvre et du quotidien."
+          },
+          {
+            "type": "application",
+            "title": "Sujet type examen : Les traditions ancestrales sont-elles un frein au progrès ou un garant de l'identité ?",
+            "description": "Rédaction d'une introduction complète (accroche, définition, problématique, plan), de deux paragraphes argumentés et d'une conclusion."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : La tragédie moderne (Jean Anouilh - Antigone)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La réécriture tragique contemporaine et le mythe thébain",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Origine mythologique d'Antigone : de la tragédie grecque de Sophocle à la réécriture moderne d'Anouilh (1944)",
+            "description": "Contexte historique de la création de la pièce sous l'Occupation allemande, allégorie de la Résistance contre la collaboration."
+          },
+          {
+            "type": "activity",
+            "title": "Le Prologue d'Anouilh : présentation anachronique des personnages et métathéâtre",
+            "description": "Rupture avec le chœur antique, désacralisation des héros, révélation immédiate du dénouement et fatalité tragique."
+          },
+          {
+            "type": "cours",
+            "title": "L'affrontement central Antigone / Créon : idéalisme intransigeant contre réalisme politique",
+            "description": "Conflit de valeurs inconciliable : la pureté de l'enfance et le devoir fraternel face à la raison d'État et au bonheur médiocre du 'pain quotidien'."
+          },
+          {
+            "type": "cours",
+            "title": "L'opposition des sœurs : Antigone la révoltée face à Ismène la raisonnable",
+            "description": "Étude comparée des deux postures féminines face à la tyrannie et à la peur de la mort."
+          }
+        ]
+      },
+      {
+        "name": "Outils de la langue et de l'analyse dramaturgique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les registres tragique, pathétique et ironique",
+            "description": "Moyens linguistiques de la fatalité, de la pitié, de la terreur (catharsis) et de la dérision amère."
+          },
+          {
+            "type": "cours",
+            "title": "L'énonciation dans le débat d'idées : les connecteurs d'opposition, de cause et de conséquence",
+            "description": "Organisation rigoureuse de la tirade argumentative et réfutation des thèses adverses."
+          },
+          {
+            "type": "cours",
+            "title": "L'anachronisme volontaire et le niveau de langue familier dans la tragédie moderne",
+            "description": "Effets stylistiques du mélange des registres (cigarettes des gardes, café du matin, langage quotidien)."
+          }
+        ]
+      },
+      {
+        "name": "Production écrite et réflexion critique",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Rédiger un essai critique sur le devoir de désobéissance civile et la liberté individuelle",
+            "description": "Structuration rigoureuse de l'essai : connecteurs logiques, nuances de modalisation et conclusions nuancées."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Le roman à thèse (Victor Hugo - Le Dernier Jour d'un condamné)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La littérature engagée et le combat abolitionniste",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le roman à thèse au XIXe siècle : définition, visée argumentative et plaidoyer pour l'abolition de la peine de mort",
+            "description": "La préface de 1832 de Victor Hugo : manifeste politique et philosophique pour le droit inviolable à la vie."
+          },
+          {
+            "type": "activity",
+            "title": "Analyse du premier chapitre : 'Condamné à mort !' - L'obsession fatale de l'idée fixe",
+            "description": "Monologue intérieur du condamné, passage de la liberté insouciante du passé à la claustration mentale du présent."
+          },
+          {
+            "type": "cours",
+            "title": "Le journal intime d'un supplicié : anonymat volontaire et universalité de la condition humaine",
+            "description": "Pourquoi Victor Hugo refuse-t-il de donner un nom et de préciser le crime commis par son protagoniste ?"
+          },
+          {
+            "type": "application",
+            "title": "Les étapes du calvaire : le ferrage des forçats à Bicêtre, le voyage en charrette, l'arrivée à la Conciergerie et l'échafaud",
+            "description": "Étude du regard sociologique impitoyable de Hugo sur la foule voyeuse et la barbarie légale."
+          }
+        ]
+      },
+      {
+        "name": "Stylistique de l'angoisse et rhétorique du plaidoyer",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le registre pathétique et l'appel à l'empathie du lecteur",
+            "description": "Lexique de la douleur physique et morale, apostrophes au lecteur et focalisation interne déchirante (la visite de sa fille Marie)."
+          },
+          {
+            "type": "cours",
+            "title": "Les figures de style au service du réquisitoire : métaphore filée, antithèse, questions rhétoriques",
+            "description": "Techniques oratoires de la persuasion et de la conviction."
+          },
+          {
+            "type": "cours",
+            "title": "Les champs lexicaux de la mort, du temps qui s'écoule et de la captivité",
+            "description": "Obsession temporelle : décompte impitoyable des heures restantes jusqu'à 4 heures de l'après-midi."
+          }
+        ]
+      },
+      {
+        "name": "Préparation méthodique à l'examen régional",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Analyse méthodique d'un extrait de texte suivi de questions de compréhension littéraire",
+            "description": "Méthode pour repérer le contexte de l'extrait, justifier ses réponses par des citations et analyser les procédés formels."
+          },
+          {
+            "type": "methode",
+            "title": "Entraînement intensif à l'épreuve de production écrite : argumentation sur la justice rétributive vs réhabilitative",
+            "description": "Simulations complètes avec grilles d'évaluation officielles de l'Académie."
+          }
+        ]
+      }
+    ]
+  }
+]

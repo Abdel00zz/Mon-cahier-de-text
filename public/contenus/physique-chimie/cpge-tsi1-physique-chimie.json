@@ -1,0 +1,241 @@
+[
+  {
+    "title": "Chapitre 1 : Cinématique du point matériel",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Repérages et vecteurs",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Coordonnées cartésiennes, cylindriques et sphériques",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Vecteur vitesse et accélération, base de Frenet",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Trajectoires usuelles : rectiligne, circulaire, hélicoïdale",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Dynamique du point en référentiel galiléen",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lois de Newton et théorèmes fondamentaux",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Principe fondamental de la dynamique $\\sum \\vec{F} = m\\vec{a}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Théorème du moment cinétique : $\\frac{d\\vec{L}_O}{dt} = \\vec{\\mathcal{M}}_O(\\vec{F})$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Mouvement à force centrale conservative : lois de Kepler et potentiel effectif",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Dynamique en référentiel non galiléen",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Forces d'inertie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Loi de composition des vitesses et des accélérations (accélération d'entraînement et de Coriolis)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Forces d'inertie d'entraînement $\\vec{F}_{ie} = -m\\vec{a}_e$ et de Coriolis $\\vec{F}_{ic} = -m\\vec{a}_c$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Effets sur Terre : pendule de Foucault et déviation vers l'est",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Énergétique du point matériel",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Théorèmes énergétiques",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Forces conservatives et énergie potentielle $\\vec{F} = -\\vec{\\nabla} E_p$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de l'énergie mécanique et intégrales premières du mouvement",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Stabilité des positions d'équilibre et petites oscillations",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Circuits électriques linéaires en régime transitoire",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Circuits du premier et second ordre",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Lois de Kirchhoff et représentations différentielles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Réponse indicielle d'un circuit $RC$ et $RL$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Circuit $RLC$ série : équation du second ordre, facteur de qualité $Q$, régimes apériodique, critique et oscillatoire",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Régime sinusoïdal forcé et résonance",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Représentation complexe et filtres",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Impédance et admittance complexes $\\underline{Z}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Fonction de transfert $\\underline{H}(j\\omega)$, gain en décibels et phase",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Filtres usuels d'ordre 1 et 2 (passe-bas, passe-haut, passe-bande) et diagrammes de Bode",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Optique géométrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lois de Snell-Descartes et stigmatisme",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Lois de Snell-Descartes pour la réflexion et la réfraction",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Conditions de Gauss et stigmatisme approché",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Miroirs plans, sphériques et lentilles minces : foyers, plans focaux et constructions",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Thermodynamique : Premier et second principes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Systèmes thermodynamiques et bilans",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Description macroscopique, variables d'état et gaz parfait $PV=nRT$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Premier principe de la thermodynamique : $\\Delta U = W + Q$, enthalpie $H = U + PV$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Second principe : création d'entropie $\\Delta S = S_{ech} + S_{cree}$ ($S_{cree} \\ge 0$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Cycles thermodynamiques et machines thermiques : théorème de Carnot",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Architecture de la matière et thermochimie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Structure atomique et équilibres",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Classification périodique, orbitales atomiques et modèle de Lewis / VSEPR",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Premier et second principe appliqués à la réaction chimique : enthalpies standard de réaction $\\Delta_r H^\\circ$ et affinité",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Loi d'action de masse et équilibres acido-basiques, de précipitation et d'oxydoréduction",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

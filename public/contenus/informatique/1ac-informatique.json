@@ -1,0 +1,121 @@
+[
+  {
+    "title": "Unité 1 : Le système informatique (Notions de base)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Concepts fondamentaux et structure d'un ordinateur",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de l'informatique : traitement automatique et rationnel de l'information",
+            "description": "Distinction essentielle entre Information, Donnée, et Traitement."
+          },
+          {
+            "type": "cours",
+            "title": "Structure matérielle d'un ordinateur : Unité Centrale et Périphériques",
+            "description": "Rôle du processeur (CPU), de la mémoire vive (RAM), de la mémoire morte (ROM) et de la carte mère."
+          },
+          {
+            "type": "cours",
+            "title": "Classification fonctionnelle des périphériques informatiques",
+            "description": "Périphériques d'entrée (clavier, souris, scanner), de sortie (écran, imprimante, haut-parleurs) et d'entrée-sortie/stockage (clé USB, disque dur SSD)."
+          },
+          {
+            "type": "application",
+            "title": "Mesure et unités de stockage de la mémoire numérique",
+            "description": "Du bit à l'octet (Byte), Kilooctet (Ko), Mégaoctet (Mo), Gigaoctet (Go) et Téraoctet (To)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 2 : Le système d'exploitation et environnement de travail",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Gestion des fichiers et organisation de l'espace disque",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Rôle et fonctions du système d'exploitation (Windows / GNU Linux)",
+            "description": "Interface homme-machine, gestion des ressources matérielles, lancement des logiciels et sécurité."
+          },
+          {
+            "type": "methode",
+            "title": "Organisation hiérarchique de l'information : arborescence, dossiers et fichiers",
+            "description": "Création, renommage, déplacement, copie et suppression de dossiers et fichiers."
+          },
+          {
+            "type": "cours",
+            "title": "Nomenclature et extensions usuelles des fichiers (.docx, .pdf, .jpg, .mp3, .mp4)",
+            "description": "Identification des types de fichiers et association avec les logiciels appropriés."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 3 : Traitement de texte et mise en page",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Production de documents écrits soignés",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Saisie de texte au kilomètre et correction orthographique automatique",
+            "description": "Règles typographiques françaises et arabes : ponctuation, majuscules, espaces insécables."
+          },
+          {
+            "type": "methode",
+            "title": "Mise en forme des caractères et des paragraphes",
+            "description": "Police, taille, gras, italique, souligné, couleur, alignement (gauche, centré, justifié), interligne et retraits."
+          },
+          {
+            "type": "application",
+            "title": "Insertion et mise en page d'objets : tableaux, images, formes géométriques",
+            "description": "Habillage du texte, fusion et fractionnement de cellules, bordures et trames de fond."
+          },
+          {
+            "type": "methode",
+            "title": "Mise en page finale et préparation de l'impression",
+            "description": "Marges du document, orientation (portrait / paysage), numérotation des pages et aperçu avant impression."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 4 : Réseaux locaux et initiation à Internet",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Communication et recherche documentaire",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Notion de réseau informatique et avantages du réseau local (LAN)",
+            "description": "Partage de fichiers, partage d'imprimante, communication instantanée entre postes."
+          },
+          {
+            "type": "cours",
+            "title": "Le réseau Internet mondial et le Web (World Wide Web)",
+            "description": "Différence entre Internet (réseau des réseaux) et Web (service de pages multimédias interconnectées par hyperliens)."
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation d'un navigateur et techniques de recherche par mots-clés",
+            "description": "Moteurs de recherche, utilisation des guillemets et opérateurs booléens simples."
+          },
+          {
+            "type": "cours",
+            "title": "Netiquette, sécurité numérique et protection des données personnelles",
+            "description": "Choix de mots de passe robustes, sensibilisation aux dangers des virus et du hameçonnage (phishing)."
+          }
+        ]
+      }
+    ]
+  }
+]

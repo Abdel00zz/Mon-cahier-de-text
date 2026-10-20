@@ -1,0 +1,431 @@
+[
+  {
+    "title": "Chapitre 1 : Quelques matériaux utilisés dans la vie quotidienne",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Distinction objet et matériau",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Distinguer entre un objet technique et les matériaux qui le composent",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Les trois grandes familles de matériaux : métaux, matières plastiques, verres et céramiques",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Tests simples de distinction des métaux usuels : fer, cuivre, aluminium, zinc",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Tests de distinction des matières plastiques : PE, PVC, PS, PET (flottaison, combustion)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Les atomes et les ions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Constitution de l'atome",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Noyau central chargé positivement et nuage électronique chargé négativement",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Neutralité électrique de l'atome : charge totale du noyau $+Ze$ et des électrons $-Ze$",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Formation des ions",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition d'un cation (perte d'électrons) et d'un anion (gain d'électrons)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Ions monoatomiques ($Fe^{2+}, Al^{3+}, Cl^-$) et polyatomiques ($SO_4^{2-}, NO_3^-, OH^-$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Écrire le bilan de charge d'une solution électrolytique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Oxydation de quelques métaux dans l'air",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Oxydation du fer et de l'aluminium",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Facteurs favorisant la rouille du fer : dioxygène et eau",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Formation de la rouille ($Fe_2O_3$), matériau poreux qui ne protège pas le fer",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Oxydation de l'aluminium et formation de l'alumine ($Al_2O_3$), couche protectrice imperméable",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Techniques de protection du fer contre la corrosion (peinture, galvanisation)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Combustions des matériaux organiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Combustions et dangers",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Combustion du polyéthylène et du papier dans l'air",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Gaz formés lors de la combustion : dioxyde de carbone, eau, chlorure d'hydrogène, cyanure",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Sensibilisation aux risques d'intoxication et respect de l'environnement",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Solutions acides et solutions basiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Notion de pH",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition du pH comme mesure du caractère acide, neutre ou basique à $25^\\circ\\text{C}$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Mesure du pH au papier indicateur et au pH-mètre",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Échelle de pH de $0$ à $14$ : dominance des ions $H^+$ (acide) ou $HO^-$ (basique)",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Dilution d'une solution",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Évolution du pH lors de l'ajout d'eau pure : le pH se rapproche de 7",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Règle de sécurité : verser toujours l'acide dans l'eau, jamais l'inverse",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Tests d'identification de quelques ions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Tests de précipitation",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Précipitation par la soude des ions $Cu^{2+}$ (bleu), $Fe^{2+}$ (vert), $Fe^{3+}$ (rouille), $Zn^{2+}$ (blanc)",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Précipitation des ions chlorure $Cl^-$ par le nitrate d'argent (précipité blanc qui noircit à la lumière)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Écrire les équations de précipitation ioniques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Action des solutions acides et basiques sur les métaux",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Action de l'acide chlorhydrique sur les métaux",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Réaction de l'acide chlorhydrique avec le fer, le zinc, l'aluminium et absence de réaction avec le cuivre",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Caractérisation du dégagement gazeux de dihydrogène $H_2$ par détonation à la flamme",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Équations bilans ioniques réduites",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Mouvement et repos - La vitesse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Description du mouvement",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Relativité du mouvement : choix indispensable d'un solide de référence",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Notion de trajectoire (rectiligne, circulaire, curviligne)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Mouvement de translation et mouvement de rotation d'un solide",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "La vitesse moyenne et sécurité routière",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Formule de la vitesse moyenne $v = \\frac{d}{t}$ et conversion $m/s \\leftrightarrow km/h$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Types de mouvements : accéléré, uniforme, retardé",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Distance d'arrêt $D_A = D_R + D_F$ et facteurs d'insécurité routière (alcool, fatigue, pluie)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Actions mécaniques et notion de force",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Modélisation d'une action mécanique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Actions de contact (localisées ou réparties) et actions à distance",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Effets d'une action mécanique : effet dynamique (mouvement) ou statique (équilibre, déformation)",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Caractéristiques du vecteur force $\\vec{F}$ : point d'application, droite d'action, sens, intensité (Newton)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Équilibre d'un solide soumis à deux forces",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conditions d'équilibre",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Étude expérimentale d'un corps léger soumis à deux dynamomètres",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Énoncé des conditions d'équilibre : même droite d'action et $\\vec{F}_1 + \\vec{F}_2 = \\vec{0}$ ($F_1 = F_2$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résolution de problèmes d'équilibre statique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Poids et masse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Distinction poids et masse",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La masse $m$ : grandeur intrinsèque invariante mesurée avec une balance",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le poids $\\vec{P}$ : force d'attraction gravitationnelle exercée par la Terre mesurée au dynamomètre",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Relation $P = m\\cdot g$ et variation de l'intensité de pesanteur $g$ selon le lieu et l'altitude",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : La loi d'Ohm",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Caractéristique d'un conducteur ohmique",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Tracer la courbe $U = f(I)$ pour un dipôle ohmique",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi d'Ohm : la tension est proportionnelle à l'intensité ($U = R\\cdot I$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer une résistance, une tension ou une intensité à l'aide de la loi d'Ohm",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 13 : La puissance électrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Puissance nominale et énergie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Signification des indications nominales portées sur les appareils ménagers",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Expression de la puissance électrique en courant continu $P = U\\cdot I$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Puissance consommée par un appareil à effet Joule : $P = R\\cdot I^2$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calcul de la puissance totale consommée dans une installation domestique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 14 : L'énergie électrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Consommation d'énergie électrique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Relation entre énergie, puissance et durée : $E = P\\cdot t$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Unités d'énergie : Joule ($J$) et Wattheure ($Wh$), équivalence $1\\text{ kWh} = 3{,}6\\times 10^6\\text{ J}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Lecture du compteur électrique et calcul du coût de consommation",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

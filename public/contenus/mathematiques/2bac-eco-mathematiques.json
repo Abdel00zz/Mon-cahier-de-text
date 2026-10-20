@@ -1,0 +1,219 @@
+[
+  {
+    "title": "Chapitre 1 : Continuité et limites",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Continuité sur un intervalle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Continuité en un point et sur un intervalle, continuité des fonctions usuelles",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème des valeurs intermédiaires (TVI) et corollaire avec stricte monotonie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Image d'un intervalle par une fonction continue",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Limites usuelles et branches infinies (asymptotes et directions asymptotiques)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Dérivation et étude de fonctions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dérivabilité et optimisation économique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dérivabilité en un point et sur un intervalle, dérivée des fonctions composées",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Sens de variation, extremums relatifs et tableau de variations",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Convexité d'une courbe, point d'inflexion et signe de la dérivée seconde $f''$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Applications économiques : coût marginal, maximisation du profit, élasticité-prix",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Les suites numériques et convergence",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Limites de suites",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Suites majorées, minorées, bornées et suites monotones",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de convergence monotone : toute suite croissante et majorée converge",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Limites des suites géométriques selon la valeur de la raison $q$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Suites récurrentes $u_{n+1}=f(u_n)$ et équation $f(l)=l$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Les fonctions logarithmes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Fonction logarithme népérien et décimal",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de $\\ln(x)$ comme primitive de $1/x$ sur $]0, +\\infty[$ s'annulant en $1$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés algébriques fondamentales : $\\ln(ab)=\\ln(a)+\\ln(b), \\ln(a/b)=\\ln(a)-\\ln(b)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Limites de référence de $\\ln(x)$ en $0^+$ et en $+\\infty$, croissances comparées",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Étude complète de fonctions comportant $\\ln(x)$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Les fonctions exponentielles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Fonction exponentielle népérienne",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de $\\exp(x) = e^x$ comme bijection réciproque de $\\ln(x)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés algébriques : $e^{a+b}=e^a\\cdot e^b, e^{-a}=1/e^a, (e^a)^b=e^{ab}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Limites usuelles et croissances comparées en $\\pm\\infty$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Modèles de croissance exponentielle et amortissement de capital",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Calcul intégral et calcul d'aires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Primitives et intégration",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Notion de primitive d'une fonction continue sur un intervalle",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Tableau des primitives usuelles et intégration par parties : $\\int u v' = [uv] - \\int u' v$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Interprétation géométrique de $\\int_a^b f(x)dx$ comme aire sous la courbe",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calcul du surplus du consommateur et du producteur en économie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Probabilités et variables aléatoires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Calcul des probabilités",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Probabilité conditionnelle $P(B|A) = \\frac{P(A\\cap B)}{P(A)}$ et indépendance d'événements",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formule des probabilités totales",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Variable aléatoire discrète $X$, loi de probabilité, espérance $E(X)$ et variance $V(X)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Schéma de Bernoulli et loi binomiale $\\mathcal{B}(n, p)$ : formule $P(X=k) = C_n^k p^k (1-p)^{n-k}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,114 @@
+[
+  {
+    "title": "Partie 1 : Économie Générale et Statistique (EGS) - Fondements et Mécanismes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les concepts fondamentaux de l'analyse économique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "La notion de besoin économique, de bien (libre et économique) et le problème de la rareté",
+            "description": "Hiérarchie des besoins (pyramide de Maslow), caractéristiques des biens et rareté relative."
+          },
+          {
+            "type": "cours",
+            "title": "Les agents économiques institutionnels et leurs fonctions principales",
+            "description": "Ménages (consommation), Sociétés non financières (production de biens et services marchands), Sociétés financières (intermédiation financière), Administrations publiques (redistribution et services non marchands), Reste du monde."
+          },
+          {
+            "type": "cours",
+            "title": "Les opérations économiques et le circuit économique global",
+            "description": "Opérations sur biens et services, opérations de répartition (salaires, impôts, cotisations) et opérations financières. Modélisation des flux réels et monétaires."
+          }
+        ]
+      },
+      {
+        "name": "Le fonctionnement du marché et la fixation des prix",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La notion de marché et ses composantes : offre, demande et prix",
+            "description": "Marché des biens et services, marché du travail et marché des capitaux."
+          },
+          {
+            "type": "loi",
+            "title": "La loi de l'offre et de la demande et détermination du prix d'équilibre",
+            "description": "Mécanisme d'ajustement automatique sur un marché concurrentiel et calcul des élasticités-prix de la demande et de l'offre."
+          },
+          {
+            "type": "cours",
+            "title": "La monnaie et le système financier : formes, fonctions et création monétaire",
+            "description": "Monnaie fiduciaire, divisionnaire et scripturale ; agrégats monétaires (M1, M2, M3) et rôle régulateur de Bank Al-Maghrib."
+          }
+        ]
+      },
+      {
+        "name": "Statistique descriptive appliquée à l'économie",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Collecte des données, séries statistiques simples et tableaux de fréquences",
+            "description": "Effectifs, fréquences relatives, pourcentages et effectifs cumulés croissants."
+          },
+          {
+            "type": "cours",
+            "title": "Les caractéristiques de tendance centrale : moyenne arithmétique simple et pondérée, médiane et mode",
+            "description": "Calculs pas à pas et interprétation économique concrète."
+          },
+          {
+            "type": "cours",
+            "title": "Les caractéristiques de dispersion : étendue, variance et écart-type",
+            "description": "Mesure de l'homogénéité d'une distribution de salaires ou de prix."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Partie 2 : Économie et Organisation des Entreprises (EOAE) - L'Entreprise et son Fonctionnement",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'entreprise dans son tissu économique et ses structures",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Définition juridique et économique de l'entreprise et critères de classification",
+            "description": "Classification par taille (TPE, PME, grande entreprise), par secteur d'activité (primaire, secondaire, tertiaire) et par forme juridique (SARL, SA, entreprise individuelle)."
+          },
+          {
+            "type": "cours",
+            "title": "L'environnement micro et macroéconomique de l'entreprise (modèle PESTEL)",
+            "description": "Facteurs Politiques, Économiques, Socioculturels, Technologiques, Écologiques et Légaux."
+          },
+          {
+            "type": "cours",
+            "title": "Les structures organisationnelles classiques et modernes",
+            "description": "Structure hiérarchique (Fayol), fonctionnelle (Taylor), hiérarchico-fonctionnelle (Staff and line), divisionnelle et matricielle. Représentation par organigramme."
+          }
+        ]
+      },
+      {
+        "name": "Les grandes fonctions opérationnelles de l'entreprise",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La fonction commerciale et la démarche mercatique (Marketing Mix : les 4P)",
+            "description": "Politique de Produit (cycle de vie, gamme), de Prix (écrémage, pénétration, alignement), de Distribution (canaux courts, longs) et de Communication (publicité, promotion)."
+          },
+          {
+            "type": "cours",
+            "title": "La fonction approvisionnement et gestion des stocks",
+            "description": "Calcul du stock d'alerte, stock de sécurité, méthode de réapprovisionnement économique de Wilson et méthode ABC (20/80)."
+          },
+          {
+            "type": "cours",
+            "title": "La fonction financière : cycle d'exploitation et cycle d'investissement",
+            "description": "Besoins de financement du BFR et des immobilisations, et modes de financement (autofinancement, crédit bancaire, crédit-bail/leasing, émission d'actions)."
+          }
+        ]
+      }
+    ]
+  }
+]

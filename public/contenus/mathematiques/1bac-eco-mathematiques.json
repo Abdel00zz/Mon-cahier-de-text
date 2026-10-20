@@ -1,0 +1,230 @@
+[
+  {
+    "title": "Chapitre 1 : Notions de logique et raisonnements",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Connecteurs logiques et quantificateurs",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Propositions, négation, conjonction, disjonction, implication et équivalence",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Quantificateurs universel $\\forall$ et existentiel $\\exists$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Méthodes de raisonnement : direct, par contraposée, par l'absurde, contre-exemple",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Équations, inéquations et systèmes linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Outils algébriques pour l'économie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Résolution des équations du second degré $ax^2+bx+c=0$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Signe du trinôme et inéquations du second degré",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Systèmes linéaires $2\\times 2$ et $3\\times 3$ par la méthode du pivot de Gauss et de Cramer",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Modélisation économique : équilibre offre-demande et allocation de budget",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Généralités sur les fonctions numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Analyse des fonctions économiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Domaine de définition, parité et monotonie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Fonction de coût total, coût moyen, fonction de recette et de bénéfice",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Recherche du seuil de rentabilité et du volume de production optimal",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Les suites numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Suites arithmétiques et géométriques",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Mode de génération : terme explicite $u_n=f(n)$ et récurrence $u_{n+1}=f(u_n)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites arithmétiques : raison $r$, terme général $u_n=u_0+n r$, somme des termes",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites géométriques : raison $q$, terme général $u_n=u_0 q^n$, somme des termes",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Mathématiques financières : intérêts simples, intérêts composés, amortissement d'un emprunt",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Dénombrement et combinatoire",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Principes de comptage",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Principe additif et multiplicatif, cardinal d'un ensemble fini",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Arrangements avec répétition ($n^p$), sans répétition ($A_n^p$), permutations ($n!$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Combinaisons ($C_n^p$), triangle de Pascal et formule du binôme de Newton",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Applications aux tirages avec ou sans remise et tirages simultanés",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Limites de fonctions numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Calcul de limites et asymptotes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Limites usuelles en un point et à l'infini",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Opérations sur les limites et levée des quatre formes indéterminées ($+\\infty-\\infty, 0\\times\\infty, \\frac{0}{0}, \\frac{\\infty}{\\infty}$)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Interprétation graphique : asymptotes horizontales, verticales et obliques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Dérivation et optimisation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Nombre dérivé et fonction dérivée",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Taux de variation et nombre dérivé $f'(x_0)$, équation de la tangente",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Dérivées des fonctions usuelles et opérations ($u+v, u\\cdot v, u/v, u^n$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Lien entre le signe de la dérivée et le sens de variation de la fonction",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Notion de coût marginal et élasticité de la demande",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : La fonction logarithme décimal",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Propriétés algébriques de log",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de $\\log_{10}(x) = \\frac{\\ln(x)}{\\ln(10)}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés : $\\log(a\\cdot b) = \\log(a)+\\log(b)$ et $\\log(10^n) = n$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résolution des équations exponentielles du type $q^n \\ge A$ (calcul de durée d'épargne)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

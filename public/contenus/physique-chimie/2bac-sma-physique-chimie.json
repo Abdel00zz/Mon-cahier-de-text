@@ -1,0 +1,573 @@
+[
+  {
+    "title": "Chapitre 1 : Ondes mécaniques progressives",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Propagation d'une perturbation",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition d'une onde mécanique et de la célérité $v = \\frac{d}{\\Delta t}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Ondes transversales et ondes longitudinales",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Retard temporel $\\tau = \\frac{SM}{v}$, relation $y_M(t) = y_S(t-\\tau)$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Ondes mécaniques progressives périodiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Périodicité et diffraction",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Double périodicité temporelle ($T$) et spatiale (longueur d'onde $\\lambda = v\\cdot T$)",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Mise en évidence du phénomène de diffraction d'une onde mécanique à la cuve à ondes",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Notion de milieu dispersif : dépendance de la célérité avec la fréquence",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Propagation d'une onde lumineuse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Nature ondulatoire de la lumière",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Diffraction d'un faisceau laser par une fente de largeur $a$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Écart angulaire de diffraction $\\theta = \\frac{\\lambda}{a} = \\frac{L}{2D}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Dispersion de la lumière par un prisme : indice de réfraction $n = c/v$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Décroissance radioactive",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Radioactivité naturelle et décroissance",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Stabilité des noyaux et diagramme de Segrè $(N, Z)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Émissions radioactives $\\alpha, \\beta^-, \\beta^+, \\gamma$ et lois de Soddy",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi de décroissance radioactive $N(t) = N_0 e^{-\\lambda t}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Demi-vie radioactive $t_{1/2} = \\frac{\\ln(2)}{\\lambda}$ et activité $A(t) = -\\frac{dN}{dt} = \\lambda N$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Noyaux, masse et énergie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Équivalence masse-énergie",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Relation d'Einstein : $E = m\\cdot c^2$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Défaut de masse $\\Delta m$ et énergie de liaison du noyau $E_l = \\Delta m\\cdot c^2$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Énergie de liaison par nucléon $\\frac{E_l}{A}$ et courbe d'Aston",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Fission et fusion nucléaires, bilan énergétique $\\Delta E = \\Delta m\\cdot c^2$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Le dipôle RC",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Réponse d'un dipôle RC à un échelon de tension",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Relation charge-tension d'un condensateur : $q = C\\cdot u_C$ et courant $i = \\frac{dq}{dt}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équation différentielle de charge et décharge : $u_C + RC\\frac{du_C}{dt} = E$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Solution de l'équation différentielle et constante de temps $\\tau = RC$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Énergie emmagasinée dans un condensateur : $\\mathcal{E}_e = \\frac{1}{2}C u_C^2$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Le dipôle RL",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Comportement d'une bobine",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Tension aux bornes d'une bobine : $u_L = L\\frac{di}{dt} + r i$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équation différentielle d'établissement du courant : $L\\frac{di}{dt} + (R+r)i = E$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Constante de temps $\\tau = \\frac{L}{R+r}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Énergie magnétique emmagasinée : $\\mathcal{E}_m = \\frac{1}{2}L i^2$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Oscillations libres dans un circuit RLC série",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Circuit oscillant",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Équation différentielle du circuit $RLC$ : $\\frac{d^2 q}{dt^2} + \\frac{R_t}{L}\\frac{dq}{dt} + \\frac{1}{LC}q = 0$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Régimes pseudo-périodique, apériodique et critique",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Période propre du circuit idéal $LC$ : $T_0 = 2\\pi\\sqrt{LC}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Amortissement et échange d'énergie électrostatique et magnétique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Les lois de Newton",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dynamique du point matériel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Vecteur vitesse et vecteur accélération dans le repère de Frenet et cartésien",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Deuxième loi de Newton : $\\sum \\vec{F}_{ext} = m\\cdot\\vec{a}_G$ dans un référentiel galiléen",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Troisième loi de Newton (principe des actions réciproques)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Chute libre verticale d'un solide",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mouvement sous champ de pesanteur",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Chute libre sans frottement : équations horaires et trajectoire",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Chute avec frottement fluide : équation différentielle $m\\frac{dv}{dt} = mg - kv^n$ et vitesse limite $v_{lim}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Mouvements plans : projectiles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mouvement dans un champ de pesanteur uniforme",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Établir les équations horaires $x(t)$ et $y(t)$ à partir des conditions initiales",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équation cartésienne de la trajectoire parabolique",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calcul de la flèche $H$ et de la portée $X_P$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : Transformations lentes et rapides",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Cinétique chimique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Facteurs cinétiques : température, concentration des réactifs, catalyseur",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Techniques de suivi temporel : spectrophotométrie, conductimétrie, pH-métrie",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vitesse volumique de réaction $v = \\frac{1}{V}\\frac{dx}{dt}$ et temps de demi-réaction $t_{1/2}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 13 : Transformations non totales et équilibre chimique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "État d'équilibre d'un système",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Taux d'avancement final $\\tau = \\frac{x_f}{x_{max}}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Quotient de réaction $Q_r$ et constante d'équilibre $K$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Critère d'évolution spontanée : comparaison de $Q_{r,i}$ et $K$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 14 : Réactions acido-basiques en solution aqueuse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Constantes d'acidité et pH",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Autoprotolyse de l'eau et produit ionique $K_e = [H_3O^+][OH^-] = 10^{-14}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Constante d'acidité $K_A = \\frac{[H_3O^+][A^-]}{[HA]}$ et relation $pH = pK_A + \\log\\frac{[A^-]}{[HA]}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Diagrammes de prédominance et zone de virage des indicateurs colorés",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 15 : Piles électrochimiques et production d'énergie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Piles et énergie chimique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Constitution d'une pile : demi-piles, pont salin, électrodes (anode, cathode)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Quantité d'électricité débitée : $Q = I\\cdot\\Delta t = n(e^-)\\cdot F$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Bilan de masse aux électrodes lors du fonctionnement d'une pile",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 16 : Réactions d'estérification et d'hydrolyse",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Chimie organique et équilibre",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Réaction entre un acide carboxylique et un alcool : formation d'un ester et d'eau",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Caractéristiques : réaction lente, limitée et athermique",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Facteurs influençant le rendement : excès de réactif ou élimination d'un produit",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 17 : Ondes électromagnétiques et modulation d'amplitude (Spécifique SM)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Transmission d'informations",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Principe de la modulation d'amplitude : signal modulant et onde porteuse",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Expression du signal modulé $s(t) = [A + S_m\\cos(2\\pi f t)]\\cos(2\\pi F t)$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Taux de modulation $m = \\frac{S_m}{A}$ et condition de non-surmodulation ($m < 1$)",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Démodulation d'amplitude : détecteur d'enveloppe et filtre passe-bas",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 18 : Oscillations électriques forcées en régime sinusoïdal (Spécifique SM)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Résonance électrique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dipôle RLC excité par une tension sinusoïdale de fréquence réglable",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Impédance du circuit $Z = \\sqrt{R^2 + (L\\omega - \\frac{1}{C\\omega})^2}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Phénomène de résonance d'intensité : fréquence de résonance $f_0$, bande passante et facteur de qualité $Q$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 19 : Mouvement des satellites et des planètes (Spécifique SM)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lois de Kepler et mécanique céleste",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Les trois lois de Kepler du mouvement planétaire",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Mouvement circulaire uniforme d'un satellite artificiel : vitesse $v = \\sqrt{\\frac{GM}{r}}$ et période $T = 2\\pi\\sqrt{\\frac{r^3}{GM}}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Satellite géostationnaire et conditions d'orbite",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 20 : Rotation d'un solide autour d'un axe fixe - Moment cinétique (Spécifique SM)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dynamique de la rotation",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Moment cinétique d'un solide $L_\\Delta = J_\\Delta\\cdot\\omega$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Deuxième loi de Newton en rotation : $\\sum \\mathcal{M}_\\Delta(\\vec{F}) = J_\\Delta\\cdot\\frac{d\\omega}{dt}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation du moment cinétique d'un système isolé",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 21 : Systèmes mécaniques oscillants (Spécifique SM)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Pendules et oscillations",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le pendule élastique : équation différentielle, période propre $T_0 = 2\\pi\\sqrt{\\frac{m}{k}}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le pendule de torsion : constante de torsion $C$, période $T_0 = 2\\pi\\sqrt{\\frac{J_\\Delta}{C}}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le pendule pesant et pendule simple : étude dynamique et énergétique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

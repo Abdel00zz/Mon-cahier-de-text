@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500" role="img" aria-label="Emblème floral géométrique moderne">
+  <defs>
+    <style>
+      @keyframes classesRosetteSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .classes-rosette-rotor {
+        transform-origin: 250px 250px;
+        transform-box: view-box;
+        animation: classesRosetteSpin 24s linear infinite;
+        will-change: transform;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .classes-rosette-rotor {
+          animation: none !important;
+        }
+      }
+    </style>
+
+    <linearGradient id="modernGoldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#FCE1A2"/>
+      <stop offset="100%" stop-color="#EEB048"/>
+    </linearGradient>
+
+    <linearGradient id="modernGoldDeep" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF7E4"/>
+      <stop offset="50%" stop-color="#FAD082"/>
+      <stop offset="100%" stop-color="#E29636"/>
+    </linearGradient>
+
+    <radialGradient id="modernJewel" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="40%" stop-color="#FCD278"/>
+      <stop offset="85%" stop-color="#E27E36"/>
+      <stop offset="100%" stop-color="#C25A20"/>
+    </radialGradient>
+
+    <filter id="modernSoftGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#B35230" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#modernSoftGlow)">
+    <g class="classes-rosette-rotor">
+      <!-- 8 grands pétales modernes fluides -->
+      <g transform="rotate(0 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldLight)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(45 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldDeep)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(90 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldLight)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(135 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldDeep)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(180 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldLight)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(225 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldDeep)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(270 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldLight)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+      <g transform="rotate(315 250 250)"><path d="M 250 56 C 290 95 295 180 250 250 C 205 180 210 95 250 56 Z" fill="url(#modernGoldDeep)" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/></g>
+
+      <!-- 8 sous-pétales intérieurs décalés -->
+      <g transform="rotate(22.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(67.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(112.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(157.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(202.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(247.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(292.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+      <g transform="rotate(337.5 250 250)"><path d="M 250 110 C 275 140 275 200 250 250 C 225 200 225 140 250 110 Z" fill="url(#modernGoldLight)" opacity="0.85"/></g>
+
+      <!-- Cœur épuré moderne -->
+      <circle cx="250" cy="250" r="50" fill="#FFFDF8" stroke="#E29636" stroke-width="1.8"/>
+      <circle cx="250" cy="250" r="35" fill="url(#modernJewel)"/>
+      <circle cx="250" cy="250" r="10" fill="#FFFFFF" opacity="0.95"/>
+    </g>
+  </g>
+</svg>

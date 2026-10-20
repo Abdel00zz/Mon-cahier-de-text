@@ -1,0 +1,174 @@
+[
+  {
+    "title": "Unit 1 : The Gifts of Youth and Creativity",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Vocabulary and Reading",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Youth qualities and potential : vigor, passion, creativity, innovation, and perseverance",
+            "description": "Stereotypes about youth (rebellious, careless) contrasted with their real civic contributions."
+          },
+          {
+            "type": "activity",
+            "title": "Text Analysis : Young Moroccan inventors and social entrepreneurs making global impact",
+            "description": "Vocabulary acquisition : ambition, initiative, breakthrough, empowerment, and self-esteem."
+          }
+        ]
+      },
+      {
+        "name": "Grammar and Functions",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Gerund vs Infinitive advanced patterns and prepositions followed by -ing",
+            "description": "Common phrases : look forward to + ing, be used to + ing, succeed in + ing."
+          },
+          {
+            "type": "cours",
+            "title": "Language Functions : Expressing Complaint and Apologizing sincerely",
+            "description": "Formal and informal ways to lodge a complaint and respond constructively."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 2 : Humour and Emotional Wellbeing",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Psychological and Cultural Dimensions of Humour",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Humour styles : slapstick, satire, irony, puns, and psychological health benefits of laughter",
+            "description": "Idiomatic expressions related to laughter : 'burst into tears', 'crack up', 'die of laughter'."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : Modals of Past Deduction and Regret (must have, can't have, should have + past participle)",
+            "description": "Expressing logical certainty about the past and expressing moral regret for past mistakes."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 3 : Sustainable Development and Environmental Ecology",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Green Economy and Climate Emergency",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Sustainable development goals (SDGs) : renewable energies, reforestation, waste management, and solar power",
+            "description": "Morocco's global leadership in clean energy : Noor Ouarzazate Solar Complex and wind farms."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : Phrasal Verbs with multi-word verbs (look after, give up, run out of, carry on)",
+            "description": "Transitive and intransitive phrasal verbs, separable and inseparable verbs in English sentences."
+          }
+        ]
+      },
+      {
+        "name": "Formal Writing : Cause and Effect Essay",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Structuring a Cause and Effect Essay on Environmental Pollution",
+            "description": "Writing introductory hooks, background information, thesis statements, cause/effect body paragraphs, and actionable conclusions."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 4 : Women and Power : Gender Equality and Leadership",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Pioneering Women in Modern History",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Women's empowerment, closing the gender gap, and female political participation",
+            "description": "Moroccan women pioneers in science, sports, business, and human rights advocacy."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : The Passive Voice across all tenses (Continuous, Perfect, and Modal verbs)",
+            "description": "Transformation rules : Subject + auxiliary be + past participle + (by agent)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 5 : Cultural Values, Citizenship, and Diversity",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Global Citizenship and Shared Humanity",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Civic duties and constitutional rights, volunteering, solidarity, and countering discrimination",
+            "description": "Understanding stereotypes, prejudices, tolerance, and peaceful dialogue between civilizations."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : Reported Speech (Direct to Indirect Speech) : Statements, Questions, and Commands",
+            "description": "Backshift of tenses, adjustments of pronouns, and time/place adverbs (now -> then, today -> that day)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 6 : Advances in Science, AI, and Technology",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Technological Revolution and Ethical Dilemmas",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Artificial Intelligence, biotechnology, space exploration, and cyber security challenges",
+            "description": "Pros and cons of technological automation and the ethical boundaries of genetic engineering."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : Conditionals Type 2 and Type 3, and Expressing Wishes and Regrets",
+            "description": "Unreal present conditionals (If I were you...), unreal past conditionals (If I had known...), and 'I wish / If only' constructions."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 7 : Brain Drain and International Migration",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Brain Drain vs Brain Gain",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Causes and consequences of highly skilled migration from developing countries",
+            "description": "Push factors (lack of research funding, low salaries) and pull factors (high living standards, better facilities), and strategies to turn Brain Drain into Brain Gain."
+          },
+          {
+            "type": "methode",
+            "title": "Preparation for the National Baccalaureate Examination : Reading, Language & Writing",
+            "description": "Intensive drills on past exam papers, error correction, sentence completion, and argumentative essay writing."
+          }
+        ]
+      }
+    ]
+  }
+]

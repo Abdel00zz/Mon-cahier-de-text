@@ -1,0 +1,69 @@
+[
+  {
+    "title": "Module 1 : L'alphabet Tifinagh officiel et système phonétique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Graphie, lecture et calligraphie Tifinagh",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Présentation de l'alphabet Tifinagh standardisé par l'IRCAM (Institut Royal de la Culture Amazighe)",
+            "description": "Les 33 graphèmes officiels : 27 consonnes, 2 semi-consonnes et 4 voyelles."
+          },
+          {
+            "type": "cours",
+            "title": "Phonétique et système vocalique de la langue amazighe",
+            "description": "Voyelles pleines (a, i, u) et voyelle neutre (e - ilem) ; consonnes tendues (géminées) et labiovélaires."
+          },
+          {
+            "type": "application",
+            "title": "Pratique de l'écriture manuscrite et dactylographique en Tifinagh sur clavier numérique",
+            "description": "Transcription de mots usuels, phrases simples et respect du sens d'écriture gauche-droite."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Morphosyntaxe et communication usuelle",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Grammaire fondamentale amazighe",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le nom en amazighe : genre (masculin / féminin par affixe T...T) et nombre (singulier / pluriel)",
+            "description": "Formations des pluriels externes en -en/-in et pluriels internes par alternance vocalique."
+          },
+          {
+            "type": "cours",
+            "title": "L'état d'annexion (Addad amaruz) et l'état libre (Addad ilelli) du nom",
+            "description": "Modifications phonétiques de la voyelle initiale en position de sujet postposé ou après préposition."
+          },
+          {
+            "type": "cours",
+            "title": "Le système verbal : conjugaison à l'aoriste, à l'accompli (prétérit) et à l'inaccompli",
+            "description": "Les pronoms affixes sujets et l'utilisation de la particule d'inaccompli (ar / da)."
+          }
+        ]
+      },
+      {
+        "name": "Communication et patrimoine culturel marocain",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Dialogues thématiques de la vie quotidienne : présentations, famille, maison, saisons",
+            "description": "Expression orale fluide et acquisition du lexique usuel de l'environnement proche."
+          },
+          {
+            "type": "cours",
+            "title": "Les contes traditionnels, devinettes et proverbes du patrimoine oral amazigh marocain",
+            "description": "Transmission des valeurs de solidarité (Tiwizi), de respect des anciens et de protection de la nature."
+          }
+        ]
+      }
+    ]
+  }
+]

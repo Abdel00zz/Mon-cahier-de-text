@@ -1,0 +1,137 @@
+[
+  {
+    "title": "Chapitre 1 : Les suites numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Suites arithmétiques et géométriques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Rappels sur le calcul des termes d'une suite",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites arithmétiques : formule $u_n = u_0 + n r$ et somme $S = \\frac{n+1}{2}(u_0+u_n)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites géométriques : formule $u_n = u_0 q^n$ et somme",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Applications pratiques (évolution de populations, budget personnel)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Limites et dérivées de fonctions simples",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dérivée et variations",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Calculs de limites sans indétermination pour les polynômes",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Dérivée des fonctions usuelles : $x\\mapsto ax+b, x\\mapsto ax^2$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Signe de la dérivée et tableau de variations d'une fonction du second degré",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Étude et tracé de courbes de fonctions polynômes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Étude de fonctions du second et troisième degré",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Démarche d'étude complète : ensemble de définition, limites, dérivée, variations",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Extremums locaux (maximum, minimum)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Tracé soigné de la courbe représentative dans un repère",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Dénombrement et probabilités",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Événements et calcul de chances",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dénombrement par tableau à double entrée ou arbre de choix",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Calcul de probabilités dans des situations d'équiprobabilité simples",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Probabilité de l'événement contraire $P(\\bar{A}) = 1 - P(A)$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Statistiques descriptives",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Indicateurs statistiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Tableaux de fréquences, pourcentages et effectifs cumulés",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Paramètres de position : moyenne et médiane",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Représentations graphiques adaptées et interprétation critique d'informations chiffrées",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

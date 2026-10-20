@@ -1,0 +1,90 @@
+[
+  {
+    "title": "Unité 1 : Multimédia et traitement de l'image numérique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Formats et retouche graphique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'image numérique : différence entre image matricielle (pixels) et vectorielle (tracés)",
+            "description": "Résolution en PPP/DPI, définition (largeur x hauteur), profondeur de couleur (RVB / CMJN)."
+          },
+          {
+            "type": "cours",
+            "title": "Formats de compression d'images et leurs usages : JPEG, PNG, GIF, SVG",
+            "description": "Transparence, taux de compression avec et sans perte (lossless / lossy)."
+          },
+          {
+            "type": "application",
+            "title": "Pratique de la retouche photo : recadrage, ajustement des niveaux, filtres et détourage",
+            "description": "Utilisation d'un logiciel de graphisme libre (GIMP ou équivalent en ligne)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 2 : Algorithmique et pensée informatique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Résolution logique de problèmes",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition rigoureuse d'un algorithme : suite finie et ordonnée d'instructions non ambiguës",
+            "description": "De la recette de cuisine à la programmation : démarche méthodique d'analyse et de décomposition d'un problème."
+          },
+          {
+            "type": "cours",
+            "title": "Les variables et constantes : nom, type (Entier, Réel, Caractère, Booléen) et valeur",
+            "description": "Notion d'affectation d'une valeur à une case mémoire (<- ou =)."
+          },
+          {
+            "type": "cours",
+            "title": "Les instructions élémentaires d'entrée / sortie : Lire et Écrire",
+            "description": "Interaction avec l'utilisateur : affichage de messages à l'écran et saisie de valeurs au clavier."
+          },
+          {
+            "type": "cours",
+            "title": "Représentation graphique d'un algorithme par organigramme (Fléché / Organigramme)",
+            "description": "Symboles normalisés : début/fin, traitement rectangulaire, losange de décision conditionnelle, flèches de liaison."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 3 : Programmation visuelle par blocs (Scratch)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Développement de projets interactifs",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'environnement Scratch : lutins (sprites), scènes, blocs d'instructions et coordonnées (X, Y)",
+            "description": "Initialisation de la position et de l'orientation d'un personnage au démarrage du drapeau vert."
+          },
+          {
+            "type": "cours",
+            "title": "Les structures alternatives dans Scratch : 'Si ... Alors' et 'Si ... Alors ... Sinon'",
+            "description": "Tests de collision (si touche le bord, si touche la couleur rouge) et gestion des scores."
+          },
+          {
+            "type": "cours",
+            "title": "Les structures répétitives : boucles 'Répéter ... fois' et 'Répéter indéfiniment'",
+            "description": "Création d'animations fluides par changement successif de costumes et mouvements cadencés."
+          },
+          {
+            "type": "application",
+            "title": "Conception et programmation d'un jeu vidéo interactif complet",
+            "description": "Projet guidé : jeu de labyrinthe, pong ou quizz éducatif avec chronomètre et système de points."
+          }
+        ]
+      }
+    ]
+  }
+]

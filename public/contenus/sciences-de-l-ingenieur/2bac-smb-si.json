@@ -1,0 +1,192 @@
+[
+  {
+    "title": "Module 1 : Analyse fonctionnelle et modélisation SysML des systèmes complexes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Ingénierie système et langage SysML",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Concepts de l'ingénierie système appliquée aux systèmes mécatroniques modernes",
+            "description": "Approche globale d'un système cyber-physique autonome."
+          },
+          {
+            "type": "methode",
+            "title": "Diagrammes comportementaux SysML : Diagramme des Cas d'Utilisation (uc) et de Séquence (sd)",
+            "description": "Identification des acteurs externes, des cas d'usage et des flux temporels d'échanges d'informations."
+          },
+          {
+            "type": "methode",
+            "title": "Diagrammes structurels SysML : Diagramme de Définition de Blocs (bdd) et Blocs Internes (ibd)",
+            "description": "Hiérarchie des sous-systèmes, flux de matière, d'énergie et de signal à travers les ports de communication."
+          },
+          {
+            "type": "methode",
+            "title": "Diagramme des Exigences (req) et traçabilité des performances",
+            "description": "Relations de dérivation (deriveReqt), de satisfaction (satisfy) et de validation expérimentale (verify)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Modélisation cinématique des mécanismes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Cinématique du solide indéformable et torseurs cinématiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Graphe des liaisons et détermination rigoureuse des classes d'équivalence cinématique",
+            "description": "Schématisation cinématique minimale normalisée dans l'espace tridimensionnel."
+          },
+          {
+            "type": "cours",
+            "title": "Torseur cinématique d'un solide par rapport à un repère : vecteur rotation et champ des vitesses",
+            "description": "Relation fondamentale de champ des moments (formule de Varignon) : V(B) = V(A) + BA ^ Omega."
+          },
+          {
+            "type": "cours",
+            "title": "Composition des mouvements : loi de dérivation vectorielle dans les repères mobiles",
+            "description": "Vitesse absolue, vitesse relative et vitesse d'entraînement ; accélération absolue et accélération de Coriolis."
+          },
+          {
+            "type": "application",
+            "title": "Cinématique graphique plane : Centre Instantané de Rotation (CIR) et propriété d'équiprojectivité",
+            "description": "Résolution géométrique rapide des vecteurs vitesses sur mécanismes articulés plans."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Modélisation des actions mécaniques et Statique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Torseurs d'actions mécaniques et équilibre des systèmes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Modélisation torsorielle des actions mécaniques de contact transmissibles par les liaisons parfaites",
+            "description": "Torseurs des liaisons normalisées : composantes d'efforts et de moments transmissibles au point de contact."
+          },
+          {
+            "type": "cours",
+            "title": "Actions mécaniques à distance : pesanteur, actions magnétiques et centre de gravité",
+            "description": "Torseur d'action pesanteur appliqué au barycentre d'un système matériel."
+          },
+          {
+            "type": "loi",
+            "title": "Principe Fondamental de la Statique (PFS) sous forme vectorielle et torsorielle",
+            "description": "Condition nécessaire et suffisante d'équilibre : somme des torseurs d'actions mécaniques extérieures nulle."
+          },
+          {
+            "type": "cours",
+            "title": "Lois du frottement et de l'adhérence de Coulomb : cône de frottement et arc-boutement",
+            "description": "Coefficient d'adhérence f0, coefficient de frottement f, et calcul des conditions de non-glissement."
+          },
+          {
+            "type": "application",
+            "title": "Résolution analytique et graphique de systèmes matériels isostatiques",
+            "description": "Isolement d'un sous-ensemble, bilan complet des actions extérieures et calcul des inconnues de liaison."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : La chaîne d'énergie : Puissance électrique et électrotechnique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Actionneurs électriques industriels et électronique de commande",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Moteurs à Courant Continu (MCC) : équations électromécaniques fondamentales, couple et vitesse",
+            "description": "Modélisation : E = k*Omega, C = k*I, bilan énergétique et commande par hacheur 4 quadrants (MLI)."
+          },
+          {
+            "type": "cours",
+            "title": "Moteurs asynchrones triphasés : constitution, principe du champ tournant, caractéristique couple-vitesse",
+            "description": "Glissement, point de fonctionnement avec la charge mécanique et commande par variateur de fréquence scalaire (U/f)."
+          },
+          {
+            "type": "cours",
+            "title": "Moteurs synchrones et servomoteurs 'brushless' à aimants permanents",
+            "description": "Performances dynamiques, autopilotage et utilisation dans la robotique de précision."
+          }
+        ]
+      },
+      {
+        "name": "Transmission et transformation de puissance mécanique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Trains d'engrenages simples et trains épicycloïdaux : calcul de la raison cinématique",
+            "description": "Formule de Willis appliquée aux réducteurs épicycloïdaux à planétaires et satellites."
+          },
+          {
+            "type": "cours",
+            "title": "Système vis-écrou à billes : transformation de mouvement rotation-translation à haut rendement",
+            "description": "Pas de la vis, réversibilité, calcul de la vitesse d'avance linéaire et poussée axiale."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 5 : La chaîne d'information : Systèmes asservis et traitement du signal",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Automatique des systèmes continus et échantillonnés",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Structure générale d'un système asservi en boucle fermée (consigne, comparateur, correcteur, capteur)",
+            "description": "Concepts clés : précision statique, rapidité (temps de réponse à 5%) et stabilité (marges de gain et de phase)."
+          },
+          {
+            "type": "cours",
+            "title": "Modélisation temporelle et fréquentielle par transformée de Laplace : fonctions de transfert",
+            "description": "Systèmes du 1er et du 2ème ordre : réponse indicielle à un échelon, pulsation propre et coefficient d'amortissement."
+          },
+          {
+            "type": "cours",
+            "title": "Représentations fréquentielles : lieux de Bode (gain et phase) et identification expérimentale",
+            "description": "Tracé asymptotique de Bode et détermination des caractéristiques fréquentielles d'un système."
+          },
+          {
+            "type": "cours",
+            "title": "Les correcteurs industriels PID (Proportionnel, Intégrateur, Dérivateur)",
+            "description": "Rôle de l'action P (rapidité), I (élimination de l'erreur statique), D (amortissement et stabilité)."
+          }
+        ]
+      },
+      {
+        "name": "Systèmes séquentiels et programmation industrielle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "GRAFCET point de vue commande et point de vue partie opérative : structures avancées",
+            "description": "Sélections de séquences exclusives, séquences simultanées (parallélisme ET), macro-étapes et temporisations."
+          },
+          {
+            "type": "cours",
+            "title": "GEMMA (Guide d'Étude des Modes de Marches et d'Arrêts)",
+            "description": "Procédures de mise en route, d'arrêt d'urgence, de marche de préparation et de production normale."
+          },
+          {
+            "type": "application",
+            "title": "Programmation des Automates Programmables Industriels (API) en langage Ladder et C embarqué",
+            "description": "Implémentation d'un automatisme complet avec gestion des sécurités et dialogue IHM."
+          }
+        ]
+      }
+    ]
+  }
+]

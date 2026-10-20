@@ -1,0 +1,90 @@
+[
+  {
+    "title": "Module 1 : Activités athlétiques de performance individuelle",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Course de vitesse et demi-fond",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Course de vitesse (50m / 60m) : technique de départ en starting-blocks et mise en action explosive",
+            "description": "Coordination motrice, fréquence et amplitude de la foulée, maintien de la ligne droite et franchissement de la ligne d'arrivée."
+          },
+          {
+            "type": "cours",
+            "title": "Course de demi-fond (600m / 1000m) : régularité de l'allure et gestion de l'effort aérobie",
+            "description": "Calcul de la vitesse moyenne, respiration rythmée et gestion de l'énergie pour éviter l'épuisement précoce."
+          }
+        ]
+      },
+      {
+        "name": "Saut en longueur et lancer de poids",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Saut en longueur : prise d'élan étalonnée, impulsion sur la planche d'appel et suspension",
+            "description": "Maintien de la vitesse d'approche, poussée verticale-oblique et réception équilibrée dans le bac à sable sans chute en arrière."
+          },
+          {
+            "type": "cours",
+            "title": "Lancer de poids (technique en translation) : placement corporel et poussée explosive du bras",
+            "description": "Tenue de l'engin contre le cou, angle d'éjection optimal à 45° et respect des limites du cercle de lancer."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Sports collectifs et coopération tactique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Principes du jeu collectif (Basketball, Football, Handball, Volleyball)",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Fondamentaux techniques individuels : drible, passe précise, contrôle et tir orienté",
+            "description": "Dissociation visuelle entre la balle et le placement des partenaires et adversaires sur le terrain."
+          },
+          {
+            "type": "cours",
+            "title": "Tactique collective en attaque : démarquage, occupation rationnelle de l'espace et appui-soutien",
+            "description": "Création de surnombre offensif, jeu sans ballon et transmission rapide pour déséquilibrer la défense adverse."
+          },
+          {
+            "type": "cours",
+            "title": "Tactique collective en défense : repli défensif immédiat, marquage individuel et de zone",
+            "description": "Entraide défensive, interception de trajectoires de balles et protection de la zone de tir."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Gymnastique sportive au sol et éducation à la santé",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Maîtrise corporelle, équilibre et citoyenneté sportive",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Éléments gymniques au sol : roulades avant/arrière, roue, appui tendu renversé (ATR), chandelle",
+            "description": "Gainage abdominal, alignement des segments corporels et enchaînement fluide chorégraphié."
+          },
+          {
+            "type": "cours",
+            "title": "Échauffement méthodique, étirements post-effort et prévention des traumatismes articulaires",
+            "description": "Importance de l'hydratation, d'une alimentation saine et du sommeil réparateur pour la performance."
+          },
+          {
+            "type": "cours",
+            "title": "Règles du jeu, rôle de l'arbitre officiel et esprit d'équipe (Fair-Play)",
+            "description": "Respect des décisions arbitrales, acceptation de la défaite et valorisation de l'esprit d'équipe."
+          }
+        ]
+      }
+    ]
+  }
+]

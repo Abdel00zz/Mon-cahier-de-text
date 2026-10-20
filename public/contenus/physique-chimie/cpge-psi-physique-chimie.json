@@ -1,0 +1,142 @@
+[
+  {
+    "title": "Chapitre 1 : Électromagnétisme : Équations de Maxwell",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Champ électromagnétique et lois fondamentales",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Opérateurs différentiels : gradient, divergence, rotationnel et laplacien",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équations de Maxwell locales : Maxwell-Gauss, Maxwell-Thomson, Maxwell-Faraday et Maxwell-Ampère",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation de la charge électrique : $\\text{div}\\vec{j} + \\frac{\\partial \\rho}{\\partial t} = 0$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Énergie électromagnétique et propagation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Vecteur de Poynting et ondes planes",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Densité d'énergie électromagnétique $u_{em}$ et vecteur de Poynting $\\vec{\\Pi} = \\frac{\\vec{E}\\wedge\\vec{B}}{\\mu_0}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équation de Poynting et bilan d'énergie électromagnétique",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Onde plane progressive monochromatique (OPPM) dans le vide et dans les milieux diélectriques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Ondes et optique ondulatoire",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Interférences lumineuses",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Modèle scalaire des ondes lumineuses et intensité",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formule de Fresnel pour deux ondes cohérentes",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Dispositif des trous d'Young : interfrange $i = \\frac{\\lambda D}{a}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Interféromètre de Michelson : configurations en lame d'air et en coin d'air",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Mécanique des fluides",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Statique et dynamique des fluides",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Principe fondamental de la statique des fluides : $\\vec{\\nabla} P = \\rho\\vec{g}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Description eulérienne et lagrangienne d'un écoulement",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équation de continuité et équation d'Euler pour un fluide parfait",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Bernoulli pour un écoulement incompressible et stationnaire",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Physique quantique et physique statistique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Introduction au monde quantique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dualité onde-corpuscule et relation de de Broglie $\\lambda = \\frac{h}{p}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Inégalités d'Heisenberg spatiales et temporelles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Équation de Schrödinger indépendante du temps et puits de potentiel infini",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

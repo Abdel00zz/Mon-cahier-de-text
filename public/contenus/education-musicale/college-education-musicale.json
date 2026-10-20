@@ -1,0 +1,121 @@
+[
+  {
+    "title": "Module 1 : Solfège, théorie et écriture musicale",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La notation musicale universelle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La portée musicale, les clés de sol et de fa, et l'ordonnancement des notes",
+            "description": "Emplacement des notes sur les lignes et dans les interlignes, portées supplémentaires."
+          },
+          {
+            "type": "cours",
+            "title": "Les figures de notes et de silences : durées relatives et valeurs de temps",
+            "description": "La ronde (4 temps), la blanche (2 temps), la noire (1 temps), la croche (1/2 temps), double-croche et silences correspondants (pause, demi-pause, soupir, demi-soupir)."
+          },
+          {
+            "type": "cours",
+            "title": "Les altérations (dièse, bémol, bécarre) et les armures de clés",
+            "description": "Effets sur la hauteur des sons, tons et demi-tons diatoniques et chromatiques."
+          },
+          {
+            "type": "cours",
+            "title": "La mesure musicale : battement, chiffrage et tempo",
+            "description": "Mesures simples à 2/4, 3/4, 4/4 et initiation aux mesures composées (6/8) ; tempi lents (Largo, Adagio), modérés (Andante) et rapides (Allegro, Presto)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Voix, chant choral et interprétation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Technique vocale et pratique chorale collective",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Anatomie de l'appareil vocal et respiration diaphragmatique",
+            "description": "Posture corporelle droite, soutien abdominal, gestion de la colonne d'air et détente des cordes vocales."
+          },
+          {
+            "type": "cours",
+            "title": "Diction, vocalises d'échauffement et justesse mélodique",
+            "description": "Placement des voyelles, articulation consonantique nette et résonance dans les cavités faciales."
+          },
+          {
+            "type": "application",
+            "title": "Interprétation de l'Hymne national marocain et de chants patriotiques",
+            "description": "Respect du tempo solennel, de la nuance dynamique et de la ferveur collective."
+          },
+          {
+            "type": "cours",
+            "title": "Initiation à la polyphonie et au canon à deux et trois voix",
+            "description": "Écoute active des autres pupitres, synchronisation rythmique et équilibre des nuances (piano, mezzo-forte, forte)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Le patrimoine musical marocain et ses richesses régionales",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Traditions savantes et populaires du Maroc",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La musique arabo-andalouse (Al-Ala marocaine) : structure de la Nouba",
+            "description": "Les cinq mouvements rythmiques (Mizan) : Bassit, Qaïm wa Nisf, Btaïhi, Darj, Qoddam, et la poésie chantée du Mouachah et du Zajal."
+          },
+          {
+            "type": "cours",
+            "title": "L'art authentique du Melhoun : poésie populaire, chantre et orchestre traditionnel",
+            "description": "Histoire des poètes artisans de Meknès, Fès et Marrakech, structure de la Qasida et rôle du Tarija."
+          },
+          {
+            "type": "cours",
+            "title": "La musique Gnaoua : rituels ancestraux, transes et syncrétisme africain",
+            "description": "Le rythme binaire et ternaire des Qraqeb (crotales en fer) et les sonorités profondes du Guembri (luth-tambour)."
+          },
+          {
+            "type": "cours",
+            "title": "Les musiques amazighes et sahariennes : Ahidous de l'Atlas, Ahwach du Souss et musique Hassanie",
+            "description": "Chants collectifs responsoriaux, polyrythmie des tambours Bendir, et poésie saharienne au son de la Tidinit."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Organologie et découverte des instruments du monde",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Classification des instruments de musique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Classification scientifique de Hornbostel-Sachs",
+            "description": "Cordophones (cordes), Aérophones (vent), Membranophones (peaux vibrantes) et Idiophones (matière auto-vibrante)."
+          },
+          {
+            "type": "cours",
+            "title": "Les instruments orientaux et maghrébins emblématiques",
+            "description": "L'Oud (luth oriental à manche court), le Qanun (cithare à cordes pincées), le Nay (flûte en roseau), le Riqq et la Derbouka."
+          },
+          {
+            "type": "cours",
+            "title": "Les grandes familles de l'orchestre symphonique occidental",
+            "description": "Cordes frottées (violon, alto, violoncelle, contrebasse), bois (flûte, hautbois, clarinette, basson), cuivres (trompette, cor, trombone, tuba) et percussions."
+          }
+        ]
+      }
+    ]
+  }
+]

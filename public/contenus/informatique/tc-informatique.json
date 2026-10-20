@@ -1,0 +1,126 @@
+[
+  {
+    "title": "Module 1 : Architecture des ordinateurs et codage de l'information",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Circuits, modèle de Von Neumann et logique binaire",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le modèle architectural de John Von Neumann : CPU (UAL + UC), Mémoire Centrale, Bus et Entrées/Sorties",
+            "description": "Cycle d'exécution d'une instruction machine : Recherche (Fetch), Décodage (Decode), Exécution (Execute)."
+          },
+          {
+            "type": "cours",
+            "title": "Systèmes de numération : binaire (base 2), décimal (base 10) et hexadécimal (base 16)",
+            "description": "Conversions manuelles et algorithmiques entre bases (divisions successives, puissances de 2)."
+          },
+          {
+            "type": "cours",
+            "title": "Codage des caractères : codes ASCII, ISO-8859 et standard universel Unicode (UTF-8)",
+            "description": "Représentation binaire des caractères accentués et des alphabets non latins (arabe, tifinagh)."
+          },
+          {
+            "type": "cours",
+            "title": "Algèbre de Boole élémentaire : portes logiques ET, OU, NON, XOR et tables de vérité",
+            "description": "Équations logiques et simplification de circuits combinatoires simples."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Réseaux informatiques, adressage et protocoles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Infrastructures et communication réseau",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Topologies physiques et logiques de réseaux : en étoile, en bus, en anneau et maillée",
+            "description": "Rôle des équipements d'interconnexion : commutateurs (switches), routeurs et points d'accès Wi-Fi."
+          },
+          {
+            "type": "cours",
+            "title": "Les modèles en couches : modèle OSI (7 couches) et modèle Internet TCP/IP (4 couches)",
+            "description": "Encapsulation et décapsulation des paquets de données lors de la transmission."
+          },
+          {
+            "type": "cours",
+            "title": "Adressage IPv4 : adresse IP, masque de sous-réseau et adresse de broadcast",
+            "description": "Classes d'adresses (A, B, C), adresses privées et publiques, translation d'adresses NAT."
+          },
+          {
+            "type": "cours",
+            "title": "Les protocoles applicatifs majeurs d'Internet : DNS, HTTP/HTTPS, FTP, SMTP/IMAP",
+            "description": "Résolution de noms de domaine, sécurisation des échanges par chiffrement SSL/TLS."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Algorithmique avancée et structures de données",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conception algorithmique rigoureuse",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Structures de contrôle conditionnelles : alternatives simples, complètes et imbriquées",
+            "description": "Syntaxe pseudo-code normalisée, opérateurs logiques et conditions composées."
+          },
+          {
+            "type": "cours",
+            "title": "Structures de contrôle itératives : boucle déterministe 'Pour' et boucles conditionnelles 'Tant Que' / 'Répéter'",
+            "description": "Incrémentation, compteurs, accumulateurs et conditions d'arrêt fiables pour éviter les boucles infinies."
+          },
+          {
+            "type": "cours",
+            "title": "Structures de données séquentielles : Tableaux à une dimension (vecteurs)",
+            "description": "Déclaration, parcours séquentiel, recherche du maximum, calcul de moyenne et recherche dichotomique dans un tableau trié."
+          },
+          {
+            "type": "cours",
+            "title": "Modularité : procédures, fonctions, passage de paramètres et portée des variables (locales vs globales)",
+            "description": "Décomposition d'un algorithme complexe en sous-programmes indépendants et réutilisables."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Programmation structurée en langage Python",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "De l'algorithme au code exécutable",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Syntaxe fondamentale de Python : typage dynamique, indentation obligatoire et fonctions print() / input()",
+            "description": "Conversion explicite de types (int(), float(), str()) et bonnes pratiques PEP 8."
+          },
+          {
+            "type": "cours",
+            "title": "Structures de données natives en Python : listes, tuples et dictionnaires",
+            "description": "Méthodes usuelles sur les listes : append(), extend(), pop(), slicing ([start:end:step])."
+          },
+          {
+            "type": "cours",
+            "title": "Définition de fonctions en Python : mot-clé 'def', arguments par défaut et valeur de retour 'return'",
+            "description": "Documentation des fonctions avec des docstrings claires."
+          },
+          {
+            "type": "application",
+            "title": "Projet algorithmique en Python : traitement de données et simulation mathématique",
+            "description": "Exemple : algorithme d'Euclide pour le PGCD, crible d'Ératosthène ou traitement de données statistiques d'élèves."
+          }
+        ]
+      }
+    ]
+  }
+]

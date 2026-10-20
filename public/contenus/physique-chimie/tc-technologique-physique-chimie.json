@@ -1,0 +1,366 @@
+[
+  {
+    "title": "Chapitre 1 : La gravitation universelle",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'échelle des longueurs dans l'univers",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Ordres de grandeur et notation scientifique, de l'atome aux galaxies",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi de la gravitation universelle de Newton : $F = G\\frac{m_1 m_2}{d^2}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Poids d'un corps et champ de pesanteur terrestre $P = m\\cdot g$, relation avec l'altitude",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Les actions mécaniques et modélisation par des forces",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Typologie des forces",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Actions de contact (localisées, réparties) et forces à distance",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Vecteur force : caractéristiques, composante normale et tangentielle (frottement)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Équilibre d'un solide soumis à deux forces",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conditions d'équilibre statique",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Condition vectorielle : $\\vec{F}_1 + \\vec{F}_2 = \\vec{0}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Tension d'un ressort : loi de Hooke $T = k\\cdot |\\Delta l|$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Poussée d'Archimède : définition, expression et conditions de flottaison",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Équilibre d'un solide soumis à trois forces non parallèles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Résolution graphique et analytique",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Conditions d'équilibre : forces coplanaires, concourantes et $\\sum \\vec{F} = \\vec{0}$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Méthode géométrique du polygone fermé des forces",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Méthode analytique par projection sur un repère orthonormé $(O, \\vec{i}, \\vec{j})$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Équilibre d'un solide en rotation autour d'un axe fixe",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le moment d'une force",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Moment d'une force par rapport à un axe $\\Delta$ : $\\mathcal{M}_\\Delta(\\vec{F}) = \\pm F\\cdot d$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème des moments : $\\sum \\mathcal{M}_\\Delta(\\vec{F}) = 0$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Notion de couple de forces et moment d'un couple",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Le mouvement et le principe d'inertie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Cinématique et première loi de Newton",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Relativité du mouvement, repères d'espace et de temps",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Vitesse instantanée et vecteur vitesse",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Énoncé du principe d'inertie (première loi de Newton)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Définition du centre d'inertie $G$ et relation barycentrique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Le courant électrique continu",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Nature et lois du courant",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Porteurs de charge : électrons libres dans les métaux, ions en solution",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Débit de charge et intensité $I = \\frac{Q}{\\Delta t}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi des nœuds dans un circuit avec dérivations",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : La tension électrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mesures et propriétés de la tension",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Différence de potentiel $U_{AB} = V_A - V_B$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi d'additivité des tensions et loi des mailles de Kirchhoff",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation de l'oscilloscope : réglages de sensibilité verticale et balayage horizontal",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Les dipôles passifs et loi d'Ohm",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conducteurs ohmiques et association",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Loi d'Ohm $U = R\\cdot I$, conductance $G = 1/R$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Association de conducteurs ohmiques en série ($R_{eq} = \\sum R_i$) et en dérivation ($\\frac{1}{R_{eq}} = \\sum \\frac{1}{R_i}$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Diviseur de tension et potentiomètre",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Les espèces chimiques et techniques d'extraction",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Extraction, séparation et identification",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Espèces chimiques naturelles et synthétiques",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Techniques d'extraction : macération, décoction, hydrodistillation et extraction par solvant",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Chromatographie sur couche mince (CCM) et calcul du rapport frontal $R_f$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Synthèse des espèces chimiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Réalisation et contrôle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Objectifs et importance de la chimie de synthèse industrielle",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Montage à reflux pour accélérer la réaction sans perte de matière",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Filtration sous vide sur Büchner et recristallisation",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : Le modèle de l'atome et la classification périodique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Structure atomique et cortège électronique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Constitution : nucléons (protons, neutrons) et électrons, nombre $Z$ et $A$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Répartition électronique en couches $K, L, M$ et électrons de valence",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Classification périodique des éléments et règles de stabilité (duet et octet)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 13 : La mole et les grandeurs molaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La quantité de matière",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Constante d'Avogadro $N_A$ et définition de la mole",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Masse molaire atomique et moléculaire $M$, relation $n = \\frac{m}{M}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Volume molaire d'un gaz $V_m$ à pression et température données, relation $n = \\frac{V}{V_m}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 14 : Les solutions aqueuses et concentration",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Préparation et dosage de solutions",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Concentration molaire $C = \\frac{n}{V}$ et concentration massique $C_m = \\frac{m}{V}$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Protocole expérimental de dissolution d'un soluté solide",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Protocole expérimental de dilution d'une solution mère ($C_1 V_1 = C_2 V_2$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

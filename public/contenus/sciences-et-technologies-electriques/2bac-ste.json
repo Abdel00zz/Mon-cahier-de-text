@@ -1,0 +1,105 @@
+[
+  {
+    "title": "Module 1 : Systèmes triphasés équilibrés et machines tournantes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Électrotechnique des réseaux triphasés industriels",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Réseaux triphasés équilibrés : tensions simples (V) et composées (U), déphasage de 120°",
+            "description": "Relation U = V * racine(3) ; couplages des récepteurs en étoile (Y) et en triangle (Delta)."
+          },
+          {
+            "type": "cours",
+            "title": "Puissances en triphasé équilibré et méthode des deux wattmètres",
+            "description": "P = racine(3) * U * I * cos(phi) ; calcul de la puissance réactive totale et du facteur de puissance de l'installation."
+          }
+        ]
+      },
+      {
+        "name": "Transformateurs et machines asynchrones triphasées",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le transformateur triphasé industriel : constitution, rapport de transformation et indice horaire",
+            "description": "Schéma équivalent ramené au secondaire, essai à vide, essai en court-circuit et calcul du rendement."
+          },
+          {
+            "type": "cours",
+            "title": "Moteurs asynchrones triphasés à cage d'écureuil : principe du champ tournant statorique",
+            "description": "Fréquence de synchronisme Ns, glissement g, couple électromagnétique, caractéristique mécanique Cu=f(N)."
+          },
+          {
+            "type": "cours",
+            "title": "Procédés de démarrage des moteurs asynchrones et variateurs de vitesse industriels",
+            "description": "Démarrage direct, étoile-triangle, démarreurs électroniques progressifs et variateurs de fréquence scalaires (U/f)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Électronique de puissance et conversion statique d'énergie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Commutation de puissance et convertisseurs",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Composants électroniques de puissance : Thyristors, Triacs, Transistors MOSFET de puissance et IGBT",
+            "description": "Pertes par conduction et par commutation, caractéristiques de commande de gâchette et protections."
+          },
+          {
+            "type": "cours",
+            "title": "Les redresseurs commandés (ponts mixtes et tout thyristors monophasés et triphasés)",
+            "description": "Contrôle de l'angle d'amorçage alpha, calcul de la tension moyenne redressée et filtrage LC."
+          },
+          {
+            "type": "cours",
+            "title": "Les hacheurs série et réversibles : conversion continu-continu",
+            "description": "Rapport cyclique alpha, tension moyenne de sortie, conduction continue et commande en modulation de largeur d'impulsion (MLI)."
+          },
+          {
+            "type": "cours",
+            "title": "Les onduleurs autonomes de tension monophasés et triphasés",
+            "description": "Onduleur en pont à commande MLI (PWM) pour la génération d'ondes sinusoïdales à fréquence variable destinées aux moteurs AC."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Systèmes automatisés, microcontrôleurs et réseaux de communication",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Programmation embarquée et automatique industrielle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Architecture interne des microcontrôleurs (CPU, Registres, Mémoires Flash/RAM/EEPROM, Périphériques E/S)",
+            "description": "Gestion des entrées-sorties Tout-Ou-Rien (TOR), convertisseur analogique-numérique (CAN 10 bits), timers et modules PWM."
+          },
+          {
+            "type": "cours",
+            "title": "Programmation des microcontrôleurs en langage C embarqué : gestion des interruptions matérielles",
+            "description": "Routage des interruptions externes, boucle principale et réactivité temps réel."
+          },
+          {
+            "type": "cours",
+            "title": "Automates Programmables Industriels (API) : architecture, câblage et programmation Grafcet / Ladder",
+            "description": "Traitement séquentiel et combinatoire, sécurité intrinsèque et liaison avec les pupitres opérateur IHM."
+          },
+          {
+            "type": "cours",
+            "title": "Bus de terrain et communication industrielle : Modbus RTU/TCP, bus CAN, bus I2C et SPI",
+            "description": "Structure de trames de données, détection d'erreurs par CRC et interconnexion des capteurs/actionneurs intelligents."
+          }
+        ]
+      }
+    ]
+  }
+]

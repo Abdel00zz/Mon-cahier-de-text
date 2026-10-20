@@ -1,0 +1,54 @@
+[
+  {
+    "title": "Module 1 : Design graphique, sémiologie et communication visuelle",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Sémiologie de l'image et identité visuelle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La sémiologie de l'image selon Roland Barthes : message plastique, dénoté et connoté",
+            "description": "Décryptage des codes publicitaires, de la rhétorique visuelle et des stéréotypes socio-culturels."
+          },
+          {
+            "type": "cours",
+            "title": "Conception d'une charte graphique d'entreprise : logotype, typographie et grille de mise en page",
+            "description": "Symbolique des couleurs, équilibre des masses, lisibilité universelle et déclinaisons supports (print et digital)."
+          },
+          {
+            "type": "cours",
+            "title": "Les lois de la perception visuelle de la psychologie de la Gestalt",
+            "description": "Loi de proximité, de similarité, de bonne continuité, de clôture et relation figure-fond appliquée au design graphique."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Design de produit, d'espace et écoconception",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Méthodologie du design d'objet et d'aménagement spatial",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La démarche de design : du cahier des charges fonctionnel au prototype final",
+            "description": "Phase d'analyse, planches d'ambiance (moodboard), croquis de recherche conceptuelle et modélisation volumique."
+          },
+          {
+            "type": "cours",
+            "title": "Ergonomie, fonctionnalité d'usage et écoconception des objets du quotidien",
+            "description": "Choix des matériaux durables et recyclables, réduction de l'empreinte carbone et analyse du cycle de vie du produit."
+          },
+          {
+            "type": "cours",
+            "title": "Design d'espace et scénographie : plan de masse, coupe architecturale, élévation et échelle",
+            "description": "Circulation des flux, ambiance lumineuse, ergonomie spatiale et dialogue entre tradition marocaine et modernité épurée."
+          }
+        ]
+      }
+    ]
+  }
+]

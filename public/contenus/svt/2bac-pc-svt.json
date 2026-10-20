@@ -1,0 +1,173 @@
+[
+  {
+    "title": "Chapitre 1 : Consommation de la matière organique et libération d'énergie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Respiration cellulaire et fermentation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Voies métaboliques : glycolyse dans le cytoplasme (hyaloplasme) avec production de pyruvate et d'$ATP$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Cycle de Krebs dans la matrice mitochondriale et production de coenzymes réduits ($NADH, H^+$, $FADH_2$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Chaîne respiratoire et phosphorylation oxydative sur la membrane interne mitochondriale",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Les fermentations : lactique et alcoolique, et bilan énergétique comparé (rendement)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Rôle du muscle squelettique dans la conversion d'énergie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Contraction musculaire et ATP",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Enregistrement du myogramme : secousse isolée, tétanos imparfait et parfait",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Structure moléculaire du sarcomère : filaments fins d'actine et filaments épais de myosine",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Mécanisme moléculaire du glissement des myofilaments en présence d'$ATP$ et d'ions $Ca^{2+}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Voies de régénération de l'$ATP$ musculaire (anaérobie alactique, anaérobie lactique, aérobie)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Nature et mécanisme de l'expression du matériel génétique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'information génétique (ADN)",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Expériences historiques : Griffith, Avery, Hershey et Chase",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Structure de la molécule d'ADN en double hélice (Watson et Crick) et complémentarité des bases",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Réplication semi-conservative de l'ADN pendant la phase S de l'interphase",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Expression génétique : transcription de l'ADN en ARNm et traduction avec le code génétique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Transmission de l'information génétique par la reproduction sexuée",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Méiose et fécondation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les étapes de la méiose : division réductionnelle et division équationnelle",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Brassage interchromosomique (anaphase I) et brassage intrachromosomique (crossing-over en prophase I)",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Rôle amplificateur de la fécondation dans la diversité génétique des individus",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Les lois statistiques de la transmission des caractères héréditaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Génétique mendélienne chez les diploïdes",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Monohybridisme : dominance complète, codominance, gènes létaux et gènes liés au sexe ($X$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Dihybridisme : gènes indépendants (proportions $9:3:3:1$) et gènes liés (linkage et calcul de la distance en cM)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Les phénomènes géologiques accompagnant la formation des chaînes de montagnes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Tectonique des plaques et orogenèse",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Chaînes de subduction (Andes) : caractéristiques structurales, volcanisme andésitique et plutonisme",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Chaînes d'obduction (Oman) : charriage de croûte océanique (ophiolites) sur la marge continentale",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Chaînes de collision (Himalaya) : suture ophiolitique, plis, failles inverses et épaississement crustal",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le métamorphisme thermo-dynamique et faciès de haute pression, et anatexie (granitisation)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

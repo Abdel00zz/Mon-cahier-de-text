@@ -1,0 +1,194 @@
+[
+  {
+    "title": "Chapitre 1 : Les facteurs édaphiques et leur influence sur les êtres vivants",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le sol : composantes et propriétés",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Observation et mise en évidence des constituants du sol (minéraux, matière organique, eau, air)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés physiques du sol : texture, structure et perméabilité",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Le complexe argilo-humique et capacité de rétention d'eau",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Rôle des êtres vivants dans la formation et l'évolution du sol",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Les facteurs climatiques et répartition des végétaux et animaux",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mesures et diagrammes climatiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Mesure des composantes du climat : température, pluviométrie, humidité, ensoleillement",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Tracé et exploitation du diagramme ombrothermique de Gaussen et du climagramme d'Emberger",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Relation entre les étages bioclimatiques et la répartition de la végétation au Maroc",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Flux de matière et d'énergie dans l'écosystème",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Réseaux trophiques et pyramides écologiques",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Notion d'écosystème : biocénose et biotope",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Les niveaux trophiques : producteurs primaires, consommateurs et décomposeurs",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Construction des pyramides de nombres, de biomasse et d'énergie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Rendement écologique et flux unidirectionnel de l'énergie solaire",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Les équilibres naturels et l'impact de l'Homme",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Gestion durable des ressources",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dynamique et résilience des écosystèmes naturels",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Impacts négatifs des activités humaines : déforestation, surpâturage, pollution et désertification",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Stratégies nationales de protection de l'environnement et développement durable",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : La reproduction sexuée chez les plantes à fleurs (Angiospermes)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Organisation florale et pollinisation",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Dissection florale et identification des pièces stériles et fertiles (étamines, pistil)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Formation des grains de pollen et du sac embryonnaire",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Pollinisation, germination du grain de pollen et double fécondation caractéristique des angiospermes",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Transformation de la fleur en fruit et de l'ovule en graine",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : La reproduction sexuée chez les Gymnospermes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Reproduction chez le pin",
+        "items": [
+          {
+            "type": "observation",
+            "title": "Organisation des cônes mâles et des cônes femelles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Formation des gamètes et fécondation simple",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Cycle de développement comparé des gymnospermes et angiospermes",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : La reproduction asexuée (multiplication végétative)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Modes de multiplication végétative",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Multiplication par organes spécialisés : tubercules, bulbes, rhizomes et stolons",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Techniques agronomiques : bouturage, marcottage, greffage et micropropagation in vitro",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

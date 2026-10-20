@@ -1,0 +1,130 @@
+[
+  {
+    "title": "Module 1 : Les travaux de fin d'exercice (Travaux d'inventaire)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les amortissements des immobilisations",
+        "items": [
+          {
+            "type": "definition",
+            "title": "L'amortissement pour dépréciation : constatation de la perte irréversible de valeur d'une immobilisation",
+            "description": "Rôle économique, financier et fiscal de l'amortissement."
+          },
+          {
+            "type": "cours",
+            "title": "Le système d'amortissement linéaire (constant) : base amortissable, taux, annuité et tableau d'amortissement",
+            "description": "Application du prorata temporis pour les acquisitions en cours d'exercice."
+          },
+          {
+            "type": "cours",
+            "title": "Le système d'amortissement dégressif selon la réglementation fiscale marocaine",
+            "description": "Calcul avec les coefficients fiscaux légaux (1,5 pour 3-4 ans ; 2 pour 5-6 ans ; 3 pour plus de 6 ans) et bascule vers le linéaire."
+          },
+          {
+            "type": "methode",
+            "title": "Comptabilisation des dotations d'exploitation aux amortissements (DEA) et cessions d'immobilisations",
+            "description": "Écritures de régularisation : sortie du bien, annulation des amortissements cumulés et calcul de la VNA."
+          }
+        ]
+      },
+      {
+        "name": "Les provisions pour dépréciation et provisions pour risques et charges",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Provisions pour dépréciation des éléments d'actif : immobilisations non amortissables, stocks et titres",
+            "description": "Terrains, fonds commercial, stocks de marchandises et Titres de Participation (TP) / TVP."
+          },
+          {
+            "type": "cours",
+            "title": "Dépréciation des créances clients : clients douteux ou litigieux, créances irrécouvrables",
+            "description": "Calcul de la provision sur le montant hors taxe (HT) et régularisation de la TVA sur perte."
+          },
+          {
+            "type": "cours",
+            "title": "Les provisions durables et momentanées pour risques et charges",
+            "description": "Provisions pour litiges avec les salariés ou clients, garanties données, et amendes fiscales probables."
+          }
+        ]
+      },
+      {
+        "name": "Les autres régularisations d'inventaire",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Régularisation des comptes de charges et de produits pour respecter l'indépendance des exercices",
+            "description": "Charges à payer (factures non parvenues), charges constatées d'avance (CCA), produits à recevoir et produits constatés d'avance (PCA)."
+          },
+          {
+            "type": "cours",
+            "title": "Écarts de conversion actif et passif sur créances et dettes libellées en monnaies étrangères",
+            "description": "Application du principe de prudence et constitution de provision pour perte de change."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Analyse financière et diagnostic de santé de l'entreprise",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'État des Soldes de Gestion (ESG) et la Capacité d'Autofinancement",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le Tableau de Formation du Résultat (TFR) : soldes intermédiaires de gestion",
+            "description": "Marge commerciale, Production de l'exercice, Valeur Ajoutée (VA), Excédent Brut d'Exploitation (EBE), Résultat d'exploitation, Résultat courant, Résultat net."
+          },
+          {
+            "type": "cours",
+            "title": "La Capacité d'Autofinancement (CAF) : méthode additive (à partir du résultat net) et soustractive (à partir de l'EBE)",
+            "description": "Mesure du potentiel de financement interne des investissements de l'entreprise et versement des dividendes."
+          }
+        ]
+      },
+      {
+        "name": "Le bilan fonctionnel et l'analyse de l'équilibre financier",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Construction du Bilan Fonctionnel condensé à partir du bilan comptable",
+            "description": "Emplois stables, actif circulant d'exploitation et hors exploitation, trésorerie-actif face aux ressources stables, passif circulant et trésorerie-passif."
+          },
+          {
+            "type": "loi",
+            "title": "Les indicateurs de l'équilibre financier fondamental : FRF, BFR et Trésorerie Nette",
+            "description": "Fonds de Roulement Fonctionnel (Ressources stables - Emplois stables), Besoin en Fonds de Roulement (Actif circulant HT - Passif circulant HT) et relation fondamentale : TN = FRF - BFR."
+          },
+          {
+            "type": "cours",
+            "title": "L'analyse par la méthode des ratios financiers",
+            "description": "Ratios de structure financière (autonomie financière, solvabilité générale), de liquidité (générale, réduite, immédiate) et de rentabilité (commerciale, financière ROE)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Mathématiques financières approfondies",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les opérations financières à long terme",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les intérêts composés : formule de la valeur acquise Cn = C0 * (1 + i)^n et de la valeur actuelle C0",
+            "description": "Placement à moyen et long terme, taux proportionnels et taux équivalents."
+          },
+          {
+            "type": "cours",
+            "title": "Les annuités constantes de fin de période : constitution de capital et amortissement d'un emprunt indivis",
+            "description": "Formules de calcul du capital emprunté, de l'annuité constante et élaboration du tableau d'amortissement de l'emprunt."
+          }
+        ]
+      }
+    ]
+  }
+]

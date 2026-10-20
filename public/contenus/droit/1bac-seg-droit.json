@@ -1,0 +1,100 @@
+[
+  {
+    "title": "Module 1 : Introduction générale à l'étude du droit objectif",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La règle de droit et ses caractères distinctifs",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition du droit objectif et distinction fondamentale entre Droit, Morale et Religion",
+            "description": "Le droit comme ensemble des règles de conduite régissant les hommes vivant en société."
+          },
+          {
+            "type": "cours",
+            "title": "Les caractères essentiels de la règle de droit : générale, impersonnelle, abstraite, permanente et coercitive",
+            "description": "L'intervention de la contrainte étatique (sanctions civiles, pénales, administratives) pour faire respecter la règle."
+          },
+          {
+            "type": "cours",
+            "title": "Les grandes divisions du droit : Droit Public (constitutionnel, administratif, finances publiques) et Droit Privé (civil, commercial, travail)",
+            "description": "Critère de la présence de la puissance publique et des prérogatives de puissance publique."
+          },
+          {
+            "type": "cours",
+            "title": "Les sources du droit marocain : sources formelles directes et sources d'interprétation",
+            "description": "La Constitution marocaine de 2011, la Loi votée par le Parlement, les Règlements (décrets), la Coutume ('Orf), la Jurisprudence et la Doctrine."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : L'organisation judiciaire du Royaume du Maroc",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les juridictions et les principes directeurs de la justice marocaine",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La carte judiciaire marocaine : Juridictions de premier degré (TPI), de second degré (Cours d'Appel) et Cour de Cassation",
+            "description": "Compétence d'attribution (ratione materiae) et compétence territoriale (ratione loci)."
+          },
+          {
+            "type": "cours",
+            "title": "Les juridictions spécialisées : Tribunaux et Cours d'Appel de Commerce, Tribunaux et Cours d'Appel Administratifs",
+            "description": "Règlement des litiges commerciaux entre commerçants et contrôle de la légalité des actes de l'Administration."
+          },
+          {
+            "type": "cours",
+            "title": "Les principes fondamentaux de la justice : gratuité, égalité devant la justice, double degré de juridiction, collégialité et publicité des audiences",
+            "description": "Garanties d'un procès équitable et indépendance constitutionnelle du pouvoir judiciaire."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Les droits subjectifs et la personnalité juridique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les personnes physiques et morales",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La personnalité juridique des personnes physiques : acquisition à la naissance et perte au décès",
+            "description": "Éléments d'individualisation : nom patronymique, prénom, domicile, état civil et nationalité marocaine."
+          },
+          {
+            "type": "cours",
+            "title": "La capacité juridique selon le Code de la Famille marocain (Moudawana) : capacité de jouissance et capacité d'exercice",
+            "description": "Minorité, régimes de tutelle légale, testamentaire, datée, et cas d'incapacité (démence, prodigalité, faiblesse d'esprit)."
+          },
+          {
+            "type": "cours",
+            "title": "La personnalité juridique des personnes morales : personnes morales de droit public et de droit privé (sociétés, associations)",
+            "description": "Patrimoine propre, autonomie financière, représentation légale et responsabilité juridique."
+          }
+        ]
+      },
+      {
+        "name": "Les actes et les faits juridiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Classification des sources des droits subjectifs : actes juridiques conventionnels vs faits juridiques involontaires",
+            "description": "Responsabilité contractuelle vs responsabilité délictuelle et quasi-délictuelle (faute, dommage, lien de causalité)."
+          },
+          {
+            "type": "cours",
+            "title": "La théorie générale des contrats selon le Dahir des Obligations et Contrats (DOC marocain)",
+            "description": "Conditions de validité d'un contrat : consentement mutuel exempt de vices (erreur, dol, violence), capacité de contracter, objet licite et déterminé, cause conforme à l'ordre public et aux bonnes mœurs."
+          }
+        ]
+      }
+    ]
+  }
+]

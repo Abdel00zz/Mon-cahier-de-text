@@ -1,0 +1,151 @@
+[
+  {
+    "title": "Unit 1 : Education and School Life",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Vocabulary and Reading Comprehension",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Types of Education : Formal, Non-formal, and Informal Learning",
+            "description": "School vs homeschooling, non-formal adult literacy classes, and experiential informal learning."
+          },
+          {
+            "type": "activity",
+            "title": "Reading Comprehension : The School of the Future and Digital Classrooms",
+            "description": "Extracting key information, identifying topic sentences, and understanding contextual vocabulary."
+          },
+          {
+            "type": "cours",
+            "title": "Collocations and word formation related to Education (attend school, drop out, literacy rate)",
+            "description": "Prefixes and suffixes forming nouns, adjectives and verbs in academic contexts."
+          }
+        ]
+      },
+      {
+        "name": "Grammar and Language Functions",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Gerunds and Infinitives : verbs followed by gerund (-ing), infinitive (to + verb) or both",
+            "description": "Rules for verbs of preference (like, hate, avoid, suggest vs hope, plan, decide, afford)."
+          },
+          {
+            "type": "cours",
+            "title": "Simple Past vs Present Perfect Tense : definite past time vs unfinished / relevant past",
+            "description": "Time markers : yesterday, ago, in 2020 vs already, yet, just, since, for, ever, never."
+          },
+          {
+            "type": "methode",
+            "title": "Expressing Opinion, Agreeing, and Disagreeing politely in discussion",
+            "description": "Functional exponents : 'In my opinion...', 'I totally agree because...', 'I see your point, but...'"
+          }
+        ]
+      },
+      {
+        "name": "Writing Skills",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Writing an effective paragraph : Topic sentence, supporting details, and concluding sentence",
+            "description": "Structure of a cohesive English paragraph, use of linking words (furthermore, in addition, however)."
+          },
+          {
+            "type": "application",
+            "title": "Writing an opinion paragraph : Should smartphones be allowed in Moroccan classrooms ?",
+            "description": "Brainstorming pros and cons, organizing arguments, and producing an error-free draft."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 2 : Society and Youth Issues",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Social Realities and Civic Responsibility",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Youth problems : unemployment, delinquency, rural migration, and generation gap",
+            "description": "Analyzing social causes and community solutions in Moroccan urban and rural environments."
+          },
+          {
+            "type": "activity",
+            "title": "Case Study : Youth voluntary associations and community service initiatives in Morocco",
+            "description": "Highlighting youth leadership, civil society, and civic engagement."
+          }
+        ]
+      },
+      {
+        "name": "Grammar and Structures",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Modals of Ability, Obligation, Prohibition, and Permission (can, must, mustn't, have to, should)",
+            "description": "Expressing moral advice with 'ought to' and 'had better'."
+          },
+          {
+            "type": "cours",
+            "title": "Relative Clauses : Defining and Non-defining relative pronouns (who, which, that, where, whose)",
+            "description": "Combining sentences accurately without repetitive nouns."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 3 : Health, Nutrition, and Sports",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Healthy Living and Welfare",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Healthy habits vs Junk food addictions and lifestyle diseases",
+            "description": "Nutritional balance, organic food, mental wellbeing, and the importance of daily physical exercise."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : Conditionals Type 0 and Type 1 (Real present and probable future conditions)",
+            "description": "Formulas : If + present simple, present simple / will + bare infinitive."
+          }
+        ]
+      },
+      {
+        "name": "Writing an Informal Letter",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Format of an informal letter or personal email to a penfriend",
+            "description": "Salutation, informal opening greetings, body paragraphs, and informal sign-off formulas."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unit 4 : Culture, Heritage, and Moroccan Traditions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Interculturality and Cultural Heritage",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Moroccan cultural diversity : architecture, hospitality, craftsmanship, and gastronomy",
+            "description": "Celebrating tolerance, coexistence of Muslim and Jewish heritage, and Amazigh traditions."
+          },
+          {
+            "type": "cours",
+            "title": "Grammar : The Passive Voice in Present and Past Simple (be + past participle)",
+            "description": "Focusing on the action and object rather than the agent."
+          }
+        ]
+      }
+    ]
+  }
+]

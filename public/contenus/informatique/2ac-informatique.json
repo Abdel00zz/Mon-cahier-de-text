@@ -1,0 +1,100 @@
+[
+  {
+    "title": "Unité 1 : Le tableur et calculs automatisés",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Structure d'un classeur et formules arithmétiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Concepts de base du tableur : classeur, feuilles de calcul, lignes, colonnes et cellules",
+            "description": "Adresse relative et absolue d'une cellule (A1, $A$1), types de données (texte, nombre, date)."
+          },
+          {
+            "type": "methode",
+            "title": "Écriture et évaluation des formules de calcul élémentaires (+, -, *, /, ^)",
+            "description": "Priorité des opérations mathématiques et syntaxe débutant par le signe égal '='."
+          },
+          {
+            "type": "cours",
+            "title": "Utilisation des fonctions statistiques prédéfinies : SOMME, MOYENNE, MIN, MAX, NB",
+            "description": "Syntaxe des plages de cellules (ex: A1:A20), calcul automatique des moyennes de classe."
+          },
+          {
+            "type": "application",
+            "title": "La fonction logique conditionnelle : SI simple et imbriqué",
+            "description": "Affichage automatique d'une mention ou d'un résultat selon une condition (ex: SI(Moyenne>=10; 'Admis'; 'Ajourné'))."
+          }
+        ]
+      },
+      {
+        "name": "Représentation graphique des données",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Création et personnalisation de diagrammes statistiques",
+            "description": "Choix du type de graphique adapté : histogramme (comparaison), secteur (répartition en pourcentages), courbe (évolution dans le temps)."
+          },
+          {
+            "type": "application",
+            "title": "Mise en forme conditionnelle et tri de listes de données",
+            "description": "Mise en surbrillance automatique des valeurs critiques et ordonnancement alphabétique ou numérique."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 2 : Présentation assistée par ordinateur (PAO)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conception de diaporamas interactifs",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Règles d'or d'une présentation visuelle efficace : concision, lisibilité et contraste",
+            "description": "Éviter la surcharge textuelle, choisir une palette de couleurs harmonieuse et des typographies lisibles."
+          },
+          {
+            "type": "methode",
+            "title": "Création de diapositives : masques, thèmes, zones de texte et éléments multimédias",
+            "description": "Intégration harmonieuse de graphiques, vidéos courtes et schémas conceptuels."
+          },
+          {
+            "type": "cours",
+            "title": "Transitions entre diapositives et animations personnalisées des objets",
+            "description": "Réglage du minutage, effets d'apparition progressive pour rythmer l'exposé oral."
+          },
+          {
+            "type": "application",
+            "title": "Liens hypertextes et boutons d'action interactifs",
+            "description": "Création d'un sommaire cliquable et navigation non linéaire dans le diaporama."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unité 3 : Veille informationnelle et citoyenneté numérique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Éthique du numérique et esprit critique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Évaluation de la fiabilité des sources d'information sur Internet",
+            "description": "Détection des fausses nouvelles (Fake News), vérification de l'auteur, de la date et croisement des sources."
+          },
+          {
+            "type": "cours",
+            "title": "Droit d'auteur, licences Creative Commons et respect de la propriété intellectuelle",
+            "description": "Règles de citation, utilisation d'images libres de droits et lutte contre le plagiat scolaire."
+          }
+        ]
+      }
+    ]
+  }
+]

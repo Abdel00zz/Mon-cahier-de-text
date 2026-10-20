@@ -1,0 +1,80 @@
+[
+  {
+    "title": "Unità 1 : Incontri, Presentazione e Vita Quotidiana",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Comunicazione fondamentale in lingua italiana",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Presentarsi, salutare in modo formale e informale, nazionalità e descrizioni personali",
+            "description": "Uso del 'Tu' amichevole rispetto al 'Lei' di cortesia."
+          },
+          {
+            "type": "cours",
+            "title": "Il Presente Indicativo dei verbi regolari nelle tre coniugazioni (-are, -ere, -ire)",
+            "description": "Verbi ad alta frequenza e verbi con infisso in -isc- (preferire, capire, pulire)."
+          },
+          {
+            "type": "cours",
+            "title": "I verbi ausiliari e irregolari essenziali : essere, avere, andare, fare, venire, uscire",
+            "description": "Costruzione di frasi semplici e domande informative."
+          },
+          {
+            "type": "cours",
+            "title": "Articoli determinativi (il, lo, l', la, i, gli, le) e indeterminativi (un, uno, una, un')",
+            "description": "Regole fonetiche legate a consonanti speciali (s+consonante, gn, z)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unità 2 : La Casa, la Famiglia e i Luoghi della Città",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Spazio abitativo e vita sociale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Descrivere la casa, i mobili, la famiglia e i rapporti di parentela",
+            "description": "Gli aggettivi e pronomini possessivi (mio, tuo, suo, nostro, vostro, loro) e particolarità con i nomi di famiglia."
+          },
+          {
+            "type": "cours",
+            "title": "I verbi riflessivi nella routine quotidiana (alzarsi, lavarsi, vestirsi)",
+            "description": "Posizione dei pronomi riflessivi (mi, ti, si, ci, vi, si) nel presente indicativo."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Unità 3 : Il Passato, i Viaggi e la Cultura Italiana",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Esperienze passate e patrimonio culturale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Il Passato Prossimo con gli ausiliari essere e avere",
+            "description": "Regola fondamentale dell'accordo del participio passato con l'ausiliare essere."
+          },
+          {
+            "type": "cours",
+            "title": "Le preposizioni articolate (a, da, di, in, su) e indicazioni di luogo",
+            "description": "Uso corretto nella localizzazione di città, paesi e luoghi pubblici."
+          },
+          {
+            "type": "cours",
+            "title": "Arte, cucina, cinema e relazioni storiche e mediterranee tra Marocco e Italia",
+            "description": "La tradizione del Made in Italy, le città d'arte (Roma, Firenze, Venezia) e il dialogo mediterraneo."
+          }
+        ]
+      }
+    ]
+  }
+]

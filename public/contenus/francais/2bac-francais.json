@@ -1,0 +1,180 @@
+[
+  {
+    "title": "Module 1 : Le conte philosophique (Voltaire - Candide ou l'Optimisme)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "L'esprit des Lumières et la contestation philosophique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le conte philosophique au XVIIIe siècle : genre hybride alliant la fantaisie du récit et la rigueur de la critique philosophique",
+            "description": "Contexte historique : le tremblement de terre de Lisbonne (1755), la guerre de Sept Ans et la lutte des Philosophes des Lumières."
+          },
+          {
+            "type": "activity",
+            "title": "L'incipit de Candide : satire féroce du château de Thunder-ten-tronckh et de la philosophie de Pangloss",
+            "description": "L'ironie voltairienne contre l'optimisme providentiel de Leibniz ('tout est pour le mieux dans le meilleur des mondes possibles')."
+          },
+          {
+            "type": "cours",
+            "title": "Le parcours initiatique de Candide : de l'illusion naïve à la lucidité critique",
+            "description": "Traversée des maux du monde : la guerre, l'Inquisition (l'Autodafé), l'esclavage (le Nègre de Surinam), le fanatisme et les naufrages."
+          },
+          {
+            "type": "application",
+            "title": "L'Eldorado (Chapitres 17-18) : utopie politique, tolérance religieuse et société idéale",
+            "description": "Fonction de l'utopie comme contre-modèle éclatant face aux tares des sociétés européennes corrompues."
+          },
+          {
+            "type": "cours",
+            "title": "L'excipit et la morale finale : 'Il faut cultiver notre jardin'",
+            "description": "Interprétation philosophique : primauté du travail concret, du pragmatisme social et rejet des spéculations métaphysiques vaines."
+          }
+        ]
+      },
+      {
+        "name": "Langue, ironie et procédés argumentatifs voltairiens",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'ironie sous toutes ses formes : antiphrase, faux éloge, association saugrenue, euphémisme satirique",
+            "description": "Décryptage des décalages voulus entre le ton ingénu du narrateur et l'atrocité des réalités décrites."
+          },
+          {
+            "type": "cours",
+            "title": "Le discours critique : arguments d'autorité parodiés et raisonnements fallacieux",
+            "description": "Démontage de la casuistique et du faux syllogisme des théologiens et philosophes dogmatiques."
+          },
+          {
+            "type": "methode",
+            "title": "Les connecteurs logiques de la concession et de la réfutation",
+            "description": "Usage précis des articulateurs : certes, néanmoins, toutefois, en revanche, loin de là."
+          }
+        ]
+      },
+      {
+        "name": "Dissertation philosophique et littéraire",
+        "items": [
+          {
+            "type": "methode",
+            "title": "La dissertation critique : formulation d'une réflexion nuancée sur le progrès et l'action humaine",
+            "description": "Méthodologie détaillée de l'introduction, du plan thématique / dialectique et de la synthèse conclusive."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Le roman réaliste (Honoré de Balzac - Le Père Goriot)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "La Comédie Humaine et la fresque de la société parisienne",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le projet monumental de Balzac : faire concurrence à l'état civil et peindre les types sociaux sous la Restauration",
+            "description": "Structure du roman balzacien : théorie des milieux, déterminisme social et drames de l'ambition."
+          },
+          {
+            "type": "activity",
+            "title": "La pension Vauquer : description minutieuse et correspondance métonymique entre le lieu et ses habitants",
+            "description": "L'art du détail signifiant : odeur de pension, crasse des meubles et décadence morale de Madame Vauquer."
+          },
+          {
+            "type": "cours",
+            "title": "Les destins croisés de la pension : Goriot, Rastignac et Vautrin",
+            "description": "Le drame de la paternité sublime et aliénante (Goriot le 'Christ de la paternité') face à l'ingratitude d'Anastasie et Delphine."
+          },
+          {
+            "type": "cours",
+            "title": "La tentation de Rastignac et le pacte corrupteur proposé par Vautrin",
+            "description": "Le dilemme moral de l'étudiant provincial : réussir par le travail honnête ou triompher par le crime cynique."
+          },
+          {
+            "type": "cours",
+            "title": "L'agonie de Goriot et le défi final de Rastignac du haut du Père-Lachaise : 'À nous deux maintenant !'",
+            "description": "Le sacre de l'ambition sociale et la perte définitive des illusions de jeunesse."
+          }
+        ]
+      },
+      {
+        "name": "Stylistique et écriture balzacienne",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les fonctions de la description balzacienne : réaliste, explicative, psychologique et symbolique",
+            "description": "Analyse de la technique du zoom avant, de l'extérieur vers l'intérieur, de l'espace vers l'âme des personnages."
+          },
+          {
+            "type": "cours",
+            "title": "Les registres dramatique, pathétique et réaliste",
+            "description": "Combinaison des registres pour susciter l'émotion devant le sacrifice paternel bafoué."
+          },
+          {
+            "type": "cours",
+            "title": "Les métaphores organiques et animales appliquées aux comportements humains",
+            "description": "Le champ lexical de la jungle parisienne, de la proie et du prédateur social."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Littérature maghrébine contemporaine (M. Khaïr-Eddine - Il était une fois un vieux couple heureux)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Modernité, enracinement et mutation de la société marocaine",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Mohammed Khaïr-Eddine et le renouvellement de la littérature marocaine d'expression française",
+            "description": "La rupture avec le cri révolté des années 1960 ('Agadir') et l'avènement d'une écriture apaisée, poétique et testamentaire."
+          },
+          {
+            "type": "activity",
+            "title": "Bouchaïb et sa femme dans la vallée d'Ammeln : harmonie avec la nature et mémoire ancestrale",
+            "description": "Rituels quotidiens : préparation du thé à la menthe, cuisson du tajine, soins aux bêtes et contemplation de la montagne."
+          },
+          {
+            "type": "cours",
+            "title": "La menace de la modernité déréglée et l'émigration vers les métropoles et l'Europe",
+            "description": "Opposition entre la sagesse millénaire du village berbère et l'aliénation consumériste des parvenus de la ville."
+          },
+          {
+            "type": "cours",
+            "title": "L'écriture et la poésie comme sauvegarde de la mémoire collective amazighe",
+            "description": "Le travail de Bouchaïb transcrivant en tifinagh un long poème à la gloire d'un saint local méconnu."
+          }
+        ]
+      },
+      {
+        "name": "Langue, poésie du quotidien et dialogue culturel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'interférence linguistique et culturelle : intégration harmonieuse de proverbes et termes berbères et arabes",
+            "description": "Richesse du métissage stylistique au service de l'authenticité de l'ancrage régional."
+          },
+          {
+            "type": "cours",
+            "title": "L'évocation lyrique du paysage saharien et présaharien marocain",
+            "description": "Champs lexicaux des couleurs minérales, du vent aride (chergui) et de la fécondité de l'oasis."
+          }
+        ]
+      },
+      {
+        "name": "Synthèse et épreuve finale du Baccalauréat",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Techniques avancées du commentaire de texte et de l'essai critique pour l'Examen National",
+            "description": "Consolidation des savoir-faire d'analyse littéraire, précision du lexique critique et gestion du temps de l'épreuve."
+          }
+        ]
+      }
+    ]
+  }
+]

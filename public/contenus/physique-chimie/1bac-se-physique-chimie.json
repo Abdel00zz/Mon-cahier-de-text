@@ -1,0 +1,423 @@
+[
+  {
+    "title": "Chapitre 1 : Rotation d'un solide indéformable autour d'un axe fixe",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Cinématique de la rotation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Abscisse angulaire $\\theta(t)$, vitesse angulaire $\\omega = \\frac{d\\theta}{dt}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Mouvement de rotation uniforme : période $T$, fréquence $N$ et équation horaire $\\theta(t) = \\omega t + \\theta_0$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Relation entre vitesse linéaire et vitesse angulaire $v = R\\cdot\\omega$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Travail et puissance d'une force",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Travail mécanique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Travail d'une force constante en translation : $W_{AB}(\\vec{F}) = \\vec{F}\\cdot\\vec{AB} = F\\cdot AB\\cdot\\cos(\\alpha)$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Travail moteur, résistant et nul",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Travail du poids : $W_{AB}(\\vec{P}) = \\pm m g h$ (indépendance du chemin suivi)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Travail d'une force de moment constant en rotation : $W = \\mathcal{M}_\\Delta(\\vec{F})\\cdot\\Delta\\theta$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Puissance moyenne et instantanée : $\\mathcal{P} = \\vec{F}\\cdot\\vec{v} = \\mathcal{M}_\\Delta\\cdot\\omega$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Travail et énergie cinétique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Théorème de l'énergie cinétique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Énergie cinétique de translation $E_c = \\frac{1}{2}m v^2$ et de rotation $E_c = \\frac{1}{2}J_\\Delta\\omega^2$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de l'énergie cinétique : $\\Delta E_c = \\sum W(\\vec{F}_{ext})$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Application au freinage, chute libre et plans inclinés",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Travail et énergie potentielle de pesanteur - Énergie mécanique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Énergie potentielle et énergie mécanique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Expression de l'énergie potentielle de pesanteur $E_{pp} = m g z + C$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Définition de l'énergie mécanique $E_m = E_c + E_{pp}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation de l'énergie mécanique en l'absence de frottements ($\\Delta E_m = 0$)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Non-conservation en présence de frottements : $\\Delta E_m = W(\\vec{f})$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Énergie thermique et transferts thermiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Chaleur et calorimétrie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Modes de transfert thermique : conduction, convection et rayonnement",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Capacité thermique massique $c$ et quantité de chaleur $Q = m\\cdot c\\cdot\\Delta T$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Bilan thermique d'un calorimètre à l'équilibre",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Le champ électrostatique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Forces et champs électriques",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Loi de Coulomb pour deux charges ponctuelles",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vecteur champ électrostatique $\\vec{E}$, force $\\vec{F} = q\\vec{E}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Champ uniforme entre deux armatures planes parallèles ($E = U/d$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Énergie potentielle électrostatique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Travail de la force électrostatique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Travail de la force électrostatique $W_{AB}(\\vec{F}) = q(V_A - V_B)$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Énergie potentielle électrostatique $E_{pe} = q V$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation de l'énergie mécanique d'une particule chargée",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Transfert d'énergie dans un circuit électrique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Bilan énergétique d'un circuit",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Effet Joule : $W_J = R\\cdot I^2\\cdot\\Delta t$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Générateur réel : force électromotrice $E$, résistance interne $r$, tension $U_{PN} = E - r I$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Récepteur actif : force contre-électromotrice $E'$, tension $U_{AB} = E' + r' I$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi de Pouillet et rendement d'un circuit électrique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Le champ magnétique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Propriétés du champ magnétique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Sources magnétiques : aimants naturels, courants électriques",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vecteur champ magnétique $\\vec{B}$, unité Tesla ($T$)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Lignes de champ créées par un fil rectiligne, une bobine plate et un solénoïde ($B = \\mu_0\\frac{N}{L}I$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : La force de Laplace",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Action d'un champ magnétique sur un courant",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Loi de Laplace : force $\\vec{F} = I\\vec{L}\\wedge\\vec{B}$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Règle de la main droite ou des trois doigts pour déterminer le sens",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Applications industrielles : moteur à courant continu, haut-parleur électrodynamique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Optique géométrique : les lentilles convergentes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Formation d'images et grandissement",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Formule de conjugaison de Descartes : $\\frac{1}{\\overline{OA'}} - \\frac{1}{\\overline{OA}} = \\frac{1}{f'}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formule de grandissement : $\\gamma = \\frac{\\overline{A'B'}}{\\overline{AB}} = \\frac{\\overline{OA'}}{\\overline{OA}}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Étude du modèle du microscope optique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : La mesure en chimie et quantité de matière",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Approche quantitative des réactions",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Incertitudes de mesure et précision de la verrerie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Tableau d'avancement d'une réaction chimique, avancement maximal $x_{max}$ et réactif limitant",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 13 : Solutions électrolytiques et conductimétrie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conductance et concentration",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Conductance $G = I/U$ et conductivité d'une solution $\\sigma$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Loi de Kohlrausch : $\\sigma = \\sum \\lambda_i [X_i]$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Dosage par étalonnage conductimétrique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 14 : Réactions acido-basiques et dosages",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Théorie de Brönsted et titrage",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Couple acide/base selon Brönsted, échange de protons $H^+$",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Titrage acido-basique en présence d'un indicateur coloré, repérage de l'équivalence",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 15 : Réactions d'oxydo-réduction",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Transfert d'électrons",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Couple oxydant/réducteur ($Ox/Red$) et demi-équations électroniques",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Établir une équation bilan redox globale",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Dosage d'oxydo-réduction par le permanganate de potassium",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 16 : Chimie organique : squelettes carbonés et fonctions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Structure des molécules organiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Tétravalence du carbone, alcanes, alcènes et isomérie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Familles fonctionnelles : alcools, aldéhydes, cétones, acides carboxyliques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

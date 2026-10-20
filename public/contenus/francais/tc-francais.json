@@ -1,0 +1,221 @@
+[
+  {
+    "title": "Module 1 : La nouvelle réaliste (Guy de Maupassant)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lecture méthodique et analyse littéraire",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le genre de la nouvelle réaliste au XIXe siècle : brièveté, concentration dramatique et ancrage réaliste",
+            "description": "Étude des caractéristiques du réalisme littéraire à travers Guy de Maupassant et la description des mœurs normandes."
+          },
+          {
+            "type": "activity",
+            "title": "Analyse de l'incipit de 'Aux champs' : présentation du cadre spatio-temporel et des familles Tuvache et Vallin",
+            "description": "Repérage des indices spatio-temporels, caractérisation sociale et opposition des deux familles paysannes."
+          },
+          {
+            "type": "cours",
+            "title": "Le schéma narratif : état initial, élément perturbateur, péripéties, élément de résolution, état final",
+            "description": "Découpage précis du récit et identification de la rupture d'équilibre introduite par la proposition d'adoption des Hubières."
+          },
+          {
+            "type": "application",
+            "title": "Le portrait physique et moral en contexte réaliste : techniques de caractérisation des personnages",
+            "description": "Analyse du vocabulaire péjoratif et mélioratif, des notations descriptives et des fonctions du portrait (documentaire et symbolique)."
+          }
+        ]
+      },
+      {
+        "name": "Langue et outils d'analyse",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les temps du récit : opposition fonctionnelle Imparfait / Passé simple",
+            "description": "Usage de l'imparfait pour l'arrière-plan, la durée et la description, et du passé simple pour les actions ponctuelles de premier plan."
+          },
+          {
+            "type": "cours",
+            "title": "Les discours rapportés : discours direct, indirect et indirect libre",
+            "description": "Reconnaissance des verbes introducteurs, des changements de pronoms, de repères temporels et de la concordance des temps."
+          },
+          {
+            "type": "methode",
+            "title": "Les figures de style d'analogie : comparaison, métaphore, personnification",
+            "description": "Identification et interprétation de la portée expressive des figures dans le texte narratif réaliste."
+          }
+        ]
+      },
+      {
+        "name": "Production écrite et argumentation",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Débat argumenté : l'argent fait-il le bonheur familial ?",
+            "description": "Confrontation des points de vue des élèves à partir du dilemme moral posé par Maupassant dans 'Aux champs'."
+          },
+          {
+            "type": "methode",
+            "title": "Rédaction d'une suite de récit en respectant la cohérence narrative et le registre réaliste",
+            "description": "Consignes d'écriture : respect des temps du récit, intégration d'un passage descriptif et d'un dialogue argumentatif."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : La comédie classique (Molière - Le Bourgeois gentilhomme)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Lecture théâtrale et dramaturgie",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les spécificités du texte de théâtre : répliques, tirades, apartés, didascalies et double énonciation",
+            "description": "Comprendre le double niveau d'énonciation au théâtre : le personnage s'adresse à la fois à son interlocuteur et au public."
+          },
+          {
+            "type": "activity",
+            "title": "Analyse de la scène d'ouverture : Monsieur Jourdain et les maîtres de musique et de danse",
+            "description": "Étude du ridicule du protagoniste, de la flatterie intéressée des maîtres et de la satire des prétentions nobiliaires."
+          },
+          {
+            "type": "cours",
+            "title": "La leçon d'orthographe et de philosophie (Acte II, scène 4) : le comique verbal et gestuel",
+            "description": "Exploration des procédés comiques : comique de mots, de gestes, de situation, de répétition et de mœurs."
+          },
+          {
+            "type": "application",
+            "title": "La comédie-ballet : alliance du théâtre, du chant et de la danse à la cour de Louis XIV",
+            "description": "Rôle des intermèdes musicaux et de la turquerie finale (cérémonie du Mamamouchi) orchestrée par Lulli et Molière."
+          }
+        ]
+      },
+      {
+        "name": "Outils de la langue et stylistique théâtrale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les types de phrases et les actes de parole dans le dialogue dramatique",
+            "description": "Phrases assertives, interrogatives, injonctives, exclamatives et leurs valeurs illocutoires (ordonner, supplier, menacer)."
+          },
+          {
+            "type": "cours",
+            "title": "Les registres comique, satirique et ironique",
+            "description": "Moyens linguistiques au service de la critique sociale et du divertissement classique."
+          },
+          {
+            "type": "methode",
+            "title": "Le champ lexical et les réseaux de sens au théâtre",
+            "description": "Reconstitution des thématiques dominantes (la noblesse, la duperie, l'argent, l'apprentissage du savoir)."
+          }
+        ]
+      },
+      {
+        "name": "Expression écrite et jeu scénique",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Mise en voix et jeu théâtral d'une scène choisie",
+            "description": "Travail sur la diction, l'intonation, la gestuelle, les déplacements et l'occupation de l'espace scénique."
+          },
+          {
+            "type": "methode",
+            "title": "Rédaction d'un dialogue comique mettant en scène un personnage vaniteux moderne",
+            "description": "Application des procédés du comique moliéresque à une situation contemporaine (réseaux sociaux, mode, paraître)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : La nouvelle fantastique (Prosper Mérimée - La Vénus d'Ille)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le genre fantastique et l'hésitation",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition du fantastique selon Tzvetan Todorov : l'hésitation entre explication rationnelle et surnaturelle",
+            "description": "Frontière subtile entre le réel et le surnaturel, distinction fondamentale entre fantastique, merveilleux et étrange."
+          },
+          {
+            "type": "activity",
+            "title": "Analyse de la découverte de la Vénus : statue antique bienfaisante ou idole maléfique ?",
+            "description": "Étude de la description de la statue, son regard ironique et menaçant, et son inscription gravée 'Cave amantem'."
+          },
+          {
+            "type": "cours",
+            "title": "La gradation de la peur et la création de l'atmosphère d'angoisse",
+            "description": "Procédés narratifs : cadre nocturne, tempête, bruits suspects, ellipses narratives et focalisation interne."
+          }
+        ]
+      },
+      {
+        "name": "Analyse linguistique du fantastique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La modalisation et les indices d'incertitude dans le récit",
+            "description": "Verbes d'opinion, adverbes de doute (peut-être, sans doute), conditionnel et tournures impersonnelles."
+          },
+          {
+            "type": "cours",
+            "title": "Les figures d'opposition : antithèse, oxymore et antiphrase",
+            "description": "Mise en tension des contraires (beauté pétrifiée / cruauté vivante, marbre froid / passion brûlante)."
+          }
+        ]
+      },
+      {
+        "name": "Écriture d'invention",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Rédiger un paragraphe fantastique fondé sur un événement inexplicable du quotidien",
+            "description": "Consignes : instaurer un cadre ordinaire, introduire un élément perturbateur insolite, maintenir le doute jusqu'à la fin."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Poésie et versification française",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les structures métriques et le rythme poétique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les règles fondamentales de la versification : syllabes, 'e' muet, diérèse et synérèse",
+            "description": "Calcul métrique rigoureux, césure à l'hémistiche dans l'alexandrin classique et enjambement, rejet, contre-rejet."
+          },
+          {
+            "type": "cours",
+            "title": "Les formes poétiques fixes : le sonnet italien et le sonnet français",
+            "description": "Disposition des quatrains et tercets, schémas de rimes plates (AABB), croisées (ABAB) et embrassées (ABBA)."
+          }
+        ]
+      },
+      {
+        "name": "Musicalité et images poétiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les harmonies sonores : allitération et assonance",
+            "description": "Effets phoniques évocateurs et correspondances synesthésiques (Baudelaire, Rimbaud, Verlaine)."
+          },
+          {
+            "type": "application",
+            "title": "Commentaire stylistique d'un poème du XIXe siècle",
+            "description": "Mise en relation des choix formels du poète avec l'expression lyrique des émotions et de la nostalgie."
+          }
+        ]
+      }
+    ]
+  }
+]

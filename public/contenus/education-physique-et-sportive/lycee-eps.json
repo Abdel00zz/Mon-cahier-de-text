@@ -1,0 +1,54 @@
+[
+  {
+    "title": "Module 1 : Performance athlétique et optimisation physiologique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Endurance, filières énergétiques et athlétisme avancé",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Développement de la Vitesse Maximale Aérobie (VMA) et calcul de la Fréquence Cardiaque Maximale (FCM)",
+            "description": "Connaissance des filières énergétiques (aérobie, anaérobie alactique, anaérobie lactique) et gestion personnalisée de l'effort."
+          },
+          {
+            "type": "cours",
+            "title": "Course de relais (4 x 100m) : synchronisation de la transmission du témoin à pleine vitesse",
+            "description": "Zone d'élan, zone de transmission de 20 mètres, prise de repère visuel et passage par le bas ou par le haut sans rupture d'allure."
+          },
+          {
+            "type": "cours",
+            "title": "Saut en hauteur : perfectionnement de la technique du Fosbury-Flop",
+            "description": "Course d'élan courbe, appel vertical puissant, enroulement dorsal de la barre et réception dorsale sécurisée."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Sports collectifs : Stratégies tactiques complexes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Organisation tactique et arbitrage officiel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Basketball / Handball : organisation tactique de l'attaque placée contre défense groupée",
+            "description": "Mise en place de blocs, écrans, passes et va, décalages sur les ailes et tirs en suspension."
+          },
+          {
+            "type": "cours",
+            "title": "Systèmes défensifs élaborés : défense homme à homme tout-terrain et zones 6-0 ou 1-3-2",
+            "description": "Glissements collectifs, couverture mutuelle et contre-attaque fulgurante dès la récupération de balle."
+          },
+          {
+            "type": "cours",
+            "title": "Auto-arbitrage et arbitrage fédéral des compétitions sportives inter-établissements",
+            "description": "Maîtrise du code arbitral officiel, gestion impartiale du chronomètre, des fautes et des sanctions disciplinaires."
+          }
+        ]
+      }
+    ]
+  }
+]

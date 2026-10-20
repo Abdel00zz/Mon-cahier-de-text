@@ -1,0 +1,450 @@
+[
+  {
+    "title": "Chapitre 1 : L'eau dans notre environnement",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Les réservoirs naturels d'eau",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Identifier les différents réservoirs d'eau sur la Terre",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Répartition de l'eau sur le globe : mers, glaciers, nappes souterraines",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le pourcentage d'eau douce exploitable par l'Homme",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Le cycle naturel de l'eau",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les étapes du cycle de l'eau : évaporation, condensation, précipitations",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Observation des changements d'état lors du cycle de l'eau",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Importance vitale de la préservation des ressources en eau",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Les trois états physiques de la matière",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Propriétés physiques des solides et des liquides",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Manipuler des solides compacts et divisés, et des liquides",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Forme propre des solides compacts et absence de forme propre des liquides",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Planité et horizontalité de la surface libre d'un liquide au repos",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Propriétés physiques des gaz",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Mise en évidence de l'absence de forme propre et de volume propre d'un gaz",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Compressibilité et expansibilité des gaz à l'aide d'une seringue",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Comparer les trois états de la matière dans un tableau synthétique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Mesure du volume des liquides et des solides",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Unités de volume et instruments de mesure",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Notion de volume et capacité, unités usuelles ($L$, $mL$, $m^3$, $cm^3$)",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utiliser correctement une éprouvette graduée et lire le ménisque",
+            "description": ""
+          },
+          {
+            "type": "exercice",
+            "title": "Conversions d'unités de volume et de capacité",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Mesure du volume d'un solide",
+        "items": [
+          {
+            "type": "methode",
+            "title": "Méthode par déplacement de liquide pour un solide de forme quelconque",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le volume d'un solide géométrique régulier ($V=a^3$, $V=L\\times l\\times h$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Mesure de la masse des solides et des liquides",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Unités de masse et pesée",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Unités de masse (kilogramme, gramme, milligramme, tonne)",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation de la balance électronique et fonction tare",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Mesurer la masse d'un liquide en tenant compte du récipient",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : La masse volumique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Notion de masse volumique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition de la masse volumique $\\rho = \\frac{m}{V}$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Unités usuelles : $kg/m^3$ et $g/cm^3$",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Déterminer expérimentalement la masse volumique de l'eau et de l'huile",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Identifier un métal inconnu d'après sa masse volumique mesurée",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Pression et pression atmosphérique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Notion de pression d'un gaz",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Expérience de la seringue : comprimer et détendre un gaz enfermé",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Définition de la pression $P = \\frac{F}{S}$ et unité internationale (Pascal)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Instruments de mesure de pression : manomètre",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "La pression atmosphérique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Mise en évidence de la pression atmosphérique (verre d'eau renversé)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Mesure au baromètre, valeur normale au niveau de la mer ($1013\\text{ hPa}$)",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Effet de l'altitude sur la valeur de la pression atmosphérique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Modèle particulaire de la matière",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Interprétation microscopique des états physiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Hypothèse particulaire : molécules en mouvement ou ordonnées",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Modélisation de l'état solide (ordonné et compact)",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Modélisation de l'état liquide (désordonné et compact)",
+            "description": ""
+          },
+          {
+            "type": "observation",
+            "title": "Modélisation de l'état gazeux (désordonné et dispersé)",
+            "description": ""
+          },
+          {
+            "type": "conclusion",
+            "title": "Conservation du nombre de particules lors des déformations physiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Chaleur et changements d'états physiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Chaleur et température",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Distinction fondamentale entre chaleur (énergie transférée) et température",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation du thermomètre et échelle Celsius ($^\\circ\\text{C}$)",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Les changements d'états physiques de l'eau",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Tracer la courbe de fusion et de solidification de l'eau pure",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Palier de température pendant le changement d'état d'un corps pur",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Conservation de la masse et variation du volume lors du gel de l'eau",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Les mélanges et corps purs",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mélanges homogènes et hétérogènes",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Mélanger eau et sel, eau et huile, eau et sable",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Définition d'un mélange homogène et d'un mélange hétérogène",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Miscibilité de deux liquides et émulsion temporaire",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : La dissolution dans l'eau",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Solution, soluté et solvant",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Définition du solvant (l'eau), du soluté et de la solution aqueuse",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Limite de solubilité et notion de solution saturée",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conservation de la masse totale lors de la dissolution",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Séparation des constituants d'un mélange",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Techniques usuelles de séparation",
+        "items": [
+          {
+            "type": "methode",
+            "title": "La décantation et la centrifugation pour séparer solide et liquide",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "La filtration : rôle du filtre et obtention d'un filtrat limpide",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "La distillation simple : obtention d'eau distillée pure (distillat)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : Le circuit électrique simple",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Éléments du circuit électrique",
+        "items": [
+          {
+            "type": "activite",
+            "title": "Allumer une lampe avec une pile plate et des pinces crocodiles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Rôle du générateur (pile), des récepteurs (lampe, moteur) et de l'interrupteur",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Symboles normalisés et tracé du schéma électrique",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Notion de court-circuit et dangers d'incendie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 13 : Types de montages électriques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Montages en série et en dérivation",
+        "items": [
+          {
+            "type": "experience",
+            "title": "Montage de deux lampes en série : conséquences du dévissage d'une lampe",
+            "description": ""
+          },
+          {
+            "type": "experience",
+            "title": "Montage de deux lampes en dérivation : indépendance des récepteurs",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Choix du montage en dérivation pour l'installation domestique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

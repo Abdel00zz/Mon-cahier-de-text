@@ -1,0 +1,95 @@
+[
+  {
+    "title": "Module 1 : Résistance des Matériaux (RDM) appliquée aux organes de machines",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Dimensionnement des pièces sous sollicitations simples",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Hypothèses fondamentales de la RDM : milieu homogène, isotrope, continuité et déformations élastiques",
+            "description": "Domaine de validité de la loi de Hooke (sigma = E * epsilon) et module de Young E."
+          },
+          {
+            "type": "cours",
+            "title": "Sollicitation d'extension et de compression simples",
+            "description": "Contrainte normale sigma = N / S, allongement relatif delta_L, condition de résistance mécanique (sigma <= Rpe = Re / s)."
+          },
+          {
+            "type": "cours",
+            "title": "Sollicitation de cisaillement simple appliquée aux rivets, boulons et goupilles",
+            "description": "Contrainte tangentielle tau = T / S, déformation angulaire gamma, module de cisaillement G et dimensionnement."
+          },
+          {
+            "type": "cours",
+            "title": "Sollicitation de torsion simple des arbres de transmission circulaires",
+            "description": "Contrainte tangentielle maximale tau_max = (Mt * R) / Io, angle unitaire de torsion theta et rigidité de l'arbre."
+          },
+          {
+            "type": "cours",
+            "title": "Sollicitation de flexion plane simple des poutres droites",
+            "description": "Diagrammes des efforts tranchants Ty et des moments fléchissants Mfz, contrainte normale maximale de flexion et flèche."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Dynamique et énergétique des systèmes mécaniques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Mécanique générale et théorèmes énergétiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Centres d'inertie et moments d'inertie des solides usuels par rapport à un axe",
+            "description": "Théorème de Huygens pour le déplacement d'axe d'inertie."
+          },
+          {
+            "type": "loi",
+            "title": "Le Principe Fondamental de la Dynamique (PFD) en translation et en rotation",
+            "description": "Somme des forces extérieures = m * a_G ; Somme des moments dynamiques = J_delta * theta_point_point."
+          },
+          {
+            "type": "cours",
+            "title": "Théorème de l'énergie cinétique et bilan des puissances",
+            "description": "Travail des forces constantes et variables, énergie cinétique de translation et de rotation, calcul du rendement et volant d'inertie."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Productique mécanique et Commande Numérique (CNC)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Programmation ISO et Commande Numérique",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Structure des Machines-Outils à Commande Numérique (MOCN) : tours et centres d'usinage CNC",
+            "description": "Axes normalisés (X, Y, Z), origines machine (Om), origine programme (Opp) et décalages d'origines (PREF, DEC)."
+          },
+          {
+            "type": "cours",
+            "title": "Programmation en code ISO : fonctions préparatoires G (G00, G01, G02, G03, G90, G91) et auxiliaires M (M03, M05, M06, M08)",
+            "description": "Interpolation linéaire, circulaire, cycles fixes d'ébauche et de perçage automatique."
+          },
+          {
+            "type": "cours",
+            "title": "La chaîne CFAO (Conception et Fabrication Assistées par Ordinateur)",
+            "description": "Génération automatique des trajectoires d'outils, post-processeur et simulation 3D de l'usinage sans collision."
+          },
+          {
+            "type": "cours",
+            "title": "Procédés de fabrication avancés : découpe au jet d'eau haute pression, découpe laser et impression 3D métallique",
+            "description": "Principes physiques, tolérances obtenues et domaines d'application dans l'aéronautique et l'automobile au Maroc."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,158 @@
+[
+  {
+    "title": "Chapitre 1 : Calcul numérique, pourcentages et proportions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Calcul élémentaire et applications réelles",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Fractions, puissances de 10, racines carrées et identités remarquables",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Calculs de pourcentages, taux d'évolution, augmentations et réductions",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Proportions, coefficients multiplicateurs et indices de prix",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Équations et inéquations du premier et second degré",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Résolution de problèmes concrets",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Résolution des équations $ax+b=0$ et inéquations du premier degré",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Équations du second degré $ax^2+bx+c=0$ à l'aide du discriminant $\\Delta$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résolution de systèmes d'équations à deux inconnues et applications pratiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Les suites numériques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Progressions arithmétiques et géométriques simples",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Notion de suite numérique et calcul des premiers termes",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites arithmétiques : formule de récurrence $u_{n+1}=u_n+r$ et formule explicite",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites géométriques : formule $u_{n+1}=q\\cdot u_n$ et applications démographiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Statistiques et représentations graphiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Traitement de données statistiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Tableaux d'effectifs, fréquences et pourcentages",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Diagrammes en bâtons, histogrammes et diagrammes circulaires",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Calcul de la moyenne, médiane et étendue d'une série statistique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Dénombrement et probabilités élémentaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Hasard et chances de réalisation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Vocabulaire des événements : univers, événement certain, impossible, contraire",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Utilisation des arbres de probabilités pour dénombrer les issues",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Équiprobabilité : calcul de $P(A) = \\frac{\\text{Cas favorables}}{\\text{Cas possibles}}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Fonctions usuelles et lectures graphiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Courbes et interprétations",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Représentation graphique d'une fonction affine $f(x)=ax+b$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Lecture graphique d'images, d'antécédents et de solutions d'équations $f(x)=k$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Sens de variation et tableau de variations d'une fonction",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

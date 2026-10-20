@@ -1,0 +1,120 @@
+[
+  {
+    "title": "Module 1 : Dessin industriel, modélisation 3D CAO et tolérancements",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Représentation technique et géométrie des formes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Normalisation du dessin technique : formats de feuilles, cartouche d'inscription et traits normalisés",
+            "description": "Tracé rigoureux selon les normes ISO."
+          },
+          {
+            "type": "cours",
+            "title": "Projections orthogonales, coupes simples, demi-coupes et sections rabattues / sorties",
+            "description": "Règles de projection, plans de coupe sécants et hachures distinctives selon les métaux et alliages."
+          },
+          {
+            "type": "cours",
+            "title": "Modélisation volumique 3D paramétrique sur logiciel de CAO",
+            "description": "Contraintes géométriques d'esquisse (coïncidence, parallélisme, tangence), opérations de révolution, extrusion et balayage."
+          }
+        ]
+      },
+      {
+        "name": "Cotation fonctionnelle et tolérancements géométriques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La cotation fonctionnelle : établissement rigoureux des chaînes de cotes unidirectionnelles",
+            "description": "Identification de la cote-condition (jeu fonctionnel), boucle fermée des vecteurs-cotes et calcul des cotes limites max et min."
+          },
+          {
+            "type": "cours",
+            "title": "Ajustements normalisés ISO (système de l'alésage normalisé H)",
+            "description": "Ajustements avec jeu (ex: H7/g6), ajustements incertains (ex: H7/k6) et avec serrage (ex: H7/p6)."
+          },
+          {
+            "type": "cours",
+            "title": "Tolérancements géométriques de forme, d'orientation, de position et de battement",
+            "description": "Rectitude, planéité, circularité, parallélisme, perpendicularité, coaxialité et localisation."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Mécanique appliquée : Statique et cinématique des mécanismes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Équilibre des mécanismes et torseurs d'action",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Modélisation des liaisons mécaniques élémentaires et détermination des degrés de liberté",
+            "description": "Tableau récapitulatif des 11 liaisons normalisées et torseurs d'actions mécaniques transmissibles."
+          },
+          {
+            "type": "loi",
+            "title": "Le Principe Fondamental de la Statique (PFS) sous forme vectorielle et analytique",
+            "description": "Isolement d'un solide ou d'un ensemble de solides, bilan complet des forces et moments extérieurs, et résolution d'équations."
+          },
+          {
+            "type": "cours",
+            "title": "Lois du frottement et de l'adhérence de Coulomb : cône de frottement",
+            "description": "Calcul des conditions de blocage et de glissement dans les freins et embrayages mécaniques."
+          }
+        ]
+      },
+      {
+        "name": "Cinématique du solide et transmissions de mouvement",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Cinématique du point et du solide en mouvement de translation et de rotation d'axe fixe",
+            "description": "Trajectoire, vitesse linéaire, vitesse angulaire omega et accélération tangentielle/normale."
+          },
+          {
+            "type": "cours",
+            "title": "Transmissions par engrenages droits, coniques et roues dentées",
+            "description": "Calcul des diamètres primitifs, du module normalisé, de l'entraxe et du rapport global de réduction cinématique."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Procédés de fabrication mécanique et métrologie d'atelier",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Technologie d'usinage conventionnel et contrôle",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Usinage par tournage : géométrie de l'outil coupant, chariotage, dressage, chanfreinage et filetage",
+            "description": "Paramètres de coupe : Vitesse de coupe Vc (m/min), Avance f (mm/tr), Profondeur de passe ap (mm)."
+          },
+          {
+            "type": "cours",
+            "title": "Usinage par fraisage : fraisage de profil, surfaçage, rainurage et fraisage combiné",
+            "description": "Fraisage en concordance (avalant) et en opposition ; calcul de la fréquence de rotation N (tr/min) et de l'avance Vf."
+          },
+          {
+            "type": "cours",
+            "title": "Métrologie d'atelier : utilisation des instruments de mesure dimensionnelle et géométrique",
+            "description": "Pied à coulisse au 1/50e, micromètre d'extérieur (palmer), comparateur à cadran et jauges tampons/fourches."
+          },
+          {
+            "type": "cours",
+            "title": "Hygiène, sécurité et prévention des risques d'accidents en atelier mécanique industriel",
+            "description": "Port obligatoire des EPI (lunettes, chaussures de sécurité), arrêts d'urgence et consignation des machines."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,329 @@
+[
+  {
+    "title": "Chapitre 1 : Nombres complexes et trigonométrie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Algèbre des nombres complexes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Forme algébrique, conjugué, module et inégalité triangulaire",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Forme trigonométrique et exponentielle, formule d'Euler et de Moivre",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Racines n-ièmes de l'unité et d'un nombre complexe quelconque",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Linéarisation et factorisation de polynômes trigonométriques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Raisonnement, ensembles et applications",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Fondements logiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Logique formelle, quantificateurs, implication et négation",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Ensembles, opérations (union, intersection, produit cartésien, complémentaire)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Injections, surjections, bijections et composition d'applications",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Principe de récurrence simple, double et forte",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Polynômes et fractions rationnelles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Arithmétique des polynômes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Anneau $\\mathbb{K}[X]$, degré, division euclidienne et algorithme d'Euclide",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Bézout et factorisation en éléments irréductibles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Racines et multiplicité, relations coefficients-racines",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Décomposition en éléments simples d'une fraction rationnelle sur $\\mathbb{R}$ et $\\mathbb{C}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Espaces vectoriels et applications linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Algèbre linéaire générale",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Structure d'espace vectoriel, sous-espaces vectoriels, somme directe",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Familles libres, génératrices et bases",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Applications linéaires, noyau $\\ker(f)$ et image $\\text{Im}(f)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème du rang : $\\dim(E) = \\dim(\\ker f) + \\text{rg}(f)$ en dimension finie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Matrices et systèmes linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Calcul matriciel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Espace $\\mathcal{M}_{n,p}(\\mathbb{K})$, produit matriciel et transposée",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Matrice d'une application linéaire, formule de changement de base",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Résolution de systèmes linéaires par pivot de Gauss et calcul de l'inverse",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Déterminants",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Formes multilinéaires alternées",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Déterminant d'une famille de vecteurs, d'une matrice carrée et d'un endomorphisme",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés : $\\det(AB) = \\det(A)\\det(B)$, développement selon une ligne ou une colonne",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Caractérisation de l'inversibilité d'une matrice et formules de Cramer",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Suites réelles ou complexes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Topologie de R et limites",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Propriété de la borne supérieure dans $\\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Bolzano-Weierstrass et suites de Cauchy",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites adjacentes, comparaisons (Landau : $o, O, \\sim$) et développements asymptotiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Continuité et dérivabilité des fonctions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Analyse réelle d'une variable",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Théorème des bornes atteintes et théorème des valeurs intermédiaires",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Rolle et théorème des accroissements finis (TAF)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formule de Taylor-Lagrange et développements limités (Taylor-Young)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Intégration sur un segment",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Intégrale de Riemann",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Fonctions continues par morceaux, sommes de Riemann",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème fondamental de l'analyse : dérivation d'une intégrale par rapport à sa borne",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Intégration par parties et changement de variable",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Équations différentielles linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Équations scalaires",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Équations linéaires d'ordre 1 : structure des solutions et variation de la constante",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Équations linéaires d'ordre 2 à coefficients constants, équation caractéristique",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 11 : Espaces préhilbertiens réels",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Géométrie euclidienne",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Produit scalaire, norme euclidienne et inégalité de Cauchy-Schwarz",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Procédé d'orthonormalisation de Gram-Schmidt",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Projection orthogonale sur un sous-espace de dimension finie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 12 : Dénombrement et probabilités discrètes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Espaces probabilisés finis",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Cardinaux, combinaisons, formule du crible de Poincaré",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Conditionnement, formule de Bayes et des probabilités totales",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Variables aléatoires finies, espérance, variance et covariance",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

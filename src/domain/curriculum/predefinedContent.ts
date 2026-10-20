@@ -88,6 +88,167 @@ const CANONICAL_SUBJECTS: Record<string, string> = {
     'علوم الحياة و الارض': 'Sciences de la Vie et de la Terre',
     'علوم الحياة و الأرض': 'Sciences de la Vie et de la Terre',
     'علوم': 'Sciences de la Vie et de la Terre',
+
+    // Informatique
+    'informatique': 'Informatique',
+    'info': 'Informatique',
+    'computer science': 'Informatique',
+    'المعلوميات': 'Informatique',
+    'معلوميات': 'Informatique',
+
+    // Philosophie
+    'philosophie': 'Philosophie',
+    'philo': 'Philosophie',
+    'philosophy': 'Philosophie',
+    'الفلسفة': 'Philosophie',
+    'فلسفة': 'Philosophie',
+
+    // Histoire-Géographie
+    'histoire geographie': 'Histoire-Géographie',
+    'histoire-geographie': 'Histoire-Géographie',
+    'histoire': 'Histoire-Géographie',
+    'geographie': 'Histoire-Géographie',
+    'hg': 'Histoire-Géographie',
+    'history geography': 'Histoire-Géographie',
+    'التاريخ والجغرافيا': 'Histoire-Géographie',
+    'التاريخ و الجغرافيا': 'Histoire-Géographie',
+    'اجتماعيات': 'Histoire-Géographie',
+    'الاجتماعيات': 'Histoire-Géographie',
+
+    // Français
+    'francais': 'Français',
+    'français': 'Français',
+    'french': 'Français',
+    'اللغة الفرنسية': 'Français',
+    'فرنسية': 'Français',
+
+    // Éducation Islamique
+    'education islamique': 'Éducation Islamique',
+    'éducation islamique': 'Éducation Islamique',
+    'islamic education': 'Éducation Islamique',
+    'التربية الإسلامية': 'Éducation Islamique',
+    'التربية الاسلامية': 'Éducation Islamique',
+    'تربية إسلامية': 'Éducation Islamique',
+    'تربية اسلامية': 'Éducation Islamique',
+
+    // Arabe
+    'arabe': 'Arabe',
+    'arabic': 'Arabe',
+    'اللغة العربية': 'Arabe',
+    'عربية': 'Arabe',
+
+    // Anglais
+    'anglais': 'Anglais',
+    'english': 'Anglais',
+    'اللغة الإنجليزية': 'Anglais',
+    'اللغة الانجليزية': 'Anglais',
+    'إنجليزية': 'Anglais',
+    'انجليزية': 'Anglais',
+
+    // Sciences de l'Ingénieur
+    'sciences de l ingenieur': 'Sciences de l’Ingénieur',
+    'sciences de l’ingenieur': 'Sciences de l’Ingénieur',
+    'si': 'Sciences de l’Ingénieur',
+    'علوم المهندس': 'Sciences de l’Ingénieur',
+
+    // Sciences Économiques et Gestion
+    'sciences economiques et gestion': 'Sciences Économiques et Gestion',
+    'sciences economiques': 'Sciences Économiques et Gestion',
+    'seg': 'Sciences Économiques et Gestion',
+    'العلوم الاقتصادية والتدبير': 'Sciences Économiques et Gestion',
+    'العلوم الاقتصادية': 'Sciences Économiques et Gestion',
+    'اقتصاد وتدبير': 'Sciences Économiques et Gestion',
+    'اقتصاد': 'Sciences Économiques et Gestion',
+
+    // Comptabilité et Mathématiques Financières
+    'comptabilite et mathematiques financieres': 'Comptabilité et Mathématiques Financières',
+    'comptabilite': 'Comptabilité et Mathématiques Financières',
+    'المحاسبة والرياضيات المالية': 'Comptabilité et Mathématiques Financières',
+    'المحاسبة': 'Comptabilité et Mathématiques Financières',
+    'محاسبة': 'Comptabilité et Mathématiques Financières',
+
+    // Droit
+    'droit': 'Droit',
+    'القانون والتنظيم الإداري': 'Droit',
+    'القانون': 'Droit',
+    'قانون': 'Droit',
+
+    // Traduction
+    'traduction': 'Traduction',
+    'الترجمة': 'Traduction',
+    'ترجمة': 'Traduction',
+
+    // Éducation Physique et Sportive
+    'education physique et sportive': 'Éducation Physique et Sportive',
+    'education physique': 'Éducation Physique et Sportive',
+    'eps': 'Éducation Physique et Sportive',
+    'التربية البدنية والرياضية': 'Éducation Physique et Sportive',
+    'التربية البدنية': 'Éducation Physique et Sportive',
+    'تربية بدنية': 'Éducation Physique et Sportive',
+    'رياضة': 'Éducation Physique et Sportive',
+
+    // Éducation Artistique & Arts Appliqués
+    'education artistique': 'Éducation Artistique',
+    'التربية الفنية والتشكيلية': 'Éducation Artistique',
+    'التربية التشكيلية': 'Éducation Artistique',
+    'تربية تشكيلية': 'Éducation Artistique',
+    'arts appliques': 'Arts Appliqués',
+    'arts appliqués': 'Arts Appliqués',
+    'الفنون التطبيقية': 'Arts Appliqués',
+
+    // Langue Amazighe
+    'langue amazighe': 'Langue Amazighe',
+    'amazighe': 'Langue Amazighe',
+    'tamazight': 'Langue Amazighe',
+    'اللغة الأمازيغية': 'Langue Amazighe',
+    'اللغة الامازيغية': 'Langue Amazighe',
+    'أمازيغية': 'Langue Amazighe',
+    'امازيغية': 'Langue Amazighe',
+
+    // Espagnol
+    'espagnol': 'Espagnol',
+    'spanish': 'Espagnol',
+    'اللغة الإسبانية': 'Espagnol',
+    'إسبانية': 'Espagnol',
+
+    // Allemand
+    'allemand': 'Allemand',
+    'german': 'Allemand',
+    'اللغة الألمانية': 'Allemand',
+    'ألمانية': 'Allemand',
+
+    // Italien
+    'italien': 'Italien',
+    'italian': 'Italien',
+    'اللغة الإيطالية': 'Italien',
+    'إيطالية': 'Italien',
+
+    // Éducation Musicale
+    'education musicale': 'Éducation Musicale',
+    'éducation musicale': 'Éducation Musicale',
+    'musique': 'Éducation Musicale',
+    'التربية الموسيقية والأناشيد': 'Éducation Musicale',
+    'التربية الموسيقية': 'Éducation Musicale',
+    'تربية موسيقية': 'Éducation Musicale',
+    'موسيقى': 'Éducation Musicale',
+
+    // Sciences Agronomiques
+    'sciences agronomiques': 'Sciences Agronomiques',
+    'agronomie': 'Sciences Agronomiques',
+    'العلوم الزراعية': 'Sciences Agronomiques',
+    'علوم زراعية': 'Sciences Agronomiques',
+
+    // Sciences et Technologies Électriques
+    'sciences et technologies electriques': 'Sciences et Technologies Électriques',
+    'sciences et technologies électriques': 'Sciences et Technologies Électriques',
+    'ste': 'Sciences et Technologies Électriques',
+    'العلوم والتكنولوجيات الكهربائية': 'Sciences et Technologies Électriques',
+
+    // Sciences et Technologies Mécaniques
+    'sciences et technologies mecaniques': 'Sciences et Technologies Mécaniques',
+    'sciences et technologies mécaniques': 'Sciences et Technologies Mécaniques',
+    'stm': 'Sciences et Technologies Mécaniques',
+    'العلوم والتكنولوجيات الميكانيكية': 'Sciences et Technologies Mécaniques',
 };
 
 const resolveCanonicalSubject = (subject: string): string => {
@@ -106,6 +267,29 @@ const SUBJECT_FOLDER: Record<string, string> = {
     'Mathématiques': 'mathematiques',
     'Physique-Chimie': 'physique-chimie',
     'Sciences de la Vie et de la Terre': 'svt',
+    'Informatique': 'informatique',
+    'Philosophie': 'philosophie',
+    'Histoire-Géographie': 'histoire-geographie',
+    'Français': 'francais',
+    'Éducation Islamique': 'education-islamique',
+    'Arabe': 'arabe',
+    'Anglais': 'anglais',
+    'Sciences de l’Ingénieur': 'sciences-de-l-ingenieur',
+    'Sciences Économiques et Gestion': 'sciences-economiques-et-gestion',
+    'Comptabilité et Mathématiques Financières': 'comptabilite-et-mathematiques-financieres',
+    'Droit': 'droit',
+    'Traduction': 'traduction',
+    'Éducation Physique et Sportive': 'education-physique-et-sportive',
+    'Éducation Artistique': 'education-artistique',
+    'Arts Appliqués': 'arts-appliques',
+    'Langue Amazighe': 'langue-amazighe',
+    'Espagnol': 'espagnol',
+    'Allemand': 'allemand',
+    'Italien': 'italien',
+    'Éducation Musicale': 'education-musicale',
+    'Sciences Agronomiques': 'sciences-agronomiques',
+    'Sciences et Technologies Électriques': 'sciences-et-technologies-electriques',
+    'Sciences et Technologies Mécaniques': 'sciences-et-technologies-mecaniques',
 };
 
 const subjectFolder = (matiere: string): string =>

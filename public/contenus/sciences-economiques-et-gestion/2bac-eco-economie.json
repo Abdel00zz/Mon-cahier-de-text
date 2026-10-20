@@ -1,0 +1,145 @@
+[
+  {
+    "title": "Module 1 : Économie Générale et Statistique (EGS) - Régulation et Déséquilibres Macroéconomiques",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Le marché, la concurrence et les agrégats de la comptabilité nationale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les structures de marché : concurrence pure et parfaite (CPP) versus concurrence imparfaite",
+            "description": "Conditions de la CPP (atomicité, homogénéité, transparence, libre entrée, mobilité) face aux monopoles, oligopoles et cartels réels."
+          },
+          {
+            "type": "cours",
+            "title": "Les agrégats de la comptabilité nationale marocaine",
+            "description": "Calcul et analyse du Produit Intérieur Brut (PIB marchand et non marchand), Revenu National Brut Disponible (RNBD), Épargne Nationale Brute (ENB) et Formation Brute de Capital Fixe (FBCF)."
+          },
+          {
+            "type": "cours",
+            "title": "Les limites du PIB comme indicateur de bien-être réel",
+            "description": "Non prise en compte de l'économie informelle, du travail domestique bénévole et des dégradations écologiques."
+          }
+        ]
+      },
+      {
+        "name": "Les dysfonctionnements majeurs : Inflation et Chômage",
+        "items": [
+          {
+            "type": "cours",
+            "title": "L'inflation : mesure par l'Indice des Prix à la Consommation (IPC), causes et conséquences",
+            "description": "Inflation par la demande, par les coûts des matières premières importées, ou par création monétaire excessive. Effets néfastes sur le pouvoir d'achat et la compétitivité."
+          },
+          {
+            "type": "cours",
+            "title": "Le chômage : définitions officielles du HCP et du BIT, typologie et mesures statistiques",
+            "description": "Chômage conjoncturel, structurel, frictionnel et technologique ; analyse des caractéristiques du chômage au Maroc (diplômés, jeunes, femmes, milieu urbain)."
+          }
+        ]
+      },
+      {
+        "name": "Les politiques économiques de régulation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La politique monétaire de Bank Al-Maghrib : objectifs et instruments d'intervention",
+            "description": "Stabilité des prix, manipulation du taux directeur, réserves obligatoires et opérations d'injection de liquidités (Open Market)."
+          },
+          {
+            "type": "cours",
+            "title": "La politique budgétaire de l'État : Loi de Finances, déficit public et endettement",
+            "description": "Effet multiplicateur keynésien des dépenses publiques, balance entre relance économique et rigueur d'assainissement budgétaire."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Économie Générale - Ouverture Internationale et Développement Durable",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Commerce international, balance des paiements et marché des changes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les théories du commerce international : libre-échange vs protectionnisme",
+            "description": "Théorie des avantages absolus d'Adam Smith, des avantages comparatifs de David Ricardo, modèle HOS, et protectionnisme éducateur de Friedrich List."
+          },
+          {
+            "type": "cours",
+            "title": "La balance des paiements marocaine et ses composantes",
+            "description": "Compte des transactions courantes (balance commerciale des biens, balance des services, revenus primaires et transferts des MRE), compte de capital et compte financier."
+          },
+          {
+            "type": "cours",
+            "title": "Le marché des changes et le régime de change du Dirham marocain",
+            "description": "Régime de change à flexibilité progressive encadrée par Bank Al-Maghrib basé sur le panier de devises (60% Euro, 40% Dollar américain)."
+          }
+        ]
+      },
+      {
+        "name": "Croissance économique, développement et mondialisation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Croissance économique versus développement humain durable (Indice IDH)",
+            "description": "Mesure du développement par l'espérance de vie, le niveau d'instruction et le RNB par habitant."
+          },
+          {
+            "type": "cours",
+            "title": "La mondialisation économique et le rôle des institutions internationales (FMI, Banque Mondiale, OMC)",
+            "description": "Libéralisation des flux de capitaux, accords de libre-échange signés par le Maroc (avec l'UE, les USA, la Turquie)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Économie et Organisation des Entreprises (EOAE) - Management Stratégique",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Diagnostic et options stratégiques de l'entreprise",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La démarche stratégique : finalités, objectifs et diagnostic stratégique global (SWOT)",
+            "description": "Diagnostic interne (forces et faiblesses, chaîne de valeur de Michael Porter) et externe (opportunités et menaces de l'environnement)."
+          },
+          {
+            "type": "cours",
+            "title": "Les stratégies concurrentielles génériques de Porter",
+            "description": "Domination globale par les coûts, différenciation des produits, et stratégie de focalisation (niche de marché)."
+          },
+          {
+            "type": "cours",
+            "title": "Les stratégies de développement : spécialisation, diversification, intégration et externalisation",
+            "description": "Avantages comparés de la concentration sur le cœur de métier face à la répartition des risques par diversification."
+          }
+        ]
+      },
+      {
+        "name": "Croissance, Gestion des Ressources Humaines (GRH) et Responsabilité Sociétale",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les voies de croissance de l'entreprise : croissance interne, externe et conjointe",
+            "description": "Avantages de la croissance interne face à la rapidité des fusions-acquisitions et à la souplesse des partenariats (joint-ventures, franchises)."
+          },
+          {
+            "type": "cours",
+            "title": "La Gestion des Ressources Humaines (GRH) : recrutement, rémunération, formation et motivation",
+            "description": "Politique salariale équitable, gestion prévisionnelle des emplois et des compétences (GPEC), dialogue social et climat d'entreprise."
+          },
+          {
+            "type": "cours",
+            "title": "La démarche qualité totale et la Responsabilité Sociale et Environnementale (RSE)",
+            "description": "Certifications ISO (9001 qualité, 14001 environnement, 45001 santé-sécurité), éthique d'entreprise et impact sur la marque employeur."
+          }
+        ]
+      }
+    ]
+  }
+]

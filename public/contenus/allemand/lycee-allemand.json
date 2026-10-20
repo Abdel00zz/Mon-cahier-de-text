@@ -1,0 +1,80 @@
+[
+  {
+    "title": "Thema 1 : Kontakte, Familie und persönliches Umfeld",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Sprachliche Grundlagen und erste Kommunikation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Sich vorstellen, Begrüßung, Alphabet, Zahlen, Herkunft, Sprachen und Hobbys",
+            "description": "W-Fragen (Wer, Wie, Wo, Woher, Was) und Ja/Nein-Fragen im Satzbau."
+          },
+          {
+            "type": "cours",
+            "title": "Das Präsens der regelmäßigen Verben und der Hilfsverben 'sein' und 'haben'",
+            "description": "Konjugationsendungen (-e, -st, -t, -en, -t, -en) und Verben mit Vokalwechsel (sprechen, lesen, fahren)."
+          },
+          {
+            "type": "cours",
+            "title": "Der bestimmte und unbestimmte Artikel im Nominativ und Akkusativ",
+            "description": "Der, die, das, die / ein, eine, ein / Verneinung mit 'kein' und 'nicht'."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Thema 2 : Alltag, Schule und Berufswelt",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Tagesablauf und zeitliche Orientierung",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Die Uhrzeit, Wochentage, Monate und Tagesablauf beschreiben",
+            "description": "Temporale Präpositionen : um (Uhrzeit), am (Tage), im (Monate/Jahreszeiten)."
+          },
+          {
+            "type": "cours",
+            "title": "Trennbare und untrennbare Verben im Deutschen (aufstehen, anrufen, mitkommen)",
+            "description": "Satzklammer : Präfix wandert im Hauptsatz ans absolute Satzende."
+          },
+          {
+            "type": "cours",
+            "title": "Die Modalverben (können, müssen, wollen, dürfen, sollen, möchten)",
+            "description": "Bedeutung, Konjugation im Präsens und Satzstruktur mit Infinitiv am Satzende."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Thema 3 : Freizeit, Reisen und Kultur in den D-A-CH-Ländern",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Kulturelle Entdeckungen in Deutschland, Österreich und der Schweiz",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Wortschatz : Ferien, Städte, Transportmittel und Sehenswürdigkeiten",
+            "description": "Berlin, München, Wien und Zürich : Geographie und Besonderheiten."
+          },
+          {
+            "type": "cours",
+            "title": "Das Perfekt mit 'haben' und 'sein' für abgeschlossene Handlungen in der Vergangenheit",
+            "description": "Bildung des Partizip II (ge-...-t / ge-...-en) und Wahl des Hilfsverbs bei Bewegung und Zustandsänderung."
+          },
+          {
+            "type": "cours",
+            "title": "Nebensätze mit den Konjunktionen 'weil' (Begründung) und 'dass' (Inhalt)",
+            "description": "Verbstellung im Nebensatz : das konjugierte Verb steht an letzter Stelle."
+          }
+        ]
+      }
+    ]
+  }
+]

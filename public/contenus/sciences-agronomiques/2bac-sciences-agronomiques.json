@@ -1,0 +1,142 @@
+[
+  {
+    "title": "Module 1 : Pédologie appliquée et conservation des sols marocains",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Propriétés physico-chimiques et travail du sol",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Constitution minérale et organique des sols agricoles au Maroc (texture et structure)",
+            "description": "Granulométrie (argile, limon, sable), porosité, rétention de l'eau utile et aération racinaire."
+          },
+          {
+            "type": "cours",
+            "title": "Le complexe argilo-humique (CAH), le pH du sol et la Capacité d'Échange Cationique (CEC)",
+            "description": "Fixation des cations nutritifs (Ca2+, Mg2+, K+, NH4+), assimilation racinaire et amendements calciques."
+          },
+          {
+            "type": "cours",
+            "title": "L'érosion des sols, la désertification et les techniques de conservation des terres",
+            "description": "Lutte contre l'érosion hydrique dans le Rif et éolienne dans le Sud : terrasses, banquettes, brise-vents et semis direct sous couverture végétale."
+          },
+          {
+            "type": "application",
+            "title": "Analyse agronomique d'un sol et choix des outils de travail du sol (labour, décompactage, hersage)",
+            "description": "Préparation du lit de semences et préservation de la structure motteuse contre le compactage."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 2 : Nutrition minérale des plantes et fertilisation raisonnée",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Besoins nutritifs et plan de fumure",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Les macro-éléments indispensables : Azote (N), Phosphore (P), Potassium (K) et éléments secondaires",
+            "description": "Rôle de l'azote dans la croissance végétative, du phosphore dans l'enracinement et la floraison, et du potassium dans la résistance à la sécheresse et le calibre des fruits."
+          },
+          {
+            "type": "cours",
+            "title": "Les oligo-éléments essentiels (Fer, Zinc, Manganèse, Bore, Cuivre) et correction des carences",
+            "description": "Chlorose ferrique en sols calcaires et apports de chélates de fer par pulvérisation foliaire."
+          },
+          {
+            "type": "cours",
+            "title": "Calcul précis du bilan de fertilisation et élaboration du plan prévisionnel de fumure",
+            "description": "Évaluation des exportations des cultures, des fournitures du sol et calcul des doses d'engrais minéraux et organiques (compost)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 3 : Gestion rationnelle de l'eau et irrigation de précision",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Économie de l'eau en milieu méditerranéen et aride",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Le cycle de l'eau dans le continuum Sol-Plante-Atmosphère : Évapotranspiration (ETP et ETM)",
+            "description": "Calcul des besoins nets en eau des cultures selon le coefficient cultural (Kc) et les données météorologiques."
+          },
+          {
+            "type": "cours",
+            "title": "Les systèmes d'irrigation modernes : micro-irrigation localisée (goutte-à-goutte) et fertigation",
+            "description": "Réseau de distribution, régulateurs de pression, stations de filtration (filtres à sable, à disques) et injecteurs d'engrais."
+          },
+          {
+            "type": "cours",
+            "title": "La stratégie nationale de l'eau au Maroc : grands barrages, interconnexion des bassins et dessalement d'eau de mer",
+            "description": "Modernisation des périmètres irrigués (Programme National d'Économie d'Eau en Irrigation PNEEI)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 4 : Productions végétales et arboriculture marocaine",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Conduite technique des grandes cultures et vergers",
+        "items": [
+          {
+            "type": "cours",
+            "title": "La céréaliculture (blé dur, blé tendre, orge) : itinéraires techniques, densité de semis et protection",
+            "description": "Stades phénologiques (tallage, montaison, épiaison), désherbage sélectif et récolte mécanique."
+          },
+          {
+            "type": "cours",
+            "title": "L'arboriculture fruitière stratégique : Olivier, Agrumes, Palmier dattier et Amandier",
+            "description": "Taille de formation et de fructification, pollinisation artificielle du palmier, alternance de production et récolte."
+          },
+          {
+            "type": "cours",
+            "title": "Les cultures maraîchères de primeurs sous abri-serre (tomate, poivron, melon)",
+            "description": "Conduite climatique des serres (aération, ombrage), tuteurage, pollinisation par les bourdons."
+          },
+          {
+            "type": "cours",
+            "title": "La protection intégrée des cultures (IPM) et lutte biologique",
+            "description": "Seuils d'intervention économique, lâchers d'auxiliaires (acariens prédateurs), piégeage à phéromones et respect des normes phytosanitaires (ONSSA)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Module 5 : Productions animales et gestion d'exploitation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Zootechnie des filières animales marocaines",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Filières ovine et bovine : races locales adaptées (Sardi, Timahdite, D'man) et races laitières sélectionnées",
+            "description": "Objectifs de sélection génétique, conformation bouchère et rusticité face aux aléas climatiques."
+          },
+          {
+            "type": "cours",
+            "title": "Alimentation rationnée du bétail : fourrages, ensilage, concentrés et équilibrage énergétique/azoté",
+            "description": "Calcul des Unités Fourragères (UF) et des Protéines Digestibles dans l'Intestin (PDI)."
+          },
+          {
+            "type": "cours",
+            "title": "Stratégies agricoles nationales : Plan Maroc Vert et Génération Green 2020-2030",
+            "description": "Agrégation agricole, valorisation des produits du terroir (appellations d'origine AOP/IGP) et rentabilité de l'exploitation."
+          }
+        ]
+      }
+    ]
+  }
+]

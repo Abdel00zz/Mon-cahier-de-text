@@ -1,0 +1,230 @@
+[
+  {
+    "title": "Chapitre 1 : Réduction des endomorphismes et des matrices",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Diagonalisation et trigonalisation",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Valeurs propres, vecteurs propres et sous-espaces propres",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Polynôme caractéristique $\\chi_A(X) = \\det(XI - A)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Cayley-Hamilton et polynôme minimal",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Critères nécessaires et suffisants de diagonalisation et trigonalisation",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Puissances de matrices et systèmes différentiels linéaires",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Espaces vectoriels normés et topologie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Topologie de dimension finie",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Normes et distances, équivalence des normes en dimension finie",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Ouverts, fermés, voisinages, adhérence et intérieur",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Compacité : caractérisation par Bolzano-Weierstrass et fermés bornés",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Continuité des applications linéaires en dimension finie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Séries numériques et vectorielles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Convergence et sommabilité",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Séries à termes positifs : règle de Riemann, d'Alembert et de Cauchy",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème des séries alternées et majoration du reste",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Convergence absolue et semi-convergence",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Suites et séries de fonctions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Modes de convergence",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Convergence simple, uniforme et normale d'une série de fonctions",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorèmes d'interversion : continuité, intégration et dérivation de la somme",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Approximation uniforme par des polynômes (théorème de Weierstrass)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Séries entières",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Rayon de convergence et analyticité",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Lemme d'Abel et rayon de convergence $R$",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Dérivation et intégration terme à terme d'une série entière",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Développements en série entière des fonctions usuelles ($e^x, \\ln(1+x), \\cos, \\sin, (1+x)^\\alpha$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Intégrales généralisées (ou impropres)",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Intégration sur un intervalle quelconque",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Intégrabilité au sens de Riemann sur un intervalle non compact",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Critères de comparaison pour les fonctions positives (Riemann : $1/t^\\alpha$)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Convergence absolue et intégrales dépendant d'un paramètre (continuité, dérivation sous le signe $\\int$)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Espaces euclidiens et endomorphismes remarquables",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Adjoint et théorème spectral",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Endomorphisme adjoint $u^*$ dans un espace euclidien",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Endomorphismes symétriques (autoadjoints) et matrices symétriques réelles",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème spectral : toute matrice symétrique réelle est diagonalisable dans une base orthonormée",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Groupe orthogonal $O(n)$ et isométries vectorielles",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Probabilités sur un univers dénombrable",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Variables aléatoires discrètes infinies",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Tribu d'événements, probabilité $\\sigma$-additive",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Loi géométrique $\\mathcal{G}(p)$ et loi de Poisson $\\mathcal{P}(\\lambda)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Inégalité de Markov, Bienaymé-Tchebychev et loi faible des grands nombres",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]

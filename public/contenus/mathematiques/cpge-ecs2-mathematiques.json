@@ -1,0 +1,282 @@
+[
+  {
+    "title": "Chapitre 1 : Nombres complexes et trigonométrie",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Algèbre des nombres complexes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Forme algébrique, conjugué, module et inégalité triangulaire",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Forme trigonométrique et exponentielle, formule d'Euler et de Moivre",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Racines n-ièmes de l'unité et d'un nombre complexe quelconque",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Linéarisation et factorisation de polynômes trigonométriques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 2 : Raisonnement, ensembles et applications",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Fondements logiques",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Logique formelle, quantificateurs, implication et négation",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Ensembles, opérations (union, intersection, produit cartésien, complémentaire)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Injections, surjections, bijections et composition d'applications",
+            "description": ""
+          },
+          {
+            "type": "methode",
+            "title": "Principe de récurrence simple, double et forte",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 3 : Polynômes et fractions rationnelles",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Arithmétique des polynômes",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Anneau $\\mathbb{K}[X]$, degré, division euclidienne et algorithme d'Euclide",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Bézout et factorisation en éléments irréductibles",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Racines et multiplicité, relations coefficients-racines",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Décomposition en éléments simples d'une fraction rationnelle sur $\\mathbb{R}$ et $\\mathbb{C}$",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 4 : Espaces vectoriels et applications linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Algèbre linéaire générale",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Structure d'espace vectoriel, sous-espaces vectoriels, somme directe",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Familles libres, génératrices et bases",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Applications linéaires, noyau $\\ker(f)$ et image $\\text{Im}(f)$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème du rang : $\\dim(E) = \\dim(\\ker f) + \\text{rg}(f)$ en dimension finie",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 5 : Matrices et systèmes linéaires",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Calcul matriciel",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Espace $\\mathcal{M}_{n,p}(\\mathbb{K})$, produit matriciel et transposée",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Matrice d'une application linéaire, formule de changement de base",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Résolution de systèmes linéaires par pivot de Gauss et calcul de l'inverse",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 6 : Déterminants",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Formes multilinéaires alternées",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Déterminant d'une famille de vecteurs, d'une matrice carrée et d'un endomorphisme",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Propriétés : $\\det(AB) = \\det(A)\\det(B)$, développement selon une ligne ou une colonne",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Caractérisation de l'inversibilité d'une matrice et formules de Cramer",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 7 : Suites réelles ou complexes",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Topologie de R et limites",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Propriété de la borne supérieure dans $\\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Bolzano-Weierstrass et suites de Cauchy",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Suites adjacentes, comparaisons (Landau : $o, O, \\sim$) et développements asymptotiques",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 8 : Continuité et dérivabilité des fonctions",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Analyse réelle d'une variable",
+        "items": [
+          {
+            "type": "loi",
+            "title": "Théorème des bornes atteintes et théorème des valeurs intermédiaires",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Théorème de Rolle et théorème des accroissements finis (TAF)",
+            "description": ""
+          },
+          {
+            "type": "loi",
+            "title": "Formule de Taylor-Lagrange et développements limités (Taylor-Young)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 9 : Fonctions de plusieurs variables et calcul différentiel",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Optimisation multivariée",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Dérivées partielles, gradient $\\vec{\\nabla} f$ et matrice jacobienne",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Matrice hessienne et formule de Taylor à l'ordre 2",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Recherche d'extremums libres et optimisation sous contrainte (multiplicateurs de Lagrange)",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Chapitre 10 : Statistiques inférentielles et estimation",
+    "type": "chapter",
+    "sections": [
+      {
+        "name": "Échantillonnage et estimation",
+        "items": [
+          {
+            "type": "cours",
+            "title": "Échantillons indépendants et identiquement distribués (i.i.d.)",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Estimateurs sans biais, convergent, méthode du maximum de vraisemblance",
+            "description": ""
+          },
+          {
+            "type": "cours",
+            "title": "Intervalles de confiance pour une moyenne et une proportion",
+            "description": ""
+          }
+        ]
+      }
+    ]
+  }
+]
