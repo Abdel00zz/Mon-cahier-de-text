@@ -19,6 +19,10 @@ interface AssistantPopoverProps {
   headRoundness?: number;
   autoSleepMs?: number;
   onAction?: () => void;
+  greeting?: string;
+  teacherName?: string;
+  contactLabel?: string;
+  onContact?: () => void;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -55,7 +59,7 @@ export function AssistantPopover({
   antennaFlash,
   headRoundness,
   autoSleepMs,
-  onAction,
+  onAction, greeting, teacherName, contactLabel, onContact,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
@@ -126,6 +130,7 @@ export function AssistantPopover({
       >
         {open && (
           <>
+            {teacherName && <p className="assistant-panel__greeting">{greeting} <bdi>{teacherName}</bdi></p>}
             <div className="assistant-panel__heading">
               <div className="assistant-panel__copy">
                 <h2 id={`${id}-title`} className="assistant-panel__title">
@@ -159,6 +164,7 @@ export function AssistantPopover({
                 {message.action}
               </button>
             )}
+            {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
           </>
         )}
       </div>

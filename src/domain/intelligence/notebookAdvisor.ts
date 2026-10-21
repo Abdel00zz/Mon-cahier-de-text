@@ -1,3 +1,4 @@
+import { isNonCourseActivity, validChapterDate } from '../curriculum/chapterLifecycle.js';
 import { NOTEBOOK_CONTAINERS } from '../notebook/notebookSchema.js';
 import { walkNotebook } from '../notebook/notebookTraversal.js';
 import { hasControlCharacters, hasUnclosedFormula } from '../notebook/textSignals.js';
@@ -13,16 +14,15 @@ import { fingerprintNode } from './fingerprint.js';
  *   • une formule ouverte et jamais fermée      → le TeX brut s'affiche ;
  *   • deux blocs identiques                     → import fait deux fois ;
  *   • des séances datées à l'envers             → relecture chronologique cassée ;
- *   • des contenus sans date                    → progression et projection aveugles ;
  *   • des chapitres ou sections vides           → plan annoncé mais pas rempli ;
  *   • des caractères de contrôle                → texte collé abîmé.
  *
  * Optimisation : un seul parcours (le moteur partagé), aucun tableau
  * intermédiaire par nœud, des compteurs numériques, un échantillon de chemin
- * par défaut. Le tri final porte sur six entrées au plus.
+ * par défaut. Le tri final porte sur cinq entrées au plus.
  */
 
-const CODES = ['unclosedFormula', 'outOfOrderSessions', 'duplicateBlocks', 'emptyStructure', 'undatedContent', 'controlCharacters'] as const;
+const CODES = ['unclosedFormula', 'outOfOrderSessions', 'duplicateBlocks', 'emptyStructure', 'controlCharacters'] as const;
 type AdviceCode = (typeof CODES)[number];
 type AdviceSeverity = 'notice' | 'warning';
 
@@ -40,7 +40,6 @@ const SEVERITY: Record<AdviceCode, AdviceSeverity> = {
   outOfOrderSessions: 'warning',
   duplicateBlocks: 'warning',
   emptyStructure: 'notice',
-  undatedContent: 'notice',
   controlCharacters: 'notice',
 };
 
@@ -51,7 +50,7 @@ const SEVERITY: Record<AdviceCode, AdviceSeverity> = {
  */
 export const analyseNotebook = (nodes: unknown, limit = 4): NotebookAdvice[] => {
   const counts: Record<AdviceCode, number> = {
-    unclosedFormula: 0, outOfOrderSessions: 0, duplicateBlocks: 0, emptyStructure: 0, undatedContent: 0, controlCharacters: 0,
+    unclosedFormula: 0, outOfOrderSessions: 0, duplicateBlocks: 0, emptyStructure: 0, controlCharacters: 0,
   };
   const samples: Partial<Record<AdviceCode, string>> = {};
   const bump = (code: AdviceCode, path: string): void => {
@@ -59,7 +58,7 @@ export const analyseNotebook = (nodes: unknown, limit = 4): NotebookAdvice[] => 
     if (!samples[code]) samples[code] = path;
   };
 
-  let datedContents = 0;
+  const dateExclusions = new Set<string>();
   let currentChapter = -1;
   const lastDateByChapter = new Map<number, string>();
   const seenBlocks = new Set<string>();
@@ -67,6 +66,9 @@ export const analyseNotebook = (nodes: unknown, limit = 4): NotebookAdvice[] => 
   walkNotebook(nodes, {
     onNode: context => {
       const node = context.node;
+      const parentNodePath = context.parentPath.slice(0, context.parentPath.lastIndexOf(' › '));
+      const outsideCourse = dateExclusions.has(parentNodePath) || isNonCourseActivity(node.type) || node.type === 'free';
+      if (outsideCourse) dateExclusions.add(context.path);
 
       // Un bloc de premier niveau qui répète un frère à l'identique : import
       // fait deux fois, copier-coller de chapitre — le défaut le plus coûteux.
@@ -83,9 +85,10 @@ export const analyseNotebook = (nodes: unknown, limit = 4): NotebookAdvice[] => 
         return;
       }
 
-      const date = typeof node.date === 'string' ? node.date.trim() : '';
-      if (!date) { bump('undatedContent', context.path); return; }
-      datedContents += 1;
+      // A date records an assigned session, not proof that every other item was taught.
+      // Planned items, free notes and assessment dates must not raise course alerts.
+      const date = node.date;
+      if (outsideCourse || context.elementType !== 'item' || !validChapterDate(date)) return;
       const previous = lastDateByChapter.get(currentChapter);
       if (previous !== undefined && date < previous) bump('outOfOrderSessions', context.path);
       lastDateByChapter.set(currentChapter, date);
@@ -97,10 +100,6 @@ export const analyseNotebook = (nodes: unknown, limit = 4): NotebookAdvice[] => 
       if (hasControlCharacters(value)) bump('controlCharacters', path);
     },
   });
-
-  // « Sans date » n'est un conseil que si l'auteur date ailleurs : un cahier
-  // neuf entièrement vierge de dates n'a rien à se reprocher.
-  if (datedContents === 0) counts.undatedContent = 0;
 
   return CODES
     .filter(code => counts[code] > 0)

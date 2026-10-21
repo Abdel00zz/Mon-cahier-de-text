@@ -538,3 +538,53 @@ test('security rules refuse anonymous, teacher, other account and forged admin a
     }
   } finally { await env.cleanup(); }
 });
+
+
+test('companion requests round-trip through authenticated accounts, admin dashboard and inbox without duplicates', async () => {
+  const owner = '0617779911';
+  const register = await call(authHandler, { method: 'POST', headers: {}, body: { action: 'register', phone: owner, nom: 'Compagnon', prenom: 'Amina', password: 'Test-password-123' } });
+  assert.equal(register.status, 201);
+  const headers = { cookie: String(register.headers['Set-Cookie']).split(';')[0], 'x-workspace-owner': owner };
+  const adminHeaders = { cookie: `${ADMIN_COOKIE}=${await signSession({ role: 'admin' }, 60)}` };
+  const draft = { action: 'send', requestId: 'teacher-10000000-0000-4000-8000-000000000001', body: 'أحتاج إلى محتوى خاص بقسمي', kind: 'custom-content' };
+  const send = (body: unknown, requestHeaders = headers) => call(messagesHandler, { method: 'POST', headers: requestHeaders, body });
+  assert.equal((await send(draft, { ...headers, cookie: '' })).status, 401);
+  assert.equal((await send(draft, { ...headers, 'x-workspace-owner': '0617779922' })).status, 409);
+  assert.equal((await send({ ...draft, body: ' ' })).status, 400);
+  assert.equal((await send({ ...draft, body: 'x'.repeat(1201) })).status, 400);
+  assert.equal((await send({ ...draft, classId: 'someone-elses-class' })).status, 409);
+  const sent = await send({ ...draft, phone: '0617779922', sender: 'admin', answeredAt: 'fake' });
+  assert.equal(sent.status, 200);
+  const inbox = await call(messagesHandler, { method: 'GET', headers });
+  const received = inbox.body as { messages: import('../src/types.js').AdminMessage[]; history: import('../src/types.js').AdminMessage[]; unreadCount: number };
+  assert.equal(received.messages.length, 0, 'outbound requests are never shown as incoming admin messages');
+  assert.equal(received.unreadCount, 0);
+  assert.equal(received.history[0].sender, 'teacher');
+  assert.equal(received.history[0].answeredAt, undefined, 'client cannot forge an admin response');
+  assert.equal((await send(draft)).status, 200, 'same UUID retries safely after a lost response');
+  assert.equal((await send({ ...draft, body: 'Changed content' })).status, 409);
+  const overview = await call(adminHandler, { method: 'GET', headers: adminHeaders, query: { action: 'overview' } });
+  const summary = (overview.body as { teachers: { phone: string; pendingRequests: number; pendingMessages: number }[] }).teachers.find(item => item.phone === owner);
+  assert.equal(summary?.pendingRequests, 1, 'first contact appears even before syncing a class');
+  assert.equal(summary?.pendingMessages, 0);
+  const reply = await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'notifyTeacher', phone: owner, replyTo: draft.requestId, title: 'Votre contenu', message: 'Partagez le chapitre souhaité.' } });
+  assert.equal(reply.status, 200);
+  const replyId = (reply.body as { message: { id: string } }).message.id;
+  const afterReply = (await call(messagesHandler, { method: 'GET', headers })).body as typeof received;
+  assert.equal(afterReply.unreadCount, 1);
+  assert.equal(afterReply.messages[0].replyTo, draft.requestId);
+  assert.ok(afterReply.history.find(item => item.id === draft.requestId)?.answeredAt);
+  assert.equal(afterReply.history.filter(item => item.id === draft.requestId).length, 1);
+  assert.equal((await send({ action: 'acknowledge', messageId: replyId })).status, 200);
+  const afterRead = (await call(messagesHandler, { method: 'GET', headers })).body as typeof received;
+  assert.equal(afterRead.unreadCount, 0);
+  assert.equal(afterRead.history.length, 2, 'reading never removes the conversation');
+  assert.equal((await send({ ...draft, requestId: 'teacher-10000000-0000-4000-8000-000000000002', replyTo: replyId, kind: 'help', body: 'Chapitre sur les ondes.' })).status, 200);
+  assert.equal((await send({ ...draft, requestId: 'teacher-10000000-0000-4000-8000-000000000003', replyTo: 'admin-unknown-12345678' })).status, 404);
+  const created = await call(adminHandler, { method: 'POST', headers: adminHeaders, body: { action: 'upsertTeacherClass', phone: owner, classInfo: { name: '1AC1', cycle: 'college', subject: 'Mathématiques', level: '1AC', group: '1' } } });
+  assert.equal(created.status, 200);
+  const cls = (created.body as { classInfo: ClassInfo }).classInfo;
+  const classRequest = await send({ ...draft, requestId: 'teacher-10000000-0000-4000-8000-000000000004', classId: cls.id, className: 'forged name' });
+  assert.equal(classRequest.status, 200);
+  assert.equal((classRequest.body as { message: { className: string } }).message.className, cls.name);
+});

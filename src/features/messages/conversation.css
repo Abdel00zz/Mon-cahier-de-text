@@ -1,0 +1,21 @@
+.teacher-conversation { display: grid; gap: 16px; min-width: 0; font-family: var(--font-sans); font-size: .9rem; }
+.teacher-conversation__subject { margin: 0; color: var(--control-ink); overflow-wrap: anywhere; }
+.teacher-conversation__form { display: grid; gap: 8px; }
+.teacher-conversation textarea { width: 100%; min-height: 104px; padding: 12px; resize: vertical; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; font-size: 1rem; }
+.teacher-conversation__compose-actions, .teacher-conversation__reply-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.teacher-conversation button, .teacher-conversation__whatsapp { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid hsl(var(--border)); background: hsl(var(--secondary)); color: hsl(var(--foreground)); font: inherit; cursor: pointer; touch-action: manipulation; transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1), background-color 180ms ease; }
+.teacher-conversation button[type='submit'] { background: var(--control-ink); color: hsl(var(--card)); border-color: transparent; }
+.teacher-conversation button:active, .teacher-conversation__whatsapp:active { transform: scale(.98); }
+.teacher-conversation button:disabled { opacity: .5; cursor: default; transform: none; }
+.teacher-conversation :is(button, a, textarea):focus-visible { outline: 2px solid var(--control-ink); outline-offset: 3px; }
+.teacher-conversation__hint, .teacher-conversation small { font-size: .78rem; color: hsl(var(--muted-foreground)); }
+.teacher-conversation__whatsapp { background: var(--ds-whatsapp-soft); color: var(--ds-whatsapp); text-decoration: none; }
+.teacher-conversation__success { color: hsl(var(--success)); }
+.teacher-conversation__error { color: hsl(var(--destructive)); }
+.teacher-conversation__history { display: grid; gap: 10px; }
+.teacher-conversation__history h3 { font: inherit; font-weight: 500; }
+.teacher-conversation__history article { border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 12px; background: hsl(var(--card)); }
+.teacher-conversation__history article[data-sender='teacher'] { background: hsl(var(--secondary) / .5); }
+.teacher-conversation__history header { display: flex; justify-content: space-between; gap: 8px; font-size: .75rem; color: hsl(var(--muted-foreground)); }
+.teacher-conversation__history p { white-space: pre-wrap; overflow-wrap: anywhere; margin-block: 8px; }
+@media (prefers-reduced-motion: reduce) { .teacher-conversation button, .teacher-conversation__whatsapp { transition: none; transform: none; } }

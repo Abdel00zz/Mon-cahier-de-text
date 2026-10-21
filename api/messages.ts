@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { conversationSignature, pendingAdminMessages } from '../src/domain/messages/conversation.js';
+import { sendTeacherRequest } from './_lib/teacherMessages.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
@@ -28,10 +31,8 @@ const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, m
  * accusé est enregistré, et ne dépend d'aucune horloge. Le snapshot, lui, avance
  * son horloge à chaque lecture : il ne peut donc pas servir de signal.
  */
-const inboxSignature = (messages: AdminMessage[]): string => {
-    const newest = messages[0];
-    return `${messages.filter(message => !message.acknowledgedAt).length}|${newest?.id ?? ''}|${newest?.createdAt ?? ''}`;
-};
+const inboxSignature = (messages: AdminMessage[]): string =>
+    createHash('sha256').update(conversationSignature(messages)).digest('hex');
 
 /**
  * Attente active : la requête est retenue jusqu'à ce que la signature change,
@@ -54,8 +55,8 @@ const handleList = async (res: ApiResponse, phone: string, wait: number, since: 
     }
     const { messages, unreadCount, badgeUpdatedAt } = await readInboxSnapshot(redis, phone);
     // L'enseignant ne reçoit que les messages qui nécessitent encore son accusé.
-    const pending = messages.filter(message => !message.acknowledgedAt);
-    res.status(200).json({ messages: pending, unreadCount, badgeUpdatedAt,
+    const pending = pendingAdminMessages(messages);
+    res.status(200).json({ messages: pending, history: messages, unreadCount, badgeUpdatedAt,
         ...(longPolling ? { signature: inboxSignature(messages) } : {}) });
 };
 
@@ -67,7 +68,7 @@ const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: str
     // l'écriture. La révision de compte sérialise les deux écrivains.
     const write = await beginAccountWrite(redis, phone);
     const messages = normalizeAdminMessages(await redis.get<AdminMessage[]>(KEYS.adminMessages(phone)));
-    const index = messages.findIndex(message => message.id === body.messageId);
+    const index = messages.findIndex(message => message.id === body.messageId && message.sender !== 'teacher');
     if (index === -1) throw new HttpError(404, 'Message introuvable.');
 
     const message = messages[index];
@@ -94,6 +95,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         }
         if (req.method === 'POST') {
             const body = parseBody<MessageBody>(req.body);
+            if (body.action === 'send') {
+                const message = await sendTeacherRequest(await getRedis(), phone, body);
+                return res.status(200).json({ ok: true, message });
+            }
             if (body.action === 'acknowledge') return await handleAcknowledge(body, res, phone);
             throw new HttpError(400, 'Action inconnue.');
         }

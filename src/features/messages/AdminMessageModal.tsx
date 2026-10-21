@@ -1,3 +1,4 @@
+import { conversationCopy } from './conversationCopy';
 import React, { useState } from 'react';
 import type { AdminMessage } from '../../types';
 import { Button } from '../../components/ui/button';
@@ -8,19 +9,22 @@ import { useLocale } from '@/i18n/LocaleProvider';
 interface AdminMessageModalProps {
     message: AdminMessage;
     onAcknowledge: (messageId: string) => Promise<void>;
+    onReply?: () => void;
 }
 
 /** Message direction obligatoire : il n'est fermé qu'après accusé explicite. */
-export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, onAcknowledge }) => {
-    const { t } = useLocale();
+export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, onAcknowledge, onReply }) => {
+    const { t, locale } = useLocale();
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const acknowledge = async () => {
+    const acknowledge = async (reply = false) => {
+        if (isSending) return;
         setIsSending(true);
         setError(null);
         try {
             await onAcknowledge(message.id);
+            if (reply) onReply?.();
         } catch {
             setError(t('adminMessage.acknowledgeError'));
         } finally {
@@ -49,7 +53,8 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                 </div>
             }
             footer={(
-                <div className="flex items-center justify-end w-full">
+                <div className="flex flex-wrap items-center justify-end gap-2 w-full">
+                    {onReply && <Button type="button" variant="outline" disabled={isSending} onClick={() => void acknowledge(true)}>{conversationCopy(locale).answer}</Button>}
                     <Button
                         type="button"
                         onClick={() => void acknowledge()}

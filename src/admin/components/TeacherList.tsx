@@ -132,12 +132,15 @@ const TeacherCard = memo(function TeacherCard({ teacher, severity, inactive, com
                 {teacher.blocked && (
                     <span className="rounded-full bg-foreground/10 px-2 py-1 text-[10px] font-bold text-foreground">Accès bloqué</span>
                 )}
+                {(teacher.pendingRequests ?? 0) > 0 && (
+                    <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">{teacher.pendingRequests} demande(s) à traiter</span>
+                )}
                 {teacher.pendingMessages > 0 && (
                     <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
                         {teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}
                     </span>
                 )}
-                {teacher.pendingMessages === 0 && teacher.lastMessageAt && (
+                {teacher.pendingMessages === 0 && !teacher.pendingRequests && teacher.lastMessageAt && (
                     <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">Messages confirmés</span>
                 )}
                 <span className="ms-auto text-[10px] font-bold text-primary">Ouvrir la fiche →</span>
@@ -209,7 +212,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     severity,
                     inactive,
                     completion: globalCompletion(teacher),
-                    needsFollowUp: teacher.blocked || teacher.pendingMessages > 0 || inactive || severity === 'critical',
+                    needsFollowUp: teacher.blocked || (teacher.pendingMessages > 0 || (teacher.pendingRequests ?? 0) > 0) || inactive || severity === 'critical',
                 };
             }),
         [teachers]
@@ -225,7 +228,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
         for (const e of enriched) {
             counts[e.severity] += 1;
             if (e.inactive) inactive += 1;
-            pendingMessages += e.teacher.pendingMessages;
+            pendingMessages += e.teacher.pendingMessages + (e.teacher.pendingRequests ?? 0);
             if (e.teacher.blocked) blocked += 1;
             if (e.needsFollowUp) needsFollowUp += 1;
         }
@@ -237,7 +240,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             .filter(item => item.needsFollowUp)
             .sort((a, b) =>
                 Number(b.teacher.blocked) - Number(a.teacher.blocked) ||
-                Number(b.teacher.pendingMessages > 0) - Number(a.teacher.pendingMessages > 0) ||
+                Number((b.teacher.pendingMessages > 0 || (b.teacher.pendingRequests ?? 0) > 0)) - Number((a.teacher.pendingMessages > 0 || (a.teacher.pendingRequests ?? 0) > 0)) ||
                 Number(b.inactive) - Number(a.inactive) ||
                 SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]
             )
@@ -259,7 +262,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             const matchesSeverity =
                 severityFilter === 'all' ||
                 (severityFilter === 'inactive' ? inactive :
-                    severityFilter === 'messages' ? teacher.pendingMessages > 0 :
+                    severityFilter === 'messages' ? (teacher.pendingMessages > 0 || (teacher.pendingRequests ?? 0) > 0) :
                         severityFilter === 'blocked' ? teacher.blocked :
                             severity === severityFilter);
             return matchesQuery && matchesCycle && matchesSubject && matchesSeverity
@@ -319,6 +322,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             status: teacher.blocked ? 'Compte bloqué' : inactive ? 'Inactif' : SEVERITY_META[severity].label,
             lastSyncAt: teacher.lastSyncAt ?? '',
             pendingMessages: teacher.pendingMessages,
+              pendingRequests: teacher.pendingRequests ?? 0,
             blocked: teacher.blocked === true,
         }));
         const url = URL.createObjectURL(new Blob([teachersToCsv(rows)], { type: 'text/csv;charset=utf-8' }));
@@ -404,9 +408,9 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     onClick={() => setSeverityFilter('messages')}
                     className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}
                 >
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Lectures attendues</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Messages à suivre</span>
                     <span className="mt-1 block text-3xl font-black text-warning">{distribution.pendingMessages}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">message(s) direction non confirmé(s)</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">demande(s) et lecture(s) en attente</span>
                 </button>
                 <button
                     type="button"
@@ -439,10 +443,10 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                 <span className="min-w-0">
                                     <span className="block truncate text-xs font-bold text-foreground">{teacherNameOf(teacher)}</span>
                                     <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                                        {teacher.blocked ? 'Compte bloqué' : teacher.pendingMessages > 0 ? `${teacher.pendingMessages} accusé(s) attendu(s)` : inactive ? 'Aucune synchronisation récente' : SEVERITY_META[severity].label}
+                                        {teacher.blocked ? 'Compte bloqué' : teacher.pendingRequests ? `${teacher.pendingRequests} demande(s) à traiter` : teacher.pendingMessages > 0 ? `${teacher.pendingMessages} accusé(s) attendu(s)` : inactive ? 'Aucune synchronisation récente' : SEVERITY_META[severity].label}
                                     </span>
                                 </span>
-                                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : teacher.pendingMessages > 0 || inactive ? 'bg-warning' : SEVERITY_META[severity].dot}`} aria-hidden />
+                                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : (teacher.pendingMessages > 0 || (teacher.pendingRequests ?? 0) > 0) || inactive ? 'bg-warning' : SEVERITY_META[severity].dot}`} aria-hidden />
                             </button>
                         ))}
                     </div>
@@ -480,10 +484,10 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     className={`inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning transition-all ${
                         severityFilter === 'messages' ? 'ring-2 ring-offset-1 ring-warning/40' : 'opacity-90 hover:opacity-100'
                     }`}
-                    title="Messages direction en attente de confirmation"
+                    title="Demandes à traiter et messages à confirmer"
                 >
                     <span className="h-2 w-2 rounded-full bg-warning" />
-                    Lectures attendues <span className="font-black">{distribution.pendingMessages}</span>
+                    Messages à suivre <span className="font-black">{distribution.pendingMessages}</span>
                 </button>
                 <button
                     onClick={() => toggleSeverityFilter('blocked')}

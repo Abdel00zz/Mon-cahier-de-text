@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { LessonsData, Indices, ContentDirection } from '@/types';
+import { LessonsData, Indices, ContentDirection, ClassInfo } from '@/types';
 import { withAbsenceRows, groupRowsWithAbsences, absenceRemarkGroups, type AbsenceSession, type AbsenceDisplayRow } from '@/domain/notebook/absenceSessions';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { type LessonRow } from '@/domain/notebook/lessonRows';
@@ -14,7 +14,7 @@ import { logger } from '@/lib/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { hasOnlyPristineStarterDiagnostic } from '@/domain/notebook/starterDiagnostic';
-import { SupportWhatsAppBlock } from '@/components/support/SupportWhatsAppBlock';
+import { NotebookSupport } from '@/features/messages/NotebookSupport';
 import { ProudTeacherIllustration, CurriculumImportIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { motion, useReducedMotion } from 'framer-motion';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
@@ -42,6 +42,7 @@ const sortAttributes = (item: FlatDataItem, id: string) => ({
 });
 
 interface MainTableProps {
+  supportClass?: Pick<ClassInfo, 'id' | 'name'>;
   lessonsData: LessonsData;
   visibleRows: LessonRow[];
   absenceSessions?: readonly AbsenceSession[];
@@ -446,10 +447,11 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 
 /* État vide réinventé selon le design system éditorial chaud & épuré avec illustration dynamique. */
 const EmptyState: React.FC<{
+  supportClass?: Pick<ClassInfo, 'id' | 'name'>;
   onOpenAddContentModal: (indices?: Indices) => void;
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
-}> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
+}> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined, supportClass }) => {
     const { t, locale } = useLocale();
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
     const reduceMotion = useReducedMotion();
@@ -507,7 +509,8 @@ const EmptyState: React.FC<{
                 </div>
 
                 {/* Surface secondaire : assistance WhatsApp */}
-                <SupportWhatsAppBlock
+                <NotebookSupport
+                    target={supportClass}
                     locale={locale}
                     hint={t('support.serviceHint')}
                     label={t('support.serviceWhatsApp')}
@@ -518,6 +521,7 @@ const EmptyState: React.FC<{
 };
 
 export const MainTable: React.FC<MainTableProps> = React.memo(({
+  supportClass,
   lessonsData,
   visibleRows,
   absenceSessions = NO_ABSENCES,
@@ -656,6 +660,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       return (
           <div dir={contentDirection} data-content-direction={contentDirection}>
               <EmptyState
+                  supportClass={supportClass}
                   onOpenAddContentModal={onOpenAddContentModal}
                   predefinedProgramTitle={predefinedProgramTitle}
                   onLoadPredefined={onLoadPredefined}

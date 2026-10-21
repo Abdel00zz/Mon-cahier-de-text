@@ -25,6 +25,7 @@ interface SupportWhatsAppBlockProps {
   /** Libellé du bouton. */
   label: string;
   className?: string;
+  context?: { teacherName?: string; className?: string };
 }
 
 /**
@@ -36,6 +37,7 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
   hint,
   label,
   className = '',
+  context,
 }) => {
   if (!hasSupportWhatsApp()) return null;
 
@@ -48,7 +50,7 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
       </p>
 
       <a
-        href={buildSupportWhatsAppUrl(locale)}
+        href={buildSupportWhatsAppUrl(locale, context)}
         target="_blank"
         rel="noopener noreferrer"
         className="group mt-3.5 inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full bg-[var(--ds-whatsapp)] hover:bg-[var(--ds-whatsapp-hover)] px-5 py-2.5 sm:px-6 sm:py-2.5 text-[13px] sm:text-[13.5px] font-bold text-white active:scale-[0.98] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring cursor-pointer touch-manipulation select-none motion-reduce:transform-none"

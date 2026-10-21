@@ -382,3 +382,24 @@ test('les événements cloud et stockage sont regroupés, suspendus en arrière-
     assert.equal(updates, 2);
   } finally { dispose(); }
 });
+
+
+test('a prepared curriculum with undated content and empty headings is not an unresolved problem', () => {
+  const lessons: LessonsData = [
+    { type: 'chapter', title: 'En cours', items: [
+      { type: 'definition', title: 'Déjà affecté', date: '2026-10-20' },
+      { type: 'exercice', title: 'Prévu pour plus tard' },
+    ] },
+    { type: 'chapter', title: 'Prochain chapitre', sections: [{ name: 'À préparer' }] },
+  ];
+  const config = { timetable: classes.map(item => slot(item.id)) };
+  const guidance = resolveClassGuidance(classes, config, undefined, { readLessons: () => lessons });
+  assert.equal(guidance.step, 'ready');
+  assert.equal(resolvePedagogicalBehavior(guidance).problemCount, 0);
+  assert.equal(resolvePedagogicalBehavior(guidance).antennaFlash, false);
+  const broken: LessonsData = structuredClone(lessons);
+  broken[0].items![1] = { type: 'exercice', title: 'Prévu pour plus tard', description: 'Soit $x' };
+  const actualIssue = resolveClassGuidance(classes, config, undefined, { readLessons: () => broken });
+  assert.equal(actualIssue.step, 'notebook-issue');
+  assert.equal('issueCode' in actualIssue && actualIssue.issueCode, 'unclosedFormula');
+});

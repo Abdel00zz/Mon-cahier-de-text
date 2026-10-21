@@ -47,6 +47,7 @@ export type AdminTeacherSummary = TeacherSnapshot & {
     email?: string;
     blocked: boolean;
     pendingMessages: number;
+    pendingRequests?: number;
     lastMessageAt: string | null;
 };
 
@@ -185,8 +186,8 @@ export const importClassLessons = (
     });
 
 /** Notification push directe vers le(s) téléphone(s) de l'enseignant. */
-export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number; message: AdminMessage }> =>
-    postAdmin({ action: 'notifyTeacher', phone, message, title });
+export const notifyTeacher = (phone: string, message: string, title?: string, replyTo?: string): Promise<{ ok: boolean; sent: number; message: AdminMessage }> =>
+    postAdmin({ action: 'notifyTeacher', phone, message, title, replyTo });
 
 export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>
     request('/api/admin?action=calendar');

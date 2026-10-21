@@ -7,7 +7,6 @@ const ADVICE_KEYS: Record<NotebookAdvice['code'], string> = {
     outOfOrderSessions: 'advice.outOfOrderSessions',
     duplicateBlocks: 'advice.duplicateBlocks',
     emptyStructure: 'advice.emptyStructure',
-    undatedContent: 'advice.undatedContent',
     controlCharacters: 'advice.controlCharacters',
 };
 

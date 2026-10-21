@@ -422,8 +422,23 @@ export interface TeacherSnapshot {
     classes: ClassSnapshot[];
 }
 
-/** Message unidirectionnel de la direction, visible par son seul destinataire. */
+/** Conversation privée entre un compte enseignant et la direction. */
+export interface TeacherRequestDraft {
+    requestId: string;
+    body: string;
+    kind: 'help' | 'custom-content';
+    classId?: string;
+    replyTo?: string;
+}
+
 export interface AdminMessage {
+    /** Absent sur les messages historiques de la direction. */
+    sender?: 'admin' | 'teacher';
+    requestKind?: TeacherRequestDraft['kind'];
+    classId?: string;
+    className?: string;
+    replyTo?: string;
+    answeredAt?: string;
     id: string;
     title: string;
     body: string;

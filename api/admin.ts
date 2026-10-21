@@ -1,6 +1,7 @@
+import { pendingAdminMessages, pendingTeacherRequests } from '../src/domain/messages/conversation.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { createHash, randomUUID } from 'node:crypto';
-import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
+import { appendConversationMessage, normalizeAdminMessages, recentAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { getRedis, KEYS, isFirestoreStore } from './_lib/redis.js';
 import { firebaseAuth, teacherUid } from './_lib/firebaseAdmin.js';
 import { accountFirebaseUid } from './_lib/authAccounts.js';
@@ -39,6 +40,7 @@ interface AdminBody {
     blocked?: boolean;
     title?: string;
     message?: string;
+    replyTo?: string;
     calendar?: HolidayCalendar;
     officialEvents?: OfficialStudentEventsFile;
     classId?: string;
@@ -204,7 +206,8 @@ const handleOverview = async (req: ApiRequest, res: ApiResponse) => {
             contactPhone: user.phone,
             email: user.email,
             blocked: user?.blocked === true,
-            pendingMessages: messages.filter(message => !message.acknowledgedAt).length,
+            pendingMessages: pendingAdminMessages(messages).length,
+            pendingRequests: pendingTeacherRequests(messages).length,
             lastMessageAt: messages[0]?.createdAt ?? null,
         }];
     }).sort((a, b) => {
@@ -916,14 +919,18 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     ]);
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
 
+    const previousMessages = normalizeAdminMessages(storedMessages);
+    const request = body.replyTo === undefined ? undefined : previousMessages.find(item => item.id === body.replyTo && item.sender === 'teacher');
+    if (body.replyTo !== undefined && !request) throw new HttpError(404, 'Demande introuvable pour cet enseignant.');
     const message: AdminMessage = {
+        sender: 'admin',
+        ...(request ? { replyTo: request.id, classId: request.classId, className: request.className } : {}),
         id: `admin-${randomUUID()}`,
         title,
         body: content,
         createdAt: new Date().toISOString(),
     };
-    const messages = [message, ...normalizeAdminMessages(storedMessages)]
-        .slice(0, MAX_ADMIN_MESSAGES_PER_TEACHER);
+    const messages = appendConversationMessage(previousMessages.map(item => item.id === request?.id ? { ...item, answeredAt: message.createdAt } : item), message);
     write.set(KEYS.adminMessages(phone), messages);
     await write.exec();
 

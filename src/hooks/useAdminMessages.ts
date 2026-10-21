@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AdminMessage, AppLocale } from '../types';
+import type { AdminMessage, AppLocale, TeacherRequestDraft } from '../types';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { requestSyncJson } from '../infrastructure/sync/syncTransport';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
@@ -9,6 +9,7 @@ import { Capacitor } from '@capacitor/core';
 
 interface MessagesResponse {
     messages?: AdminMessage[];
+    history?: AdminMessage[];
     unreadCount?: number;
     badgeUpdatedAt?: number;
     signature?: string;
@@ -30,6 +31,23 @@ const loadPendingMessages = async (owner: string, signal: AbortSignal): Promise<
  */
 export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLocale = 'ar') => {
     const [messages, setMessages] = useState<AdminMessage[]>([]);
+    const [history, setHistory] = useState<AdminMessage[]>([]);
+    const [loaded, setLoaded] = useState(false);
+    const [failed, setFailed] = useState(false);
+    const [loadedOwner, setLoadedOwner] = useState<string>();
+    const lastSnapshot = useRef(0);
+    const acknowledged = useRef(new Set<string>());
+    const applyPage = useCallback((page: MessagesResponse) => {
+        if (!Array.isArray(page.messages)) return;
+        const time = page.badgeUpdatedAt ?? Date.now();
+        if (time < lastSnapshot.current) return;
+        lastSnapshot.current = time;
+        setMessages(page.messages.filter(message => !acknowledged.current.has(message.id)));
+        setHistory((page.history ?? page.messages).map(message => acknowledged.current.has(message.id) ? { ...message, acknowledgedAt: message.acknowledgedAt ?? new Date().toISOString() } : message));
+        setLoadedOwner(owner);
+        setLoaded(true);
+        setFailed(false);
+    }, [owner]);
     const refreshController = useRef<AbortController | null>(null);
 
     const refresh = useCallback(async () => {
@@ -40,17 +58,27 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
         try {
             const next = await loadPendingMessages(owner, controller.signal);
             if (isCurrent() && !controller.signal.aborted) {
-                setMessages(next.messages!);
+                applyPage(next);
                 void syncInboxBadge(owner, next.unreadCount ?? next.messages!.length, next.badgeUpdatedAt!, locale);
             }
             return true;
+        } catch (error) {
+            if (isCurrent() && !controller.signal.aborted) setFailed(true);
+            throw error;
         } finally {
             if (refreshController.current === controller) refreshController.current = null;
         }
-    }, [enabled, owner, locale]);
+    }, [enabled, owner, locale, applyPage]);
 
     useEffect(() => {
         setMessages([]);
+        setHistory([]);
+        setLoaded(false);
+        setFailed(false);
+        setLoadedOwner(owner);
+        lastSnapshot.current = 0;
+        acknowledged.current.clear();
+        const isCurrent = captureWorkspaceLease();
         if (!enabled || !owner) return;
         let stopConnection = () => {};
         if (Capacitor.isNativePlatform()) {
@@ -85,8 +113,8 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
                 { credentials: 'same-origin', headers: { 'X-Workspace-Owner': owner }, signal: realtimeController.signal },
                 wait + 12_000),
             onPage: page => {
-                if (!Array.isArray(page.messages) || !captureWorkspaceLease()()) return;
-                setMessages(page.messages);
+                if (!Array.isArray(page.messages) || !isCurrent() || !realtimeActive) return;
+                applyPage(page);
                 void syncInboxBadge(owner, page.unreadCount ?? page.messages.length, page.badgeUpdatedAt ?? Date.now(), locale);
             },
         }).catch(() => {});
@@ -103,7 +131,7 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
             refreshController.current = null;
             stopConnection();
         };
-    }, [enabled, owner, locale, refresh]);
+    }, [enabled, owner, locale, refresh, applyPage]);
 
     const acknowledge = useCallback(async (messageId: string): Promise<void> => {
         const isCurrent = captureWorkspaceLease();
@@ -116,6 +144,9 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
             body: JSON.stringify({ action: 'acknowledge', messageId }),
         }, 15_000);
         if (isCurrent()) {
+            if (result.badgeUpdatedAt) lastSnapshot.current = Math.max(lastSnapshot.current, result.badgeUpdatedAt);
+            acknowledged.current.add(messageId);
+            setHistory(current => current.map(message => message.id === messageId ? { ...message, acknowledgedAt: new Date().toISOString() } : message));
             setMessages(current => current.filter(message => message.id !== messageId));
             if (typeof result.unreadCount === 'number' && typeof result.badgeUpdatedAt === 'number') {
                 void syncInboxBadge(owner, result.unreadCount, result.badgeUpdatedAt, locale);
@@ -123,5 +154,22 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
         }
     }, [enabled, owner, locale, refresh]);
 
-    return { messages, acknowledge };
+    const sendRequest = useCallback(async (draft: TeacherRequestDraft, signal?: AbortSignal) => {
+        if (!enabled || !owner) throw new Error('Session indisponible.');
+        const isCurrent = captureWorkspaceLease();
+        const result = await requestSyncJson<{ message: AdminMessage }>('/api/messages', {
+            method: 'POST', credentials: 'same-origin', signal,
+            headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': owner },
+            body: JSON.stringify({ ...draft, action: 'send' }),
+        }, 15_000);
+        if (!isCurrent()) throw new Error('Session modifiée.');
+        setHistory(current => [result.message, ...current.filter(item => item.id !== result.message.id)]);
+        setLoadedOwner(owner);
+        void refresh().catch(() => {});
+        return result.message;
+    }, [enabled, owner, refresh]);
+
+    return { messages: enabled && loadedOwner === owner ? messages : [], history: enabled && loadedOwner === owner ? history : [],
+        loaded: loadedOwner === owner && loaded, failed, enabled: enabled && Boolean(owner), owner,
+        acknowledge, sendRequest, refresh };
 };

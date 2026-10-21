@@ -1,3 +1,5 @@
+import type { AdminMessage } from '../types';
+import { TeacherMessagingContext } from '../contexts/TeacherMessagingContext';
 import { hasCompletedOnboarding } from '../domain/auth/onboardingCompletion';
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Toaster } from '../components/ui/sonner';
@@ -37,6 +39,7 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then
 const GuidePage = lazy(() => import('../features/guide/GuidePage').then(module => ({ default: module.GuidePage })));
 const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
+const TeacherConversation = lazy(() => import('../features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
 
 const App: React.FC = () => {
@@ -71,7 +74,11 @@ const App: React.FC = () => {
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
   const authOwner = authUser ? accountOwner(authUser) : undefined;
   useNativeReminders(config, classes, authOwner);
-  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated', authOwner, config.applicationLocale ?? 'ar');
+  const messaging = useAdminMessages(authStatus === 'authenticated', authOwner, config.applicationLocale ?? 'ar');
+  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = messaging;
+  const [replySelection, setReplySelection] = useState<{ owner?: string; message: AdminMessage } | null>(null);
+  const replyMessage = replySelection?.owner === authOwner ? replySelection?.message : undefined;
+  useEffect(() => setReplySelection(null), [authOwner]);
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && !!authUser));
@@ -294,6 +301,8 @@ const App: React.FC = () => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
   }, [classes, currentSession.classIds]);
 
+  const mandatoryAdminMessage = adminMessages.find(message => !message.replyTo || view !== 'dashboard');
+
   const appSurface = (
     <div
       className="workspace-shell relative min-h-dvh overflow-x-clip text-foreground bg-background"
@@ -337,6 +346,7 @@ const App: React.FC = () => {
 
   return (
     <>
+      <TeacherMessagingContext.Provider value={{ ...messaging, teacherName }}>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
         <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
         {/* Liseré de synchronisation : discret, sans écran bloquant. */}
@@ -374,15 +384,21 @@ const App: React.FC = () => {
           </Suspense>
         </DeferredMount>
 
-        {adminMessages[0] && (
+        {mandatoryAdminMessage && (
           <Suspense fallback={null}>
             <AdminMessageModal
-              message={adminMessages[0]}
+              message={mandatoryAdminMessage}
               onAcknowledge={acknowledgeAdminMessage}
+              onReply={() => setReplySelection({ owner: authOwner, message: mandatoryAdminMessage })}
             />
           </Suspense>
         )}
 
+        {replyMessage && <Suspense fallback={null}>
+          <TeacherConversation key={`${authOwner}:${replyMessage.id}`} open onClose={() => setReplySelection(null)}
+            locale={config.applicationLocale ?? 'ar'} kind="help" initialReplyTo={replyMessage.id}
+            target={replyMessage.classId ? { id: replyMessage.classId, name: replyMessage.className ?? '' } : undefined} />
+        </Suspense>}
         <GlobalTooltip />
         <Toaster
           position={isRtl ? 'bottom-left' : 'bottom-right'}
@@ -398,6 +414,7 @@ const App: React.FC = () => {
         />
         </SubjectScopeProvider>
       </LocaleProvider>
+      </TeacherMessagingContext.Provider>
     </>
   );
 }

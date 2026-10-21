@@ -1301,6 +1301,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
+              supportClass={classInfo}
               lessonsData={lessonsData}
               absenceSessions={absenceSessions}
               visibleRows={visibleRows}

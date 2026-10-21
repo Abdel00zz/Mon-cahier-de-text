@@ -49,7 +49,7 @@ const adviceCache = new WeakMap<LessonsData, NotebookAdvice[]>();
  * 3. Séances en direct (Action immédiate / Présentiel)
  * 4. Qualité et cohérence des cahiers de textes (Conseiller de cahier)
  * 5. Cahiers vierges à démarrer (Progression)
- * 6. Sérénité pédagogique totale quand tout est en ordre
+ * 6. Aucun point détecté par ces vérifications (pas une validation exhaustive)
  */
 export function diagnosePedagogicalState({
   classes,
@@ -130,7 +130,9 @@ export function diagnosePedagogicalState({
         } else {
           let advices = adviceCache.get(lessons);
           if (!advices) {
-            advices = analyseNotebook(lessons, 6);
+            // Empty headings are normal in a prepared curriculum, not tasks to fix.
+            // Keep that informational note in import previews only.
+            advices = analyseNotebook(lessons, 5).filter(advice => advice.code !== 'emptyStructure');
             adviceCache.set(lessons, advices);
           }
           if (advices.length > 0) {
@@ -181,7 +183,7 @@ export function diagnosePedagogicalState({
     };
   }
 
-  // 5. Sérénité pédagogique totale
+  // 5. Aucun point détecté par les vérifications disponibles
   const defaultTarget = classes.find(c => c.id === preferredClassId) ?? classes[0];
   return {
     step: 'ready',

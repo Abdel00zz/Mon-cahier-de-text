@@ -1,3 +1,4 @@
+import { AdminConversation } from './AdminConversation';
 import { buildAbsenceSessions, type AbsenceSession } from '../../domain/notebook/absenceSessions';
 import { migrateLessonsData } from '../../domain/notebook/dataUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -30,7 +31,6 @@ import {
     FileText,
     ChevronDown,
     Loader2,
-    Check,
 } from 'lucide-react';
 import { Trash2 } from '../../components/ui/icons';
 import { Modal } from '../../components/ui/modal';
@@ -38,7 +38,7 @@ import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { MathText } from '../../components/ui/math-text';
 import { MathTitle } from '../../components/ui/math-title';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
-import type { AbsencePeriod, AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, EvaluationPolicy, LessonsData, TeacherSnapshot, TimetableClockPolicy, TimetableEntry } from '../../types';
+import type { AbsencePeriod, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, ContentDocument, Cycle, EvaluationPolicy, LessonsData, TeacherSnapshot, TimetableClockPolicy, TimetableEntry } from '../../types';
 import { computeClassSessionSchedule } from '../../domain/calendar/sessionScheduleStatus';
 import { PrintView } from '../../features/editor/PrintView';
 import { PrintModal, type PrintMode, type PrintOptions } from '../../features/editor/modals/PrintModal';
@@ -527,42 +527,6 @@ const AssessmentDateEditor: React.FC<{
     );
 };
 
-const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages }) => {
-    if (messages.length === 0) {
-        return (
-            <section className="rounded-2xl border border-dashed bg-card p-10 text-center">
-                <p className="text-sm font-black text-foreground">Aucun message envoyé</p>
-                <p className="mt-1 text-xs text-muted-foreground">Les messages de la direction et leurs accusés de lecture apparaîtront ici.</p>
-            </section>
-        );
-    }
-    return (
-        <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
-            <div className="mb-3">
-                <h2 className="text-sm font-black text-foreground">Messages de la direction</h2>
-                <p className="text-[11px] text-muted-foreground">Accusés de réception du professeur sélectionné.</p>
-            </div>
-            <div className="space-y-2">
-                {messages.slice(0, 12).map(message => (
-                    <article key={message.id} className="rounded-xl bg-secondary/55 p-3">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                            <div className="min-w-0">
-                                <h3 className="text-xs font-bold text-foreground">{message.title}</h3>
-                                <p className="mt-1 whitespace-pre-wrap text-[11px] leading-relaxed text-muted-foreground">{message.body}</p>
-                            </div>
-                            <span className={`inline-flex items-center gap-1 shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${message.acknowledgedAt ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning-strong'}`}>
-                                {message.acknowledgedAt ? <Check className="h-3 w-3" aria-hidden="true" /> : <Clock className="h-3 w-3" aria-hidden="true" />}
-                                <span>{message.acknowledgedAt ? `Compris le ${formatDateTimeFr(message.acknowledgedAt)}` : 'En attente'}</span>
-                            </span>
-                        </div>
-                        <p className="mt-2 text-[10px] text-muted-foreground">Envoyé le {formatDateTimeFr(message.createdAt)}</p>
-                    </article>
-                ))}
-            </div>
-        </section>
-    );
-};
-
 type TeacherDetailTab = 'classes' | 'assessments' | 'messages';
 const TEACHER_DETAIL_TAB_ORDER: TeacherDetailTab[] = ['classes', 'assessments', 'messages'];
 
@@ -576,6 +540,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const [isMessageModalOpen, setMessageModalOpen] = useState(false);
     const [messageTitle, setMessageTitle] = useState('Message de la direction');
     const [messageBody, setMessageBody] = useState('');
+    const [replyTo, setReplyTo] = useState<string>();
     const [isClassModalOpen, setClassModalOpen] = useState(false);
     const activeTeacherRef = useRef(phone);
     activeTeacherRef.current = phone;
@@ -650,12 +615,13 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     const handleSendMessage = () =>
         runAction(async () => {
             if (!messageBody.trim()) throw new Error('Le message ne peut pas être vide.');
-            const result = await notifyTeacher(phone, messageBody.trim(), messageTitle.trim());
+            const result = await notifyTeacher(phone, messageBody.trim(), messageTitle.trim(), replyTo);
             setData(current => current
-                ? { ...current, adminMessages: [result.message, ...(current.adminMessages ?? [])] }
+                ? { ...current, adminMessages: [result.message, ...(current.adminMessages ?? []).map(item => item.id === replyTo ? { ...item, answeredAt: result.message.createdAt } : item)] }
                 : current
             );
             setMessageBody('');
+            setReplyTo(undefined);
             setMessageModalOpen(false);
             return result.sent > 0
                 ? `Message envoyé (${result.sent} appareil(s) notifié(s)).`
@@ -985,7 +951,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setMessageModalOpen(true)}
+                                    onClick={() => { setReplyTo(undefined); setMessageTitle('Message de la direction'); setMessageModalOpen(true); }}
                                     disabled={busy}
                                     title="Envoyer un message"
                                     aria-label="Envoyer un message"
@@ -1065,7 +1031,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         aria-labelledby="teacher-tab-messages"
                         hidden={activeTab !== 'messages'}
                     >
-                        <AdminMessagesHistory messages={data.adminMessages ?? []} />
+                        <AdminConversation messages={data.adminMessages ?? []} onReply={message => {
+                            setReplyTo(message.id);
+                            setMessageTitle(`Réponse : ${message.title}`.slice(0, 80));
+                            setMessageBody('');
+                            setMessageModalOpen(true);
+                        }} />
                     </div>
 
                     <div

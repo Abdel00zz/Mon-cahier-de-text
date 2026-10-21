@@ -21,5 +21,9 @@ const PREFILLED_MESSAGE: Record<SupportLocale, string> = {
 export const hasSupportWhatsApp = (): boolean => /^\d{8,15}$/.test(SUPPORT_WHATSAPP_NUMBER);
 
 /** Lien wa.me avec message d'accroche localisé. */
-export const buildSupportWhatsAppUrl = (locale: SupportLocale = 'fr'): string =>
-  `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(PREFILLED_MESSAGE[locale] ?? PREFILLED_MESSAGE.fr)}`;
+export const buildSupportWhatsAppUrl = (locale: SupportLocale = 'fr', context?: { teacherName?: string; className?: string; requestId?: string }): string => {
+  const clean = (value?: string) => value?.replace(/[\r\n\u0000-\u001f\u202a-\u202e\u2066-\u2069]/g, ' ').trim().slice(0, 140);
+  const labels = locale === 'ar' ? ['الاسم', 'القسم', 'الطلب'] : locale === 'en' ? ['Name', 'Class', 'Request'] : ['Nom', 'Classe', 'Demande'];
+  const details = [context?.teacherName, context?.className, context?.requestId].map((value, index) => clean(value) ? `${labels[index]} : ${clean(value)}` : '').filter(Boolean);
+  return `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent([PREFILLED_MESSAGE[locale] ?? PREFILLED_MESSAGE.fr, ...details].join('\n'))}`;
+};

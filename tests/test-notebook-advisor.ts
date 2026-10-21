@@ -49,14 +49,16 @@ test('une séance datée avant la précédente est hors ordre', () => {
   assert.deepEqual(codes(ordered), []);
 });
 
-test('les contenus sans date ne sont signalés que si le cahier date ailleurs', () => {
+test('les contenus non datés restent normaux, avant ou après des séances déjà datées', () => {
   const undatedOnly = [{ type: 'chapter', title: 'C', items: [{ type: 'definition', title: 'D' }] }];
   assert.deepEqual(codes(undatedOnly), [], 'un cahier neuf sans aucune date n’est pas sermoné');
   const mixed = [{ type: 'chapter', title: 'C', items: [
     { type: 'definition', title: 'D', date: '2026-09-14' },
     { type: 'definition', title: 'E' },
   ] }];
-  assert.deepEqual(codes(mixed), ['undatedContent']);
+  assert.deepEqual(codes(mixed), []);
+  assert.deepEqual(codes([{ ...mixed[0], items: [...mixed[0].items].reverse() }]), []);
+  assert.deepEqual(inspectNotebookImport(JSON.stringify(mixed)).advice, []);
 });
 
 test('un chapitre ou une section vide est signalé comme structure vide', () => {
@@ -112,4 +114,30 @@ test('l’aperçu d’import transporte les conseils, prêts à afficher', () =>
   assert.deepEqual(preview.advice.map(item => item.code), ['unclosedFormula']);
   const clean = inspectNotebookImport(JSON.stringify([{ type: 'chapter', title: 'C', items: [{ type: 'definition', title: 'D', date: '2026-09-14' }] }]));
   assert.deepEqual(clean.advice, [], 'aucun bruit quand tout va bien');
+});
+
+
+test('assessment dates and their nested content do not constrain course chronology', () => {
+  const course = [{ type: 'chapter', title: 'Chapitre', items: [
+    { type: 'definition', title: 'Cours', date: '2026-09-14' },
+    { type: 'devoir_maison', title: 'Devoir', date: '2026-10-10', items: [
+      { type: 'exercice', title: 'Sujet', date: '2026-10-10' },
+    ] },
+    { type: 'free', title: 'Note', date: '2026-11-15' },
+    { type: 'definition', title: 'Suite', date: '2026-09-15' },
+  ] }];
+  assert.deepEqual(codes(course), []);
+  assert.deepEqual(codes([{ type: 'devoir_maison', title: 'Sujet', description: '$x' }]), ['unclosedFormula'], 'excluding assessment dates must not hide text defects');
+  const broken = structuredClone(course);
+  broken[0].items[3].date = '2026-09-12';
+  assert.deepEqual(codes(broken), ['outOfOrderSessions']);
+});
+
+test('malformed dates are not compared lexically as session dates', () => {
+  assert.deepEqual(codes([{ type: 'chapter', title: 'Cours', items: [
+    { type: 'definition', date: '31/12/2026' },
+    { type: 'definition', date: '2026-09-15' },
+    { type: 'definition', date: '2026-02-30' },
+    { type: 'definition', date: '2026-09-16' },
+  ] }]), []);
 });

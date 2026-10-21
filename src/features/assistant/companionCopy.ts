@@ -203,7 +203,6 @@ const ADVICE_COPY = {
     outOfOrderSessions: 'Certaines dates ne suivent pas l’ordre du contenu. Vérifiez les séances concernées.',
     duplicateBlocks: 'Des blocs identiques apparaissent plusieurs fois. Vérifiez si cette répétition est voulue.',
     emptyStructure: 'Certaines rubriques sont encore vides. Complétez-les à votre rythme.',
-    undatedContent: 'Des contenus restent sans date. Sélectionnez ceux réalisés pour leur attribuer une séance.',
     controlCharacters: 'Le texte contient des caractères invisibles inhabituels. Vérifiez le contenu collé.',
   },
   ar: {
@@ -211,7 +210,6 @@ const ADVICE_COPY = {
     outOfOrderSessions: 'بعض التواريخ لا تتبع ترتيب المحتوى. راجع الحصص المعنية.',
     duplicateBlocks: 'توجد عناصر متطابقة مكررة. تأكد إن كان تكرارها مقصوداً.',
     emptyStructure: 'بعض الفقرات ما زالت فارغة. أكملها حسب تقدمك.',
-    undatedContent: 'توجد محتويات بدون تاريخ. حدّد المنجز منها لإسناده إلى حصة.',
     controlCharacters: 'يتضمن النص رموزاً خفية غير معتادة. راجع المحتوى الملصق.',
   },
   en: {
@@ -219,7 +217,6 @@ const ADVICE_COPY = {
     outOfOrderSessions: 'Some dates do not follow the content order. Check the relevant sessions.',
     duplicateBlocks: 'Identical blocks appear more than once. Check whether the repetition is intentional.',
     emptyStructure: 'Some sections are still empty. Complete them as you progress.',
-    undatedContent: 'Some content has no date. Select completed items to assign them to a session.',
     controlCharacters: 'The text contains unusual invisible characters. Check the pasted content.',
   },
 } as const;
