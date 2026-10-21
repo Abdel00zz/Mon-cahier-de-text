@@ -130,24 +130,24 @@ export function AssistantPopover({
       >
         {open && (
           <>
+            <button
+              type="button"
+              className="assistant-panel__close"
+              onClick={() => close(true)}
+              aria-label={labels.close}
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
             {teacherName && <p className="assistant-panel__greeting">{greeting} <bdi>{teacherName}</bdi></p>}
             <div className="assistant-panel__heading">
               <div className="assistant-panel__copy">
                 <h2 id={`${id}-title`} className="assistant-panel__title">
-                  <span className="assistant-panel__title-action">{message.title}</span>
+                  {message.title ? <span className="assistant-panel__title-action">{message.title}</span> : null}
                   {message.subject && (
                     <bdi className="assistant-panel__title-subject">{message.subject}</bdi>
                   )}
                 </h2>
               </div>
-              <button
-                type="button"
-                className="assistant-panel__close"
-                onClick={() => close(true)}
-                aria-label={labels.close}
-              >
-                <X size={14} aria-hidden="true" />
-              </button>
             </div>
             <p id={`${id}-detail`} className="assistant-panel__detail">
               {message.detail}

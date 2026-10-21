@@ -113,14 +113,11 @@
 }
 
 .assistant-panel__heading {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: block;
+  padding-inline-end: 28px;
 }
 
 .assistant-panel__copy {
-  flex: 1;
   min-width: 0;
 }
 
@@ -149,13 +146,19 @@
   font-weight: 500;
 }
 
+.assistant-panel__title-subject:first-child {
+  margin-block-start: 0;
+}
+
 .assistant-panel__close {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
   display: grid;
   place-items: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  margin: -2px -2px 0 0;
+  width: 32px;
+  height: 32px;
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -163,16 +166,23 @@
   color: hsl(var(--muted-foreground));
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 150ms ease, color 150ms ease;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+  z-index: 2;
 }
 
-.assistant-anchor[dir="rtl"] .assistant-panel__close {
-  margin: -2px 0 0 -2px;
+.assistant-panel__close::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 
 .assistant-panel__close:hover {
   background: hsl(var(--muted) / 80%);
   color: hsl(var(--foreground));
+}
+
+.assistant-panel__close:active {
+  transform: scale(0.92);
 }
 
 .assistant-panel .assistant-panel__detail {
@@ -282,6 +292,6 @@
   .assistant-panel__title { line-height: 1.5; }
 }
 
-.assistant-panel__greeting { margin: 0 0 8px; font: 400 .78rem/1.5 var(--font-secondary); color: var(--control-ink); overflow-wrap: anywhere; }
+.assistant-panel__greeting { margin: 0 0 6px; padding-inline-end: 28px; font: 400 .78rem/1.5 var(--font-secondary); color: var(--control-ink); overflow-wrap: anywhere; }
 .assistant-panel__contact { display: block; width: 100%; min-height: 44px; margin-top: 4px; border: 0; border-radius: 8px; background: transparent; color: var(--control-ink); font: 400 .8rem/1.4 var(--font-sans); cursor: pointer; touch-action: manipulation; }
 @media (hover: hover) { .assistant-panel__contact:hover { background: var(--control-wash); } }

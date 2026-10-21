@@ -63,7 +63,7 @@ export function ClassAssistant({
   const ordinaryMessage = classGuidanceMessage(guidance, locale);
   const message = reply ? { id: reply.id, title: copy.reply, detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
     : ready && pending ? { id: pending.id, title: copy.pending, detail: copy.sent, subject: pending.className, action: copy.history }
-    : ready ? { ...ordinaryMessage, title: copy.ready, detail: copy.offer, action: copy.custom } : ordinaryMessage;
+    : ready ? { ...ordinaryMessage, title: '', detail: copy.offer, action: copy.custom } : ordinaryMessage;
   const openContact = () => {
     const target = reply?.classId ? classes.find(item => item.id === reply.classId)
       : ready && pending?.classId ? classes.find(item => item.id === pending.classId)
