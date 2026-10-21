@@ -7,7 +7,7 @@ export const start = chapter('start', ['profile', 'schedule', 'content'], {
     keywords: 'cahier de textes numérique professeur enseignant inspection pédagogique programme progression préparation classe niveau emploi du temps séance organisation début démarrage',
     sections: [
       {
-        title: 'Un cahier de textes pensé pour l’enseignant marocain',
+        title: 'Un cahier de textes pensé pour l’enseignant',
         body: 'Mon cahier de textes réunit **vos classes, leurs contenus et vos séances** dans un même espace. Vous préparez votre travail, puis vous sélectionnez les éléments réellement traités pour **leur attribuer une date**.',
       },
       {
@@ -47,7 +47,7 @@ export const start = chapter('start', ['profile', 'schedule', 'content'], {
     keywords: 'دفتر النصوص الرقمي أستاذ مدرس تفتيش تربوي برنامج تقدم تعلمات إعداد تنظيم تتبع قسم مستوى سلك استعمال الزمن حصة مؤسسة بداية',
     sections: [
       {
-        title: 'دفتر نصوص مصمّم للأستاذ المغربي',
+        title: 'دفتر نصوص مصمّم للأستاذ',
         body: 'يجمع التطبيق **أقسامك ومحتوياتها وحصصك** في فضاء واحد. تُعدّ العمل مسبقاً، ثم تحدّد العناصر التي أُنجزت فعلاً **لإسناد تاريخها**.',
       },
       {
