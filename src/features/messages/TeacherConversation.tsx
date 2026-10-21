@@ -3,6 +3,7 @@ import type { AppLocale, ClassInfo, TeacherRequestDraft } from '../../types';
 import { Modal } from '../../components/ui/modal';
 import { useTeacherMessaging } from '../../contexts/TeacherMessagingContext';
 import { buildSupportWhatsAppUrl, hasSupportWhatsApp } from '../../constants/support';
+import { WhatsAppIcon } from '../../components/support/SupportWhatsAppBlock';
 import { SyncRequestError } from '../../infrastructure/sync/syncTransport';
 import { isNetworkOnline } from '../../platform/networkStatus';
 import { conversationCopy } from './conversationCopy';
@@ -65,25 +66,80 @@ export function TeacherConversation({ open, onClose, locale, target, kind, conte
     };
     return <Modal isOpen={open} onClose={close} title={copy.title} maxWidth="lg">
         <div className="teacher-conversation" dir={locale === 'ar' ? 'rtl' : 'ltr'} lang={locale}>
-            {selectedTarget && <p className="teacher-conversation__subject" dir="auto">{selectedTarget.name}</p>}
-            {inbox?.enabled ? <form onSubmit={event => { event.preventDefault(); void send(); }} className="teacher-conversation__form">
-                <label htmlFor={id}>{copy.message}</label>
-                {replyTo && <p className="teacher-conversation__hint">{copy.answer} · {inbox.history.find(item => item.id === replyTo)?.title}</p>}
-                <textarea id={id} ref={field} value={body} dir="auto" maxLength={1200} rows={3} placeholder={copy.placeholder}
-                    disabled={busy} onChange={event => { setBody(event.target.value); requestId.current = undefined; setSentId(undefined); }} />
-                <div className="teacher-conversation__compose-actions">
-                    <span className="teacher-conversation__hint">{body.length}/1200</span>
-                    <button type="submit" disabled={busy || !body.trim()} aria-busy={busy}>{busy ? copy.sending : error ? copy.retry : copy.send}</button>
+            {selectedTarget && (
+                <div className="teacher-conversation__target-badge">
+                    <span className="teacher-conversation__target-dot" aria-hidden="true" />
+                    <span className="teacher-conversation__target-name" dir="auto">{selectedTarget.name}</span>
                 </div>
-            </form> : <p>{copy.login}</p>}
+            )}
+            {inbox?.enabled ? <form onSubmit={event => { event.preventDefault(); void send(); }} className="teacher-conversation__form">
+                <div className="teacher-conversation__form-header">
+                    <label htmlFor={id} className="teacher-conversation__label">{copy.message}</label>
+                    {replyTo && (
+                        <div className="teacher-conversation__replying-pill">
+                            <span>{copy.answer} · {inbox.history.find(item => item.id === replyTo)?.title}</span>
+                            <button type="button" onClick={() => setReplyTo(undefined)} aria-label="Annuler" className="teacher-conversation__replying-dismiss">✕</button>
+                        </div>
+                    )}
+                </div>
+                <div className="teacher-conversation__textarea-wrap">
+                    <textarea
+                        id={id}
+                        ref={field}
+                        value={body}
+                        dir="auto"
+                        maxLength={1200}
+                        rows={4}
+                        placeholder={copy.placeholder}
+                        disabled={busy}
+                        onChange={event => { setBody(event.target.value); requestId.current = undefined; setSentId(undefined); }}
+                    />
+                </div>
+                <div className="teacher-conversation__compose-actions">
+                    <span className="teacher-conversation__counter" aria-live="polite">
+                        {body.length}<span className="teacher-conversation__counter-max">/1200</span>
+                    </span>
+                    <button
+                        type="submit"
+                        disabled={busy || !body.trim()}
+                        aria-busy={busy}
+                        className="teacher-conversation__submit-btn"
+                    >
+                        {busy ? copy.sending : error ? copy.retry : copy.send}
+                    </button>
+                </div>
+            </form> : <p className="teacher-conversation__login">{copy.login}</p>}
+
             {sentId && <p role="status" className="teacher-conversation__success">{copy.sent}</p>}
             {error && <p role="alert" className="teacher-conversation__error">{error}</p>}
-            {hasSupportWhatsApp() && <a className="teacher-conversation__whatsapp" target="_blank" rel="noopener noreferrer"
-                href={buildSupportWhatsAppUrl(locale, { teacherName: inbox?.teacherName, className: selectedTarget?.name, requestId: sentId })}>{copy.whatsapp}</a>}
+
+            {hasSupportWhatsApp() && (
+                <div className="teacher-conversation__whatsapp-section">
+                    <div className="teacher-conversation__divider">
+                        <span>{copy.alternate}</span>
+                    </div>
+                    <a
+                        className="teacher-conversation__whatsapp"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={buildSupportWhatsAppUrl(locale, { teacherName: inbox?.teacherName, className: selectedTarget?.name, requestId: sentId })}
+                    >
+                        <WhatsAppIcon className="teacher-conversation__whatsapp-icon" />
+                        <span>{copy.whatsapp}</span>
+                    </a>
+                </div>
+            )}
+
             {inbox?.enabled && <section aria-label={copy.history} className="teacher-conversation__history">
-                <h3>{copy.history}</h3>
-                {!isNetworkOnline() ? <p role="status">{copy.offline}</p> : inbox.failed ? <div role="status"><p>{copy.unavailable}</p><button type="button" onClick={() => void inbox.refresh().catch(() => {})}>{copy.retry}</button></div>
-                    : !inbox.loaded ? <p role="status">{copy.loading}</p> : !inbox.history.length ? <p>{copy.empty}</p> : null}
+                <h3 className="teacher-conversation__history-title">{copy.history}</h3>
+                {!isNetworkOnline() ? <p role="status" className="teacher-conversation__status-msg">{copy.offline}</p>
+                    : inbox.failed ? <div role="status" className="teacher-conversation__status-msg"><p>{copy.unavailable}</p><button type="button" onClick={() => void inbox.refresh().catch(() => {})}>{copy.retry}</button></div>
+                    : !inbox.loaded ? <p role="status" className="teacher-conversation__status-msg">{copy.loading}</p>
+                    : !inbox.history.length ? (
+                        <div className="teacher-conversation__empty-history">
+                            <p>{copy.empty}</p>
+                        </div>
+                    ) : null}
                 {inbox.history.map(message => <article key={message.id} data-sender={message.sender ?? 'admin'}>
                     <header><span>{message.sender === 'teacher' ? copy.you : copy.team}</span><time dateTime={message.createdAt}>{Number.isFinite(Date.parse(message.createdAt)) ? new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(new Date(message.createdAt)) : '—'}</time></header>
                     {message.className && <p className="teacher-conversation__hint" dir="auto">{message.className}</p>}

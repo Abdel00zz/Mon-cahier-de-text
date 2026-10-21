@@ -6,7 +6,7 @@ type SupportLocale = 'fr' | 'ar' | 'en';
 /**
  * Icône WhatsApp haute précision vectorielle moderne.
  */
-const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
+export const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 24 24"
     fill="currentColor"

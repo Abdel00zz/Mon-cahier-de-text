@@ -1,21 +1,428 @@
-.teacher-conversation { display: grid; gap: 16px; min-width: 0; font-family: var(--font-sans); font-size: .9rem; }
-.teacher-conversation__subject { margin: 0; color: var(--control-ink); overflow-wrap: anywhere; }
-.teacher-conversation__form { display: grid; gap: 8px; }
-.teacher-conversation textarea { width: 100%; min-height: 104px; padding: 12px; resize: vertical; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; font-size: 1rem; }
-.teacher-conversation__compose-actions, .teacher-conversation__reply-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-.teacher-conversation button, .teacher-conversation__whatsapp { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid hsl(var(--border)); background: hsl(var(--secondary)); color: hsl(var(--foreground)); font: inherit; cursor: pointer; touch-action: manipulation; transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1), background-color 180ms ease; }
-.teacher-conversation button[type='submit'] { background: var(--control-ink); color: hsl(var(--card)); border-color: transparent; }
-.teacher-conversation button:active, .teacher-conversation__whatsapp:active { transform: scale(.98); }
-.teacher-conversation button:disabled { opacity: .5; cursor: default; transform: none; }
-.teacher-conversation :is(button, a, textarea):focus-visible { outline: 2px solid var(--control-ink); outline-offset: 3px; }
-.teacher-conversation__hint, .teacher-conversation small { font-size: .78rem; color: hsl(var(--muted-foreground)); }
-.teacher-conversation__whatsapp { background: var(--ds-whatsapp-soft); color: var(--ds-whatsapp); text-decoration: none; }
-.teacher-conversation__success { color: hsl(var(--success)); }
-.teacher-conversation__error { color: hsl(var(--destructive)); }
-.teacher-conversation__history { display: grid; gap: 10px; }
-.teacher-conversation__history h3 { font: inherit; font-weight: 500; }
-.teacher-conversation__history article { border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 12px; background: hsl(var(--card)); }
-.teacher-conversation__history article[data-sender='teacher'] { background: hsl(var(--secondary) / .5); }
-.teacher-conversation__history header { display: flex; justify-content: space-between; gap: 8px; font-size: .75rem; color: hsl(var(--muted-foreground)); }
-.teacher-conversation__history p { white-space: pre-wrap; overflow-wrap: anywhere; margin-block: 8px; }
-@media (prefers-reduced-motion: reduce) { .teacher-conversation button, .teacher-conversation__whatsapp { transition: none; transform: none; } }
+/* Container de la conversation enseignant-équipe */
+.teacher-conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: hsl(var(--foreground));
+}
+
+.teacher-conversation[dir="rtl"] {
+  text-align: right;
+}
+
+/* Badge de contexte de la classe ciblée */
+.teacher-conversation__target-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: hsl(var(--muted) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.85);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.teacher-conversation__target-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--control-ink, #725b47);
+  flex-shrink: 0;
+}
+
+.teacher-conversation__target-name {
+  overflow-wrap: anywhere;
+}
+
+/* Formulaire de saisie */
+.teacher-conversation__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.teacher-conversation__form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.teacher-conversation__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.01em;
+}
+
+.teacher-conversation__replying-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border) / 0.7);
+  font-size: 0.76rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.teacher-conversation__replying-dismiss {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.teacher-conversation__replying-dismiss:hover {
+  opacity: 1;
+}
+
+/* Zone de texte moderne & minimaliste */
+.teacher-conversation__textarea-wrap {
+  position: relative;
+  border-radius: 14px;
+  background: hsl(var(--card));
+  border: 1.5px solid hsl(var(--border) / 0.85);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.teacher-conversation__textarea-wrap:focus-within {
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
+}
+
+.dark .teacher-conversation__textarea-wrap:focus-within {
+  border-color: #e4e4e7;
+  box-shadow: 0 0 0 3px rgba(228, 228, 231, 0.14);
+}
+
+.teacher-conversation textarea {
+  display: block;
+  width: 100%;
+  min-height: 108px;
+  max-height: 240px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.teacher-conversation textarea:focus {
+  outline: none;
+}
+
+.teacher-conversation textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+/* Pied de formulaire : compteur & bouton CTA */
+.teacher-conversation__compose-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.teacher-conversation__counter {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.teacher-conversation__counter-max {
+  opacity: 0.65;
+}
+
+/* Bouton principal : style Vercel noir, tactile et épuré */
+.teacher-conversation__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 22px;
+  border-radius: 10px;
+  background: #18181b;
+  color: #fafafa;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition: background-color 150ms ease, transform 150ms cubic-bezier(.34, 1.56, .64, 1), opacity 150ms ease, box-shadow 150ms ease;
+}
+
+.teacher-conversation__submit-btn:hover:not(:disabled) {
+  background: #27272a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.teacher-conversation__submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  background: #121214;
+}
+
+.teacher-conversation__submit-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.dark .teacher-conversation__submit-btn {
+  background: #f4f4f5;
+  color: #18181b;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.dark .teacher-conversation__submit-btn:hover:not(:disabled) {
+  background: #ffffff;
+}
+
+.dark .teacher-conversation__submit-btn:active:not(:disabled) {
+  background: #e4e4e7;
+}
+
+/* Statuts et retours système */
+.teacher-conversation__success {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: hsl(var(--success) / 0.1);
+  border: 1px solid hsl(var(--success) / 0.25);
+  color: hsl(var(--success));
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.teacher-conversation__error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.25);
+  color: hsl(var(--destructive));
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.teacher-conversation__login {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.86rem;
+}
+
+/* Section WhatsApp dédiée avec séparateur subtil */
+.teacher-conversation__whatsapp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.teacher-conversation__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.teacher-conversation__divider::before,
+.teacher-conversation__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--border) / 0.75);
+}
+
+.teacher-conversation__whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: var(--ds-whatsapp, #1f7a4d);
+  color: #ffffff;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 2px 6px rgba(31, 122, 77, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: background-color 150ms ease, transform 150ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 150ms ease;
+}
+
+.teacher-conversation__whatsapp:hover {
+  background: var(--ds-whatsapp-hover, #186340);
+  box-shadow: 0 4px 12px rgba(31, 122, 77, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.teacher-conversation__whatsapp:active {
+  transform: scale(0.98);
+}
+
+.teacher-conversation__whatsapp-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* Historique des échanges */
+.teacher-conversation__history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid hsl(var(--border) / 0.75);
+}
+
+.teacher-conversation__history-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.01em;
+}
+
+.teacher-conversation__status-msg {
+  margin: 0;
+  font-size: 0.82rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.teacher-conversation__empty-history {
+  padding: 18px 16px;
+  border-radius: 12px;
+  border: 1px dashed hsl(var(--border));
+  background: hsl(var(--muted) / 0.25);
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.teacher-conversation__empty-history p {
+  margin: 0;
+}
+
+.teacher-conversation__history article {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid hsl(var(--border) / 0.85);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: hsl(var(--card));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.teacher-conversation__history article[data-sender='teacher'] {
+  background: hsl(var(--muted) / 0.35);
+  border-color: hsl(var(--border) / 0.7);
+}
+
+.teacher-conversation__history header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.teacher-conversation__history p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: hsl(var(--foreground));
+}
+
+.teacher-conversation__hint,
+.teacher-conversation small {
+  font-size: 0.76rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.teacher-conversation__reply-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.teacher-conversation__reply-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.teacher-conversation__reply-actions button:hover {
+  background: hsl(var(--muted));
+}
+
+.teacher-conversation__reply-actions button:active {
+  transform: scale(0.97);
+}
+
+.teacher-conversation :is(button, a, textarea):focus-visible {
+  outline: 2px solid #18181b;
+  outline-offset: 2px;
+}
+
+.dark .teacher-conversation :is(button, a, textarea):focus-visible {
+  outline-color: #fafafa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teacher-conversation button,
+  .teacher-conversation__whatsapp,
+  .teacher-conversation__submit-btn {
+    transition: none;
+    transform: none;
+  }
+}
