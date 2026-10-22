@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { AppLocale } from '@/types';
 import { BloubAvatar, type BloubExpression } from '@/components/ui/BloubAvatar';
 import { X } from '@/components/ui/icons';
@@ -19,10 +20,11 @@ interface AssistantPopoverProps {
   headRoundness?: number;
   autoSleepMs?: number;
   onAction?: () => void;
-  greeting?: string;
-  teacherName?: string;
+  actionBusy?: boolean;
+  keepOpenOnAction?: boolean;
   contactLabel?: string;
   onContact?: () => void;
+  primaryAction?: ReactNode;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -59,7 +61,7 @@ export function AssistantPopover({
   antennaFlash,
   headRoundness,
   autoSleepMs,
-  onAction, greeting, teacherName, contactLabel, onContact,
+  onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
@@ -67,6 +69,8 @@ export function AssistantPopover({
   const [hovered, setHovered] = useState(false);
   const id = useId();
   const labels = companionLabels(locale);
+  const emphasis = message.detailEmphasis;
+  const emphasisIndex = emphasis ? message.detail.indexOf(emphasis) : -1;
 
   useEffect(() => { if (open || !attentionKey) setSeen(attentionKey); }, [open, attentionKey]);
   const unread = Boolean(attentionKey && seen !== attentionKey && !open);
@@ -74,7 +78,7 @@ export function AssistantPopover({
   // The domain decision owns the expression. Interactions never replace a real
   // warning with a random happy/sleeping gesture or invent a success during class.
   const baseExpression = robotAction ?? mood;
-  const activeExpression: BloubExpression = welcoming && !open ? 'excited'
+  const activeExpression: BloubExpression = welcoming && !open && baseExpression === 'success' ? 'excited'
     : hovered && baseExpression === 'success' ? 'love' : baseExpression;
 
   const badgeVariant = problemCount === 0 ? 'serene' : problemCount <= 2 ? 'minor' : 'alert';
@@ -88,6 +92,7 @@ export function AssistantPopover({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls={`${id}-panel`}
+        aria-describedby={!open ? `${id}-preview` : undefined}
         aria-label={`${open ? labels.close : labels.open}${message.context ? ` · ${message.context}` : unread ? ` · ${labels.attention}` : ''}`}
         onPointerEnter={event => { if (event.pointerType !== 'touch') setHovered(true); }}
         onPointerLeave={() => setHovered(false)}
@@ -103,8 +108,8 @@ export function AssistantPopover({
           size={30}
           color="var(--control-ink, #725b47)"
           expression={activeExpression}
-          attention={unread && !welcoming}
-          antennaFlash={Boolean(antennaFlash && unread && !welcoming)}
+          attention={unread && activeExpression !== 'excited'}
+          antennaFlash={Boolean(antennaFlash && unread && activeExpression !== 'excited')}
           headRoundness={headRoundness}
           autoSleepMs={autoSleepMs}
         />
@@ -117,6 +122,7 @@ export function AssistantPopover({
           </span>
         )}
       </button>
+      <span id={`${id}-preview`} role="tooltip" className="assistant-preview" hidden={open}>{message.title}{message.subject ? ` · ${message.subject}` : ''}</span>
       <div
         id={`${id}-panel`}
         hidden={!open}
@@ -127,45 +133,50 @@ export function AssistantPopover({
         aria-labelledby={open ? `${id}-title` : undefined}
         aria-describedby={open ? `${id}-detail` : undefined}
         className="assistant-panel"
+        data-state={robotAction ?? mood}
       >
         {open && (
-          <>
+          <div className="assistant-panel__body">
+            <div className="assistant-panel__topbar">
+              <span className="assistant-panel__kicker">{message.title}</span>
             <button
               type="button"
               className="assistant-panel__close"
               onClick={() => close(true)}
               aria-label={labels.close}
             >
-              <X size={14} aria-hidden="true" />
+              <X size={14} strokeWidth={1.25} absoluteStrokeWidth aria-hidden="true" />
             </button>
-            {teacherName && <p className="assistant-panel__greeting">{greeting} <bdi>{teacherName}</bdi></p>}
-            <div className="assistant-panel__heading">
+            </div>
+            {message.subject ? <div className="assistant-panel__heading">
               <div className="assistant-panel__copy">
                 <h2 id={`${id}-title`} className="assistant-panel__title">
-                  {message.title ? <span className="assistant-panel__title-action">{message.title}</span> : null}
-                  {message.subject && (
-                    <bdi className="assistant-panel__title-subject">{message.subject}</bdi>
-                  )}
+                  <bdi className="assistant-panel__title-subject">{message.subject}</bdi>
                 </h2>
               </div>
-            </div>
+            </div> : <h2 id={`${id}-title`} className="sr-only">{message.title}</h2>}
             <p id={`${id}-detail`} className="assistant-panel__detail">
-              {message.detail}
+              {emphasis && emphasisIndex >= 0 ? <>
+                {message.detail.slice(0, emphasisIndex)}<strong className="assistant-panel__emphasis">{emphasis}</strong>{message.detail.slice(emphasisIndex + emphasis.length)}
+              </> : message.detail}
             </p>
-            {onAction && message.action && (
+            {primaryAction ?? (onAction && message.action && (
               <button
                 type="button"
                 className="assistant-panel__action"
+                disabled={actionBusy}
+                aria-busy={actionBusy || undefined}
                 onClick={() => {
-                  close();
+                  if (!keepOpenOnAction) close();
                   onAction();
                 }}
               >
-                {message.action}
+                <span>{message.action}</span>
+
               </button>
-            )}
+            ))}
             {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
-          </>
+          </div>
         )}
       </div>
     </div>

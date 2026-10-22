@@ -20,15 +20,16 @@ export function subscribeCompanionChanges(notify: () => void, doc: Document = do
     const storage = (event: StorageEvent) => {
       if (event.key === null || event.key.startsWith('classData_v1_')) refresh();
     };
-    const dispose = [subscribe('dirty', refresh), subscribe('pull-applied', refresh)];
+    const dispose = [subscribe('dirty', refresh), subscribe('pull-applied', refresh), subscribe('config-changed', refresh), subscribe('classes-changed', refresh)];
+    const lifecycleEvents = ['pageshow', 'native-resume', 'online', 'offline'] as const;
     view.addEventListener('storage', storage);
-    view.addEventListener('pageshow', refresh);
+    lifecycleEvents.forEach(event => view.addEventListener(event, refresh));
     doc.addEventListener('visibilitychange', refresh);
     return () => {
       clearTimeout(pending);
       dispose.forEach(remove => remove());
       view.removeEventListener('storage', storage);
-      view.removeEventListener('pageshow', refresh);
+      lifecycleEvents.forEach(event => view.removeEventListener(event, refresh));
       doc.removeEventListener('visibilitychange', refresh);
     };
 }

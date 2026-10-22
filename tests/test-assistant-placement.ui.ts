@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { assistantPlacement, attachAssistantPlacement } from '../src/features/assistant/assistantPlacement';
+import { assistantPlacement, assistantPushOffset, attachAssistantPlacement } from '../src/features/assistant/assistantPlacement';
 
 test('la bulle reste dans le téléphone/tablette, en FR et AR, avec zoom ou clavier ouvert', () => {
   for (const viewport of [
@@ -35,13 +35,18 @@ test('placement : un seul calcul par image et aucun observateur actif après fer
   });
   let reads = 0;
   let cleared = 0;
-  const anchor = { ownerDocument: { defaultView: view }, dir: 'rtl', getBoundingClientRect: () => {
+  let push = '';
+  const flow = { getBoundingClientRect: () => ({ top: 300 }), style: {
+    setProperty: (_: string, value: string) => { push = value; }, removeProperty: () => { push = ''; },
+  } };
+  const anchor = { closest: () => ({ querySelector: () => flow }), ownerDocument: { defaultView: view }, dir: 'rtl', getBoundingClientRect: () => {
     reads++; return { left: 16, top: 200, width: 44, height: 44 };
   } } as unknown as HTMLElement;
-  const style = { left: '', top: '', maxWidth: '', maxHeight: '', removeProperty: () => { cleared++; } };
+  const style = { setProperty: () => {}, left: '', top: '', maxWidth: '', maxHeight: '', removeProperty: () => { cleared++; } };
   const panel = { offsetWidth: 300, offsetHeight: 200, style, dataset: {} } as unknown as HTMLElement;
   const dispose = attachAssistantPlacement(anchor, panel);
   assert.equal(reads, 1);
+  assert.equal(push, '164px', 'cards clear the actual bottom of the open panel');
   viewport.height = 300;
   viewport.dispatchEvent(new Event('resize'));
   view.dispatchEvent(new Event('resize'));
@@ -50,11 +55,21 @@ test('placement : un seul calcul par image et aucun observateur actif après fer
   const callback = [...frames.values()][0]; frames.clear(); callback(16);
   assert.equal(reads, 2);
   assert.equal(panel.dataset.placement, 'above');
+  assert.equal(push, '0px', 'no downward shift when the panel fits above the bot');
   view.dispatchEvent(new Event('scroll'));
   dispose();
   assert.equal(frames.size, 0);
   assert.equal(cleared, 4);
+  assert.equal(push, '', 'closing restores the original document flow');
   view.dispatchEvent(new Event('resize'));
   viewport.dispatchEvent(new Event('scroll'));
   assert.equal(frames.size, 0);
+});
+
+
+test('the class flow moves only by the panel overlap, without cumulative drift', () => {
+  assert.equal(assistantPushOffset(300, 140, 'below'), 172);
+  assert.equal(assistantPushOffset(300, 140, 'below'), 172);
+  assert.equal(assistantPushOffset(120, 140, 'below'), 0);
+  assert.equal(assistantPushOffset(300, 140, 'above'), 0);
 });

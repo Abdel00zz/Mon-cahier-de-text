@@ -211,11 +211,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <div className="space-y-4 pb-8 sm:pb-12">
+        <div className="schedule-tab space-y-3 pb-1 sm:pb-2">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
-                    <label htmlFor={yearStartId} className="text-xs lg:text-sm font-bold text-foreground/80">{t('schedule.startYear')}</label>
-                    <div className="relative">
+                <div className="schedule-start-field flex min-w-0 items-center gap-2" aria-label={t('schedule.startYear')}>
+                    <label htmlFor={yearStartId} className="text-[11px] sm:text-xs font-medium text-muted-foreground">{t('schedule.startYear')}</label>
+                    <div className="schedule-start-field__input relative">
                         <input
                             id={yearStartId}
                             type="date"
@@ -223,20 +223,20 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             onChange={e => setSchoolYearStart(e.target.value)}
                             lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
                             dir="ltr"
-                            className={`h-9 lg:h-10 rounded-md border border-border bg-card px-3 text-xs lg:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
+                            className={`h-11 w-full min-w-0 rounded-lg border border-border bg-card px-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
                         />
                         {locale === 'ar' && (
                             <span
                                 aria-hidden
                                 dir="ltr"
-                                className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center text-xs lg:text-sm font-bold text-foreground"
+                                className="pointer-events-none absolute inset-y-0 left-2.5 right-9 flex items-center text-sm font-medium text-foreground"
                             >
                                 {displaySchoolYearStart}
                             </span>
                         )}
                     </div>
                 </div>
-                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                <div className="schedule-periods w-full sm:w-auto flex justify-start sm:justify-end">
                     <FluidTabRail<SchedulePeriod>
                         items={periodTabItems}
                         activeId={visiblePeriod}
@@ -244,7 +244,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         layoutId="schedule-period-subpill"
                         size="sm"
                         ariaLabel={t('schedule.viewLabel')}
-                        className="w-max mx-auto sm:mx-0"
+                        className="w-full sm:w-max"
                         tabClassName="text-xs h-11 px-2 sm:px-2.5"
                     />
                 </div>

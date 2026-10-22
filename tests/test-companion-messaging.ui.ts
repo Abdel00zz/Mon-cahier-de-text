@@ -34,9 +34,9 @@ test('bounded history retains all unanswered requests and unread admin messages'
 });
 
 test('request validation strips client identity and privileged fields, rejects empty, overlong and forged references', () => {
-    const draft = { requestId: request.id, kind: 'custom-content', body: '  مرحباً  ', phone: 'victim', sender: 'admin', answeredAt: 'fake' };
-    assert.deepEqual(parseTeacherRequest(draft), { requestId: request.id, kind: 'custom-content', body: 'مرحباً' });
-    for (const invalid of [null, { ...draft, body: ' ' }, { ...draft, body: 'x'.repeat(1201) }, { ...draft, requestId: 'admin-12345678' }, { ...draft, kind: 'privileged' }, { ...draft, classId: {} }, { ...draft, replyTo: request.id }]) {
+    const draft = { requestId: request.id, kind: 'help', body: '  مرحباً  ', phone: 'victim', sender: 'admin', answeredAt: 'fake' };
+    assert.deepEqual(parseTeacherRequest(draft), { requestId: request.id, kind: 'help', body: 'مرحباً' });
+    for (const invalid of [null, { ...draft, body: ' ' }, { ...draft, body: 'x'.repeat(1201) }, { ...draft, requestId: 'admin-12345678' }, { ...draft, kind: 'privileged' }, { ...draft, kind: 'custom-content' }, { ...draft, classId: {} }, { ...draft, replyTo: request.id }]) {
         assert.throws(() => parseTeacherRequest(invalid));
     }
 });
@@ -57,4 +57,19 @@ test('admin conversation renders bilingual user content as text and exposes a re
     assert.match(html, /&lt;script&gt;/);
     assert.match(html, /Répondre/);
     assert.match(html, /À traiter/);
+});
+
+
+test('WhatsApp contacts are informational events, not unanswered messages', () => {
+    const event: AdminMessage = { ...request, requestKind: undefined, event: 'whatsapp-contact', title: 'Contact WhatsApp', body: 'Ouverture du lien ; envoi non confirmé.' };
+    assert.equal(pendingTeacherRequests([event]).length, 0);
+    assert.equal(pendingAdminMessages([event]).length, 0);
+    const html = renderToStaticMarkup(createElement(AdminConversation, { messages: [event], onReply: () => {} }));
+    assert.match(html, /WhatsApp/);
+    assert.doesNotMatch(html, /Répondre|À traiter|Lecture attendue/);
+    const history = Array.from({ length: 60 }, (_, index) => ({ ...request, id: `pending-${index}` }));
+    history[59] = event;
+    const next = appendConversationMessage(history, reply);
+    assert.equal(next.length, 60);
+    assert.equal(next.some(item => item.event), false, 'old contact events are evicted before blocking help');
 });

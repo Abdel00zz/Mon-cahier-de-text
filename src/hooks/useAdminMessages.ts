@@ -169,7 +169,21 @@ export const useAdminMessages = (enabled: boolean, owner?: string, locale: AppLo
         return result.message;
     }, [enabled, owner, refresh]);
 
+    const recordWhatsAppContact = useCallback(async (requestId: string, classId?: string) => {
+        if (!enabled || !owner) return;
+        const isCurrent = captureWorkspaceLease();
+        // Keep the small authenticated request alive while the browser opens WhatsApp.
+        const result = await requestSyncJson<{ message: AdminMessage }>('/api/messages', {
+            method: 'POST', credentials: 'same-origin', keepalive: true,
+            headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': owner },
+            body: JSON.stringify({ action: 'whatsapp-contact', requestId, classId }),
+        }, 15_000);
+        if (!isCurrent()) return;
+        setHistory(current => [result.message, ...current.filter(item => item.id !== result.message.id)]);
+        setLoadedOwner(owner);
+    }, [enabled, owner]);
+
     return { messages: enabled && loadedOwner === owner ? messages : [], history: enabled && loadedOwner === owner ? history : [],
         loaded: loadedOwner === owner && loaded, failed, enabled: enabled && Boolean(owner), owner,
-        acknowledge, sendRequest, refresh };
+        acknowledge, sendRequest, recordWhatsAppContact, refresh };
 };

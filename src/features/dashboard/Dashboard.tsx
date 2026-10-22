@@ -387,20 +387,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             onOpenClass={openNotebook}
                           />
                         </DashboardActions>
+                    </div>
+                    <main data-assistant-flow>
+                        <section className="dashboard-class-section w-full" aria-labelledby="classes-heading">
                         {classes.length > 0 && (
+                          <div className="dashboard-heading mb-4 sm:mb-6" data-layout={currentDisplay}>
                             <h1
                                 id="classes-heading"
                                 tabIndex={-1}
                                 style={dashboardTitleStyle(locale)}
-                                className="dashboard-heading__title flex items-center gap-2 sm:gap-2.5 text-lg sm:text-xl md:text-2xl lg:text-3xl text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
+                                className="dashboard-heading__title flex items-center gap-2 sm:gap-2.5 text-xl sm:text-2xl md:text-[1.6rem] lg:text-[2rem] text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
                             >
                                 <span>{t('dashboard.classes')}</span>
                                 <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
                             </h1>
+                          </div>
                         )}
-                    </div>
-                    <main>
-                        <section className="dashboard-class-section w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
                                     <div className="dashboard-empty flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
                                         <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />

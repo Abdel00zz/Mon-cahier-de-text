@@ -112,7 +112,7 @@ export const BloubAvatar = memo(function BloubAvatar({
     const el = avatarRef.current;
     if (!el) return;
     if (typeof el.setPointerFollow === 'function') {
-      el.setPointerFollow(animate && interactive);
+      el.setPointerFollow(animate);
     }
     if (typeof el.setAntennaFlash === 'function') {
       el.setAntennaFlash(antennaFlash ?? attention);
@@ -121,6 +121,21 @@ export const BloubAvatar = memo(function BloubAvatar({
       el.setHeadRoundness(headRoundness);
     }
   }, [animate, interactive, attention, antennaFlash, headRoundness]);
+
+  useEffect(() => {
+    const el = avatarRef.current;
+    const host = el?.parentElement;
+    if (!el || !host) return;
+    const wake = () => el.noteActivity(true);
+    host.addEventListener('pointerenter', wake);
+    host.addEventListener('pointerdown', wake);
+    host.addEventListener('focusin', wake);
+    return () => {
+      host.removeEventListener('pointerenter', wake);
+      host.removeEventListener('pointerdown', wake);
+      host.removeEventListener('focusin', wake);
+    };
+  }, []);
 
   return React.createElement('agent-robot-avatar', {
     ref: avatarRef,

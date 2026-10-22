@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { conversationSignature, pendingAdminMessages } from '../src/domain/messages/conversation.js';
-import { sendTeacherRequest } from './_lib/teacherMessages.js';
+import { recordWhatsAppContact, sendTeacherRequest } from './_lib/teacherMessages.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
@@ -95,6 +95,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         }
         if (req.method === 'POST') {
             const body = parseBody<MessageBody>(req.body);
+            if (body.action === 'whatsapp-contact') {
+                const message = await recordWhatsAppContact(await getRedis(), phone, body);
+                return res.status(200).json({ ok: true, message });
+            }
             if (body.action === 'send') {
                 const message = await sendTeacherRequest(await getRedis(), phone, body);
                 return res.status(200).json({ ok: true, message });

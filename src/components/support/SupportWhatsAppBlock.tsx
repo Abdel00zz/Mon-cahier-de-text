@@ -6,7 +6,7 @@ type SupportLocale = 'fr' | 'ar' | 'en';
 /**
  * Icône WhatsApp haute précision vectorielle moderne.
  */
-export const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
+const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 24 24"
     fill="currentColor"
@@ -26,6 +26,7 @@ interface SupportWhatsAppBlockProps {
   label: string;
   className?: string;
   context?: { teacherName?: string; className?: string };
+  onContact?: () => void;
 }
 
 /**
@@ -38,6 +39,7 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
   label,
   className = '',
   context,
+  onContact,
 }) => {
   if (!hasSupportWhatsApp()) return null;
 
@@ -49,15 +51,24 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
         {hint}
       </p>
 
+      <SupportWhatsAppButton locale={locale} label={label} context={context} onContact={onContact} className="mt-3.5" />
+    </div>
+  );
+};
+
+/** Shared WhatsApp link: one identity and one action across editor and companion. */
+export function SupportWhatsAppButton({ locale = 'fr', label, context, onContact, className = '' }: Omit<SupportWhatsAppBlockProps, 'hint'>) {
+  if (!hasSupportWhatsApp()) return null;
+  return (
       <a
         href={buildSupportWhatsAppUrl(locale, context)}
         target="_blank"
         rel="noopener noreferrer"
-        className="group mt-3.5 inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full bg-[var(--ds-whatsapp)] hover:bg-[var(--ds-whatsapp-hover)] px-5 py-2.5 sm:px-6 sm:py-2.5 text-[13px] sm:text-[13.5px] font-bold text-white active:scale-[0.98] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring cursor-pointer touch-manipulation select-none motion-reduce:transform-none"
+        onClick={onContact}
+        className={`group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full bg-[var(--ds-whatsapp)] hover:bg-[var(--ds-whatsapp-hover)] px-5 py-2.5 sm:px-6 sm:py-2.5 text-[13px] sm:text-[13.5px] font-semibold text-[#073b23] active:scale-[0.98] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring cursor-pointer touch-manipulation select-none motion-reduce:transform-none ${className}`}
       >
-        <span className="leading-tight text-white">{label}</span>
-        <WhatsAppIcon className="h-5 w-5 shrink-0 text-white fill-white" />
+        <span className="leading-tight">{label}</span>
+        <WhatsAppIcon className="h-5 w-5 shrink-0" />
       </a>
-    </div>
   );
-};
+}

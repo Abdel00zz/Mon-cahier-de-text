@@ -27,7 +27,11 @@ test('navigation FR/AR/EN : classes et paramètres en haut, aide accessible en b
     for (const html of [mobile, desktop]) {
       assert.doesNotMatch(html, /Suivi pédagogique|Teaching Overview|التتبع التربوي/);
       const help = html.match(new RegExp('<button[^>]*aria-label="' + NAV_COPY[locale].help + '"[\\s\\S]*?</button>'))?.[0];
-      assert.ok(help?.includes('size-7'), 'Help icon is enlarged on desktop and mobile');
+      if (html === desktop) {
+        assert.ok(help?.includes('size-7'), 'Help icon is enlarged on desktop');
+      } else {
+        assert.equal((mobile.match(/size-\[22px\]/g) ?? []).length, 3, 'Mobile icons share the same 22px frame');
+      }
     }
   }
 });

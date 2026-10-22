@@ -6,7 +6,7 @@ import { resolveClassGuidance, guidanceAction, guidanceKey } from '../src/domain
 import { AssistantPopover } from '../src/features/assistant/AssistantPopover';
 import { BloubAvatar, toRobotAction } from '../src/components/ui/BloubAvatar';
 import { subscribeCompanionChanges } from '../src/features/assistant/useCompanionRevision';
-import { notifyPullApplied } from '../src/infrastructure/sync/syncBus';
+import { notifyClassesChanged, notifyConfigChanged, notifyPullApplied } from '../src/infrastructure/sync/syncBus';
 import { attachAssistantDismiss } from '../src/features/assistant/assistantPopoverController';
 import { classGuidanceMessage } from '../src/features/assistant/companionCopy';
 import { companionMood, resolvePedagogicalBehavior } from '../src/domain/assistant/companionPedagogicalBehavior';
@@ -75,7 +75,7 @@ test('la bulle reste fermée au départ, sans faux dialogue bloquant l’ouvertu
   }
 });
 
-test('le composant robot avatar intègre le web component agent-robot-avatar et ses états', () => {
+test('le robot restauré expose les états pédagogiques et conserve un seul bouton interactif', () => {
   for (const expression of ['neutral', 'attentive', 'surprised', 'happy', 'excited', 'concerned', 'sad'] as const) {
     const html = renderToStaticMarkup(createElement('div', null,
       createElement(BloubAvatar, { expression, animate: false }), createElement(BloubAvatar, { expression, animate: false })));
@@ -402,4 +402,26 @@ test('a prepared curriculum with undated content and empty headings is not an un
   const actualIssue = resolveClassGuidance(classes, config, undefined, { readLessons: () => broken });
   assert.equal(actualIssue.step, 'notebook-issue');
   assert.equal('issueCode' in actualIssue && actualIssue.issueCode, 'unclosedFormula');
+});
+
+
+test('the companion refreshes on Android resume, connectivity and class/config changes, with cleanup', async () => {
+  const doc = Object.assign(new EventTarget(), { hidden: false });
+  const view = new EventTarget();
+  let updates = 0;
+  const dispose = subscribeCompanionChanges(() => updates++, doc as unknown as Document, view as unknown as Window);
+  const settle = () => new Promise(resolve => setTimeout(resolve, 130));
+  try {
+    notifyClassesChanged(); notifyConfigChanged();
+    view.dispatchEvent(new Event('native-resume')); view.dispatchEvent(new Event('online'));
+    await settle();
+    assert.equal(updates, 1, 'one revision for a burst of real changes');
+    view.dispatchEvent(new Event('offline'));
+    await settle();
+    assert.equal(updates, 2);
+    dispose();
+    notifyConfigChanged(); notifyClassesChanged(); view.dispatchEvent(new Event('native-resume'));
+    await settle();
+    assert.equal(updates, 2, 'all added listeners are detached');
+  } finally { dispose(); }
 });

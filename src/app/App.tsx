@@ -346,7 +346,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <TeacherMessagingContext.Provider value={{ ...messaging, teacherName }}>
+      <TeacherMessagingContext.Provider value={{ ...messaging, teacherName, classes }}>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
         <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
         {/* Liseré de synchronisation : discret, sans écran bloquant. */}
@@ -396,7 +396,7 @@ const App: React.FC = () => {
 
         {replyMessage && <Suspense fallback={null}>
           <TeacherConversation key={`${authOwner}:${replyMessage.id}`} open onClose={() => setReplySelection(null)}
-            locale={config.applicationLocale ?? 'ar'} kind="help" initialReplyTo={replyMessage.id}
+            locale={config.applicationLocale ?? 'ar'} initialReplyTo={replyMessage.id}
             target={replyMessage.classId ? { id: replyMessage.classId, name: replyMessage.className ?? '' } : undefined} />
         </Suspense>}
         <GlobalTooltip />

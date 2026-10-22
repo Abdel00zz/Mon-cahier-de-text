@@ -1,6 +1,6 @@
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppConfig, AppLocale, ClassInfo, LessonsData } from '@/types';
 import { guidanceAction, guidanceKey, resolveClassGuidance } from '@/domain/assistant/classGuidance';
 import { AssistantPopover } from './AssistantPopover';
@@ -8,7 +8,11 @@ import { resolvePedagogicalBehavior } from '@/domain/assistant/companionPedagogi
 import { classGuidanceMessage } from './companionCopy';
 import { useCompanionRevision } from './useCompanionRevision';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
-import { pendingTeacherRequests } from '@/domain/messages/conversation';
+import { useSync } from '@/contexts/SyncContext';
+import { isNetworkOnline } from '@/platform/networkStatus';
+import { decideCompanion } from '@/domain/assistant/companionDecision';
+import { companionServiceMessage } from './companionServiceCopy';
+import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 
@@ -41,9 +45,17 @@ export function ClassAssistant({
   const copy = conversationCopy(locale);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
-  const [contact, setContact] = useState<{ target?: Pick<ClassInfo, 'id' | 'name'>; kind: 'help' | 'custom-content'; context?: string }>({ kind: 'help' });
+  const [contact, setContact] = useState<{ owner?: string; target?: Pick<ClassInfo, 'id' | 'name'>; context?: string; initialReplyTo?: string }>({});
   const revision = useCompanionRevision();
   const progress = useSyncProgress();
+  const { syncStatus, syncNow } = useSync();
+  const [recovering, setRecovering] = useState(false);
+  const recovery = useRef<object | null>(null);
+  useEffect(() => {
+    recovery.current = null; setRecovering(false);
+    setContactOpen(false); setContactStarted(false); setContact({});
+    return () => { recovery.current = null; };
+  }, [messaging?.owner]);
   const notebooksLoading = progress.state === 'pulling' || progress.state === 'notebooks';
   const brainContext = useMemo(
     () => ({ activeSessionClassIds, readLessons, notebooksLoading }),
@@ -57,18 +69,36 @@ export function ClassAssistant({
 
   const behavior = useMemo(() => resolvePedagogicalBehavior(guidance), [guidance]);
 
-  const reply = messaging?.messages.find(message => message.replyTo);
-  const ready = guidance.step === 'ready';
-  const pending = pendingTeacherRequests(messaging?.history ?? []).find(item => item.requestKind === 'custom-content');
+  const decision = decideCompanion({
+    guidance, authenticated: Boolean(messaging?.enabled), online: isNetworkOnline(), syncStatus,
+    transfer: progress.state, inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false,
+    messages: messaging?.messages ?? [], hasNotebookReader: typeof readLessons === 'function',
+  });
+  const reply = decision.kind === 'reply' ? decision.reply : undefined;
+  const ready = decision.kind === 'offer';
+  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' ? decision.kind : undefined;
+  const serviceError = service === 'sync-error' || service === 'inbox-error';
   const ordinaryMessage = classGuidanceMessage(guidance, locale);
-  const message = reply ? { id: reply.id, title: copy.reply, detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
-    : ready && pending ? { id: pending.id, title: copy.pending, detail: copy.sent, subject: pending.className, action: copy.history }
-    : ready ? { ...ordinaryMessage, title: '', detail: copy.offer, action: copy.custom } : ordinaryMessage;
+  const message = service ? companionServiceMessage(service, locale, recovering)
+    : reply ? { id: reply.id, title: copy.reply, detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
+    : ready ? { ...ordinaryMessage, title: copy.ready, detail: copy.offer, detailEmphasis: locale === 'ar' ? 'واتساب' : 'WhatsApp', action: copy.whatsapp } : ordinaryMessage;
+  const retry = async () => {
+    if (recovery.current || !isNetworkOnline()) return;
+    const attempt = {};
+    recovery.current = attempt; setRecovering(true);
+    try {
+      if (service === 'sync-error') await syncNow();
+      else if (service === 'inbox-error') await messaging?.refresh();
+    } catch {
+      // The shared sync/inbox store retains its error; no optimistic success message.
+    } finally {
+      if (recovery.current === attempt) { recovery.current = null; setRecovering(false); }
+    }
+  };
   const openContact = () => {
     const target = reply?.classId ? classes.find(item => item.id === reply.classId)
-      : ready && pending?.classId ? classes.find(item => item.id === pending.classId)
-      : 'classId' in guidance ? classes.find(item => item.id === guidance.classId) : undefined;
-    setContact({ target, kind: ready && !reply ? 'custom-content' : 'help', context: !ready && !reply ? ordinaryMessage.detail : undefined });
+      : service ? undefined : 'classId' in guidance ? classes.find(item => item.id === guidance.classId) : undefined;
+    setContact({ owner: messaging?.owner, target, initialReplyTo: reply?.id, context: !ready && !reply ? message.detail : undefined });
     setContactStarted(true);
     setContactOpen(true);
   };
@@ -77,19 +107,20 @@ export function ClassAssistant({
     <AssistantPopover
       locale={locale}
       message={message}
-      greeting={copy.greeting}
-      teacherName={messaging?.teacherName?.trim().slice(0, 80)}
-      contactLabel={!ready && !reply ? copy.contact : undefined}
+      contactLabel={!reply ? copy.contact : undefined}
+      primaryAction={ready && guidance.step === 'ready' ? <WhatsAppContact locale={locale} target={classes.find(item => item.id === guidance.classId)} /> : undefined}
       onContact={openContact}
       mood={behavior.mood}
-      robotAction={reply ? 'inspect' : behavior.robotAction}
-      problemCount={behavior.problemCount + (messaging?.messages.filter(item => item.replyTo).length ?? 0)}
-      antennaFlash={behavior.antennaFlash}
-      headRoundness={behavior.headRoundness}
-      autoSleepMs={behavior.autoSleepMs}
-      attentionKey={reply?.id ?? (['ready', 'checking', 'active-session'].includes(guidance.step) ? undefined : guidanceKey(guidance))}
+      robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : behavior.robotAction}
+      problemCount={(service ? Number(serviceError) : behavior.problemCount) + (messaging?.messages.filter(item => item.replyTo).length ?? 0)}
+      antennaFlash={service ? serviceError : !reply && behavior.antennaFlash}
+      headRoundness={service ? serviceError ? 55 : 90 : behavior.headRoundness}
+      autoSleepMs={service ? serviceError ? 0 : 30000 : behavior.autoSleepMs}
+      attentionKey={service ? serviceError ? service : undefined : reply?.id ?? (['ready', 'checking', 'active-session'].includes(guidance.step) ? undefined : guidanceKey(guidance))}
+      actionBusy={recovering}
+      keepOpenOnAction={serviceError}
       onAction={
-        reply || ready ? openContact : guidance.step === 'schedule' && !onOpenSchedule
+        service ? serviceError ? () => { void retry(); } : undefined : reply ? openContact : ready ? undefined : guidance.step === 'schedule' && !onOpenSchedule
           ? undefined
           : () => {
               const action = guidanceAction(guidance);
@@ -102,8 +133,8 @@ export function ClassAssistant({
             }
       }
     />
-    {contactStarted && <Suspense fallback={<p role="status">{copy.loading}</p>}>
-      <TeacherConversation key={`${messaging?.owner ?? 'guest'}:${contact.target?.id ?? ''}:${contact.kind}`} open={contactOpen} onClose={() => setContactOpen(false)} locale={locale} {...contact} />
+    {contactStarted && contact.owner === messaging?.owner && <Suspense fallback={<p role="status">{copy.loading}</p>}>
+      <TeacherConversation key={`${messaging?.owner ?? 'guest'}:${contact.target?.id ?? ''}:${contact.initialReplyTo ?? ''}`} open={contactOpen} onClose={() => setContactOpen(false)} locale={locale} {...contact} />
     </Suspense>}
     </>
   );

@@ -920,7 +920,7 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
 
     const previousMessages = normalizeAdminMessages(storedMessages);
-    const request = body.replyTo === undefined ? undefined : previousMessages.find(item => item.id === body.replyTo && item.sender === 'teacher');
+    const request = body.replyTo === undefined ? undefined : previousMessages.find(item => item.id === body.replyTo && item.sender === 'teacher' && !item.event);
     if (body.replyTo !== undefined && !request) throw new HttpError(404, 'Demande introuvable pour cet enseignant.');
     const message: AdminMessage = {
         sender: 'admin',

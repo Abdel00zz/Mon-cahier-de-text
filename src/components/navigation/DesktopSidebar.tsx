@@ -9,16 +9,16 @@ export function DesktopSidebar({ activeTab, goTo, copy, teacherName, expanded, t
 }) {
   const gestures = useSidebarGesture(expanded, isRtl, toggle);
   return <nav {...gestures} data-app-sidebar data-expanded={expanded} aria-label={copy.mainNav}
-    className="workspace-sidebar fixed inset-y-0 start-0 z-40 h-dvh flex-col overflow-x-hidden overflow-y-auto py-3.5 lg:py-5 font-sans print:hidden">
+    className="workspace-sidebar fixed inset-y-0 start-0 z-40 h-dvh flex-col gap-5 lg:gap-8 overflow-x-hidden overflow-y-auto py-3.5 lg:py-5 font-sans print:hidden">
     <div className="flex min-h-10 lg:min-h-11 items-center gap-2.5 lg:gap-3 px-2.5 lg:px-4">
       <button type="button" onClick={toggle} aria-expanded={expanded} aria-label={expanded ? copy.collapse : copy.expand}
-        className="workspace-menu-toggle flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground">
-        <Menu className="size-5 lg:size-[22px]" aria-hidden />
+        className="workspace-menu-toggle flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+        <Menu className="size-5 lg:size-[22px]" strokeWidth={1.5} aria-hidden />
       </button>
-      {expanded && <div className="min-w-0"><p className="truncate text-xs lg:text-sm font-semibold text-foreground" dir="auto">{teacherName}</p>
+      {expanded && <div className="min-w-0 flex-1"><p className="truncate text-xs lg:text-sm font-semibold text-foreground" dir="auto">{teacherName}</p>
         <p className="mt-0.5 truncate text-[9px] lg:text-[10px] text-muted-foreground">{copy.teacherSpace}</p></div>}
     </div>
-    <div className="mt-5 lg:mt-8 space-y-1.5 px-2.5 lg:px-3">
+    <div className="flex flex-col gap-1.5 px-2.5 lg:px-3">
       <NavigationButton tab="dashboard" active={activeTab === 'dashboard'} onSelect={goTo} copy={copy} expanded={expanded} />
       <NavigationButton tab="settings" active={activeTab === 'settings'} onSelect={goTo} copy={copy} expanded={expanded} />
     </div>

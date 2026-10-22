@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 'react';
 import './settingsModal.css';
+import { SettingsTabNavigation } from './components/SettingsTabNavigation';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -144,47 +145,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const inSection = sectionOpen && !isDesktop;
   const openSection = useCallback((id: SettingsCategory) => { setActiveCategory(id); setSectionOpen(true); }, []);
 
-  const horizontalNavRef = useRef<HTMLElement>(null);
-  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [indicatorStyle, setIndicatorStyle] = useState<{
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-    ready: boolean;
-  }>({ left: 0, top: 0, width: 0, height: 0, ready: false });
-
-  React.useLayoutEffect(() => {
-    if (!asPage) return;
-    const updateIndicator = () => {
-      const activeBtn = tabButtonRefs.current[activeCategory];
-      const nav = horizontalNavRef.current;
-      if (!activeBtn || !nav) return;
-
-      setIndicatorStyle({
-        left: activeBtn.offsetLeft,
-        top: activeBtn.offsetTop,
-        width: activeBtn.offsetWidth,
-        height: activeBtn.offsetHeight,
-        ready: true,
-      });
-    };
-
-    updateIndicator();
-    if (typeof document !== 'undefined' && 'fonts' in document) {
-      document.fonts.ready.then(updateIndicator);
-    }
-    window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
-  }, [asPage, activeCategory]);
-
-  const handleSelectTab = (tabId: SettingsCategory) => {
-    setActiveCategory(tabId);
-    const btn = tabButtonRefs.current[tabId];
-    if (btn && typeof btn.scrollIntoView === 'function') {
-      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    }
-  };
+  const tabsId = React.useId();
 
   useEffect(() => {
     if ((isOpen || asPage) && !wasOpenRef.current) {
@@ -408,60 +369,18 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   if (asPage) {
     return (
       <div className="settings-page-root w-full max-w-5xl mx-auto py-5 sm:py-8 px-3.5 sm:px-6">
-        {/* Barre d'onglets horizontale en haut : encadrée avec fond dock feutré et indicateur glissant */}
-        <nav
-          ref={horizontalNavRef}
-          aria-label={t('settings.title')}
-          className="settings-horizontal-nav relative flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar p-1.5 sm:p-2 mb-6 sm:mb-8 rounded-2xl border border-border/70 bg-card/75 dark:bg-card/50 shadow-xs backdrop-blur-sm"
-        >
-          {/* Indicateur actif glissant inspiré de .tabs__nav-decoration */}
-          <div
-            aria-hidden="true"
-            className="tabs__nav-decoration absolute top-0 left-0 rounded-xl bg-primary shadow-sm pointer-events-none z-0"
-            style={{
-              transform: `translate3d(${indicatorStyle.left}px, ${indicatorStyle.top}px, 0)`,
-              width: indicatorStyle.width ? `${indicatorStyle.width}px` : undefined,
-              height: indicatorStyle.height ? `${indicatorStyle.height}px` : undefined,
-              opacity: indicatorStyle.ready ? 1 : 0,
-              transition: indicatorStyle.ready
-                ? 'transform 0.22s cubic-bezier(0.2, 0, 0, 1), width 0.22s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s ease-out'
-                : 'none',
-            }}
-          />
-
-          {SETTING_ITEMS.map(item => {
-            const active = activeCategory === item.id;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                ref={el => { tabButtonRefs.current[item.id] = el; }}
-                type="button"
-                aria-current={active ? 'page' : undefined}
-                onClick={() => handleSelectTab(item.id)}
-                onPointerEnter={() => preloadTabComponent(item.id)}
-                onFocus={() => preloadTabComponent(item.id)}
-                className={cn(
-                  'relative z-10 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium shrink-0 cursor-pointer select-none transition-colors duration-200',
-                  active
-                    ? (indicatorStyle.ready
-                        ? 'text-primary-foreground font-semibold'
-                        : 'bg-primary text-primary-foreground font-semibold shadow-sm')
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                )}
-              >
-                <Icon className={cn('size-4 shrink-0 transition-transform duration-200', active ? 'stroke-[2] scale-105' : 'stroke-[1.5]')} />
-                <span className="whitespace-nowrap">{t(item.titleKey)}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <SettingsTabNavigation items={SETTING_ITEMS} activeId={activeCategory} onChange={setActiveCategory}
+          onPrepare={preloadTabComponent} translate={t} idPrefix={tabsId} label={t('settings.title')} />
 
         {/* Zone de contenu sous les onglets : encadrée et arrière-plan différent */}
         <main className="settings-page-main min-w-0">
-          <div className="settings-page-panel rounded-2xl sm:rounded-3xl border border-border/80 bg-card/90 dark:bg-card/70 shadow-sm p-5 sm:p-7 md:p-8 backdrop-blur-sm">
+          <div className="settings-page-panel rounded-2xl border border-border/80 bg-card/90 dark:bg-card/70 shadow-sm p-3 sm:p-5 md:p-6">
             <section
               key={activeCategory}
+              role="tabpanel"
+              id={`${tabsId}-panel`}
+              aria-labelledby={`${tabsId}-${activeCategory}`}
+              tabIndex={0}
               aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}
               className="settings-page-section"
             >
@@ -472,7 +391,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
         {/* Sauvegarde flottante si profil modifié */}
         {hasProfileChanges && (
-          <div className="sticky bottom-4 z-20 mt-8 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl shadow-xl">
+          <div className="settings-profile-save sticky z-20 mt-8 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl shadow-xl">
             {footer}
           </div>
         )}

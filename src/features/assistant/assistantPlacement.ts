@@ -1,5 +1,9 @@
 interface Box { left: number; top: number; width: number; height: number }
 
+/** The flow host stays untransformed, so repeated measurements never accumulate offsets. */
+export const assistantPushOffset = (panelBottom: number, flowTop: number, side: string): number =>
+  side === 'below' ? Math.max(0, Math.ceil(panelBottom - flowTop + 12)) : 0;
+
 /** Physical coordinates also cover RTL, pinch zoom and the Android visual viewport. */
 export function assistantPlacement(anchor: Box, panel: Pick<Box, 'width' | 'height'>, viewport: Box, rtl: boolean) {
   const margin = 12;
@@ -22,6 +26,7 @@ export function assistantPlacement(anchor: Box, panel: Pick<Box, 'width' | 'heig
 export function attachAssistantPlacement(anchor: HTMLElement, panel: HTMLElement): () => void {
   const view = anchor.ownerDocument.defaultView;
   if (!view) return () => {};
+  const flow = anchor.closest?.('[data-dashboard-main]')?.querySelector<HTMLElement>('[data-assistant-flow]');
   let frame: number | undefined;
   const update = () => {
     frame = undefined;
@@ -30,7 +35,8 @@ export function attachAssistantPlacement(anchor: HTMLElement, panel: HTMLElement
     const inset = (edge: string) => Math.max(0, Number.parseFloat(style?.getPropertyValue(`--assistant-safe-${edge}`) ?? '') || 0);
     const left = inset('left'), right = inset('right'), top = inset('top'), bottom = inset('bottom');
     // Layout dimensions ignore the short reveal transform and avoid placement jitter.
-    const position = assistantPlacement(anchor.getBoundingClientRect(), { width: panel.offsetWidth, height: panel.offsetHeight }, {
+    const anchorBox = anchor.getBoundingClientRect();
+    const position = assistantPlacement(anchorBox, { width: panel.offsetWidth, height: panel.offsetHeight }, {
       left: (viewport?.offsetLeft ?? 0) + left, top: (viewport?.offsetTop ?? 0) + top,
       width: Math.max(0, (viewport?.width ?? view.innerWidth) - left - right),
       height: Math.max(0, (viewport?.height ?? view.innerHeight) - top - bottom),
@@ -40,11 +46,16 @@ export function attachAssistantPlacement(anchor: HTMLElement, panel: HTMLElement
     panel.style.maxHeight = `${position.maxHeight}px`;
     panel.style.maxWidth = `${position.maxWidth}px`;
     panel.dataset.placement = position.side;
+    if (flow) {
+      const bottom = anchorBox.top + position.top + Math.min(panel.offsetHeight, position.maxHeight);
+      flow.style.setProperty('--assistant-push-offset', `${assistantPushOffset(bottom, flow.getBoundingClientRect().top, position.side)}px`);
+    }
   };
   const schedule = () => { frame ??= view.requestAnimationFrame(update); };
   const observer = typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(schedule) : undefined;
   observer?.observe(panel);
   observer?.observe(anchor);
+  if (flow) observer?.observe(flow);
   const options = { passive: true, capture: true };
   view.addEventListener('scroll', schedule, options);
   view.addEventListener('resize', schedule, options);
@@ -62,6 +73,7 @@ export function attachAssistantPlacement(anchor: HTMLElement, panel: HTMLElement
     panel.style.removeProperty('top');
     panel.style.removeProperty('max-height');
     panel.style.removeProperty('max-width');
+    flow?.style.removeProperty('--assistant-push-offset');
     delete panel.dataset.placement;
   };
 }

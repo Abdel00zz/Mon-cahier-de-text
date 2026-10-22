@@ -156,7 +156,7 @@
   font-family: var(--font-secondary);
   font-variant-numeric: lining-nums tabular-nums;
   font-size: calc(.76em * var(--class-badge-scale));
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.1px;
   line-height: 1.25;
   text-align: start;
@@ -281,16 +281,17 @@
   gap: 8px;
   max-width: 100%;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--class-live-ink) 20%, transparent);
   background: var(--class-live-fill);
   color: var(--class-live-ink);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.5;
 }
 
 .class-card__live-remaining {
-  font-weight: 600;
+  font-weight: 500;
   opacity: 0.92;
 }
 

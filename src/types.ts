@@ -426,15 +426,17 @@ export interface TeacherSnapshot {
 export interface TeacherRequestDraft {
     requestId: string;
     body: string;
-    kind: 'help' | 'custom-content';
+    kind: 'help';
     classId?: string;
     replyTo?: string;
 }
 
 export interface AdminMessage {
+    /** A link click, never proof of a WhatsApp message being sent or delivered. */
+    event?: 'whatsapp-contact';
     /** Absent sur les messages historiques de la direction. */
     sender?: 'admin' | 'teacher';
-    requestKind?: TeacherRequestDraft['kind'];
+    requestKind?: TeacherRequestDraft['kind'] | 'custom-content'; // Legacy internal requests remain readable.
     classId?: string;
     className?: string;
     replyTo?: string;

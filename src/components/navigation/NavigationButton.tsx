@@ -25,7 +25,15 @@ export function NavigationButton({ tab, active, onSelect, copy, expanded = true,
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 450, damping: 32 }}
       />
     )}
-    <Icon aria-hidden className={cn('relative z-10 shrink-0 stroke-[1.9]', tab === 'help' ? 'size-7' : 'size-[22px]')} />
+    <span
+      aria-hidden
+      className={cn(
+        'relative z-10 grid shrink-0 place-items-center',
+        mobile ? 'size-[22px]' : (tab === 'help' ? 'size-7' : 'size-[22px]')
+      )}
+    >
+      <Icon strokeWidth={mobile ? 1.5 : 1.25} absoluteStrokeWidth className="size-full" />
+    </span>
     {(mobile || expanded) && <span className={cn('workspace-nav-label relative z-10 min-w-0', mobile ? 'mobile-tab-label' : 'truncate text-sm')}>{copy[tab]}</span>}
   </motion.button>;
 }

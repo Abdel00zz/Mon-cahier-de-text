@@ -11,6 +11,7 @@ const isAdminMessage = (value: unknown): value is AdminMessage => {
     const message = value as Partial<AdminMessage>;
     return (
         typeof message.id === 'string' &&
+        (message.event === undefined || (message.event === 'whatsapp-contact' && message.sender === 'teacher')) &&
         typeof message.title === 'string' &&
         typeof message.body === 'string' &&
         typeof message.createdAt === 'string' && Number.isFinite(Date.parse(message.createdAt)) &&
@@ -40,7 +41,7 @@ export function appendConversationMessage(messages: AdminMessage[], message: Adm
         let removable = -1;
         for (let index = next.length - 1; index > 0; index--) {
             const item = next[index];
-            if (item.sender === 'teacher' ? item.answeredAt : item.acknowledgedAt) { removable = index; break; }
+            if (item.event || (item.sender === 'teacher' ? item.answeredAt : item.acknowledgedAt)) { removable = index; break; }
         }
         if (removable < 0) throw new HttpError(429, 'La conversation est pleine. Traitez les messages en attente avant de réessayer.');
         next.splice(removable, 1);

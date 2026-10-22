@@ -24,6 +24,9 @@ interface FluidTabRailProps<T extends string = string> {
   showEdgeArrows?: boolean;
   size?: 'sm' | 'md' | 'lg';
   ariaLabel?: string;
+  idPrefix?: string;
+  panelId?: string;
+  onPrepare?: (id: T) => void;
 }
 
 /**
@@ -45,7 +48,7 @@ export function FluidTabRail<T extends string = string>({
   layoutId,
   showEdgeArrows = false,
   size = 'md',
-  ariaLabel,
+  ariaLabel, idPrefix, panelId, onPrepare,
 }: FluidTabRailProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -127,16 +130,20 @@ export function FluidTabRail<T extends string = string>({
     };
     container.addEventListener('scroll', handleScroll, { passive: true });
 
-    const resizeObserver = new ResizeObserver(() => {
+    const resize = () => {
       checkOverflow();
       scrollToTab(activeId, 'auto');
-    });
-    resizeObserver.observe(container);
+    };
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : undefined;
+    resizeObserver?.observe(container);
+    Object.values(itemRefs.current).forEach(item => { if (item) resizeObserver?.observe(item); });
+    window.addEventListener('resize', resize);
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
       if (frame !== null) cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', resize);
     };
   }, [checkOverflow, scrollToTab, activeId]);
 
@@ -213,14 +220,18 @@ export function FluidTabRail<T extends string = string>({
           return (
             <button
               key={item.id}
+              id={idPrefix ? `${idPrefix}-${item.id}` : undefined}
               ref={el => { itemRefs.current[item.id] = el; }}
               type="button"
               role="tab"
               aria-selected={isActive}
+              aria-controls={panelId}
               aria-disabled={item.disabled}
               tabIndex={isActive ? 0 : -1}
               disabled={item.disabled}
               onClick={() => handleSelect(item.id)}
+              onPointerEnter={() => onPrepare?.(item.id)}
+              onFocus={() => onPrepare?.(item.id)}
               onKeyDown={e => handleKeyDown(e, index)}
               className={cn(
                 'group relative flex shrink-0 items-center justify-center whitespace-nowrap font-medium transition-colors duration-150 motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',

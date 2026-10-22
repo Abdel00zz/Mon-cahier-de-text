@@ -32,7 +32,7 @@ export interface PedagogicalBehavior {
 export function resolvePedagogicalBehavior(guidance: ClassGuidance): PedagogicalBehavior {
   if (guidance.step === 'notebook-unavailable') return {
     problemCount: guidance.remaining, severity: 'critical', mood: 'sad', robotAction: 'failure',
-    antennaFlash: false, headRoundness: 75, autoSleepMs: 30000,
+    antennaFlash: true, headRoundness: 55, autoSleepMs: 0,
   };
   if (guidance.step === 'checking') return {
     problemCount: 0, severity: 'minor', mood: 'attentive', robotAction: 'waiting',

@@ -35,3 +35,30 @@
   .settings-modal-frame .settings-home { padding-inline: var(--settings-inset); }
   .settings-modal-frame .settings-scroll { padding-block: 16px 24px; }
 }
+
+/* Page navigation: shared keyboard model and transform-based selection indicator. */
+.settings-tab-navigation { min-width: 0; margin-bottom: 16px; padding: 4px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--card)); }
+.settings-tab-navigation [role='tablist'] { padding: 0; gap: 4px; scroll-padding-inline: 8px; }
+.settings-tab-navigation [role='tab'] { min-height: 44px; border-radius: 10px; font-size: 12px; }
+.settings-tab-navigation [role='tab'] svg { width: 17px; height: 17px; stroke-width: 1.4; }
+.settings-tab-navigation [role='tab'][aria-selected='true'] { font-weight: 600; }
+.settings-tab-navigation [role='tablist'] > button { scroll-snap-align: center; }
+.settings-tab-navigation [role='tab']:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.settings-page-section { animation: settings-section-in 180ms cubic-bezier(.22,1,.36,1); }
+@keyframes settings-section-in { from { opacity: .65; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+.schedule-start-field { flex-wrap: wrap; }
+.schedule-start-field > label { font-size: 12px; font-weight: 500; }
+.schedule-start-field__input { width: 154px; flex: 0 1 154px; min-width: 134px; }
+.schedule-start-field input[type='date'] { min-height: 44px; height: 44px; font-size: 14px; font-weight: 500; line-height: 1.25; }
+.schedule-start-field input::-webkit-date-and-time-value { text-align: start; }
+.schedule-periods [role='tablist'] { padding-block: 0; gap: 4px; }
+.schedule-periods [role='tab'] { font-size: 12px; border-radius: 9px; }
+.schedule-tab th, .schedule-tab td:first-child { font-weight: 500; }
+.settings-profile-save { bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 768px) { .settings-profile-save { bottom: 1rem; } }
+.workspace-shell[data-phone-navigation='true'] .settings-profile-save { bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 639px) {
+  .schedule-start-field input[type='date'] { font-size: 16px; }
+  .schedule-tab { gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .settings-page-section { animation: none; } }
