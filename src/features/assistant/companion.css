@@ -374,40 +374,17 @@
 .assistant-trigger:focus-visible + .assistant-preview:not([hidden]) { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .assistant-preview { transition: none; transform: none; } }
 
-.assistant-panel__help, .assistant-help__back {
+.assistant-panel__help {
   display: flex; align-items: center; justify-content: center; min-height: 44px;
   padding: 6px 10px; border: 0; border-radius: 8px;
   background: transparent; color: var(--control-ink);
   font: 500 .8rem/1.4 var(--font-companion); cursor: pointer; touch-action: manipulation;
   transition: background-color 150ms ease, transform 180ms cubic-bezier(.22, 1, .36, 1);
 }
-.assistant-help__back { justify-content: flex-start; text-align: start; }
-.assistant-help { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.assistant-help p, .assistant-help h3, .assistant-help h4, .assistant-help dl, .assistant-help dd { margin: 0; }
-.assistant-help { font-size: .84rem; line-height: 1.6; overflow-wrap: anywhere; }
-.assistant-help__heading, .assistant-help__answer h4 { font-size: .88rem; font-weight: 600; }
-.assistant-help__note { font-size: .75rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
-.assistant-help__search {
-  width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px;
-  border: 1px solid hsl(var(--border)); border-radius: 8px;
-  background: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 16px;
-}
-.assistant-help__search:focus-visible { outline: 2px solid var(--control-ink); outline-offset: 2px; }
-.assistant-help__answer { display: flex; flex-direction: column; gap: 10px; }
-.assistant-help__answer ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-inline-start: 20px; }
-.assistant-help__answer dl { display: flex; flex-direction: column; gap: 8px; }
-.assistant-help__answer dt { font-weight: 600; }
-.assistant-help__results { display: flex; flex-direction: column; gap: 4px; list-style: none; padding: 0; margin: 0; }
-.assistant-help__results button {
-  width: 100%; min-height: 44px; text-align: start; padding: 8px 10px;
-  border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--secondary) / .35);
-  color: hsl(var(--foreground)); font-size: .84rem; font-weight: 500; cursor: pointer; touch-action: manipulation;
-}
-.assistant-help button:disabled { opacity: .5; cursor: progress; }
 @media (hover: hover) {
-  .assistant-panel__help:hover, .assistant-help__back:hover, .assistant-help__results button:hover { background: var(--control-wash); }
+  .assistant-panel__help:hover { background: var(--control-wash); }
 }
-.assistant-panel__help:active, .assistant-help__back:active { transform: scale(.98); }
+.assistant-panel__help:active { transform: scale(.98); }
 @media (prefers-reduced-motion: reduce) {
-  .assistant-panel__help, .assistant-help__back { transition: none; transform: none; }
+  .assistant-panel__help { transition: none; transform: none; }
 }
