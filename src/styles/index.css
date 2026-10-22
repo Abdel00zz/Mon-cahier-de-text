@@ -18,6 +18,7 @@
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
 :root {
+  --font-companion: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
   --control-ink: hsl(27 25% 35%);
   --control-ink-hover: hsl(25 32% 27%);
   --control-wash: hsl(30 25% 90%);

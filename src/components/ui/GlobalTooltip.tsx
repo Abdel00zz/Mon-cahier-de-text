@@ -72,13 +72,31 @@ export const GlobalTooltip: React.FC = () => {
     let press: { timer: number; x: number; y: number; target: HTMLElement } | null = null;
     let lastTouchAt = 0;
 
-    /** L'élément porteur d'infobulle le plus proche — API EXPLICITE uniquement. */
+    /** L'élément porteur d'infobulle le plus proche — API EXPLICITE prioritaire, puis remplacement du title natif. */
     const findTarget = (node: EventTarget | null): { target: HTMLElement; text: string } | null => {
       const element = node instanceof HTMLElement ? node : null;
-      const target = element?.closest<HTMLElement>('[data-tippy-content]') ?? null;
-      if (!target || !target.isConnected || PROTECTED_TAGS.has(target.tagName)) return null;
-      const text = (target.getAttribute('data-tippy-content') ?? target.getAttribute('title') ?? '').trim();
-      return text ? { target, text } : null;
+      if (!element || !element.isConnected) return null;
+
+      // 1. Source explicite prioritaire
+      const target = element.closest<HTMLElement>('[data-tippy-content]') ?? null;
+      if (target && target.isConnected && !PROTECTED_TAGS.has(target.tagName)) {
+        const text = (target.getAttribute('data-tippy-content') ?? target.getAttribute('title') ?? '').trim();
+        if (text) return { target, text };
+      }
+
+      // 2. Contrôles et éléments porteurs de title natif :
+      //    Remplacement de l'infobulle système native par le style UI raffiné du compagnon.
+      const titled = element.closest<HTMLElement>(
+        'button[title], a[title], [role="button"][title], [data-mode][title], summary[title], input[title], select[title], [tabindex][title], [data-tooltip], [aria-label][title], span[title], svg[title]'
+      ) ?? null;
+      if (titled && titled.isConnected && !PROTECTED_TAGS.has(titled.tagName)) {
+        const text = (titled.getAttribute('title') ?? '').trim();
+        if (text && text !== titled.textContent?.trim()) {
+          return { target: titled, text };
+        }
+      }
+
+      return null;
     };
 
     /** Le `title` sort du DOM pendant l'affichage : une seule bulle, la nôtre. */
@@ -232,11 +250,14 @@ export const GlobalTooltip: React.FC = () => {
     <span
       ref={bubbleRef}
       role="tooltip"
-      className="pointer-events-none fixed z-[200] w-max max-w-[min(20rem,calc(100vw-1rem))] rounded-md bg-foreground px-2 py-1 text-center text-[11px] font-medium leading-snug text-background shadow-lg animate-fade-in"
+      className="global-ui-tooltip pointer-events-none fixed z-[200] w-max max-w-[min(20rem,calc(100vw-1rem))] rounded-lg border border-border/80 bg-card/95 backdrop-blur-md px-2.5 py-1.5 text-start text-[12px] font-medium leading-snug text-foreground shadow-md shadow-black/5"
       style={{
         left: position?.x ?? tooltip.anchorX,
         top: position?.y ?? tooltip.anchorY,
-        opacity: position ? undefined : 0,
+        opacity: position ? 1 : 0,
+        fontFamily: 'var(--font-companion, var(--font-sans))',
+        transform: position ? 'translateY(0)' : 'translateY(-2px)',
+        transition: 'opacity 160ms ease, transform 160ms ease',
       }}
     >
       {tooltip.text}
