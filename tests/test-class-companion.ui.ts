@@ -426,3 +426,19 @@ test('the companion refreshes on Android resume, connectivity and class/config c
     assert.equal(updates, 2, 'all added listeners are detached');
   } finally { dispose(); }
 });
+
+test('la bulle du robot est conçue sans kicker de titre artificiel pour un texte direct et humain', () => {
+  const guidance = resolveClassGuidance(classes, { timetable: [slot('a'), slot('b')] });
+  const msgAr = classGuidanceMessage(guidance, 'ar');
+  const msgFr = classGuidanceMessage(guidance, 'fr');
+  assert.match(msgAr.detail, /برافو/);
+  assert.match(msgFr.detail, /bravo/i);
+
+  const html = renderToStaticMarkup(createElement(AssistantPopover, {
+    locale: 'ar',
+    message: msgAr,
+    dismissLabel: 'ليس الآن، شكراً',
+    onDismiss: () => {},
+  }));
+  assert.doesNotMatch(html, /assistant-panel__kicker/);
+});

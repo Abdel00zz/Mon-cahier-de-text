@@ -25,6 +25,8 @@ interface AssistantPopoverProps {
   contactLabel?: string;
   onContact?: () => void;
   primaryAction?: ReactNode;
+  dismissLabel?: string;
+  onDismiss?: () => void;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -62,6 +64,7 @@ export function AssistantPopover({
   headRoundness,
   autoSleepMs,
   onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
+  dismissLabel, onDismiss,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
@@ -71,6 +74,11 @@ export function AssistantPopover({
   const labels = companionLabels(locale);
   const emphasis = message.detailEmphasis;
   const emphasisIndex = emphasis ? message.detail.indexOf(emphasis) : -1;
+
+  const handleDismissAndClose = useCallback((restoreFocus = false) => {
+    onDismiss?.();
+    close(restoreFocus);
+  }, [onDismiss, close]);
 
   useEffect(() => { if (open || !attentionKey) setSeen(attentionKey); }, [open, attentionKey]);
   const unread = Boolean(attentionKey && seen !== attentionKey && !open);
@@ -138,15 +146,14 @@ export function AssistantPopover({
         {open && (
           <div className="assistant-panel__body">
             <div className="assistant-panel__topbar">
-              <span className="assistant-panel__kicker">{message.title}</span>
-            <button
-              type="button"
-              className="assistant-panel__close"
-              onClick={() => close(true)}
-              aria-label={labels.close}
-            >
-              <X size={14} strokeWidth={1.25} absoluteStrokeWidth aria-hidden="true" />
-            </button>
+              <button
+                type="button"
+                className="assistant-panel__close"
+                onClick={() => handleDismissAndClose(true)}
+                aria-label={labels.close}
+              >
+                <X size={14} strokeWidth={1.25} absoluteStrokeWidth aria-hidden="true" />
+              </button>
             </div>
             {message.subject ? <div className="assistant-panel__heading">
               <div className="assistant-panel__copy">
@@ -172,9 +179,17 @@ export function AssistantPopover({
                 }}
               >
                 <span>{message.action}</span>
-
               </button>
             ))}
+            {onDismiss && dismissLabel && (
+              <button
+                type="button"
+                className="assistant-panel__dismiss"
+                onClick={() => handleDismissAndClose(true)}
+              >
+                {dismissLabel}
+              </button>
+            )}
             {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
           </div>
         )}

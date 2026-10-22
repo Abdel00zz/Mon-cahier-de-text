@@ -6,6 +6,7 @@ import { contentSuggestionMessage } from '../src/features/assistant/contentSugge
 import { decideCompanion } from '../src/domain/assistant/companionDecision';
 import { buildSupportWhatsAppUrl } from '../src/constants/support';
 import { resolveClassGuidance } from '../src/domain/assistant/classGuidance';
+import { classGuidanceMessage } from '../src/features/assistant/companionCopy';
 
 const now = Date.parse('2026-10-22T10:00:00Z');
 const makeClass = (id: string, patch: Partial<ClassInfo> = {}): ClassInfo => ({
@@ -102,4 +103,37 @@ test('WhatsApp request intent and class context match the visible offer, without
     }
     assert.equal(texts.size, 3);
   }
+});
+
+test('ignoring a content suggestion falls back to timetable or notebook problems, and if none, celebratory bravo message', () => {
+  const classes = [makeClass('a'), makeClass('b')];
+  const options = { classes, now, readLessons: () => lessons };
+
+  // Initial state offers class 'a'
+  const first = resolveContentSuggestion(options);
+  assert.equal(first?.target.id, 'a');
+
+  // Ignored class 'a' advances to class 'b'
+  const second = resolveContentSuggestion({ ...options, ignoredClassIds: new Set(['a']) });
+  assert.equal(second?.target.id, 'b');
+
+  // Both ignored: suggestion yields undefined
+  const none = resolveContentSuggestion({ ...options, ignoredClassIds: new Set(['a', 'b']) });
+  assert.equal(none, undefined);
+
+  // When suggestions are ignored and timetable slot is missing for 'b', companion falls through to timetable guidance
+  const timetableGuidance = resolveClassGuidance(classes, { timetable: [{ classId: 'a', day: 1, slot: 0 }] });
+  assert.equal(timetableGuidance.step, 'schedule');
+  assert.equal('classId' in timetableGuidance && timetableGuidance.classId, 'b');
+
+  // When all timetable slots are set and notebooks are ready, companion celebrates with bravo
+  const allScheduled = { timetable: [{ classId: 'a', day: 1, slot: 0 }, { classId: 'b', day: 2, slot: 1 }] };
+  const readyGuidance = resolveClassGuidance(classes, allScheduled, undefined, { readLessons: () => lessons });
+  assert.equal(readyGuidance.step, 'ready');
+
+  // Both Arabic and French messages contain "bravo" / "برافو"
+  const msgAr = classGuidanceMessage(readyGuidance, 'ar');
+  const msgFr = classGuidanceMessage(readyGuidance, 'fr');
+  assert.match(msgAr.detail, /برافو/);
+  assert.match(msgFr.detail, /bravo/i);
 });

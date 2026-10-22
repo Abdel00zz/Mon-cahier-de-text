@@ -53,6 +53,7 @@ export function ClassAssistant({
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
   const [contactedClasses, setContactedClasses] = useState<ReadonlySet<string>>(() => new Set());
+  const [ignoredClasses, setIgnoredClasses] = useState<ReadonlySet<string>>(() => new Set());
   const today = useMoroccoToday();
   const [contact, setContact] = useState<{ owner?: string; target?: Pick<ClassInfo, 'id' | 'name'>; context?: string; initialReplyTo?: string }>({});
   const revision = useCompanionRevision();
@@ -64,6 +65,7 @@ export function ClassAssistant({
     recovery.current = null; setRecovering(false);
     setContactOpen(false); setContactStarted(false); setContact({});
     setContactedClasses(new Set());
+    setIgnoredClasses(new Set());
     return () => { recovery.current = null; };
   }, [messaging?.owner]);
   const notebooksLoading = progress.state === 'pulling' || progress.state === 'notebooks';
@@ -80,8 +82,8 @@ export function ClassAssistant({
   const behavior = useMemo(() => resolvePedagogicalBehavior(guidance), [guidance]);
   const contentSuggestion = useMemo(() => notebooksLoading || !hasSupportWhatsApp() ? undefined : resolveContentSuggestion({
     classes, readLessons, preferredClassId, visibleClassIds, messages: messaging?.history,
-    contactedClassIds: contactedClasses, now: Date.now(),
-  }), [classes, readLessons, preferredClassId, visibleClassIds, messaging?.history, contactedClasses, notebooksLoading, revision, today]);
+    contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses, now: Date.now(),
+  }), [classes, readLessons, preferredClassId, visibleClassIds, messaging?.history, contactedClasses, ignoredClasses, notebooksLoading, revision, today]);
 
   const decision = decideCompanion({
     guidance, authenticated: Boolean(messaging?.enabled), online: isNetworkOnline(), syncStatus,
@@ -117,6 +119,11 @@ export function ClassAssistant({
     setContactStarted(true);
     setContactOpen(true);
   };
+  const dismissSuggestion = () => {
+    if (contentSuggestion) {
+      setIgnoredClasses(current => new Set([...current, contentSuggestion.target.id]));
+    }
+  };
   return (
     <>
     <AssistantPopover
@@ -126,6 +133,8 @@ export function ClassAssistant({
       primaryAction={ready && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
         onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
+      dismissLabel={ready && contentSuggestion ? (locale === 'ar' ? 'ليس الآن، شكراً' : locale === 'en' ? 'Not now, thanks' : 'Pas maintenant, merci') : undefined}
+      onDismiss={ready && contentSuggestion ? dismissSuggestion : undefined}
       onContact={openContact}
       mood={behavior.mood}
       robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : ready ? 'success' : behavior.robotAction}

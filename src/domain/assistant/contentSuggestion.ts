@@ -57,21 +57,24 @@ interface SuggestionOptions {
   visibleClassIds?: readonly string[];
   messages?: readonly AdminMessage[];
   contactedClassIds?: ReadonlySet<string>;
+  ignoredClassIds?: ReadonlySet<string>;
   now: number;
 }
 
-/** Local evidence only. Unreadable notebooks and recent contacts never become sales opportunities. */
+/** Local evidence only. Unreadable notebooks, recent contacts and dismissed offers never become suggestions. */
 export function resolveContentSuggestion(options: SuggestionOptions): ContentSuggestion | undefined {
   if (!options.readLessons) return;
   const visible = options.visibleClassIds ? new Set(options.visibleClassIds) : undefined;
   const recentlyContacted = new Set(options.contactedClassIds);
+  const ignored = new Set(options.ignoredClassIds);
   for (const message of options.messages ?? []) {
     const at = timestamp(message.createdAt, options.now);
     if (message.sender === 'teacher' && message.event === 'whatsapp-contact' && message.classId
       && at > 0 && options.now - at < 86_400_000) recentlyContacted.add(message.classId);
   }
   const candidates = orderCompanionClasses(options.classes.filter(item => (!visible || visible.has(item.id))
-    && !recentlyContacted.has(item.id)), options.preferredClassId, options.now);
+    && !recentlyContacted.has(item.id)
+    && !ignored.has(item.id)), options.preferredClassId, options.now);
   let fallback: ContentSuggestion | undefined;
   for (const target of candidates) {
     try {

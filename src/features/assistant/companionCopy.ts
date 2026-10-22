@@ -50,50 +50,50 @@ const COPY = {
       context: 'À débuter',
     },
     ready: {
-      title: 'Prêt pour la suite',
-      detail: 'Vos contenus sont ici. On ouvre le cahier ?',
+      title: 'Tout est en ordre',
+      detail: 'Vos cahiers et votre emploi du temps sont parfaitement en ordre. Continuez sur votre belle lancée, bravo !',
       action: 'Ouvrir le cahier',
       context: 'Prêt',
     },
   },
   ar: {
-    checking: { title: 'أستعيد دفاترك', detail: 'جارٍ مزامنة المحتوى…', context: 'جارٍ التزامن', action: undefined },
-    'notebook-unavailable': { title: 'لنراجع هذا الدفتر', detail: 'لم أتمكن من قراءة هذا الدفتر. نجرّب فتحه؟', context: 'القراءة غير متاحة', action: 'فتح الدفتر' },
+    checking: { title: 'أستعيد دفاتر حصصك', detail: 'جارٍ مزامنة المحتوى وتحديث الدفاتر…', context: 'جارٍ التزامن', action: undefined },
+    'notebook-unavailable': { title: 'معاينة الدفتر', detail: 'تعذرت قراءة هذا الدفتر تلقائياً. هل نحاول فتحه معاً؟', context: 'القراءة غير متاحة', action: 'فتح الدفتر' },
     open: 'فتح الرفيق',
     close: 'إغلاق الرسالة',
     attention: 'تنبيه تربوي',
     create: {
-      title: 'نبدأ معاً؟',
-      detail: 'أضف قسمك الأول، وسأرشدك إلى الخطوة التالية.',
-      action: 'إضافة القسم',
+      title: 'مرحباً بك مع رفيقك',
+      detail: 'لنبدأ معاً بإضافة قسمك الأول، وسأرافقك خطوة بخطوة في تنظيم دروسك وحصصك.',
+      action: 'إضافة قسم جديد',
       context: 'البداية',
     },
     schedule: {
-      title: 'استعمال الزمن',
-      detail: 'تنقص هذا القسم حصصه الأسبوعية. نحدّدها؟',
-      action: 'ضبط الحصص',
+      title: 'تنظيم استعمال الزمن',
+      detail: 'ينقصنا تحديد الحصص الأسبوعية في استعمال الزمن لتنظيم مواعيدك بدقة. هل نضبطها معاً؟',
+      action: 'ضبط الحصص الآن',
     },
     'active-session': {
-      title: 'حصة جارية',
-      detail: 'أنهيت محتوى؟ حدّده لإسناد تاريخ الحصة إليه.',
-      action: 'فتح الدفتر',
+      title: 'حصة جارية الآن',
+      detail: 'حصتك جارية حالياً؛ اختر درساً أو نشاطاً منجزاً لإسناد تاريخ اليوم إليه وتثبيته مباشرة.',
+      action: 'تسجيل محتوى الحصة',
       context: 'الآن',
     },
     'notebook-issue': {
-      title: 'نقطة نراجعها معاً',
-      detail: 'وجدت نقطة تستحق المراجعة في هذا الدفتر.',
+      title: 'ملاحظة للمراجعة',
+      detail: 'لاحظت نقطة تستحق الانتباه في هذا الدفتر لنراجعها معاً.',
       action: 'مراجعة الدفتر',
       context: 'للمعاينة',
     },
     'notebook-empty': {
-      title: 'لنجهّز هذا الدفتر',
-      detail: 'هذا الدفتر ينتظر محتواه الأول. نبدأ؟',
-      action: 'بدء الدفتر',
+      title: 'تجهيز أول درس',
+      detail: 'هذا الدفتر ينتظر درسه الأول. ما رأيك أن نبدأ بإعداده معاً؟',
+      action: 'بدء تحضير الدفتر',
       context: 'جديد',
     },
     ready: {
-      title: 'جاهز للخطوة التالية',
-      detail: 'محتوياتك هنا. نفتح الدفتر؟',
+      title: 'كل شيء على ما يرام',
+      detail: 'دفاترك واستعمال الزمن في أفضل حال ومضبوطة بدقة. استمر في هذا التقدم الرائع، وبرافو!',
       action: 'فتح الدفتر',
       context: 'جاهز',
     },
@@ -134,8 +134,8 @@ const COPY = {
       context: 'Start',
     },
     ready: {
-      title: 'Ready for the next step',
-      detail: 'Your content is here. Shall we open the notebook?',
+      title: 'All set and ready',
+      detail: 'Everything is in order and up to date. Keep up the great work, bravo!',
       action: 'Open notebook',
       context: 'Ready',
     },
@@ -167,17 +167,17 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
     : formatLocalizedClassDisplayName(guidance.className, locale).replace(/[\r\n\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim();
   if (name) {
     if (guidance.step === 'schedule') detail = locale === 'fr' ? `Fixons les créneaux de ${name} pour retrouver ses séances dans votre emploi du temps.`
-      : locale === 'ar' ? `نحدّد حصص قسم ${name} لتظهر في استعمال الزمن وتتابعها بسهولة؟`
+      : locale === 'ar' ? `لنضبط حصص قسم ${name} في استعمال الزمن لتتابع مواعيد حصصك بكل سهولة ووضوح.`
         : `Shall we set the weekly slots for ${name} so you can find its sessions in your timetable?`;
     else if (guidance.step === 'active-session') detail = locale === 'fr' ? `Votre séance avec ${name} est en cours ; sélectionnez le contenu réalisé pour lui attribuer la date de cette séance.`
-      : locale === 'ar' ? `حصتك مع قسم ${name} جارية؛ حدّد المحتوى المنجز لإسناد تاريخ هذه الحصة إليه.`
+      : locale === 'ar' ? `حصتك مع قسم ${name} جارية الآن؛ اختر المحتوى المنجز لإسناد تاريخ اليوم إليه وتثبيته مباشرة.`
         : `Your session with ${name} is in progress; select the content covered to assign this session’s date.`;
     else if (guidance.step === 'notebook-empty') detail = locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
-      : locale === 'ar' ? `دفتر قسم ${name} ينتظر محتواه الأول؛ نبدأ بما ترغب في تدريسه؟`
+      : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
         : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`;
-    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Retrouvons le cahier de ${name} pour préparer la suite à votre rythme.`
-      : locale === 'ar' ? `نفتح دفتر قسم ${name} لتحضير ما يلي حسب وتيرتك؟`
-        : `Shall we open the notebook for ${name} and prepare what comes next at your own pace?`;
+    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Tout est en ordre pour ${name} ! Vos contenus sont prêts et à jour, continuez ainsi, bravo !`
+      : locale === 'ar' ? `كل شيء على ما يرام لقسم ${name} ومضبوط تماماً! تدرجك ممتاز ودفترك جاهز، واصل تقدمك وبرافو!`
+        : `Everything is in order for ${name}! Your content is ready and up to date, keep up the great work, bravo!`;
     else detail = `${locale === 'ar' ? `في دفتر قسم ${name}، ` : locale === 'en' ? `For ${name}: ` : `Dans le cahier de ${name} : `}${detail}`;
     detailEmphasis = name;
   }
@@ -214,9 +214,9 @@ function emptyNotebooksLabel(count: number, locale: AppLocale): string {
   const number = new Intl.NumberFormat(locale).format(count);
   if (locale === 'fr') return count === 1 ? '1 cahier à préparer' : `${number} cahiers à préparer`;
   if (locale === 'en') return `${number} ${count === 1 ? 'blank notebook' : 'blank notebooks'}`;
-  if (count === 1) return 'دفتر ينتظر محتواه';
-  if (count === 2) return 'دفتران ينتظران المحتوى';
-  return count >= 3 && count <= 10 ? `${number} دفاتر تنتظر المحتوى` : `${number} دفتراً بانتظار المحتوى`;
+  if (count === 1) return 'دفتر في انتظار محتواه';
+  if (count === 2) return 'دفتران في انتظار المحتوى';
+  return count >= 3 && count <= 10 ? `${number} دفاتر في انتظار المحتوى` : `${number} دفتراً بانتظار المحتوى`;
 }
 
 // Same diagnostic codes as notebookAdvisor; each suggestion explains the actual finding.
@@ -229,11 +229,11 @@ const ADVICE_COPY = {
     controlCharacters: 'Le texte collé contient des caractères invisibles inhabituels. On le vérifie ?',
   },
   ar: {
-    unclosedFormula: 'تبدو صيغة رياضية غير مكتملة. نراجع علامات فتحها وإغلاقها؟',
-    outOfOrderSessions: 'بعض التواريخ لا تتبع ترتيب المحتوى. نراجع الحصص المعنية؟',
-    duplicateBlocks: 'وجدت عناصر متطابقة مكررة. نتحقق إن كان التكرار مقصوداً؟',
-    emptyStructure: 'بعض الفقرات ما زالت فارغة. أكملها حسب تقدمك.',
-    controlCharacters: 'في النص الملصق رموز خفية غير معتادة. نراجعه معاً؟',
+    unclosedFormula: 'تبدو إحدى الصيغ الرياضية غير مكتملة الإغلاق ($). هل نراجع علامات فتحها وإغلاقها؟',
+    outOfOrderSessions: 'بعض تواريخ الحصص لا تتبع التسلسل الزمني للمحتوى. هل نراجع ترتيبها معاً؟',
+    duplicateBlocks: 'وجدت عناصر متطابقة ومكررة في هذا الدفتر. هل نتحقق إن كان ذلك مقصوداً؟',
+    emptyStructure: 'توجد بعض العناوين الفارغة في انتظار محتواها. يمكنك إكمالها حسب وتيرتك.',
+    controlCharacters: 'النص الملصق يحتوي على بعض الرموز غير المرئية. هل نراجعه معاً لتنظيفه؟',
   },
   en: {
     unclosedFormula: 'A formula seems incomplete. Shall we check its delimiters?',
