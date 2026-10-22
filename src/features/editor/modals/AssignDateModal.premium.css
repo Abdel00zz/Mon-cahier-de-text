@@ -235,3 +235,11 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* Typographie Samsung en version arabe pour la saisie et les puces de remarque */
+html[lang="ar"] .remark-textarea,
+.remark-textarea[dir="rtl"],
+html[lang="ar"] .remark-chip,
+.remark-chip[dir="rtl"] {
+  font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
+}
