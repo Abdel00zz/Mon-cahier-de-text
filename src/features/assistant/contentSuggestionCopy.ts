@@ -9,80 +9,80 @@ type Phrase = (name: string) => string;
 const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = {
   fr: {
     empty: [
-      n => `Le cahier de ${n} attend ses premiers cours : préférez-vous adapter le programme officiel, ou créer un contenu sur mesure avec l’équipe ?`,
-      n => `Pour démarrer sereinement avec ${n} : souhaitez-vous des séances adaptées prêtes à l'emploi ou un contenu entièrement personnalisé ?`,
+      n => `Le cahier de ${n} attend ses premiers cours : préférez-vous adapter le programme officiel ou concevoir un contenu sur mesure avec l’équipe ? Contactez-nous.`,
+      n => `Pour démarrer sereinement avec ${n} : souhaitez-vous des séances prêtes à l’emploi ou un cours entièrement personnalisé ? Contactez-nous sur WhatsApp.`,
     ],
     personal: [
-      n => `Vous construisez le contenu de ${n} à votre manière : souhaitez-vous de l’aide pour préparer fiches de cours, activités ou exercices adaptés ?`,
-      n => `Votre approche pour ${n} est personnalisée : envie d’enrichir vos séances avec des évaluations ou exercices ciblés préparés avec l’équipe ?`,
+      n => `Le saviez-vous : si vous souhaitez enrichir vos cours de ${n} avec des exercices ou fiches sur mesure, vous pouvez contacter notre équipe.`,
+      n => `Le saviez-vous : l’équipe peut vous préparer des évaluations et activités adaptées à votre approche pour ${n} sur simple contact.`,
     ],
     predefined: [
-      n => `Vous avez choisi le programme prédéfini pour ${n} : souhaitez-vous des leçons adaptées à ce contenu, ou préférez-vous concevoir un contenu personnalisé avec l’équipe ?`,
-      n => `La base officielle de ${n} est en place : désirez-vous des séances adaptées à ce programme, ou des cours et activités entièrement sur mesure ?`,
+      n => `Le saviez-vous : si vous souhaitez des leçons ou exercices adaptés au programme de ${n}, vous pouvez contacter l’équipe pour les préparer.`,
+      n => `Le saviez-vous : vous pouvez obtenir des cours et activités sur mesure adaptés à ${n} en contactant directement notre équipe.`,
     ],
     imported: [
-      n => `Vous avez importé le contenu de ${n} : souhaitez-vous le structurer en séances fluides ou l’enrichir d'exercices et devoirs avec l’équipe ?`,
-      n => `Vos documents pour ${n} sont importés : désirez-vous un accompagnement pour les adapter à votre rythme ou concevoir des supports complémentaires ?`,
+      n => `Le saviez-vous : si vous souhaitez structurer votre contenu importé ou l’enrichir d’exercices pour ${n}, vous pouvez contacter l’équipe.`,
+      n => `Le saviez-vous : notre équipe peut adapter vos supports importés au rythme de ${n} sur simple message WhatsApp.`,
     ],
     assigned: [
-      n => `Des contenus de ${n} sont rattachés à des séances ; souhaitez-vous préparer la suite avec des exercices ou des devoirs sur mesure ?`,
-      n => `Pour les prochaines séances de ${n}, envie de prévoir des supports et activités adaptés avec l’équipe ?`,
+      n => `Le saviez-vous : pour vos prochaines séances avec ${n}, vous pouvez contacter l’équipe afin d’obtenir des devoirs et exercices adaptés.`,
+      n => `Le saviez-vous : vous pouvez anticiper vos prochains chapitres pour ${n} avec des activités préparées sur mesure avec l’équipe.`,
     ],
     unknown: [
-      n => `Besoin de cours structurés, d’exercices ciblés ou d’évaluations pour ${n} ? L’équipe est à votre écoute sur WhatsApp pour vous accompagner.`,
-      n => `Pour adapter ou enrichir les contenus de ${n} selon vos besoins réels : échangeons directement sur WhatsApp pour préparer vos supports.`,
+      n => `Le saviez-vous : si vous souhaitez des cours, fiches ou exercices adaptés à ${n}, vous pouvez contacter l’équipe sur WhatsApp.`,
+      n => `Le saviez-vous : pour adapter ou enrichir les contenus de ${n} selon vos besoins, contactez directement l’équipe sur WhatsApp.`,
     ],
   },
   ar: {
     empty: [
-      n => `لإعداد أولى الحصص، هل تودّ تكييف البرنامج المقرر لقسم ${n} أو بناء محتوى مخصص بمساعدة الفريق؟`,
-      n => `للبدء بمحتوى يناسب أسلوبك، هل ترغب في تجهيز دروس وتمارين لقسم ${n} مع الفريق؟`,
+      n => `لإعداد أولى الحصص لقسم ${n}، هل ترغب في تكييف البرنامج الرسمي أو تصميم محتوى مخصص مع فريقنا؟ تواصل معنا عبر واتساب.`,
+      n => `لبدء دروس قسم ${n} بكل يسر، هل تودّ تجهيز حصص وتمارين مكيفة تناسب أسلوبك بمساعدة الفريق؟ تواصل معنا.`,
     ],
     personal: [
-      n => `لإثراء المحتوى الذي تعدّه، هل تودّ إعداد تمارين وأنشطة لقسم ${n} تناسب طريقتك بمساعدة الفريق؟`,
-      n => `لتطوير محتواك، هل ترغب في ملخصات أو فروض مخصصة لقسم ${n} يعدّها الفريق وفق احتياجاتك؟`,
+      n => `هل تعلم : إذا كنت ترغب في محتوى إضافي أو تمارين مكيفة مع دروسك لقسم ${n}، يمكنك التواصل معنا لإعدادها لك.`,
+      n => `هل تعلم : يمكنك الحصول على ملخصات وفروض مخصصة تتماشى مع طريقتك لقسم ${n} بالتواصل مباشرة مع فريقنا.`,
     ],
     predefined: [
-      n => `فيما يخصّ المحتوى الجاهز، هل تودّ تكييف دروسه لقسم ${n} أو إعداد محتوى مخصص مع الفريق؟`,
-      n => `لتكييف البرنامج الذي اخترته، هل ترغب في أنشطة وفروض لقسم ${n} يعدّها الفريق بما يناسب تلاميذك؟`,
+      n => `هل تعلم : إذا كنت ترغب في دروس أو تمارين مكيفة مع مقررك لقسم ${n}، يمكنك التواصل معنا لإعدادها لك.`,
+      n => `هل تعلم : يمكنك طلب محتوى مخصص وأنشطة مكيفة مع تدرج قسم ${n} بالتواصل مباشرة مع فريقنا.`,
     ],
     imported: [
-      n => `فيما يخصّ المحتوى الذي استوردته، هل تودّ تنظيمه في حصص لقسم ${n} بمساعدة الفريق؟`,
-      n => `لإثراء محتواك المستورد، هل ترغب في تمارين وأنشطة لقسم ${n} يعدّها الفريق وفق احتياجاتك؟`,
+      n => `هل تعلم : إذا كنت ترغب في تكييف دروسك المستوردة لقسم ${n} أو إثرائها بتمارين، يمكنك التواصل مع فريقنا.`,
+      n => `هل تعلم : يمكنك تنظيم وتكييف محتواك المستورد لقسم ${n} في حصص متناسقة بالتواصل معنا عبر واتساب.`,
     ],
     assigned: [
-      n => `فيما يخصّ محتوى الحصص القادمة، هل تودّ إعداد تمارين وأنشطة مخصّصة لقسم ${n} بمساعدة الفريق؟`,
-      n => `فيما يخصّ محتوى الحصص القادمة، هل ترغب في تحضير دروس ومراجعات لقسم ${n} تناسب تدرّجك بمساعدة الفريق؟`,
+      n => `هل تعلم : إذا كنت ترغب في تحضير الحصص القادمة بتمارين وفروض مكيفة لقسم ${n}، يمكنك التواصل مع فريقنا.`,
+      n => `هل تعلم : يمكنك الحصول على مراجعات وأنشطة مخصصة لقسم ${n} تتماشى مع تدرجك بالتواصل المباشر معنا.`,
     ],
     unknown: [
-      n => `فيما يخصّ محتوى حصصك، هل تودّ إعداد دروس أو تمارين لقسم ${n} مع الفريق عبر واتساب؟`,
-      n => `لتحضير محتوى يناسب احتياجاتك، هل ترغب في مناقشة دروس قسم ${n} مع الفريق عبر واتساب؟`,
+      n => `هل تعلم : إذا كنت ترغب في دروس، تمارين أو فروض مكيفة لقسم ${n}، يمكنك التواصل مع فريقنا عبر واتساب.`,
+      n => `هل تعلم : يمكنك تكييف محتوى حصص قسم ${n} وفق احتياجاتك الحقيقية بالتواصل مباشرة مع فريقنا عبر واتساب.`,
     ],
   },
   en: {
     empty: [
-      n => `The notebook for ${n} is waiting for its first lesson: would you like to adapt the standard curriculum, or create custom content with the team?`,
-      n => `To get started smoothly with ${n}: would you like ready-to-teach lessons that fit your style, or fully personalized materials?`,
+      n => `The notebook for ${n} is ready for its first lesson: would you like to adapt the standard curriculum or create custom content with our team? Contact us.`,
+      n => `To start smoothly with ${n}: would you like ready lessons tailored to your style or fully personalized content? Contact us.`,
     ],
     personal: [
-      n => `You’re building your own content for ${n}: would you like help preparing lesson summaries, activities, or tailored exercises?`,
-      n => `Your teaching approach for ${n} is unique: would you like additional exercises or assessments crafted with the team?`,
+      n => `Did you know: if you would like to enrich your materials for ${n} with tailored exercises, you can contact our team to help.`,
+      n => `Did you know: our team can craft custom assessments and practice sheets suited to your teaching style for ${n} upon request.`,
     ],
     predefined: [
-      n => `You chose the predefined curriculum for ${n}: would you like lessons adapted to this content, or would you prefer custom-designed content with the team?`,
-      n => `The standard curriculum for ${n} is ready: do you want lessons tailored to match this content, or fully personalized teaching materials?`,
+      n => `Did you know: if you would like lessons or exercises tailored to the curriculum for ${n}, you can contact our team to prepare them.`,
+      n => `Did you know: you can request custom-designed lessons and activities adapted to ${n} by contacting our team.`,
     ],
     imported: [
-      n => `You imported content for ${n}: would you like help structuring it into ready lessons or enriching it with tailored exercises and tests?`,
-      n => `Your imported files for ${n} are in place: would you like the team’s help adapting them to your schedule or creating extra materials?`,
+      n => `Did you know: if you would like help structuring your imported files or enriching them for ${n}, you can contact our team.`,
+      n => `Did you know: our team can adapt your imported documents for ${n} into ready-to-teach lessons upon request.`,
     ],
     assigned: [
-      n => `Content for ${n} is linked to sessions; would you like tailored exercises or tests for what comes next?`,
-      n => `For your upcoming sessions with ${n}, would you like help preparing targeted exercises and activities?`,
+      n => `Did you know: for your upcoming sessions with ${n}, you can contact our team to prepare tailored exercises and reviews.`,
+      n => `Did you know: you can anticipate the next chapters for ${n} with custom activities crafted with our team upon request.`,
     ],
     unknown: [
-      n => `Looking for structured lessons, exercises, or tests for ${n}? The team is available on WhatsApp to prepare whatever you need.`,
-      n => `To adapt or enrich the curriculum for ${n} to your exact needs: talk it through with our team on WhatsApp.`,
+      n => `Did you know: if you need tailored lessons, exercises or tests for ${n}, you can reach out to our team on WhatsApp.`,
+      n => `Did you know: to adapt or enrich the curriculum for ${n} to your exact needs, talk it through with our team on WhatsApp.`,
     ],
   },
 };

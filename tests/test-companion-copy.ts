@@ -40,8 +40,8 @@ test('all content situations and daily variants introduce the class only once', 
       for (const day of ['2026-10-22', '2026-10-23']) {
         const message = contentSuggestionMessage({ target: { id: 'physics', name }, ...situation }, 'ar', day);
         assertClassMention(message);
-        if (situation.origin === 'unknown' && situation.evidence.assignedCount > 0) {
-          assert.match(message.detail, /^فيما يخصّ محتوى الحصص القادمة، هل /u);
+        if (!situation.evidence.empty) {
+          assert.match(message.detail, /^هل تعلم\s*:/u);
         }
       }
     }

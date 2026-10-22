@@ -128,22 +128,21 @@ export function ClassAssistant({
       setIgnoredClasses(current => new Set([...current, contentSuggestion.target.id]));
     }
   };
+  const isContentOffer = ready && Boolean(contentSuggestion);
   return (
     <>
     <AssistantPopover
       locale={locale}
       message={message}
-      helpReference={companionHelpReference(decision, guidance, contentSuggestion)}
-      onOpenGuide={openGuide}
-      contactLabel={!reply ? copy.contact : undefined}
-      primaryAction={ready && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
+      helpReference={!isContentOffer ? companionHelpReference(decision, guidance, contentSuggestion) : undefined}
+      onOpenGuide={!isContentOffer ? openGuide : undefined}
+      contactLabel={!reply && !isContentOffer ? copy.contact : undefined}
+      primaryAction={isContentOffer && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
-        label={contentSuggestion.origin === 'predefined'
-          ? (locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Adapter ou personnaliser le cours')
-          : undefined}
+        label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}
         onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
-      dismissLabel={ready && contentSuggestion ? (locale === 'ar' ? 'ليس الآن، شكراً' : locale === 'en' ? 'Not now, thanks' : 'Pas maintenant, merci') : undefined}
-      onDismiss={ready && contentSuggestion ? dismissSuggestion : undefined}
+      dismissLabel={isContentOffer ? (locale === 'ar' ? 'ليس الآن، شكراً' : locale === 'en' ? 'Not now, thanks' : 'Pas maintenant, merci') : undefined}
+      onDismiss={isContentOffer ? dismissSuggestion : undefined}
       onContact={openContact}
       mood={behavior.mood}
       robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : ready ? 'success' : behavior.robotAction}
@@ -155,17 +154,19 @@ export function ClassAssistant({
       actionBusy={recovering}
       keepOpenOnAction={serviceError}
       onAction={
-        service ? serviceError ? () => { void retry(); } : undefined : reply ? openContact : ready ? undefined : guidance.step === 'schedule' && !onOpenSchedule
-          ? undefined
-          : () => {
-              const action = guidanceAction(guidance);
-              if (action.type === 'create-class') onCreateClass();
-              else if (action.type === 'schedule') onOpenSchedule?.();
-              else {
-                const target = classes.find(item => item.id === action.classId);
-                if (target) onOpenClass(target);
+        !isContentOffer ? (
+          service ? serviceError ? () => { void retry(); } : undefined : reply ? openContact : ready ? undefined : guidance.step === 'schedule' && !onOpenSchedule
+            ? undefined
+            : () => {
+                const action = guidanceAction(guidance);
+                if (action.type === 'create-class') onCreateClass();
+                else if (action.type === 'schedule') onOpenSchedule?.();
+                else {
+                  const target = classes.find(item => item.id === action.classId);
+                  if (target) onOpenClass(target);
+                }
               }
-            }
+        ) : undefined
       }
     />
     {guide && <guide.Component isOpen onClose={closeGuide} initialReference={guide.reference} />}
