@@ -13,6 +13,11 @@ import { isNetworkOnline } from '@/platform/networkStatus';
 import { decideCompanion } from '@/domain/assistant/companionDecision';
 import { companionServiceMessage } from './companionServiceCopy';
 import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
+import { orderCompanionClasses, resolveContentSuggestion } from '@/domain/assistant/contentSuggestion';
+import { contentSuggestionMessage } from './contentSuggestionCopy';
+import { useMoroccoToday } from '@/hooks/useMoroccoToday';
+import { hasSupportWhatsApp } from '@/constants/support';
+import { pendingAdminMessages } from '@/domain/messages/conversation';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 
@@ -22,6 +27,7 @@ interface ClassAssistantProps {
   classes: readonly ClassInfo[];
   config: Pick<AppConfig, 'timetable' | 'schedules'>;
   preferredClassId?: string;
+  visibleClassIds?: readonly string[];
   activeSessionClassIds?: readonly string[];
   readLessons?: (classId: string) => LessonsData;
   onCreateClass: () => void;
@@ -35,6 +41,7 @@ export function ClassAssistant({
   classes,
   config,
   preferredClassId,
+  visibleClassIds,
   activeSessionClassIds,
   readLessons,
   onCreateClass,
@@ -45,6 +52,8 @@ export function ClassAssistant({
   const copy = conversationCopy(locale);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
+  const [contactedClasses, setContactedClasses] = useState<ReadonlySet<string>>(() => new Set());
+  const today = useMoroccoToday();
   const [contact, setContact] = useState<{ owner?: string; target?: Pick<ClassInfo, 'id' | 'name'>; context?: string; initialReplyTo?: string }>({});
   const revision = useCompanionRevision();
   const progress = useSyncProgress();
@@ -54,6 +63,7 @@ export function ClassAssistant({
   useEffect(() => {
     recovery.current = null; setRecovering(false);
     setContactOpen(false); setContactStarted(false); setContact({});
+    setContactedClasses(new Set());
     return () => { recovery.current = null; };
   }, [messaging?.owner]);
   const notebooksLoading = progress.state === 'pulling' || progress.state === 'notebooks';
@@ -63,25 +73,30 @@ export function ClassAssistant({
   );
 
   const guidance = useMemo(
-    () => resolveClassGuidance(classes, config, preferredClassId, brainContext),
+    () => resolveClassGuidance(orderCompanionClasses(classes, preferredClassId), config, preferredClassId, brainContext),
     [classes, config.timetable, config.schedules, preferredClassId, brainContext, revision]
   );
 
   const behavior = useMemo(() => resolvePedagogicalBehavior(guidance), [guidance]);
+  const contentSuggestion = useMemo(() => notebooksLoading || !hasSupportWhatsApp() ? undefined : resolveContentSuggestion({
+    classes, readLessons, preferredClassId, visibleClassIds, messages: messaging?.history,
+    contactedClassIds: contactedClasses, now: Date.now(),
+  }), [classes, readLessons, preferredClassId, visibleClassIds, messaging?.history, contactedClasses, notebooksLoading, revision, today]);
 
   const decision = decideCompanion({
     guidance, authenticated: Boolean(messaging?.enabled), online: isNetworkOnline(), syncStatus,
     transfer: progress.state, inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false,
     messages: messaging?.messages ?? [], hasNotebookReader: typeof readLessons === 'function',
+    hasContentSuggestion: Boolean(contentSuggestion),
   });
   const reply = decision.kind === 'reply' ? decision.reply : undefined;
-  const ready = decision.kind === 'offer';
+  const ready = decision.kind === 'offer' && Boolean(contentSuggestion);
   const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' ? decision.kind : undefined;
   const serviceError = service === 'sync-error' || service === 'inbox-error';
   const ordinaryMessage = classGuidanceMessage(guidance, locale);
   const message = service ? companionServiceMessage(service, locale, recovering)
     : reply ? { id: reply.id, title: copy.reply, detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
-    : ready ? { ...ordinaryMessage, title: copy.ready, detail: copy.offer, detailEmphasis: locale === 'ar' ? 'واتساب' : 'WhatsApp', action: copy.whatsapp } : ordinaryMessage;
+    : ready && contentSuggestion ? contentSuggestionMessage(contentSuggestion, locale, today) : ordinaryMessage;
   const retry = async () => {
     if (recovery.current || !isNetworkOnline()) return;
     const attempt = {};
@@ -97,7 +112,7 @@ export function ClassAssistant({
   };
   const openContact = () => {
     const target = reply?.classId ? classes.find(item => item.id === reply.classId)
-      : service ? undefined : 'classId' in guidance ? classes.find(item => item.id === guidance.classId) : undefined;
+      : service ? undefined : ready ? contentSuggestion?.target : 'classId' in guidance ? classes.find(item => item.id === guidance.classId) : undefined;
     setContact({ owner: messaging?.owner, target, initialReplyTo: reply?.id, context: !ready && !reply ? message.detail : undefined });
     setContactStarted(true);
     setContactOpen(true);
@@ -108,15 +123,17 @@ export function ClassAssistant({
       locale={locale}
       message={message}
       contactLabel={!reply ? copy.contact : undefined}
-      primaryAction={ready && guidance.step === 'ready' ? <WhatsAppContact locale={locale} target={classes.find(item => item.id === guidance.classId)} /> : undefined}
+      primaryAction={ready && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
+        intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
+        onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
       onContact={openContact}
       mood={behavior.mood}
-      robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : behavior.robotAction}
-      problemCount={(service ? Number(serviceError) : behavior.problemCount) + (messaging?.messages.filter(item => item.replyTo).length ?? 0)}
-      antennaFlash={service ? serviceError : !reply && behavior.antennaFlash}
-      headRoundness={service ? serviceError ? 55 : 90 : behavior.headRoundness}
-      autoSleepMs={service ? serviceError ? 0 : 30000 : behavior.autoSleepMs}
-      attentionKey={service ? serviceError ? service : undefined : reply?.id ?? (['ready', 'checking', 'active-session'].includes(guidance.step) ? undefined : guidanceKey(guidance))}
+      robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : ready ? 'success' : behavior.robotAction}
+      problemCount={(service ? Number(serviceError) : ready ? 0 : behavior.problemCount) + pendingAdminMessages(messaging?.messages ?? []).filter(item => item.replyTo).length}
+      antennaFlash={service ? serviceError : !reply && !ready && behavior.antennaFlash}
+      headRoundness={service ? serviceError ? 55 : 90 : ready ? 100 : behavior.headRoundness}
+      autoSleepMs={service ? serviceError ? 0 : 30000 : ready ? 25000 : behavior.autoSleepMs}
+      attentionKey={service ? serviceError ? service : undefined : reply?.id ?? (ready || ['ready', 'checking', 'active-session'].includes(guidance.step) ? undefined : guidanceKey(guidance))}
       actionBusy={recovering}
       keepOpenOnAction={serviceError}
       onAction={

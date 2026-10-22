@@ -102,17 +102,6 @@ export function diagnosePedagogicalState({
     step: 'checking', targetClass: classes.find(item => item.id === preferredClassId) ?? classes[0],
     problemCount: 0, unscheduledClasses, emptyNotebookClasses: [], notebookIssues: [],
   };
-  if (unscheduledClasses.length > 0) {
-    const target = unscheduledClasses.find(item => item.id === preferredClassId) ?? unscheduledClasses[0];
-    return {
-      step: 'schedule',
-      targetClass: target,
-      problemCount: unscheduledClasses.length,
-      unscheduledClasses,
-      emptyNotebookClasses: [],
-      notebookIssues: [],
-    };
-  }
 
   // 3. Séance active en direct (priorité pédagogique immédiate)
 
@@ -169,6 +158,12 @@ export function diagnosePedagogicalState({
       notebookIssues,
     };
   }
+
+  // Inspect notebooks before routine setup so unreadable content is never masked by an offer.
+  if (unscheduledClasses.length > 0) return {
+    step: 'schedule', targetClass: unscheduledClasses.find(item => item.id === preferredClassId) ?? unscheduledClasses[0],
+    problemCount: unscheduledClasses.length, unscheduledClasses, emptyNotebookClasses, notebookIssues,
+  };
 
   // Cahiers entièrement vierges
   if (emptyNotebookClasses.length > 0 && typeof readLessons === 'function') {

@@ -70,6 +70,7 @@ import { captureWorkspaceLease, registerWorkspaceWriter } from '@/infrastructure
 import { hasMathContent } from '@/lib/text/math';
 import { useSync } from '@/contexts/SyncContext';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
+import { recordNotebookOrigin } from '@/infrastructure/storage/notebookOrigin';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -320,6 +321,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       try {
           const prepared = await loadPredefinedContent(predefinedOffer);
           if (!workspaceIsActive()) return;
+          recordNotebookOrigin(classInfo.id, 'predefined', workspaceIsActive);
           setState(
             () => withStarterDiagnostic(
               prepared.lessonsData,
@@ -335,7 +337,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       } catch {
           if (workspaceIsActive()) toast.error(t('editorNotice.predefinedLoadError'));
       }
-  }, [predefinedOffer, setState, setEditorState, t, workspaceIsActive]);
+  }, [predefinedOffer, setState, setEditorState, t, workspaceIsActive, classInfo.id]);
 
   // Échap : efface la sélection (si aucune modale/édition n'est ouverte, elles gèrent leur propre Échap)
   useEffect(() => {
@@ -893,6 +895,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
 
       reviewNotebookChange(lessonsData, nextLessons, () => {
+        if (isNotebookAwaitingContent) recordNotebookOrigin(classInfo.id, 'personal', workspaceIsActive);
         setState(() => nextLessons, action);
         if (notificationMessage) {
           addNewItemHighlight(newId);
@@ -902,7 +905,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         setSelectionState(createSelectionState());
         handleModalClose();
       });
-  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange, recordSessionSettings, isNotebookAwaitingContent]);
+  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t, locale, config, classInfo.id, reviewNotebookChange, recordSessionSettings, isNotebookAwaitingContent, workspaceIsActive]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -1153,6 +1156,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return false;
         }
         lessonsDataRef.current = nextLessons;
+        if (mode === 'replace' || isNotebookAwaitingContent) recordNotebookOrigin(classInfo.id, 'imported', workspaceIsActive);
         contentDirectionRef.current = nextDirection;
         saveStatusRef.current = 'saved';
         setSelectionState(createSelectionState());

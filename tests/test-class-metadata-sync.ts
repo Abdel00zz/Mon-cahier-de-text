@@ -39,3 +39,14 @@ test('un ancien override administratif conserve ses champs et une version invali
     assert.equal(mergeClassMetadata(base, { ...base, name: 'Old device' }, { ...base, name: 'Direction' }).name, 'Direction');
     assert.throws(() => assertValidClasses([{ ...base, metadataUpdatedAt: 'not-a-date' }]));
 });
+
+test('explicit notebook setup survives validation, cloud merging and admin identity edits without guessing legacy sources', () => {
+    const personal = updateClassMetadata(base, { notebookContentOrigin: 'personal' }, 1000);
+    const predefined = updateClassMetadata(personal, { notebookContentOrigin: 'predefined' }, 2000);
+    const stored = assertValidClasses([predefined])[0];
+    assert.equal(stored.notebookContentOrigin, 'predefined');
+    assert.equal(mergeClassMetadata(stored, personal).notebookContentOrigin, 'predefined');
+    assert.equal(mergeClassMetadata(stored, stored, { ...stored, name: 'Renamed', metadataUpdatedAt: new Date(3000).toISOString() }).notebookContentOrigin, 'predefined');
+    assert.equal(assertValidClasses([base])[0].notebookContentOrigin, undefined);
+    assert.throws(() => assertValidClasses([{ ...base, notebookContentOrigin: 'guessed' }]));
+});

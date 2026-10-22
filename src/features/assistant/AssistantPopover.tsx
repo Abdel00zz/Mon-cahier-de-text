@@ -157,7 +157,7 @@ export function AssistantPopover({
             </div> : <h2 id={`${id}-title`} className="sr-only">{message.title}</h2>}
             <p id={`${id}-detail`} className="assistant-panel__detail">
               {emphasis && emphasisIndex >= 0 ? <>
-                {message.detail.slice(0, emphasisIndex)}<strong className="assistant-panel__emphasis">{emphasis}</strong>{message.detail.slice(emphasisIndex + emphasis.length)}
+                {message.detail.slice(0, emphasisIndex)}<strong className="assistant-panel__emphasis"><bdi>{emphasis}</bdi></strong>{message.detail.slice(emphasisIndex + emphasis.length)}
               </> : message.detail}
             </p>
             {primaryAction ?? (onAction && message.action && (

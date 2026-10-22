@@ -2,6 +2,8 @@ export type Cycle = 'college' | 'lycee' | 'prepa';
 export type AppLocale = 'fr' | 'en' | 'ar';
 /** Sens de lecture propre au contenu d'un cahier, indépendant de la langue de l'interface. */
 export type ContentDirection = 'ltr' | 'rtl';
+/** Explicit setup choice; absent on legacy notebooks whose origin is unknown. */
+export type NotebookContentOrigin = 'personal' | 'predefined' | 'imported';
 
 export interface ClassInfo {
   id: string;
@@ -20,6 +22,8 @@ export interface ClassInfo {
   /** @deprecated Legacy metadata preserved for old clients; progression only uses chapter title dates. */
   courseStartDate?: string;
   curriculumSourceId?: string;
+  /** How the teacher started/replaced this notebook, not a claim about authorship of every row. */
+  notebookContentOrigin?: NotebookContentOrigin;
   /** Associations confirmées, invalidées si le titre ou l'index du cahier change. */
   curriculumChapterMatches?: Record<string, { index: number; title: string }[]>;
 }

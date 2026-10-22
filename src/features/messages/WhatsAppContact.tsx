@@ -3,10 +3,12 @@ import type { AppLocale, ClassInfo } from '../../types';
 import { useTeacherMessaging } from '../../contexts/TeacherMessagingContext';
 import { SupportWhatsAppBlock, SupportWhatsAppButton } from '../../components/support/SupportWhatsAppBlock';
 import { conversationCopy } from './conversationCopy';
+import type { SupportContext } from '../../constants/support';
 
 /** Opening WhatsApp stays synchronous; recording the click never blocks the external app. */
-export function WhatsAppContact({ locale, target, hint, label }: {
+export function WhatsAppContact({ locale, target, hint, label, intent, onOpened }: {
     locale: AppLocale; target?: Pick<ClassInfo, 'id' | 'name'>; hint?: string; label?: string;
+    intent?: SupportContext['intent']; onOpened?: () => void;
 }) {
     const inbox = useTeacherMessaging();
     const copy = conversationCopy(locale);
@@ -33,7 +35,7 @@ export function WhatsAppContact({ locale, target, hint, label }: {
             if (scope.current === active) { pending.current = false; setBusy(false); }
         }
     };
-    const props = { locale, label: label ?? copy.whatsapp, context: { teacherName: inbox?.teacherName, className: target?.name }, onContact: () => { void record(); } };
+    const props = { locale, label: label ?? copy.whatsapp, context: { teacherName: inbox?.teacherName, className: target?.name, intent }, onContact: () => { void record(); onOpened?.(); } };
     return <div>
         {hint ? <SupportWhatsAppBlock {...props} hint={hint} /> : <SupportWhatsAppButton {...props} className="w-full" />}
         {(failed || busy) && <div role="status" className="mt-2 text-xs text-muted-foreground">

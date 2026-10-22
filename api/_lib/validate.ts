@@ -268,6 +268,7 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
   return classes.map(raw => {
     if (!raw || typeof raw !== 'object') throw new HttpError(400, 'Classe invalide.');
     const item = raw as Partial<ClassInfo>;
+    if (item.notebookContentOrigin !== undefined && !['personal', 'predefined', 'imported'].includes(item.notebookContentOrigin)) throw new HttpError(400, 'Origine du contenu invalide.');
     const id = assertStringField(item.id, 'Identifiant de classe', 120);
     if (seen.has(id)) throw new HttpError(400, 'Identifiants de classes dupliqués.');
     seen.add(id);
@@ -313,6 +314,7 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
       group: item.group ? assertStringField(item.group, 'Groupe', 30) : undefined,
       courseStartDate: item.courseStartDate,
       curriculumSourceId: item.curriculumSourceId,
+      ...(item.notebookContentOrigin ? { notebookContentOrigin: item.notebookContentOrigin } : {}),
       curriculumChapterMatches,
     };
   });

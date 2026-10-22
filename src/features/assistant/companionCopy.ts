@@ -152,12 +152,6 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
 
   if (guidance.step === 'schedule') {
     context = pendingClassesLabel(guidance.remaining, locale);
-    if (guidance.remaining > 1) detail = locale === 'fr'
-      ? `${new Intl.NumberFormat(locale).format(guidance.remaining)} classes à planifier. ${guidance.remaining > 5 ? 'Une à la fois : on commence ici ?' : 'Commençons par celle-ci.'}`
-      : locale === 'en' ? `${new Intl.NumberFormat(locale).format(guidance.remaining)} classes need a timetable. Let’s start with this one.` : `${context}. خطوة بخطوة، نبدأ بهذا القسم؟`;
-    if (guidance.remaining > 1) detailEmphasis = locale === 'fr' ? `${new Intl.NumberFormat(locale).format(guidance.remaining)} classes`
-      : locale === 'en' ? `${new Intl.NumberFormat(locale).format(guidance.remaining)} classes`
-      : guidance.remaining === 2 ? 'قسمان' : `${new Intl.NumberFormat(locale).format(guidance.remaining)} ${guidance.remaining <= 10 ? 'أقسام' : 'قسماً'}`;
   } else if (guidance.step === 'notebook-issue') {
     context = notebookIssuesLabel(guidance.remaining, locale);
     detail = ADVICE_COPY[locale][guidance.issueCode];
@@ -167,8 +161,25 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
     }
   } else if (guidance.step === 'notebook-empty') {
     context = emptyNotebooksLabel(guidance.remaining, locale);
-    if (guidance.remaining > 1) detail = locale === 'fr' ? `${context}. Commençons par celui-ci.`
-      : locale === 'en' ? `${context}. Let’s start with this one.` : `${context}. نبدأ بهذا الدفتر؟`;
+  }
+
+  const name = guidance.step === 'create' ? undefined
+    : formatLocalizedClassDisplayName(guidance.className, locale).replace(/[\r\n\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (name) {
+    if (guidance.step === 'schedule') detail = locale === 'fr' ? `Fixons les créneaux de ${name} pour retrouver ses séances dans votre emploi du temps.`
+      : locale === 'ar' ? `نحدّد حصص قسم ${name} لتظهر في استعمال الزمن وتتابعها بسهولة؟`
+        : `Shall we set the weekly slots for ${name} so you can find its sessions in your timetable?`;
+    else if (guidance.step === 'active-session') detail = locale === 'fr' ? `Votre séance avec ${name} est en cours ; sélectionnez le contenu réalisé pour lui attribuer la date de cette séance.`
+      : locale === 'ar' ? `حصتك مع قسم ${name} جارية؛ حدّد المحتوى المنجز لإسناد تاريخ هذه الحصة إليه.`
+        : `Your session with ${name} is in progress; select the content covered to assign this session’s date.`;
+    else if (guidance.step === 'notebook-empty') detail = locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
+      : locale === 'ar' ? `دفتر قسم ${name} ينتظر محتواه الأول؛ نبدأ بما ترغب في تدريسه؟`
+        : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`;
+    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Retrouvons le cahier de ${name} pour préparer la suite à votre rythme.`
+      : locale === 'ar' ? `نفتح دفتر قسم ${name} لتحضير ما يلي حسب وتيرتك؟`
+        : `Shall we open the notebook for ${name} and prepare what comes next at your own pace?`;
+    else detail = `${locale === 'ar' ? `في دفتر قسم ${name}، ` : locale === 'en' ? `For ${name}: ` : `Dans le cahier de ${name} : `}${detail}`;
+    detailEmphasis = name;
   }
 
   return {
@@ -178,9 +189,6 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
     ...(detailEmphasis ? { detailEmphasis } : {}),
     action: base.action,
     ...(context ? { context } : {}),
-    ...(guidance.step !== 'create'
-      ? { subject: formatLocalizedClassDisplayName(guidance.className, locale) }
-      : {}),
   };
 }
 

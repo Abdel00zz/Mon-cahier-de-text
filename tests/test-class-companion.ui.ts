@@ -160,7 +160,8 @@ test('message et humeur partagent le même nombre réel de classes à planifier'
       const message = classGuidanceMessage(guidance, locale);
       assert.ok(message.context);
       assert.ok(message.action);
-      assert.ok(message.subject);
+      assert.ok(message.detailEmphasis && message.detail.includes(message.detailEmphasis));
+      assert.equal(message.subject, undefined, 'le nom reste dans la phrase, sans titre détaché');
       if (remaining >= 3) assert.ok(message.context.includes(new Intl.NumberFormat(locale).format(remaining)));
     }
   }

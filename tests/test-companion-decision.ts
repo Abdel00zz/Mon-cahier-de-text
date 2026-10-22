@@ -6,7 +6,7 @@ import type { AdminMessage } from '../src/types';
 const signals: Parameters<typeof decideCompanion>[0] = {
   guidance: { step: 'ready', classId: 'a', className: 'Classe A' },
   authenticated: true, online: true, syncStatus: 'synced', transfer: 'ready',
-  inboxLoaded: true, inboxFailed: false, messages: [], hasNotebookReader: true,
+  inboxLoaded: true, inboxFailed: false, messages: [], hasNotebookReader: true, hasContentSuggestion: true,
 };
 const reply: AdminMessage = { id: 'admin-first', sender: 'admin', title: 'Réponse', body: 'Bonjour',
   createdAt: '2026-10-20T12:00:00Z', replyTo: 'teacher-question' };
@@ -22,7 +22,7 @@ test('unknown, pending and failed services never produce a personalization offer
     [{ online: false }, 'offline'], [{ syncStatus: 'offline' }, 'offline'],
     [{ syncStatus: 'pending' }, 'syncing'], [{ syncStatus: 'syncing' }, 'syncing'], [{ syncStatus: 'idle' }, 'checking'],
     [{ transfer: 'notebooks' }, 'syncing'], [{ inboxLoaded: false }, 'checking'],
-    [{ inboxFailed: true }, 'inbox-error'], [{ hasNotebookReader: false }, 'guidance'],
+    [{ inboxFailed: true }, 'inbox-error'], [{ hasNotebookReader: false }, 'guidance'], [{ hasContentSuggestion: false }, 'guidance'],
   ] as const) assert.equal(decideCompanion({ ...signals, ...patch }).kind, expected);
   assert.equal(decideCompanion(signals).kind, 'offer');
 });

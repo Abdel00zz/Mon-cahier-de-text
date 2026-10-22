@@ -8,5 +8,6 @@ export function withCurriculumSettings(base: ClassInfo, settings: ClassInfo): Cl
     courseStartDate: settings.courseStartDate,
     curriculumSourceId: settings.curriculumSourceId,
     curriculumChapterMatches: settings.curriculumChapterMatches,
+    notebookContentOrigin: settings.notebookContentOrigin,
   };
 }

@@ -12,6 +12,7 @@ interface CompanionSignals {
   inboxFailed: boolean;
   messages: readonly AdminMessage[];
   hasNotebookReader: boolean;
+  hasContentSuggestion?: boolean;
 }
 
 export type CompanionDecision =
@@ -31,11 +32,13 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
   const reply = pendingAdminMessages(signals.messages).filter(message => message.replyTo)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
   if (authenticated && reply) return { kind: 'reply', reply };
-  if (guidance.step !== 'ready') return { kind: 'guidance' };
+  const canSuggestContent = signals.hasNotebookReader && signals.hasContentSuggestion
+    && ['ready', 'schedule', 'notebook-empty'].includes(guidance.step);
+  if (!canSuggestContent && guidance.step !== 'ready') return { kind: 'guidance' };
   if (authenticated) {
     if (!signals.online || syncStatus === 'offline') return { kind: 'offline' };
     if (syncStatus === 'pending' || syncStatus === 'syncing') return { kind: 'syncing' };
     if (!signals.inboxLoaded || syncStatus === 'idle') return { kind: 'checking' };
   }
-  return { kind: signals.hasNotebookReader ? 'offer' : 'guidance' };
+  return { kind: canSuggestContent && signals.online ? 'offer' : 'guidance' };
 }

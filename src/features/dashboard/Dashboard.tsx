@@ -270,6 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         () => computeDynamicCanvasStyle(filteredClasses, activeSessionClassIds),
         [filteredClasses, activeSessionClassIds],
     );
+    const assistantVisibleClassIds = useMemo(() => filteredClasses.map(item => item.id), [filteredClasses]);
     // Measure only when order, session title or display mode changes, not on
     // unrelated sync/config renders. Position-only animation keeps text crisp.
     const classLayoutKey = useMemo(
@@ -380,6 +381,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             classes={classes}
                             config={config}
                             preferredClassId={preferredClassId}
+                            visibleClassIds={assistantVisibleClassIds}
                             activeSessionClassIds={activeSessionClassIds}
                             readLessons={readAssistantLessons}
                             onCreateClass={() => setCreateModalOpen(true)}

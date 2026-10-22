@@ -1,5 +1,5 @@
 import React from 'react';
-import { buildSupportWhatsAppUrl, hasSupportWhatsApp } from '@/constants/support';
+import { buildSupportWhatsAppUrl, hasSupportWhatsApp, type SupportContext } from '@/constants/support';
 
 type SupportLocale = 'fr' | 'ar' | 'en';
 
@@ -25,7 +25,7 @@ interface SupportWhatsAppBlockProps {
   /** Libellé du bouton. */
   label: string;
   className?: string;
-  context?: { teacherName?: string; className?: string };
+  context?: SupportContext;
   onContact?: () => void;
 }
 
