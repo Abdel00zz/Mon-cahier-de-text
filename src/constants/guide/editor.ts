@@ -18,7 +18,7 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
             ]
         },
         {
-            "title": "Déplacer directement un élément",
+            "id": "move", "title": "Déplacer directement un élément",
             "body": "Maintenez le contenu jusqu’à son soulèvement, puis faites-le glisser vers un emplacement autorisé. Le repère indique sa destination. Vous pouvez aussi maintenir, relâcher, puis toucher la destination. Sur téléphone, un balayage sans maintien fait défiler le tableau. Échap annule un déplacement en cours."
         },
         {
@@ -48,7 +48,7 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
             ]
         },
         {
-            "title": "نقل عنصر مباشرة",
+            "id": "move", "title": "نقل عنصر مباشرة",
             "body": "اضغط مطولاً على المحتوى حتى يرتفع، ثم اسحبه إلى موضع مسموح. يوضح المؤشر وجهة الإدراج. يمكنك أيضاً الضغط المطول ثم الإفلات ولمس الوجهة. على الهاتف، السحب دون انتظار يمرّر الجدول. يلغي مفتاح Échap النقل الجاري."
         },
         {

@@ -19,6 +19,8 @@ import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { hasSupportWhatsApp } from '@/constants/support';
 import { pendingAdminMessages } from '@/domain/messages/conversation';
 import { readNotebookActivity } from '@/infrastructure/storage/companionActivity';
+import { companionHelpReference } from '@/domain/assistant/companionHelp';
+import { useCompanionGuide } from './useCompanionGuide';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 
@@ -50,6 +52,7 @@ export function ClassAssistant({
   onOpenClass,
 }: ClassAssistantProps) {
   const messaging = useTeacherMessaging();
+  const { guide, openGuide, closeGuide } = useCompanionGuide(messaging?.owner);
   const copy = conversationCopy(locale);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
@@ -130,6 +133,8 @@ export function ClassAssistant({
     <AssistantPopover
       locale={locale}
       message={message}
+      helpReference={companionHelpReference(decision, guidance, contentSuggestion)}
+      onOpenGuide={openGuide}
       contactLabel={!reply ? copy.contact : undefined}
       primaryAction={ready && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
@@ -163,6 +168,7 @@ export function ClassAssistant({
             }
       }
     />
+    {guide && <guide.Component isOpen onClose={closeGuide} initialReference={guide.reference} />}
     {contactStarted && contact.owner === messaging?.owner && <Suspense fallback={<p role="status">{copy.loading}</p>}>
       <TeacherConversation key={`${messaging?.owner ?? 'guest'}:${contact.target?.id ?? ''}:${contact.initialReplyTo ?? ''}`} open={contactOpen} onClose={() => setContactOpen(false)} locale={locale} {...contact} />
     </Suspense>}

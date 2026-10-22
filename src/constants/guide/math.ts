@@ -6,7 +6,7 @@ export const math = chapter('math', ['types', 'appearance', 'troubleshooting'], 
     keywords: 'LaTeX KaTeX mathématiques formules scientifiques équations fractions bilingue RTL LTR recherche',
     sections: [
       {
-        title: 'Saisie rigoureuse des expressions mathématiques',
+        id: 'formulas', title: 'Saisie rigoureuse des expressions mathématiques',
         steps: [
           'Pour insérer une formule dans le flux du texte, encadrez-la par des dollars simples : $f(x) = ax^2 + bx + c$.',
           'Pour une formule mise en valeur centrée, utilisez des doubles dollars : $$\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$$.',
@@ -30,7 +30,7 @@ export const math = chapter('math', ['types', 'appearance', 'troubleshooting'], 
     keywords: 'رياضيات ترميز علمي معادلات صيغ LaTeX KaTeX لاتكس ماثجاكس كسور نهايات متجهات بحث',
     sections: [
       {
-        title: 'كتابة الصيغ والرموز الرياضية',
+        id: 'formulas', title: 'كتابة الصيغ والرموز الرياضية',
         steps: [
           'لكتابة صيغة رياضية مدمجة في السطر، ضع التعبير بين علامتي دولار: $f(x) = ax^2 + bx + c$.',
           'للصيغ الرياضية المستقلة في سطر منفصل، استخدم علامتي دولار مضاعفتين: $$\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$$.',

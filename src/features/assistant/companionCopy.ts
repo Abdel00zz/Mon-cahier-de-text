@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/types';
 import type { ClassGuidance } from '@/domain/assistant/classGuidance';
-import { formatLocalizedClassDisplayName } from '@/constants/class-levels';
+import { companionClassName } from './companionClassName';
 
 export interface CompanionMessage {
   id: string;
@@ -164,7 +164,7 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
   }
 
   const name = guidance.step === 'create' ? undefined
-    : formatLocalizedClassDisplayName(guidance.className, locale).replace(/[\r\n\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim();
+    : companionClassName(guidance.className, locale);
   if (name) {
     if (guidance.step === 'schedule') detail = locale === 'fr' ? `Fixons les créneaux de ${name} pour retrouver ses séances dans votre emploi du temps.`
       : locale === 'ar' ? `لنضبط حصص قسم ${name} في استعمال الزمن لتتابع مواعيد حصصك بكل سهولة ووضوح.`

@@ -29,7 +29,7 @@ export const devices = chapter('devices', ['notifications', 'backup', 'troublesh
         ],
       },
       {
-        title: 'Suivre le statut de synchronisation',
+        id: 'sync-status', title: 'Suivre le statut de synchronisation',
         items: [
           { term: 'Synchronisé', detail: 'L’ensemble de vos saisies locales est sécurisé et enregistré sur le serveur.' },
           { term: 'En cours / En attente', detail: 'Des séances ou modifications locales sont prêtes à être transmises dès le rétablissement de la connexion.' },
@@ -37,7 +37,7 @@ export const devices = chapter('devices', ['notifications', 'backup', 'troublesh
         ],
       },
       {
-        title: 'Préserver l’intégrité de vos données de cours',
+        id: 'data-safety', title: 'Préserver l’intégrité de vos données de cours',
         body: 'Les données saisies hors ligne sont conservées précieusement sur l’appareil. Ne videz pas le cache du navigateur et ne désinstallez pas l’application tant qu’une synchronisation réussie n’a pas été confirmée. Évitez de modifier simultanément le même cahier sur deux appareils différents avec des modifications en attente.',
       },
     ],
@@ -70,7 +70,7 @@ export const devices = chapter('devices', ['notifications', 'backup', 'troublesh
         ],
       },
       {
-        title: 'متابعة حالة المزامنة السحابية',
+        id: 'sync-status', title: 'متابعة حالة المزامنة السحابية',
         items: [
           { term: 'تمت المزامنة بنجاح', detail: 'كافة التعديلات والحصص المدوّنة محفوظة بأمان ومطابقة على السحابة.' },
           { term: 'قيد الإرسال / في الانتظار', detail: 'توجد حصص أو بيانات جديدة بانتظار الإرسال بمجرد استقرار الاتصال بالإنترنت.' },
@@ -78,7 +78,7 @@ export const devices = chapter('devices', ['notifications', 'backup', 'troublesh
         ],
       },
       {
-        title: 'تأمين المعطيات المخزنة محلياً',
+        id: 'data-safety', title: 'تأمين المعطيات المخزنة محلياً',
         body: 'يضمن النظام حفظ كل كلمة تدونها في الذاكرة المحلية للجهاز أولاً بأول. تجنب مسح بيانات المتصفح أو إزالة التطبيق أثناء وجود تعديلات معلقة قبل تأكيد المزامنة السحابية. تجنب تعديل الدفتر نفسه في الوقت ذاته من جهازين مختلفين.',
       },
     ],

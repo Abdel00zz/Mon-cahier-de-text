@@ -6,18 +6,21 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
 import { APP_VERSION } from '@/platform/appVersion';
+import type { GuideReference } from '@/constants/guide/model';
+import { resolveGuideReference } from '@/constants/guide/navigation';
 import './guide.css';
 
-interface GuideModalProps { isOpen: boolean; onClose: () => void }
+interface GuideModalProps { isOpen: boolean; onClose: () => void; initialReference?: GuideReference }
 
-export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
+export const GuideModal = ({ isOpen, onClose, initialReference }: GuideModalProps) => {
   const { locale } = useLocale();
   const lang = locale === 'ar' ? 'ar' : 'fr';
   const [query, setQuery] = useState('');
-  const [chapterId, setChapterId] = useState('start');
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [chapterId, setChapterId] = useState(initialReference?.chapterId ?? 'start');
+  const [isSidebarOpen, setSidebarOpen] = useState(!initialReference);
   const scrollRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const sectionRef = useRef<HTMLHeadingElement>(null);
   const isAr = lang === 'ar';
   const entries = isAr ? GUIDE_AR : GUIDE_FR;
   const results = useMemo(() => searchGuide(entries, query), [entries, query]);
@@ -27,12 +30,18 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
   useEffect(() => {
     if (!isOpen) return;
     setQuery('');
-    setChapterId('start');
-    setSidebarOpen(true);
-  }, [isOpen, locale]);
+    setChapterId(resolveGuideReference(entries, initialReference ?? { chapterId: 'start' }).chapter?.id ?? 'start');
+    setSidebarOpen(!initialReference);
+  }, [isOpen, locale, initialReference?.chapterId, initialReference?.sectionId]);
 
-  useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [active?.id, lang, isOpen]);
-  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, [chapterId]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const section = sectionRef.current;
+    const reader = scrollRef.current;
+    if (reader) reader.scrollTo({ top: section
+      ? section.getBoundingClientRect().top - reader.getBoundingClientRect().top + reader.scrollTop - 16 : 0 });
+    (section ?? headingRef.current)?.focus({ preventScroll: true });
+  }, [active?.id, lang, isOpen, initialReference?.sectionId]);
 
   const openChapter = (id: string, clearSearch = false) => {
     if (clearSearch) setQuery('');
@@ -119,7 +128,7 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
             </header>
             {active.image && <GuideFigure key={`${active.image.key}-${lang}`} image={active.image} lang={lang} />}
             {active.sections.map((section, index) => <section key={`${active.id}-${index}`}>
-              <h3>{section.title}</h3>
+              <h3 tabIndex={-1} ref={active.id === initialReference?.chapterId && section.id === initialReference.sectionId && section.id ? sectionRef : undefined}>{section.title}</h3>
               {section.body && <p dir="auto"><GuideText>{section.body}</GuideText></p>}
               {section.steps && <ol className="guide-steps">{section.steps.map((step, i) =>
                 <li key={i}><span dir="auto"><GuideText>{step}</GuideText></span></li>)}</ol>}

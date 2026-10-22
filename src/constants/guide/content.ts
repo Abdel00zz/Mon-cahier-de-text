@@ -6,7 +6,7 @@ export const content = chapter('content', ['editor', 'curriculum', 'backup'], {
     keywords: 'programme officiel curriculum import progression pédagogique rédaction libre service préparation cahier de textes WhatsApp cours personnels diagnostic',
     sections: [
       {
-        title: 'Trois démarches de planification',
+        id: 'prepare', title: 'Trois démarches de planification',
         steps: [
           'Import du programme officiel : À l’ouverture d’un nouveau cahier de textes, l’application vous propose d’importer le référentiel officiel correspondant à votre cycle, niveau et matière, intégrant l’évaluation diagnostique de rentrée.',
           'Rédaction libre : Concevez et saisissez directement vos propres chapitres, notions et activités selon votre démarche didactique et le rythme de vos élèves.',
@@ -15,7 +15,7 @@ export const content = chapter('content', ['editor', 'curriculum', 'backup'], {
         ],
       },
       {
-        title: 'Gestion des fichiers de progression (JSON)',
+        id: 'transfer', title: 'Gestion des fichiers de progression (JSON)',
         body: 'Vous pouvez importer vos propres fiches de progression via l’outil de transfert de cours. Veillez à distinguer l’ajout de chapitres complémentaires du remplacement complet du cahier ouvert. Exportez la version actuelle avant tout remplacement.',
       },
     ],
@@ -26,7 +26,7 @@ export const content = chapter('content', ['editor', 'curriculum', 'backup'], {
     keywords: 'منهاج رسمي توزيع سنوي توجيهات تربوية استيراد تدرج بيداغوجي تحرير حر خدمة إعداد دفاتر النصوص جذاذات دروس خاصة واتساب تقويم تشخيصي',
     sections: [
       {
-        title: 'ثلاثة مسارات مرنة لتخطيط وتجهيز الدفتر',
+        id: 'prepare', title: 'ثلاثة مسارات مرنة لتخطيط وتجهيز الدفتر',
         steps: [
           'استيراد المنهاج الرسمي: عند فتح دفتر نصوص فارغ، يقترح التطبيق بنقرة واحدة استيراد التوزيع السنوي الرسمي المعتمد من وزارة التربية الوطنية لمادتك وسلكك الدراسي، مع إدراج مرحلة التقويم التشخيصي والدعم في مستهل البرنامج.',
           'التحرير الحر: يمكنك الشروع مباشرة في إنشاء وحدات وفصول ودروس خاصة بك، وضبط الأنشطة والتمارين وصيغ التقويم وفق هندستك البيداغوجية المستقلة.',
@@ -35,7 +35,7 @@ export const content = chapter('content', ['editor', 'curriculum', 'backup'], {
         ],
       },
       {
-        title: 'استيراد التدرجات الخاصة (ملفات JSON)',
+        id: 'transfer', title: 'استيراد التدرجات الخاصة (ملفات JSON)',
         body: 'يمكنك تصدير واستيراد تخطيطك الدراسي المخصص عبر نافذة نقل البيانات. انتبه للاختيار بين «إضافة عناصر» و«استبدال شامل» للدفتر، واحتفظ بنسخة احتياطية قبل أي عملية استبدال.',
       },
     ],

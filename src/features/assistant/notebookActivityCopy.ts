@@ -9,9 +9,9 @@ const phrases: Record<AppLocale, Record<NotebookActivityKind, (name: string) => 
     order: n => `Vous avez réorganisé le cahier de ${n} ; souhaitez-vous adapter aussi son contenu à votre progression ?`,
   },
   ar: {
-    content: n => `حُفظت تعديلاتك لقسم ${n}؛ هل تودّ إثراء هذا المحتوى بتمارين مخصّصة؟`,
-    dates: n => `حُدّثت معلومات الحصص لقسم ${n}؛ هل ترغب في تحضير ما يلي بمحتوى يناسب تدرّجك؟`,
-    order: n => `أعدت تنظيم دفتر قسم ${n}؛ هل تودّ تكييف محتواه أيضاً مع تدرّجك؟`,
+    content: n => `لإثراء المحتوى الذي عدّلته، هل تودّ إعداد تمارين مخصّصة لقسم ${n} بمساعدة الفريق؟`,
+    dates: n => `بعد تحديث معلومات الحصص، هل ترغب في تحضير محتوى الحصص القادمة لقسم ${n} مع الفريق؟`,
+    order: n => `لمواكبة الترتيب الجديد لدفترك، هل تودّ تكييف محتوى قسم ${n} مع تدرّجك بمساعدة الفريق؟`,
   },
   en: {
     content: n => `Your changes for ${n} are saved; would you like to enrich this content with tailored exercises?`,

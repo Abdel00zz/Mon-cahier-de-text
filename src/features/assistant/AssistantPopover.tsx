@@ -7,6 +7,9 @@ import { companionLabels, type CompanionMessage } from './companionCopy';
 import { attachAssistantDismiss } from './assistantPopoverController';
 import { attachAssistantPlacement } from './assistantPlacement';
 import { useCompanionWelcome } from './welcomeSession';
+import type { GuideReference } from '../../constants/guide/model';
+import { AssistantGuideHelp } from './AssistantGuideHelp';
+import { companionHelpCopy } from './companionHelpCopy';
 import './companion.css';
 
 interface AssistantPopoverProps {
@@ -27,6 +30,8 @@ interface AssistantPopoverProps {
   primaryAction?: ReactNode;
   dismissLabel?: string;
   onDismiss?: () => void;
+  helpReference?: GuideReference;
+  onOpenGuide?: (reference: GuideReference, signal?: AbortSignal) => Promise<boolean>;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -64,16 +69,25 @@ export function AssistantPopover({
   headRoundness,
   autoSleepMs,
   onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
-  dismissLabel, onDismiss,
+  dismissLabel, onDismiss, helpReference, onOpenGuide,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
   const [seen, setSeen] = useState<string | undefined>();
   const [hovered, setHovered] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpTrigger = useRef<HTMLButtonElement>(null);
+  const wasHelping = useRef(false);
   const id = useId();
   const labels = companionLabels(locale);
   const emphasis = message.detailEmphasis;
   const emphasisIndex = emphasis ? message.detail.indexOf(emphasis) : -1;
+
+  useEffect(() => { setHelpOpen(false); }, [open, message.id, locale]);
+  useLayoutEffect(() => {
+    if (open && !helpOpen && wasHelping.current) helpTrigger.current?.focus({ preventScroll: true });
+    wasHelping.current = helpOpen;
+  }, [open, helpOpen]);
 
   const handleDismissAndClose = useCallback((restoreFocus = false) => {
     onDismiss?.();
@@ -139,7 +153,7 @@ export function AssistantPopover({
         role={open ? 'dialog' : undefined}
         aria-modal={open ? false : undefined}
         aria-labelledby={open ? `${id}-title` : undefined}
-        aria-describedby={open ? `${id}-detail` : undefined}
+        aria-describedby={open && !helpOpen ? `${id}-detail` : undefined}
         className="assistant-panel"
         data-state={robotAction ?? mood}
       >
@@ -149,12 +163,18 @@ export function AssistantPopover({
               <button
                 type="button"
                 className="assistant-panel__close"
-                onClick={() => handleDismissAndClose(true)}
+                onClick={() => helpOpen ? close(true) : handleDismissAndClose(true)}
                 aria-label={labels.close}
               >
                 <X size={14} strokeWidth={1.25} absoluteStrokeWidth aria-hidden="true" />
               </button>
             </div>
+            {helpOpen && helpReference && onOpenGuide ? <>
+              <h2 id={`${id}-title`} className="sr-only">{companionHelpCopy(locale).search}</h2>
+              <AssistantGuideHelp key={`${helpReference.chapterId}:${helpReference.sectionId ?? ''}:${locale}`}
+                locale={locale} reference={helpReference} onBack={() => setHelpOpen(false)}
+                onOpenGuide={onOpenGuide} onGuideOpened={() => close()} />
+            </> : <>
             {message.subject ? <div className="assistant-panel__heading">
               <div className="assistant-panel__copy">
                 <h2 id={`${id}-title`} className="assistant-panel__title">
@@ -190,6 +210,9 @@ export function AssistantPopover({
                 {dismissLabel}
               </button>
             )}
+            {helpReference && onOpenGuide && <button ref={helpTrigger} type="button" className="assistant-panel__help"
+              onClick={() => setHelpOpen(true)}>{companionHelpCopy(locale).open}</button>}
+            </>}
             {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
           </div>
         )}

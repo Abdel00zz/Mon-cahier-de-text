@@ -10,7 +10,7 @@ export const dates = chapter('dates', ["editor", "schedule", "notifications"], {
     },
     "sections": [
         {
-            "title": "Affecter une date",
+            "id": "assign", "title": "Affecter une date",
             "steps": [
                 "Sélectionnez le ou les contenus concernés puis ouvrez l’action de date.",
                 "Saisissez la date ou choisissez-la dans le calendrier. Vérifiez les éléments sélectionnés avant d’appliquer.",
@@ -37,7 +37,7 @@ export const dates = chapter('dates', ["editor", "schedule", "notifications"], {
     },
     "sections": [
         {
-            "title": "إسناد تاريخ",
+            "id": "assign", "title": "إسناد تاريخ",
             "steps": [
                 "حدّد المحتوى أو المحتويات المعنية ثم افتح إجراء التاريخ.",
                 "أدخل التاريخ أو اختره من التقويم وراجع العناصر المحددة قبل التطبيق.",
