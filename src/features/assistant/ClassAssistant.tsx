@@ -18,6 +18,7 @@ import { contentSuggestionMessage } from './contentSuggestionCopy';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { hasSupportWhatsApp } from '@/constants/support';
 import { pendingAdminMessages } from '@/domain/messages/conversation';
+import { readNotebookActivity } from '@/infrastructure/storage/companionActivity';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 
@@ -82,7 +83,7 @@ export function ClassAssistant({
   const behavior = useMemo(() => resolvePedagogicalBehavior(guidance), [guidance]);
   const contentSuggestion = useMemo(() => notebooksLoading || !hasSupportWhatsApp() ? undefined : resolveContentSuggestion({
     classes, readLessons, preferredClassId, visibleClassIds, messages: messaging?.history,
-    contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses, now: Date.now(),
+    contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses, now: Date.now(), readActivity: readNotebookActivity,
   }), [classes, readLessons, preferredClassId, visibleClassIds, messaging?.history, contactedClasses, ignoredClasses, notebooksLoading, revision, today]);
 
   const decision = decideCompanion({
@@ -97,7 +98,7 @@ export function ClassAssistant({
   const serviceError = service === 'sync-error' || service === 'inbox-error';
   const ordinaryMessage = classGuidanceMessage(guidance, locale);
   const message = service ? companionServiceMessage(service, locale, recovering)
-    : reply ? { id: reply.id, title: copy.reply, detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
+    : reply ? { id: reply.id, title: reply.replyTo ? copy.reply : locale === 'ar' ? 'رسالة من الفريق' : locale === 'en' ? 'A message from the team' : 'Un message de l’équipe', detail: reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body, subject: reply.className, action: copy.read }
     : ready && contentSuggestion ? contentSuggestionMessage(contentSuggestion, locale, today) : ordinaryMessage;
   const retry = async () => {
     if (recovery.current || !isNetworkOnline()) return;
@@ -141,7 +142,7 @@ export function ClassAssistant({
       onContact={openContact}
       mood={behavior.mood}
       robotAction={service ? serviceError ? 'failure' : 'waiting' : reply ? 'inspect' : ready ? 'success' : behavior.robotAction}
-      problemCount={(service ? Number(serviceError) : ready ? 0 : behavior.problemCount) + pendingAdminMessages(messaging?.messages ?? []).filter(item => item.replyTo).length}
+      problemCount={(service ? Number(serviceError) : ready ? 0 : behavior.problemCount) + pendingAdminMessages(messaging?.messages ?? []).length}
       antennaFlash={service ? serviceError : !reply && !ready && behavior.antennaFlash}
       headRoundness={service ? serviceError ? 55 : 90 : ready ? 100 : behavior.headRoundness}
       autoSleepMs={service ? serviceError ? 0 : 30000 : ready ? 25000 : behavior.autoSleepMs}

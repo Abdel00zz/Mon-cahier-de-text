@@ -58,3 +58,11 @@ test('service recovery takes priority over the current lesson when an online fai
   assert.equal(decideCompanion({ ...active, syncStatus: 'error' }).kind, 'sync-error');
   assert.equal(decideCompanion({ ...active, inboxFailed: true }).kind, 'inbox-error');
 });
+
+test('an unread message initiated by the team is not lost just because it has no replyTo', () => {
+  const notice: AdminMessage = { id: 'admin-notice', title: 'Contenu disponible', body: 'Votre contenu est disponible.', createdAt: '2026-10-22T10:00:00Z' };
+  const decision = decideCompanion({ ...signals, messages: [notice] });
+  assert.equal(decision.kind, 'reply');
+  assert.equal(decision.kind === 'reply' && decision.reply.id, notice.id);
+  assert.equal(decideCompanion({ ...signals, messages: [{ ...notice, acknowledgedAt: notice.createdAt }] }).kind, 'offer');
+});

@@ -71,6 +71,7 @@ import { hasMathContent } from '@/lib/text/math';
 import { useSync } from '@/contexts/SyncContext';
 import { saveNotebook } from '@/infrastructure/storage/saveNotebook';
 import { recordNotebookOrigin } from '@/infrastructure/storage/notebookOrigin';
+import { rememberNotebookActivity } from '@/infrastructure/storage/companionActivity';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -118,7 +119,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // chargement différé et son écran d'attente, jamais sur un cahier vide.
   const [initialNotebook] = useState(() => readInitialNotebook({ classId: initialClassInfo.id, locale }));
   const initialNotebookRef = useRef<{ classId: string } | null>(initialNotebook ? { classId: initialClassInfo.id } : null);
-  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
+  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>(initialNotebook?.lessons ?? []);
+  const historyContext = useRef({ operationType, historyAction });
+  historyContext.current = { operationType, historyAction };
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
@@ -523,6 +526,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     if (withVisualStatus) setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
       saveNotebook(classInfo.id, lessonsDataRef.current, contentDirectionRef.current);
+      rememberNotebookActivity(classInfo.id, historyContext.current.operationType, historyContext.current.historyAction);
       saveStatusRef.current = 'saved';
       if (withVisualStatus) {
         setEditorState(draft => { draft.saveStatus = 'saved'; });

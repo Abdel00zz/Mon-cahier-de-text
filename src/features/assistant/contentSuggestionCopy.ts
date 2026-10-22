@@ -2,6 +2,7 @@ import type { AppLocale } from '../../types';
 import type { ContentSuggestion } from '../../domain/assistant/contentSuggestion';
 import { formatLocalizedClassDisplayName } from '../../constants/class-levels';
 import type { CompanionMessage } from './companionCopy';
+import { notebookActivityPhrase } from './notebookActivityCopy';
 
 type ContentSituation = 'empty' | 'personal' | 'predefined' | 'imported' | 'assigned' | 'unknown';
 type Phrase = (name: string) => string;
@@ -24,8 +25,8 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `Vos documents pour ${n} sont importés : désirez-vous un accompagnement pour les adapter à votre rythme ou concevoir des supports complémentaires ?`,
     ],
     assigned: [
-      n => `Vos séances avec ${n} progressent bien : souhaitez-vous préparer la suite avec des exercices de soutien, révisions ou devoirs sur mesure ?`,
-      n => `Votre progression pour ${n} est en route : envie d’anticiper les prochains chapitres avec des supports et activités préparés avec l’équipe ?`,
+      n => `Des contenus de ${n} sont rattachés à des séances ; souhaitez-vous préparer la suite avec des exercices ou des devoirs sur mesure ?`,
+      n => `Pour les prochaines séances de ${n}, envie de prévoir des supports et activités adaptés avec l’équipe ?`,
     ],
     unknown: [
       n => `Besoin de cours structurés, d’exercices ciblés ou d’évaluations pour ${n} ? L’équipe est à votre écoute sur WhatsApp pour vous accompagner.`,
@@ -50,8 +51,8 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `ملفات قسم ${n} المستوردة في دفترك؛ هل ترغب في مواءمتها مع حصصك أو تصميم تمارين وأنشطة نوعية ترافقها؟`,
     ],
     assigned: [
-      n => `حصص قسم ${n} تتقدم بنجاح؛ هل ترغب في إعداد تمارين دعم، مراجعات دورية أو فروض محروسة للمرحلة القادمة بمساعدة الفريق؟`,
-      n => `ربطت دروس قسم ${n} بحصصك بانتظام؛ هل تود دعماً لتحضير ما تبقى من المنهاج بتمارين وأنشطة نوعية مناسبة؟`,
+      n => `محتويات قسم ${n} مرتبطة بحصص؛ هل ترغب في إعداد تمارين أو مراجعات مخصّصة للمرحلة القادمة بمساعدة الفريق؟`,
+      n => `للحصص القادمة مع قسم ${n}، هل تودّ إعداد تمارين وأنشطة تناسب احتياجاتك بمساعدة الفريق؟`,
     ],
     unknown: [
       n => `هل تحتاج إلى دروس مهيكلة، تمارين نوعية أو فروض مخصصة لقسم ${n}؟ يسعد فريقنا مرافقتك وتجهيز كل ما يلزمك عبر واتساب.`,
@@ -76,8 +77,8 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `Your imported files for ${n} are in place: would you like the team’s help adapting them to your schedule or creating extra materials?`,
     ],
     assigned: [
-      n => `Your sessions for ${n} are progressing well: would you like tailored review exercises, extra practice, or tests for what comes next?`,
-      n => `Content for ${n} is being taught regularly: would you like help preparing the upcoming chapters with targeted exercises?`,
+      n => `Content for ${n} is linked to sessions; would you like tailored exercises or tests for what comes next?`,
+      n => `For your upcoming sessions with ${n}, would you like help preparing targeted exercises and activities?`,
     ],
     unknown: [
       n => `Looking for structured lessons, exercises, or tests for ${n}? The team is available on WhatsApp to prepare whatever you need.`,
@@ -95,10 +96,11 @@ export function contentSuggestionMessage(suggestion: ContentSuggestion, locale: 
   const variants = phrases[locale][situation];
   let hash = 0;
   for (const char of `${suggestion.target.id}:${situation}:${day}`) hash = (Math.imul(hash, 31) + char.charCodeAt(0)) >>> 0;
+  const activity = !suggestion.evidence.empty ? suggestion.activity : undefined;
   return {
-    id: `content:${suggestion.target.id}:${situation}`,
+    id: `content:${suggestion.target.id}:${activity?.kind ?? situation}`,
     title: locale === 'ar' ? 'محتوى مخصص لقسمك' : locale === 'en' ? 'Tailored class content' : 'Un contenu adapté à votre classe',
-    detail: variants[hash % variants.length](name), detailEmphasis: name,
+    detail: activity ? notebookActivityPhrase(activity.kind, name, locale) : variants[hash % variants.length](name), detailEmphasis: name,
     context: name,
   };
 }

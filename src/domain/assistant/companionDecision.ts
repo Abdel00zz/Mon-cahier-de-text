@@ -29,7 +29,7 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
   if (authenticated && !signals.online && (syncStatus !== 'synced' || transfer === 'failed')) return { kind: 'offline' };
   if (authenticated && (transfer === 'pulling' || transfer === 'notebooks')) return { kind: 'syncing' };
 
-  const reply = pendingAdminMessages(signals.messages).filter(message => message.replyTo)
+  const reply = pendingAdminMessages(signals.messages)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
   if (authenticated && reply) return { kind: 'reply', reply };
   const canSuggestContent = signals.hasNotebookReader && signals.hasContentSuggestion

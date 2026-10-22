@@ -2,6 +2,7 @@ import type { AdminMessage, ClassInfo, LessonsData, NotebookContentOrigin } from
 import { hasOnlyPristineStarterDiagnostic } from '../notebook/starterDiagnostic';
 import { walkNotebook } from '../notebook/notebookTraversal';
 import { isNonCourseActivity, validChapterDate } from '../curriculum/chapterLifecycle';
+import type { NotebookActivity } from './notebookActivity';
 
 export interface NotebookContentEvidence {
   empty: boolean;
@@ -13,6 +14,7 @@ export interface ContentSuggestion {
   target: Pick<ClassInfo, 'id' | 'name'>;
   origin: NotebookContentOrigin | 'unknown';
   evidence: NotebookContentEvidence;
+  activity?: NotebookActivity;
 }
 
 const evidenceCache = new WeakMap<LessonsData, NotebookContentEvidence>();
@@ -59,6 +61,7 @@ interface SuggestionOptions {
   contactedClassIds?: ReadonlySet<string>;
   ignoredClassIds?: ReadonlySet<string>;
   now: number;
+  readActivity?: (classId: string) => NotebookActivity | undefined;
 }
 
 /** Local evidence only. Unreadable notebooks, recent contacts and dismissed offers never become suggestions. */
@@ -79,7 +82,9 @@ export function resolveContentSuggestion(options: SuggestionOptions): ContentSug
   for (const target of candidates) {
     try {
       const evidence = notebookContentEvidence(options.readLessons(target.id));
-      const suggestion: ContentSuggestion = { target, evidence, origin: target.notebookContentOrigin ?? 'unknown' };
+      const storedOrigin = target.notebookContentOrigin;
+      const origin = storedOrigin === 'personal' || storedOrigin === 'predefined' || storedOrigin === 'imported' ? storedOrigin : 'unknown';
+      const suggestion: ContentSuggestion = { target, evidence, origin, activity: options.readActivity?.(target.id) };
       // Continue the class just used; otherwise a blank notebook is the clearest opportunity.
       if (target.id === options.preferredClassId || timestamp(target.lastOpenedAt, options.now) || evidence.empty) return suggestion;
       fallback ??= suggestion;
