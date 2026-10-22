@@ -132,6 +132,9 @@ export function ClassAssistant({
       contactLabel={!reply ? copy.contact : undefined}
       primaryAction={ready && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
+        label={contentSuggestion.origin === 'predefined'
+          ? (locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Adapter ou personnaliser le cours')
+          : undefined}
         onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
       dismissLabel={ready && contentSuggestion ? (locale === 'ar' ? 'ليس الآن، شكراً' : locale === 'en' ? 'Not now, thanks' : 'Pas maintenant, merci') : undefined}
       onDismiss={ready && contentSuggestion ? dismissSuggestion : undefined}

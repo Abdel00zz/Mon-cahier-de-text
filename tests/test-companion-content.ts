@@ -69,6 +69,13 @@ test('messages integrate the actual class in one paragraph, vary stably and matc
       assert.equal(variants.size, 2);
     }
   }
+
+  // Predefined origin explicitly proposes adapted or personalized content
+  const predefined = { target: makeClass('p', { name: 'Tronc Commun' }), origin: 'predefined' as const, evidence: notebookContentEvidence(lessons) };
+  const msgAr = contentSuggestionMessage(predefined, 'ar', '2026-10-22');
+  const msgFr = contentSuggestionMessage(predefined, 'fr', '2026-10-22');
+  assert.ok(msgAr.detail.includes('مخصص') || msgAr.detail.includes('مكيفة') || msgAr.detail.includes('تكييف'));
+  assert.ok(msgFr.detail.includes('adapté') || msgFr.detail.includes('personnalisé'));
 });
 
 test('content personalization precedes routine setup but never service failures, unread replies or an active session', () => {

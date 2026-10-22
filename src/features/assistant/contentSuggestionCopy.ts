@@ -8,80 +8,80 @@ type Phrase = (name: string) => string;
 const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = {
   fr: {
     empty: [
-      n => `Un contenu sur mesure pour ${n} ? L’équipe peut vous accompagner pour préparer vos séances pas à pas.`,
-      n => `Pour démarrer sereinement avec ${n}, souhaitez-vous un contenu adapté à votre façon d’enseigner ?`,
+      n => `Le cahier de ${n} attend ses premiers cours : préférez-vous adapter le programme officiel, ou créer un contenu sur mesure avec l’équipe ?`,
+      n => `Pour démarrer sereinement avec ${n} : souhaitez-vous des séances adaptées prêtes à l'emploi ou un contenu entièrement personnalisé ?`,
     ],
     personal: [
-      n => `Vous construisez le contenu de ${n} : envie de l’enrichir avec des exercices ou activités sur mesure ?`,
-      n => `Votre approche, votre contenu pour ${n} : souhaitez-vous un coup de main de l’équipe pour aller plus loin ?`,
+      n => `Vous construisez le contenu de ${n} à votre manière : souhaitez-vous de l’aide pour préparer fiches de cours, activités ou exercices adaptés ?`,
+      n => `Votre approche pour ${n} est personnalisée : envie d’enrichir vos séances avec des évaluations ou exercices ciblés préparés avec l’équipe ?`,
     ],
     predefined: [
-      n => `La base prédéfinie de ${n} est en place ; souhaitez-vous l’adapter avec nous à votre propre progression ?`,
-      n => `Envie de personnaliser le cahier de ${n} ? L’équipe peut vous aider à ajuster la base selon vos besoins.`,
+      n => `Vous avez choisi le programme prédéfini pour ${n} : souhaitez-vous des leçons adaptées à ce contenu, ou préférez-vous concevoir un contenu personnalisé avec l’équipe ?`,
+      n => `La base officielle de ${n} est en place : désirez-vous des séances adaptées à ce programme, ou des cours et activités entièrement sur mesure ?`,
     ],
     imported: [
-      n => `Vous avez importé le contenu de ${n} ; souhaitez-vous l’enrichir ou le structurer avec l’équipe ?`,
-      n => `Un ajustement pour ${n} ? L’équipe peut vous accompagner pour perfectionner votre contenu importé.`,
+      n => `Vous avez importé le contenu de ${n} : souhaitez-vous le structurer en séances fluides ou l’enrichir d'exercices et devoirs avec l’équipe ?`,
+      n => `Vos documents pour ${n} sont importés : désirez-vous un accompagnement pour les adapter à votre rythme ou concevoir des supports complémentaires ?`,
     ],
     assigned: [
-      n => `Des séances de ${n} sont déjà en place ; envie de préparer la suite avec des exercices ciblés ?`,
-      n => `Pour vos prochaines séances avec ${n}, souhaitez-vous enrichir vos supports avec l’équipe ?`,
+      n => `Vos séances avec ${n} progressent bien : souhaitez-vous préparer la suite avec des exercices de soutien, révisions ou devoirs sur mesure ?`,
+      n => `Votre progression pour ${n} est en route : envie d’anticiper les prochains chapitres avec des supports et activités préparés avec l’équipe ?`,
     ],
     unknown: [
-      n => `Souhaitez-vous enrichir le contenu de ${n} ou préparer des exercices adaptés avec l’équipe ?`,
-      n => `Un contenu plus proche de vos attentes pour ${n} ? Échangeons directement sur WhatsApp.`,
+      n => `Besoin de cours structurés, d’exercices ciblés ou d’évaluations pour ${n} ? L’équipe est à votre écoute sur WhatsApp pour vous accompagner.`,
+      n => `Pour adapter ou enrichir les contenus de ${n} selon vos besoins réels : échangeons directement sur WhatsApp pour préparer vos supports.`,
     ],
   },
   ar: {
     empty: [
-      n => `هل ترغب في محتوى مفصل لقسم ${n}؟ يسعد فريقنا مساعدتك في إعداد دفتر يناسب أسلوبك في التدريس.`,
-      n => `لبدء العمل مع قسم ${n} بكل راحة، هل تود أن نساعدك في تجهيز دروس وتمارين تلائم منهاجك؟`,
+      n => `دفتر قسم ${n} ينتظر أولى دروسه؛ هل تود تكييف البرنامج المقرر أو تفضل إعداد محتوى مخصص بالكامل لأسلوبك من الصفر بمساعدة الفريق؟`,
+      n => `لبدء العمل مع قسم ${n} بكل راحة؛ هل ترغب في دروس وتمارين مفصلة توافق طريقتك، أو تفضل أن نجهز لك دفتراً متكاملاً؟`,
     ],
     personal: [
-      n => `أنت تبني محتوى قسم ${n} بأسلوبك؛ هل تود أن نساعدك في إثرائه بتمارين نوعية وأنشطة مخصصة؟`,
-      n => `محتواك لقسم ${n} يحمل لمستك؛ هل ترغب في دعم إضافي من فريقنا لتطويره أكثر عبر واتساب؟`,
+      n => `أنت تبني محتوى قسم ${n} بأسلوبك؛ هل تود أن نساعدك في إعداد ملخصات دروس، أنشطة تطبيقية أو تمارين إضافية ترافق تقدمك؟`,
+      n => `محتواك لقسم ${n} يعكس أسلوبك الخاص؛ هل ترغب في دعامات تعليمية أو فروض مخصصة من إعداد الفريق لتسهيل عملك؟`,
     ],
     predefined: [
-      n => `المحتوى المقترح لقسم ${n} نقطة انطلاق ميسرة؛ هل تود تكييفه مع تدرجك السنوي بمساعدة الفريق؟`,
-      n => `اخترت المحتوى الجاهز لقسم ${n}؛ يسعدنا مساعدتك في إثرائه وتطويره ليوافق احتياجات تلاميذك.`,
+      n => `اخترت المحتوى المقرر لقسم ${n}؛ هل ترغب في دروس وجذاذات مكيفة مع هذا البرنامج، أو تفضل إعداد محتوى مخصص بالكامل لأسلوبك بمساعدة الفريق؟`,
+      n => `المحتوى الجاهز لقسم ${n} معتمد في دفترك؛ هل تود تكييفه بمذكرات ودروس مرافقة، أو تصميم أنشطة وفروض إضافية تناسب تلاميذك؟`,
     ],
     imported: [
-      n => `قمت باستيراد محتوى قسم ${n} بنجاح؛ هل ترغب في مراجعته أو تكييفه مع متطلباتك برفقة الفريق؟`,
-      n => `هل تحتاج لتعديل أو إثراء المحتوى المستورد لقسم ${n}؟ فريقنا جاهز لمرافقتك وتسهيل عملك.`,
+      n => `استوردت محتوى قسم ${n} بنجاح؛ هل تود تحويله إلى دروس مهيكلة أو إثراءه بتمارين وفروض تطبيقية بمساعدة الفريق؟`,
+      n => `ملفات قسم ${n} المستوردة في دفترك؛ هل ترغب في مواءمتها مع حصصك أو تصميم تمارين وأنشطة نوعية ترافقها؟`,
     ],
     assigned: [
-      n => `بدأت ربط محتويات قسم ${n} بحصصك؛ هل ترغب في تحضير الحصص القادمة بتمارين ومسائل مخصصة؟`,
-      n => `للحصص القادمة مع قسم ${n}، هل تود مساعدة من الفريق لإعداد امتدادات وتمارين نوعية لتلاميذك؟`,
+      n => `حصص قسم ${n} تتقدم بنجاح؛ هل ترغب في إعداد تمارين دعم، مراجعات دورية أو فروض محروسة للمرحلة القادمة بمساعدة الفريق؟`,
+      n => `ربطت دروس قسم ${n} بحصصك بانتظام؛ هل تود دعماً لتحضير ما تبقى من المنهاج بتمارين وأنشطة نوعية مناسبة؟`,
     ],
     unknown: [
-      n => `هل ترغب في إثراء محتوى قسم ${n} أو إعداد تمارين تناسب احتياجات تلاميذك؟ الفريق في خدمتك عبر واتساب.`,
-      n => `محتوى مخصص ومناسب لقسم ${n}؟ تواصل مع الفريق عبر واتساب لنتعاون معاً على إعداده وتجهيزه.`,
+      n => `هل تحتاج إلى دروس مهيكلة، تمارين نوعية أو فروض مخصصة لقسم ${n}؟ يسعد فريقنا مرافقتك وتجهيز كل ما يلزمك عبر واتساب.`,
+      n => `لتطوير محتوى قسم ${n} وفق احتياجاتك الحقيقية؛ تواصل مع الفريق عبر واتساب لمناقشة ما تود إعداده وتكييفه.`,
     ],
   },
   en: {
     empty: [
-      n => `Would you like tailored content for ${n}? The team can help you prepare your lessons step by step.`,
-      n => `Getting started with ${n}? Would you like content that fits your teaching approach?`,
+      n => `The notebook for ${n} is waiting for its first lesson: would you like to adapt the standard curriculum, or create custom content with the team?`,
+      n => `To get started smoothly with ${n}: would you like ready-to-teach lessons that fit your style, or fully personalized materials?`,
     ],
     personal: [
-      n => `You’re building your own content for ${n}; would you like help enriching it with tailored exercises?`,
-      n => `Your approach, your content: would you like help developing the notebook for ${n}?`,
+      n => `You’re building your own content for ${n}: would you like help preparing lesson summaries, activities, or tailored exercises?`,
+      n => `Your teaching approach for ${n} is unique: would you like additional exercises or assessments crafted with the team?`,
     ],
     predefined: [
-      n => `The predefined content for ${n} is in place; would you like to adapt it to your progression with us?`,
-      n => `Want to go further with ${n}? The team can help you tailor the provided content.`,
+      n => `You chose the predefined curriculum for ${n}: would you like lessons adapted to this content, or would you prefer custom-designed content with the team?`,
+      n => `The standard curriculum for ${n} is ready: do you want lessons tailored to match this content, or fully personalized teaching materials?`,
     ],
     imported: [
-      n => `You’ve imported content for ${n}; would you like help enriching or fine-tuning it?`,
-      n => `Something to adjust for ${n}? The team can work with your imported content.`,
+      n => `You imported content for ${n}: would you like help structuring it into ready lessons or enriching it with tailored exercises and tests?`,
+      n => `Your imported files for ${n} are in place: would you like the team’s help adapting them to your schedule or creating extra materials?`,
     ],
     assigned: [
-      n => `Content for ${n} is linked to sessions; would you like tailored exercises for what comes next?`,
-      n => `For your next sessions with ${n}, would you like help enriching your materials?`,
+      n => `Your sessions for ${n} are progressing well: would you like tailored review exercises, extra practice, or tests for what comes next?`,
+      n => `Content for ${n} is being taught regularly: would you like help preparing the upcoming chapters with targeted exercises?`,
     ],
     unknown: [
-      n => `Would you like to enrich the content for ${n} or prepare tailored exercises with the team?`,
-      n => `Content that better fits your needs for ${n}? Talk it through with the team on WhatsApp.`,
+      n => `Looking for structured lessons, exercises, or tests for ${n}? The team is available on WhatsApp to prepare whatever you need.`,
+      n => `To adapt or enrich the curriculum for ${n} to your exact needs: talk it through with our team on WhatsApp.`,
     ],
   },
 };
@@ -90,7 +90,8 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
 export function contentSuggestionMessage(suggestion: ContentSuggestion, locale: AppLocale, day: string): CompanionMessage {
   const name = formatLocalizedClassDisplayName(suggestion.target.name, locale).replace(/[\r\n\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim();
   const situation: ContentSituation = suggestion.evidence.empty ? 'empty'
-    : suggestion.evidence.assignedCount > 0 ? 'assigned' : suggestion.origin;
+    : suggestion.origin !== 'unknown' ? suggestion.origin
+    : suggestion.evidence.assignedCount > 0 ? 'assigned' : 'unknown';
   const variants = phrases[locale][situation];
   let hash = 0;
   for (const char of `${suggestion.target.id}:${situation}:${day}`) hash = (Math.imul(hash, 31) + char.charCodeAt(0)) >>> 0;
