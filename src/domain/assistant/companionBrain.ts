@@ -107,7 +107,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
         ?? (decision.kind === 'guidance' && selectedTask && guidance.step !== 'active-session'
           ? `${selectedTask.id}:${selectedTask.evidence.occurrences}:${guidance.step === 'notebook-followup' ? guidance.lastSessionDate ?? 'first' : selectedTask.evidence.samplePath ?? ''}` : undefined),
       calendarNotice: !service && !reply ? companionCalendarNotice(input.calendar, input.today, input.config, target) : undefined,
-      helpReference: companionHelpReference(decision, guidance, contentSuggestion),
+      helpReference: companionHelpReference(decision, guidance),
       // Explanations can be inspected without exposing text, names of pupils or provider secrets.
       trace: { rule: selectedTask && decision.kind === 'guidance' ? selectedTask.evidence.rule : decision.kind,
         evidence: selectedTask && decision.kind === 'guidance' ? selectedTask.evidence : undefined,

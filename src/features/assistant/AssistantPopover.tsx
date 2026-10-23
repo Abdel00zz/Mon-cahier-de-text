@@ -88,7 +88,7 @@ export function AssistantPopover({
   useEffect(() => {
     setHelpBusy(false); setHelpError(false);
     return () => { helpRequest.current?.abort(); helpRequest.current = null; };
-  }, [open, message.id]);
+  }, [open, message.id, helpReference?.chapterId, helpReference?.sectionId]);
 
   const handleDismissAndClose = useCallback((restoreFocus = false) => {
     onDismiss?.();
@@ -207,7 +207,7 @@ export function AssistantPopover({
                 {helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
               </button>
             )}
-            {helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
+            {helpReference && onOpenGuide && helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
             {tips && <AssistantTips key={`${tips.day}:${locale}`} locale={locale} {...tips} />}
             {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
           </div>

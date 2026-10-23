@@ -19,7 +19,7 @@ export const troubleshooting = chapter('troubleshooting', ['notifications', 'dev
       {
         id: 'support', title: 'Solliciter l’assistance technique et pédagogique',
         steps: [
-          'Ouvrez le compagnon puis « Comment faire ? » pour lire une explication liée à votre situation ou rechercher une action dans le guide.',
+          'Lorsque la situation demande une explication, le compagnon propose « Comment faire ? ». Le guide complet reste accessible depuis « Aide » dans la navigation.',
           'Pour une question ou une correction de contenu, choisissez « Contacter l’équipe », sélectionnez la classe concernée ou « Question générale », puis décrivez la difficulté. Le compagnon vous signalera la réponse.',
           'Pour faire préparer un cours personnalisé, utilisez le bouton WhatsApp. L’ouverture de WhatsApp ne confirme pas l’envoi : envoyez votre message dans WhatsApp.',
           'Indiquez l’action tentée et votre appareil. Masquez les noms des élèves et les données confidentielles dans les captures transmises.',
@@ -46,7 +46,7 @@ export const troubleshooting = chapter('troubleshooting', ['notifications', 'dev
       {
         id: 'support', title: 'التواصل الفعال مع فريق الدعم',
         steps: [
-          'افتح الرفيق ثم «كيف أفعل ذلك؟» لقراءة شرح مرتبط بوضعك الحالي أو البحث عن إجراء في دليل الاستخدام.',
+          'عندما يتطلب الوضع شرحاً، يقترح الرفيق «كيف أفعل ذلك؟». يظل دليل الاستخدام الكامل متاحاً من زر المساعدة في شريط التنقل.',
           'لسؤال أو تعديل في المحتوى، اختر «التواصل مع الفريق» وحدّد القسم المعني أو «سؤال عام»، ثم اشرح الصعوبة. سيُعلمك الرفيق بوصول الردّ.',
           'لإعداد دروس مخصصة، استخدم زر واتساب. فتح واتساب لا يعني إرسال الرسالة؛ أرسلها بنفسك داخل واتساب.',
           'اذكر الإجراء الذي جرّبته ونوع جهازك، واحجب أسماء التلاميذ والمعطيات الشخصية في الصور المرسلة.',

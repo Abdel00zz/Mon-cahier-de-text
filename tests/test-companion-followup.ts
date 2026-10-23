@@ -8,8 +8,6 @@ import { decideCompanion } from '../src/domain/assistant/companionDecision';
 import { resolvePedagogicalBehavior } from '../src/domain/assistant/companionPedagogicalBehavior';
 import { classGuidanceMessage } from '../src/features/assistant/companionCopy';
 import { companionHelpReference } from '../src/domain/assistant/companionHelp';
-import { GUIDE_AR, GUIDE_FR } from '../src/constants/guides';
-import { resolveGuideReference } from '../src/constants/guide/navigation';
 
 const calendar: HolidayCalendar = { version: 1, pays: 'Maroc', fuseau: 'Africa/Casablanca',
   anneeScolaire: { libelle: '2026-2027', debut: '2026-09-07', fin: '2027-06-30' }, vacances: [], joursFeries: [] };
@@ -93,7 +91,7 @@ test('the brain advances from setup to content to review, updates after edits, a
   assert.equal(resolveClassGuidance([], config, undefined, context).step, 'create');
 });
 
-test('follow-up is actionable with genuine class context, gentle expression and live guide links in every language', () => {
+test('routine follow-up keeps a gentle class-specific action without unnecessary how-to instructions', () => {
   const guidance = resolveClassGuidance([target], config, undefined, { today, calendar, readLessons: () => book('2026-10-12') });
   assert.equal(guidance.step, 'notebook-followup');
   assert.equal(resolvePedagogicalBehavior(guidance).robotAction, 'inspect');
@@ -104,8 +102,7 @@ test('follow-up is actionable with genuine class context, gentle expression and 
     assert.doesNotMatch(message.detail, /قسم\s+قسم|\r|\n/);
     assert.ok(message.action);
   }
-  const reference = companionHelpReference({ kind: 'guidance' }, guidance);
-  for (const entries of [GUIDE_FR, GUIDE_AR]) assert.equal(resolveGuideReference(entries, reference).section?.id, reference.sectionId);
+  assert.equal(companionHelpReference({ kind: 'guidance' }, guidance), undefined);
   assert.equal(decideCompanion({ guidance, authenticated: false, online: true, syncStatus: 'idle', transfer: 'idle',
     inboxLoaded: false, inboxFailed: false, messages: [], hasNotebookReader: true, hasContentSuggestion: true }).kind, 'guidance');
   if (guidance.step === 'notebook-followup') assert.equal(guidanceKey({ ...guidance, elapsedDays: guidance.elapsedDays + 1 }), guidanceKey(guidance), 'no new attention signal every day for the same review');

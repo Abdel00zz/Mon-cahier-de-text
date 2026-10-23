@@ -142,9 +142,26 @@ test('presentation, calendar context, help and actions are projections of the sa
     assert.ok(message.action);
     assert.doesNotMatch(message.detail, /قسم\s+قسم|\r|\n/);
     assert.equal(result.action.type, 'open-class');
-    assert.equal(result.helpReference.chapterId, 'content');
+    assert.equal(result.helpReference?.chapterId, 'content');
     assert.equal(result.calendarNotice?.end, '2026-10-25');
   }
+});
+
+test('contextual help disappears when browsing a simple check or after resolution, without removing the action', () => {
+  const options = input({ readLessons: id => id === '1' ? broken : id === '2' ? [...valid, ...valid] : valid });
+  const evaluate = createCompanionEvaluation(options);
+  const formula = evaluate();
+  assert.deepEqual(formula.helpReference, { chapterId: 'math', sectionId: 'formulas' });
+  assert.deepEqual(formula.action, { type: 'open-class', classId: '1' });
+  const duplicate = evaluate(formula.nextTaskId);
+  assert.equal(duplicate.trace.rule, 'duplicateBlocks');
+  assert.equal(duplicate.helpReference, undefined);
+  assert.deepEqual(duplicate.action, { type: 'open-class', classId: '2' });
+  const repaired = evaluateCompanion({ ...options, readLessons: () => valid, offersEnabled: false });
+  assert.equal(repaired.guidance.step, 'ready');
+  assert.equal(repaired.helpReference, undefined);
+  assert.equal(repaired.action.type, 'open-class');
+  assert.equal(evaluateCompanion({ ...options, services: { ...options.services, transfer: 'pulling' } }).helpReference, undefined);
 });
 
 test('snapshot isolates failures and avoids repeated reads without retaining data across evaluations', () => {

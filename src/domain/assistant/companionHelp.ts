@@ -1,41 +1,34 @@
 import type { GuideReference } from '../../constants/guide/model';
 import type { ClassGuidance } from './classGuidance';
 import type { CompanionDecision } from './companionDecision';
-import type { ContentSuggestion } from './contentSuggestion';
 
-/** Documentation follows the visible decision, not a lower-priority marketing suggestion. */
+/** Offer instructions only for an actionable procedure covered by the guide.
+ * Status updates, conversations, offers and routine reminders need no extra how-to. */
 export function companionHelpReference(
   decision: CompanionDecision,
   guidance: ClassGuidance,
-  suggestion?: ContentSuggestion,
-): GuideReference {
+): GuideReference | undefined {
   switch (decision.kind) {
-    case 'sync-error': case 'offline': return { chapterId: 'devices', sectionId: 'data-safety' };
-    case 'syncing': case 'checking': return { chapterId: 'devices', sectionId: 'sync-status' };
-    case 'inbox-error': case 'reply': return { chapterId: 'troubleshooting', sectionId: 'support' };
-    case 'offer':
-      if (suggestion?.evidence.empty) return { chapterId: 'content', sectionId: 'prepare' };
-      if (suggestion?.activity?.kind === 'dates') return { chapterId: 'dates', sectionId: 'assign' };
-      if (suggestion?.activity?.kind === 'order') return { chapterId: 'editor', sectionId: 'move' };
-      return { chapterId: 'content', sectionId: suggestion?.origin === 'imported' ? 'transfer' : 'prepare' };
+    case 'sync-error': return { chapterId: 'devices', sectionId: 'data-safety' };
     case 'guidance': break;
+    default: return undefined;
   }
   switch (guidance.step) {
     case 'create': return { chapterId: 'classes' };
     case 'schedule': return { chapterId: 'schedule' };
     case 'active-session': return { chapterId: 'dates', sectionId: 'assign' };
-    case 'notebook-followup': return { chapterId: 'notifications', sectionId: 'followup' };
+    case 'notebook-followup': return guidance.reason === 'first-session'
+      ? { chapterId: 'dates', sectionId: 'assign' } : undefined;
     case 'notebook-empty': return { chapterId: 'content', sectionId: 'prepare' };
     case 'notebook-unavailable': return { chapterId: 'troubleshooting' };
-    case 'checking': return { chapterId: 'devices', sectionId: 'sync-status' };
-    case 'ready': return { chapterId: 'editor' };
+    case 'checking': case 'ready': return undefined;
     case 'notebook-issue':
       switch (guidance.issueCode) {
         case 'unclosedFormula': return { chapterId: 'math', sectionId: 'formulas' };
         case 'outOfOrderSessions': return { chapterId: 'dates', sectionId: 'assign' };
         case 'emptyStructure': return { chapterId: 'types' };
-        case 'duplicateBlocks': return { chapterId: 'editor' };
-        case 'controlCharacters': return { chapterId: 'troubleshooting' };
+        // A generic chapter does not explain how to resolve these particular findings.
+        case 'duplicateBlocks': case 'controlCharacters': return undefined;
       }
   }
 }

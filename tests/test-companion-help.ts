@@ -5,17 +5,13 @@ import { resolveGuideReference } from '../src/constants/guide/navigation';
 import type { GuideReference } from '../src/constants/guide/model';
 import type { ClassGuidance } from '../src/domain/assistant/classGuidance';
 import type { CompanionDecision } from '../src/domain/assistant/companionDecision';
-import type { ContentSuggestion } from '../src/domain/assistant/contentSuggestion';
 import { companionHelpReference } from '../src/domain/assistant/companionHelp';
 
 const base = { classId: 'physics', className: '2BAC PC 3', remaining: 1 };
 const ready: ClassGuidance = { ...base, step: 'ready' };
-const suggestion: ContentSuggestion = {
-  target: { id: base.classId, name: base.className }, origin: 'predefined',
-  evidence: { empty: false, contentCount: 2, assignedCount: 1 },
-};
 
-function assertReference(reference: GuideReference) {
+function assertReference(reference: GuideReference | undefined): asserts reference is GuideReference {
+  assert.ok(reference, 'this procedure requires contextual instructions');
   for (const entries of [GUIDE_FR, GUIDE_AR]) {
     const result = resolveGuideReference(entries, reference);
     assert.equal(result.chapter?.id, reference.chapterId, 'no silent fallback for known assistant actions');
@@ -25,46 +21,46 @@ function assertReference(reference: GuideReference) {
   }
 }
 
-test('every guidance and diagnostic points to an existing bilingual help section', () => {
+test('configuration and documented procedures offer a precise bilingual how-to', () => {
   const states: ClassGuidance[] = [
     { step: 'create' }, { ...base, step: 'schedule' }, { ...base, step: 'active-session' },
-    { ...base, step: 'notebook-empty' }, { ...base, step: 'notebook-unavailable' }, { ...base, step: 'checking' }, ready,
-    ...(['unclosedFormula', 'outOfOrderSessions', 'emptyStructure', 'duplicateBlocks', 'controlCharacters'] as const)
+    { ...base, step: 'notebook-empty' }, { ...base, step: 'notebook-unavailable' },
+    { ...base, step: 'notebook-followup', reason: 'first-session', elapsedDays: 5 },
+    ...(['unclosedFormula', 'outOfOrderSessions', 'emptyStructure'] as const)
       .map(issueCode => ({ ...base, step: 'notebook-issue' as const, issueCode, count: 1 })),
   ];
   for (const guidance of states) assertReference(companionHelpReference({ kind: 'guidance' }, guidance));
   assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'active-session' }), { chapterId: 'dates', sectionId: 'assign' });
-  assert.equal(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'schedule' }).chapterId, 'schedule');
+  assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'schedule' }), { chapterId: 'schedule' });
+  assert.deepEqual(companionHelpReference({ kind: 'guidance' }, {
+    ...base, step: 'notebook-followup', reason: 'first-session', elapsedDays: 5,
+  }), { chapterId: 'dates', sectionId: 'assign' });
 });
 
-test('service or inbox help takes priority over content promotion and an underlying timetable problem', () => {
+test('statuses, replies and offers never inherit how-to instructions from an underlying problem', () => {
   const decisions: CompanionDecision[] = [
-    ...(['sync-error', 'offline', 'syncing', 'checking', 'inbox-error'] as const).map(kind => ({ kind })),
+    ...(['offline', 'syncing', 'checking', 'inbox-error', 'offer'] as const).map(kind => ({ kind })),
     { kind: 'reply', reply: { id: 'reply', title: 'Question', body: 'Aide', createdAt: '2026-10-22' } },
   ];
   for (const decision of decisions) {
-    const reference = companionHelpReference(decision, { ...base, step: 'schedule' }, suggestion);
-    assertReference(reference);
-    assert.notEqual(reference.chapterId, 'content');
-    assert.notEqual(reference.chapterId, 'schedule');
+    assert.equal(companionHelpReference(decision, { ...base, step: 'schedule' }), undefined);
+    assert.equal(companionHelpReference(decision, {
+      ...base, step: 'notebook-issue', issueCode: 'unclosedFormula', count: 1,
+    }), undefined);
   }
-  assert.deepEqual(companionHelpReference({ kind: 'offline' }, ready), { chapterId: 'devices', sectionId: 'data-safety' });
+  const recovery = companionHelpReference({ kind: 'sync-error' }, ready);
+  assertReference(recovery);
+  assert.deepEqual(recovery, { chapterId: 'devices', sectionId: 'data-safety' });
 });
 
-test('help distinguishes imported content, recent moves, date actions and an empty notebook', () => {
-  for (const origin of ['personal', 'predefined', 'imported', 'unknown'] as const) {
-    const reference = companionHelpReference({ kind: 'offer' }, ready, { ...suggestion, origin });
-    assertReference(reference);
-    assert.equal(reference.sectionId, origin === 'imported' ? 'transfer' : 'prepare');
-  }
-  for (const [kind, expected] of [['order', 'editor'], ['dates', 'dates'], ['content', 'content']] as const) {
-    const current = { ...suggestion, activity: { kind, at: 1 } };
-    const reference = companionHelpReference({ kind: 'offer' }, ready, current);
-    assertReference(reference);
-    assert.equal(reference.chapterId, expected);
-    assert.equal(companionHelpReference({ kind: 'offer' }, ready, {
-      ...current, evidence: { empty: true, contentCount: 0, assignedCount: 0 },
-    }).sectionId, 'prepare', 'an empty notebook cannot offer stale movement instructions');
+test('success, waiting, routine reminders and findings without specific instructions keep only their direct action', () => {
+  const states: ClassGuidance[] = [ready, { ...base, step: 'checking' },
+    { ...base, step: 'notebook-followup', reason: 'long-pause', elapsedDays: 5, lastSessionDate: '2026-10-12' },
+    ...(['duplicateBlocks', 'controlCharacters'] as const)
+      .map(issueCode => ({ ...base, step: 'notebook-issue' as const, issueCode, count: 1 })),
+  ];
+  for (const guidance of states) {
+    assert.equal(companionHelpReference({ kind: 'guidance' }, guidance), undefined, guidance.step);
   }
 });
 

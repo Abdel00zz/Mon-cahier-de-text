@@ -135,8 +135,8 @@ export function ClassAssistant({
       locale={locale}
       message={message}
       tips={{ day: today, initiallyOpen: !service && !reply && guidance.step === 'ready' }}
-      helpReference={!isContentOffer ? brain.helpReference : undefined}
-      onOpenGuide={!isContentOffer ? openGuide : undefined}
+      helpReference={brain.helpReference}
+      onOpenGuide={openGuide}
       contactLabel={!reply && !isContentOffer ? copy.contact : undefined}
       primaryAction={isContentOffer && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
