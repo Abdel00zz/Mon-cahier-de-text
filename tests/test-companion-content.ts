@@ -78,11 +78,13 @@ test('messages integrate the actual class in one paragraph, vary stably and matc
   assert.ok(msgFr.detail.includes('adapté') || msgFr.detail.includes('personnalisé'));
 });
 
-test('content personalization precedes routine setup but never service failures, unread replies or an active session', () => {
+test('class setup and session follow-up precede content offers; service recovery and replies remain actionable', () => {
   const signals: Parameters<typeof decideCompanion>[0] = { guidance: { step: 'schedule', classId: 'a', className: 'A', remaining: 2 },
     authenticated: true, online: true, syncStatus: 'synced', transfer: 'ready', inboxLoaded: true, inboxFailed: false,
     messages: [], hasNotebookReader: true, hasContentSuggestion: true };
-  assert.equal(decideCompanion(signals).kind, 'offer');
+  assert.equal(decideCompanion(signals).kind, 'guidance');
+  assert.equal(decideCompanion({ ...signals, guidance: { step: 'notebook-empty', classId: 'a', className: 'A', remaining: 1 } }).kind, 'guidance');
+  assert.equal(decideCompanion({ ...signals, guidance: { step: 'ready', classId: 'a', className: 'A' } }).kind, 'offer');
   assert.equal(decideCompanion({ ...signals, hasContentSuggestion: false }).kind, 'guidance');
   assert.equal(decideCompanion({ ...signals, syncStatus: 'error' }).kind, 'sync-error');
   assert.equal(decideCompanion({ ...signals, guidance: { step: 'active-session', classId: 'a', className: 'A' } }).kind, 'guidance');

@@ -2,6 +2,11 @@ import type { AppConfig, ClassInfo, LessonsData } from '../../types';
 import { effectiveSchedules, getHourSlots, TIMETABLE_DAYS } from '../calendar/timetable';
 import { analyseNotebook, type NotebookAdvice } from './notebookAdvisor';
 import { hasOnlyPristineStarterDiagnostic } from '../notebook/starterDiagnostic';
+import { detectNotebookFollowup, type FollowupClass, type FollowupConfig, type NotebookFollowup } from '../assistant/notebookFollowup';
+import type { HolidayCalendar } from '../calendar/calendar';
+import { getBundledCalendar } from '../calendar/calendar';
+
+interface NotebookClassFollowup { classInfo: FollowupClass; followup: NotebookFollowup }
 
 interface NotebookClassIssue {
   classInfo: Pick<ClassInfo, 'id' | 'name'>;
@@ -11,7 +16,7 @@ interface NotebookClassIssue {
 
 export interface PedagogicalDiagnosis {
   /** Le type de besoin ou d'état pédagogique prioritaire */
-  step: 'create' | 'schedule' | 'active-session' | 'notebook-issue' | 'notebook-empty' | 'notebook-unavailable' | 'checking' | 'ready';
+  step: 'create' | 'schedule' | 'active-session' | 'notebook-issue' | 'notebook-empty' | 'notebook-unavailable' | 'notebook-followup' | 'checking' | 'ready';
   /** Classe ciblée par l'action */
   targetClass?: Pick<ClassInfo, 'id' | 'name'>;
   /** Nombre total de points nécessitant attention */
@@ -22,17 +27,21 @@ export interface PedagogicalDiagnosis {
   emptyNotebookClasses: Pick<ClassInfo, 'id' | 'name'>[];
   /** Détails sur les anomalies détectées par le conseiller de cahier */
   notebookIssues: NotebookClassIssue[];
+  notebookFollowups?: NotebookClassFollowup[];
   /** Classe actuellement en séance */
   activeSessionClass?: Pick<ClassInfo, 'id' | 'name'>;
 }
 
 export interface PedagogicalBrainOptions {
-  classes: readonly Pick<ClassInfo, 'id' | 'name'>[];
-  config: Pick<AppConfig, 'timetable' | 'schedules'>;
+  classes: readonly FollowupClass[];
+  config: Pick<AppConfig, 'timetable' | 'schedules'> & FollowupConfig;
   preferredClassId?: string;
   activeSessionClassIds?: readonly string[];
   readLessons?: (classId: string) => LessonsData;
   notebooksLoading?: boolean;
+  /** Explicit clock keeps temporal diagnostics deterministic for all callers. */
+  today?: string;
+  calendar?: HolidayCalendar;
 }
 
 const VALID_DAYS = new Set(TIMETABLE_DAYS.map(day => day.value));
@@ -58,6 +67,8 @@ export function diagnosePedagogicalState({
   activeSessionClassIds,
   readLessons,
   notebooksLoading = false,
+  today,
+  calendar = getBundledCalendar(),
 }: PedagogicalBrainOptions): PedagogicalDiagnosis {
   // 1. Aucune classe créée
   if (!classes.length) {
@@ -81,6 +92,7 @@ export function diagnosePedagogicalState({
     timetable,
     schedules: config.timetable === undefined ? config.schedules : [],
   });
+  const slotsByClass = new Map(schedules.map(schedule => [schedule.classId, schedule.slots]));
 
   for (const schedule of schedules) {
     if (knownIds.has(schedule.classId) && schedule.slots.some(slot => VALID_DAYS.has(slot.weekday))) {
@@ -109,6 +121,7 @@ export function diagnosePedagogicalState({
   const notebookIssues: NotebookClassIssue[] = [];
   const emptyNotebookClasses: Pick<ClassInfo, 'id' | 'name'>[] = [];
   const unreadable: Pick<ClassInfo, 'id' | 'name'>[] = [];
+  const notebookFollowups: NotebookClassFollowup[] = [];
 
   if (typeof readLessons === 'function') {
     for (const classInfo of classes) {
@@ -130,6 +143,11 @@ export function diagnosePedagogicalState({
               advices,
               topAdvice: advices[0],
             });
+          }
+          const slots = slotsByClass.get(classInfo.id) ?? [];
+          if (today && scheduled.has(classInfo.id)) {
+            const followup = detectNotebookFollowup(classInfo, lessons, slots, config, calendar, today);
+            if (followup) notebookFollowups.push({ classInfo, followup });
           }
         }
       } catch {
@@ -176,6 +194,13 @@ export function diagnosePedagogicalState({
       emptyNotebookClasses,
       notebookIssues: [],
     };
+  }
+
+  if (notebookFollowups.length) {
+    const target = notebookFollowups.find(item => item.classInfo.id === preferredClassId)
+      ?? notebookFollowups.reduce((first, item) => item.followup.elapsedDays > first.followup.elapsedDays ? item : first);
+    return { step: 'notebook-followup', targetClass: target.classInfo, problemCount: notebookFollowups.length,
+      unscheduledClasses, emptyNotebookClasses, notebookIssues, notebookFollowups };
   }
 
   // 5. Aucun point détecté par les vérifications disponibles

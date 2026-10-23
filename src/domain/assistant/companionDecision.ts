@@ -33,7 +33,7 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
   if (authenticated && reply) return { kind: 'reply', reply };
   const canSuggestContent = signals.hasNotebookReader && signals.hasContentSuggestion
-    && ['ready', 'schedule', 'notebook-empty'].includes(guidance.step);
+    && guidance.step === 'ready';
   if (!canSuggestContent && guidance.step !== 'ready') return { kind: 'guidance' };
   if (authenticated) {
     if (!signals.online || syncStatus === 'offline') return { kind: 'offline' };

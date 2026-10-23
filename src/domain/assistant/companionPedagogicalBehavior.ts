@@ -62,6 +62,12 @@ export function resolvePedagogicalBehavior(guidance: ClassGuidance): Pedagogical
     };
   }
 
+  // A review reminder is a gentle prompt, never evidence of a critical failure.
+  if (guidance.step === 'notebook-followup') return {
+    problemCount: guidance.remaining, severity: 'minor', mood: 'attentive', robotAction: 'inspect',
+    antennaFlash: false, headRoundness: 85, autoSleepMs: 60000,
+  };
+
   const problemCount = guidance.step === 'create' ? 1 : guidance.remaining;
 
   if (problemCount <= 2) {

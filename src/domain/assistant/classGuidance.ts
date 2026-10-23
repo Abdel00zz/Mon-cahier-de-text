@@ -1,6 +1,8 @@
-import type { AppConfig, ClassInfo, LessonsData } from '../../types';
+import type { AppConfig, LessonsData } from '../../types';
 import { diagnosePedagogicalState } from '../intelligence/pedagogicalBrain';
 import type { NotebookAdvice } from '../intelligence/notebookAdvisor';
+import type { HolidayCalendar } from '../calendar/calendar';
+import type { FollowupClass, FollowupConfig, NotebookFollowup } from './notebookFollowup';
 
 export type GuidanceAction = { type: 'create-class' } | { type: 'schedule' } | { type: 'open-class'; classId: string };
 
@@ -11,6 +13,7 @@ export type ClassGuidance =
   | { step: 'notebook-issue'; classId: string; className: string; issueCode: NotebookAdvice['code']; count: number; remaining: number }
   | { step: 'notebook-empty'; classId: string; className: string; remaining: number }
   | { step: 'notebook-unavailable'; classId: string; className: string; remaining: number }
+  | ({ step: 'notebook-followup'; classId: string; className: string; remaining: number } & NotebookFollowup)
   | { step: 'checking'; classId: string; className: string }
   | { step: 'ready'; classId: string; className: string };
 
@@ -18,16 +21,18 @@ export interface GuidanceBrainContext {
   activeSessionClassIds?: readonly string[];
   readLessons?: (classId: string) => LessonsData;
   notebooksLoading?: boolean;
+  today?: string;
+  calendar?: HolidayCalendar;
 }
 
-type GuidanceConfig = Pick<AppConfig, 'timetable' | 'schedules'>;
+export type GuidanceConfig = Pick<AppConfig, 'timetable' | 'schedules'> & FollowupConfig;
 
 /**
  * Moteur décisionnel du compagnon connecté au cerveau pédagogique central.
  * Analyse la structure, l'emploi du temps, les séances en cours et la qualité des cahiers.
  */
 export function resolveClassGuidance(
-  classes: readonly Pick<ClassInfo, 'id' | 'name'>[],
+  classes: readonly FollowupClass[],
   config: GuidanceConfig,
   preferredClassId?: string,
   context?: GuidanceBrainContext
@@ -39,6 +44,8 @@ export function resolveClassGuidance(
     activeSessionClassIds: context?.activeSessionClassIds,
     readLessons: context?.readLessons,
     notebooksLoading: context?.notebooksLoading,
+    today: context?.today,
+    calendar: context?.calendar,
   });
 
   if (diagnosis.step === 'create') {
@@ -91,6 +98,12 @@ export function resolveClassGuidance(
     };
   }
 
+  if (diagnosis.step === 'notebook-followup') {
+    const target = diagnosis.notebookFollowups!.find(item => item.classInfo.id === diagnosis.targetClass?.id)!;
+    return { step: 'notebook-followup', classId: target.classInfo.id, className: target.classInfo.name,
+      remaining: diagnosis.problemCount, ...target.followup };
+  }
+
   return {
     step: 'ready',
     classId: diagnosis.targetClass!.id,
@@ -113,5 +126,6 @@ export function guidanceKey(guidance: ClassGuidance): string {
   if (guidance.step === 'notebook-unavailable') return `unavailable:${guidance.classId}:${guidance.remaining}`;
   if (guidance.step === 'notebook-issue') return `issue:${guidance.classId}:${guidance.issueCode}:${guidance.count}:${guidance.remaining}`;
   if (guidance.step === 'notebook-empty') return `empty:${guidance.classId}:${guidance.remaining}`;
+  if (guidance.step === 'notebook-followup') return `followup:${guidance.classId}:${guidance.reason}:${guidance.lastSessionDate ?? 'first'}`;
   return `${guidance.step}:${guidance.classId}:${guidance.remaining}`;
 }

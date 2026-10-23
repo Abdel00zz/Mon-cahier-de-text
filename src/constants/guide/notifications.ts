@@ -26,6 +26,10 @@ export const notifications = chapter('notifications', ['schedule', 'devices'], {
         ],
       },
       {
+        id: 'followup', title: 'Le suivi léger du compagnon',
+        body: 'Le compagnon repère une classe sans horaires, un cahier à démarrer ou une longue période sans nouvelle séance datée. Ce dernier rappel utilise le seuil d’inactivité réglé dans les notifications (5 jours de cours par défaut), les jours prévus pour cette classe, la rentrée et la fin des cours. Les vacances, jours fériés et absences justifiées sont exclus du calcul. La journée en cours relève des rappels de séance. Une date commune ne permet pas de distinguer toutes les séances du même jour ; le compagnon invite donc à vérifier, sans affirmer que le travail n’a pas été fait. Les contenus préparés sans date ne constituent pas à eux seuls un retard. Le bouton ouvre le cahier concerné ; le signal disparaît quand la situation évolue.',
+      },
+      {
         title: 'Recommandations d’usage',
         body: 'Pour garantir la réception des rappels en classe, désactivez les restrictions d’économie d’énergie sur votre navigateur. Les alertes constituent une aide au quotidien, sans se substituer à votre rigueur professionnelle.',
       },
@@ -54,6 +58,10 @@ export const notifications = chapter('notifications', ['schedule', 'devices'], {
           { term: 'هدوء العطل والرخص المبرمجة', detail: 'إيقاف التنبيهات تلقائياً خلال العطل المدرسية المحددة في المقرر الوزاري والرخص الخاصة بالأستاذ.' },
           { term: 'التنبيه بالاهتزاز الخفيف', detail: 'إشعار حركي غير ملفت ملائم لجو الحجرة الدراسية (وفق دعم نظام تشغيل الهاتف).' },
         ],
+      },
+      {
+        id: 'followup', title: 'المتابعة الخفيفة لدى الرفيق',
+        body: 'يرصد الرفيق القسم دون استعمال زمن، والدفتر الذي ينتظر محتواه الأول، ومرور مدة طويلة دون تسجيل حصة مؤرخة جديدة. يعتمد هذا التذكير عتبة الانقطاع المضبوطة في الإشعارات (خمسة أيام تدريس افتراضياً)، وأيام حصص القسم وبداية الدراسة ونهايتها، مع استبعاد العطل والأعياد والغيابات المبررة. يترك اليوم الجاري لتذكيرات الحصة. لا يكفي التاريخ المشترك للتمييز بين جميع حصص اليوم نفسه؛ لذلك يدعوك الرفيق إلى المراجعة دون الجزم بعدم إنجاز العمل. لا يُعدّ المحتوى المحضّر دون تاريخ تأخراً في حد ذاته. يفتح الزر الدفتر المعني ويزول التنبيه عند تغيّر الوضع.',
       },
       {
         title: 'إرشادات لضمان وصول التنبيهات',

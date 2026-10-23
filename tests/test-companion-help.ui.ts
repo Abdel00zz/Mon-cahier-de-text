@@ -3,17 +3,14 @@ import test from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AssistantPopover } from '../src/features/assistant/AssistantPopover';
-import { companionHelpCopy } from '../src/features/assistant/companionHelpCopy';
 
 test('help action provides direct access to the guide without nested search or summary excerpt', () => {
   for (const locale of ['fr', 'ar', 'en'] as const) {
-    const copy = companionHelpCopy(locale);
-    let targetReference: object | null = null;
     const html = renderToStaticMarkup(createElement(AssistantPopover, {
       locale,
       message: { id: 'schedule', title: 'Schedule', detail: 'Vérifiez vos horaires.' },
       helpReference: { chapterId: 'dates', sectionId: 'assign' },
-      onOpenGuide: async ref => { targetReference = ref; return true; },
+      onOpenGuide: async () => true,
     }));
 
     // The robot avatar is rendered

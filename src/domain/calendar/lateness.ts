@@ -53,7 +53,7 @@ export interface LatenessResult {
 }
 
 const DEFAULT_GAP_THRESHOLD = 2;
-const DEFAULT_INACTIVITY_DAYS = 5;
+export const DEFAULT_INACTIVITY_DAYS = 5;
 
 export const computeLateness = (input: LatenessInput): LatenessResult => {
     const { slots, sessionsCount } = input;

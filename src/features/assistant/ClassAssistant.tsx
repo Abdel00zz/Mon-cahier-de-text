@@ -1,8 +1,8 @@
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import type { AppConfig, AppLocale, ClassInfo, LessonsData } from '@/types';
-import { guidanceAction, guidanceKey, resolveClassGuidance } from '@/domain/assistant/classGuidance';
+import type { AppLocale, ClassInfo, LessonsData } from '@/types';
+import { guidanceAction, guidanceKey, resolveClassGuidance, type GuidanceConfig } from '@/domain/assistant/classGuidance';
 import { AssistantPopover } from './AssistantPopover';
 import { resolvePedagogicalBehavior } from '@/domain/assistant/companionPedagogicalBehavior';
 import { classGuidanceMessage } from './companionCopy';
@@ -21,6 +21,7 @@ import { pendingAdminMessages } from '@/domain/messages/conversation';
 import { readNotebookActivity } from '@/infrastructure/storage/companionActivity';
 import { companionHelpReference } from '@/domain/assistant/companionHelp';
 import { useCompanionGuide } from './useCompanionGuide';
+import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
 
@@ -28,7 +29,7 @@ const TeacherConversation = lazy(() => import('@/features/messages/TeacherConver
 interface ClassAssistantProps {
   locale: AppLocale;
   classes: readonly ClassInfo[];
-  config: Pick<AppConfig, 'timetable' | 'schedules'>;
+  config: GuidanceConfig;
   preferredClassId?: string;
   visibleClassIds?: readonly string[];
   activeSessionClassIds?: readonly string[];
@@ -59,6 +60,7 @@ export function ClassAssistant({
   const [contactedClasses, setContactedClasses] = useState<ReadonlySet<string>>(() => new Set());
   const [ignoredClasses, setIgnoredClasses] = useState<ReadonlySet<string>>(() => new Set());
   const today = useMoroccoToday();
+  const [calendar, setCalendar] = useState(getBundledCalendar);
   const [contact, setContact] = useState<{ owner?: string; target?: Pick<ClassInfo, 'id' | 'name'>; context?: string; initialReplyTo?: string }>({});
   const revision = useCompanionRevision();
   const progress = useSyncProgress();
@@ -73,14 +75,20 @@ export function ClassAssistant({
     return () => { recovery.current = null; };
   }, [messaging?.owner]);
   const notebooksLoading = progress.state === 'pulling' || progress.state === 'notebooks';
+  useEffect(() => {
+    let current = true;
+    // Same shared request/cache as session notifications; no new Firebase subscription.
+    void loadHolidayCalendar().then(value => { if (current) setCalendar(value); });
+    return () => { current = false; };
+  }, [today, revision]);
   const brainContext = useMemo(
-    () => ({ activeSessionClassIds, readLessons, notebooksLoading }),
-    [activeSessionClassIds, readLessons, notebooksLoading]
+    () => ({ activeSessionClassIds, readLessons, notebooksLoading, today, calendar }),
+    [activeSessionClassIds, readLessons, notebooksLoading, today, calendar]
   );
 
   const guidance = useMemo(
     () => resolveClassGuidance(orderCompanionClasses(classes, preferredClassId), config, preferredClassId, brainContext),
-    [classes, config.timetable, config.schedules, preferredClassId, brainContext, revision]
+    [classes, config.timetable, config.schedules, config.absences, config.schoolYearStart, config.notificationSettings, preferredClassId, brainContext, revision]
   );
 
   const behavior = useMemo(() => resolvePedagogicalBehavior(guidance), [guidance]);

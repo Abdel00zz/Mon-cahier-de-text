@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/types';
 import type { ClassGuidance } from '@/domain/assistant/classGuidance';
 import { companionClassName } from './companionClassName';
+import { notebookFollowupMessage } from './notebookFollowupCopy';
 
 export interface CompanionMessage {
   id: string;
@@ -51,7 +52,7 @@ const COPY = {
     },
     ready: {
       title: 'Tout est en ordre',
-      detail: 'Vos cahiers et votre emploi du temps sont parfaitement en ordre. Continuez sur votre belle lancée, bravo !',
+      detail: 'Aucun point à signaler dans les vérifications disponibles. Bravo pour le suivi de vos cahiers !',
       action: 'Ouvrir le cahier',
       context: 'Prêt',
     },
@@ -93,7 +94,7 @@ const COPY = {
     },
     ready: {
       title: 'كل شيء على ما يرام',
-      detail: 'دفاترك واستعمال الزمن في أفضل حال ومضبوطة بدقة. استمر في هذا التقدم الرائع، وبرافو!',
+      detail: 'لم يظهر ما يستدعي المراجعة في الفحوص المتاحة. برافو على متابعة دفاترك!',
       action: 'فتح الدفتر',
       context: 'جاهز',
     },
@@ -135,7 +136,7 @@ const COPY = {
     },
     ready: {
       title: 'All set and ready',
-      detail: 'Everything is in order and up to date. Keep up the great work, bravo!',
+      detail: 'Nothing to flag in the available checks. Bravo for keeping track of your notebooks!',
       action: 'Open notebook',
       context: 'Ready',
     },
@@ -145,6 +146,7 @@ const COPY = {
 export const companionLabels = (locale: AppLocale) => COPY[locale];
 
 export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale): CompanionMessage {
+  if (guidance.step === 'notebook-followup') return notebookFollowupMessage(guidance, locale);
   const base = COPY[locale][guidance.step];
   let context: string | undefined = 'context' in base ? base.context : undefined;
   let detail: string = base.detail;
@@ -175,9 +177,9 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
     else if (guidance.step === 'notebook-empty') detail = locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
       : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
         : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`;
-    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Tout est en ordre pour ${name} ! Vos contenus sont prêts et à jour, continuez ainsi, bravo !`
-      : locale === 'ar' ? `كل شيء على ما يرام لقسم ${name} ومضبوط تماماً! تدرجك ممتاز ودفترك جاهز، واصل تقدمك وبرافو!`
-        : `Everything is in order for ${name}! Your content is ready and up to date, keep up the great work, bravo!`;
+    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Aucun point à signaler pour ${name} dans les vérifications disponibles. Bravo pour le suivi de votre cahier !`
+      : locale === 'ar' ? `لم يظهر ما يستدعي المراجعة لقسم ${name} في الفحوص المتاحة. برافو على متابعة دفترك!`
+        : `Nothing to flag for ${name} in the available checks. Bravo for keeping track of your notebook!`;
     else detail = `${locale === 'ar' ? `في دفتر قسم ${name}، ` : locale === 'en' ? `For ${name}: ` : `Dans le cahier de ${name} : `}${detail}`;
     detailEmphasis = name;
   }

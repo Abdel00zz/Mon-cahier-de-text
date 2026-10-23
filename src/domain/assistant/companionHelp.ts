@@ -24,6 +24,7 @@ export function companionHelpReference(
     case 'create': return { chapterId: 'classes' };
     case 'schedule': return { chapterId: 'schedule' };
     case 'active-session': return { chapterId: 'dates', sectionId: 'assign' };
+    case 'notebook-followup': return { chapterId: 'notifications', sectionId: 'followup' };
     case 'notebook-empty': return { chapterId: 'content', sectionId: 'prepare' };
     case 'notebook-unavailable': return { chapterId: 'troubleshooting' };
     case 'checking': return { chapterId: 'devices', sectionId: 'sync-status' };
