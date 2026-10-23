@@ -1,5 +1,5 @@
 import type { AppConfig, LessonsData } from '../../types';
-import { diagnosePedagogicalState } from '../intelligence/pedagogicalBrain';
+import { diagnosePedagogicalState, type PedagogicalDiagnosis } from '../intelligence/pedagogicalBrain';
 import type { NotebookAdvice } from '../intelligence/notebookAdvisor';
 import type { HolidayCalendar } from '../calendar/calendar';
 import type { FollowupClass, FollowupConfig, NotebookFollowup } from './notebookFollowup';
@@ -47,6 +47,12 @@ export function resolveClassGuidance(
     today: context?.today,
     calendar: context?.calendar,
   });
+
+  return guidanceFromDiagnosis(diagnosis);
+}
+
+/** Shared projection: standalone callers and the central brain use the same guidance contract. */
+export function guidanceFromDiagnosis(diagnosis: PedagogicalDiagnosis): ClassGuidance {
 
   if (diagnosis.step === 'create') {
     return { step: 'create' };

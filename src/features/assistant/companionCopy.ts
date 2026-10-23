@@ -9,6 +9,7 @@ export interface CompanionMessage {
   detail: string;
   /** Literal text to emphasize; never parsed as HTML or Markdown. */
   detailEmphasis?: string;
+  detailHighlights?: readonly string[];
   subject?: string;
   action?: string;
   context?: string;

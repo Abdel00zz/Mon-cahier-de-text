@@ -28,6 +28,7 @@ export interface PedagogicalDiagnosis {
   /** Détails sur les anomalies détectées par le conseiller de cahier */
   notebookIssues: NotebookClassIssue[];
   notebookFollowups?: NotebookClassFollowup[];
+  unreadableNotebookClasses?: Pick<ClassInfo, 'id' | 'name'>[];
   /** Classe actuellement en séance */
   activeSessionClass?: Pick<ClassInfo, 'id' | 'name'>;
 }
@@ -42,6 +43,8 @@ export interface PedagogicalBrainOptions {
   /** Explicit clock keeps temporal diagnostics deterministic for all callers. */
   today?: string;
   calendar?: HolidayCalendar;
+  /** The central assistant scans all local notebooks even when a live session takes display priority. */
+  inspectDuringSession?: boolean;
 }
 
 const VALID_DAYS = new Set(TIMETABLE_DAYS.map(day => day.value));
@@ -69,6 +72,7 @@ export function diagnosePedagogicalState({
   notebooksLoading = false,
   today,
   calendar = getBundledCalendar(),
+  inspectDuringSession = false,
 }: PedagogicalBrainOptions): PedagogicalDiagnosis {
   // 1. Aucune classe créée
   if (!classes.length) {
@@ -106,7 +110,7 @@ export function diagnosePedagogicalState({
   const activeIds = new Set(activeSessionClassIds);
   const activeSessionClass = classes.find(item => item.id === preferredClassId && activeIds.has(item.id))
     ?? classes.find(item => activeIds.has(item.id));
-  if (activeSessionClass) return {
+  if (activeSessionClass && (!inspectDuringSession || notebooksLoading)) return {
     step: 'active-session', targetClass: activeSessionClass, activeSessionClass,
     problemCount: 0, unscheduledClasses, emptyNotebookClasses: [], notebookIssues: [],
   };
@@ -156,7 +160,12 @@ export function diagnosePedagogicalState({
     }
   }
 
+  const findings = { unscheduledClasses, emptyNotebookClasses, notebookIssues, notebookFollowups,
+    unreadableNotebookClasses: unreadable, activeSessionClass };
+  if (activeSessionClass) return { ...findings, step: 'active-session', targetClass: activeSessionClass, problemCount: 0 };
+
   if (unreadable.length) return {
+    ...findings,
     step: 'notebook-unavailable', targetClass: unreadable.find(item => item.id === preferredClassId) ?? unreadable[0],
     problemCount: unreadable.length, unscheduledClasses, emptyNotebookClasses, notebookIssues,
   };
@@ -168,10 +177,11 @@ export function diagnosePedagogicalState({
     const totalAdvicesCount = notebookIssues.reduce((sum, curr) => sum + curr.advices.length, 0);
 
     return {
+      ...findings,
       step: 'notebook-issue',
       targetClass: targetIssue.classInfo,
       problemCount: totalAdvicesCount,
-      unscheduledClasses: [],
+      unscheduledClasses,
       emptyNotebookClasses,
       notebookIssues,
     };
@@ -179,6 +189,7 @@ export function diagnosePedagogicalState({
 
   // Inspect notebooks before routine setup so unreadable content is never masked by an offer.
   if (unscheduledClasses.length > 0) return {
+    ...findings,
     step: 'schedule', targetClass: unscheduledClasses.find(item => item.id === preferredClassId) ?? unscheduledClasses[0],
     problemCount: unscheduledClasses.length, unscheduledClasses, emptyNotebookClasses, notebookIssues,
   };
@@ -187,6 +198,7 @@ export function diagnosePedagogicalState({
   if (emptyNotebookClasses.length > 0 && typeof readLessons === 'function') {
     const target = emptyNotebookClasses.find(c => c.id === preferredClassId) ?? emptyNotebookClasses[0];
     return {
+      ...findings,
       step: 'notebook-empty',
       targetClass: target,
       problemCount: emptyNotebookClasses.length,

@@ -2,7 +2,7 @@ import type { AdminMessage } from '../../types';
 import type { ClassGuidance } from './classGuidance';
 import { pendingAdminMessages } from '../messages/conversation';
 
-interface CompanionSignals {
+export interface CompanionSignals {
   guidance: ClassGuidance;
   authenticated: boolean;
   online: boolean;

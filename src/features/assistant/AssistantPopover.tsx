@@ -2,13 +2,14 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import type { ReactNode } from 'react';
 import type { AppLocale } from '@/types';
 import { BloubAvatar, type BloubExpression } from '@/components/ui/BloubAvatar';
-import { X } from '@/components/ui/icons';
 import { companionLabels, type CompanionMessage } from './companionCopy';
 import { attachAssistantDismiss } from './assistantPopoverController';
 import { attachAssistantPlacement } from './assistantPlacement';
 import { useCompanionWelcome } from './welcomeSession';
 import type { GuideReference } from '../../constants/guide/model';
 import { companionHelpCopy } from './companionHelpCopy';
+import { CompanionText } from './CompanionText';
+import { AssistantTips } from './AssistantTips';
 import './companion.css';
 
 interface AssistantPopoverProps {
@@ -31,6 +32,9 @@ interface AssistantPopoverProps {
   onDismiss?: () => void;
   helpReference?: GuideReference;
   onOpenGuide?: (reference: GuideReference, signal?: AbortSignal) => Promise<boolean>;
+  tips?: { day: string; initiallyOpen: boolean };
+  nextTaskLabel?: string;
+  onNextTask?: () => void;
 }
 
 /** Gestion autonome de l'ouverture et fermeture de la bulle avec focus accessible. */
@@ -68,16 +72,23 @@ export function AssistantPopover({
   headRoundness,
   autoSleepMs,
   onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
-  dismissLabel, onDismiss, helpReference, onOpenGuide,
+  dismissLabel, onDismiss, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
   const [seen, setSeen] = useState<string | undefined>();
   const [hovered, setHovered] = useState(false);
+  const [helpBusy, setHelpBusy] = useState(false);
+  const [helpError, setHelpError] = useState(false);
+  const helpRequest = useRef<AbortController | null>(null);
   const id = useId();
   const labels = companionLabels(locale);
-  const emphasis = message.detailEmphasis;
-  const emphasisIndex = emphasis ? message.detail.indexOf(emphasis) : -1;
+  const highlights = [...(message.detailHighlights ?? []), ...(message.detailEmphasis ? [message.detailEmphasis] : [])];
+
+  useEffect(() => {
+    setHelpBusy(false); setHelpError(false);
+    return () => { helpRequest.current?.abort(); helpRequest.current = null; };
+  }, [open, message.id]);
 
   const handleDismissAndClose = useCallback((restoreFocus = false) => {
     onDismiss?.();
@@ -149,27 +160,9 @@ export function AssistantPopover({
       >
         {open && (
           <div className="assistant-panel__body">
-            <div className="assistant-panel__topbar">
-              <button
-                type="button"
-                className="assistant-panel__close"
-                onClick={() => handleDismissAndClose(true)}
-                aria-label={labels.close}
-              >
-                <X size={14} strokeWidth={1.25} absoluteStrokeWidth aria-hidden="true" />
-              </button>
-            </div>
-            {message.subject ? <div className="assistant-panel__heading">
-              <div className="assistant-panel__copy">
-                <h2 id={`${id}-title`} className="assistant-panel__title">
-                  <bdi className="assistant-panel__title-subject">{message.subject}</bdi>
-                </h2>
-              </div>
-            </div> : <h2 id={`${id}-title`} className="sr-only">{message.title}</h2>}
+            <h2 id={`${id}-title`} className="sr-only">{message.title}</h2>
             <p id={`${id}-detail`} className="assistant-panel__detail">
-              {emphasis && emphasisIndex >= 0 ? <>
-                {message.detail.slice(0, emphasisIndex)}<strong className="assistant-panel__emphasis"><bdi>{emphasis}</bdi></strong>{message.detail.slice(emphasisIndex + emphasis.length)}
-              </> : message.detail}
+              <CompanionText text={message.detail} highlights={highlights} />
             </p>
             {primaryAction ?? (onAction && message.action && (
               <button
@@ -194,18 +187,28 @@ export function AssistantPopover({
                 {dismissLabel}
               </button>
             )}
+            {onNextTask && nextTaskLabel && <button type="button" className="assistant-panel__help" onClick={onNextTask}>{nextTaskLabel}</button>}
             {helpReference && onOpenGuide && (
               <button
                 type="button"
                 className="assistant-panel__help"
+                disabled={helpBusy}
+                aria-busy={helpBusy || undefined}
                 onClick={() => {
-                  close();
-                  void onOpenGuide(helpReference);
+                  if (helpRequest.current && !helpRequest.current.signal.aborted) return;
+                  const request = new AbortController(); helpRequest.current = request;
+                  setHelpBusy(true); setHelpError(false);
+                  void onOpenGuide(helpReference, request.signal).then(opened => {
+                    if (opened && !request.signal.aborted) close();
+                  }).catch(() => { if (!request.signal.aborted) setHelpError(true); })
+                    .finally(() => { if (!request.signal.aborted) { helpRequest.current = null; setHelpBusy(false); } });
                 }}
               >
-                {companionHelpCopy(locale).open}
+                {helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
               </button>
             )}
+            {helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
+            {tips && <AssistantTips key={`${tips.day}:${locale}`} locale={locale} {...tips} />}
             {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
           </div>
         )}
