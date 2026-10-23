@@ -12,7 +12,7 @@ import type { NotebookActivity } from './notebookActivity';
 import { createNotebookSnapshot } from './notebookSnapshot';
 import { pedagogicalTasks } from './pedagogicalTasks';
 
-type ServiceSignals = Omit<CompanionSignals, 'guidance' | 'hasContentSuggestion' | 'hasNotebookReader'>;
+type ServiceSignals = Omit<CompanionSignals, 'guidance' | 'hasContentSuggestion' | 'hasNotebookReader' | 'calendarNotice'>;
 export interface CompanionBrainInput {
   classes: readonly ClassInfo[];
   config: GuidanceConfig;
@@ -67,19 +67,22 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     const selectedTask = tasks[0]?.guidance.step === 'active-session' ? tasks[0]
       : tasks.find(task => task.id === selectedTaskId) ?? tasks[0];
     const guidance = selectedTask?.guidance ?? guidanceFromDiagnosis(diagnosis);
-    const contentSuggestion = guidance.step === 'ready' && input.offersEnabled && !loading ? resolveContentSuggestion({
+    const calendarTarget = 'classId' in guidance ? input.classes.find(item => item.id === guidance.classId) : undefined;
+    const calendarNotice = guidance.step === 'ready'
+      ? companionCalendarNotice(input.calendar, input.today, input.config, calendarTarget) : undefined;
+    const contentSuggestion = guidance.step === 'ready' && !calendarNotice && input.offersEnabled && !loading ? resolveContentSuggestion({
       classes: input.classes, readLessons: snapshot.read, readActivity: input.readActivity,
       preferredClassId: input.preferredClassId, visibleClassIds: input.visibleClassIds,
       messages: input.messageHistory, contactedClassIds: input.contactedClassIds, ignoredClassIds: input.ignoredClassIds, now: input.now,
     }) : undefined;
-    const decision = decideCompanion({ ...input.services, guidance,
+    const decision = decideCompanion({ ...input.services, guidance, calendarNotice,
       hasNotebookReader: Boolean(snapshot.read), hasContentSuggestion: Boolean(contentSuggestion) });
     const reply = decision.kind === 'reply' ? decision.reply : undefined;
     const targetId = reply?.classId ?? (decision.kind === 'offer' ? contentSuggestion?.target.id
       : 'classId' in guidance ? guidance.classId : undefined);
     const target = input.classes.find(item => item.id === targetId);
     const serviceError = decision.kind === 'sync-error' || decision.kind === 'inbox-error';
-    const service = !['guidance', 'offer', 'reply'].includes(decision.kind);
+    const service = !['guidance', 'offer', 'reply', 'calendar'].includes(decision.kind);
     const pendingTasks = tasks.filter(task => task.guidance.step !== 'active-session');
     const unreadReplies = input.services.authenticated ? pendingAdminMessages(input.services.messages).length : 0;
     const attentionCount = pendingTasks.length + unreadReplies + Number(serviceError);
@@ -106,7 +109,8 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       attentionKey: service ? serviceError ? decision.kind : undefined : reply?.id
         ?? (decision.kind === 'guidance' && selectedTask && guidance.step !== 'active-session'
           ? `${selectedTask.id}:${selectedTask.evidence.occurrences}:${guidance.step === 'notebook-followup' ? guidance.lastSessionDate ?? 'first' : selectedTask.evidence.samplePath ?? ''}` : undefined),
-      calendarNotice: !service && !reply ? companionCalendarNotice(input.calendar, input.today, input.config, target) : undefined,
+      calendarNotice: decision.kind === 'calendar' ? decision.notice : undefined,
+      showTips: decision.kind === 'guidance' && guidance.step === 'ready',
       helpReference: companionHelpReference(decision, guidance),
       // Explanations can be inspected without exposing text, names of pupils or provider secrets.
       trace: { rule: selectedTask && decision.kind === 'guidance' ? selectedTask.evidence.rule : decision.kind,

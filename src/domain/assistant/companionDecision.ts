@@ -1,5 +1,6 @@
 import type { AdminMessage } from '../../types';
 import type { ClassGuidance } from './classGuidance';
+import type { CompanionCalendarNotice } from './companionCalendar';
 import { pendingAdminMessages } from '../messages/conversation';
 
 export interface CompanionSignals {
@@ -13,10 +14,12 @@ export interface CompanionSignals {
   messages: readonly AdminMessage[];
   hasNotebookReader: boolean;
   hasContentSuggestion?: boolean;
+  calendarNotice?: CompanionCalendarNotice;
 }
 
 export type CompanionDecision =
   | { kind: 'reply'; reply: AdminMessage }
+  | { kind: 'calendar'; notice: CompanionCalendarNotice }
   | { kind: 'guidance' | 'offer' | 'sync-error' | 'offline' | 'syncing' | 'checking' | 'inbox-error' };
 
 /** One deterministic arbitration point. Unknown or failed checks never become a success offer. */
@@ -40,5 +43,7 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
     if (syncStatus === 'pending' || syncStatus === 'syncing') return { kind: 'syncing' };
     if (!signals.inboxLoaded || syncStatus === 'idle') return { kind: 'checking' };
   }
+  // One subject per message: a calendar notice replaces an optional offer, never prefixes it.
+  if (guidance.step === 'ready' && signals.calendarNotice) return { kind: 'calendar', notice: signals.calendarNotice };
   return { kind: canSuggestContent && signals.online ? 'offer' : 'guidance' };
 }

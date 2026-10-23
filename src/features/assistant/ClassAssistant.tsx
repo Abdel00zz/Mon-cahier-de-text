@@ -88,9 +88,9 @@ export function ClassAssistant({
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
     messaging?.messages, contactedClasses, ignoredClasses, online, syncStatus, progress.state, revision]);
   const brain = useMemo(() => evaluate(selectedTaskId), [evaluate, selectedTaskId]);
-  const { guidance, decision, behavior, contentSuggestion } = brain;
+  const { decision, behavior, contentSuggestion } = brain;
   const reply = decision.kind === 'reply' ? decision.reply : undefined;
-  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' ? decision.kind : undefined;
+  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' && decision.kind !== 'calendar' ? decision.kind : undefined;
   const serviceError = service === 'sync-error' || service === 'inbox-error';
   const message = companionMessage(brain, locale, today, recovering);
   const retry = async () => {
@@ -134,10 +134,10 @@ export function ClassAssistant({
     <AssistantPopover
       locale={locale}
       message={message}
-      tips={{ day: today, initiallyOpen: !service && !reply && guidance.step === 'ready' }}
+      tips={brain.showTips ? { day: today, initiallyOpen: true } : undefined}
       helpReference={brain.helpReference}
       onOpenGuide={openGuide}
-      contactLabel={!reply && !isContentOffer ? copy.contact : undefined}
+      contactLabel={!reply && !isContentOffer && decision.kind !== 'calendar' ? copy.contact : undefined}
       primaryAction={isContentOffer && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
         label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}

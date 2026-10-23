@@ -13,24 +13,24 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `Pour démarrer sereinement avec ${n} : souhaitez-vous des séances prêtes à l’emploi ou un cours entièrement personnalisé ? Contactez-nous sur WhatsApp.`,
     ],
     personal: [
-      n => `Le saviez-vous : si vous souhaitez enrichir vos cours de ${n} avec des exercices ou fiches sur mesure, vous pouvez contacter notre équipe.`,
-      n => `Le saviez-vous : l’équipe peut vous préparer des évaluations et activités adaptées à votre approche pour ${n} sur simple contact.`,
+      n => `Pour enrichir vos cours de ${n}, souhaitez-vous des exercices ou des fiches sur mesure préparés avec l’équipe ?`,
+      n => `L’équipe peut préparer des évaluations et activités adaptées à votre approche pour ${n}. Parlons de vos besoins sur WhatsApp.`,
     ],
     predefined: [
-      n => `Le saviez-vous : si vous souhaitez des leçons ou exercices adaptés au programme de ${n}, vous pouvez contacter l’équipe pour les préparer.`,
-      n => `Le saviez-vous : vous pouvez obtenir des cours et activités sur mesure adaptés à ${n} en contactant directement notre équipe.`,
+      n => `Souhaitez-vous des leçons ou exercices adaptés au programme de ${n} ? L’équipe peut les préparer avec vous.`,
+      n => `Pour ${n}, l’équipe peut préparer des cours adaptés et des activités sur mesure. Échangeons sur ce qui vous serait utile.`,
     ],
     imported: [
-      n => `Le saviez-vous : si vous souhaitez structurer votre contenu importé ou l’enrichir d’exercices pour ${n}, vous pouvez contacter l’équipe.`,
-      n => `Le saviez-vous : notre équipe peut adapter vos supports importés au rythme de ${n} sur simple message WhatsApp.`,
+      n => `Souhaitez-vous structurer vos supports importés ou les enrichir d’exercices pour ${n} ? Contactez l’équipe.`,
+      n => `Vos supports importés peuvent être adaptés au rythme de ${n} avec l’équipe. Discutons-en sur WhatsApp.`,
     ],
     assigned: [
-      n => `Le saviez-vous : pour vos prochaines séances avec ${n}, vous pouvez contacter l’équipe afin d’obtenir des devoirs et exercices adaptés.`,
-      n => `Le saviez-vous : vous pouvez anticiper vos prochains chapitres pour ${n} avec des activités préparées sur mesure avec l’équipe.`,
+      n => `Pour les prochaines séances avec ${n}, souhaitez-vous des devoirs et exercices adaptés, préparés avec l’équipe ?`,
+      n => `Pour les prochains chapitres de ${n}, l’équipe peut préparer des activités sur mesure. Parlons de votre progression.`,
     ],
     unknown: [
-      n => `Le saviez-vous : si vous souhaitez des cours, fiches ou exercices adaptés à ${n}, vous pouvez contacter l’équipe sur WhatsApp.`,
-      n => `Le saviez-vous : pour adapter ou enrichir les contenus de ${n} selon vos besoins, contactez directement l’équipe sur WhatsApp.`,
+      n => `Besoin de cours, fiches ou exercices adaptés à ${n} ? Échangez avec l’équipe sur WhatsApp.`,
+      n => `Pour adapter ou enrichir les contenus de ${n} selon vos besoins, contactez l’équipe sur WhatsApp.`,
     ],
   },
   ar: {
@@ -39,24 +39,24 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `لبدء دروس قسم ${n} بكل يسر، هل تودّ تجهيز حصص وتمارين مكيفة تناسب أسلوبك بمساعدة الفريق؟ تواصل معنا.`,
     ],
     personal: [
-      n => `هل تعلم : إذا كنت ترغب في محتوى إضافي أو تمارين مكيفة مع دروسك لقسم ${n}، يمكنك التواصل معنا لإعدادها لك.`,
-      n => `هل تعلم : يمكنك الحصول على ملخصات وفروض مخصصة تتماشى مع طريقتك لقسم ${n} بالتواصل مباشرة مع فريقنا.`,
+      n => `فيما يخص دروس قسم ${n}، هل تودّ إثراءها بمحتوى إضافي أو تمارين مكيفة؟ يمكن لفريقنا إعدادها معك.`,
+      n => `لقسم ${n}، هل ترغب في ملخصات وفروض مخصصة تتماشى مع طريقتك؟ تواصل مع فريقنا لبحث ما يناسبك.`,
     ],
     predefined: [
-      n => `هل تعلم : إذا كنت ترغب في دروس أو تمارين مكيفة مع مقررك لقسم ${n}، يمكنك التواصل معنا لإعدادها لك.`,
-      n => `هل تعلم : يمكنك طلب محتوى مخصص وأنشطة مكيفة مع تدرج قسم ${n} بالتواصل مباشرة مع فريقنا.`,
+      n => `فيما يخص مقرر قسم ${n}، هل تودّ تكييف بعض الدروس أو التمارين مع احتياجاتك؟ يمكن للفريق مساعدتك في إعدادها.`,
+      n => `لقسم ${n}، يمكن للفريق إعداد محتوى وأنشطة مكيفة مع تدرجك. تواصل معنا لنتعرف على ما تحتاجه.`,
     ],
     imported: [
-      n => `هل تعلم : إذا كنت ترغب في تكييف دروسك المستوردة لقسم ${n} أو إثرائها بتمارين، يمكنك التواصل مع فريقنا.`,
-      n => `هل تعلم : يمكنك تنظيم وتكييف محتواك المستورد لقسم ${n} في حصص متناسقة بالتواصل معنا عبر واتساب.`,
+      n => `بخصوص دروسك المستوردة لقسم ${n}، هل تودّ تكييفها أو إثراءها بتمارين؟ تواصل مع فريقنا.`,
+      n => `هل ترغب في تنظيم محتواك المستورد لقسم ${n} في حصص متناسقة؟ ناقش احتياجاتك مع الفريق عبر واتساب.`,
     ],
     assigned: [
-      n => `هل تعلم : إذا كنت ترغب في تحضير الحصص القادمة بتمارين وفروض مكيفة لقسم ${n}، يمكنك التواصل مع فريقنا.`,
-      n => `هل تعلم : يمكنك الحصول على مراجعات وأنشطة مخصصة لقسم ${n} تتماشى مع تدرجك بالتواصل المباشر معنا.`,
+      n => `فيما يخص محتوى الحصص القادمة لقسم ${n}، هل تودّ إعداد تمارين وفروض مكيفة بمساعدة الفريق؟`,
+      n => `لقسم ${n}، هل ترغب في مراجعات وأنشطة مخصصة تتماشى مع تدرجك؟ تواصل معنا لبحث ما يناسب حصصك القادمة.`,
     ],
     unknown: [
-      n => `هل تعلم : إذا كنت ترغب في دروس، تمارين أو فروض مكيفة لقسم ${n}، يمكنك التواصل مع فريقنا عبر واتساب.`,
-      n => `هل تعلم : يمكنك تكييف محتوى حصص قسم ${n} وفق احتياجاتك الحقيقية بالتواصل مباشرة مع فريقنا عبر واتساب.`,
+      n => `هل تحتاج إلى دروس أو تمارين أو فروض مكيفة لقسم ${n}؟ تواصل مع فريقنا عبر واتساب.`,
+      n => `لتكييف محتوى حصص قسم ${n} وفق احتياجاتك، يمكنك مناقشة التفاصيل مع فريقنا عبر واتساب.`,
     ],
   },
   en: {
@@ -65,24 +65,24 @@ const phrases: Record<AppLocale, Record<ContentSituation, readonly Phrase[]>> = 
       n => `To start smoothly with ${n}: would you like ready lessons tailored to your style or fully personalized content? Contact us.`,
     ],
     personal: [
-      n => `Did you know: if you would like to enrich your materials for ${n} with tailored exercises, you can contact our team to help.`,
-      n => `Did you know: our team can craft custom assessments and practice sheets suited to your teaching style for ${n} upon request.`,
+      n => `Would you like to enrich your materials for ${n} with tailored exercises? Our team can help prepare them with you.`,
+      n => `Our team can prepare assessments and practice sheets suited to your teaching style for ${n}. Let’s discuss your needs.`,
     ],
     predefined: [
-      n => `Did you know: if you would like lessons or exercises tailored to the curriculum for ${n}, you can contact our team to prepare them.`,
-      n => `Did you know: you can request custom-designed lessons and activities adapted to ${n} by contacting our team.`,
+      n => `Would you like to adapt lessons or exercises from the curriculum for ${n}? Contact our team to prepare them together.`,
+      n => `Our team can prepare lessons and activities tailored to ${n}. Tell us what would be useful for your class.`,
     ],
     imported: [
-      n => `Did you know: if you would like help structuring your imported files or enriching them for ${n}, you can contact our team.`,
-      n => `Did you know: our team can adapt your imported documents for ${n} into ready-to-teach lessons upon request.`,
+      n => `Would you like help structuring your imported materials or adding exercises for ${n}? Contact our team.`,
+      n => `Our team can adapt your imported materials for ${n} into lessons. Discuss your needs with us on WhatsApp.`,
     ],
     assigned: [
-      n => `Did you know: for your upcoming sessions with ${n}, you can contact our team to prepare tailored exercises and reviews.`,
-      n => `Did you know: you can anticipate the next chapters for ${n} with custom activities crafted with our team upon request.`,
+      n => `For your upcoming lessons with ${n}, would you like tailored exercises and reviews prepared with our team?`,
+      n => `For the next chapters with ${n}, our team can prepare custom activities. Let’s discuss your teaching plan.`,
     ],
     unknown: [
-      n => `Did you know: if you need tailored lessons, exercises or tests for ${n}, you can reach out to our team on WhatsApp.`,
-      n => `Did you know: to adapt or enrich the curriculum for ${n} to your exact needs, talk it through with our team on WhatsApp.`,
+      n => `Need tailored lessons, exercises or tests for ${n}? Talk to our team on WhatsApp.`,
+      n => `To adapt or enrich your content for ${n}, discuss your needs with our team on WhatsApp.`,
     ],
   },
 };

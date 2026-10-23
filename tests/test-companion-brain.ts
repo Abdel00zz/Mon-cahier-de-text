@@ -133,7 +133,7 @@ test('service recovery, admin replies, local guests and data scope lead to consi
   assert.ok(otherAccount.tasks.every(task => !('classId' in task.guidance) || task.guidance.classId === 'other'));
 });
 
-test('presentation, calendar context, help and actions are projections of the same chosen class', () => {
+test('a notebook task keeps its class, help and action without appending an unrelated holiday', () => {
   const options = input({ readLessons: () => [], calendar: { ...calendar, vacances: [{ nom: 'Congé', debut: '2026-10-18', fin: '2026-10-25' }] } });
   const result = evaluateCompanion(options);
   for (const locale of ['ar', 'fr', 'en'] as const) {
@@ -143,8 +143,51 @@ test('presentation, calendar context, help and actions are projections of the sa
     assert.doesNotMatch(message.detail, /قسم\s+قسم|\r|\n/);
     assert.equal(result.action.type, 'open-class');
     assert.equal(result.helpReference?.chapterId, 'content');
-    assert.equal(result.calendarNotice?.end, '2026-10-25');
+    assert.equal(result.calendarNotice, undefined);
+    assert.equal(result.showTips, false);
+    assert.doesNotMatch(message.detail, /Congé|vacances|العطلة|WhatsApp/iu);
   }
+});
+
+test('a holiday notice replaces optional content offers and tips, but never absorbs important problems or replies', () => {
+  const options = input({ calendar: { ...calendar, vacances: [{ nom: 'Congé', debut: '2026-10-18', fin: '2026-10-25' }] },
+    readActivity: () => { throw new Error('do not inspect marketing activity for a calendar message'); } });
+  const holiday = evaluateCompanion(options);
+  assert.equal(holiday.decision.kind, 'calendar');
+  assert.equal(holiday.calendarNotice?.end, '2026-10-25');
+  assert.equal(holiday.contentSuggestion, undefined);
+  assert.deepEqual(holiday.action, { type: 'none' });
+  assert.equal(holiday.helpReference, undefined);
+  assert.equal(holiday.showTips, false);
+  for (const locale of ['ar', 'fr', 'en'] as const) {
+    const message = companionMessage(holiday, locale, options.today, false);
+    assert.match(message.id, /^calendar:/);
+    assert.equal(message.action, undefined);
+    assert.doesNotMatch(message.detail, /هل تعلم|Le saviez-vous|Did you know|WhatsApp|واتساب|exercices|تمارين/iu);
+  }
+  const issue = evaluateCompanion({ ...options, readLessons: () => broken });
+  assert.equal(issue.decision.kind, 'guidance');
+  assert.equal(issue.calendarNotice, undefined);
+  const failure = evaluateCompanion({ ...options, services: { ...options.services, syncStatus: 'error' } });
+  assert.equal(failure.decision.kind, 'sync-error');
+  assert.equal(failure.calendarNotice, undefined);
+  const reply = evaluateCompanion({ ...options, services: { ...options.services,
+    messages: [{ id: 'reply', title: 'Aide', body: 'Réponse', createdAt: '2026-10-23' }] } });
+  assert.equal(reply.decision.kind, 'reply');
+  assert.equal(reply.calendarNotice, undefined);
+  for (const snapshot of [issue, failure, reply]) {
+    assert.equal(snapshot.showTips, false);
+    assert.doesNotMatch(companionMessage(snapshot, 'fr', options.today, false).detail, /Congé|vacances/iu);
+  }
+});
+
+test('the teaching tip appears only in the calm ready state, never alongside a content offer', () => {
+  const offered = evaluateCompanion(input());
+  assert.equal(offered.decision.kind, 'offer');
+  assert.equal(offered.showTips, false);
+  const calm = evaluateCompanion(input({ offersEnabled: false }));
+  assert.equal(calm.decision.kind, 'guidance');
+  assert.equal(calm.showTips, true);
 });
 
 test('contextual help disappears when browsing a simple check or after resolution, without removing the action', () => {

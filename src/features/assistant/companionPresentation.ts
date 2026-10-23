@@ -3,13 +3,14 @@ import type { CompanionBrainSnapshot } from '../../domain/assistant/companionBra
 import { classGuidanceMessage, type CompanionMessage } from './companionCopy';
 import { companionServiceMessage } from './companionServiceCopy';
 import { contentSuggestionMessage } from './contentSuggestionCopy';
-import { withCompanionCalendar } from './companionCalendarCopy';
+import { companionCalendarMessage } from './companionCalendarCopy';
 import { companionClassName } from './companionClassName';
 import { conversationCopy } from '../messages/conversationCopy';
 
 /** Text is a projection of the chosen decision; presentation does not choose another class or action. */
 export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLocale, today: string, recovering: boolean): CompanionMessage {
   const { decision } = snapshot;
+  if (decision.kind === 'calendar') return companionCalendarMessage(decision.notice, locale, snapshot.target?.name);
   let message: CompanionMessage;
   if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale);
   else if (decision.kind === 'offer' && snapshot.contentSuggestion) message = contentSuggestionMessage(snapshot.contentSuggestion, locale, today);
@@ -22,5 +23,5 @@ export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLo
       detailEmphasis: name, action: copy.read };
   } else if (decision.kind !== 'offer') message = companionServiceMessage(decision.kind, locale, recovering);
   else message = classGuidanceMessage(snapshot.guidance, locale);
-  return withCompanionCalendar(message, snapshot.calendarNotice, locale);
+  return message;
 }

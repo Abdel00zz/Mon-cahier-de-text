@@ -40,9 +40,7 @@ test('all content situations and daily variants introduce the class only once', 
       for (const day of ['2026-10-22', '2026-10-23']) {
         const message = contentSuggestionMessage({ target: { id: 'physics', name }, ...situation }, 'ar', day);
         assertClassMention(message);
-        if (!situation.evidence.empty) {
-          assert.match(message.detail, /^هل تعلم\s*:/u);
-        }
+        assert.doesNotMatch(message.detail, /هل تعلم/u, 'the teaching tip alone owns this heading');
       }
     }
   }
@@ -51,9 +49,24 @@ test('all content situations and daily variants introduce the class only once', 
 test('confirmed editor actions also use the class name without a second prefix', () => {
   for (const name of names) {
     for (const kind of ['content', 'dates', 'order'] as const) {
-      assertClassMention(contentSuggestionMessage({
+      const message = contentSuggestionMessage({
         target: { id: 'physics', name }, origin: 'personal', evidence, activity: { kind, at: 10 },
-      }, 'ar', '2026-10-22'));
+      }, 'ar', '2026-10-22');
+      assertClassMention(message);
+      assert.doesNotMatch(message.detail, /هل تعلم/u);
+    }
+  }
+});
+
+test('service offers and activity messages never reuse the teaching-tip heading in any language', () => {
+  for (const locale of ['ar', 'fr', 'en'] as const) {
+    for (const origin of ['personal', 'predefined', 'imported', 'unknown'] as const) {
+      for (const activity of [undefined, ...(['content', 'dates', 'order'] as const).map(kind => ({ kind, at: 10 }))]) {
+        for (const day of ['2026-10-22', '2026-10-23']) {
+          const message = contentSuggestionMessage({ target: { id: 'physics', name: officialName }, origin, evidence, activity }, locale, day);
+          assert.doesNotMatch(message.detail, /هل تعلم|Le saviez-vous|Did you know/iu);
+        }
+      }
     }
   }
 });
