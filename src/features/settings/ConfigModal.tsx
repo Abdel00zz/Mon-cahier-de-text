@@ -369,8 +369,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   if (asPage) {
     return (
       <div className="settings-page-root w-full max-w-5xl mx-auto py-5 sm:py-8 px-3.5 sm:px-6">
-        <SettingsTabNavigation items={SETTING_ITEMS} activeId={activeCategory} onChange={setActiveCategory}
-          onPrepare={preloadTabComponent} translate={t} idPrefix={tabsId} label={t('settings.title')} />
+        <div className="flex justify-center w-full">
+          <SettingsTabNavigation items={SETTING_ITEMS} activeId={activeCategory} onChange={setActiveCategory}
+            onPrepare={preloadTabComponent} translate={t} idPrefix={tabsId} label={t('settings.title')} />
+        </div>
 
         {/* Zone de contenu sous les onglets : encadrée et arrière-plan différent */}
         <main className="settings-page-main min-w-0">

@@ -1,15 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { computeClassSessionSchedule } from '../src/domain/calendar/sessionScheduleStatus';
+import { moroccoClockMinutes } from '../src/domain/notifications/sessionAlertEngine';
 import type { TimetableEntry } from '../src/types';
+
+function makeCasablancaDate(year: number, month: number, day: number, hours: number, minutes: number): Date {
+    const targetMin = hours * 60 + minutes;
+    const d = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+    const actualMin = Math.round(moroccoClockMinutes(d));
+    const diff = targetMin - actualMin;
+    return new Date(d.getTime() + diff * 60_000);
+}
 
 test('session schedule status : détecte une séance en cours avec calcul du temps restant', () => {
     // Lundi (day: 1), slot 2 (10h-11h, startMin: 600, endMin: 660)
     const timetable: TimetableEntry[] = [{ day: 1, slot: 2, classId: 'cls-1' }];
-
-    // Le Maroc est à UTC+1 (heure d'hiver/été GMT+1).
-    // 09h16 UTC correspond exactement à 10h16 à Casablanca (minute = 10 * 60 + 16 = 616).
-    const monday1016Casablanca = new Date('2026-10-12T09:16:00Z');
+    const monday1016Casablanca = makeCasablancaDate(2026, 10, 12, 10, 16);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
         now: monday1016Casablanca,
@@ -25,8 +31,8 @@ test('session schedule status : détecte une séance en cours avec calcul du tem
 test('session schedule status : détecte une séance imminente (< 60 min)', () => {
     // Lundi slot 2 (10h-11h)
     const timetable: TimetableEntry[] = [{ day: 1, slot: 2, classId: 'cls-1' }];
-    // 08h45 UTC -> 09h45 à Casablanca -> 15 min avant 10h00
-    const monday0945Casablanca = new Date('2026-10-12T08:45:00Z');
+    // 09h45 à Casablanca -> 15 min avant 10h00
+    const monday0945Casablanca = makeCasablancaDate(2026, 10, 12, 9, 45);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
         now: monday0945Casablanca,
@@ -41,8 +47,7 @@ test('session schedule status : détecte une séance imminente (< 60 min)', () =
 test('session schedule status : détecte une séance plus tard aujourd’hui', () => {
     // Lundi slot 4 (14h-15h)
     const timetable: TimetableEntry[] = [{ day: 1, slot: 4, classId: 'cls-1' }];
-    // 09h00 UTC -> 10h00 à Casablanca
-    const monday1000Casablanca = new Date('2026-10-12T09:00:00Z');
+    const monday1000Casablanca = makeCasablancaDate(2026, 10, 12, 10, 0);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
         now: monday1000Casablanca,
@@ -56,8 +61,7 @@ test('session schedule status : détecte une séance plus tard aujourd’hui', (
 test('session schedule status : détecte la prochaine séance demain ou un autre jour', () => {
     // Mercredi (day: 3), slot 2 (10h-11h)
     const timetable: TimetableEntry[] = [{ day: 3, slot: 2, classId: 'cls-1' }];
-    // Lundi 12h00 Casablanca -> 11h00 UTC
-    const monday1200Casablanca = new Date('2026-10-12T11:00:00Z');
+    const monday1200Casablanca = makeCasablancaDate(2026, 10, 12, 12, 0);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
         now: monday1200Casablanca,
@@ -72,7 +76,7 @@ test('session schedule status : détecte la prochaine séance demain ou un autre
 
 test('session schedule status : supporte la locale arabe', () => {
     const timetable: TimetableEntry[] = [{ day: 1, slot: 2, classId: 'cls-1' }];
-    const monday1016Casablanca = new Date('2026-10-12T09:16:00Z');
+    const monday1016Casablanca = makeCasablancaDate(2026, 10, 12, 10, 16);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
         now: monday1016Casablanca,

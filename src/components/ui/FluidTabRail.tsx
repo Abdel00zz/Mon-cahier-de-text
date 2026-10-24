@@ -58,24 +58,31 @@ export function FluidTabRail<T extends string = string>({
   const scrollBehavior: ScrollBehavior = reducedMotion ? 'auto' : 'smooth';
   const pillId = layoutId ?? `fluid-tab-pill-${railId}`;
 
+  const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Vérification de la visibilité des extrémités sans dépendre du modèle RTL interne
+  // Vérification de débordement et visibilité des extrémités
   const checkOverflow = useCallback(() => {
     const container = containerRef.current;
     if (!container || items.length === 0) return;
+
+    const isOverflowing = container.scrollWidth > container.clientWidth + 4;
+    setHasOverflow(isOverflowing);
 
     const containerRect = container.getBoundingClientRect();
     const firstItem = itemRefs.current[items[0].id];
     const lastItem = itemRefs.current[items[items.length - 1].id];
 
-    if (!firstItem || !lastItem) return;
+    if (!firstItem || !lastItem) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return;
+    }
 
     const firstRect = firstItem.getBoundingClientRect();
     const lastRect = lastItem.getBoundingClientRect();
 
-    // L'extrémité gauche est masquée si l'un des éléments dépasse à gauche
     const minLeft = Math.min(firstRect.left, lastRect.left);
     const maxRight = Math.max(firstRect.right, lastRect.right);
 
@@ -111,8 +118,16 @@ export function FluidTabRail<T extends string = string>({
       scrollToTab(activeId, scrollBehavior);
       checkOverflow();
     });
+    // Deuxième passe pour mobiles après chargement des polices / styles
+    const timer = setTimeout(() => {
+      scrollToTab(activeId, 'auto');
+      checkOverflow();
+    }, 60);
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [activeId, scrollToTab, checkOverflow, scrollBehavior]);
 
   // Surveillance du redimensionnement et du scroll
@@ -136,7 +151,6 @@ export function FluidTabRail<T extends string = string>({
     };
     const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : undefined;
     resizeObserver?.observe(container);
-    Object.values(itemRefs.current).forEach(item => { if (item) resizeObserver?.observe(item); });
     window.addEventListener('resize', resize);
 
     return () => {
@@ -148,7 +162,11 @@ export function FluidTabRail<T extends string = string>({
   }, [checkOverflow, scrollToTab, activeId]);
 
   const handleSelect = (id: T) => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try { navigator.vibrate(8); } catch {}
+    }
     onChange(id);
+    scrollToTab(id, scrollBehavior);
   };
 
   const handleScrollStep = (direction: 'left' | 'right') => {
@@ -174,13 +192,13 @@ export function FluidTabRail<T extends string = string>({
 
   const sizeClasses = {
     sm: 'min-h-11 px-2.5 text-xs rounded-lg gap-1.5',
-    md: 'min-h-11 px-3 py-1 text-xs rounded-xl gap-1.5',
-    lg: 'min-h-11 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm rounded-xl gap-2',
+    md: 'min-h-11 px-3 sm:px-3.5 py-1.5 text-xs sm:text-[13px] rounded-xl gap-2',
+    lg: 'min-h-11 px-3.5 sm:px-4 py-2 text-xs sm:text-sm rounded-xl gap-2',
   }[size];
 
   return (
-    <div className={cn('relative flex w-full items-center', className)}>
-      {/* Bouton flèche gauche discrète (desktop/tablet ou si activé) */}
+    <div className={cn('relative flex w-full items-center justify-center', className)}>
+      {/* Bouton flèche gauche discrète (desktop/tablet si activé) */}
       {showEdgeArrows && canScrollLeft && (
         <button
           type="button"
@@ -195,18 +213,21 @@ export function FluidTabRail<T extends string = string>({
       {/* Masque de dégradé gauche si débordement */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-background/90 to-transparent transition-opacity duration-200 motion-reduce:transition-none',
+          'pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-[var(--rail-surface,hsl(var(--card)))] to-transparent transition-opacity duration-200 motion-reduce:transition-none',
           canScrollLeft ? 'opacity-100' : 'opacity-0'
         )}
         aria-hidden="true"
       />
 
-      {/* Conteneur de défilement horizontal haute fluidité */}
+      {/* Conteneur de défilement horizontal haute fluidité avec auto-centrage */}
       <div
         ref={containerRef}
         role="tablist"
         aria-label={ariaLabel}
-        className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-2.5 pt-0.5 px-1 no-scrollbar select-none"
+        className={cn(
+          'flex w-full min-w-0 items-center gap-1.5 sm:gap-2 overflow-x-auto overscroll-x-contain py-1 px-1 no-scrollbar select-none',
+          hasOverflow ? 'justify-start' : 'justify-center'
+        )}
         style={{
           scrollBehavior,
           WebkitOverflowScrolling: 'touch',
@@ -218,7 +239,7 @@ export function FluidTabRail<T extends string = string>({
           const Icon = item.icon;
 
           return (
-            <button
+            <motion.button
               key={item.id}
               id={idPrefix ? `${idPrefix}-${item.id}` : undefined}
               ref={el => { itemRefs.current[item.id] = el; }}
@@ -230,9 +251,13 @@ export function FluidTabRail<T extends string = string>({
               tabIndex={isActive ? 0 : -1}
               disabled={item.disabled}
               onClick={() => handleSelect(item.id)}
+              onTouchStart={() => onPrepare?.(item.id)}
+              onPointerDown={() => onPrepare?.(item.id)}
               onPointerEnter={() => onPrepare?.(item.id)}
               onFocus={() => onPrepare?.(item.id)}
               onKeyDown={e => handleKeyDown(e, index)}
+              whileTap={reducedMotion ? undefined : { scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
               className={cn(
                 'group relative flex shrink-0 items-center justify-center whitespace-nowrap font-medium transition-colors duration-150 motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                 sizeClasses,
@@ -261,7 +286,7 @@ export function FluidTabRail<T extends string = string>({
               {Icon && (
                 <Icon className={cn(
                   'relative z-10 shrink-0 transition-transform duration-150 group-active:scale-95 motion-reduce:transform-none motion-reduce:transition-none',
-                  size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4',
+                  size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4 sm:h-4.5 sm:w-4.5',
                   isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                 )} />
               )}
@@ -269,7 +294,7 @@ export function FluidTabRail<T extends string = string>({
               {item.badge && (
                 <span className="relative z-10">{item.badge}</span>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>
@@ -277,13 +302,13 @@ export function FluidTabRail<T extends string = string>({
       {/* Masque de dégradé droit si débordement */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-background/90 to-transparent transition-opacity duration-200 motion-reduce:transition-none',
+          'pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[var(--rail-surface,hsl(var(--card)))] to-transparent transition-opacity duration-200 motion-reduce:transition-none',
           canScrollRight ? 'opacity-100' : 'opacity-0'
         )}
         aria-hidden="true"
       />
 
-      {/* Bouton flèche droite discrète (desktop/tablet ou si activé) */}
+      {/* Bouton flèche droite discrète (desktop/tablet si activé) */}
       {showEdgeArrows && canScrollRight && (
         <button
           type="button"
