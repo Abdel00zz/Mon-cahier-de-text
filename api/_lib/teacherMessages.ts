@@ -1,5 +1,5 @@
 import type { AdminMessage, ClassInfo, TeacherRequestDraft, TeacherSnapshot } from '../../src/types.js';
-import { pendingTeacherRequests } from '../../src/domain/messages/conversation.js';
+import { pendingAdminMessages, pendingTeacherRequests } from '../../src/domain/messages/conversation.js';
 import { beginAccountWrite } from './atomicWrite.js';
 import { appendConversationMessage, normalizeAdminMessages } from './adminMessages.js';
 import { HttpError } from './http.js';
@@ -62,12 +62,31 @@ async function persistContact(redis: RedisClient, owner: string, draft: TeacherR
         ...(draft.replyTo ? { replyTo: draft.replyTo } : {}),
     };
     const next = appendConversationMessage(messages, message);
-    // A first contact before the initial sync must still appear in the admin overview.
-    if (!await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, owner)) {
-        const user = await redis.get<{ nom: string; prenom: string }>(KEYS.user(owner));
+    // A first contact before the initial sync must still appear in the admin overview, and keep counters current.
+    const existingSnapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, owner);
+    const snapshotBase = existingSnapshot ?? await (async () => {
+        const user = await redis.get<{ phone: string; email?: string; nom: string; prenom: string; blocked?: boolean }>(KEYS.user(owner));
         if (!user) throw new HttpError(404, 'Compte supprimé.');
-        write.hset(KEYS.adminSnapshots, { [owner]: { phone: owner, nom: user.nom, prenom: user.prenom, lastSyncAt: null, classes: [] } satisfies TeacherSnapshot });
-    }
+        return {
+            phone: owner,
+            establishmentName: '',
+            contactPhone: user.phone,
+            ...(user.email ? { email: user.email } : {}),
+            blocked: user.blocked === true,
+            nom: user.nom,
+            prenom: user.prenom,
+            lastSyncAt: null,
+            classes: [],
+        } satisfies TeacherSnapshot;
+    })();
+    write.hset(KEYS.adminSnapshots, {
+        [owner]: {
+            ...snapshotBase,
+            pendingMessages: pendingAdminMessages(next).length,
+            pendingRequests: pendingTeacherRequests(next).length,
+            lastMessageAt: next[0]?.createdAt ?? null,
+        } satisfies TeacherSnapshot,
+    });
     write.set(KEYS.adminMessages(owner), next);
     await write.exec();
     return message;

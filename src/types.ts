@@ -396,6 +396,13 @@ export interface ClassSnapshot {
 export interface TeacherSnapshot {
     phone: string;
     establishmentName?: string;
+    /** Champs dénormalisés pour la vue d'ensemble administrative en O(1) collection read sans jointures N+1. */
+    contactPhone?: string;
+    email?: string;
+    blocked?: boolean;
+    pendingMessages?: number;
+    pendingRequests?: number;
+    lastMessageAt?: string | null;
     nom: string;
     prenom: string;
     /**

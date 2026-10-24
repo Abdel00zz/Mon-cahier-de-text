@@ -271,6 +271,14 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         // Taken from accepted cloud settings, never an untrusted/stale snapshot.
         snapshot.establishmentName = typeof nextBlob.settings?.establishmentName === 'string'
             ? nextBlob.settings.establishmentName.trim().slice(0, 200) : '';
+        if (storedSnapshot?.contactPhone !== undefined) {
+            snapshot.contactPhone = storedSnapshot.contactPhone;
+            if (storedSnapshot.email) snapshot.email = storedSnapshot.email;
+            snapshot.blocked = storedSnapshot.blocked === true;
+            snapshot.pendingMessages = storedSnapshot.pendingMessages ?? 0;
+            snapshot.pendingRequests = storedSnapshot.pendingRequests ?? 0;
+            snapshot.lastMessageAt = storedSnapshot.lastMessageAt ?? null;
+        }
         const previousById = new Map((storedSnapshot?.classes ?? []).map(item => [item.id, item]));
         const incomingById = new Map(snapshot.classes.map(item => [item.id, item]));
         snapshot.classes = classes.flatMap(classInfo => {

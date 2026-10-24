@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import { conversationSignature, pendingAdminMessages } from '../src/domain/messages/conversation.js';
+import { conversationSignature, pendingAdminMessages, pendingTeacherRequests } from '../src/domain/messages/conversation.js';
 import { recordWhatsAppContact, sendTeacherRequest } from './_lib/teacherMessages.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages, readInboxSnapshot } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
 import { getRedis, isFirestoreStore, KEYS } from './_lib/redis.js';
-import type { AdminMessage } from '../src/types.js';
+import type { AdminMessage, TeacherSnapshot } from '../src/types.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import { waitUntil } from '@vercel/functions';
 import { sendNativeToOwner } from './_lib/nativePush.js';
@@ -67,7 +67,11 @@ const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: str
     // read-modify-write écrasait un message arrivé entre la lecture et
     // l'écriture. La révision de compte sérialise les deux écrivains.
     const write = await beginAccountWrite(redis, phone);
-    const messages = normalizeAdminMessages(await redis.get<AdminMessage[]>(KEYS.adminMessages(phone)));
+    const [rawMessages, storedSnapshot] = await Promise.all([
+        redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
+        redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone),
+    ]);
+    const messages = normalizeAdminMessages(rawMessages);
     const index = messages.findIndex(message => message.id === body.messageId && message.sender !== 'teacher');
     if (index === -1) throw new HttpError(404, 'Message introuvable.');
 
@@ -75,6 +79,16 @@ const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: str
     if (!message.acknowledgedAt) {
         messages[index] = { ...message, acknowledgedAt: new Date().toISOString() };
         write.set(KEYS.adminMessages(phone), messages);
+        if (storedSnapshot) {
+            write.hset(KEYS.adminSnapshots, {
+                [phone]: {
+                    ...storedSnapshot,
+                    pendingMessages: pendingAdminMessages(messages).length,
+                    pendingRequests: pendingTeacherRequests(messages).length,
+                    lastMessageAt: messages[0]?.createdAt ?? null,
+                },
+            });
+        }
         await write.exec();
     }
     const { unreadCount, badgeUpdatedAt } = await readInboxSnapshot(redis, phone);

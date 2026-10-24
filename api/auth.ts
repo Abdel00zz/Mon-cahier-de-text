@@ -47,6 +47,13 @@ const publicUser = (user: StoredUser) => ({
 // de vérité dont une seule serait tenue à jour.
 const initialAdminSnapshot = (user: StoredUser) => ({
   phone: accountKey(user), // Historical snapshot key, independent of contact information.
+  establishmentName: '',
+  contactPhone: user.phone,
+  ...(user.email ? { email: user.email } : {}),
+  blocked: user.blocked === true,
+  pendingMessages: 0,
+  pendingRequests: 0,
+  lastMessageAt: null,
   nom: user.nom,
   prenom: user.prenom,
   lastSyncAt: null,

@@ -25,6 +25,8 @@ test('configuration and documented procedures offer a precise bilingual how-to',
   const states: ClassGuidance[] = [
     { step: 'create' }, { ...base, step: 'schedule' }, { ...base, step: 'active-session' },
     { ...base, step: 'notebook-empty' }, { ...base, step: 'notebook-unavailable' },
+    { ...base, step: 'evaluation-conflict', conflictKind: 'overlap', count: 1 },
+    { ...base, step: 'roster-incomplete', reason: 'missing-roster', count: 1 },
     { ...base, step: 'notebook-followup', reason: 'first-session', elapsedDays: 5 },
     ...(['unclosedFormula', 'outOfOrderSessions', 'emptyStructure'] as const)
       .map(issueCode => ({ ...base, step: 'notebook-issue' as const, issueCode, count: 1 })),
@@ -32,6 +34,8 @@ test('configuration and documented procedures offer a precise bilingual how-to',
   for (const guidance of states) assertReference(companionHelpReference({ kind: 'guidance' }, guidance));
   assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'active-session' }), { chapterId: 'dates', sectionId: 'assign' });
   assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'schedule' }), { chapterId: 'schedule' });
+  assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'evaluation-conflict', conflictKind: 'overlap', count: 1 }), { chapterId: 'assessments' });
+  assert.deepEqual(companionHelpReference({ kind: 'guidance' }, { ...base, step: 'roster-incomplete', reason: 'missing-roster', count: 1 }), { chapterId: 'students' });
   assert.deepEqual(companionHelpReference({ kind: 'guidance' }, {
     ...base, step: 'notebook-followup', reason: 'first-session', elapsedDays: 5,
   }), { chapterId: 'dates', sectionId: 'assign' });

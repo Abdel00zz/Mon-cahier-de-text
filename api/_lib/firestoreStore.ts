@@ -40,11 +40,46 @@ export function encodeRecord(value: unknown): Pick<RecordData, 'json' | 'parts'>
   return { parts: chunks.length, chunks };
 }
 
+function snapshotProjection(field: string, value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const snap = value as Record<string, unknown>;
+  const projected: Record<string, unknown> = { accountId: field };
+  if (typeof snap.nom === 'string') projected.nom = snap.nom;
+  if (typeof snap.prenom === 'string') projected.prenom = snap.prenom;
+  if (typeof snap.establishmentName === 'string') projected.establishmentName = snap.establishmentName;
+  if (typeof snap.contactPhone === 'string') projected.contactPhone = snap.contactPhone;
+  if (typeof snap.email === 'string') projected.email = snap.email;
+  if (typeof snap.blocked === 'boolean') projected.blocked = snap.blocked;
+  if (typeof snap.pendingMessages === 'number') projected.pendingMessages = snap.pendingMessages;
+  if (typeof snap.pendingRequests === 'number') projected.pendingRequests = snap.pendingRequests;
+  if (typeof snap.lastSyncAt === 'string' || snap.lastSyncAt === null) projected.lastSyncAt = snap.lastSyncAt;
+  if (typeof snap.lastMessageAt === 'string' || snap.lastMessageAt === null) projected.lastMessageAt = snap.lastMessageAt;
+  if (Array.isArray(snap.classes)) projected.classesCount = snap.classes.length;
+  return projected;
+}
+
 /** Writes are buffered until all reads finish: required by Firestore transactions. */
 export class FirestoreView {
   private cache = new Map<string, { data: RecordData; value: unknown }>();
   private pending = new Map<string, { ref: DocumentReference; data: Record<string, unknown> | null }>();
   constructor(private db: Firestore, private tx?: Transaction) {}
+
+  async prefetch(paths: string[]): Promise<void> {
+    const uncached = [...new Set(paths)].filter(path => !this.cache.has(path));
+    for (let offset = 0; offset < uncached.length; offset += 100) {
+      const refs = uncached.slice(offset, offset + 100).map(path => this.db.doc(path));
+      if (refs.length === 0) continue;
+      const snapshots = this.tx ? await this.tx.getAll(...refs) : await this.db.getAll(...refs);
+      for (const snapshot of snapshots) {
+        const data = (snapshot.data() ?? {}) as RecordData;
+        if (!snapshot.exists || (data.expiresAt && data.expiresAt.toMillis() <= Date.now())) {
+          this.cache.set(snapshot.ref.path, { data, value: null });
+        } else if (!data.parts && typeof data.json === 'string') {
+          this.cache.set(snapshot.ref.path, { data, value: JSON.parse(data.json) });
+        }
+      }
+    }
+  }
 
   private async read(path: string): Promise<unknown> {
     if (this.cache.has(path)) return this.cache.get(path)!.value;
@@ -106,7 +141,10 @@ export class FirestoreView {
   }
   hget<T = unknown>(key: string, field: string): Promise<T | null> { return this.read(hashRecordPath(key, field)) as Promise<T | null>; }
   async hset(key: string, fields: Record<string, unknown>) {
-    for (const [field, value] of Object.entries(fields)) await this.write(hashRecordPath(key, field), value, { key, field });
+    for (const [field, value] of Object.entries(fields)) {
+      const extra = key === 'admin:snapshots' ? snapshotProjection(field, value) : {};
+      await this.write(hashRecordPath(key, field), value, { ...extra, key, field });
+    }
     return Object.keys(fields).length;
   }
   async hsetnx(key: string, field: string, value: unknown) {
@@ -194,26 +232,31 @@ export class FirestoreStore {
       hget(key: string, field: string) { operations.push(['hget', key, field]); return pipeline; },
       hset(key: string, fields: Record<string, unknown>) { operations.push(['hset', key, fields]); return pipeline; },
       hdel(key: string, field: string) { operations.push(['hdel', key, field]); return pipeline; },
-      exec: () => this.atomic(async view => {
-        // Un pipeline de pure LECTURE (vue d'ensemble de l'administration : 2 lectures par enseignant) n'a
-        // aucun ordre à respecter : les lectures partent ensemble au lieu de s'enchaîner une à une.
+      exec: async () => {
+        // Un pipeline de pure LECTURE (vue d'ensemble de l'administration : lectures groupées) n'a
+        // aucun ordre à respecter et s'exécute hors transaction via db.getAll par lots de 100.
         if (operations.every(([method]) => method === 'get' || method === 'hget')) {
+          const view = new FirestoreView(this.db);
+          await view.prefetch(operations.map(([method, key, value]) =>
+            method === 'get' ? recordPath(key) : hashRecordPath(key, String(value))));
           return Promise.all(operations.map(([method, key, value]) =>
             method === 'get' ? view.get(key) : view.hget(key, String(value))));
         }
-        const results: unknown[] = [];
-        for (const [method, key, value] of operations) {
-          switch (method) {
-            case 'get': results.push(await view.get(key)); break;
-            case 'set': results.push(await view.set(key, value)); break;
-            case 'del': results.push(await view.del(key)); break;
-            case 'hget': results.push(await view.hget(key, String(value))); break;
-            case 'hset': results.push(await view.hset(key, value as Record<string, unknown>)); break;
-            case 'hdel': results.push(await view.hdel(key, String(value))); break;
+        return this.atomic(async view => {
+          const results: unknown[] = [];
+          for (const [method, key, value] of operations) {
+            switch (method) {
+              case 'get': results.push(await view.get(key)); break;
+              case 'set': results.push(await view.set(key, value)); break;
+              case 'del': results.push(await view.del(key)); break;
+              case 'hget': results.push(await view.hget(key, String(value))); break;
+              case 'hset': results.push(await view.hset(key, value as Record<string, unknown>)); break;
+              case 'hdel': results.push(await view.hdel(key, String(value))); break;
+            }
           }
-        }
-        return results;
-      }),
+          return results;
+        });
+      },
     };
     return pipeline;
   }

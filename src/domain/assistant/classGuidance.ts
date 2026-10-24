@@ -1,16 +1,24 @@
-import type { AppConfig, LessonsData } from '../../types';
-import { diagnosePedagogicalState, type PedagogicalDiagnosis } from '../intelligence/pedagogicalBrain';
+import type { ClassEvaluationEntry, LessonsData } from '../../types';
+import { diagnosePedagogicalState, type PedagogicalBrainConfig, type PedagogicalDiagnosis } from '../intelligence/pedagogicalBrain';
 import type { NotebookAdvice } from '../intelligence/notebookAdvisor';
+import type { EvaluationConflict } from '../evaluations/evaluationConflicts';
 import type { HolidayCalendar } from '../calendar/calendar';
-import type { FollowupClass, FollowupConfig, NotebookFollowup } from './notebookFollowup';
+import type { FollowupClass, NotebookFollowup } from './notebookFollowup';
 
-export type GuidanceAction = { type: 'create-class' } | { type: 'schedule' } | { type: 'open-class'; classId: string };
+export type GuidanceAction =
+  | { type: 'create-class' }
+  | { type: 'schedule' }
+  | { type: 'open-class'; classId: string }
+  | { type: 'open-evaluations'; classId: string; entry?: ClassEvaluationEntry }
+  | { type: 'configure-roster'; classId: string };
 
 export type ClassGuidance =
   | { step: 'create' }
   | { step: 'schedule'; classId: string; className: string; remaining: number }
   | { step: 'active-session'; classId: string; className: string }
   | { step: 'notebook-issue'; classId: string; className: string; issueCode: NotebookAdvice['code']; count: number; remaining: number }
+  | { step: 'evaluation-conflict'; classId: string; className: string; conflictKind: EvaluationConflict['kind']; count: number; remaining: number }
+  | { step: 'roster-incomplete'; classId: string; className: string; reason: 'missing-roster' | 'unmerged-names'; count: number; remaining: number }
   | { step: 'notebook-empty'; classId: string; className: string; remaining: number }
   | { step: 'notebook-unavailable'; classId: string; className: string; remaining: number }
   | ({ step: 'notebook-followup'; classId: string; className: string; remaining: number } & NotebookFollowup)
@@ -25,7 +33,7 @@ export interface GuidanceBrainContext {
   calendar?: HolidayCalendar;
 }
 
-export type GuidanceConfig = Pick<AppConfig, 'timetable' | 'schedules'> & FollowupConfig;
+export type GuidanceConfig = PedagogicalBrainConfig;
 
 /**
  * Moteur décisionnel du compagnon connecté au cerveau pédagogique central.
@@ -87,6 +95,30 @@ export function guidanceFromDiagnosis(diagnosis: PedagogicalDiagnosis): ClassGui
     };
   }
 
+  if (diagnosis.step === 'evaluation-conflict') {
+    const targetConflict = diagnosis.evaluationConflicts!.find(item => item.classInfo.id === diagnosis.targetClass?.id)!;
+    return {
+      step: 'evaluation-conflict',
+      classId: targetConflict.classInfo.id,
+      className: targetConflict.classInfo.name,
+      conflictKind: targetConflict.topConflictKind,
+      count: targetConflict.conflictCount,
+      remaining: diagnosis.problemCount,
+    };
+  }
+
+  if (diagnosis.step === 'roster-incomplete') {
+    const targetRoster = diagnosis.incompleteRosterClasses!.find(item => item.classInfo.id === diagnosis.targetClass?.id)!;
+    return {
+      step: 'roster-incomplete',
+      classId: targetRoster.classInfo.id,
+      className: targetRoster.classInfo.name,
+      reason: targetRoster.reason,
+      count: targetRoster.missingCount,
+      remaining: diagnosis.problemCount,
+    };
+  }
+
   if (diagnosis.step === 'checking') return {
     step: 'checking', classId: diagnosis.targetClass!.id, className: diagnosis.targetClass!.name,
   };
@@ -120,6 +152,8 @@ export function guidanceFromDiagnosis(diagnosis: PedagogicalDiagnosis): ClassGui
 export function guidanceAction(guidance: ClassGuidance): GuidanceAction {
   if (guidance.step === 'create') return { type: 'create-class' };
   if (guidance.step === 'schedule') return { type: 'schedule' };
+  if (guidance.step === 'evaluation-conflict') return { type: 'open-evaluations', classId: guidance.classId, entry: 'all' };
+  if (guidance.step === 'roster-incomplete') return { type: 'configure-roster', classId: guidance.classId };
   return { type: 'open-class', classId: guidance.classId };
 }
 
@@ -131,7 +165,10 @@ export function guidanceKey(guidance: ClassGuidance): string {
   if (guidance.step === 'checking') return `checking:${guidance.classId}`;
   if (guidance.step === 'notebook-unavailable') return `unavailable:${guidance.classId}:${guidance.remaining}`;
   if (guidance.step === 'notebook-issue') return `issue:${guidance.classId}:${guidance.issueCode}:${guidance.count}:${guidance.remaining}`;
+  if (guidance.step === 'evaluation-conflict') return `eval-conflict:${guidance.classId}:${guidance.conflictKind}:${guidance.count}:${guidance.remaining}`;
+  if (guidance.step === 'roster-incomplete') return `roster:${guidance.classId}:${guidance.reason}:${guidance.count}:${guidance.remaining}`;
   if (guidance.step === 'notebook-empty') return `empty:${guidance.classId}:${guidance.remaining}`;
   if (guidance.step === 'notebook-followup') return `followup:${guidance.classId}:${guidance.reason}:${guidance.lastSessionDate ?? 'first'}`;
   return `${guidance.step}:${guidance.classId}:${guidance.remaining}`;
 }
+

@@ -77,6 +77,8 @@ test('schedule, session, diagnostic and recovery guidance share the same Arabic 
     const guidance: ClassGuidance[] = [
       { ...base, step: 'schedule' }, { ...base, step: 'active-session' },
       { ...base, step: 'notebook-issue', issueCode: 'unclosedFormula', count: 1 },
+      { ...base, step: 'evaluation-conflict', conflictKind: 'overlap', count: 1 },
+      { ...base, step: 'roster-incomplete', reason: 'unmerged-names', count: 2 },
       { ...base, step: 'notebook-empty' }, { ...base, step: 'notebook-unavailable' },
       { ...base, step: 'checking' }, { ...base, step: 'ready' },
     ];

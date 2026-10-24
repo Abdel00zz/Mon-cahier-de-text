@@ -15,7 +15,15 @@ export function pedagogicalTasks(diagnosis: PedagogicalDiagnosis, preferredClass
   const tasks: PedagogicalTask[] = [];
   const add = (guidance: ClassGuidance, priority: number, occurrences = 1, samplePath?: string) => {
     const scope = 'classId' in guidance ? guidance.classId : '_global';
-    const rule = guidance.step === 'notebook-issue' ? guidance.issueCode : guidance.step === 'notebook-followup' ? guidance.reason : guidance.step;
+    const rule = guidance.step === 'notebook-issue'
+      ? guidance.issueCode
+      : guidance.step === 'evaluation-conflict'
+        ? `conflict-${guidance.conflictKind}`
+        : guidance.step === 'roster-incomplete'
+          ? guidance.reason
+          : guidance.step === 'notebook-followup'
+            ? guidance.reason
+            : guidance.step;
     tasks.push({ id: `${scope}:${rule}`, priority, guidance, evidence: {
       rule: guidance.step === 'notebook-issue' ? guidance.issueCode : guidance.step,
       occurrences, ...(samplePath ? { samplePath } : {}),
@@ -30,8 +38,30 @@ export function pedagogicalTasks(diagnosis: PedagogicalDiagnosis, preferredClass
     for (const advice of item.advices) add({ step: 'notebook-issue', classId: item.classInfo.id, className: item.classInfo.name,
       issueCode: advice.code, count: advice.count, remaining: issuesCount }, ISSUE_PRIORITY[advice.code], advice.count, advice.samplePath);
   }
+  const conflictsCount = (diagnosis.evaluationConflicts ?? []).reduce((sum, item) => sum + item.conflictCount, 0);
+  for (const item of diagnosis.evaluationConflicts ?? []) {
+    add({
+      step: 'evaluation-conflict',
+      classId: item.classInfo.id,
+      className: item.classInfo.name,
+      conflictKind: item.topConflictKind,
+      count: item.conflictCount,
+      remaining: conflictsCount,
+    }, 88, item.conflictCount, item.sampleLabel);
+  }
   for (const item of diagnosis.unscheduledClasses) add({ step: 'schedule', classId: item.id, className: item.name,
     remaining: diagnosis.unscheduledClasses.length }, 80);
+  const rostersCount = diagnosis.incompleteRosterClasses?.length ?? 0;
+  for (const item of diagnosis.incompleteRosterClasses ?? []) {
+    add({
+      step: 'roster-incomplete',
+      classId: item.classInfo.id,
+      className: item.classInfo.name,
+      reason: item.reason,
+      count: item.missingCount,
+      remaining: rostersCount,
+    }, 75, item.missingCount);
+  }
   for (const item of diagnosis.emptyNotebookClasses) add({ step: 'notebook-empty', classId: item.id, className: item.name,
     remaining: diagnosis.emptyNotebookClasses.length }, 60);
   for (const item of diagnosis.notebookFollowups ?? []) add({ step: 'notebook-followup', classId: item.classInfo.id, className: item.classInfo.name,
@@ -39,3 +69,4 @@ export function pedagogicalTasks(diagnosis: PedagogicalDiagnosis, preferredClass
   const isPreferred = (task: PedagogicalTask) => 'classId' in task.guidance && task.guidance.classId === preferredClassId;
   return tasks.sort((a, b) => b.priority - a.priority || Number(isPreferred(b)) - Number(isPreferred(a)) || a.id.localeCompare(b.id));
 }
+

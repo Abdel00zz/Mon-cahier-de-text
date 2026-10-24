@@ -167,6 +167,14 @@ const handleAdminLogin = async (body: AdminBody, req: ApiRequest, res: ApiRespon
 const overviewEtag = (teachers: unknown): string =>
     createHash('sha1').update(JSON.stringify(teachers)).digest('base64url').slice(0, 22);
 
+const isDenormalizedSnapshot = (snapshot: TeacherSnapshot): boolean =>
+    snapshot.contactPhone !== undefined
+    && typeof snapshot.blocked === 'boolean'
+    && typeof snapshot.pendingMessages === 'number'
+    && typeof snapshot.pendingRequests === 'number'
+    && (typeof snapshot.lastMessageAt === 'string' || snapshot.lastMessageAt === null)
+    && snapshot.establishmentName !== undefined;
+
 const handleOverview = async (req: ApiRequest, res: ApiResponse) => {
     const redis = await getRedis();
     const since = getQueryParam(req, 'since');
@@ -178,28 +186,42 @@ const handleOverview = async (req: ApiRequest, res: ApiResponse) => {
     }
 
     const pipeline = redis.pipeline();
-    const legacySchoolSlots = new Map<number, number>();
-    let recordCount = entries.length * 2;
-    for (const [phone] of entries) {
+    const legacySlots = new Map<number, { userSlot: number; messagesSlot: number; schoolSlot?: number }>();
+    let recordCount = 0;
+    // Les nouveaux snapshots portent déjà contactPhone, email, blocked, compteurs de boîte et établissement :
+    // 0 lecture supplémentaire par enseignant. Seuls les snapshots historiques passent par le pipeline groupé.
+    entries.forEach(([phone, snapshot], index) => {
+        if (isDenormalizedSnapshot(snapshot)) return;
+        const userSlot = recordCount++;
+        const messagesSlot = recordCount++;
         pipeline.get(KEYS.user(phone));
         pipeline.get(KEYS.adminMessages(phone));
-    }
-    // New snapshots contain this small field. Only legacy accounts require the
-    // settings blob, avoiding downloads of every teacher's documents on refresh.
-    entries.forEach(([phone, snapshot], index) => {
-        if (snapshot.establishmentName === undefined) {
-            legacySchoolSlots.set(index, recordCount++);
-            pipeline.get(KEYS.classes(phone));
-        }
+        const schoolSlot = snapshot.establishmentName === undefined ? recordCount++ : undefined;
+        if (schoolSlot !== undefined) pipeline.get(KEYS.classes(phone));
+        legacySlots.set(index, { userSlot, messagesSlot, schoolSlot });
     });
-    const records = await pipeline.exec() as Array<StoredUser | AdminMessage[] | ClassesBlob | null>;
+    const records = recordCount > 0
+        ? await pipeline.exec() as Array<StoredUser | AdminMessage[] | ClassesBlob | null>
+        : [];
     const teachers = entries.flatMap(([, snapshot], index) => {
-        const user = records[index * 2] as StoredUser | null;
+        const slots = legacySlots.get(index);
+        if (!slots) {
+            return [{
+                ...snapshot,
+                establishmentName: typeof snapshot.establishmentName === 'string' ? snapshot.establishmentName.trim().slice(0, 200) : '',
+                contactPhone: snapshot.contactPhone!,
+                email: snapshot.email,
+                blocked: snapshot.blocked === true,
+                pendingMessages: snapshot.pendingMessages ?? 0,
+                pendingRequests: snapshot.pendingRequests ?? 0,
+                lastMessageAt: snapshot.lastMessageAt ?? null,
+            }];
+        }
+        const user = records[slots.userSlot] as StoredUser | null;
         if (!user) return [];
-        const messages = normalizeAdminMessages(records[index * 2 + 1]);
-        const schoolSlot = legacySchoolSlots.get(index);
-        const school = schoolSlot === undefined ? snapshot.establishmentName
-            : (records[schoolSlot] as ClassesBlob | null)?.settings?.establishmentName;
+        const messages = normalizeAdminMessages(records[slots.messagesSlot]);
+        const school = slots.schoolSlot === undefined ? snapshot.establishmentName
+            : (records[slots.schoolSlot] as ClassesBlob | null)?.settings?.establishmentName;
         return [{
             ...snapshot,
             establishmentName: typeof school === 'string' ? school.trim().slice(0, 200) : '',
@@ -808,6 +830,15 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
     };
     const snapshotBase: TeacherSnapshot = storedSnapshot ?? {
         phone,
+        establishmentName: typeof classesBlob.settings?.establishmentName === 'string'
+            ? classesBlob.settings.establishmentName.trim().slice(0, 200)
+            : '',
+        contactPhone: user.phone,
+        ...(user.email ? { email: user.email } : {}),
+        blocked: user.blocked === true,
+        pendingMessages: 0,
+        pendingRequests: 0,
+        lastMessageAt: null,
         nom: user.nom,
         prenom: user.prenom,
         lastSyncAt: null, // aucun push enseignant encore observé
@@ -858,12 +889,18 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     // dont dépend l'écriture. Un `redis.set` direct pouvait être écrasé par un
     // push ou une inscription concurrents, et perdre le blocage.
     const write = await beginAccountWrite(redis, phone);
-    const user = await redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone));
+    const [user, storedSnapshot] = await Promise.all([
+        redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone)),
+        redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone),
+    ]);
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
     // Jamais de blocage « par défaut » : un champ absent ou mal typé ne doit pas suspendre un compte.
     if (typeof body.blocked !== 'boolean') throw new HttpError(400, 'Réglage de blocage invalide.');
     const blocked = body.blocked;
     write.set(KEYS.user(phone), { ...user, blocked });
+    if (storedSnapshot) {
+        write.hset(KEYS.adminSnapshots, { [phone]: { ...storedSnapshot, blocked } });
+    }
     await write.exec();
     if (isFirestoreStore(redis)) await firebaseAuth().updateUser(accountFirebaseUid(user), { disabled: blocked });
     res.status(200).json({ ok: true, blocked });
@@ -913,9 +950,10 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     // sans révision partagée, une publication simultanée à un accusé pouvait
     // perdre l'un des deux messages.
     const write = await beginAccountWrite(redis, phone);
-    const [user, storedMessages] = await Promise.all([
+    const [user, storedMessages, storedSnapshot] = await Promise.all([
         redis.get<StoredUser>(KEYS.user(phone)),
         redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
+        redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone),
     ]);
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
 
@@ -932,6 +970,16 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     };
     const messages = appendConversationMessage(previousMessages.map(item => item.id === request?.id ? { ...item, answeredAt: message.createdAt } : item), message);
     write.set(KEYS.adminMessages(phone), messages);
+    if (storedSnapshot) {
+        write.hset(KEYS.adminSnapshots, {
+            [phone]: {
+                ...storedSnapshot,
+                pendingMessages: pendingAdminMessages(messages).length,
+                pendingRequests: pendingTeacherRequests(messages).length,
+                lastMessageAt: messages[0]?.createdAt ?? null,
+            },
+        });
+    }
     await write.exec();
 
     const { unreadCount: badgeCount, badgeUpdatedAt: timestamp } = await readInboxSnapshot(redis, phone);

@@ -45,6 +45,18 @@ const COPY = {
       action: 'Vérifier le cahier',
       context: 'À vérifier',
     },
+    'evaluation-conflict': {
+      title: 'Dates d’évaluations',
+      detail: 'Deux évaluations ou activités se chevauchent ou portent le même numéro. On ajuste leurs dates ?',
+      action: 'Vérifier les évaluations',
+      context: 'Évaluations',
+    },
+    'roster-incomplete': {
+      title: 'Liste des élèves',
+      detail: 'La liste d’élèves est à compléter pour le suivi des évaluations et activités.',
+      action: 'Configurer la liste',
+      context: 'Liste d’élèves',
+    },
     'notebook-empty': {
       title: 'À vous de jouer',
       detail: 'Ce cahier attend son premier contenu. On le prépare ?',
@@ -86,6 +98,18 @@ const COPY = {
       detail: 'لاحظت نقطة تستحق الانتباه في هذا الدفتر لنراجعها معاً.',
       action: 'مراجعة الدفتر',
       context: 'للمعاينة',
+    },
+    'evaluation-conflict': {
+      title: 'تواريخ التقويمات',
+      detail: 'يوجد تداخل في التواريخ أو تكرار في ترقيم الفروض والأنشطة. هل نضبطها معاً؟',
+      action: 'مراجعة التقويمات',
+      context: 'التقويمات',
+    },
+    'roster-incomplete': {
+      title: 'لائحة التلاميذ',
+      detail: 'لائحة التلاميذ تحتاج إلى استكمال لضبط تتبع الفروض والأنشطة. هل نثبتها الآن؟',
+      action: 'ضبط لائحة التلاميذ',
+      context: 'لائحة التلاميذ',
     },
     'notebook-empty': {
       title: 'تجهيز أول درس',
@@ -129,6 +153,18 @@ const COPY = {
       action: 'Review notebook',
       context: 'Review',
     },
+    'evaluation-conflict': {
+      title: 'Assessment dates',
+      detail: 'Two assessments or activities overlap or share the same number. Shall we review their dates?',
+      action: 'Review assessments',
+      context: 'Assessments',
+    },
+    'roster-incomplete': {
+      title: 'Student roster',
+      detail: 'The student list needs to be completed to track assessments and activities.',
+      action: 'Configure roster',
+      context: 'Student list',
+    },
     'notebook-empty': {
       title: 'Let’s get started',
       detail: 'This notebook is waiting for its first content. Shall we add it?',
@@ -162,6 +198,12 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
       const number = new Intl.NumberFormat(locale).format(guidance.count);
       detail += locale === 'fr' ? ` ${number} passages concernés.` : locale === 'en' ? ` ${number} places to check.` : ` المواضع المعنية: ${number}.`;
     }
+  } else if (guidance.step === 'evaluation-conflict') {
+    context = evaluationConflictsLabel(guidance.remaining, locale);
+    detail = CONFLICT_COPY[locale][guidance.conflictKind];
+  } else if (guidance.step === 'roster-incomplete') {
+    context = incompleteRostersLabel(guidance.remaining, locale);
+    detail = ROSTER_COPY[locale][guidance.reason];
   } else if (guidance.step === 'notebook-empty') {
     context = emptyNotebooksLabel(guidance.remaining, locale);
   }
@@ -213,6 +255,24 @@ function notebookIssuesLabel(count: number, locale: AppLocale): string {
   return count >= 3 && count <= 10 ? `${number} ملاحظات للمراجعة` : `${number} ملاحظة للمراجعة`;
 }
 
+function evaluationConflictsLabel(count: number, locale: AppLocale): string {
+  const number = new Intl.NumberFormat(locale).format(count);
+  if (locale === 'fr') return count === 1 ? '1 conflit d’évaluation' : `${number} conflits d’évaluation`;
+  if (locale === 'en') return `${number} ${count === 1 ? 'assessment conflict' : 'assessment conflicts'}`;
+  if (count === 1) return 'تعارض في التقويمات';
+  if (count === 2) return 'تعارضان في التقويمات';
+  return count >= 3 && count <= 10 ? `${number} تعارضات في التقويمات` : `${number} تعارضاً في التقويمات`;
+}
+
+function incompleteRostersLabel(count: number, locale: AppLocale): string {
+  const number = new Intl.NumberFormat(locale).format(count);
+  if (locale === 'fr') return count === 1 ? '1 liste d’élèves à compléter' : `${number} listes d’élèves à compléter`;
+  if (locale === 'en') return `${number} ${count === 1 ? 'roster to complete' : 'rosters to complete'}`;
+  if (count === 1) return 'لائحة تلاميذ لاستكمالها';
+  if (count === 2) return 'لائحتا تلاميذ لاستكمالهما';
+  return count >= 3 && count <= 10 ? `${number} لوائح تلاميذ لاستكمالها` : `${number} لائحة تلاميذ لاستكمالها`;
+}
+
 function emptyNotebooksLabel(count: number, locale: AppLocale): string {
   const number = new Intl.NumberFormat(locale).format(count);
   if (locale === 'fr') return count === 1 ? '1 cahier à préparer' : `${number} cahiers à préparer`;
@@ -246,3 +306,40 @@ const ADVICE_COPY = {
     controlCharacters: 'The pasted text contains unusual invisible characters. Shall we check it?',
   },
 } as const;
+
+const CONFLICT_COPY = {
+  fr: {
+    identity: 'Deux évaluations portent le même numéro au cours du même semestre. On vérifie leur numérotation ?',
+    binding: 'Une évaluation apparaît en double dans le cahier. On harmonise ses dates ?',
+    duplicate: 'Une même évaluation ou activité est répétée à la même date. On la vérifie ?',
+    overlap: 'Deux évaluations de même nature se chevauchent sur la même période. On ajuste leurs dates ?',
+  },
+  ar: {
+    identity: 'يحمل فرضان نفس الرقم داخل نفس الأسدس. هل نراجع ترقيمهما معاً؟',
+    binding: 'يتكرر نفس الفرض في موضعين مختلفين. هل نوحد تاريخه؟',
+    duplicate: 'تتكرر نفس عملية التقويم في نفس التاريخ. هل نتحقق منها؟',
+    overlap: 'يتداخل تقويمان من نفس النوع في نفس الفترة الزمنية. هل نضبط تواريخهما؟',
+  },
+  en: {
+    identity: 'Two assessments share the same number in the same semester. Shall we check their numbering?',
+    binding: 'An assessment is linked twice in the notebook. Shall we align its dates?',
+    duplicate: 'The same assessment or activity is repeated on the same date. Shall we check it?',
+    overlap: 'Two assessments of the same kind overlap on the same dates. Shall we adjust them?',
+  },
+} as const;
+
+const ROSTER_COPY = {
+  fr: {
+    'missing-roster': 'Un suivi nominatif est prévu mais la liste des élèves est encore vide. On ajoute ou reprend les noms ?',
+    'unmerged-names': 'Des noms d’élèves saisis dans vos suivis ne figurent pas encore dans la liste officielle de la classe. On les fusionne ?',
+  },
+  ar: {
+    'missing-roster': 'توجد أنشطة أو تقويمات فردية بينما لائحة التلاميذ لا تزال فارغة. هل نضيف الأسماء أو نسترجعها؟',
+    'unmerged-names': 'توجد أسماء تلاميذ مسجلة في التتبعات غير مدمجة بعد في لائحة القسم. هل ندمجها معاً؟',
+  },
+  en: {
+    'missing-roster': 'Student tracking is active but the class roster is still empty. Shall we add or import the student names?',
+    'unmerged-names': 'Some student names recorded in your activities are not yet in the class roster. Shall we merge them?',
+  },
+} as const;
+

@@ -228,3 +228,44 @@ test('browsing the entire task queue reuses one observation rather than scanning
   for (let i = 0; i < total * 2; i++) state = decide(state.nextTaskId);
   assert.equal(reads, 3, 'only actual data changes should require a new observation');
 });
+
+test('evaluation date conflicts and incomplete student rosters produce prioritized tasks with direct dashboard actions', () => {
+  const testConfig = {
+    timetable: [1, 2, 3].map(id => ({ classId: String(id), day: 1, slot: id })),
+    manualAssessments: {
+      '1': [
+        { id: 'ctrl-1', type: 'controle' as const, num: 1, semestre: 1 as const, dateISO: '2026-10-26' },
+        { id: 'ctrl-2', type: 'controle' as const, num: 2, semestre: 1 as const, dateISO: '2026-10-26' },
+      ],
+    },
+    pedagogicalEvents: {
+      '2': [{
+        id: 'check-2',
+        type: 'controle_cahiers' as const,
+        title: 'Contrôle des cahiers',
+        date: '2026-10-22',
+        status: 'planned' as const,
+        createdAt: '2026-10-20T08:00:00Z',
+        students: { names: ['Amina', 'Youssef'], notebookConditions: { Amina: 'good' as const }, updatedAt: '2026-10-22T08:00:00Z' },
+      }],
+    },
+    classRosters: {
+      '2': { names: ['Amina'], updatedAt: '2026-10-20T08:00:00Z', version: 1 },
+    },
+  };
+  const conflictAndRoster = evaluateCompanion(input({ config: testConfig }));
+
+  assert.equal(conflictAndRoster.guidance.step, 'evaluation-conflict');
+  assert.deepEqual(conflictAndRoster.action, { type: 'open-evaluations', classId: '1', entry: 'all' });
+  assert.deepEqual(conflictAndRoster.helpReference, { chapterId: 'assessments' });
+
+  const nextState = evaluateCompanion({
+    ...input({ config: testConfig }),
+    selectedTaskId: conflictAndRoster.nextTaskId,
+  });
+
+  assert.equal(nextState.guidance.step, 'roster-incomplete');
+  assert.deepEqual(nextState.action, { type: 'configure-roster', classId: '2' });
+  assert.deepEqual(nextState.helpReference, { chapterId: 'students' });
+});
+

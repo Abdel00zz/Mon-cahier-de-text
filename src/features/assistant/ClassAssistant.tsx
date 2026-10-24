@@ -1,7 +1,7 @@
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import type { AppLocale, ClassInfo, LessonsData } from '@/types';
+import type { AppLocale, ClassEvaluationEntry, ClassInfo, LessonsData } from '@/types';
 import type { GuidanceConfig } from '@/domain/assistant/classGuidance';
 import { AssistantPopover } from './AssistantPopover';
 import { useCompanionRevision } from './useCompanionRevision';
@@ -31,6 +31,8 @@ interface ClassAssistantProps {
   onCreateClass: () => void;
   onOpenSchedule?: () => void;
   onOpenClass: (classInfo: ClassInfo) => void;
+  onOpenEvaluations?: (classInfo: ClassInfo, entry: ClassEvaluationEntry) => void;
+  onConfigureClass?: (classInfo: ClassInfo) => void;
 }
 
 /** Le compagnon branché au cerveau pédagogique central : adapte son comportement à l'état global. */
@@ -45,6 +47,8 @@ export function ClassAssistant({
   onCreateClass,
   onOpenSchedule,
   onOpenClass,
+  onOpenEvaluations,
+  onConfigureClass,
 }: ClassAssistantProps) {
   const messaging = useTeacherMessaging();
   const { guide, openGuide, closeGuide } = useCompanionGuide(messaging?.owner);
@@ -124,7 +128,19 @@ export function ClassAssistant({
     else if (action.type === 'read-reply') openContact();
     else if (action.type === 'create-class') onCreateClass();
     else if (action.type === 'schedule') onOpenSchedule?.();
-    else if (action.type === 'open-class') {
+    else if (action.type === 'open-evaluations') {
+      const target = classes.find(item => item.id === action.classId);
+      if (target) {
+        if (onOpenEvaluations) onOpenEvaluations(target, action.entry ?? 'all');
+        else onOpenClass(target);
+      }
+    } else if (action.type === 'configure-roster') {
+      const target = classes.find(item => item.id === action.classId);
+      if (target) {
+        if (onConfigureClass) onConfigureClass(target);
+        else onOpenClass(target);
+      }
+    } else if (action.type === 'open-class') {
       const target = classes.find(item => item.id === action.classId);
       if (target) onOpenClass(target);
     }
@@ -166,3 +182,4 @@ export function ClassAssistant({
     </>
   );
 }
+

@@ -17,6 +17,8 @@ export function companionHelpReference(
     case 'create': return { chapterId: 'classes' };
     case 'schedule': return { chapterId: 'schedule' };
     case 'active-session': return { chapterId: 'dates', sectionId: 'assign' };
+    case 'evaluation-conflict': return { chapterId: 'assessments' };
+    case 'roster-incomplete': return { chapterId: 'students' };
     case 'notebook-followup': return guidance.reason === 'first-session'
       ? { chapterId: 'dates', sectionId: 'assign' } : undefined;
     case 'notebook-empty': return { chapterId: 'content', sectionId: 'prepare' };
@@ -32,3 +34,4 @@ export function companionHelpReference(
       }
   }
 }
+
