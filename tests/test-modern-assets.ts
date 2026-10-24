@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import postcss, { list } from 'postcss';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { modernMathFonts } from '../build/vite/modern-math-fonts';
+import { modernMathFonts } from '../scripts/vite/modern-math-fonts';
 import { DeferredMount } from '../src/components/ui/DeferredMount';
 
 test('KaTeX : toutes les familles et variantes conservées avec leur source WOFF2', async () => {

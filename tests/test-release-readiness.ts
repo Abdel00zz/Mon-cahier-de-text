@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { rgbToHex } from '../src/platform/themeColor';
 import { APP_VERSION, ANDROID_BUILD } from '../src/platform/appVersion';
 import { canRestartForUpdate } from '../src/platform/nativeUpdates';
-import { isNativeAsset } from '../build/vite/native-assets';
+import { isNativeAsset } from '../scripts/vite/native-assets';
 import { startAppUpdateChecks } from '../src/platform/appUpdates';
 
 test('une surface CSS opaque se convertit sans ambiguïté pour les barres Android', () => {

@@ -4,11 +4,11 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { BUNDLE_OPTIMIZATION } from './build/optimization';
-import { premiumPerformancePlugin } from './build/vite/performance-plugin';
-import { nativeAssets } from './build/vite/native-assets';
-import { versionFile } from './build/vite/version-file';
-import { modernMathFonts, pruneLegacyMathFonts } from './build/vite/modern-math-fonts';
+import { BUNDLE_OPTIMIZATION } from './scripts/vite/optimization';
+import { premiumPerformancePlugin } from './scripts/vite/performance-plugin';
+import { nativeAssets } from './scripts/vite/native-assets';
+import { versionFile } from './scripts/vite/version-file';
+import { modernMathFonts, pruneLegacyMathFonts } from './scripts/vite/modern-math-fonts';
 
 const PROJECT_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_VERSION = (JSON.parse(readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8')) as { version: string }).version;
