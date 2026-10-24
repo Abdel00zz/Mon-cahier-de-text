@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
             host: true,
             strictPort: false,
             allowedHosts: true,
-            hmr: { },
+            hmr: false,
             watch: { ignored: ['**/tmp/**', '**/android/**', '**/dist-android/**', '**/artifacts/**'] },
         },
         plugins: [

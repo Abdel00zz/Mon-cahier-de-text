@@ -2,25 +2,23 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
 
-// Safeguard against third-party libraries (like Capacitor) attempting to re-assign window.fetch
+// Safeguard against third-party libraries (like Capacitor) and extensions attempting to re-assign window.fetch
 // in environments (like AI Studio preview) where it is read-only (getter only).
 try {
+  let activeFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : window.fetch;
   const desc = Object.getOwnPropertyDescriptor(window, 'fetch');
-  const nativeFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
-  if (desc && nativeFetch && !desc.set && desc.configurable) {
+  if (!desc || !desc.set || desc.writable === false) {
     Object.defineProperty(window, 'fetch', {
-      // `fetch` est généralement une propriété de données (`value`) et non
-      // un getter. Réutiliser uniquement `desc.get` la rendait indéfinie.
-      get: () => nativeFetch,
+      get: () => activeFetch,
       set: function(val) {
-        console.warn('Ignored attempt to re-assign window.fetch', val);
+        if (typeof val === 'function') activeFetch = val;
       },
       configurable: true,
-      enumerable: desc.enumerable
+      enumerable: true
     });
   }
-} catch (e) {
-  console.warn('Could not safeguard window.fetch:', e);
+} catch {
+  /* environment protected */
 }
 
 import App from './App';

@@ -3055,3 +3055,44 @@ mark.doc-hl .katex-display > .katex {
   .settings-toggle-row__icon { transition: none; }
   .settings-toggle-row.is-on .settings-toggle-row__icon .app-icon { animation: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Typographie Samsung pour le texte saisi par l'utilisateur en arabe
+   (Noms des élèves saisis, champs de formulaire, textarea, recherche, notes)
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --font-samsung-arabic: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Samsung Sharp Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* 1. Tous les champs de saisie en version arabe ou avec direction RTL */
+html[lang="ar"] :is(input, textarea, select, [contenteditable="true"], [role="textbox"]),
+[dir="rtl"] :is(input, textarea, select, [contenteditable="true"], [role="textbox"]),
+:is(input, textarea, select, [contenteditable="true"], [role="textbox"]):is([dir="rtl"], [dir="auto"]) {
+  font-family: var(--font-samsung-arabic) !important;
+}
+
+html[lang="ar"] :is(input, textarea, select)::placeholder,
+[dir="rtl"] :is(input, textarea, select)::placeholder,
+:is(input, textarea, select):is([dir="rtl"], [dir="auto"])::placeholder {
+  font-family: var(--font-samsung-arabic) !important;
+}
+
+/* 2. Noms des élèves saisis par l'enseignant (Listes de classe, suivi, pointage, évaluations, badges) */
+:is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
+html[lang="ar"] :is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
+[dir="rtl"] :is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
+html[lang="ar"] :is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) bdi,
+[dir="rtl"] :is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) bdi,
+:is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) [dir="rtl"] bdi,
+.student-name[dir="rtl"],
+.notebook-student__name[dir="rtl"] {
+  font-family: var(--font-samsung-arabic) !important;
+}
+
+/* 3. Classes utilitaires explicites */
+.font-samsung-arabic,
+.font-user-input,
+.font-student-name {
+  font-family: var(--font-samsung-arabic) !important;
+}
+

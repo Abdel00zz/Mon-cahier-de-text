@@ -29,11 +29,14 @@
 .auth-page-shell :is(button, input):focus-visible { outline-color: hsl(var(--primary)); }
 .auth-page-shell button:disabled { cursor: default; opacity: .5; }
 .auth-showcase { display: none; }
-.auth-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 52px; padding: 12px 18px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 14px; font-weight: 600; cursor: pointer; }
+.auth-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 52px; padding: 12px 18px; margin-top: 24px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 14px; font-weight: 600; cursor: pointer; }
 .auth-google svg { flex-shrink: 0; }
 .auth-google:hover { background: hsl(var(--muted) / .65); border-color: hsl(var(--muted-foreground) / .5); }
 .auth-divider { display: flex; align-items: center; gap: 14px; margin-block: 22px; color: hsl(var(--muted-foreground)); font-size: 12px; }
 .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: hsl(var(--border)); }
+.auth-switch-prompt { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 22px; font-size: 13.5px; color: hsl(var(--muted-foreground)); }
+.auth-link-highlight { font-weight: 650; color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 4px; border-radius: 6px; cursor: pointer; transition: color 150ms ease; }
+.auth-link-highlight:hover { color: color-mix(in srgb, hsl(var(--primary)) 80%, black); }
 .auth-link { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding-inline: 6px; border-radius: 8px; color: hsl(var(--primary)); font-size: 13px; font-weight: 550; cursor: pointer; }
 .auth-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .auth-forgot { display: flex; margin-inline-start: auto; margin-block: -8px; }

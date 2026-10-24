@@ -7,7 +7,6 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -70,8 +69,12 @@ const AUTH_COPY = {
       "Votre accès a été suspendu par votre établissement. Contactez la direction pour le rétablir.",
     welcomeTitle: "Heureux de vous retrouver.",
     welcomeDetail: "Connectez-vous pour retrouver vos classes et vos séances.",
+    registerTitle: "Créer un compte",
+    registerDetail: "Créez votre compte enseignant pour retrouver vos cahiers sur tous vos appareils.",
     login: "Se connecter",
-    createAccount: "Créer un compte",
+    createAccount: "S’inscrire",
+    hasAccountPrompt: "Vous avez déjà un compte ?",
+    noAccountPrompt: "Vous n’avez pas de compte ?",
     modeLabel: "Accès au compte",
     name: "Nom",
     firstName: "Prénom",
@@ -126,8 +129,12 @@ const AUTH_COPY = {
       "تم إيقاف ولوجك من طرف إدارتك. تواصل مع الإدارة لاستعادة الدخول.",
     welcomeTitle: "سعداء بعودتك.",
     welcomeDetail: "سجّل دخولك للعودة إلى أقسامك وحصصك.",
+    registerTitle: "إنشاء حساب جديد",
+    registerDetail: "أنشئ حسابك لحفظ وتدبير أقسامك وحصصك والوصول إليها من جميع أجهزتك.",
     login: "تسجيل الدخول",
-    createAccount: "إنشاء حساب جديد",
+    createAccount: "التسجيل",
+    hasAccountPrompt: "لديك حساب بالفعل؟",
+    noAccountPrompt: "ليس لديك حساب بعد؟",
     modeLabel: "الولوج إلى الحساب",
     name: "الاسم العائلي",
     firstName: "الاسم الشخصي",
@@ -251,7 +258,6 @@ export const AuthPage: React.FC<{
   const { login, register, loginGoogle } = useAuth();
   const displayLocale: AuthLocale = locale === "ar" ? "ar" : "fr";
   const copy = AUTH_COPY[displayLocale];
-  const reducedMotion = useReducedMotion();
 
   const getInitialState = () => {
     let returning = false;
@@ -388,17 +394,19 @@ export const AuthPage: React.FC<{
     finally { submittingRef.current = false; setIsSubmitting(false); }
   };
 
-  const switchMode = (next: Mode) => navigateTo("auth", next);
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setError(null);
+    setResetMode(false);
+    const hash = `#${next}`;
+    if (window.location.hash !== hash) window.history.pushState(null, "", hash);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (submittingRef.current) return;
     setError(null);
     if (isRegister) {
-      if (!setupRef.current) {
-        navigateTo("onboarding");
-        return;
-      }
       if (!nom.trim() || !prenom.trim()) return setError(copy.nameRequired);
       if (password.length < 8) return setError(copy.passwordRequired);
       if (password !== confirmPassword) return setError(copy.passwordMismatch);
@@ -501,8 +509,24 @@ export const AuthPage: React.FC<{
       {view === "landing" && (
         <LandingPage
           locale={displayLocale}
-          onLogin={() => navigateTo("auth", "login")}
-          onRegister={() => navigateTo("onboarding")}
+          onLogin={() => {
+            setView("auth");
+            setMode("login");
+            setResetMode(false);
+            setError(null);
+            if (window.location.hash !== "#login") {
+              window.history.pushState(null, "", "#login");
+            }
+          }}
+          onRegister={() => {
+            setView("auth");
+            setMode("register");
+            setResetMode(false);
+            setError(null);
+            if (window.location.hash !== "#register") {
+              window.history.pushState(null, "", "#register");
+            }
+          }}
         />
       )}
       {view === "onboarding" && (
@@ -538,11 +562,11 @@ export const AuthPage: React.FC<{
                 tabIndex={-1}
                 id={id + "-title"}
               >
-                {resetMode ? copy.resetTitle : isRegister ? copy.savePreparation : copy.welcomeTitle}
+                {resetMode ? copy.resetTitle : isRegister ? (setup ? copy.savePreparation : copy.registerTitle) : copy.welcomeTitle}
               </h1>
               <p className="auth-form-detail">
                 {resetMode ? copy.resetDetail : isRegister
-                  ? copy.savePreparationDetail
+                  ? (setup ? copy.savePreparationDetail : copy.registerDetail)
                   : setup
                     ? copy.existingAccountHint
                     : copy.welcomeDetail}
@@ -557,39 +581,6 @@ export const AuthPage: React.FC<{
                   {copy.returnToPreparation}
                 </button>
               )}
-              {!resetMode && <div
-                role="group"
-                aria-label={copy.modeLabel}
-                className="auth-modes"
-              >
-                {(["login", "register"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    disabled={isSubmitting}
-                    aria-pressed={mode === value}
-                    aria-controls={id + "-form"}
-                    onClick={() => switchMode(value)}
-                    className="auth-choice focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    {mode === value && (
-                      <motion.span
-                        layoutId={id + "-active-mode"}
-                        aria-hidden="true"
-                        className="auth-mode-active"
-                        transition={
-                          reducedMotion
-                            ? { duration: 0 }
-                            : { type: "spring", stiffness: 450, damping: 36 }
-                        }
-                      />
-                    )}
-                    <span className="relative">
-                      {value === "login" ? copy.login : copy.createAccount}
-                    </span>
-                  </button>
-                ))}
-              </div>}
               {!resetMode && <>
                 <GoogleSignInButton label={copy.google} busy={googleBusy} disabled={isSubmitting} onClick={() => void handleGoogle()} />
                 <div className="auth-divider"><span>{loginMethod === 'phone' && !isRegister ? copy.phone : copy.emailDivider}</span></div>
@@ -817,6 +808,19 @@ export const AuthPage: React.FC<{
               {!isRegister && <button type="button" disabled={isSubmitting} className="auth-link auth-legacy" onClick={() => { setLoginMethod(method => method === 'email' ? 'phone' : 'email'); setError(null); }}>
                 {loginMethod === 'email' ? copy.legacyPhone : copy.useEmail}
               </button>}
+              {!resetMode && (
+                <div className="auth-switch-prompt">
+                  <span>{isRegister ? copy.hasAccountPrompt : copy.noAccountPrompt}</span>
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => switchMode(isRegister ? "login" : "register")}
+                    className="auth-link-highlight"
+                  >
+                    {isRegister ? copy.login : copy.createAccount}
+                  </button>
+                </div>
+              )}
               </>}
               <p className="auth-secure">
                 <LockKeyhole

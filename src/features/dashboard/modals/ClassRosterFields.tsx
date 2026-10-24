@@ -16,13 +16,13 @@ export function ClassRosterFields({ value, onChange, names, invalid, changed, su
             <label htmlFor={id} className="block text-sm font-semibold">{t('classRoster.label')}</label>
             <textarea id={id} value={value} onChange={event => onChange(event.target.value)} rows={5} dir="auto" spellCheck={false}
                 aria-describedby={`${id}-help`} aria-invalid={invalid} placeholder={t('classRoster.placeholder')}
-                className="min-h-32 w-full resize-y rounded-xl border border-border bg-background px-3 py-3 text-base leading-7 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
+                className="min-h-32 w-full resize-y rounded-xl border border-border bg-background px-3 py-3 text-base leading-7 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 font-user-input" />
             <p id={`${id}-help`} className="text-xs leading-relaxed text-muted-foreground">{t('classRoster.format')}</p>
         </div>
         {invalid ? <p role="alert" className="text-sm text-destructive">{t('evaluations.students.limit')}</p>
             : <p aria-live="polite" className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="h-4 w-4" aria-hidden="true"/>{t('classRoster.count', { count: numberFormat(locale).format(names.length) })}</p>}
         {!!names.length && <ol className="grid max-h-44 grid-cols-1 gap-x-4 overflow-y-auto rounded-xl border border-border bg-background p-3 sm:grid-cols-2">
-            {names.map((name, index) => <li key={name} className="flex min-w-0 gap-2 py-1.5 text-sm"><span className="text-muted-foreground tabular-nums">{numberFormat(locale).format(index + 1)}.</span><bdi className="break-words">{name}</bdi></li>)}
+            {names.map((name, index) => <li key={name} className="flex min-w-0 gap-2 py-1.5 text-sm"><span className="text-muted-foreground tabular-nums">{numberFormat(locale).format(index + 1)}.</span><bdi className="break-words student-name font-samsung-arabic">{name}</bdi></li>)}
         </ol>}
         {!value.trim() && !!suggestedNames.length && <button type="button" onClick={() => onChange(suggestedNames.join(' ؛ '))}
             className="min-h-11 rounded-lg border border-border px-3 text-start text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary">

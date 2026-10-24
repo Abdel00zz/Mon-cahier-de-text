@@ -29,13 +29,13 @@ export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublishe
             <p className="text-sm text-muted-foreground">La liste sera transmise à cette classe pour le suivi des élèves, les remises de devoirs et le contrôle continu. Les observations déjà enregistrées par le professeur sont conservées.</p>
             <label className="block space-y-2"><span className="text-sm font-semibold">Noms complets séparés par « ؛ »</span>
                 <textarea value={draft} onChange={event => { setDraft(event.target.value); setError(''); }} disabled={busy} rows={7} dir="auto"
-                    spellCheck={false} aria-describedby="class-roster-format" placeholder="أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"/>
+                    spellCheck={false} aria-describedby="class-roster-format" placeholder="أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-user-input"/>
             </label>
             <p id="class-roster-format" className="text-xs text-muted-foreground">Nom Prénom ؛ Nom Prénom — les séparateurs ؛ et ; sont reconnus. Les espaces du nom complet sont conservés.</p>
             <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{parsed.names.length} / 200 élèves · doublons retirés</span>
                 {roster && <span>Liste publiée · version {roster.version}</span>}</div>
             {parsed.names.length > 0 && <ol className="grid max-h-44 gap-2 overflow-y-auto rounded-xl border border-border p-3 sm:grid-cols-2" aria-label="Aperçu de la liste">
-                {parsed.names.map((name, index) => <li key={name} className="flex min-w-0 items-center gap-2 text-sm"><span className="text-xs text-muted-foreground">{index + 1}.</span><span dir={textDirectionAttribute(name)} className="break-words">{name}</span></li>)}
+                {parsed.names.map((name, index) => <li key={name} className="flex min-w-0 items-center gap-2 text-sm"><span className="text-xs text-muted-foreground">{index + 1}.</span><span dir={textDirectionAttribute(name)} className="break-words student-name font-samsung-arabic">{name}</span></li>)}
             </ol>}
             {(error || parsed.error) && <p role="alert" className="text-sm text-destructive">{error || parsed.error}</p>}
             <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">

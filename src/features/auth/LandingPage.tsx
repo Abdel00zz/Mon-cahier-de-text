@@ -8,8 +8,8 @@ const COPY = {
   fr: {
     title: 'Votre journée,', emphasis: 'plus simplement.',
     detail: 'Vos classes, vos séances, votre planning. Tout votre cahier à portée de main.',
-    start: 'Votre classe d’abord. Votre compte ensuite.',
-    login: 'Se connecter', register: 'Créer mon cahier',
+    start: 'Compte enseignant gratuit et sans engagement.',
+    login: 'Se connecter', register: 'S’inscrire',
     reassurance: 'Sur téléphone, tablette et ordinateur', preview: 'Enseigner, préparer, avancer ensemble',
     features: [
       { title: 'Contenus prêts', detail: 'À adapter à vos séances.' },
@@ -20,8 +20,8 @@ const COPY = {
   ar: {
     title: 'يومك الدراسي،', emphasis: 'بكل بساطة.',
     detail: 'أقسامك وحصصك وجدولك. دفتر واضح، دائما في متناول يدك.',
-    start: 'قسمك أولا، ثم حسابك لحفظه.',
-    login: 'تسجيل الدخول', register: 'إعداد دفتري',
+    start: 'حساب أستاذ مجاني بدون أي بطاقة بنكية.',
+    login: 'تسجيل الدخول', register: 'التسجيل',
     reassurance: 'على الهاتف والجهاز اللوحي والحاسوب', preview: 'نحضّر ونتقدّم معاً',
     features: [
       { title: 'محتوى جاهز', detail: 'تكيّفه مع حصصك.' },

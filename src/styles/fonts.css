@@ -174,8 +174,7 @@
        local('SamsungOneArabic'),
        local('SamsungOneArabic-400'),
        url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
-       url('/SamsungOneArabic-400.ttf') format('truetype'),
-       url('/maghribi-font-3.ttf') format('truetype');
+       url('/SamsungOneArabic-400.ttf') format('truetype');
   font-style: normal; font-weight: 300 900; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
 }

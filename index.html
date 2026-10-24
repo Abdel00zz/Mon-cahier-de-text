@@ -2,6 +2,53 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function() {
+      // 1. Isolate third-party browser extension errors & WebSocket proxy closures
+      window.addEventListener('error', function(e) {
+        if (e.filename && (e.filename.indexOf('chrome-extension://') === 0 || e.filename.indexOf('moz-extension://') === 0)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason && (e.reason.message || String(e.reason));
+        if (typeof msg === 'string' && (msg.indexOf('WebSocket') !== -1 || msg.indexOf('closed without opened') !== -1)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      });
+
+      // 2. Safeguard window.fetch against getter-only environments for extensions & Capacitor
+      try {
+        var globalObj = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this);
+        if (globalObj) {
+          var currentFetch = globalObj.fetch;
+          var activeFetch = typeof currentFetch === 'function' ? currentFetch.bind(globalObj) : currentFetch;
+          Object.defineProperty(globalObj, 'fetch', {
+            get: function() { return activeFetch; },
+            set: function(val) { activeFetch = val; },
+            configurable: true,
+            enumerable: true
+          });
+        }
+      } catch (_) {
+        try {
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            var protoFetch = Window.prototype.fetch;
+            var activeProtoFetch = typeof protoFetch === 'function' ? protoFetch : undefined;
+            Object.defineProperty(Window.prototype, 'fetch', {
+              get: function() { return activeProtoFetch; },
+              set: function(val) { activeProtoFetch = val; },
+              configurable: true,
+              enumerable: true
+            });
+          }
+        } catch (__) {}
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Mon Cahier de Text</title>
   <meta name="application-name" content="Mon Cahier de Text" />
