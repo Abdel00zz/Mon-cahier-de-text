@@ -5,7 +5,7 @@
   "androidVersionCode": 19,
   "type": "module",
   "engines": {
-    "node": "24.x"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "tsx server/index.ts",
