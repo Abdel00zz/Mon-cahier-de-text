@@ -44,7 +44,7 @@ const sortAttributes = (item: FlatDataItem, id: string) => ({
 });
 
 interface MainTableProps {
-  supportClass?: Pick<ClassInfo, 'id' | 'name'>;
+  supportClass?: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'createdAt' | 'subject'>>;
   lessonsData: LessonsData;
   visibleRows: LessonRow[];
   absenceSessions?: readonly AbsenceSession[];
@@ -449,7 +449,7 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 
 /* État vide réinventé selon le design system éditorial chaud & épuré avec illustration dynamique. */
 const EmptyState: React.FC<{
-  supportClass?: Pick<ClassInfo, 'id' | 'name'>;
+  supportClass?: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'createdAt' | 'subject'>>;
   onOpenAddContentModal: (indices?: Indices) => void;
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;

@@ -266,11 +266,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
             </div>
             <div className="print-institution-grid">
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'المؤسسة التعليمية' : 'Établissement'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'المؤسسة التعليمية :' : 'Établissement :'}</span>
                     <strong className="print-field-value">{config.establishmentName || (isRtlPrint ? 'غير محددة' : 'Non renseigné')}</strong>
                 </div>
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة) :' : 'Enseignant :'}</span>
                     <strong className={`print-field-value text-[#0056D2] font-bold ${
                         isArabicText(config.defaultTeacherName || classInfo.teacherName)
                             ? 'print-field-value-ar text-[1.15em]'
@@ -280,19 +280,19 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                     </strong>
                 </div>
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'القسم / الفوج' : 'Classe'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'القسم / الفوج :' : 'Classe :'}</span>
                     <strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>{classInfo.name || (isRtlPrint ? 'غير محدد' : 'Non spécifiée')}</strong>
                 </div>
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'المادة الدراسية' : 'Matière'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'المادة الدراسية :' : 'Matière :'}</span>
                     <strong className="print-field-value">{classInfo.subject || (isRtlPrint ? 'غير محددة' : 'Non renseignée')}</strong>
                 </div>
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'السنة الدراسية' : 'Année scolaire'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'السنة الدراسية :' : 'Année scolaire :'}</span>
                     <strong className="print-field-value"><bdi dir="ltr">{schoolYearLabel}</bdi></strong>
                 </div>
                 <div className="print-institution-field">
-                    <span className="print-field-label">{isRtlPrint ? 'الفترة المطبوعة' : 'Période imprimée'}</span>
+                    <span className="print-field-label">{isRtlPrint ? 'الفترة المطبوعة :' : 'Période imprimée :'}</span>
                     <strong className="print-field-value">{periodLabel}</strong>
                 </div>
             </div>

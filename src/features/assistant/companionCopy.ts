@@ -182,7 +182,11 @@ const COPY = {
 
 export const companionLabels = (locale: AppLocale) => COPY[locale];
 
-export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale): CompanionMessage {
+export function classGuidanceMessage(
+  guidance: ClassGuidance,
+  locale: AppLocale,
+  options?: { askReadyContent?: boolean },
+): CompanionMessage {
   if (guidance.step === 'notebook-followup') return notebookFollowupMessage(guidance, locale);
   const base = COPY[locale][guidance.step];
   let context: string | undefined = 'context' in base ? base.context : undefined;
@@ -211,9 +215,13 @@ export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale)
     else if (guidance.step === 'active-session') detail = locale === 'fr' ? `Votre séance avec ${name} est en cours ; sélectionnez le contenu réalisé pour lui attribuer la date de cette séance.`
       : locale === 'ar' ? `حصتك مع قسم ${name} جارية الآن؛ اختر المحتوى المنجز لإسناد تاريخ اليوم إليه وتثبيته مباشرة.`
         : `Your session with ${name} is in progress; select the content covered to assign this session’s date.`;
-    else if (guidance.step === 'notebook-empty') detail = locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
-      : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
-        : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`;
+    else if (guidance.step === 'notebook-empty') detail = options?.askReadyContent
+      ? (locale === 'fr' ? `Le cahier de ${name} attend son contenu ; avez-vous besoin d’un contenu prêt à utiliser à l’aide de votre cours enseigné ?`
+        : locale === 'ar' ? `دفتر قسم ${name} في انتظار محتواه؛ هل تحتاج إلى محتوى جاهز للاستعمال انطلاقاً من درسك المعتمد؟`
+          : `The notebook for ${name} is waiting for content; do you need ready-to-use content based on the course you teach?`)
+      : (locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
+        : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
+          : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`);
     else if (guidance.step === 'ready') detail = locale === 'fr' ? `Aucun point à signaler pour ${name} dans les vérifications disponibles. Bravo pour le suivi de votre cahier !`
       : locale === 'ar' ? `لم يظهر ما يستدعي المراجعة لقسم ${name} في الفحوص المتاحة. برافو على متابعة دفترك!`
         : `Nothing to flag for ${name} in the available checks. Bravo for keeping track of your notebook!`;

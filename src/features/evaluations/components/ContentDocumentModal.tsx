@@ -11,7 +11,7 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
 import { SUPPORTED_HTML_TAGS } from '@/lib/text/htmlTags';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { resolveDocumentDirection, textDirectionAttribute } from '@/lib/text/textDirection';
 import { useTextHistory } from '@/hooks/useTextHistory';
 import type { ContentDocument } from '@/types';
 import './contentDocument.css';
@@ -92,8 +92,8 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
     setConflictOpen(false);
   }, [isOpen, saved, resetHistory]);
 
-  /* Première lettre de prose, sans les formules ni les commandes de formatage. */
-  const documentDir = textDirectionAttribute(source) ?? (isRtl ? 'rtl' : 'ltr');
+  /* Sens général de la feuille : prose du document, puis titre, puis langue de l'interface. */
+  const documentDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, sheetTitle, isRtl ? 'rtl' : 'ltr');
   // Un document qui s'ouvre par son propre titre le dit déjà : l'en-tête ne le répète pas.
   const headerTitle = headerTitleFor(sheetTitle, source);
   const length = source.length;
@@ -192,7 +192,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
               aria-label={t('evaluations.doc.source')}
-              className="min-h-[16rem] max-h-[58vh] h-[46vh] resize-y rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
+              className="content-document-textarea min-h-[16rem] max-h-[58vh] h-[46vh] resize-y rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
             />
             <div className="flex items-center justify-between gap-2 px-1">
               <button
@@ -233,7 +233,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-3 sm:p-5 shadow-xs', !preview && 'min-h-[12rem]')}>
             {preview ? (
               <div dir={documentDir}>
-                <DocumentSheetHeader title={headerTitle} classLabel={sheetClass} />
+                <DocumentSheetHeader title={headerTitle} classLabel={sheetClass} dir={documentDir} />
                 {/* La feuille est une PAGE : colonne de lecture bornée, jamais
                     étirée sur toute la largeur d'un grand écran. */}
                 <div className="devoir-document mx-auto max-w-[56rem]" dir={documentDir}>{preview}</div>

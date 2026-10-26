@@ -267,5 +267,48 @@ test('evaluation date conflicts and incomplete student rosters produce prioritiz
   assert.equal(nextState.guidance.step, 'roster-incomplete');
   assert.deepEqual(nextState.action, { type: 'configure-roster', classId: '2' });
   assert.deepEqual(nextState.helpReference, { chapterId: 'students' });
+  assert.equal(conflictAndRoster.canContactTeam, true);
+  assert.equal(nextState.canContactTeam, true);
+});
+
+test('team contact button only appears for problems or after a few hours of missing/brief content', () => {
+  // No classes (create) or missing schedule -> no team contact button
+  assert.equal(evaluateCompanion(input({ classes: [], config: {} })).canContactTeam, false);
+  assert.equal(evaluateCompanion(input({ config: {} })).canContactTeam, false);
+
+  // Newly created empty class (< 3 hours) -> no team contact button yet
+  const freshEmpty = makeClass('fresh');
+  freshEmpty.createdAt = '2026-10-23T08:00:00Z'; // 1h before 09:00Z
+  const freshState = evaluateCompanion(input({
+    classes: [freshEmpty],
+    config: { timetable: [{ classId: 'fresh', day: 1, slot: 1 }] },
+    readLessons: () => [],
+  }));
+  assert.equal(freshState.guidance.step, 'notebook-empty');
+  assert.equal(freshState.canContactTeam, false);
+
+  // Mature empty class (>= 3 hours) -> asks about ready-to-use content from taught course & shows team contact
+  const matureEmpty = makeClass('mature');
+  matureEmpty.createdAt = '2026-10-23T04:00:00Z'; // 5h before 09:00Z
+  const matureEmptyState = evaluateCompanion(input({
+    classes: [matureEmpty],
+    config: { timetable: [{ classId: 'mature', day: 1, slot: 1 }] },
+    readLessons: () => [],
+  }));
+  assert.equal(matureEmptyState.guidance.step, 'notebook-empty');
+  assert.equal(matureEmptyState.canContactTeam, true);
+  assert.match(companionMessage(matureEmptyState, 'ar', '2026-10-23', false).detail, /محتوى جاهز للاستعمال/);
+  assert.match(companionMessage(matureEmptyState, 'fr', '2026-10-23', false).detail, /contenu prêt à utiliser/);
+
+  // Rich notebook with no problems -> calm ready state and no team contact button
+  const rich: LessonsData = [{
+    type: 'chapter',
+    title: 'Ondes',
+    items: Array.from({ length: 8 }, (_, idx) => ({ type: 'cours', title: `Cours ${idx + 1}`, date: '2026-10-22' })),
+  }];
+  const richState = evaluateCompanion(input({ readLessons: () => rich }));
+  assert.equal(richState.guidance.step, 'ready');
+  assert.equal(richState.decision.kind, 'guidance');
+  assert.equal(richState.canContactTeam, false);
 });
 

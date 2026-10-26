@@ -2577,7 +2577,42 @@ html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
   line-height: var(--doc-lh);
   letter-spacing: 0.002em;
   color: hsl(var(--foreground));
+  text-align: start;
   text-wrap: pretty;
+}
+/* Chaque ligne de prose (<bdi dir="rtl|ltr">) est un bloc à part entière dans la feuille :
+   son attribut `dir` gouverne son alignement horizontal (droite en arabe, gauche en français)
+   ainsi que la ponctuation finale, même dans un document bilingue. */
+.devoir-document > bdi,
+.devoir-document .doc-columns > bdi,
+.devoir-document .editor-item-body > bdi {
+  display: block;
+  width: 100%;
+  text-align: start;
+  white-space: pre-wrap;
+  unicode-bidi: isolate;
+}
+.devoir-document .editor-item-body {
+  white-space: normal;
+  text-align: start;
+}
+.devoir-document .editor-list[dir='rtl'],
+.devoir-document .editor-item-body[dir='rtl'],
+.devoir-document > bdi[dir='rtl'],
+.devoir-document .doc-columns > bdi[dir='rtl'],
+.devoir-document .editor-item-body > bdi[dir='rtl'],
+.devoir-document .doc-line[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+.devoir-document .editor-list[dir='ltr'],
+.devoir-document .editor-item-body[dir='ltr'],
+.devoir-document > bdi[dir='ltr'],
+.devoir-document .doc-columns > bdi[dir='ltr'],
+.devoir-document .editor-item-body > bdi[dir='ltr'],
+.devoir-document .doc-line[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
 }
 .devoir-document .doc-title {
   display: block;
@@ -2661,6 +2696,19 @@ mark.doc-hl .katex-display > .katex {
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
+.devoir-document .doc-heading[dir='rtl'] {
+  direction: rtl;
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+  letter-spacing: 0;
+}
+.devoir-document .doc-heading[dir='ltr'] {
+  direction: ltr;
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+}
 .devoir-document .doc-heading[data-tone='1'] { --doc-tone: #2563eb; }
 .devoir-document .doc-heading[data-tone='2'] { --doc-tone: #15803d; }
 .devoir-document .doc-heading[data-tone='3'] { --doc-tone: #b45309; }
@@ -2671,6 +2719,16 @@ mark.doc-hl .katex-display > .katex {
   font-size: var(--doc-fs-heading);
   font-weight: 700;
   letter-spacing: 0.005em;
+  text-align: start;
+}
+.devoir-document .doc-subheading[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+  letter-spacing: 0;
+}
+.devoir-document .doc-subheading[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
 }
 /* Rangée d'énoncé : le texte se replie, le barème reste au bord de lecture —
    les points se lisent à la hauteur de la question qu'ils notent. */
@@ -2679,8 +2737,9 @@ mark.doc-hl .katex-display > .katex {
   align-items: baseline;
   gap: 0.5rem;
   width: 100%;
+  text-align: start;
 }
-.devoir-document .doc-line__text { min-width: 0; flex: 1 1 auto; }
+.devoir-document .doc-line__text { min-width: 0; flex: 1 1 auto; text-align: start; white-space: pre-wrap; }
 .devoir-document .doc-bareme {
   flex: none;
   font-size: var(--doc-fs-bareme);

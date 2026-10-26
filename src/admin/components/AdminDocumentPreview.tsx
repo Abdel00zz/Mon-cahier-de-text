@@ -6,7 +6,7 @@ import { renderDescriptionWithBold } from '../../components/typography/textForma
 import { DocumentPrintButton } from '../../components/documents/DocumentPrintButton';
 import { DocumentSheetHeader } from '../../components/documents/DocumentSheetHeader';
 import { headerTitleFor } from '../../domain/evaluations/documentSheet';
-import { textDirectionAttribute } from '../../lib/text/textDirection';
+import { resolveDocumentDirection, textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
  * Relecture d'un document du professeur par la direction.
@@ -48,10 +48,10 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
     classLabel,
     emptyLabel = 'Le professeur n’a pas encore rédigé ce document.',
 }) => {
-    const { t } = useLocale();
+    const { t, isRtl } = useLocale();
     const hasDocument = Boolean(source && source.trim());
     // Le sens suit le document (première lettre hors formules), comme sur la feuille du professeur.
-    const sheetDir = textDirectionAttribute(source) ?? 'ltr';
+    const sheetDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, heading, isRtl ? 'rtl' : 'ltr');
     return (
         <Modal
             isOpen={isOpen}
@@ -65,7 +65,7 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
                 <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">
                     {hasDocument ? (
                         <div dir={sheetDir}>
-                            <DocumentSheetHeader title={headerTitleFor(heading, source)} classLabel={classLabel} />
+                            <DocumentSheetHeader title={headerTitleFor(heading, source)} classLabel={classLabel} dir={sheetDir} />
                             <div className="devoir-document mx-auto max-w-[56rem]" dir={sheetDir}>
                                 {renderDescriptionWithBold(source)}
                             </div>

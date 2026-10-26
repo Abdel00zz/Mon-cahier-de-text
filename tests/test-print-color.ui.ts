@@ -21,6 +21,15 @@ test('le PDF applique le choix couleur et conserve les familles des badges dans 
     assert.ok(html.includes(`data-print-color="${colorContent ? 'color' : 'mono'}"`));
     for (const tone of ['blue', 'red', 'green', 'neutral']) assert.ok(html.includes(`data-content-tone="${tone}"`));
     assert.ok(html.includes('Limite') && html.includes('تطبيق'));
+    if (locale === 'fr') {
+      for (const label of ['Établissement :', 'Enseignant :', 'Classe :', 'Matière :', 'Année scolaire :', 'Période imprimée :']) {
+        assert.ok(html.includes(label), `missing ${label}`);
+      }
+    } else {
+      for (const label of ['المؤسسة التعليمية :', 'الأستاذ(ة) :', 'القسم / الفوج :', 'المادة الدراسية :', 'السنة الدراسية :', 'الفترة المطبوعة :']) {
+        assert.ok(html.includes(label), `missing ${label}`);
+      }
+    }
   }
   assert.equal(JSON.stringify(lessons), original);
 });

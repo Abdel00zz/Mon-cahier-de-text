@@ -25,11 +25,22 @@ const ANY_LETTER = /\p{L}/u;
 export function detectTextDirection(text?: unknown): TextDirection | null {
   if (!text) return null;
   const plain = directionProse(text);
+  let firstDir: TextDirection | null = null;
+  let rtlCount = 0;
+  let ltrCount = 0;
   for (const char of plain) {
     if (!ANY_LETTER.test(char)) continue;
-    return RTL_SCRIPTS.test(char) ? 'rtl' : 'ltr';
+    if (RTL_SCRIPTS.test(char)) {
+      if (!firstDir) firstDir = 'rtl';
+      rtlCount += 1;
+    } else {
+      if (!firstDir) firstDir = 'ltr';
+      ltrCount += 1;
+    }
   }
-  return null;
+  if (!firstDir) return null;
+  if (firstDir === 'rtl') return 'rtl';
+  return rtlCount > ltrCount ? 'rtl' : 'ltr';
 }
 
 /**
@@ -38,6 +49,19 @@ export function detectTextDirection(text?: unknown): TextDirection | null {
  */
 export const textDirectionAttribute = (text?: unknown): TextDirection | undefined =>
   detectTextDirection(text) ?? undefined;
+
+/**
+ * Sens général d'une feuille de document (aperçu, direction, impression A5) :
+ * déterminé par la prose du document, puis par son titre, puis par la langue
+ * courante de l'interface.
+ */
+export function resolveDocumentDirection(
+  source?: unknown,
+  title?: unknown,
+  fallback: TextDirection = 'ltr',
+): TextDirection {
+  return detectTextDirection(source) ?? detectTextDirection(title) ?? fallback;
+}
 
 /**
  * Fragment toujours lu de gauche à droite (date « 12/10/2026 », note « 15/20 »)

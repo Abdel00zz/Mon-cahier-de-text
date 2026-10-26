@@ -387,6 +387,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             onCreateClass={() => setCreateModalOpen(true)}
                             onOpenSchedule={onOpenSchedule}
                             onOpenClass={openNotebook}
+                            onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
+                            onConfigureClass={classInfo => setEditingClass(classInfo)}
                           />
                         </DashboardActions>
                     </div>

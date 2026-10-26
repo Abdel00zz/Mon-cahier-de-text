@@ -12,7 +12,7 @@ export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLo
   const { decision } = snapshot;
   if (decision.kind === 'calendar') return companionCalendarMessage(decision.notice, locale, snapshot.target?.name);
   let message: CompanionMessage;
-  if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale);
+  if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale, { askReadyContent: snapshot.canContactTeam });
   else if (decision.kind === 'offer' && snapshot.contentSuggestion) message = contentSuggestionMessage(snapshot.contentSuggestion, locale, today);
   else if (decision.kind === 'reply') {
     const reply = decision.reply;
@@ -22,6 +22,6 @@ export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLo
       detail: `${name ? `${name} : ` : ''}${reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body}`,
       detailEmphasis: name, action: copy.read };
   } else if (decision.kind !== 'offer') message = companionServiceMessage(decision.kind, locale, recovering);
-  else message = classGuidanceMessage(snapshot.guidance, locale);
+  else message = classGuidanceMessage(snapshot.guidance, locale, { askReadyContent: snapshot.canContactTeam });
   return message;
 }

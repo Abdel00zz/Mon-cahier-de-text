@@ -63,6 +63,8 @@
 }
 html[lang='ar'] .doc-sheet-header__title { font-style: normal; letter-spacing: normal; line-height: 1.5; }
 html[lang='ar'] .doc-sheet-header__class { font-size: 0.84rem; letter-spacing: normal; text-transform: none; line-height: 1.5; }
+.doc-sheet-header[dir='rtl'] .doc-sheet-header__title { font-style: normal; letter-spacing: normal; line-height: 1.5; }
+.doc-sheet-header[dir='rtl'] .doc-sheet-header__class { font-size: 0.84rem; letter-spacing: normal; text-transform: none; line-height: 1.5; }
 @media screen and (max-width: 480px) {
   /* Téléphone : la classe passe sous le titre, centrée, au lieu d'écraser ses colonnes. */
   .doc-sheet-header { grid-template-columns: minmax(0, 1fr); row-gap: 0.15rem; }

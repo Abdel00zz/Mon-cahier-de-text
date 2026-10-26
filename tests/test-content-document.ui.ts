@@ -25,6 +25,14 @@ test('document bilingue : chaque ligne et chaque titre conserve son sens, formul
   assert.match(html, /class="doc-heading" dir="ltr"/);
   assert.match(html, /<bdi dir="rtl"><span class="math-text">/);
   assert.match(html, /<bdi dir="ltr">Calculer la limite\.<\/bdi>/);
+
+  // Marqueurs de sous-questions (a., b), I.) et identifiants mathématiques (f(x), ABC) en tête de phrase arabe : l'orientation RTL ne se perd jamais.
+  const arabicWithMarkers = render('## I. التمرين الأول\n\na. احسب النهاية.\nf(x) = x^2 نعتبر الدالة المعرفة بما يلي.\n1. بين أن الدالة متصلة.');
+  assert.match(arabicWithMarkers, /class="doc-heading" dir="rtl"[^>]*>I\. التمرين الأول:<\/span>/);
+  assert.match(arabicWithMarkers, /<bdi dir="rtl">a\. احسب النهاية\.<\/bdi>/);
+  assert.match(arabicWithMarkers, /<bdi dir="rtl">f\(x\) = x\^2 نعتبر الدالة المعرفة بما يلي\.<\/bdi>/);
+  assert.match(arabicWithMarkers, /class="editor-list whitespace-normal" dir="rtl"/);
+  assert.match(arabicWithMarkers, /class="editor-item-body whitespace-pre-wrap break-words"><bdi dir="rtl">بين أن الدالة متصلة\.<\/bdi><\/span>/);
 });
 
 test('les balises acceptées composent vraiment (gras, liste, formule)', () => {

@@ -233,8 +233,11 @@
     margin: 0 0 15px;
     padding: 0 0 9px;
     border-top: 0;
-    border-bottom: 0.8pt solid var(--print-rule-strong);
+    border-bottom: none;
     text-align: center;
+}
+.print-header * {
+    text-decoration: none;
 }
 .print-government {
     color: #526a8c;
@@ -280,7 +283,7 @@
     gap: 6px;
     min-width: 0;
     padding: 3px 0;
-    border-bottom: 0.6pt dotted #b8c2d0;
+    border-bottom: none;
     font-family: var(--content-font-latin), Arial, sans-serif;
     font-size: 8.5pt;
 }
@@ -293,7 +296,7 @@
     overflow-wrap: anywhere;
     color: #101b32;
     font-weight: 600;
-    text-align: right;
+    text-align: start;
 }
 /* Le nom imprime suit la langue du NOM, jamais celle de l'interface. */
 .print-institution-field .print-field-value-la {
@@ -417,7 +420,7 @@
 .print-document[dir="rtl"], .print-document[dir="rtl"] .print-header *, .print-document[dir="rtl"] .print-signature-label { font-family: var(--content-font-arabic), serif; letter-spacing: normal; }
 .print-document[dir="rtl"] .print-field-value-la { font-family: var(--content-font-latin), Arial, sans-serif; }
 .print-document .direction-rtl .print-institution-grid { direction: rtl; text-align: right; }
-.print-document .direction-rtl .print-field-value { text-align: left; }
+.print-document .direction-rtl .print-field-value { text-align: right; }
 .print-document .print-col-content ul, .print-document .print-col-content ol { margin-inline-start: 1em; padding-inline-start: 1em; margin-inline-end: 0; padding-inline-end: 0; }
 .print-document .math-text, .print-document .katex-display { max-width: 100%; }
 .print-document .katex-display { direction: ltr; unicode-bidi: isolate; text-indent: 0; }

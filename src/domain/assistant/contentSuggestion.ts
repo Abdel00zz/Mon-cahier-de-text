@@ -11,17 +11,38 @@ export interface NotebookContentEvidence {
 }
 
 export interface ContentSuggestion {
-  target: Pick<ClassInfo, 'id' | 'name'>;
+  target: Pick<ClassInfo, 'id' | 'name'> & Partial<Pick<ClassInfo, 'subject'>>;
   origin: NotebookContentOrigin | 'unknown';
   evidence: NotebookContentEvidence;
   activity?: NotebookActivity;
 }
+
+/** Delay before proposing ready-to-use content on a newly created class (3 hours). */
+export const CONTENT_OFFER_MIN_AGE_MS = 3 * 3_600_000;
+/** Maximum course items considered "too brief" for proactive content assistance. */
+export const BRIEF_CONTENT_MAX_ITEMS = 6;
 
 const evidenceCache = new WeakMap<LessonsData, NotebookContentEvidence>();
 const timestamp = (value: string | undefined, now: number): number => {
   const parsed = value ? Date.parse(value) : NaN;
   return Number.isFinite(parsed) && parsed <= now ? parsed : 0;
 };
+
+/** True once a class has existed for at least a few hours (or has no valid recent creation timestamp). */
+export function isClassMatureForContentOffer(
+  target: Pick<ClassInfo, 'createdAt'> | undefined,
+  now: number,
+): boolean {
+  if (!target?.createdAt) return true;
+  const parsed = Date.parse(target.createdAt);
+  if (!Number.isFinite(parsed) || parsed <= 0 || parsed > now) return true;
+  return now - parsed >= CONTENT_OFFER_MIN_AGE_MS;
+}
+
+/** True when a notebook is empty or its course content is still too brief. */
+export function hasMissingOrBriefContent(evidence: NotebookContentEvidence): boolean {
+  return evidence.empty || evidence.contentCount <= BRIEF_CONTENT_MAX_ITEMS;
+}
 
 /** Counts assigned course content, never "completed lessons" inferred from dates or assessments. */
 export function notebookContentEvidence(lessons: LessonsData): NotebookContentEvidence {
@@ -64,7 +85,7 @@ interface SuggestionOptions {
   readActivity?: (classId: string) => NotebookActivity | undefined;
 }
 
-/** Local evidence only. Unreadable notebooks, recent contacts and dismissed offers never become suggestions. */
+/** Local evidence only. Unreadable notebooks, recent contacts, brand-new classes and rich notebooks never become suggestions. */
 export function resolveContentSuggestion(options: SuggestionOptions): ContentSuggestion | undefined {
   if (!options.readLessons) return;
   const visible = options.visibleClassIds ? new Set(options.visibleClassIds) : undefined;
@@ -80,11 +101,14 @@ export function resolveContentSuggestion(options: SuggestionOptions): ContentSug
     && !ignored.has(item.id)), options.preferredClassId, options.now);
   let fallback: ContentSuggestion | undefined;
   for (const target of candidates) {
+    if (!isClassMatureForContentOffer(target, options.now)) continue;
     try {
       const evidence = notebookContentEvidence(options.readLessons(target.id));
+      const activity = options.readActivity?.(target.id);
+      if (!hasMissingOrBriefContent(evidence) && !activity) continue;
       const storedOrigin = target.notebookContentOrigin;
       const origin = storedOrigin === 'personal' || storedOrigin === 'predefined' || storedOrigin === 'imported' ? storedOrigin : 'unknown';
-      const suggestion: ContentSuggestion = { target, evidence, origin, activity: options.readActivity?.(target.id) };
+      const suggestion: ContentSuggestion = { target, evidence, origin, activity };
       // Continue the class just used; otherwise a blank notebook is the clearest opportunity.
       if (target.id === options.preferredClassId || timestamp(target.lastOpenedAt, options.now) || evidence.empty) return suggestion;
       fallback ??= suggestion;

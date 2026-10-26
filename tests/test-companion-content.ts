@@ -146,3 +146,17 @@ test('ignoring a content suggestion falls back to timetable or notebook problems
   assert.match(msgAr.detail, /برافو/);
   assert.match(msgFr.detail, /bravo/i);
 });
+
+test('newly created classes wait a few hours before proposing content, and rich notebooks are not spammed', () => {
+  const justCreated = makeClass('fresh', { createdAt: '2026-10-22T08:30:00Z' }); // 1.5h before `now`
+  const matureClass = makeClass('mature', { createdAt: '2026-10-22T06:00:00Z' }); // 4h before `now`
+  assert.equal(resolveContentSuggestion({ classes: [justCreated], now, readLessons: () => lessons }), undefined);
+  assert.equal(resolveContentSuggestion({ classes: [justCreated, matureClass], now, readLessons: () => lessons })?.target.id, 'mature');
+
+  const richLessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Programme complet',
+    items: Array.from({ length: 10 }, (_, index) => ({ type: 'cours', title: `Séance ${index + 1}` })),
+  }];
+  assert.equal(resolveContentSuggestion({ classes: [matureClass], now, readLessons: () => richLessons }), undefined);
+});

@@ -15,10 +15,10 @@ import { readNotebookActivity } from '@/infrastructure/storage/companionActivity
 import { useCompanionGuide } from './useCompanionGuide';
 import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
 import { createCompanionEvaluation } from '@/domain/assistant/companionBrain';
+import type { ClassEvaluationEntry } from '@/domain/evaluations';
 import { companionMessage } from './companionPresentation';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
-
 
 interface ClassAssistantProps {
   locale: AppLocale;
@@ -31,6 +31,8 @@ interface ClassAssistantProps {
   onCreateClass: () => void;
   onOpenSchedule?: () => void;
   onOpenClass: (classInfo: ClassInfo) => void;
+  onOpenEvaluations?: (classInfo: ClassInfo, entry?: ClassEvaluationEntry) => void;
+  onConfigureClass?: (classInfo: ClassInfo) => void;
 }
 
 /** Le compagnon branché au cerveau pédagogique central : adapte son comportement à l'état global. */
@@ -45,6 +47,8 @@ export function ClassAssistant({
   onCreateClass,
   onOpenSchedule,
   onOpenClass,
+  onOpenEvaluations,
+  onConfigureClass,
 }: ClassAssistantProps) {
   const messaging = useTeacherMessaging();
   const { guide, openGuide, closeGuide } = useCompanionGuide(messaging?.owner);
@@ -107,8 +111,11 @@ export function ClassAssistant({
     }
   };
   const openContact = () => {
+    if (contentSuggestion) {
+      setContactedClasses(current => new Set([...current, contentSuggestion.target.id]));
+    }
     setContact({ owner: messaging?.owner, target: service ? undefined : brain.target, initialReplyTo: reply?.id,
-      context: decision.kind !== 'offer' && !reply ? message.detail : undefined });
+      context: !reply ? message.detail : undefined });
     setContactStarted(true);
     setContactOpen(true);
   };
@@ -127,6 +134,18 @@ export function ClassAssistant({
     else if (action.type === 'open-class') {
       const target = classes.find(item => item.id === action.classId);
       if (target) onOpenClass(target);
+    } else if (action.type === 'open-evaluations') {
+      const target = classes.find(item => item.id === action.classId);
+      if (target) {
+        if (onOpenEvaluations) onOpenEvaluations(target, action.entry);
+        else onOpenClass(target);
+      }
+    } else if (action.type === 'configure-roster') {
+      const target = classes.find(item => item.id === action.classId);
+      if (target) {
+        if (onConfigureClass) onConfigureClass(target);
+        else onOpenClass(target);
+      }
     }
   };
   return (
@@ -137,7 +156,7 @@ export function ClassAssistant({
       tips={brain.showTips ? { day: today, initiallyOpen: true } : undefined}
       helpReference={brain.helpReference}
       onOpenGuide={openGuide}
-      contactLabel={!reply && !isContentOffer && decision.kind !== 'calendar' ? copy.contact : undefined}
+      contactLabel={brain.canContactTeam ? copy.contact : undefined}
       primaryAction={isContentOffer && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
         label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}

@@ -247,6 +247,14 @@ function markerFor(style: MarkerStyle, position: number): string {
  *  c'est la seule cellule qui a le droit de se replier, sinon sa largeur
  *  minimale (le mot le plus long) peut dépasser le plafond de 45 % et écraser
  *  la colonne de texte à zéro (constaté sur téléphone : 173 lignes d'une lettre). */
+function blockProseText(blocks: DescriptionBlock[]): string {
+  return blocks.map(block => (
+    block.kind === 'lines'
+      ? block.lines.join('\n')
+      : block.items.map(item => `${item.label ?? ''} ${blockProseText(item.blocks)}`).join('\n')
+  )).join('\n');
+}
+
 function renderItemCells(
   marker: React.ReactNode,
   content: React.ReactNode[],
@@ -300,7 +308,8 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): R
       block.items.forEach((item, position) => {
         cells.push(...renderItem(block.type, item, position, `${key}-i${position}`, depth));
       });
-      out.push(React.createElement('span', { key, className: 'editor-list whitespace-normal' }, ...cells));
+      const listDir = textDirectionAttribute(blockProseText([block]));
+      out.push(React.createElement('span', { key, className: 'editor-list whitespace-normal', dir: listDir }, ...cells));
       return;
     }
     out.push(...renderTextLines(block.lines, key));
@@ -673,14 +682,17 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
   // colonne des marqueurs prend la largeur du plus large, donc les textes
   // démarrent tous sur la même verticale.
   let itemCells: React.ReactNode[] = [];
+  let itemTexts: string[] = [];
   const flushItems = () => {
     if (itemCells.length === 0) return;
+    const listDir = textDirectionAttribute(itemTexts.join('\n'));
     out.push(React.createElement(
       'span',
-      { key: `hand-list-${keyBase}-${out.length}`, className: 'editor-list whitespace-normal' },
+      { key: `hand-list-${keyBase}-${out.length}`, className: 'editor-list whitespace-normal', dir: listDir },
       ...itemCells
     ));
     itemCells = [];
+    itemTexts = [];
   };
   // Un seul passage de détection : chaque ligne est testée une fois, et la
   // continuation sait immédiatement où s'arrêter (aucun test répété).
@@ -741,11 +753,15 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
     const rawLine = lines[index];
     const prefixLength = rawLine.length - marker.content.length;
     const children: React.ReactNode[] = [];
+    const currentItemLines: string[] = [];
     contentIndexes.forEach((lineIndex, contentIndex) => {
       if (contentIndex > 0 && !hasDisplayMath(lines[lineIndex - 1]) && !hasDisplayMath(lines[lineIndex])) children.push('\n');
       const text = contentIndex === 0 ? bodies[lineIndex].text.slice(prefixLength) : bodies[lineIndex].text;
+      currentItemLines.push(text);
       children.push(...renderLine(text, bodies[lineIndex].baremes, `lib-${keyBase}-${lineIndex}`));
     });
+    const itemTextJoined = currentItemLines.join('\n');
+    itemTexts.push(itemTextJoined);
     itemCells.push(...renderItemCells(
       marker.number ? `${marker.number}.` : '•',
       children,

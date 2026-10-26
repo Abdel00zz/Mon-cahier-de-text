@@ -5,7 +5,7 @@ import { pendingAdminMessages } from '../messages/conversation';
 import { guidanceAction, guidanceFromDiagnosis, type GuidanceAction, type GuidanceConfig } from './classGuidance';
 import { decideCompanion, type CompanionDecision, type CompanionSignals } from './companionDecision';
 import { resolvePedagogicalBehavior, type PedagogicalBehavior } from './companionPedagogicalBehavior';
-import { orderCompanionClasses, resolveContentSuggestion } from './contentSuggestion';
+import { isClassMatureForContentOffer, orderCompanionClasses, resolveContentSuggestion } from './contentSuggestion';
 import { companionCalendarNotice } from './companionCalendar';
 import { companionHelpReference } from './companionHelp';
 import type { NotebookActivity } from './notebookActivity';
@@ -83,6 +83,18 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     const target = input.classes.find(item => item.id === targetId);
     const serviceError = decision.kind === 'sync-error' || decision.kind === 'inbox-error';
     const service = !['guidance', 'offer', 'reply', 'calendar'].includes(decision.kind);
+    const guidanceProblem = decision.kind === 'guidance' && (
+      guidance.step === 'notebook-unavailable'
+      || guidance.step === 'notebook-issue'
+      || guidance.step === 'evaluation-conflict'
+      || guidance.step === 'roster-incomplete'
+      || guidance.step === 'notebook-followup'
+    );
+    const delayedEmptyContent = decision.kind === 'guidance'
+      && guidance.step === 'notebook-empty'
+      && isClassMatureForContentOffer(target, input.now);
+    const delayedBriefContent = decision.kind === 'offer' && Boolean(contentSuggestion);
+    const canContactTeam = serviceError || guidanceProblem || delayedEmptyContent || delayedBriefContent;
     const pendingTasks = tasks.filter(task => task.guidance.step !== 'active-session');
     const unreadReplies = input.services.authenticated ? pendingAdminMessages(input.services.messages).length : 0;
     const attentionCount = pendingTasks.length + unreadReplies + Number(serviceError);
@@ -103,6 +115,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     };
     return {
       diagnosis, tasks, selectedTask, guidance, decision, contentSuggestion, target, coverage,
+      canContactTeam,
       taskPosition: index + 1,
       action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking'),
       behavior: { ...behavior, problemCount: attentionCount }, nextTaskId,

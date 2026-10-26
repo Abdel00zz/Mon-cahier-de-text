@@ -7,7 +7,7 @@ import { useLocale } from '../../i18n/LocaleProvider';
 import { DocumentPrintButton } from './DocumentPrintButton';
 import { DocumentSheetHeader } from './DocumentSheetHeader';
 import { headerTitleFor } from '../../domain/evaluations/documentSheet';
-import { textDirectionAttribute } from '../../lib/text/textDirection';
+import { resolveDocumentDirection, textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
  * Aperçu d'un document pédagogique du professeur : le sujet d'un devoir, un
@@ -48,11 +48,12 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     classLabel,
     source,
 }) => {
-    const { t } = useLocale();
+    const { t, isRtl } = useLocale();
     const page = React.useMemo(
         () => (isOpen && source?.trim() ? renderDescriptionWithBold(source) : null),
         [isOpen, source],
     );
+    const sheetDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, title, isRtl ? 'rtl' : 'ltr');
 
     return (
         <Modal
@@ -71,9 +72,9 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             <div className="space-y-3">
                 <div className="document-preview-paper border border-border/80 bg-card p-3.5 sm:p-5">
                     {page ? (
-                        <div dir={textDirectionAttribute(source) ?? 'ltr'}>
-                            <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} />
-                            <div className="devoir-document mx-auto max-w-[56rem]" dir={textDirectionAttribute(source)}>{page}</div>
+                        <div dir={sheetDir}>
+                            <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} dir={sheetDir} />
+                            <div className="devoir-document mx-auto max-w-[56rem]" dir={sheetDir}>{page}</div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3 py-10 text-center">
