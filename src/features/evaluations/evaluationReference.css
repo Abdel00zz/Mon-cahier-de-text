@@ -35,7 +35,7 @@
 
   --radius-card: 16px;
   --radius-item: 10px;
-  --ev-actions-width: minmax(17rem, 1.3fr);
+  --ev-actions-width: 12.5rem;
 
   /* Jetons d'application */
   --eval-paper: var(--bg-page);
@@ -178,14 +178,14 @@
   border: 1px solid var(--border-subtle);
 }
 
-/* Cartes accordéons style iOS Inset Grouped */
+/* Cartes accordéons style épuré et compact */
 .evaluation-reference .ev-accordion {
   background: var(--eval-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-card);
-  margin-bottom: 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px -2px rgb(15 23 42 / 0.04), 0 1px 2px rgb(15 23 42 / 0.02);
+  box-shadow: 0 1px 3px -1px rgb(15 23 42 / 0.04);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -201,21 +201,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 6px 12px;
   cursor: pointer;
   user-select: none;
   background: var(--eval-card);
   border: none;
   width: 100%;
-  min-height: 54px;
+  min-height: 38px;
   transition: background-color 0.15s ease;
 }
 
 .evaluation-reference .ev-accordion__label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14.5px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-dark);
   min-width: 0;
@@ -224,9 +224,9 @@
 
 .evaluation-reference .ev-accordion__label-text {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.6;
+  line-height: 1.4;
   letter-spacing: normal;
   color: var(--text-dark);
   text-align: start;
@@ -245,7 +245,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-accordion__toggle-icon {
   width: 30px;
   height: 30px;
-  border-radius: 999px;
+  border-radius: 8px;
   background: var(--icon-gray-bg);
   border: none;
   display: flex;
@@ -285,30 +285,38 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-board__head {
   font-family: var(--eval-font-secondary);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 9rem var(--ev-actions-width);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas: 'id date actions';
   align-items: center;
-  padding: 8px 16px;
+  padding: 4px 10px;
   background: var(--header-row-bg);
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: var(--eval-secondary-weight);
   letter-spacing: normal;
   text-transform: none;
   color: var(--text-muted);
 }
+.evaluation-reference .ev-board__head > :nth-child(2) {
+  justify-self: center;
+  text-align: center;
+}
+.evaluation-reference .ev-board__head > :nth-child(3) {
+  justify-self: end;
+  text-align: end;
+}
 
-/* Colonnes stables sur grand écran ; repli selon la largeur réelle du tableau. */
+/* Colonnes stables ; rangée compacte resserrée sur une seule ligne */
 .evaluation-reference .ev-board__rows > .ev-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 9rem var(--ev-actions-width);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas: 'id date actions';
   align-items: center;
-  column-gap: 10px;
-  padding: 12px 16px;
+  column-gap: 8px;
+  padding: 4px 10px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--eval-card);
-  min-height: 54px;
+  min-height: 36px;
   transition: background-color 0.15s ease;
 }
 
@@ -320,7 +328,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   background: var(--eval-row-hover);
 }
 
-/* Nom de l'élément : toujours aligné au début, jamais flottant au centre */
+/* Nom de l'élément : compact et aligné */
 .evaluation-reference .ev-row__id {
   grid-area: id;
   align-self: center;
@@ -334,20 +342,19 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
 .evaluation-reference .ev-row__id > span,
 .evaluation-reference .ev-row__id h4 {
   font-family: var(--eval-font-row);
-  min-height: 44px;
+  min-height: unset !important;
   height: auto !important;
-  padding: 1px 0 !important;
+  padding: 0 !important;
   margin: 0 !important;
-  font-size: 14px;
+  font-size: 11.5px !important;
   font-weight: 600;
-  line-height: 1.65;
+  line-height: 1.4;
   color: var(--text-dark);
   text-align: start;
   justify-content: flex-start;
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  overflow-wrap: anywhere;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .evaluation-reference .ev-row__meta {
@@ -376,11 +383,12 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   white-space: normal;
 }
 
-/* Date de l'élément : capsule iOS cohérente */
+/* Date de l'élément : capsule centrée compacte */
 .evaluation-reference .ev-row__date {
   grid-area: date;
   align-self: center;
-  justify-self: start;
+  justify-self: center;
+  text-align: center;
   width: auto;
 }
 
@@ -388,16 +396,16 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   width: auto;
   max-width: 100%;
   justify-content: center;
-  font-size: 12.5px;
-  font-weight: 650;
+  font-size: 11px;
+  font-weight: 700;
   color: hsl(var(--primary));
   border: 1px solid hsl(var(--primary) / 0.2) !important;
   background: hsl(var(--primary) / 0.08) !important;
   box-shadow: none !important;
-  padding: 3px 10px !important;
-  border-radius: 999px !important;
-  min-height: 44px !important;
-  height: auto !important;
+  padding: 2px 10px !important;
+  border-radius: 9999px !important;
+  min-height: 24px !important;
+  height: 24px !important;
   white-space: nowrap;
   transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
@@ -415,15 +423,15 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   align-items: center;
   width: auto;
   justify-content: center;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
   background: var(--header-row-bg);
-  border: 1px solid var(--border-card);
-  padding: 3px 10px;
-  border-radius: 999px;
-  min-height: 30px;
-  height: 30px;
+  border: 1px dashed var(--border-card);
+  padding: 2px 10px;
+  border-radius: 9999px;
+  min-height: 24px;
+  height: 24px;
   white-space: nowrap;
 }
 
@@ -440,41 +448,51 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
   min-width: 0;
   max-width: 100%;
 }
 
-/* Icône + verbe court : chaque commande reste compréhensible sans survol. */
 .evaluation-reference .ev-action {
   position: relative;
-  width: auto;
-  max-width: 100%;
-  padding: 8px 10px;
-  gap: 6px;
-  font-size: 12px;
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  min-width: 28px !important;
+  flex: 0 0 28px !important;
+  padding: 0 !important;
+  border-radius: 7px !important;
+  gap: 0;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.5;
-  white-space: normal;
-  text-align: start;
+  line-height: 1;
+  white-space: nowrap;
   touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.evaluation-reference .ev-action > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.evaluation-reference .ev-action > span:not(.ev-action__count) {
+  display: none !important;
 }
 
 .evaluation-reference .ev-action__count {
   display: inline-grid;
   place-items: center;
-  min-width: 21px;
-  min-height: 21px;
-  padding-inline: 4px;
-  border-radius: 5px;
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  font-size: 11px;
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -3px;
+  min-width: 14px;
+  min-height: 14px;
+  padding-inline: 2px;
+  border: 1px solid var(--border-card);
+  border-radius: 4px;
+  background: var(--eval-card);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 9px;
   font-variant-numeric: tabular-nums;
   unicode-bidi: isolate;
 }
@@ -484,17 +502,20 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   white-space: nowrap;
 }
 
-.evaluation-reference .ev-icon-btn {
-  width: 44px;
-  flex: 0 0 44px;
+.evaluation-reference .ev-icon-btn,
+.evaluation-reference .del-btn {
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  min-width: 28px !important;
+  flex: 0 0 28px !important;
+  padding: 0 !important;
+  border-radius: 7px !important;
 }
 
 .evaluation-reference .ev-action,
-.evaluation-reference .ev-icon-btn {
-  height: auto;
-  min-height: 44px;
-  min-width: 44px;
-  border-radius: 10px;
+.evaluation-reference .ev-icon-btn,
+.evaluation-reference .del-btn {
   background: var(--icon-gray-bg);
   border: 1px solid var(--border-card);
   display: inline-flex;
@@ -502,29 +523,30 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   justify-content: center;
   color: var(--icon-gray-fg);
   cursor: pointer;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.03), inset 0 1px 0 rgb(255 255 255 / 0.6);
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .dark .evaluation-reference .ev-action,
-.dark .evaluation-reference .ev-icon-btn {
+.dark .evaluation-reference .ev-icon-btn,
+.dark .evaluation-reference .del-btn {
   background: var(--icon-gray-bg);
   border-color: var(--border-card);
   color: var(--icon-gray-fg);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .evaluation-reference .ev-action:hover,
-.evaluation-reference .ev-icon-btn:hover {
+.evaluation-reference .ev-icon-btn:hover,
+.evaluation-reference .del-btn:hover {
   background: color-mix(in srgb, var(--icon-gray-bg) 70%, var(--text-dark) 10%);
   border-color: color-mix(in srgb, var(--border-card) 60%, var(--text-dark));
   color: var(--text-dark);
-  transform: translateY(-1px);
 }
 
 .evaluation-reference .ev-action:active,
-.evaluation-reference .ev-icon-btn:active {
-  transform: scale(0.97);
+.evaluation-reference .ev-icon-btn:active,
+.evaluation-reference .del-btn:active {
+  transform: scale(0.92);
 }
 
 .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger, .ev-accordion__toggle):focus-visible {
@@ -576,51 +598,52 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   transform: translateY(-1px);
 }
 
-/* La disposition dépend du panneau, y compris sur tablette et en écran partagé. */
+/* La disposition reste strictement sur une seule ligne ingénieuse */
 @container (max-width: 50rem) {
   .evaluation-reference .ev-board__head { display: none; }
   .evaluation-reference .ev-board__rows > .ev-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-    grid-template-areas: 'id date' 'actions actions';
-    gap: 8px 12px;
-    padding: 12px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: 'id date actions';
+    gap: 4px 8px;
+    padding: 3px 8px;
   }
-  .evaluation-reference .ev-row__date { justify-self: end; max-width: 100%; }
+  .evaluation-reference .ev-row__date { justify-self: center; }
   .evaluation-reference .ev-row__actions {
-    justify-self: stretch;
-    justify-content: flex-start;
-    width: 100%;
-    gap: 8px;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 4px;
   }
-  .evaluation-reference .ev-icon-btn[data-danger='true'] { margin-inline-start: auto; }
 }
 
-/* À très faible largeur, un titre long ou une période ne comprime aucun contrôle. */
 @container (max-width: 23rem) {
   .evaluation-reference .ev-board__rows > .ev-row {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'id' 'date' 'actions';
+    grid-template-columns: minmax(0, 1.2fr) auto auto;
+    grid-template-areas: 'id date actions';
+    gap: 3px 6px;
+    padding: 3px 6px;
   }
-  .evaluation-reference .ev-row__date { justify-self: start; }
+  .evaluation-reference .ev-row__date { justify-self: center; align-self: center; }
+  .evaluation-reference .ev-row__actions { justify-self: end; }
 }
 
 @media (max-width: 680px) {
-  .evaluation-reference .modal-header { padding: 12px 14px; }
-  .evaluation-reference .main-title { font-size: 17px; line-height: 1.6; }
-  .evaluation-reference .modal-body { padding: 12px 8px 22px; }
-  .evaluation-reference .evaluations-category-title { font-size: 17px; }
-  .evaluation-reference .ev-accordion { border-radius: 14px; }
-  .evaluation-reference .ev-accordion__toggle { padding: 12px; gap: 8px; }
-  .evaluation-reference .ev-accordion__label-text { font-size: 15px; }
-  html[lang='ar'] .evaluation-reference .ev-accordion__label-text { font-size: 16px; }
+  .evaluation-reference .modal-header { padding: 8px 12px; }
+  .evaluation-reference .main-title { font-size: 15px; line-height: 1.5; }
+  .evaluation-reference .modal-body { padding: 8px 6px 16px; }
+  .evaluation-reference .evaluations-category-title { font-size: 15px; }
+  .evaluation-reference .ev-accordion { border-radius: 8px; margin-bottom: 6px; }
+  .evaluation-reference .ev-accordion__toggle { padding: 6px 10px; gap: 6px; min-height: 38px; }
+  .evaluation-reference .ev-accordion__label-text { font-size: 13.5px; }
+  .evaluation-reference:lang(ar) .ev-accordion__label-text { font-size: 13.5px; }
 }
 
 /* Pictogramme des commandes (Contenu, Absents, Élèves…) */
-.evaluation-reference .ev-action .ev-action__icon {
-  width: 16px;
-  height: 16px;
+.evaluation-reference .ev-action .ev-action__icon,
+.evaluation-reference .del-btn .del-btn__icon {
+  width: 14px !important;
+  height: 14px !important;
   flex: none;
-  stroke-width: 1.85;
+  stroke-width: 1.5;
   opacity: 0.94;
   transition: opacity 150ms ease, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -652,10 +675,121 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   pointer-events: none;
 }
 
-@media (pointer: coarse) {
-  .evaluation-reference :is(.ev-action, .ev-icon-btn, .ev-date-trigger) {
-    min-width: 44px !important;
-    min-height: 44px !important;
-    height: auto !important;
+/* ── Optimisation ergonomique pour smartphones Android et écrans tactiles mobiles ── */
+/* Boutons « un peu plus grands » (35px-36px), icônes proportionnées (16px) et extension tactile (Thumb zone) */
+@media (max-width: 768px), (pointer: coarse) {
+  .evaluation-reference .ev-board__rows > .ev-row {
+    min-height: 42px;
+    padding: 4px 8px;
+    column-gap: 6px;
+  }
+
+  .evaluation-reference .ev-row__id > button,
+  .evaluation-reference .ev-row__id > span,
+  .evaluation-reference .ev-row__id h4 {
+    font-size: 12px !important;
+  }
+
+  .evaluation-reference .ev-row__date .ev-date-trigger {
+    min-height: 28px !important;
+    height: 28px !important;
+    font-size: 11.5px !important;
+    padding: 3px 10px !important;
+  }
+
+  .evaluation-reference .ev-row__actions {
+    gap: 5px;
+  }
+
+  .evaluation-reference .ev-action,
+  .evaluation-reference .ev-icon-btn,
+  .evaluation-reference .del-btn {
+    width: 35px !important;
+    height: 35px !important;
+    min-width: 35px !important;
+    min-height: 35px !important;
+    flex: 0 0 35px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Extension invisible de la cible tactile sans gonfler l'encombrement visuel (Loi de Fitts ≥ 44px) */
+  .evaluation-reference .ev-action::after,
+  .evaluation-reference .ev-icon-btn::after,
+  .evaluation-reference .del-btn::after {
+    content: '';
+    position: absolute;
+    inset: -4.5px;
+    border-radius: 12px;
+    pointer-events: auto;
+  }
+
+  .evaluation-reference .ev-action .ev-action__icon,
+  .evaluation-reference .del-btn .del-btn__icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .evaluation-reference .ev-action__count {
+    min-width: 16px;
+    min-height: 16px;
+    font-size: 10px;
+    inset-block-start: -5px;
+    inset-inline-end: -4px;
+    border-radius: 5px;
+  }
+
+  .evaluation-reference .ev-accordion__toggle {
+    min-height: 42px;
+    padding: 8px 12px;
+  }
+
+  .evaluation-reference .ev-accordion__label-text {
+    font-size: 14px;
   }
 }
+
+/* Optimisation dédiée pour l'environnement natif Android (Capacitor / Android WebView) */
+[data-platform='android'] .evaluation-reference .ev-board__rows > .ev-row {
+  min-height: 42px;
+  padding: 4px 8px;
+  column-gap: 6px;
+}
+
+[data-platform='android'] .evaluation-reference .ev-action,
+[data-platform='android'] .evaluation-reference .ev-icon-btn,
+[data-platform='android'] .evaluation-reference .del-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  flex: 0 0 36px !important;
+  border-radius: 8px !important;
+}
+
+[data-platform='android'] .evaluation-reference .ev-action .ev-action__icon,
+[data-platform='android'] .evaluation-reference .del-btn .del-btn__icon {
+  width: 16.5px !important;
+  height: 16.5px !important;
+}
+
+[data-platform='android'] .evaluation-reference .ev-row__date .ev-date-trigger {
+  min-height: 29px !important;
+  height: 29px !important;
+  font-size: 12px !important;
+  padding: 3px 11px !important;
+}
+
+[data-platform='android'] .evaluation-reference .ev-accordion__toggle {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+/* Short, stable feedback rather than an endlessly pulsing deadline. */
+.evaluation-reference .ev-action[data-due='today'] {
+  color: hsl(var(--warning-strong));
+  border-color: hsl(var(--warning-strong) / .4);
+  background: hsl(var(--warning) / .12);
+}
+.evaluation-reference .ev-row__date .ev-date-trigger span { font-weight: 500; font-size: 12px; }
+.evaluation-reference .ev-row__id h4 { min-height: 0; }
+.evaluation-reference .ev-action > .sr-only { overflow: hidden; }

@@ -3,18 +3,25 @@
 :root {
   --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Latin Modern Sans', 'Inter';
   --font-latin-display: 'Roboto Slab', 'Samsung Sharp Sans', 'Latin Modern Sans';
-  --font-latin-reading: 'Latin Modern Sans', 'SamsungOne', 'Inter';
+  --font-latin-reading: 'CMU Serif', 'Latin Modern Sans', 'SamsungOne', 'Inter';
   --font-arabic-body: 'Elgharib Hayyakum Allah', 'SamsungOne Arabic';
   --font-arabic-display: 'KOMission Black', 'SamsungOne Arabic';
   --font-arabic-secondary: 'Elgharib Hayyakum Allah Light', 'SamsungOne Arabic';
-  --font-samsung-arabic: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Samsung Sharp Sans', system-ui, -apple-system, sans-serif;
-  --font-user-input: var(--font-samsung-arabic);
-  --font-student-name: var(--font-samsung-arabic);
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --content-font-latin: var(--font-latin-reading);
+  --font-feedback: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', system-ui, sans-serif;
+  --content-font-latin: 'CMU Serif';
   --content-font-arabic: var(--font-arabic-body);
   --ui-font-ar: var(--font-arabic-body);
   --ui-font-latin: var(--font-latin-body);
+}
+
+/* Short operational messages use Samsung in Arabic, independently of headings. */
+[data-sonner-toaster]:lang(ar),
+[data-sonner-toast]:lang(ar),
+[data-sonner-toast]:lang(ar) :is([data-title], [data-description], button),
+.editor-sync-status:lang(ar) {
+  font-family: var(--font-feedback);
+  letter-spacing: normal;
 }
 
 /* Recalculer les alias sur chaque frontière de langue empêche une fenêtre
@@ -25,8 +32,6 @@
   --font-secondary: var(--font-sans);
   --font-secondary-weight: 400;
   --font-content: var(--font-latin-reading), var(--font-arabic-body), sans-serif;
-  --font-user-input: var(--font-samsung-arabic);
-  --font-student-name: var(--font-samsung-arabic);
 }
 
 :root:lang(ar), :where([lang|='ar' i]) {
@@ -35,8 +40,6 @@
   --font-secondary: var(--font-arabic-secondary), var(--font-latin-body), sans-serif;
   --font-secondary-weight: 300;
   --font-content: var(--font-arabic-body), var(--font-latin-reading), sans-serif;
-  --font-user-input: var(--font-samsung-arabic);
-  --font-student-name: var(--font-samsung-arabic);
 }
 
 /* Alias historiques partagés par les cartes et les utilitaires existants. */
@@ -56,27 +59,8 @@
 @layer base {
   body, [lang] { font-family: var(--font-sans); }
   :where(h1, h2, h3, h4, h5, h6, [data-ui-title]) { font-family: var(--font-display); }
-  :where(button, [role='button'], [role='menuitem']) {
+  :where(button, input, select, textarea, optgroup, [role='button'], [role='menuitem']) {
     font-family: var(--font-sans);
-  }
-  :where(input, select, textarea, optgroup, [contenteditable], [role='textbox']) {
-    font-family: var(--font-sans);
-  }
-  :root:lang(ar) :where(input, select, textarea, optgroup, [contenteditable], [role='textbox']),
-  :where([lang|='ar' i]) :where(input, select, textarea, optgroup, [contenteditable], [role='textbox']),
-  :where(input, select, textarea, optgroup, [contenteditable], [role='textbox']):is([dir="rtl"], [dir="auto"]) {
-    font-family: var(--font-samsung-arabic);
-  }
-  :root:lang(ar) :where(input, select, textarea)::placeholder,
-  :where([lang|='ar' i]) :where(input, select, textarea)::placeholder,
-  :where(input, select, textarea):is([dir="rtl"], [dir="auto"])::placeholder {
-    font-family: var(--font-samsung-arabic);
-  }
-  :where(.student-name, .notebook-student__name, [data-student-name]),
-  :root:lang(ar) :where(.student-name, .notebook-student__name, [data-student-name]),
-  :where([lang|='ar' i]) :where(.student-name, .notebook-student__name, [data-student-name]),
-  :where(.student-name, .notebook-student__name, [data-student-name]):is([dir="rtl"], [dir="auto"]) {
-    font-family: var(--font-samsung-arabic);
   }
   table { font-family: var(--font-content); }
   :where(label, legend, th, th button, .form-hint, [data-description], [data-slot='description'], [data-slot='badge'], .tone-chip) {

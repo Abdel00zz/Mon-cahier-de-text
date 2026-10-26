@@ -648,6 +648,10 @@ html[lang="ar"] .modal-header h2,
   /* ── Typographie des contenus du cahier ───────────────────────────────
      Une seule décision : la direction du tableau. Aucune classe de police
      optionnelle ne subsiste, un contenu ne peut plus contredire sa langue. */
+  [data-editor-table][data-content-direction="ltr"] {
+    font-family: 'CMU Serif', var(--font-latin-reading);
+  }
+
   [data-content-direction="ltr"] [data-row-content="true"],
   .content-font-latin {
     font-family: var(--content-font-latin);
@@ -971,7 +975,7 @@ html[lang="ar"] .modal-header h2,
    * (Netteté, lisibilité supérieure, alignement parfait et confort visuel pour les notes et descriptions).
    */
   [data-editor-table][dir="rtl"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection),
-  html[lang="ar"] [data-editor-table] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection),
+  html[lang="ar"] [data-editor-table] :is(th, [data-session-cell="remark"], .editor-type-remark, .editor-session-note),
   [data-editor-table] [dir="rtl"]:is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description),
   [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"],
   [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"] * {
@@ -3055,44 +3059,3 @@ mark.doc-hl .katex-display > .katex {
   .settings-toggle-row__icon { transition: none; }
   .settings-toggle-row.is-on .settings-toggle-row__icon .app-icon { animation: none; }
 }
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   Typographie Samsung pour le texte saisi par l'utilisateur en arabe
-   (Noms des élèves saisis, champs de formulaire, textarea, recherche, notes)
-   ══════════════════════════════════════════════════════════════════════════════ */
-:root {
-  --font-samsung-arabic: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Samsung Sharp Sans', system-ui, -apple-system, sans-serif;
-}
-
-/* 1. Tous les champs de saisie en version arabe ou avec direction RTL */
-html[lang="ar"] :is(input, textarea, select, [contenteditable="true"], [role="textbox"]),
-[dir="rtl"] :is(input, textarea, select, [contenteditable="true"], [role="textbox"]),
-:is(input, textarea, select, [contenteditable="true"], [role="textbox"]):is([dir="rtl"], [dir="auto"]) {
-  font-family: var(--font-samsung-arabic) !important;
-}
-
-html[lang="ar"] :is(input, textarea, select)::placeholder,
-[dir="rtl"] :is(input, textarea, select)::placeholder,
-:is(input, textarea, select):is([dir="rtl"], [dir="auto"])::placeholder {
-  font-family: var(--font-samsung-arabic) !important;
-}
-
-/* 2. Noms des élèves saisis par l'enseignant (Listes de classe, suivi, pointage, évaluations, badges) */
-:is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
-html[lang="ar"] :is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
-[dir="rtl"] :is(.student-name, .notebook-student__name, [data-student-name], .student-item-name, .roster-student-item, .roster-student-name),
-html[lang="ar"] :is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) bdi,
-[dir="rtl"] :is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) bdi,
-:is(.notebook-tracker, .tracking-dialog, .notebook-tracker-standalone, .evaluation-modal) [dir="rtl"] bdi,
-.student-name[dir="rtl"],
-.notebook-student__name[dir="rtl"] {
-  font-family: var(--font-samsung-arabic) !important;
-}
-
-/* 3. Classes utilitaires explicites */
-.font-samsung-arabic,
-.font-user-input,
-.font-student-name {
-  font-family: var(--font-samsung-arabic) !important;
-}
-

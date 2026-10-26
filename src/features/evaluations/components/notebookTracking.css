@@ -439,11 +439,6 @@
     line-height: 1.35;
 }
 
-:is([dir="rtl"], html[lang="ar"], :root:lang(ar)) :is(.student-name, .notebook-student__name),
-:is(.student-name, .notebook-student__name):is([dir="rtl"], [lang|="ar"]) {
-    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Samsung Sharp Sans', system-ui, -apple-system, sans-serif !important;
-}
-
 
 
 /* Bouton de retrait / suppression */

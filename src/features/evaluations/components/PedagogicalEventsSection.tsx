@@ -120,20 +120,19 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                 data-done={done ? 'true' : undefined}
               >
                 <div className="ev-row__id min-w-0">
-                  <h4 className="text-[13px] font-bold leading-tight text-foreground truncate" dir="auto">{title}</h4>
+                  <h4 className="text-[11.5px] font-semibold leading-tight text-foreground/90 truncate" dir="auto">{title}</h4>
                   {showType && <span className="tone-chip">{typeLabel}</span>}
                 </div>
-
 
                 <div className="ev-row__date">
                   {event.date ? (
                     <button
                       type="button"
                       onClick={() => setEditingDateEvent(event)}
-                      className="ev-date-trigger inline-flex items-center gap-1.5 px-1.5 py-1 text-xs font-semibold text-foreground transition-all cursor-pointer select-none hover:text-primary hover:bg-muted/40 rounded-md active:scale-95 border-0 shadow-none"
+                      className="ev-date-trigger inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold text-foreground select-none cursor-pointer transition-all hover:text-primary hover:bg-muted/50 rounded-full active:scale-95 border border-border/40 shadow-xs"
                       aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
                     >
-                      <span className="whitespace-nowrap tabular-nums text-xs font-bold">
+                      <span className="whitespace-nowrap tabular-nums text-[11px] font-bold">
                         {formatDateBadge(event.date, event.endDate)}
                       </span>
                     </button>
@@ -142,7 +141,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     <span className="ev-date-empty">{t('evaluations.noDateYet')}</span>
                   )}
                 </div>
-                <div className="ev-row__actions flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
+                <div className="ev-row__actions flex items-center justify-end gap-1 flex-nowrap shrink-0">
                   {docIndicator !== 'none' && (
                     <button
                       type="button"
@@ -151,10 +150,11 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                       data-doc-state={docIndicator}
                       aria-label={`${t('evaluations.doc.title', { activity: title })}${docStateSuffix}`}
+                      title={eventDocTooltip}
                       data-tippy-content={eventDocTooltip}
                     >
                       <ActionIcon name="document" />
-                      <span>{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
+                      <span className="sr-only">{t(docIndicator === 'attached' ? 'evaluations.doc.open' : 'evaluations.action.addContent')}</span>
                     </button>
                   )}
                   {kindPolicy.students && (
@@ -164,10 +164,11 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     className="ev-action shrink-0"
                     data-filled={names > 0 ? 'tone' : undefined}
                     aria-label={`${t(notebookCheck ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${title}${names > 0 ? ` · ${number.format(names)}` : ''}`}
+                    title={eventStudentsTooltip}
                     data-tippy-content={eventStudentsTooltip}
                   >
                     <ActionIcon name="students" />
-                    <span>{t('evaluations.action.students')}</span>
+                    <span className="sr-only">{t('evaluations.action.students')}</span>
                     {names > 0 && <span className="ev-action__count">{number.format(names)}</span>}
                   </button>
                   )}

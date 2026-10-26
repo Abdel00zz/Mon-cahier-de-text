@@ -37,61 +37,14 @@
 }
 
 /* Page navigation: shared keyboard model and transform-based selection indicator. */
-.settings-tab-navigation {
-  --rail-surface: hsl(var(--card));
-  min-width: 0;
-  width: 100%;
-  margin-inline: auto;
-  margin-bottom: 20px;
-  padding: 5px;
-  border: 1px solid hsl(var(--border) / 0.85);
-  border-radius: 16px;
-  background: hsl(var(--card));
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-}
-@media (min-width: 640px) {
-  .settings-tab-navigation {
-    width: fit-content;
-    max-width: 100%;
-  }
-}
-.settings-tab-navigation [role='tablist'] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-content: safe center;
-  padding: 0;
-  gap: 6px;
-  scroll-padding-inline: 12px;
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-}
-.settings-tab-navigation [role='tab'] {
-  min-height: 44px;
-  border-radius: 12px;
-  font-size: 13px;
-  padding-inline: 14px;
-  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.settings-tab-navigation [role='tab'] svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 1.6;
-}
-.settings-tab-navigation [role='tab'][aria-selected='true'] {
-  font-weight: 600;
-}
-.settings-tab-navigation [role='tablist'] > button {
-  scroll-snap-align: center;
-}
-.settings-tab-navigation [role='tab']:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: -2px;
-}
-.settings-page-section {
-  animation: settings-section-in 200ms cubic-bezier(.22,1,.36,1);
-  will-change: transform, opacity;
-}
+.settings-tab-navigation { min-width: 0; margin-bottom: 16px; padding: 4px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--card)); }
+.settings-tab-navigation [role='tablist'] { padding: 0; gap: 4px; scroll-padding-inline: 8px; }
+.settings-tab-navigation [role='tab'] { min-height: 44px; border-radius: 10px; font-size: 12px; }
+.settings-tab-navigation [role='tab'] svg { width: 17px; height: 17px; stroke-width: 1.4; }
+.settings-tab-navigation [role='tab'][aria-selected='true'] { font-weight: 600; }
+.settings-tab-navigation [role='tablist'] > button { scroll-snap-align: center; }
+.settings-tab-navigation [role='tab']:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.settings-page-section { animation: settings-section-in 180ms cubic-bezier(.22,1,.36,1); }
 @keyframes settings-section-in { from { opacity: .65; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
 .schedule-start-field { flex-wrap: wrap; }
 .schedule-start-field > label { font-size: 12px; font-weight: 500; }

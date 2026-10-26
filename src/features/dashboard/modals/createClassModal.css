@@ -1,60 +1,130 @@
-/* Interactions propres à la création de classe ; les couleurs viennent du thème. */
-.class-create-primary {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+/* Scoped surfaces and language-aware type roles. */
+.class-create-modal {
+  --create-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(var(--primary)) 6%);
+  --create-field: hsl(var(--card));
+  --create-edge: color-mix(in srgb, hsl(var(--border)) 85%, hsl(var(--primary)) 15%);
+  background: var(--create-surface);
+  font-family: var(--font-sans);
 }
-
-.class-create-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 25%, hsl(var(--primary-foreground) / 0.16) 50%, transparent 75%);
-  transform: translateX(-130%);
+.class-create-modal .class-create-header,
+.class-create-modal .class-create-actions { background: var(--create-surface); border: 0; }
+.class-create-modal .class-create-header { padding-bottom: 1rem; }
+.class-create-modal .class-create-body { padding-top: 0.25rem; background: transparent; }
+.class-create-modal .class-create-actions { border-top: 1px solid var(--create-edge); }
+.class-create-heading { display: flex; align-items: center; gap: 0.75rem; }
+.class-create-heading-icon {
+  display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem;
+  border-radius: 0.875rem; background: hsl(var(--primary) / 0.08); color: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary) / 0.12);
 }
-
-.class-create-primary > span {
-  position: relative;
-  z-index: 1;
+.class-create-heading-icon svg { width: 1.4rem; height: 1.4rem; stroke-width: 1.5; }
+.class-create-eyebrow {
+  display: block; color: hsl(var(--muted-foreground));
+  font: var(--font-secondary-weight) 0.75rem/1.5 var(--font-secondary); letter-spacing: normal;
 }
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .class-create-primary:hover::after {
-    transform: translateX(130%);
-    transition: transform 260ms ease-out;
-  }
+.class-create-title {
+  display: block; margin-top: 0.125rem; font: 600 1.25rem/1.45 var(--font-display);
+  color: hsl(var(--foreground)); text-wrap: balance;
 }
-
-.class-create-stepper {
-  transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
+.class-create-progress { padding-block: 0.25rem 0.5rem; }
+.class-create-progress ol { display: grid; gap: 0.5rem; }
+.class-create-progress li { position: relative; min-width: 0; padding-bottom: 0.5rem; }
+.class-create-progress li::after {
+  content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 2px; border-radius: 2px;
+  background: var(--create-edge);
 }
-
+.class-create-progress li[data-state='current']::after { background: hsl(var(--primary)); }
+.class-create-progress li[data-state='complete']::after { background: hsl(var(--primary) / 0.45); }
+.class-create-progress button, .class-create-progress-item {
+  display: flex; align-items: center; gap: 0.375rem; min-height: 44px; width: 100%; padding: 0.25rem;
+  border-radius: 0.5rem; text-align: start; color: hsl(var(--muted-foreground));
+}
+.class-create-progress button { cursor: pointer; }
+.class-create-progress li[data-state='current'] .class-create-progress-item { color: hsl(var(--primary)); }
+.class-create-progress-number {
+  display: grid; place-items: center; flex-shrink: 0; width: 1.5rem; height: 1.5rem;
+  border-radius: 0.5rem; background: hsl(var(--muted) / 0.8); font: 500 0.75rem/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.class-create-progress-number svg { width: 0.875rem; height: 0.875rem; stroke-width: 1.75; }
+[data-state='current'] > .class-create-progress-item .class-create-progress-number {
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+}
+.class-create-progress-label { font: 500 0.75rem/1.4 var(--font-secondary); overflow-wrap: anywhere; }
+.class-create-stage h3 { font: 500 0.9375rem/1.6 var(--font-secondary); color: hsl(var(--foreground)); }
+.class-create-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%;
+  min-height: 64px; padding: 0.875rem 1rem; border: 1px solid var(--create-edge); border-radius: 0.875rem;
+  background: var(--create-field); color: hsl(var(--foreground)); text-align: start;
+  font: 500 0.9375rem/1.55 var(--font-sans); cursor: pointer; touch-action: manipulation;
+  transition: transform 180ms cubic-bezier(0.2,0.8,0.2,1), background-color 180ms, border-color 180ms;
+}
+.class-create-option > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.class-create-option-mark {
+  display: grid; place-items: center; flex-shrink: 0; width: 1.625rem; height: 1.625rem;
+  color: hsl(var(--primary)); background: hsl(var(--primary) / 0.06); border-radius: 0.5rem;
+}
+.class-create-option-mark svg { width: 0.9375rem; height: 0.9375rem; stroke-width: 1.5; }
+.class-create-modal .class-create-choice { background: var(--create-field); border-color: var(--create-edge); font-weight: 500; }
+.class-create-modal .class-create-summary {
+  border: 1px solid var(--create-edge); background: var(--create-field); border-radius: 1rem; box-shadow: none;
+}
+.class-create-summary > div:first-child > p:first-child {
+  font: var(--font-secondary-weight) 0.75rem/1.5 var(--font-secondary); text-transform: none; letter-spacing: normal;
+}
+.class-create-summary > div:first-child > p:last-child { font: 600 1.125rem/1.6 var(--font-display); }
+.class-create-summary label { font-weight: var(--font-secondary-weight); font-size: 0.875rem; }
+.class-create-modal .class-create-stepper {
+  width: min(100%, 15rem); background: var(--create-surface); border-color: var(--create-edge); box-shadow: none;
+}
+/* Avoid mobile focus zoom without changing the surrounding type scale. */
+.class-create-modal input, .class-create-modal [role='combobox'] { font-size: 1rem; }
+.class-create-modal .class-create-primary {
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); min-height: 48px;
+  border: 1px solid hsl(var(--primary) / 0.4); border-radius: 0.875rem;
+  font: 500 0.9375rem/1.4 var(--font-sans); box-shadow: 0 2px 5px hsl(var(--primary) / 0.12);
+}
+.class-create-footer { flex-wrap: wrap; }
+.class-create-footer > button { touch-action: manipulation; }
+.class-create-footer > button:only-child { margin-inline-start: auto; }
+.class-create-error {
+  padding: 0.75rem 1rem; border: 1px solid hsl(var(--destructive) / 0.25);
+  background: hsl(var(--destructive) / 0.06); color: hsl(var(--destructive));
+  border-radius: 0.75rem; font-size: 0.875rem; line-height: 1.6;
+}
+.class-create-option:focus-visible, .class-create-progress button:focus-visible,
+.class-create-step:focus-visible, .class-create-choice:focus-visible {
+  outline: 2px solid hsl(var(--primary)); outline-offset: 3px;
+}
+@media (hover: hover) {
+  .class-create-option:hover { background: hsl(var(--primary) / 0.04); border-color: hsl(var(--primary) / 0.45); }
+  .class-create-progress button:hover { background: hsl(var(--primary) / 0.06); color: hsl(var(--foreground)); }
+}
 @media (prefers-reduced-motion: no-preference) {
-  .class-create-step-down:active { transform: rotate(-8deg) scale(0.94); }
-  .class-create-step-up:active { transform: rotate(8deg) scale(0.94); }
+  .class-create-stage { animation: class-create-enter 200ms cubic-bezier(0.2,0.8,0.2,1) both; }
+  .class-create-option:active { transform: scale(0.985); }
 }
-
-.class-create-step:focus-visible,
-.class-create-choice:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
+@keyframes class-create-enter {
+  from { opacity: 0; transform: translate3d(0,6px,0); }
+  to { opacity: 1; transform: translate3d(0,0,0); }
 }
-
-.class-create-footer > button:only-child {
-  margin-inline-start: auto;
-}
-
-@media (max-width: 379px) {
+@media (max-width: 479px) {
+  .class-create-modal .class-create-body { padding-inline: 1rem; padding-bottom: 1rem; }
+  .class-create-modal .class-create-actions { padding-inline: 1rem; }
+  .class-create-title { font-size: 1.125rem; }
+  .class-create-progress ol { gap: 0.25rem; }
+  .class-create-progress button, .class-create-progress-item {
+    flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 0.375rem; text-align: center;
+  }
+  .class-create-progress-label { font-size: 0.6875rem; }
+  .class-create-option { min-height: 56px; }
   .class-create-footer { gap: 0.375rem; }
   .class-create-footer > button { padding-inline: 0.625rem; }
-  .class-create-summary { padding: 0.875rem; }
+  .class-create-modal .class-create-primary { flex: 1 1 9rem; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .class-create-stepper,
-  .class-create-step,
-  .class-create-choice,
-  .class-create-primary::after { transition: none !important; }
+  .class-create-stage, .class-create-option, .class-create-step, .class-create-choice {
+    animation: none !important; transition: none !important; transform: none !important;
+  }
 }

@@ -291,7 +291,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
               {names.map((name) => (
                 <span
                   key={name}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border-subtle)] px-2.5 py-1 text-xs font-semibold text-[var(--text-dark)] shadow-2xs student-name font-samsung-arabic"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border-subtle)] px-2.5 py-1 text-xs font-semibold text-[var(--text-dark)] shadow-2xs"
                 >
                   <bdi>{name}</bdi>
                   <button
@@ -314,7 +314,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         </div>
         {!!roster?.names.length ? <div className="space-y-2">
           <input type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label={t('evaluations.notebook.search')}
-            placeholder={t('evaluations.notebook.search')} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 text-base font-user-input" />
+            placeholder={t('evaluations.notebook.search')} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 text-base" />
           <div className="grid max-h-64 gap-1 overflow-y-auto sm:grid-cols-2">
             {roster.names.filter(name => studentSearchKey(name).includes(studentSearchKey(query))).map(name => <label key={name}
               className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border bg-background px-3 py-2 text-sm hover:bg-muted">

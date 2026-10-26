@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, notifyConfigChanged, reloadSyncState, touchClassSyncMeta, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
 import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth/registrationSetup';
 import { toast } from 'sonner';
-import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../infrastructure/storage/accountWorkspace';
+import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY, WORKSPACE_SNAPSHOT_PREFIX } from '../infrastructure/storage/accountWorkspace';
 import { unsubscribeFromPush } from '../infrastructure/push/push';
 import { clearInboxBadge, enableInboxBadge } from '../infrastructure/push/appBadge';
 import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../infrastructure/sync/syncTransport';
@@ -44,6 +44,7 @@ interface AuthContextValue {
   register: (input: RegisterInput) => Promise<void>;
   completeWelcome: () => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AUTH_CACHE_KEY = 'authUser_v1';
@@ -355,6 +356,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await clearGoogleSignIn();
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    ++requestVersion.current;
+    initialRequest.current?.abort();
+    const cached = readCachedUser();
+    const owner = cached ? accountOwner(cached) : readWorkspaceScope()?.owner ?? null;
+    await Promise.race([
+      unsubscribeFromPush().catch(() => undefined),
+      new Promise<void>(resolve => setTimeout(resolve, 5_000)),
+    ]);
+    await requestSyncJson<{ ok?: boolean }>('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'deleteAccount' }),
+    }, 25_000);
+    setSessionNotice(null);
+    localStorage.setItem(SIGNED_OUT_KEY, 'true');
+    try {
+      switchAccountWorkspace(null, { legacyOwner: owner ?? undefined });
+      if (owner) {
+        localStorage.removeItem(WORKSPACE_SNAPSHOT_PREFIX + owner);
+        localStorage.removeItem(`cdt_native_reminders_v1_${owner}`);
+      }
+    } catch {
+      // ignore local cleanup error after remote deletion succeeded
+    }
+    cacheUser(null);
+    void clearInboxBadge();
+    reloadSyncState();
+    notifyClassesChanged();
+    notifyConfigChanged();
+    setUser(null);
+    setStatus('anonymous');
+    await clearGoogleSignIn();
+  }, []);
+
   useEffect(() => {
     const revision = readWorkspaceScope()?.revision;
     const handleStorage = (event: StorageEvent) => {
@@ -372,8 +409,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const value = useMemo(
-    () => ({ user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout }),
-    [user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout]
+    () => ({ user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout, deleteAccount }),
+    [user, status, sessionNotice, login, loginGoogle, register, completeWelcome, logout, deleteAccount]
   );
 
   const workspaceKey = `${user ? accountOwner(user) : 'anonymous'}:${readWorkspaceScope()?.revision ?? 'legacy'}`;

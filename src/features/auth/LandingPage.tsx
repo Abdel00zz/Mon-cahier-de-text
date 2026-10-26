@@ -6,26 +6,26 @@ import './landing.css';
 
 const COPY = {
   fr: {
-    title: 'Votre journée,', emphasis: 'plus simplement.',
+    eyebrow: 'Pensé pour votre quotidien d’enseignant', title: 'Votre journée,', emphasis: 'plus simplement.',
     detail: 'Vos classes, vos séances, votre planning. Tout votre cahier à portée de main.',
-    start: 'Compte enseignant gratuit et sans engagement.',
-    login: 'Se connecter', register: 'S’inscrire',
+    start: 'Votre classe d’abord. Votre compte ensuite.',
+    login: 'Se connecter', register: 'Créer mon cahier',
     reassurance: 'Sur téléphone, tablette et ordinateur', preview: 'Enseigner, préparer, avancer ensemble',
     features: [
       { title: 'Contenus prêts', detail: 'À adapter à vos séances.' },
-      { title: 'Séances datées', detail: 'Choisissez le contenu et sa date.' },
+      { title: 'Séances datées', detail: 'Sélectionnez le contenu, puis sa date.' },
       { title: 'Cahier synchronisé', detail: 'Entre vos appareils, avec votre compte.' },
     ],
   },
   ar: {
-    title: 'يومك الدراسي،', emphasis: 'بكل بساطة.',
-    detail: 'أقسامك وحصصك وجدولك. دفتر واضح، دائما في متناول يدك.',
-    start: 'حساب أستاذ مجاني بدون أي بطاقة بنكية.',
-    login: 'تسجيل الدخول', register: 'التسجيل',
+    eyebrow: 'مصمّم ليومك كأستاذ', title: 'يومك الدراسي،', emphasis: 'بكل بساطة.',
+    detail: 'أقسامك وحصصك وجدولك. دفتر واضح، دائماً في متناول يدك.',
+    start: 'قسمك أولاً، ثم حسابك لحفظه.',
+    login: 'تسجيل الدخول', register: 'إعداد دفتري',
     reassurance: 'على الهاتف والجهاز اللوحي والحاسوب', preview: 'نحضّر ونتقدّم معاً',
     features: [
       { title: 'محتوى جاهز', detail: 'تكيّفه مع حصصك.' },
-      { title: 'حصص مؤرّخة', detail: 'حدّد المحتوى وأسند إليه تاريخا.' },
+      { title: 'حصص مؤرّخة', detail: 'حدّد المحتوى وأسند إليه تاريخاً.' },
       { title: 'دفتر متزامن', detail: 'بين أجهزتك، عبر حسابك.' },
     ],
   },
@@ -40,6 +40,7 @@ export function LandingPage({ locale, onLogin, onRegister }: {
   return <main className="landing-editorial" dir={ar ? 'rtl' : 'ltr'}>
     <div className="landing-composition auth-view-enter">
       <section className="landing-copy">
+        <p className="landing-eyebrow"><span aria-hidden="true" />{copy.eyebrow}</p>
         <h1 tabIndex={-1}>{copy.title}<br /><span>{copy.emphasis}</span></h1>
         <p className="landing-detail">{copy.detail}</p>
         <div className="landing-actions">
@@ -48,20 +49,11 @@ export function LandingPage({ locale, onLogin, onRegister }: {
         </div>
         <p className="landing-start">{copy.start}</p>
       </section>
-      <section className="landing-gallery" aria-label={copy.preview}><TeacherTeamIllustration size={352} className="landing-teachers" /><p>{copy.reassurance}</p></section>
+      <section className="landing-gallery" aria-label={copy.preview}><TeacherTeamIllustration size={360} className="landing-teachers" /><p>{copy.reassurance}</p></section>
       <ul className="landing-features">
         {copy.features.map((feature, index) => {
           const Icon = FEATURE_ICONS[index];
-          return (
-            <li key={feature.title}>
-              <span className="landing-feature-icon"><Icon aria-hidden="true" /></span>
-              <div className="landing-feature-text">
-                <h2>{feature.title}</h2>
-                <span className="landing-feature-sep" aria-hidden="true">·</span>
-                <p>{feature.detail}</p>
-              </div>
-            </li>
-          );
+          return <li key={feature.title}><span className="landing-feature-icon"><Icon aria-hidden="true" /></span><div><h2>{feature.title}</h2><p>{feature.detail}</p></div></li>;
         })}
       </ul>
     </div>

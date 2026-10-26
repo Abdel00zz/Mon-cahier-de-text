@@ -1,7 +1,7 @@
 /** Structured bilingual help: plain text only, no HTML injection. */
 export interface GuideReference { chapterId: string; sectionId?: string }
 
-export interface GuideSection {
+interface GuideSection {
   /** Stable anchor shared by the guide and contextual assistant. */
   id?: string;
   title: string;

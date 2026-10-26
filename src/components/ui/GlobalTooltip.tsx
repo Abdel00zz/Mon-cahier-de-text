@@ -77,6 +77,11 @@ export const GlobalTooltip: React.FC = () => {
       const element = node instanceof HTMLElement ? node : null;
       if (!element || !element.isConnected) return null;
 
+      // Aucune infobulle sur les cartes et lignes de classe (le nom est déjà affiché en grand)
+      if (element.closest('.class-card, .class-list-item') && !element.closest('.class-card__menu, .class-list-item__menu')) {
+        return null;
+      }
+
       // 1. Source explicite prioritaire
       const target = element.closest<HTMLElement>('[data-tippy-content]') ?? null;
       if (target && target.isConnected && !PROTECTED_TAGS.has(target.tagName)) {

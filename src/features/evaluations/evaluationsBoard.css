@@ -42,10 +42,8 @@
        élargissait sa propre colonne et décalait sa date — plusieurs
        abscisses différentes pour la même colonne avant ce correctif. */
     --ev-id: minmax(0, 1fr);
-    /* La date est la donnée qu'on vient lire et régler : sa colonne est la
-       plus large des fixes, assez pour « 14/09/2026 » et son bouton d'action. */
-    --ev-date: 17rem;
-    --ev-actions: 21rem;
+    --ev-date: auto;
+    --ev-actions: minmax(0, 1fr);
 }
 /* Ligne d'en-tête : le vocabulaire des colonnes, en capitales discrètes. */
 .ev-board__head {
@@ -53,8 +51,8 @@
     grid-template-columns: var(--ev-id) var(--ev-date) var(--ev-actions);
     grid-template-areas: 'id date actions';
     align-items: center;
-    gap: .75rem;
-    padding: .5rem 1rem;
+    gap: .35rem .5rem;
+    padding: .25rem .65rem;
     border-bottom: 1px solid color-mix(in srgb, hsl(var(--border)) 76%, transparent);
     background: color-mix(in srgb, hsl(var(--muted)) 52%, transparent);
     color: hsl(var(--muted-foreground));
@@ -69,9 +67,9 @@
     grid-template-columns: var(--ev-id) var(--ev-date) var(--ev-actions);
     grid-template-areas: 'id date actions';
     align-items: center;
-    gap: .25rem .75rem;
-    min-height: 56px;
-    padding: .5rem 1rem;
+    gap: .25rem .5rem;
+    min-height: 36px;
+    padding: .25rem .65rem;
     transition: background-color 160ms ease;
 }
 /* Filet de séparation : une ligne sur deux bordures ne se lit pas. */
@@ -88,16 +86,16 @@
     background: color-mix(in srgb, hsl(var(--muted)) 58%, transparent);
 }
 
-.ev-row__id { grid-area: id; }
+.ev-row__id { grid-area: id; min-width: 0; }
 /* L'identité d'une activité empile un titre, sa nature écrite et sa note :
    l'espacement appartient au tableau, pas au balisage. */
 .ev-row__id .tone-chip { margin-top: .15rem; }
 .ev-row__id p { margin: .15rem 0 0; }
-.ev-row__date { grid-area: date; }
+.ev-row__date { grid-area: date; justify-self: center; text-align: center; }
 .ev-row__actions { grid-area: actions; justify-self: end; }
 .ev-board__head > :nth-child(1) { grid-area: id; }
-.ev-board__head > :nth-child(2) { grid-area: date; }
-.ev-board__head > :nth-child(3) { grid-area: actions; justify-self: end; }
+.ev-board__head > :nth-child(2) { grid-area: date; justify-self: center; text-align: center; }
+.ev-board__head > :nth-child(3) { grid-area: actions; justify-self: end; text-align: end; }
 
 /* Sous le titre : l'écart de date à aligner et, pour un devoir maison, ses
    deux dates (donné, corrigé). Une ligne discrète qui se replie au besoin. */
@@ -116,12 +114,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: .35rem;
-    min-height: 2.25rem;
-    min-width: 2.25rem;
-    padding-inline: .5rem;
-    border: 1px solid color-mix(in srgb, hsl(var(--border)) 88%, transparent);
-    border-radius: 6px;
+    gap: .25rem;
+    width: 28px;
+    height: 28px;
+    min-height: 28px;
+    min-width: 28px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent);
+    border-radius: 7px;
     background: hsl(var(--background) / .7);
     color: hsl(var(--muted-foreground));
     font-size: 11px;
@@ -130,9 +130,10 @@
     cursor: pointer;
     touch-action: manipulation;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+    box-sizing: border-box;
 }
-.ev-action:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
-.ev-action:active { transform: scale(.97); }
+.ev-action:hover { background: color-mix(in srgb, hsl(var(--muted)) 80%, transparent); color: hsl(var(--foreground)); }
+.ev-action:active { transform: scale(.92); }
 .ev-action:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
 .ev-action[data-filled='tone'] {
     color: hsl(var(--foreground));
@@ -168,26 +169,40 @@
     background: color-mix(in srgb, #76d59a 11%, transparent);
 }
 .dark .ev-action[data-filled='ok']:hover { background: color-mix(in srgb, #76d59a 18%, transparent); color: #76d59a; }
-/* Bouton-icône de ligne (restaurer une date, supprimer) : 36 px sur grand
-   écran, 44 px au doigt. */
-.ev-icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+/* Bouton-icône de ligne et corbeille : compacts 28px, proportionnés */
+.ev-icon-btn,
+.ev-row .del-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
     flex: none;
-    border: 1px solid color-mix(in srgb, hsl(var(--border)) 88%, transparent);
-    border-radius: 6px;
-    background: hsl(var(--background) / .7);
-    color: hsl(var(--muted-foreground));
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 85%, transparent) !important;
+    border-radius: 7px !important;
+    background: hsl(var(--background) / .7) !important;
+    color: hsl(var(--muted-foreground)) !important;
     cursor: pointer;
     touch-action: manipulation;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+    box-sizing: border-box;
 }
-.ev-icon-btn:hover { background: color-mix(in srgb, hsl(var(--muted)) 70%, transparent); border-color: hsl(var(--border)); color: hsl(var(--foreground)); }
-.ev-icon-btn:active { transform: scale(.92); }
-.ev-icon-btn:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
+.ev-icon-btn:hover,
+.ev-row .del-btn:hover { background: color-mix(in srgb, hsl(var(--muted)) 80%, transparent) !important; border-color: hsl(var(--border)) !important; color: hsl(var(--foreground)) !important; }
+.ev-icon-btn:active,
+.ev-row .del-btn:active { transform: scale(.92) !important; }
+.ev-icon-btn:focus-visible,
+.ev-row .del-btn:focus-visible { outline: 2px solid color-mix(in srgb, hsl(var(--primary)) 55%, transparent); outline-offset: 1px; }
+
+.ev-action__icon,
+.ev-row .del-btn__icon {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0;
+}
 
 /* Bouton Agenda / Événement programmé : cadre distinct et icône valorisée */
 .ev-icon-btn[data-agenda='true'] {
@@ -236,53 +251,65 @@
 /* Contrôles du tableau : posés à plat au repos, soulignés au survol et au
    focus. Rien à cliquer ne se cache, mais rien ne crie non plus. */
 .ev-row__actions {
+    grid-area: actions;
+    justify-self: end;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: .375rem;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
     min-width: 0;
 }
 .ev-row__date {
-    display: flex;
+    grid-area: date;
+    display: inline-flex;
     align-items: center;
-    gap: .25rem;
+    justify-content: center;
+    justify-self: center;
+    text-align: center;
     min-width: 0;
 }
 /* Date ajustée par le professeur : elle est écrite en accent, comme partout. */
 
-/* Pastille interactive de date (activité / période) : toute la colonne est
-   cliquable, le texte s'aligne sur l'en-tête (« DATE ») — aucune icône, la
-   date parle d'elle-même. */
+/* Pastille interactive de date (activité / période) : badge centré compact */
 .ev-date-trigger {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    height: 2.125rem;
+    justify-content: center;
+    height: 24px;
     padding-inline: .625rem;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    border-radius: 6px;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, hsl(var(--border)) 70%, transparent);
+    background: color-mix(in srgb, hsl(var(--background)) 85%, transparent);
+    color: hsl(var(--foreground));
     transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 .ev-date-trigger:hover {
     background: color-mix(in srgb, hsl(var(--muted)) 75%, transparent);
+    border-color: color-mix(in srgb, hsl(var(--primary)) 45%, transparent);
+    color: hsl(var(--primary));
 }
-/* Sans date : un constat discret, aligné sur la date qu'il remplace. Rien à cliquer. */
+/* Sans date : un constat discret, aligné au centre. */
 .ev-date-empty {
     display: inline-flex;
     align-items: center;
-    height: 2.125rem;
+    justify-content: center;
+    height: 24px;
     padding-inline: .625rem;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 600;
+    border-radius: 9999px;
+    border: 1px dashed color-mix(in srgb, hsl(var(--border)) 80%, transparent);
+    background: color-mix(in srgb, hsl(var(--muted)) 35%, transparent);
     color: hsl(var(--muted-foreground));
     cursor: default;
+    white-space: nowrap;
 }
 .ev-date-trigger:active {
-    transform: scale(0.97);
+    transform: scale(0.95);
 }
 .ev-date-trigger:focus-visible {
     outline: none;
@@ -297,41 +324,29 @@
 }
 
 @media (max-width: 1023px) {
-    /* Repli en deux lignes : l'en-tête de colonnes n'a plus de colonnes. */
     .ev-board__head { display: none; }
     .ev-board__rows > .ev-row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-areas:
-            'id id'
-            'date actions';
-        gap: .4rem .5rem;
-        padding: .65rem .75rem;
-        align-items: start;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas: 'id date actions';
+        gap: .35rem .5rem;
+        padding: .35rem .65rem;
+        align-items: center;
     }
-    .ev-row__id { align-self: center; min-height: 2rem; }
-    .ev-row__date { align-self: center; }
-    .ev-row__actions { align-self: center; }
-    /* Cibles tactiles : jamais moins de 44 px pour la date ni pour agir. */
-    .ev-date-trigger, .ev-date-empty { height: 2.75rem; }
-    .ev-action { min-height: 2.75rem; padding-inline: .75rem; font-size: 11.5px; }
-    .ev-icon-btn { width: 2.75rem; height: 2.75rem; }
+    .ev-row__id { align-self: center; min-width: 0; }
+    .ev-row__date { align-self: center; justify-self: center; }
+    .ev-row__actions { align-self: center; justify-self: end; }
 }
 
-/* Repli en trois lignes SOUS 640 px — date et commandes ne tiennent plus côte
-   à côte (mesuré : à 480 px, l'action la plus large laissait 62 px à la date,
-   soit un champ illisible). */
 @media (max-width: 639px) {
     .ev-board__rows > .ev-row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-areas:
-            'id id'
-            'date date'
-            'actions actions';
-        gap: .35rem .5rem;
-        padding: .6rem .7rem;
+        grid-template-columns: minmax(0, 1.2fr) auto auto;
+        grid-template-areas: 'id date actions';
+        gap: .25rem .4rem;
+        padding: .35rem .5rem;
     }
-    .ev-row__date { justify-self: stretch; }
-    .ev-row__actions { justify-self: stretch; }
+    .ev-row__id { justify-self: stretch; min-width: 0; }
+    .ev-row__date { justify-self: center; }
+    .ev-row__actions { justify-self: end; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -353,10 +368,10 @@
     grid-template-columns: var(--ev-id) var(--ev-actions);
     grid-template-areas: 'id actions';
     align-items: center;
-    gap: .25rem .75rem;
+    gap: .25rem .5rem;
     width: 100%;
-    min-height: 56px;
-    padding: .5rem 1rem;
+    min-height: 38px;
+    padding: .35rem .75rem;
     border: 0;
     background: none;
     text-align: start;
@@ -448,4 +463,49 @@
     color: hsl(var(--muted-foreground));
     font-size: 10.5px;
     font-weight: 650;
+}
+
+/* ── Optimisation mobile et Android téléphone : boutons un peu plus grands ── */
+@media (max-width: 768px), (pointer: coarse) {
+    .ev-board__rows > .ev-row {
+        min-height: 42px;
+        padding: 0.25rem 0.5rem;
+        gap: 0.25rem 0.4rem;
+    }
+    .ev-action,
+    .ev-icon-btn,
+    .ev-row .del-btn {
+        width: 35px !important;
+        height: 35px !important;
+        min-width: 35px !important;
+        min-height: 35px !important;
+        flex: 0 0 35px !important;
+        border-radius: 8px !important;
+    }
+    .ev-action__icon,
+    .ev-row .del-btn__icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    .ev-accordion__toggle {
+        min-height: 42px;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+[data-platform='android'] .ev-action,
+[data-platform='android'] .ev-icon-btn,
+[data-platform='android'] .ev-row .del-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    flex: 0 0 36px !important;
+    border-radius: 8px !important;
+}
+
+[data-platform='android'] .ev-action__icon,
+[data-platform='android'] .ev-row .del-btn__icon {
+    width: 16.5px !important;
+    height: 16.5px !important;
 }

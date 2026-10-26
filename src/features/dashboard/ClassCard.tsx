@@ -70,7 +70,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 type="button"
                 {...pressHandlers}
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: label.fullName })}
-                title={displayName}
                 className="class-card__open"
             />
             <span className="class-card__sheet" aria-hidden="true" />
@@ -84,7 +83,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         triggerClassName="class-card__menu"/>
                 </div>
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
-                    <h3 style={classTitleStyle(isRtl)} className="class-card__title" title={label.fullName}>
+                    <h3 style={classTitleStyle(isRtl)} className="class-card__title">
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true" className="class-card__name">
                             <span className="class-card__stream">

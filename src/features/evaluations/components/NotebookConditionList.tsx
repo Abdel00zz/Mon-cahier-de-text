@@ -52,7 +52,7 @@ function StudentRowView<T extends string>({ name, value, options, pendingLabel, 
         <legend className="sr-only">{name}</legend>
         <div className="card-main-line">
             <div className="notebook-student__identity student-text-group">
-                <span dir={textDirectionAttribute(name)} className="notebook-student__name student-name font-samsung-arabic">{name}</span>
+                <span dir={textDirectionAttribute(name)} className="notebook-student__name student-name">{name}</span>
             </div>
             {onGrade && <label className="grade-chip notebook-grade">
                 <span className="sr-only">{gradeLabel}</span>

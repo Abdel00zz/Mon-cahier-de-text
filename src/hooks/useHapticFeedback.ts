@@ -1,7 +1,24 @@
 import { useCallback, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 
-const nativeHaptics = () => import('@capacitor/haptics');
+type HapticsModule = typeof import('@capacitor/haptics');
+let cachedHaptics: HapticsModule | null = null;
+let hapticsPromise: Promise<HapticsModule> | null = null;
+
+const loadNativeHaptics = (): Promise<HapticsModule> => {
+  if (cachedHaptics) return Promise.resolve(cachedHaptics);
+  if (!hapticsPromise) {
+    hapticsPromise = import('@capacitor/haptics').then((mod) => {
+      cachedHaptics = mod;
+      return mod;
+    });
+  }
+  return hapticsPromise;
+};
+
+if (Capacitor.isNativePlatform()) {
+  void loadNativeHaptics().catch(() => {});
+}
 
 const patterns: Record<string, number | number[]> = {
   light: 8,
@@ -22,7 +39,13 @@ export const useHapticFeedback = () => {
 
   const impact = useCallback((style: 'light' | 'medium' | 'heavy' | 'soft' | 'rigid' = 'light') => {
     if (Capacitor.isNativePlatform()) {
-      void nativeHaptics().then(({ Haptics, ImpactStyle }) => Haptics.impact({ style: style === 'heavy' ? ImpactStyle.Heavy : style === 'medium' || style === 'rigid' ? ImpactStyle.Medium : ImpactStyle.Light })).catch(() => {});
+      const trigger = ({ Haptics, ImpactStyle }: HapticsModule) =>
+        Haptics.impact({ style: style === 'heavy' ? ImpactStyle.Heavy : style === 'medium' || style === 'rigid' ? ImpactStyle.Medium : ImpactStyle.Light });
+      if (cachedHaptics) {
+        void trigger(cachedHaptics).catch(() => {});
+      } else {
+        void loadNativeHaptics().then(trigger).catch(() => {});
+      }
       return;
     }
     if (!hasVibrate.current) return;
@@ -31,7 +54,13 @@ export const useHapticFeedback = () => {
 
   const notification = useCallback((type: 'success' | 'warning' | 'error') => {
     if (Capacitor.isNativePlatform()) {
-      void nativeHaptics().then(({ Haptics, NotificationType }) => Haptics.notification({ type: type === 'success' ? NotificationType.Success : type === 'warning' ? NotificationType.Warning : NotificationType.Error })).catch(() => {});
+      const trigger = ({ Haptics, NotificationType }: HapticsModule) =>
+        Haptics.notification({ type: type === 'success' ? NotificationType.Success : type === 'warning' ? NotificationType.Warning : NotificationType.Error });
+      if (cachedHaptics) {
+        void trigger(cachedHaptics).catch(() => {});
+      } else {
+        void loadNativeHaptics().then(trigger).catch(() => {});
+      }
       return;
     }
     if (!hasVibrate.current) return;
@@ -40,7 +69,12 @@ export const useHapticFeedback = () => {
 
   const selection = useCallback(() => {
     if (Capacitor.isNativePlatform()) {
-      void nativeHaptics().then(({ Haptics }) => Haptics.selectionChanged()).catch(() => {});
+      const trigger = ({ Haptics }: HapticsModule) => Haptics.selectionChanged();
+      if (cachedHaptics) {
+        void trigger(cachedHaptics).catch(() => {});
+      } else {
+        void loadNativeHaptics().then(trigger).catch(() => {});
+      }
       return;
     }
     if (!hasVibrate.current) return;

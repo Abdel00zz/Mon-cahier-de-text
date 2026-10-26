@@ -174,7 +174,8 @@
        local('SamsungOneArabic'),
        local('SamsungOneArabic-400'),
        url('/fonts/SamsungOneArabic-400.ttf') format('truetype'),
-       url('/SamsungOneArabic-400.ttf') format('truetype');
+       url('/SamsungOneArabic-400.ttf') format('truetype'),
+       url('/maghribi-font-3.ttf') format('truetype');
   font-style: normal; font-weight: 300 900; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
 }
@@ -212,4 +213,36 @@
        local('SamsungSharpSans-Bold');
   font-style: normal; font-weight: 600 900; font-display: swap;
   unicode-range: U+0000-024F, U+0300-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F;
+}
+
+@font-face {
+  font-family: 'CMU Serif';
+  src: url('../../node_modules/computer-modern/fonts/cmu-serif-500-roman.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU Serif';
+  src: url('../../node_modules/computer-modern/fonts/cmu-serif-700-roman.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU Serif';
+  src: url('../../node_modules/computer-modern/fonts/cmu-serif-500-italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU Serif';
+  src: url('../../node_modules/computer-modern/fonts/cmu-serif-700-italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
 }

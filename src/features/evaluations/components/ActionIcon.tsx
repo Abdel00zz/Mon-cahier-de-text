@@ -17,5 +17,5 @@ export type ActionIconName = keyof typeof ICONS;
 
 export function ActionIcon({ name }: { name: ActionIconName }) {
   const Icon = ICONS[name];
-  return <Icon size={16} className="ev-action__icon" aria-hidden="true" />;
+  return <Icon size={14} className="ev-action__icon" aria-hidden="true" />;
 }

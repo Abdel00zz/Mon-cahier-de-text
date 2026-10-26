@@ -76,7 +76,7 @@
     padding: 10px 12px;
   }
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .date-card > * { margin-block: 0; }
-  html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .content-date-fields { width: min(100%, 358px); gap: 6px; }
+  html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .content-date-fields { width: 100%; gap: 6px; }
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .content-date-field { grid-template-columns: minmax(0, 1fr) 168px; gap: 10px; }
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .content-fields input[type="date"] { padding-inline: 10px; border-radius: 9px; font-size: 13px; }
 }

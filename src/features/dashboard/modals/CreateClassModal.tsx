@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { parseStudentNames } from '@/domain/evaluations/studentRoster';
 import { ClassRosterFields } from './ClassRosterFields';
+import { ClassCreationProgress } from './ClassCreationProgress';
 import type { ClassRoster } from '@/types';
 import type { ClassInfo, Cycle } from '@/types';
 import { Modal } from '@/components/ui/modal';
@@ -53,7 +54,7 @@ const COPY: Record<AppLocale, {
   fr: {
     createTitle: 'Créer une classe', editTitle: 'Modifier la classe',
     editDescription: 'Modifiez uniquement les informations utiles.',
-    cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer', save: 'Enregistrer', saving: 'Enregistrement…',
+    cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer la classe', save: 'Enregistrer', saving: 'Enregistrement…',
     cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe', branch: 'Filière', group: 'N° de groupe', customLevel: 'Nom du niveau',
     groupHint: 'Numéro libre proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.', decrementGroup: 'Groupe libre précédent', incrementGroup: 'Groupe libre suivant',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
@@ -64,7 +65,7 @@ const COPY: Record<AppLocale, {
   ar: {
     createTitle: 'إضافة قسم', editTitle: 'تعديل القسم',
     editDescription: 'عدّل المعلومات الضرورية فقط.',
-    cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء', save: 'حفظ', saving: 'جارٍ الحفظ…',
+    cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء القسم', save: 'حفظ', saving: 'جارٍ الحفظ…',
     cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم', branch: 'الشعبة', group: 'رقم الفوج', customLevel: 'اسم المستوى',
     groupHint: 'يُقترح أول رقم متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.', decrementGroup: 'الفوج المتاح السابق', incrementGroup: 'الفوج المتاح التالي',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
@@ -75,7 +76,7 @@ const COPY: Record<AppLocale, {
   en: {
     createTitle: 'Create class', editTitle: 'Edit class',
     editDescription: 'Edit only the information you need.',
-    cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create', save: 'Save', saving: 'Saving…',
+    cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create class', save: 'Save', saving: 'Saving…',
     cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class', branch: 'Stream', group: 'Group number', customLevel: 'Level name',
     groupHint: 'First free number proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.', decrementGroup: 'Previous free group', incrementGroup: 'Next free group',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
@@ -95,9 +96,10 @@ const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> =
   <button
     type="button"
     onClick={onClick}
-    className="group flex min-h-[48px] sm:min-h-[58px] w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-background px-3.5 py-2.5 sm:px-5 sm:py-3.5 text-center text-sm font-semibold text-card-foreground shadow-[0_1px_4px_rgba(63,58,52,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-all duration-200 hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]"
+    className="class-create-option"
   >
-    <span className="min-w-0 flex-1 leading-snug text-center font-bold tracking-normal">{children}</span>
+    <span>{children}</span>
+    <span className="class-create-option-mark" aria-hidden="true"><Plus /></span>
   </button>
 );
 
@@ -131,6 +133,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const [currentStep, setStep] = useState<WizardStep>(initial.step);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const submittingRef = useRef(false);
   const [section, setSection] = useState(initialSection);
   const [rosterBase] = useState(() => roster?.names ?? []);
@@ -172,8 +175,6 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const needsBranchChoice = !customMode && cycle !== 'college' && (activeLevelGroup ? activeLevelGroup.levels.length > 1 : levelGroups.some(item => item.levels.length > 1));
   const steps = useMemo<WizardStep[]>(() => [...(hasCycleChoice ? ['cycle'] as WizardStep[] : []), 'level', ...(needsBranchChoice ? ['branch'] as WizardStep[] : []), 'details'], [hasCycleChoice, needsBranchChoice]);
   const stepIndex = Math.max(0, steps.indexOf(step));
-  const stepCount = steps.length;
-  const progressPercent = stepCount > 1 ? (stepIndex / (stepCount - 1)) * 100 : 0;
   const effectiveLevel = customMode ? customLevel.trim() : level;
   const effectiveSubject = customMode ? (customSubject.trim() || subject) : subject;
   const normalizedGroup = normalizeGroupNumber(group);
@@ -249,13 +250,14 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSaveError(null);
     if (rosterSection) {
       if (submittingRef.current || parsedRoster.invalid || !rosterDirty || !onRosterSave) return;
       submittingRef.current = true; setSubmitting(true);
       try {
         await onRosterSave(rosterBase, parsedRoster.names);
         haptics.onConfirm(); toast.success(t('classRoster.saved')); onClose();
-      } catch { haptics.onError(); toast.error(t('common.error')); }
+      } catch { haptics.onError(); setSaveError(t('common.error')); }
       finally { submittingRef.current = false; setSubmitting(false); }
       return;
     }
@@ -293,7 +295,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       onClose();
     } catch {
       haptics.onError();
-      toast.error(locale === 'ar' ? 'تعذّر حفظ القسم. حاول مرة أخرى.' : locale === 'en' ? 'Unable to save the class. Please try again.' : 'Impossible d’enregistrer la classe. Réessayez.');
+      setSaveError(locale === 'ar' ? 'تعذّر حفظ القسم. بياناتك محفوظة هنا، حاول مجدداً.' : locale === 'en' ? 'Could not save. Your entries are still here. Please try again.' : 'Enregistrement impossible. Vos saisies sont conservées ici. Réessayez.');
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -366,22 +368,21 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   return (
     <>
       <Modal isOpen={isOpen} onClose={requestClose} blockDismiss={submitting} hideClose={submitting} title={
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background/80 text-foreground">
-            <Users className="h-8 w-8" />
+        <div className="class-create-heading">
+          <span className="class-create-heading-icon" aria-hidden="true">
+            <Users />
           </span>
           <span className="min-w-0">
-            <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{hasCycleChoice ? copy.guidedLabel : copy.cycleLabels[cycle]}</span>
-            <span className="mt-0.5 block text-lg sm:text-xl font-bold tracking-tight text-foreground">{editingClass ? copy.editTitle : copy.createTitle}</span>
+            <span className="class-create-eyebrow">{hasCycleChoice ? copy.guidedLabel : copy.cycleLabels[cycle]}</span>
+            <span className="class-create-title">{editingClass ? copy.editTitle : copy.createTitle}</span>
           </span>
         </div>
-      } maxWidth="xl" mobileDetents={CLASS_MODAL_DETENTS}
+      } maxWidth="md" mobileDetents={CLASS_MODAL_DETENTS}
         elevation="high"
-        glow={isFormValid ? 'success' : undefined}
-        className="sm:max-w-2xl sm:rounded-2xl"
-        headerClassName="border-b border-border/70 bg-background"
-        bodyClassName="bg-muted/20 px-4 py-4 sm:px-7 sm:py-6"
-        footerClassName="border-t border-border/70 bg-background"
+        className="class-create-modal sm:max-w-xl sm:rounded-3xl"
+        headerClassName="class-create-header"
+        bodyClassName="class-create-body"
+        footerClassName="class-create-actions"
         footer={<fieldset disabled={submitting} className="class-create-footer flex w-full min-w-0 items-center gap-2">
           {editingClass && onDelete && !rosterSection && <AnimatedTrashButton
             label={t('dashboard.delete')}
@@ -391,7 +392,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             className="h-11 shrink-0 rounded-xl px-3 text-destructive hover:bg-destructive/5 hover:text-destructive sm:me-auto sm:px-4"
           />}
           {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold sm:me-auto sm:px-4 sm:text-sm">{copy.back}</Button>}
-          <Button type="button" variant="outline" onClick={requestClose} className="h-11 shrink-0 rounded-xl border-border bg-background px-3 text-xs font-semibold shadow-xs sm:ms-auto sm:px-4 sm:text-sm">{copy.cancel}</Button>
+          <Button type="button" variant="ghost" onClick={requestClose} className="class-create-cancel h-11 shrink-0 rounded-xl px-3 text-sm sm:ms-auto sm:px-4">{copy.cancel}</Button>
           {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="class-create-primary h-11 min-w-0 flex-1 px-3 text-xs font-bold shadow-sm sm:flex-none sm:px-5 sm:text-sm">{copy.next}</Button>}
           {(editingClass || step === 'details') && <AnimatedSubmitButton
             type="submit"
@@ -399,6 +400,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             disabled={submitting || (rosterSection ? !rosterDirty || parsedRoster.invalid : !isFormValid || (rosterDirty && parsedRoster.invalid))}
             aria-busy={submitting}
             isSubmitting={submitting}
+            icon={editingClass ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             label={editingClass ? copy.save : copy.create}
             loadingLabel={copy.saving}
             className="class-create-primary h-11 min-w-0 flex-1 rounded-xl px-3 text-xs font-bold shadow-sm sm:flex-none sm:px-5 sm:text-sm"
@@ -412,51 +414,13 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           </button>)}
         </div>}
         <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-5 text-start">
+          {saveError && <p role="alert" className="class-create-error">{saveError}</p>}
           <fieldset disabled={submitting} className="min-w-0 space-y-5">
-          {!editingClass && <nav className="class-create-progress relative overflow-hidden rounded-xl border border-border bg-background/80 px-3 py-3 shadow-[0_2px_12px_rgba(63,58,52,0.04)] dark:shadow-[0_2px_16px_rgba(0,0,0,0.25)] sm:px-6 sm:py-5" aria-label={copy.guidedLabel}>
-            <div className="relative">
-              {/* Ligne horizontale continue servant de fil conducteur */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-4 sm:top-5 -translate-y-1/2 z-0 h-[3px] rounded-full bg-border/85"
-                style={{
-                  insetInlineStart: `calc(100% / (${stepCount} * 2))`,
-                  width: `calc(100% * (${stepCount} - 1) / ${stepCount})`,
-                }}
-              >
-                {/* La progression réalisée et les étapes terminées partagent le vert de succès. */}
-                <div
-                  className="absolute inset-y-0 start-0 rounded-full bg-success shadow-[0_0_8px_hsl(var(--success)/0.14)] transition-[width] duration-250 ease-out motion-reduce:transition-none"
-                  style={{
-                    width: `${progressPercent}%`,
-                  }}
-                />
-              </div>
+          {!editingClass && <ClassCreationProgress steps={steps} currentIndex={stepIndex}
+            label={copy.guidedLabel} stepLabel={stepLabel}
+            onReturn={previous => { haptics.onSelect(); setStep(previous); }} />}
 
-              <ol className="relative z-10 grid" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
-                {steps.map((item, index) => {
-                  const isComplete = index < stepIndex;
-                  const isActive = index === stepIndex;
-                  return <li key={item} className="relative flex min-w-0 flex-col items-center text-center" aria-current={isActive ? 'step' : undefined}>
-                    <span className={cn(
-                      'relative z-10 flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 motion-reduce:transition-none',
-                      isComplete && 'border-2 border-success bg-success text-primary-foreground shadow-[0_2px_8px_hsl(var(--success)/0.12)] ring-2 ring-success/20',
-                      isActive && 'border-2 border-primary bg-background text-primary text-sm font-extrabold shadow-[0_2px_12px_hsl(var(--primary)/0.1)] ring-4 ring-primary/20 dark:ring-primary/30 before:absolute before:inset-0 before:rounded-full before:bg-primary/[0.08]',
-                      !isComplete && !isActive && 'border border-border/90 bg-background text-muted-foreground/75 font-semibold',
-                    )}>
-                      {isComplete ? <Check className="h-4.5 w-4.5 stroke-[2.8]" /> : <span className="relative z-10">{index + 1}</span>}
-                    </span>
-                    <span className={cn(
-                      'mt-1.5 sm:mt-2.5 max-w-full truncate px-1 text-[10px] leading-tight tracking-tight transition-colors sm:text-xs',
-                      isActive ? 'font-bold text-primary' : isComplete ? 'font-semibold text-foreground/90' : 'font-medium text-muted-foreground/75',
-                    )}>{stepLabel(item)}</span>
-                  </li>;
-                })}
-              </ol>
-            </div>
-          </nav>}
-
-          {!editingClass && <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="outline-none animate-fade-in motion-reduce:animate-none">
+          {!editingClass && <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="class-create-stage outline-none">
           {step === 'cycle' && hasCycleChoice && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="grid gap-2 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'border-primary/55 bg-primary/5 text-foreground' : 'border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/40')}><span>{copy.cycleLabels[item]}</span>{item === cycle && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />}</button>)}</div></section>}
 
           {step === 'level' && <section className="space-y-3">
