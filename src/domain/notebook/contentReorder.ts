@@ -14,8 +14,44 @@ export interface ContentMovePlan {
   selection: Indices[];
 }
 
+const ASSESSMENT_AND_CORRECTION_TYPES = new Set<string>([
+  'evaluation_diagnostic',
+  'devoir_maison',
+  'controle_continu',
+  'controle_court',
+  'controle_global',
+  'oral',
+  'correction_devoir_maison',
+  'correction_controle_continu',
+  'examen_blanc',
+  'olympiade',
+  'concours',
+  'colle',
+]);
+
+const hasNestedChildren = (item: unknown): boolean => {
+  if (typeof item !== 'object' || item === null) return false;
+  const candidate = item as { items?: unknown[]; sections?: unknown[] };
+  return (Array.isArray(candidate.items) && candidate.items.length > 0)
+    || (Array.isArray(candidate.sections) && candidate.sections.length > 0);
+};
+
+export const isAssessmentOrCorrection = (item: unknown): boolean =>
+  typeof item === 'object'
+  && item !== null
+  && ASSESSMENT_AND_CORRECTION_TYPES.has(String((item as { type?: unknown }).type))
+  && !hasNestedChildren(item);
+
+/** Éléments autonomes pouvant se déplacer aussi bien dans un chapitre/paragraphe qu'à la racine (« hors chapitre »). */
+export const isRootCapableContent = (item: unknown): boolean =>
+  isFreeContent(item) || isAssessmentOrCorrection(item);
+
+export const isTransferableContent = (item: unknown): boolean =>
+  isExercise(item) || isRootCapableContent(item);
+
 /** The supplied content target stays atomic. Exercise-only blocks can enter any
- * paragraph/chapter, including an empty container without an items list. */
+ * paragraph/chapter; root-capable blocks (free lines, evaluations, corrections)
+ * can also move into any paragraph/chapter OR out to root ("hors chapitre"). */
 export function planContentDrop(
   data: LessonsData,
   groups: ContentEditTargets,
@@ -30,19 +66,52 @@ export function planContentDrop(
   const source = getContiguousSiblingBlock(data, sourceGroup);
   const target = getContiguousSiblingBlock(data, targetGroup);
   if (!source || !target) return null;
-  if (source.parent !== target.parent) {
-    if (source.anchor.itemIndex === undefined || !source.parent.slice(source.start, source.start + source.count).every(isExercise)) return null;
+
+  const sourceItems = source.parent.slice(source.start, source.start + source.count);
+  const sourceAtRoot = source.anchor.sectionIndex === undefined && source.anchor.itemIndex === undefined;
+  const targetAtRoot = target.anchor.sectionIndex === undefined && target.anchor.itemIndex === undefined;
+  const targetIsChapter = targetAtRoot && data[target.anchor.chapterIndex]?.type === 'chapter';
+  const targetIsRootBlock = targetAtRoot && !targetIsChapter;
+  const targetIsContainer = target.anchor.itemIndex === undefined && (!targetAtRoot || targetIsChapter);
+
+  const allRootCapable = sourceItems.length > 0 && sourceItems.every(isRootCapableContent);
+  const canTransferToContainer = sourceItems.length > 0 && (
+    (source.anchor.itemIndex !== undefined && sourceItems.every(isExercise))
+    || allRootCapable
+  );
+  const rootIntoChapter = sourceAtRoot && allRootCapable && targetIsChapter && side === 'after';
+
+  // 1. Sortie d'un chapitre/paragraphe vers la racine (« hors chapitre ») :
+  //    soit avant un titre de chapitre, soit avant/après un bloc déjà hors chapitre.
+  if (!sourceAtRoot && (targetIsRootBlock || (targetIsChapter && side === 'before' && allRootCapable))) {
+    if (!allRootCapable) return null;
+    if (targetIsChapter && target.count !== 1) return null;
+    const index = target.start + (targetIsRootBlock && side === 'after' ? target.count : 0);
+    return {
+      source: { anchor: source.anchor, parent: source.parent, start: source.start, count: source.count },
+      container: null,
+      index,
+      selection: Array.from({ length: source.count }, (_, offset) => ({ chapterIndex: index + offset })),
+    };
+  }
+
+  // 2. Transfert vers un conteneur (chapitre, section, sous-section) ou autour d'une feuille :
+  if (source.parent !== target.parent || rootIntoChapter) {
+    if (!canTransferToContainer) return null;
     const intoContainer = target.anchor.itemIndex === undefined;
-    if (intoContainer && (target.count !== 1 || (getIndexField(target.anchor) === 'chapterIndex' && data[target.anchor.chapterIndex]?.type !== 'chapter'))) return null;
+    if (intoContainer && (target.count !== 1 || !targetIsContainer)) return null;
     const container = intoContainer ? target.anchor : withoutDeepestIndex(target.anchor);
     const holder = resolveContainer(data, container);
     if (!holder) return null;
     const index = intoContainer ? 0 : target.start + (side === 'after' ? target.count : 0);
     if (holder.items === source.parent && index === source.start) return null;
+    const shiftedContainer = sourceAtRoot && container.chapterIndex > source.start
+      ? { ...container, chapterIndex: container.chapterIndex - source.count }
+      : container;
     return {
       source: { anchor: source.anchor, parent: source.parent, start: source.start, count: source.count },
       container, index,
-      selection: Array.from({ length: source.count }, (_, offset) => ({ ...container, itemIndex: index + offset })),
+      selection: Array.from({ length: source.count }, (_, offset) => ({ ...shiftedContainer, itemIndex: index + offset })),
     };
   }
   if (source.start < target.start + target.count && target.start < source.start + source.count) return null;
@@ -226,13 +295,13 @@ export function planContentRelocation(
 
   // Ordinary content uses sibling moves. Reject it before flattening the whole
   // notebook (this path runs twice for every selection, once per direction).
-  if (indices.some(index => !isFreeContent(findItem(data, index).item))) return null;
+  if (indices.some(index => !isRootCapableContent(findItem(data, index).item))) return null;
 
   const rows = buildLessonRows(data);
   const byKey = new Map(rows.map(row => [row.key, row]));
   const selectedRows = indices.map(index => byKey.get(indicesKey(index)));
-  // Réservé aux lignes libres : un contenu typé garde la permutation stricte.
-  if (selectedRows.some(row => !row || !isFreeContent(row.data))) return null;
+  // Réservé aux lignes autonomes (lignes libres, évaluations, corrections) : un contenu de cours garde la permutation stricte.
+  if (selectedRows.some(row => !row || !isRootCapableContent(row.data))) return null;
 
   const block = getContiguousSiblingBlock(data, indices);
   if (!block) return null;
@@ -357,8 +426,8 @@ export const isExercise = (item: unknown): boolean =>
   typeof item === 'object' && item !== null && [EXERCISE_TYPE, 'exercise', 'exo', 'exercice corrigé'].includes(String((item as { type?: unknown }).type).toLowerCase());
 export interface ContentTransferPlan {
   source: { anchor: Indices; parent: unknown; start: number; count: number };
-  /** Conteneur d'arrivée (chemin sans itemIndex) et position d'insertion dans sa liste `items`. */
-  container: Indices;
+  /** Conteneur d'arrivée (chemin sans itemIndex), ou `null` pour la racine (« hors chapitre »). */
+  container: Indices | null;
   index: number;
   /** Coordonnées de la sélection après le transfert. */
   selection: Indices[];
@@ -433,20 +502,20 @@ export function planContentTransfer(
   };
 }
 
-/** Retire le bloc de sa liste et l'insère dans le conteneur d'arrivée, en une seule transaction.
+/** Retire le bloc de sa liste et l'insère dans le conteneur d'arrivée (ou à la racine), en une seule transaction.
  *  La cible est résolue AVANT le retrait, et le bloc revient à sa place au moindre incident. */
 export function applyContentTransfer(draft: Draft<LessonsData>, plan: ContentTransferPlan): boolean {
   const sourceParent = findItem(draft, plan.source.anchor).parent;
   const resolvedSource = isDraft(sourceParent) ? original(sourceParent) : sourceParent;
   if (!Array.isArray(sourceParent) || resolvedSource !== plan.source.parent) return false;
-  const holder = resolveContainer(draft, plan.container);
-  if (!holder) return false;
+  const holder = plan.container ? resolveContainer(draft, plan.container) : null;
+  if (plan.container && !holder) return false;
 
   const removed = sourceParent.splice(plan.source.start, plan.source.count);
   const restore = () => { sourceParent.splice(plan.source.start, 0, ...removed); return false; };
   if (removed.length !== plan.source.count) return restore();
   try {
-    const list = (holder.items ??= []);
+    const list = holder ? (holder.items ??= []) : (draft as unknown[]);
     list.splice(Math.min(plan.index, list.length), 0, ...removed);
     return true;
   } catch {

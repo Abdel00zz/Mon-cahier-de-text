@@ -376,7 +376,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               >
                               {displayName}
               </button>
-              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && (rawDate || dueDateISO))) && (
+              {((link.status === 'mismatch' && link.entry?.date) || (a.type === 'maison' && dueDateISO)) && (
                 <div className="ev-row__meta">
                   {link.status === 'mismatch' && link.entry?.date && (
                     <button
@@ -392,9 +392,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     >
                       <span>{t('evaluations.align.action', { date: ltrIsolate(formatSingleDate(link.entry.date)) })}</span>
                     </button>
-                  )}
-                  {a.type === 'maison' && rawDate && (
-                    <span className="ev-row__note">{t('evaluations.homework.givenOn', { date: ltrIsolate(formatSingleDate(rawDate)) })}</span>
                   )}
                   {a.type === 'maison' && dueDateISO && (
                     <span className="ev-row__note">{dueDateISO === today ? t('evaluations.homework.dueToday') : t('evaluations.homework.dueOn', { date: ltrIsolate(formatSingleDate(dueDateISO)) })}</span>
@@ -427,7 +424,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   className="ev-action shrink-0"
                   data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                   data-doc-state={docIndicator}
-                  title={docTooltip}
                   data-tippy-content={docTooltip}
                   aria-label={`${t('evaluations.doc.title', { activity: displayName })}${docStateSuffix}`}
                 >
@@ -443,7 +439,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   onClick={() => setAbsencesFor(link)}
                   className="ev-action shrink-0"
                   data-filled={absents.length > 0 ? 'danger' : undefined}
-                  title={absentsTooltip}
                   data-tippy-content={absentsTooltip}
                   aria-label={absents.length > 0
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
@@ -463,7 +458,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   type="button"
                   onClick={() => setOralFor(link)}
                   className="ev-action shrink-0"
-                  title={oralTooltip}
                   data-tippy-content={oralTooltip}
                   aria-label={`${t(a.type === 'colle' ? 'evaluations.colle.title' : a.type === 'oral' ? 'evaluations.oral.title' : 'evaluations.track.title')} — ${displayName}`}
                 >
@@ -499,7 +493,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 data-danger="true"
                 onClick={() => setDeletingAssessment({ id: a.id, name: displayName })}
                 className="ev-icon-btn shrink-0"
-                title={t('evaluations.tip.deleteForever', { name: displayName })}
+                data-tippy-content={t('evaluations.tip.deleteForever', { name: displayName })}
                 aria-label={t('evaluations.manualDelete')}
               />
             </div>
@@ -543,7 +537,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               className="ev-action shrink-0"
               data-filled={correctionIndicator === 'attached' ? 'ok' : correctionIndicator === 'missing' ? 'missing' : undefined}
               data-doc-state={correctionIndicator}
-              title={correctionTooltip}
               data-tippy-content={correctionTooltip}
               aria-label={`${t('evaluations.doc.title', { activity: correctionName })}${correctionIndicator === 'attached' ? ` — ${t('evaluations.doc.stateAttached')}` : ''}`}
             >
@@ -572,7 +565,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             data-danger="true"
             onClick={() => setDeletingCorrection(link)}
             className="ev-icon-btn shrink-0"
-            title={t('evaluations.tip.deleteCorrection', { name: correctionName })}
+            data-tippy-content={t('evaluations.tip.deleteCorrection', { name: correctionName })}
             aria-label={t('evaluations.deleteCorrectionAction')}
           />
         </div>

@@ -37,3 +37,9 @@ test('les fontes arabes de titre et de lecture ne peuvent pas capturer le latin'
   });
   assert.deepEqual(seen, families);
 });
+
+test('les toasts et le statut de synchronisation utilisent la police Samsung en arabe', () => {
+  const typography = readFileSync('src/styles/typography.css', 'utf8');
+  assert.match(typography, /--font-feedback:\s*'SamsungOne Arabic',\s*'SamsungOne'/, 'jeton de police Samsung pour les retours');
+  assert.match(typography, /\[data-sonner-toaster\]:lang\(ar\)[\s\S]*?\[data-sonner-toast\]:lang\(ar\)[\s\S]*?\.editor-sync-status:lang\(ar\)\s*\{\s*font-family:\s*var\(--font-feedback\);/, 'toasts et statut de synchronisation en arabe');
+});

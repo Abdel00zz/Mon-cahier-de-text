@@ -20,7 +20,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { SessionDocuments } from './SessionDocuments';
-import { isExercise } from '@/domain/notebook/contentReorder';
+import { isRootCapableContent, isTransferableContent } from '@/domain/notebook/contentReorder';
 import { useEditorRowReorder } from './useEditorRowReorder';
 import './editorRowReorder.css';
 
@@ -35,8 +35,10 @@ const sortAttributes = (item: FlatDataItem, id: string) => ({
   'data-editor-sort-row': true,
   'data-editor-sort-key': item.key,
   'data-editor-sort-id': id,
-  'data-editor-sort-transfer': isExercise(item.data) || undefined,
+  'data-editor-sort-transfer': isTransferableContent(item.data) || undefined,
+  'data-editor-sort-root': isRootCapableContent(item.data) || undefined,
   'data-editor-sort-container': ['chapter', 'section', 'subsection', 'subsubsection'].includes(item.elementType) || undefined,
+  'data-editor-sort-chapter': item.elementType === 'chapter' || undefined,
   'data-editor-sort-label': sortLabel(item),
   'data-editor-sort-detail': typeof item.data.date === 'string' ? formatDateDDMMYYYY(item.data.date) ?? item.data.date : undefined,
 });

@@ -177,8 +177,13 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
   if (options.previousLessons && transmitsCorrection) {
     for (const old of previousRows.filter(row => row.elementType === 'correction_devoir_maison')) {
       const owner = correctionOwner(old, manual);
-      if (!owner || !old.data._tempId) continue;
-      const matches = correctionRows.filter(row => row.data._tempId === old.data._tempId);
+      if (!owner) continue;
+      const matches = old.data._tempId
+        ? correctionRows.filter(row => row.data._tempId === old.data._tempId)
+        : correctionRows.filter(row => !handledCorrections.has(row.key) && (
+            row.data === old.data
+            || ('title' in row.data && 'title' in old.data && row.data.title === old.data.title && row.data.date === old.data.date)
+          ));
       if (matches.length > 1) continue;
       const next = matches[0];
       const date = extractDateRange(next?.data.date).startDate;
@@ -216,7 +221,12 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
     const direct = events.find(event => event.id === id) ?? options.eventArchive?.get(id);
     if (direct) return direct;
     if (row.data._tempId?.startsWith('event-')) return undefined;
-    const previous = previousRows.find(old => old.data._tempId && old.data._tempId === row.data._tempId);
+    const previous = previousRows.find(old => (old.data._tempId && old.data._tempId === row.data._tempId) || old.data === row.data);
+    const previousId = previous ? `notebook-${previous.data._tempId ?? previous.key}` : undefined;
+    if (previousId) {
+      const fromPreviousKey = events.find(event => event.id === previousId) ?? options.eventArchive?.get(previousId);
+      if (fromPreviousKey && !matched.has(fromPreviousKey.id)) return fromPreviousKey;
+    }
     const candidates = events.filter(event => event.type === row.elementType && !matched.has(event.id)
       && ('title' in row.data && (event.title === row.data.title || (previous && 'title' in previous.data && event.title === previous.data.title))));
     return candidates.length === 1 ? candidates[0] : undefined;
@@ -249,6 +259,7 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
   // Scan remarks for pedagogical activities (contrôle cahiers, remédiation, etc.)
   for (const row of rows) {
     const remarkEvents = detectEventsFromRemarks(row, classId, options.policy);
+    const previousRemarkRow = !row.data._tempId ? previousRows.find(old => old.data === row.data) : undefined;
     for (const rev of remarkEvents) {
       // Deduplicate: if an explicit block exists for this activity on the same row or date, skip
       if (row.elementType === rev.type) continue;
@@ -266,7 +277,11 @@ export function syncNotebookToEvaluations(classId: string, config: AppConfig, le
       });
       if (explicitDuplicate) continue;
 
-      const existing = events.find(event => event.id === rev.id) ?? options.eventArchive?.get(rev.id);
+      const previousRevId = previousRemarkRow ? `remark-${rev.type}-${previousRemarkRow.data._tempId ?? previousRemarkRow.key}` : undefined;
+      const existing = events.find(event => event.id === rev.id)
+        ?? (previousRevId ? events.find(event => event.id === previousRevId) : undefined)
+        ?? options.eventArchive?.get(rev.id)
+        ?? (previousRevId ? options.eventArchive?.get(previousRevId) : undefined);
       const event: PedagogicalEvent = {
         ...existing,
         ...rev,

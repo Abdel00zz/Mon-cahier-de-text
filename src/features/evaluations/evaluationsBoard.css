@@ -465,16 +465,17 @@
     font-weight: 650;
 }
 
-/* ── Optimisation mobile et Android téléphone : boutons un peu plus grands ── */
+/* ── Optimisation mobile et Android téléphone : boutons alignés et cibles de 44 px ── */
 @media (max-width: 768px), (pointer: coarse) {
     .ev-board__rows > .ev-row {
-        min-height: 42px;
+        min-height: 44px;
         padding: 0.25rem 0.5rem;
         gap: 0.25rem 0.4rem;
     }
     .ev-action,
     .ev-icon-btn,
     .ev-row .del-btn {
+        position: relative;
         width: 35px !important;
         height: 35px !important;
         min-width: 35px !important;
@@ -482,13 +483,22 @@
         flex: 0 0 35px !important;
         border-radius: 8px !important;
     }
+    .ev-action::after,
+    .ev-icon-btn::after,
+    .ev-row .del-btn::after {
+        content: '';
+        position: absolute;
+        inset: -4.5px;
+        border-radius: 12px;
+        pointer-events: auto;
+    }
     .ev-action__icon,
     .ev-row .del-btn__icon {
         width: 16px !important;
         height: 16px !important;
     }
     .ev-accordion__toggle {
-        min-height: 42px;
+        min-height: 44px;
         padding: 0.5rem 0.75rem;
     }
 }

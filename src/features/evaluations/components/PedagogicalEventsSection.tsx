@@ -150,7 +150,6 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       data-filled={docIndicator === 'attached' ? 'ok' : docIndicator === 'missing' ? 'missing' : undefined}
                       data-doc-state={docIndicator}
                       aria-label={`${t('evaluations.doc.title', { activity: title })}${docStateSuffix}`}
-                      title={eventDocTooltip}
                       data-tippy-content={eventDocTooltip}
                     >
                       <ActionIcon name="document" />
@@ -164,7 +163,6 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     className="ev-action shrink-0"
                     data-filled={names > 0 ? 'tone' : undefined}
                     aria-label={`${t(notebookCheck ? 'evaluations.notebook.title' : 'evaluations.students.open')} — ${title}${names > 0 ? ` · ${number.format(names)}` : ''}`}
-                    title={eventStudentsTooltip}
                     data-tippy-content={eventStudentsTooltip}
                   >
                     <ActionIcon name="students" />
@@ -181,7 +179,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                     onClick={() => onDelete(event)}
                     className="ev-icon-btn shrink-0"
                     aria-label={t('evaluations.deleteEventAria', { title })}
-                    title={deleteTooltip}
+                    data-tippy-content={deleteTooltip}
                   />
                 </div>
               </li>

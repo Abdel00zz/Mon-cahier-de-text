@@ -90,16 +90,18 @@ const uniqueValues = (values: string[]) => Array.from(new Set(values.map(value =
 const EMPTY_SUBJECTS: string[] = [];
 const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
-const CLASS_MODAL_DETENTS = [0.78, 0.94];
+const CLASS_MODAL_DETENTS = [0.72, 0.92];
 
-const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
+const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; selected?: boolean }> = ({ children, onClick, selected }) => (
   <button
     type="button"
     onClick={onClick}
+    data-selected={selected ? 'true' : undefined}
+    aria-pressed={selected}
     className="class-create-option"
   >
     <span>{children}</span>
-    <span className="class-create-option-mark" aria-hidden="true"><Plus /></span>
+    <span className="class-create-option-mark" aria-hidden="true">{selected ? <Check /> : <Plus />}</span>
   </button>
 );
 
@@ -218,21 +220,31 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
   const chooseCycle = (nextCycle: Cycle) => {
     haptics.onSelect();
-    setCycle(nextCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); setStep('level');
-    setGroupTouched(false);
+    if (nextCycle !== cycle) {
+      setCycle(nextCycle);
+      setLevel('');
+      setLevelGroupKey('');
+      if (!groupTouched) setGroup('');
+    }
+    setStep('level');
   };
   const chooseLevel = (nextLevel: string) => {
     haptics.onSelect();
     setLevel(nextLevel);
     setLevelGroupKey(levelGroups.find(item => item.levels.includes(nextLevel))?.key ?? '');
-    setGroup(current => nextLevel === level && current ? current : firstAvailableGroup(nextLevel));
-    setGroupTouched(false);
+    setGroup(current => {
+      const normalized = normalizeGroupNumber(current);
+      const nextUsed = usedGroupsForLevel(existingClasses, nextLevel, editingClass?.id);
+      if ((groupTouched || nextLevel === level) && normalized && !nextUsed.has(normalized)) return current;
+      return firstAvailableGroup(nextLevel);
+    });
     setStep('details');
   };
   const chooseLevelGroup = (nextGroup: ClassLevelGroupKey) => {
     haptics.onSelect();
     const selected = levelGroups.find(item => item.key === nextGroup);
-    setLevelGroupKey(nextGroup); setLevel('');
+    setLevelGroupKey(nextGroup);
+    if (!selected || !selected.levels.includes(level)) setLevel('');
     if (selected && selected.levels.length > 1) { setStep('branch'); return; }
     if (selected?.levels[0]) chooseLevel(selected.levels[0]);
   };
@@ -331,7 +343,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-3">
           <label htmlFor="edit-class-level" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.level} :</label>
-          <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setCustomLevel(''); }} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">
+          <button type="button" onClick={() => setCustomMode(value => !value)} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">
             {customMode ? copy.switchToOfficial : copy.createCustom}
           </button>
         </div>
@@ -379,7 +391,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         </div>
       } maxWidth="md" mobileDetents={CLASS_MODAL_DETENTS}
         elevation="high"
-        className="class-create-modal sm:max-w-xl sm:rounded-3xl"
+        className="class-create-modal sm:max-w-md sm:rounded-2xl"
         headerClassName="class-create-header"
         bodyClassName="class-create-body"
         footerClassName="class-create-actions"
@@ -407,36 +419,36 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           />}
         </fieldset>}
       >
-        {editingClass && onRosterSave && <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/60 p-1" role="group" aria-label={copy.editTitle}>
+        {editingClass && onRosterSave && <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/60 p-1" role="group" aria-label={copy.editTitle}>
           {(['identity', 'students'] as const).map(item => <button key={item} type="button" aria-pressed={section === item}
             onClick={() => setSection(item)} className={cn('min-h-11 rounded-lg px-3 text-sm font-semibold transition-colors duration-150', section === item ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground')}>
             {t(item === 'identity' ? 'classRoster.identity' : 'classRoster.title')}
           </button>)}
         </div>}
-        <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-5 text-start">
+        <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-3.5 text-start">
           {saveError && <p role="alert" className="class-create-error">{saveError}</p>}
-          <fieldset disabled={submitting} className="min-w-0 space-y-5">
+          <fieldset disabled={submitting} className="min-w-0 space-y-3.5">
           {!editingClass && <ClassCreationProgress steps={steps} currentIndex={stepIndex}
             label={copy.guidedLabel} stepLabel={stepLabel}
             onReturn={previous => { haptics.onSelect(); setStep(previous); }} />}
 
           {!editingClass && <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="class-create-stage outline-none">
-          {step === 'cycle' && hasCycleChoice && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="grid gap-2 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'border-primary/55 bg-primary/5 text-foreground' : 'border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/40')}><span>{copy.cycleLabels[item]}</span>{item === cycle && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />}</button>)}</div></section>}
+          {step === 'cycle' && hasCycleChoice && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="grid gap-2 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-start text-sm font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'border-primary/55 bg-primary/5 text-foreground' : 'border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/40')}><span>{copy.cycleLabels[item]}</span>{item === cycle && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />}</button>)}</div></section>}
 
-          {step === 'level' && <section className="space-y-3">
-            <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setLevelGroupKey(''); setGroup(''); }} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
+          {step === 'level' && <section className="space-y-2.5">
+            <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => setCustomMode(value => !value)} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
             {/* Le cycle n'est pas un filtre du profil : si le profil n'en liste
                 qu'un, l'étape est masquée mais reste à un clic (collège → prépa). */}
             {!customMode && !hasCycleChoice && <button type="button" onClick={() => { setShowAllCycles(true); setStep('cycle'); }} className="min-h-11 rounded-xl border border-dashed border-border/90 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground cursor-pointer"><span className="sm:hidden">{copy.otherCycle}</span><span className="hidden sm:inline">{copy.otherCycle} · {cycleOptions.map(item => copy.cycleLabels[item]).join(' / ')}</span></button>}
-            {customMode ? <div className="space-y-2"><label htmlFor="class-custom-level" className="block text-xs font-semibold text-foreground">{copy.customLevel}</label><Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-xl border border-border bg-background text-foreground px-4" autoFocus /></div> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
+            {customMode ? <div className="space-y-2"><label htmlFor="class-custom-level" className="block text-xs font-semibold text-foreground">{copy.customLevel}</label><Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="h-11 rounded-xl border border-border bg-background text-foreground px-3.5" autoFocus /></div> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} selected={item.key === (levelGroupKey || activeLevelGroup?.key)} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
           </section>}
 
-          {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
+          {step === 'branch' && activeLevelGroup && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
-          {step === 'details' && <section className="space-y-3"><div className="class-create-summary space-y-4 rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-xs sm:p-5">
-            <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-1 break-words text-lg font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
-            <div className="space-y-1.5 border-t border-border/70 pt-3"><label htmlFor="class-group" className="block text-xs font-bold text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
-            {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-3"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-3 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
+          {step === 'details' && <section className="space-y-2.5"><div className="class-create-summary space-y-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:p-4">
+            <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-0.5 break-words text-base font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
+            <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-group" className="block text-xs font-bold text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
+            {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-2.5 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
           </div></section>}
           </div>}
           <div hidden={rosterSection}>{editConfiguration}</div>

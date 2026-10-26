@@ -75,7 +75,7 @@ test('les colonnes sont des jetons partagés : l’en-tête et les lignes ne peu
   // automatiques et ses libellés ne tombaient plus au-dessus des bonnes
   // colonnes (mesuré au navigateur).
   const board = css.slice(css.indexOf('.ev-board {'), css.indexOf('/* Ligne d’en-tête'));
-  assert.match(board, /--ev-actions: 21rem;/, 'les commandes ont une largeur FIXE, sinon une ligne décale les siennes');
+  assert.match(board, /--ev-actions: minmax\(0, 1fr\);/, 'les commandes s’alignent à droite dans une colonne équilibrée');
   assert.doesNotMatch(css, /--ev-state/, 'plus de largeur d’état à dimensionner');
   assert.equal((css.match(/--ev-date:/g) ?? []).length, 1, 'largeur de date définie une fois');
   assert.doesNotMatch(css, /--ev-kind/, 'plus de colonne de nature à dimensionner');
@@ -98,28 +98,26 @@ test('une surface, des filets : plus de pile de cartes', () => {
   assert.doesNotMatch(row, /border: 1px solid|border-radius|box-shadow/, 'la ligne reste une ligne');
 });
 
-test('au téléphone, deux lignes par entrée et jamais moins de 44 px au doigt', () => {
-  const tablet = css.slice(css.indexOf('@media (max-width: 1023px)'), css.indexOf('/* Repli en trois lignes'));
-  assert.match(tablet, /\.ev-board__head \{ display: none; \}/, 'un en-tête de colonnes n’a plus de sens en deux lignes');
-  assert.match(tablet, /grid-template-areas:[\s\S]{0,120}'id id'[\s\S]{0,80}'date actions'/, 'identité seule, puis date et actions');
-  assert.match(tablet, /\.ev-date-trigger, \.ev-date-empty \{ height: 2\.75rem/, 'la date atteint 44 px');
-  assert.match(tablet, /\.ev-action \{ min-height: 2\.75rem/, 'les commandes aussi');
-  assert.match(tablet, /\.ev-icon-btn \{ width: 2\.75rem; height: 2\.75rem; \}/, 'les icônes-commandes aussi');
-  // Sous 640 px, date et commandes ne cohabitent plus : trois lignes, pas quatre.
-  const phone = css.slice(css.indexOf('@media (max-width: 639px)'));
-  assert.match(phone, /'id id'\s*\n\s*'date date'\s*\n\s*'actions actions'/, 'trois lignes utiles');
-  // Sur grand écran, la ligne reste basse : 56 px minimum.
-  assert.match(css, /\.ev-board__rows > \.ev-row \{[\s\S]{0,400}min-height: 56px/, 'lignes denses sur grand écran');
+test('au téléphone, les boutons restent alignés et les cibles atteignent 44 px au doigt', () => {
+  const tablet = css.slice(css.indexOf('@media (max-width: 1023px)'), css.indexOf('@media (max-width: 639px)'));
+  assert.match(tablet, /\.ev-board__head \{ display: none; \}/, 'l’en-tête de colonnes est masqué sur mobile');
+  assert.match(tablet, /grid-template-areas: 'id date actions'/, 'identité, date et actions alignées sur une ligne');
+  const phone = css.slice(css.indexOf('@media (max-width: 639px)'), css.indexOf('@media (prefers-reduced-motion: reduce)'));
+  assert.match(phone, /grid-template-areas: 'id date actions'/, 'alignement conservé sur smartphone');
+  const touch = css.slice(css.indexOf('@media (max-width: 768px), (pointer: coarse)'));
+  assert.match(touch, /\.ev-board__rows > \.ev-row \{[\s\S]{0,80}min-height: 44px/, 'ligne de 44 px sur mobile');
+  assert.match(touch, /\.ev-accordion__toggle \{[\s\S]{0,80}min-height: 44px/, 'tiroir de 44 px sur mobile');
+  assert.match(touch, /inset: -4\.5px/, 'extension tactile invisible à 44 px (35 + 2×4.5)');
 });
 
-test('plus de colonne « État » : l’écart de date reste signalé et actionnable sous le titre', () => {
+test('plus de colonne « État » : l’écart de date reste signalé et actionnable sous le titre, sans répéter la date du devoir', () => {
   // L'état se déduisait de la date et du cahier : ce qui demande une action — aligner la
-  // date sur la séance — passe sous le titre de la ligne, avec les dates du devoir maison.
+  // date sur la séance — passe sous le titre de la ligne, avec l'échéance du devoir maison.
   assert.doesNotMatch(view, /STATUS_CHIP|STATUS_STYLE/, 'plus de pastille d’état par devoir');
   assert.doesNotMatch(view, /evaluations\.colState/, 'plus d’en-tête « État »');
   assert.match(view, /className="ev-row__meta"/, 'les dates et l’alignement vivent sous le titre');
   assert.match(view, /setAssessmentDate\(a\.id, targetDate\)/, 'l’alignement sur le cahier est conservé');
-  assert.match(view, /evaluations\.homework\.givenOn/, 'la date de remise du devoir maison est conservée');
+  assert.doesNotMatch(view, /evaluations\.homework\.givenOn/, 'la date de remise n’est plus répétée sous le titre');
   assert.match(view, /evaluations\.homework\.dueOn/, 'la date limite de rendu est rappelée sous le titre du devoir maison');
   assert.match(view, /ev-row--correction/, 'la date de correction est celle de l’entrée « Correction du devoir maison »');
   assert.match(css, /\.ev-row__meta \{/, 'la ligne secondaire a son style');

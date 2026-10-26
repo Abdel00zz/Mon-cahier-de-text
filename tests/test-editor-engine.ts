@@ -861,6 +861,85 @@ test('le ciblage conserve la fusion du contenu strictement identique', () => {
   assert.deepEqual(moved[1].items, data[0].items);
 });
 
+test('dépôt direct : lignes libres, évaluations et corrections se déplacent entre la racine (« hors chapitre »), les chapitres et les paragraphes sans conflit', () => {
+  const note = { type: 'free' as const, title: 'Note libre', description: 'Rappel professeur' };
+  const initial: LessonsData = [
+    note,
+    { type: 'chapter', title: 'Chapitre 1', items: [{ type: 'definition', title: 'Définition 1' }], sections: [{ name: 'Section 1', items: [] }] },
+    { type: 'chapter', title: 'Chapitre 2', items: [] },
+  ];
+  // 1. De la racine vers l'intérieur du Chapitre 1 (sous son titre)
+  const intoChapter = planContentDrop(initial, buildContentMoveTargets(buildLessonRows(initial)), indicesKey({ chapterIndex: 0 }), indicesKey({ chapterIndex: 1 }), 'after');
+  assert.ok(intoChapter);
+  assert.deepEqual(intoChapter.selection, [{ chapterIndex: 0, itemIndex: 0 }]);
+  const inChapter = produce(initial, draft => { assert.equal(applyContentDrop(draft, intoChapter), true); });
+  assert.equal(inChapter[0].items![0], note);
+  // 2. Du Chapitre 1 vers la Section 1
+  const intoSection = planContentDrop(inChapter, buildContentMoveTargets(buildLessonRows(inChapter)), indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0, sectionIndex: 0 }), 'after');
+  assert.ok(intoSection);
+  assert.deepEqual(intoSection.selection, [{ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }]);
+  const inSection = produce(inChapter, draft => { assert.equal(applyContentDrop(draft, intoSection), true); });
+  assert.equal(inSection[0].sections![0].items![0], note);
+  // 3. De la Section 1 vers le Chapitre 2
+  const intoChapter2 = planContentDrop(inSection, buildContentMoveTargets(buildLessonRows(inSection)), indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 1 }), 'after');
+  assert.ok(intoChapter2);
+  const inChapter2 = produce(inSection, draft => { assert.equal(applyContentDrop(draft, intoChapter2), true); });
+  assert.equal(inChapter2[1].items![0], note);
+  // 4. Sortie du Chapitre 2 vers la racine (« hors chapitre », entre Chapitre 1 et Chapitre 2)
+  const outBetweenChapters = planContentDrop(inChapter2, buildContentMoveTargets(buildLessonRows(inChapter2)), indicesKey({ chapterIndex: 1, itemIndex: 0 }), indicesKey({ chapterIndex: 1 }), 'before');
+  assert.ok(outBetweenChapters);
+  assert.deepEqual(outBetweenChapters.selection, [{ chapterIndex: 1 }]);
+  const atRootBetween = produce(inChapter2, draft => { assert.equal(applyContentDrop(draft, outBetweenChapters), true); });
+  assert.equal(atRootBetween[1], note);
+  assert.equal(atRootBetween[2].type, 'chapter');
+
+  // 5. Tous les types liés au contrôle continu et aux corrections voyagent dans et hors des chapitres
+  const assessmentTypes = [
+    'evaluation_diagnostic',
+    'devoir_maison',
+    'controle_continu',
+    'controle_court',
+    'controle_global',
+    'oral',
+    'correction_devoir_maison',
+    'correction_controle_continu',
+    'examen_blanc',
+    'olympiade',
+    'concours',
+    'colle',
+  ] as const;
+
+  for (const type of assessmentTypes) {
+    const block = { type, title: `${type} 1`, date: '2026-10-12' };
+    const notebook: LessonsData = [
+      { type: 'chapter', title: 'Chapitre 1', sections: [{ name: 'Paragraphe 1', items: [block as any, { type: 'exercice', title: 'Exercice 1' }] }] },
+      { type: 'chapter', title: 'Chapitre 2', items: [] },
+    ];
+    // Sortie hors chapitre (avant Chapitre 1)
+    const toRootTop = planContentDrop(notebook, buildContentMoveTargets(buildLessonRows(notebook)), indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0 }), 'before');
+    assert.ok(toRootTop, `${type} doit pouvoir sortir hors chapitre avant Chapitre 1`);
+    assert.deepEqual(toRootTop.selection, [{ chapterIndex: 0 }]);
+    const atTop = produce(notebook, draft => { assert.equal(applyContentDrop(draft, toRootTop), true); });
+    assert.equal(atTop[0], block);
+    assert.equal(atTop[1].type, 'chapter');
+
+    // Entrée dans Chapitre 2 depuis la racine
+    const toChapter2 = planContentDrop(atTop, buildContentMoveTargets(buildLessonRows(atTop)), indicesKey({ chapterIndex: 0 }), indicesKey({ chapterIndex: 2 }), 'after');
+    assert.ok(toChapter2, `${type} doit pouvoir entrer dans Chapitre 2`);
+    assert.deepEqual(toChapter2.selection, [{ chapterIndex: 1, itemIndex: 0 }]);
+    const insideChap2 = produce(atTop, draft => { assert.equal(applyContentDrop(draft, toChapter2), true); });
+    assert.equal(insideChap2[1].items![0], block);
+  }
+
+  // Un exercice ou une définition ne peut JAMAIS sortir à la racine (« hors chapitre »)
+  const withExercise: LessonsData = [
+    { type: 'chapter', title: 'Chapitre 1', items: [{ type: 'exercice', title: 'Ex 1' }, { type: 'definition', title: 'Def 1' }] },
+  ];
+  const exTargets = buildContentMoveTargets(buildLessonRows(withExercise));
+  assert.equal(planContentDrop(withExercise, exTargets, indicesKey({ chapterIndex: 0, itemIndex: 0 }), indicesKey({ chapterIndex: 0 }), 'before'), null);
+  assert.equal(planContentDrop(withExercise, exTargets, indicesKey({ chapterIndex: 0, itemIndex: 1 }), indicesKey({ chapterIndex: 0 }), 'before'), null);
+});
+
 test('évaluations identiques : un titre commun et toutes les dates reliées par et', () => {
   const data: LessonsData = ['2026-09-14', '2026-09-16', '2026-10-01'].map(date => ({
     type: 'evaluation_diagnostic', title: 'Évaluation diagnostique 1', date,

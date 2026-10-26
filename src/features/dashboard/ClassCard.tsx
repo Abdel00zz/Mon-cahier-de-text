@@ -83,7 +83,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         triggerClassName="class-card__menu"/>
                 </div>
                 <div className="class-card__identity" data-has-group={label.group ? "true" : undefined}>
-                    <h3 style={classTitleStyle(isRtl)} className="class-card__title">
+                    <h3 style={classTitleStyle(isRtl)} title={label.fullName} className="class-card__title">
                         <span className="sr-only">{label.fullName}</span>
                         <span aria-hidden="true" className="class-card__name">
                             <span className="class-card__stream">

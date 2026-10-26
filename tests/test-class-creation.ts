@@ -210,3 +210,13 @@ test('changer de profil ne détruit plus un brouillon : aucun cycle n’est inte
 test('un changement de profil ne migre jamais automatiquement une classe existante', () => {
   assert.deepEqual(reconcileClassCycle(['college'], 'lycee', 'details', true), { cycle: 'lycee', step: 'details', resetLevel: false });
 });
+
+test('la fenêtre de création de classe utilise un fond beige discret, un format compact et conserve la saisie au retour', () => {
+  const css = readFileSync('src/features/dashboard/modals/createClassModal.css', 'utf8');
+  const modal = readFileSync('src/features/dashboard/modals/CreateClassModal.tsx', 'utf8');
+  assert.match(css, /--create-surface:\s*color-mix\(in srgb,\s*hsl\(38 34% 96\.5%\)/, 'fond beige discret en mode clair');
+  assert.match(css, /\.class-create-option\s*\{[\s\S]*?min-height:\s*48px/, 'options compactes');
+  assert.match(modal, /className="class-create-modal sm:max-w-md sm:rounded-2xl"/, 'fenêtre compacte');
+  assert.match(modal, /if \(!selected \|\| !selected\.levels\.includes\(level\)\) setLevel\(''\)/, 'le niveau compatible est conservé lors du retour sur le groupe');
+  assert.doesNotMatch(modal, /setCustomMode\(value => !value\);\s*setLevel\(''\)/, 'basculer le mode personnalisé ne détruit pas la saisie');
+});

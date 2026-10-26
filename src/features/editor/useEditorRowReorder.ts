@@ -135,9 +135,20 @@ export function useEditorRowReorder(
         }
       }
       const rect = candidate?.getBoundingClientRect();
-      const inside = source.dataset.editorSortTransfer === 'true' && candidate?.dataset.editorSortContainer === 'true';
-      const side: Side = !inside && rect && y < rect.top + rect.height / 2 ? 'before' : 'after';
-      const key = side === 'after' ? candidate?.dataset.editorSortLastKey ?? candidate?.dataset.editorSortKey : candidate?.dataset.editorSortKey;
+      const canDropBeforeChapter = source.dataset.editorSortRoot === 'true' && candidate?.dataset.editorSortChapter === 'true';
+      let inside = source.dataset.editorSortTransfer === 'true' && candidate?.dataset.editorSortContainer === 'true'
+        && !(canDropBeforeChapter && rect && y < rect.top + rect.height * 0.35);
+      let side: Side = !inside && rect && y < rect.top + rect.height / 2 ? 'before' : 'after';
+      let key = side === 'after' ? candidate?.dataset.editorSortLastKey ?? candidate?.dataset.editorSortKey : candidate?.dataset.editorSortKey;
+      if (canDropBeforeChapter && candidate && key && key !== sourceKey && !callbacks.current.canReorder?.(sourceKey, key, side)) {
+        const alternateSide: Side = side === 'after' ? 'before' : 'after';
+        const alternateKey = alternateSide === 'after' ? candidate.dataset.editorSortLastKey ?? candidate.dataset.editorSortKey : candidate.dataset.editorSortKey;
+        if (alternateKey && callbacks.current.canReorder?.(sourceKey, alternateKey, alternateSide)) {
+          side = alternateSide;
+          key = alternateKey;
+          inside = alternateSide === 'after';
+        }
+      }
       if (candidate === current.target && side === current.side) return;
       clearTarget();
       const allowed = candidate && key && key !== sourceKey && rootRef.current?.contains(candidate)

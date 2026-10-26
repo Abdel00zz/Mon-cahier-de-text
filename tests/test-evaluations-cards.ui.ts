@@ -108,32 +108,32 @@ test('chaque activité est une ligne de tableau, teintée selon sa nature', () =
   assert.doesNotMatch(cahiers, /class="tone-chip"/);
   assert.match(olympiade, /Olympiade de mathématiques/);
   // La liste d'élèves consignés est comptée DANS la commande de la ligne.
-  assert.match(cahiers, /<span>Élèves<\/span><span class="ev-action__count">2<\/span>/, 'commande écrite, avec son compte');
+  assert.match(cahiers, /<span class="sr-only">Élèves<\/span><span class="ev-action__count">2<\/span>/, 'commande avec icône seule, libellé lecteur d’écran et compte');
   assert.match(cahiers, /aria-label="Suivi des cahiers — [^"]* · 2"/, 'le nom accessible garde le compte');
   // État et suppression restent des commandes, jamais un clic sur la ligne.
   assert.doesNotMatch(olympiade, /aria-label="Marquer Olympiade de mathématiques comme réalisé"/, 'le bouton marquer comme réalisé est purgé');
   assert.match(olympiade, /aria-label="Supprimer Olympiade de mathématiques"/);
 });
 
-test('les commandes portent un pictogramme, un libellé écrit et une infobulle explicative', () => {
+test('les commandes portent un pictogramme seul visible, un libellé accessible et une infobulle explicative', () => {
   const documentLabel = translateLocaleMessage('fr', 'evaluations.doc.open');
   const studentsLabel = translateLocaleMessage('fr', 'evaluations.students.open');
   const notebookLabel = translateLocaleMessage('fr', 'evaluations.notebook.title');
   const olympiade = renderSheet([event('e1', 'olympiade', 'Olympiade de mathématiques', '2026-09-14')]);
   const cahiers = renderSheet([event('e2', 'controle_cahiers', 'Contrôle des cahiers', '2026-09-15')]);
-  // Les commandes sont des MOTS : libellé court visible, nom accessible complet, infobulle explicative.
-  assert.match(olympiade, /<span>Contenu<\/span>/, 'un seul mot : « Contenu » ; le plus vit dans le pictogramme, seulement quand le contenu est requis');
-  assert.doesNotMatch(olympiade, /<span>\+ /, 'aucun « + » dans un libellé de commande');
-  assert.match(olympiade, /<span>Élèves<\/span>/, 'les élèves consignés : un mot');
-  assert.match(cahiers, /<span>Élèves<\/span>/, 'le suivi des cahiers : le même mot, « Élèves »');
-  assert.doesNotMatch(cahiers, /<span>Cahiers<\/span>/, 'aucun second mot pour la même commande');
+  // Les commandes affichent une icône seule et gardent leur libellé en sr-only + infobulle.
+  assert.match(olympiade, /<span class="sr-only">Contenu<\/span>/, 'libellé accessible : « Contenu »');
+  assert.doesNotMatch(olympiade, /<span[^>]*>\+ /, 'aucun « + » dans un libellé de commande');
+  assert.match(olympiade, /<span class="sr-only">Élèves<\/span>/, 'les élèves consignés : libellé accessible');
+  assert.match(cahiers, /<span class="sr-only">Élèves<\/span>/, 'le suivi des cahiers : le même mot, « Élèves »');
+  assert.doesNotMatch(cahiers, /<span[^>]*>Cahiers<\/span>/, 'aucun second mot pour la même commande');
   assert.match(olympiade, /data-tippy-content="[^"]+"/, 'chaque commande a son infobulle');
-  // Un pictogramme décoratif (famille d'icônes maison) précède chaque mot ; il ne remplace jamais le libellé.
-  assert.match(olympiade, /class="ev-action[^>]*>\s*<svg[^>]*ev-action__icon/, 'chaque commande porte son pictogramme décoratif');
-  assert.doesNotMatch(olympiade, /ev-action__icon[^>]*>(?:(?!<\/svg>).)*<\/svg>\s*<\/button>/, 'le pictogramme n’est jamais seul : le libellé suit');
+  // Un pictogramme précède chaque libellé sr-only.
+  assert.match(olympiade, /class="ev-action[^>]*>\s*<svg[^>]*ev-action__icon/, 'chaque commande porte son pictogramme');
+  assert.doesNotMatch(olympiade, /ev-action__icon[^>]*>(?:(?!<\/svg>).)*<\/svg>\s*<\/button>/, 'le pictogramme est suivi du libellé accessible');
   assert.ok(documentLabel && studentsLabel && notebookLabel, 'libellés complets disponibles pour les lecteurs d’écran');
   // Un contrôle des cahiers n'a pas de sujet à joindre : pas de bouton document.
-  assert.equal(occurrences(cahiers, `<span>${documentLabel}</span>`), 0);
+  assert.equal(occurrences(cahiers, `<span class="sr-only">${documentLabel}</span>`), 0);
 });
 
 test('les titres disent ce que la fenêtre contient, sans répétition', () => {
