@@ -15,7 +15,8 @@ import { numberFormat } from '@/lib/formatters';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { bidiIsolate } from '@/lib/text/textDirection';
+import { bidiIsolate, textDirectionAttribute } from '@/lib/text/textDirection';
+import { translateLocaleMessage } from '@/i18n/messages';
 import { ContentDocumentModal } from './ContentDocumentModal';
 import { EventDateModal } from './EventDateModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
@@ -143,13 +144,17 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
     ? `${t(`evaluations.type.${submissionsFor.planned.type}`)} ${number.format(submissionsFor.planned.num)}`
     : '';
 
+  const documentDir = textDirectionAttribute(documentOf?.source);
+  const docLocale: AppLocale = documentDir === 'ltr' ? 'fr' : documentDir === 'rtl' ? 'ar' : locale;
+  const docNumber = numberFormat(docLocale);
+
   const documentTitle = documentFor === null
     ? ''
     : documentFor.kind === 'event'
-      ? localizedActivityTitle(documentFor.event.title, documentFor.event.type, locale)
+      ? localizedActivityTitle(documentFor.event.title, documentFor.event.type, docLocale)
       : documentFor.part === 'correction'
-        ? `${t('manageLessons.type.correction_devoir_maison')} ${number.format(documentFor.link.planned.num)}`
-        : `${t(`evaluations.type.${documentFor.link.planned.type}`)} ${number.format(documentFor.link.planned.num)}`;
+        ? `${translateLocaleMessage(docLocale, 'manageLessons.type.correction_devoir_maison')} ${docNumber.format(documentFor.link.planned.num)}`
+        : `${translateLocaleMessage(docLocale, `evaluations.type.${documentFor.link.planned.type}`)} ${docNumber.format(documentFor.link.planned.num)}`;
 
   /* « Classe · Devoir 2 » : chaque fragment isolé, l'arabe et le latin ne se réordonnent pas entre eux. */
   const contextOf = (...parts: string[]) => parts.filter(Boolean).map(bidiIsolate).join(' · ');

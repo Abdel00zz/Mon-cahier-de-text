@@ -21,7 +21,14 @@ const COPY = {
     'notebook-unavailable': { title: 'Vérifions ce cahier', detail: 'Je n’arrive pas à lire ce cahier. On essaie de l’ouvrir ?', context: 'Lecture indisponible', action: 'Ouvrir le cahier' },
     open: 'Ouvrir le compagnon',
     close: 'Fermer le message',
+    skip: 'Passer',
     attention: 'Action requise',
+    'install-app': {
+      title: 'Installer l’application',
+      detail: 'Installez l’application sur votre appareil pour accéder instantanément à vos cahiers de textes, même hors connexion.',
+      action: 'Installer l’application',
+      context: 'Installation',
+    },
     create: {
       title: 'On commence ?',
       detail: 'Ajoutez votre première classe. Je vous guide pour la suite.',
@@ -75,7 +82,14 @@ const COPY = {
     'notebook-unavailable': { title: 'معاينة الدفتر', detail: 'تعذرت قراءة هذا الدفتر تلقائياً. هل نحاول فتحه معاً؟', context: 'القراءة غير متاحة', action: 'فتح الدفتر' },
     open: 'فتح الرفيق',
     close: 'إغلاق الرسالة',
+    skip: 'تخطي',
     attention: 'تنبيه تربوي',
+    'install-app': {
+      title: 'تثبيت التطبيق',
+      detail: 'ثبّت التطبيق على جهازك للوصول الفوري إلى دفاتر نصوصك وحصصك في أي وقت وحتى بدون اتصال بالإنترنت.',
+      action: 'تثبيت التطبيق',
+      context: 'تثبيت التطبيق',
+    },
     create: {
       title: 'مرحباً بك مع رفيقك',
       detail: 'لنبدأ معاً بإضافة قسمك الأول، وسأرافقك خطوة بخطوة في تنظيم دروسك وحصصك.',
@@ -129,7 +143,14 @@ const COPY = {
     'notebook-unavailable': { title: 'Let’s check this notebook', detail: 'I couldn’t read this notebook. Shall we try opening it?', context: 'Reading unavailable', action: 'Open notebook' },
     open: 'Open companion',
     close: 'Close message',
+    skip: 'Skip',
     attention: 'Action needed',
+    'install-app': {
+      title: 'Install application',
+      detail: 'Install the application on your device for instant access to your lesson notebooks, even offline.',
+      action: 'Install application',
+      context: 'Installation',
+    },
     create: {
       title: 'Shall we start?',
       detail: 'Add your first class. I’ll guide you through the next step.',
@@ -181,6 +202,17 @@ const COPY = {
 } as const;
 
 export const companionLabels = (locale: AppLocale) => COPY[locale];
+
+export function companionInstallAppMessage(locale: AppLocale): CompanionMessage {
+  const base = COPY[locale]['install-app'];
+  return {
+    id: 'install-app',
+    title: base.title,
+    detail: base.detail,
+    action: base.action,
+    context: base.context,
+  };
+}
 
 export function classGuidanceMessage(
   guidance: ClassGuidance,

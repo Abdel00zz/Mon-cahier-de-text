@@ -3,13 +3,13 @@
 :root {
   --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Latin Modern Sans', 'Inter';
   --font-latin-display: 'Roboto Slab', 'Samsung Sharp Sans', 'Latin Modern Sans';
-  --font-latin-reading: 'SamsungOne', 'Latin Modern Sans', 'One UI Sans', 'Inter', system-ui, sans-serif;
+  --font-latin-reading: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Inter', system-ui, sans-serif;
   --font-arabic-body: 'Elgharib Hayyakum Allah', 'SamsungOne Arabic';
   --font-arabic-display: 'KOMission Black', 'SamsungOne Arabic';
   --font-arabic-secondary: 'Elgharib Hayyakum Allah Light', 'SamsungOne Arabic';
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-feedback: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', system-ui, sans-serif;
-  --content-font-latin: 'SamsungOne', 'Latin Modern Sans', 'One UI Sans', system-ui, sans-serif;
+  --content-font-latin: 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
   --content-font-arabic: 'SamsungOne Arabic', var(--font-arabic-body);
   --ui-font-ar: var(--font-arabic-body);
   --ui-font-latin: var(--font-latin-body);

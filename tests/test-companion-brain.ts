@@ -312,3 +312,45 @@ test('team contact button only appears for problems or after a few hours of miss
   assert.equal(richState.canContactTeam, false);
 });
 
+test('PWA installation is the first priority request of the robot with no skip ("Passer") option, while other messages can be skipped', () => {
+  // When PWA is not installed yet, install-app is the first priority request even if classes are unscheduled or empty
+  const installState = evaluateCompanion(input({
+    config: {},
+    readLessons: () => [],
+    pwaInstallRequired: true,
+  }));
+  assert.equal(installState.decision.kind, 'install-app');
+  assert.deepEqual(installState.action, { type: 'install-app' });
+  assert.equal(installState.canSkip, false, 'install-app request must never expose the Passer/skip button');
+  assert.equal(installState.nextTaskId, undefined, 'install-app stays the primary request');
+  assert.equal(companionMessage(installState, 'fr', '2026-10-23', false).action, 'Installer l’application');
+  assert.equal(companionMessage(installState, 'ar', '2026-10-23', false).action, 'تثبيت التطبيق');
+  assert.equal(companionMessage(installState, 'en', '2026-10-23', false).action, 'Install application');
+
+  // Once installed (pwaInstallRequired: false), other informational/guidance messages expose canSkip = true and advance when skipped
+  const firstGuidance = evaluateCompanion(input({ config: {}, pwaInstallRequired: false }));
+  assert.equal(firstGuidance.decision.kind, 'guidance');
+  assert.equal(firstGuidance.guidance.step, 'schedule');
+  assert.equal(firstGuidance.canSkip, true);
+  assert.equal(firstGuidance.tasks.length, 3);
+
+  const skippedOne = new Set([firstGuidance.selectedTask!.id]);
+  const secondGuidance = evaluateCompanion(input({ config: {}, pwaInstallRequired: false, skippedTaskIds: skippedOne }));
+  assert.equal(secondGuidance.tasks.length, 2);
+  assert.notEqual(secondGuidance.selectedTask?.id, firstGuidance.selectedTask?.id);
+  assert.equal(secondGuidance.canSkip, true);
+
+  const allSkipped = new Set(firstGuidance.tasks.map(t => t.id));
+  const sereneAfterSkip = evaluateCompanion(input({
+    config: {},
+    offersEnabled: false,
+    pwaInstallRequired: false,
+    skippedTaskIds: allSkipped,
+  }));
+  assert.equal(sereneAfterSkip.tasks.length, 0);
+  assert.equal(sereneAfterSkip.guidance.step, 'ready');
+  assert.equal(sereneAfterSkip.behavior.problemCount, 0);
+  assert.equal(sereneAfterSkip.canSkip, true);
+});
+
+

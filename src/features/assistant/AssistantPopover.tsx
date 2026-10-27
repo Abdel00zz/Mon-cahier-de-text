@@ -30,6 +30,7 @@ interface AssistantPopoverProps {
   primaryAction?: ReactNode;
   dismissLabel?: string;
   onDismiss?: () => void;
+  keepOpenOnDismiss?: boolean;
   helpReference?: GuideReference;
   onOpenGuide?: (reference: GuideReference, signal?: AbortSignal) => Promise<boolean>;
   tips?: { day: string; initiallyOpen: boolean };
@@ -72,7 +73,7 @@ export function AssistantPopover({
   headRoundness,
   autoSleepMs,
   onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
-  dismissLabel, onDismiss, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
+  dismissLabel, onDismiss, keepOpenOnDismiss = false, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
   const { welcoming, dismissWelcome } = useCompanionWelcome();
@@ -83,6 +84,7 @@ export function AssistantPopover({
   const helpRequest = useRef<AbortController | null>(null);
   const id = useId();
   const labels = companionLabels(locale);
+  const isInstallAppMessage = message.id === 'install-app';
   const highlights = [...(message.detailHighlights ?? []), ...(message.detailEmphasis ? [message.detailEmphasis] : [])];
 
   useEffect(() => {
@@ -178,11 +180,14 @@ export function AssistantPopover({
                 <span>{message.action}</span>
               </button>
             ))}
-            {onDismiss && dismissLabel && (
+            {!isInstallAppMessage && onDismiss && dismissLabel && (
               <button
                 type="button"
                 className="assistant-panel__dismiss"
-                onClick={() => handleDismissAndClose(true)}
+                onClick={() => {
+                  if (keepOpenOnDismiss) onDismiss();
+                  else handleDismissAndClose(true);
+                }}
               >
                 {dismissLabel}
               </button>

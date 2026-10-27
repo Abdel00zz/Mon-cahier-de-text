@@ -15,15 +15,18 @@ export interface CompanionSignals {
   hasNotebookReader: boolean;
   hasContentSuggestion?: boolean;
   calendarNotice?: CompanionCalendarNotice;
+  pwaInstallRequired?: boolean;
 }
 
 export type CompanionDecision =
+  | { kind: 'install-app' }
   | { kind: 'reply'; reply: AdminMessage }
   | { kind: 'calendar'; notice: CompanionCalendarNotice }
   | { kind: 'guidance' | 'offer' | 'sync-error' | 'offline' | 'syncing' | 'checking' | 'inbox-error' };
 
 /** One deterministic arbitration point. Unknown or failed checks never become a success offer. */
 export function decideCompanion(signals: CompanionSignals): CompanionDecision {
+  if (signals.pwaInstallRequired) return { kind: 'install-app' };
   const { guidance, authenticated, syncStatus, transfer } = signals;
   if (authenticated && signals.online && (syncStatus === 'error' || transfer === 'failed')) return { kind: 'sync-error' };
   if (authenticated && signals.online && signals.inboxFailed) return { kind: 'inbox-error' };

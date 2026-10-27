@@ -218,3 +218,42 @@ test('mémoire des cahiers : cache borné, éviction sans suppression du stockag
   values.set('classData_v1_memory-0', JSON.stringify([{ type: 'chapter', title: 'Nouveau', items: [] }]));
   assert.equal(readCachedLessons('memory-0')[0].title, 'Nouveau');
 });
+
+test('PWA : manifest.webmanifest, index.html, sw.js et détection iOS/Android sont complets et valides', async () => {
+  const fs = await import('node:fs');
+  const { detectPwaPlatform, detectStandaloneMode } = await import('../src/platform/pwaInstall');
+
+  const manifest = JSON.parse(fs.readFileSync('public/manifest.webmanifest', 'utf8'));
+  assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.start_url, '/');
+  assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 3);
+  assert.ok(manifest.icons.some((icon: { sizes: string }) => icon.sizes === '192x192'));
+  assert.ok(manifest.icons.some((icon: { sizes: string }) => icon.sizes === '512x512'));
+
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /rel="manifest"\s+href="\/manifest\.webmanifest"/);
+  assert.match(html, /name="apple-mobile-web-app-capable"\s+content="yes"/);
+  assert.match(html, /rel="apple-touch-icon"/);
+
+  const sw = fs.readFileSync('public/sw.js', 'utf8');
+  assert.match(sw, /skipWaiting/);
+  assert.match(sw, /clients\.claim/);
+  assert.match(sw, /addEventListener\(['"]fetch['"]/);
+
+  assert.equal(detectPwaPlatform({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)' }), 'ios');
+  assert.equal(detectPwaPlatform({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15)', platform: 'MacIntel', maxTouchPoints: 5 }), 'ios');
+  assert.equal(detectPwaPlatform({ userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S918B)' }), 'android');
+  assert.equal(detectPwaPlatform({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }), 'desktop');
+
+  assert.equal(detectStandaloneMode(
+    { matchMedia: (q: string) => ({ matches: q.includes('standalone') }) } as unknown as Window,
+    {} as Navigator,
+    {} as Document,
+  ), true);
+  assert.equal(detectStandaloneMode(
+    { matchMedia: () => ({ matches: false }) } as unknown as Window,
+    { standalone: true } as unknown as Navigator,
+    {} as Document,
+  ), true);
+});
+

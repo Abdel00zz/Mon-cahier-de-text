@@ -94,3 +94,18 @@ test('l’en-tête d’un devoir maison ne porte pas « assigné aux élèves »
 test('un document qui s’ouvre par « Devoir à la maison 1 » n’est pas répété par l’en-tête du devoir assigné', () => {
   assert.equal(headerTitleFor('Devoir à la maison assigné aux élèves 1', '# Devoir à la maison 1\n\nExercice'), undefined);
 });
+
+test('l’en-tête s’harmonise avec la langue du texte rédigé (français/arabe)', () => {
+  // Document rédigé en français avec interface en arabe : « Devoir maison » et non « فرض منزلي »
+  assert.equal(headerTitleFor('الفرض المنزلي 1', 'Exercice 1 : calculer la limite'), 'Devoir maison 1');
+  assert.equal(headerTitleFor('الفرض المنزلي المُوكَل إلى التلاميذ 2', 'Exercice 1 : soit f une fonction'), 'Devoir maison 2');
+  assert.equal(headerTitleFor('فرض محروس 1', 'Exercice 1 : calculer les intégrales suivantes'), 'Devoir surveillé 1');
+  assert.equal(headerTitleFor('تصحيح الفرض المنزلي 1', 'Solution de l\'exercice 1'), 'Correction du devoir maison 1');
+  assert.equal(headerTitleFor('تصحيح الفرض المحروس 2', 'Barème et solution détaillée'), 'Correction du devoir surveillé 2');
+
+  // Document rédigé en arabe avec interface en français : « الفرض المنزلي » et non « Devoir maison »
+  assert.equal(headerTitleFor('Devoir maison 1', 'التمرين الأول : احسب النهاية التالية'), 'الفرض المنزلي 1');
+  assert.equal(headerTitleFor('Devoir surveillé 2', 'التمرين الأول : ليكن $f$ دالة معرفة على'), 'فرض محروس 2');
+  assert.equal(headerTitleFor('Correction du devoir maison 1', 'عناصر الإجابة وسلم التنقيط'), 'تصحيح الفرض المنزلي 1');
+});
+

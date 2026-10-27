@@ -1,13 +1,21 @@
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import type { AppLocale, ClassInfo, LessonsData } from '@/types';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import type { AppLocale, ClassEvaluationEntry, ClassInfo, LessonsData } from '@/types';
 import type { GuidanceConfig } from '@/domain/assistant/classGuidance';
 import { AssistantPopover } from './AssistantPopover';
+import { PwaInstallModal } from './PwaInstallModal';
 import { useCompanionRevision } from './useCompanionRevision';
 import { useSyncProgress } from '@/hooks/useSyncProgress';
 import { useSync } from '@/contexts/SyncContext';
 import { isNetworkOnline } from '@/platform/networkStatus';
+import {
+  getPwaInstallSnapshot,
+  markPwaInstalled,
+  setPwaGuideOpen,
+  subscribePwaInstall,
+  triggerPwaInstall,
+} from '@/platform/pwaInstall';
 import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { hasSupportWhatsApp } from '@/constants/support';
@@ -15,7 +23,7 @@ import { readNotebookActivity } from '@/infrastructure/storage/companionActivity
 import { useCompanionGuide } from './useCompanionGuide';
 import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
 import { createCompanionEvaluation } from '@/domain/assistant/companionBrain';
-import type { ClassEvaluationEntry } from '@/types';
+import { companionLabels } from './companionCopy';
 import { companionMessage } from './companionPresentation';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
@@ -53,10 +61,14 @@ export function ClassAssistant({
   const messaging = useTeacherMessaging();
   const { guide, openGuide, closeGuide } = useCompanionGuide(messaging?.owner);
   const copy = conversationCopy(locale);
+  const labels = companionLabels(locale);
+  const pwaState = useSyncExternalStore(subscribePwaInstall, getPwaInstallSnapshot, getPwaInstallSnapshot);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
   const [contactedClasses, setContactedClasses] = useState<ReadonlySet<string>>(() => new Set());
   const [ignoredClasses, setIgnoredClasses] = useState<ReadonlySet<string>>(() => new Set());
+  const [skippedTasks, setSkippedTasks] = useState<ReadonlySet<string>>(() => new Set());
+  const [skippedMessageKeys, setSkippedMessageKeys] = useState<ReadonlySet<string>>(() => new Set());
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
   const today = useMoroccoToday();
   const [calendar, setCalendar] = useState(getBundledCalendar);
@@ -72,6 +84,8 @@ export function ClassAssistant({
     setContactOpen(false); setContactStarted(false); setContact({});
     setContactedClasses(new Set());
     setIgnoredClasses(new Set());
+    setSkippedTasks(new Set());
+    setSkippedMessageKeys(new Set());
     setSelectedTaskId(undefined);
     return () => { recovery.current = null; };
   }, [messaging?.owner]);
@@ -86,15 +100,19 @@ export function ClassAssistant({
     classes, config, calendar, today, now: Date.now(), preferredClassId, visibleClassIds, activeSessionClassIds,
     readLessons, readActivity: readNotebookActivity, offersEnabled: hasSupportWhatsApp(),
     messageHistory: messaging?.history, contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses,
+    pwaInstallRequired: pwaState.shouldAskInstall,
+    skippedTaskIds: skippedTasks,
+    skippedMessageKeys,
     services: { authenticated: Boolean(messaging?.enabled), online, syncStatus, transfer: progress.state,
       inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false, messages: messaging?.messages ?? [] },
   }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds,
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
-    messaging?.messages, contactedClasses, ignoredClasses, online, syncStatus, progress.state, revision]);
+    messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, skippedTasks, skippedMessageKeys,
+    online, syncStatus, progress.state, revision]);
   const brain = useMemo(() => evaluate(selectedTaskId), [evaluate, selectedTaskId]);
   const { decision, behavior, contentSuggestion } = brain;
   const reply = decision.kind === 'reply' ? decision.reply : undefined;
-  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' && decision.kind !== 'calendar' ? decision.kind : undefined;
+  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' && decision.kind !== 'calendar' && decision.kind !== 'install-app' ? decision.kind : undefined;
   const serviceError = service === 'sync-error' || service === 'inbox-error';
   const message = companionMessage(brain, locale, today, recovering);
   const retry = async () => {
@@ -119,15 +137,24 @@ export function ClassAssistant({
     setContactStarted(true);
     setContactOpen(true);
   };
-  const dismissSuggestion = () => {
-    if (contentSuggestion) {
+  const handleSkipCurrentMessage = () => {
+    if (!brain.canSkip) return;
+    if (decision.kind === 'offer' && contentSuggestion) {
       setIgnoredClasses(current => new Set([...current, contentSuggestion.target.id]));
+    } else if (brain.selectedTask) {
+      const nextId = brain.nextTaskId;
+      setSkippedTasks(current => new Set([...current, brain.selectedTask!.id]));
+      setSelectedTaskId(nextId);
+    } else if (brain.skipKey) {
+      setSkippedMessageKeys(current => new Set([...current, brain.skipKey!]));
     }
   };
   const isContentOffer = decision.kind === 'offer' && Boolean(contentSuggestion);
+  const hasMoreTasksAfterSkip = decision.kind === 'guidance' && Boolean(brain.selectedTask) && brain.tasks.length > 1;
   const runAction = () => {
     const action = brain.action;
-    if (action.type === 'retry-sync' || action.type === 'retry-inbox') { void retry(); }
+    if (action.type === 'install-app') { void triggerPwaInstall(); }
+    else if (action.type === 'retry-sync' || action.type === 'retry-inbox') { void retry(); }
     else if (action.type === 'read-reply') openContact();
     else if (action.type === 'create-class') onCreateClass();
     else if (action.type === 'schedule') onOpenSchedule?.();
@@ -161,8 +188,9 @@ export function ClassAssistant({
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
         label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}
         onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
-      dismissLabel={isContentOffer ? (locale === 'ar' ? 'ليس الآن، شكراً' : locale === 'en' ? 'Not now, thanks' : 'Pas maintenant, merci') : undefined}
-      onDismiss={isContentOffer ? dismissSuggestion : undefined}
+      dismissLabel={brain.canSkip ? labels.skip : undefined}
+      onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
+      keepOpenOnDismiss={hasMoreTasksAfterSkip}
       nextTaskLabel={brain.nextTaskId ? `${locale === 'ar' ? 'النقطة التالية' : locale === 'en' ? 'Next point' : 'Point suivant'} · ${new Intl.NumberFormat(locale).format(brain.taskPosition)}/${new Intl.NumberFormat(locale).format(brain.tasks.length)}` : undefined}
       onNextTask={brain.nextTaskId ? () => setSelectedTaskId(brain.nextTaskId) : undefined}
       onContact={openContact}
@@ -173,10 +201,17 @@ export function ClassAssistant({
       headRoundness={behavior.headRoundness}
       autoSleepMs={behavior.autoSleepMs}
       attentionKey={brain.attentionKey}
-      actionBusy={recovering}
+      actionBusy={recovering || (decision.kind === 'install-app' && pwaState.installing)}
       keepOpenOnAction={serviceError}
       onAction={brain.action.type === 'none' || brain.action.type === 'request-content'
         || (brain.action.type === 'schedule' && !onOpenSchedule) ? undefined : runAction}
+    />
+    <PwaInstallModal
+      open={pwaState.guideOpen}
+      locale={locale}
+      platform={pwaState.platform}
+      onClose={() => setPwaGuideOpen(false)}
+      onConfirmInstalled={markPwaInstalled}
     />
     {guide && <guide.Component isOpen onClose={closeGuide} initialReference={guide.reference} />}
     {contactStarted && contact.owner === messaging?.owner && <Suspense fallback={<p role="status">{copy.loading}</p>}>

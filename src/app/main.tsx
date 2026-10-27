@@ -27,6 +27,7 @@ import { SyncProvider } from '../contexts/SyncContext';
 import { startAppUpdateChecks } from '../platform/appUpdates';
 import { initAppViewport } from '../platform/appViewport';
 import { initNativeRuntime } from '../platform/nativeRuntime';
+import { initPwaInstall } from '../platform/pwaInstall';
 import '../styles/index.css';
 
 // Un onglet reste ouvert pendant un deploiement peut demander un fragment
@@ -49,10 +50,21 @@ window.addEventListener('load', () => {
 }, { once: true });
 
 initAppViewport();
+const disposePwaInstall = initPwaInstall();
 const updateVisibility = () => { document.documentElement.dataset.appVisible = String(document.visibilityState === 'visible'); };
 updateVisibility();
 document.addEventListener('visibilitychange', updateVisibility);
-import.meta.hot?.dispose(() => document.removeEventListener('visibilitychange', updateVisibility));
+const onServiceWorkerMessage = (event: MessageEvent) => {
+  if (event.data?.type === 'NOTIFICATION_CLICK' && typeof event.data.url === 'string' && event.data.url.startsWith('/')) {
+    window.location.hash = event.data.url.replace(/^\/#?/, '#');
+  }
+};
+navigator.serviceWorker?.addEventListener?.('message', onServiceWorkerMessage);
+import.meta.hot?.dispose(() => {
+  document.removeEventListener('visibilitychange', updateVisibility);
+  navigator.serviceWorker?.removeEventListener?.('message', onServiceWorkerMessage);
+  disposePwaInstall();
+});
 void initNativeRuntime().catch(error => console.warn('Native initialization failed', error));
 // Protège les cahiers locaux contre l'éviction automatique du navigateur.
 void import('../infrastructure/storage/safeStorage').then(module => module.requestPersistentStorage()).catch(() => {});
