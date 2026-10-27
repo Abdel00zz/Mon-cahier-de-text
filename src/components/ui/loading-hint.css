@@ -3,15 +3,16 @@
 .loading-hint {
   min-height: 1.5em;
   margin: 0;
-  font-family: var(--font-sans, inherit);
+  font-family: var(--font-feedback, 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif);
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.5;
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
   color: hsl(var(--muted-foreground));
   text-wrap: balance;
 }
 .loading-hint__text {
+  font-family: var(--font-feedback, 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif);
   display: inline-block;
   opacity: 0;
   animation:

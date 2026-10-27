@@ -1550,7 +1550,7 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 .mobile-tab-bar {
   background: hsl(var(--card) / .95);
-  border-radius: 9999px;
+  border-radius: 16px;
   border: 1px solid hsl(var(--border));
   box-shadow: 0 6px 20px rgb(55 43 32 / .1);
   -webkit-backdrop-filter: blur(12px);
@@ -1558,7 +1558,7 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
 }
 .dark .mobile-tab-bar {
   background: hsl(var(--card) / .96);
-  border-radius: 9999px;
+  border-radius: 16px;
   border-color: hsl(var(--border));
   box-shadow: 0 6px 20px rgb(0 0 0 / .22);
 }

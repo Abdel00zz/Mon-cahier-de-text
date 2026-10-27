@@ -222,7 +222,9 @@ export function initPwaInstall(): () => void {
   syncRootAttributes(cachedSnapshot);
 
   const onBeforeInstallPrompt = (event: Event) => {
-    event.preventDefault();
+    // Do not call event.preventDefault() so desktop/mobile browsers also display
+    // the native "App available" / "Installer" chip in the browser address bar
+    // while keeping event.prompt() available for our in-app robot button.
     deferredPrompt = event as BeforeInstallPromptEvent;
     try {
       if (typeof localStorage !== 'undefined' && !detectStandaloneMode(window, navigator, document)) {
@@ -256,11 +258,7 @@ export function initPwaInstall(): () => void {
   const mediaQuery = window.matchMedia?.('(display-mode: standalone)');
   mediaQuery?.addEventListener?.('change', onDisplayModeChange);
 
-  if (document.readyState === 'complete') {
-    void registerPwaServiceWorker();
-  } else {
-    window.addEventListener('load', () => { void registerPwaServiceWorker(); }, { once: true });
-  }
+  void registerPwaServiceWorker();
 
   return () => {
     window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);

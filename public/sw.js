@@ -12,8 +12,8 @@ const PRECACHE_URLS = [
   '/icons/apple-touch-icon-180.png',
   '/icons/favicon-32.png',
   '/icons/favicon-16.png',
-  '/calendrier_scolaire_maroc_2025_2026.json',
-  '/calendrier_scolaire_maroc_2026_2027.json',
+  '/vacances-jourferie.json',
+  '/official-student-events.json',
 ];
 
 self.addEventListener('install', event => {

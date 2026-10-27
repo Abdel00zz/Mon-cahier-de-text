@@ -1,3 +1,10 @@
+.page-transition-loader,
+.page-transition-loader *,
+.app-boot-skeleton,
+.app-boot-skeleton * {
+  font-family: var(--font-feedback, 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif);
+}
+
 .page-transition-loader {
   display: grid;
   place-items: center;

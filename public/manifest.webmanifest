@@ -7,13 +7,16 @@
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#faf9f5",
   "theme_color": "#faf9f5",
   "lang": "fr",
   "dir": "auto",
   "categories": ["education", "productivity"],
   "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -38,6 +41,22 @@
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/guide/current/classes-fr.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Tableau de bord des classes — Mon Cahier de Text"
+    },
+    {
+      "src": "/guide/current/editor-fr.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Éditeur du cahier de textes — Mon Cahier de Text"
     }
   ],
   "shortcuts": [

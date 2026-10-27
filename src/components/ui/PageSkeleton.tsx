@@ -56,7 +56,7 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden bg-background px-6 py-[max(2rem,env(safe-area-inset-top))] text-foreground ${overlay ? 'fixed inset-0 z-[90] min-h-[100dvh]' : 'min-h-dvh'}`}
+      className={`app-boot-skeleton relative flex items-center justify-center overflow-hidden bg-background px-6 py-[max(2rem,env(safe-area-inset-top))] text-foreground ${overlay ? 'fixed inset-0 z-[90] min-h-[100dvh]' : 'min-h-dvh'}`}
       role="status"
       aria-live="polite"
       aria-label={isLatexLoading ? t('boot.latex.ariaLabel') : t('boot.teacher.ariaLabel')}
@@ -66,7 +66,7 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
         <div className="mx-auto flex h-20 w-20 items-center justify-center">
           <LoadingSpinner />
         </div>
-        <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
+        <p className="app-boot-skeleton__title mt-4 text-sm font-semibold leading-relaxed text-foreground">
           {title}
         </p>
         <LoadingHint />

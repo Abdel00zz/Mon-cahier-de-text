@@ -15,9 +15,10 @@
   width: auto;
   max-width: 360px;
   bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px;
   touch-action: pan-y pinch-zoom;
 }
-.mobile-tab-bar__items { min-height: 60px; padding-block: 4px; }
+.mobile-tab-bar__items { min-height: 56px; padding: 4px; box-sizing: border-box; }
 .mobile-tab-label { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
 .workspace-shell {
   --workspace-rail-width: 84px;
@@ -65,17 +66,18 @@
 .workspace-nav-button:hover, .workspace-menu-toggle:hover { color: hsl(var(--foreground)); background: hsl(var(--muted) / 0.45); }
 .workspace-nav-button[aria-current='page'] { color: hsl(var(--foreground)); font-weight: 600; }
 .workspace-nav-button:focus-visible, .workspace-menu-toggle:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.workspace-nav-button--mobile:focus-visible { outline-offset: -2px; border-radius: 12px; }
 .workspace-nav-button--compact { justify-content: center; padding-inline: 0.25rem; }
 .workspace-nav-button--mobile {
   position: relative;
-  min-height: 44px;
+  min-height: 48px;
   min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border-radius: 15px;
-  padding: 5px 7px;
+  border-radius: 12px;
+  padding: 5px 8px;
 }
 .workspace-nav-button--desktop {
   border-radius: 0.875rem;
@@ -94,7 +96,7 @@
 
 /* Calm active state; one moving surface and aligned icon/label frames. */
 .workspace-nav-button--mobile .workspace-nav-active {
-  inset: 1px; border-radius: 14px; border: 1px solid rgb(255 255 255 / .12);
+  inset: 0; border-radius: 12px; border: 1px solid rgb(255 255 255 / .12);
   background: #695343; box-shadow: 0 2px 5px rgb(55 43 32 / .12); pointer-events: none;
 }
 .workspace-nav-button--mobile[aria-current='page'],

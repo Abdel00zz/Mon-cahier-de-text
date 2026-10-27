@@ -24,6 +24,16 @@
   letter-spacing: normal;
 }
 
+.loading-hint,
+.loading-hint__text,
+.page-transition-loader,
+.page-transition-loader *,
+.app-boot-skeleton,
+.app-boot-skeleton * {
+  font-family: var(--font-feedback);
+  letter-spacing: normal;
+}
+
 /* Recalculer les alias sur chaque frontière de langue empêche une fenêtre
    française de conserver les alias hérités d'un parent arabe, et inversement. */
 :root, :where([lang]) {
