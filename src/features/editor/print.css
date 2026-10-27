@@ -334,7 +334,7 @@
     margin-inline-end: 0.6em;
     padding: 0.15em 0.4em;
     border: 0.5pt solid #c4bdb1;
-    border-radius: 3pt;
+    border-radius: 0 !important;
     color: #514b42;
     background-color: #f7f5f0;
     font-size: 7pt;

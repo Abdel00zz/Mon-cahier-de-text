@@ -52,7 +52,15 @@ export function LandingPage({ locale, onLogin, onRegister }: {
       <ul className="landing-features">
         {copy.features.map((feature, index) => {
           const Icon = FEATURE_ICONS[index];
-          return <li key={feature.title}><span className="landing-feature-icon"><Icon aria-hidden="true" /></span><div className="landing-feature-copy"><h2>{feature.title}</h2><p>{feature.detail}</p></div></li>;
+          return (
+            <li key={feature.title}>
+              <div className="landing-feature-header">
+                <span className="landing-feature-icon"><Icon aria-hidden="true" /></span>
+                <h2>{feature.title}</h2>
+              </div>
+              <p>{feature.detail}</p>
+            </li>
+          );
         })}
       </ul>
     </div>

@@ -646,31 +646,39 @@ html[lang="ar"] .modal-header h2,
 
 
   /* ── Typographie des contenus du cahier ───────────────────────────────
-     Une seule décision : la direction du tableau. Aucune classe de police
-     optionnelle ne subsiste, un contenu ne peut plus contredire sa langue. */
+     Police Samsung pour les textes de contenu dans la table éditeur, assurant
+     une netteté contemporaine, une grande lisibilité et un confort visuel optimal. */
+  [data-editor-table] {
+    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
+  }
+
   [data-editor-table][data-content-direction="ltr"] {
-    font-family: 'CMU Serif', var(--font-latin-reading);
+    font-family: 'SamsungOne', 'One UI Sans', 'Samsung Sans', system-ui, sans-serif;
+  }
+
+  [data-editor-table][data-content-direction="rtl"] {
+    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
   }
 
   [data-content-direction="ltr"] [data-row-content="true"],
   .content-font-latin {
-    font-family: var(--content-font-latin);
+    font-family: 'SamsungOne', 'One UI Sans', 'Samsung Sans', system-ui, sans-serif;
   }
 
   [data-content-direction="rtl"] [data-row-content="true"],
   .content-font-arabic {
-    font-family: var(--content-font-arabic);
+    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
   }
 
-  /* Éditeur : lissage limité à cette surface, l'impression garde le sien. */
+  /* Éditeur : police Samsung pour les textes de contenu */
   .font-editor-system {
-    font-family: var(--content-font-latin);
+    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   [data-content-direction="rtl"] .font-editor-system {
-    font-family: var(--content-font-arabic);
+    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
   }
 
   .editor-table-content {
@@ -971,15 +979,25 @@ html[lang="ar"] .modal-header h2,
   }
 
   /*
-   * Typographie Samsung pour les cellules Remarque et Contenu de la table éditeur en arabe
-   * (Netteté, lisibilité supérieure, alignement parfait et confort visuel pour les notes et descriptions).
+   * Typographie Samsung pour toutes les cellules de contenu et remarques de la table éditeur
+   * (Netteté, lisibilité supérieure, alignement parfait et confort visuel pour les titres, notes et descriptions).
    */
-  [data-editor-table][dir="rtl"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection),
-  html[lang="ar"] [data-editor-table] :is(th, [data-session-cell="remark"], .editor-type-remark, .editor-session-note),
-  [data-editor-table] [dir="rtl"]:is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description),
+  [data-editor-table] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
+  [data-editor-table] [data-session-cell="content"] :is(p, div, span, strong, em, bdi, a, button:not(.katex *)),
+  [data-editor-table] .editor-table-content :is(p, div, span, strong, em, bdi, a, button:not(.katex *)) {
+    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  [data-editor-table][dir="rtl"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
+  [data-editor-table] [dir="rtl"]:is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-item-description, .editor-lesson-row),
   [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"],
   [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"] * {
     font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  [data-editor-table] .katex,
+  [data-editor-table] .katex * {
+    font-family: KaTeX_Main, KaTeX_Math, 'Times New Roman', serif !important;
   }
 
   /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
@@ -2330,13 +2348,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .content-badge {
   min-width: 30px;
   padding: 2px 5px;
+  border-radius: 0 !important;
   /* Sigle académique : la fonte de composition (Latin Modern Sans) donne au
      jeton la voix d'un ouvrage, pas celle d'un bouton. Chiffres à chasse fixe
      pour que « EXO 1 » et « EXO 11 » s'alignent d'une ligne à l'autre. */
   font-family: var(--font-document);
   font-size: 10px;
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2356,15 +2375,15 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .editor-item-description[data-content-type="définition"],
 .editor-item-description[data-content-type="introduction"] {
   border-radius: 0 !important;
-  border-color: color-mix(in srgb, #185abc 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #185abc;
-  background: color-mix(in srgb, #185abc 6%, hsl(var(--card)));
+  border-color: color-mix(in srgb, #0d549b 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #0d549b;
+  background: color-mix(in srgb, #0d549b 6%, hsl(var(--card)));
 }
 .dark .editor-item-description[data-content-type="définition"],
 .dark .editor-item-description[data-content-type="introduction"] {
-  border-inline-start-color: #a8c7fa;
-  border-color: color-mix(in srgb, #1967d2 40%, hsl(var(--border)));
-  background: color-mix(in srgb, #1967d2 12%, hsl(var(--card)));
+  border-inline-start-color: #8fc3ff;
+  border-color: color-mix(in srgb, #122842 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #122842 20%, hsl(var(--card)));
 }
 
 /* Famille Rouge/Brique : Théorèmes, Propositions, Propriétés, Lemmes, Corollaires, Règles, Lois, Principes */
@@ -2379,9 +2398,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .editor-item-description[data-content-type="principe"],
 .editor-item-description[data-content-type="sécurité"] {
   border-radius: 0 !important;
-  border-color: color-mix(in srgb, #b3261e 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #b3261e;
-  background: color-mix(in srgb, #b3261e 6%, hsl(var(--card)));
+  border-color: color-mix(in srgb, #ad2d24 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #ad2d24;
+  background: color-mix(in srgb, #ad2d24 6%, hsl(var(--card)));
 }
 .dark .editor-item-description[data-content-type="théorème"],
 .dark .editor-item-description[data-content-type="proposition"],
@@ -2393,9 +2412,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .dark .editor-item-description[data-content-type="loi"],
 .dark .editor-item-description[data-content-type="principe"],
 .dark .editor-item-description[data-content-type="sécurité"] {
-  border-inline-start-color: #f28b82;
-  border-color: color-mix(in srgb, #c5221f 40%, hsl(var(--border)));
-  background: color-mix(in srgb, #c5221f 12%, hsl(var(--card)));
+  border-inline-start-color: #fca597;
+  border-color: color-mix(in srgb, #381614 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #381614 20%, hsl(var(--card)));
 }
 
 /* Famille Verte : Activités, Applications, Exemples, Exercices */
@@ -2406,9 +2425,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .editor-item-description[data-content-type="expérience"],
 .editor-item-description[data-content-type="observation"] {
   border-radius: 0 !important;
-  border-color: color-mix(in srgb, #146c2e 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #146c2e;
-  background: color-mix(in srgb, #146c2e 6%, hsl(var(--card)));
+  border-color: color-mix(in srgb, #196336 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #196336;
+  background: color-mix(in srgb, #196336 6%, hsl(var(--card)));
 }
 .dark .editor-item-description[data-content-type="activité"],
 .dark .editor-item-description[data-content-type="application"],
@@ -2416,9 +2435,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .dark .editor-item-description[data-content-type="exercice"],
 .dark .editor-item-description[data-content-type="expérience"],
 .dark .editor-item-description[data-content-type="observation"] {
-  border-inline-start-color: #81c995;
-  border-color: color-mix(in srgb, #137333 40%, hsl(var(--border)));
-  background: color-mix(in srgb, #137333 12%, hsl(var(--card)));
+  border-inline-start-color: #8de3a6;
+  border-color: color-mix(in srgb, #122b1c 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #122b1c 20%, hsl(var(--card)));
 }
 
 /* Famille Neutre : Remarques, Preuves, Méthodes */
@@ -2427,22 +2446,25 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .editor-item-description[data-content-type="méthode"],
 .editor-item-description[data-content-type="protocole"] {
   border-radius: 0 !important;
-  border-color: color-mix(in srgb, #5f6368 30%, hsl(var(--border)));
-  border-inline-start: 3.5px solid #5f6368;
-  background: color-mix(in srgb, #5f6368 6%, hsl(var(--card)));
+  border-color: color-mix(in srgb, #3e444e 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #3e444e;
+  background: color-mix(in srgb, #3e444e 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="remarque"],
+.dark .editor-item-description[data-content-type="preuve"],
+.dark .editor-item-description[data-content-type="méthode"],
+.dark .editor-item-description[data-content-type="protocole"] {
+  border-inline-start-color: #cbd5e1;
+  border-color: color-mix(in srgb, #20252d 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #20252d 20%, hsl(var(--card)));
 }
 
-/* Pastilles de ces types sans arrondi dans l'en-tête de ligne */
-.editor-kind-badge[data-content-type="définition"],
-.editor-kind-badge[data-content-type="théorème"],
-.editor-kind-badge[data-content-type="proposition"],
-.editor-kind-badge[data-content-type="propriété"],
-.editor-kind-badge[data-content-type="lemme"],
-.editor-kind-badge[data-content-type="corollaire"],
-.editor-kind-badge[data-content-type="conséquence"],
-.editor-kind-badge[data-content-type="règle"],
-.editor-kind-badge[data-content-type="loi"],
-.editor-kind-badge[data-content-type="principe"] {
+/* Pastilles de type sans arrondi pour TOUS les types (style artistique / éditorial) */
+.editor-kind-badge,
+.editor-type-badge,
+.content-badge,
+[data-content-type].editor-kind-badge,
+[data-content-type].content-badge {
   border-radius: 0 !important;
 }
 

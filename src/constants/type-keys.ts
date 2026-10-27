@@ -85,14 +85,12 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
   'sécurité': 'SÉC'
 };
 
-// Palette Material You volontairement courte : le fond et le texte restent
-// dans la même famille, sans bordure dure. Les valeurs hexadécimales sont
-// explicites pour conserver le rendu souhaité dans l'éditeur, quel que soit
-// le thème Tailwind actif.
-const BADGE_BLUE = 'bg-[#e8f0fe] text-[#185abc] dark:bg-[#1967d2]/22 dark:text-[#a8c7fa]';
-const BADGE_NEUTRAL = 'bg-[#f1f3f4] text-[#3c4043] dark:bg-white/8 dark:text-[#e8eaed]';
-const BADGE_RED = 'bg-[#fce8e6] text-[#b3261e] dark:bg-[#c5221f]/22 dark:text-[#f28b82]';
-const BADGE_GREEN = 'bg-[#e6f4ea] text-[#146c2e] dark:bg-[#137333]/22 dark:text-[#81c995]';
+// Palette artistique, élégante et moderne : teintes subtiles et nobles,
+// contrastes de galerie éditoriale avec bordure de précision.
+const BADGE_BLUE = 'bg-[#edf4fc] text-[#0d549b] dark:bg-[#122842] dark:text-[#8fc3ff]';
+const BADGE_NEUTRAL = 'bg-[#f4f5f7] text-[#3e444e] dark:bg-[#20252d] dark:text-[#cbd5e1]';
+const BADGE_RED = 'bg-[#fcf0ed] text-[#ad2d24] dark:bg-[#381614] dark:text-[#fca597]';
+const BADGE_GREEN = 'bg-[#edf6f0] text-[#196336] dark:bg-[#122b1c] dark:text-[#8de3a6]';
 
 /** Interne : les surfaces passent par `contentBadgeClass`, pas par la palette. */
 const BADGE_COLOR_MAP: { [key: string]: string } = {
@@ -146,14 +144,11 @@ export const contentBadgeTone = (type: string): 'blue' | 'red' | 'green' | 'neut
  *
  * La géométrie (corps 10 px, rembourrage 6 px en ligne, 34 px de largeur au
  * minimum) vit dans la classe `.content-badge` d'`index.css`, partagée par
- * l'éditeur, la modale de séance et les réglages : les trois surfaces affichent
- * donc exactement la même pastille, quel que soit le type, et aucune n'hérite
- * par accident de la taille de texte de son voisin. Dans le tableau, les jetons
- * `--editor-badge-*` reprennent la main (`!important`) pour que la colonne de
- * pastilles garde une largeur proportionnelle à l'échelle de lecture.
+ * l'éditeur, la modale de séance et les réglages. Angles vifs (rounded-none)
+ * pour une identité nette, artistique et contemporaine.
  */
 export const contentBadgeClass = (type?: string): string =>
-  `content-badge inline-flex items-center justify-center rounded-md border-0 font-bold uppercase shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
+  `content-badge inline-flex items-center justify-center rounded-none border-0 font-bold uppercase shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
   'activité': 'Activité (recherche / découverte)',

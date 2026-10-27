@@ -1633,7 +1633,7 @@ test('numerotation des contenus : desactivee, la carte reste vide', () => {
 test('pastilles de type : une forme commune, une famille de couleur par nature', () => {
   const shape = contentBadgeClass('théorème');
   assert.match(shape, /ring-1 ring-inset ring-current\/15/);
-  assert.match(shape, /rounded-md/);
+  assert.match(shape, /rounded-none/);
   // La géométrie vit dans `.content-badge` (index.css), partagée par l'éditeur,
   // la modale de séance et les réglages : sigle académique (fonte de document),
   // 10 px de corps, 5 px de rembourrage en ligne, 30 px de largeur au minimum,
@@ -1649,10 +1649,10 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   assert.match(rule, /line-height: 1/);
   assert.match(rule, /font-variant-numeric: tabular-nums/);
   assert.ok(!css.slice(css.indexOf('.content-badge {')).includes('@layer'), 'la règle partagée reste hors @layer');
-  // Théorème : famille rouge rosé ; deux types différents ne partagent pas
+  // Théorème : famille terracotta / brique crimson ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
-  assert.equal(contentBadgeClass('théorème').includes('#fce8e6'), true);
-  assert.equal(contentBadgeClass('exemple').includes('#e6f4ea'), true);
+  assert.equal(contentBadgeClass('théorème').includes('#fcf0ed'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#edf6f0'), true);
   assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());

@@ -15,7 +15,7 @@ import { readNotebookActivity } from '@/infrastructure/storage/companionActivity
 import { useCompanionGuide } from './useCompanionGuide';
 import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
 import { createCompanionEvaluation } from '@/domain/assistant/companionBrain';
-import type { ClassEvaluationEntry } from '@/domain/evaluations';
+import type { ClassEvaluationEntry } from '@/types';
 import { companionMessage } from './companionPresentation';
 
 const TeacherConversation = lazy(() => import('@/features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));

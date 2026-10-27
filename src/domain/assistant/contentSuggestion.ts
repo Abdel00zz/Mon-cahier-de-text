@@ -30,7 +30,7 @@ const timestamp = (value: string | undefined, now: number): number => {
 
 /** True once a class has existed for at least a few hours (or has no valid recent creation timestamp). */
 export function isClassMatureForContentOffer(
-  target: Pick<ClassInfo, 'createdAt'> | undefined,
+  target: { createdAt?: string } | undefined,
   now: number,
 ): boolean {
   if (!target?.createdAt) return true;
