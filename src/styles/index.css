@@ -522,16 +522,10 @@ html[lang="ar"] .keep-class-title {
      320px tout en restant généreuse sur les grands téléphones. Le sélecteur
      vise uniquement le libellé (`> span`), jamais la pastille de notification
      imbriquée dans le conteneur d'icône. */
-  .mobile-tab-bar .mobile-tab-label {
-    font-size: calc(clamp(0.625rem, 2.3vw, 0.6875rem) * var(--app-text-scale, 1));
-    line-height: 1.15;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
-
+  .mobile-tab-bar .mobile-tab-label,
   html[lang="ar"] .mobile-tab-bar .mobile-tab-label {
-    font-size: calc(clamp(0.6875rem, 2.5vw, 0.75rem) * var(--app-text-scale, 1));
-    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.2;
     letter-spacing: normal;
   }
 
@@ -1549,18 +1543,18 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
   [data-app-sidebar], [data-app-sidebar] * { transition: none !important; animation: none !important; }
 }
 .mobile-tab-bar {
-  background: hsl(var(--card) / .95);
-  border-radius: 16px;
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0 6px 20px rgb(55 43 32 / .1);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: var(--dash-tabbar-bg, #FFFDF9);
+  border-radius: 24px;
+  border: 1px solid var(--dash-tabbar-border, #E5DFD5);
+  box-shadow: 0 6px 20px rgba(60, 40, 25, 0.12);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .dark .mobile-tab-bar {
-  background: hsl(var(--card) / .96);
-  border-radius: 16px;
-  border-color: hsl(var(--border));
-  box-shadow: 0 6px 20px rgb(0 0 0 / .22);
+  background: var(--dash-tabbar-bg, #FFFDF9);
+  border-radius: 24px;
+  border-color: var(--dash-tabbar-border, #E5DFD5);
+  box-shadow: 0 6px 20px rgba(60, 40, 25, 0.12);
 }
 
 /* ── Fin de la feuille : aucune couleur hors palette ─────────────────── */

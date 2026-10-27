@@ -32,7 +32,7 @@ export function NavigationButton({ tab, active, onSelect, copy, expanded = true,
         mobile ? 'size-[22px]' : (tab === 'help' ? 'size-7' : 'size-[22px]')
       )}
     >
-      <Icon strokeWidth={mobile ? 1.5 : 1.25} absoluteStrokeWidth className="size-full" />
+      <Icon strokeWidth={mobile ? 1.8 : 1.25} absoluteStrokeWidth className="size-full" />
     </span>
     {(mobile || expanded) && <span className={cn('workspace-nav-label relative z-10 min-w-0', mobile ? 'mobile-tab-label' : 'truncate text-sm')}>{copy[tab]}</span>}
   </motion.button>;

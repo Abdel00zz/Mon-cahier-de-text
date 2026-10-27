@@ -5,6 +5,7 @@ import { useClassManager } from '@/hooks/useClassManager';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
+import { Plus } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { DeferredMount } from '@/components/ui/DeferredMount';
 import { ClassCard } from './ClassCard';
@@ -12,6 +13,7 @@ import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
 import { ClassListItem } from './ClassListItem';
+import { pickDepartmentPalette, type DepartmentPalette, type PaletteKey } from './departmentPalette';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
@@ -313,6 +315,73 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return map;
     }, [classes, config.timetable, config.timetableClock, config.absences, locale, scheduleClockNow]);
 
+    const groupedClasses = useMemo(() => {
+        const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number }> }>();
+
+        for (const classInfo of filteredClasses) {
+            const schedule = scheduleStatusByClassId.get(classInfo.id);
+            let groupKey = 'other';
+            let groupLabel = locale === 'ar' ? 'أقسام أخرى' : (locale === 'en' ? 'Other classes' : 'Autres classes');
+            let groupOrder = 999;
+            let startMin = 9999;
+
+            if (schedule && schedule.state !== 'none') {
+                const offset = schedule.dayOffset ?? 0;
+                startMin = schedule.startMin ?? 9999;
+                if (offset === 0) {
+                    groupKey = 'day-0';
+                    groupLabel = locale === 'ar' ? 'اليوم' : (locale === 'en' ? 'Today' : 'Aujourd’hui');
+                    groupOrder = 0;
+                } else if (offset === 1) {
+                    groupKey = 'day-1';
+                    groupLabel = locale === 'ar' ? 'غدا' : (locale === 'en' ? 'Tomorrow' : 'Demain');
+                    groupOrder = 1;
+                } else {
+                    groupKey = `day-${offset}-${schedule.dayLabel ?? ''}`;
+                    groupLabel = schedule.dayLabel ?? (locale === 'ar' ? 'أيام قادمة' : 'Jours à venir');
+                    groupOrder = offset;
+                }
+            }
+
+            if (!groupsMap.has(groupKey)) {
+                groupsMap.set(groupKey, { label: groupLabel, order: groupOrder, rawItems: [] });
+            }
+            groupsMap.get(groupKey)!.rawItems.push({ classInfo, startMin });
+        }
+
+        const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => a.order - b.order);
+
+        for (const group of sortedGroups) {
+            group.rawItems.sort((a, b) => a.startMin - b.startMin);
+        }
+
+        let lastPaletteKey: PaletteKey | undefined;
+        let globalIndex = 0;
+
+        return sortedGroups.map(group => {
+            const items = group.rawItems.map(item => {
+                const { key, palette } = pickDepartmentPalette(item.classInfo.color, item.classInfo.subject, globalIndex, lastPaletteKey);
+                lastPaletteKey = key;
+                globalIndex++;
+                return {
+                    classInfo: item.classInfo,
+                    startMin: item.startMin,
+                    palette,
+                };
+            });
+
+            const showTitle = !(sortedGroups.length === 1 && group.order === 999);
+
+            return {
+                key: group.label,
+                label: group.label,
+                order: group.order,
+                showTitle,
+                items,
+            };
+        });
+    }, [filteredClasses, scheduleStatusByClassId, locale]);
+
     if (isLoading) {
         return <DashboardSkeleton />;
     }
@@ -362,161 +431,159 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            /* Fond du tableau de bord : les valeurs vivent dans
-               `dashboardCanvas.ts`, la structure dans `dashboardCanvas.css`. */
-            style={canvasStyle}
-            className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pb-6 sm:pb-8 pt-3 sm:pt-6"
+            style={{ backgroundColor: '#F6F3EE', paddingBottom: '110px' }}
+            className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-3 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    <div className="dashboard-heading mb-4 sm:mb-6" data-layout={currentDisplay}>
+                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 sm:px-6 lg:px-8 pl-safe pr-safe">
+                    {/* En-tête : Titre à droite (26px, gras, #1F1A16), Robot à gauche (44x44px) en RTL */}
+                    <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}
-                            showDisplayModes={classes.length > 0}
+                            showDisplayModes={false}
                         >
-                          <ClassAssistant
-                            locale={locale}
-                            classes={classes}
-                            config={config}
-                            preferredClassId={preferredClassId}
-                            visibleClassIds={assistantVisibleClassIds}
-                            activeSessionClassIds={activeSessionClassIds}
-                            readLessons={readAssistantLessons}
-                            onCreateClass={() => setCreateModalOpen(true)}
-                            onOpenSchedule={onOpenSchedule}
-                            onOpenClass={openNotebook}
-                            onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
-                            onConfigureClass={classInfo => setEditingClass(classInfo)}
-                          />
+                            <ClassAssistant
+                                locale={locale}
+                                classes={classes}
+                                config={config}
+                                preferredClassId={preferredClassId}
+                                visibleClassIds={assistantVisibleClassIds}
+                                activeSessionClassIds={activeSessionClassIds}
+                                readLessons={readAssistantLessons}
+                                onCreateClass={() => setCreateModalOpen(true)}
+                                onOpenSchedule={onOpenSchedule}
+                                onOpenClass={openNotebook}
+                                onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
+                                onConfigureClass={classInfo => setEditingClass(classInfo)}
+                            />
                         </DashboardActions>
-                    </div>
+                        <h1
+                            id="classes-heading"
+                            tabIndex={-1}
+                            style={dashboardTitleStyle(locale)}
+                            className="dashboard-header-title"
+                        >
+                            <span>{t('dashboard.classes')}</span>
+                            <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
+                        </h1>
+                    </header>
+
                     <main data-assistant-flow>
                         <section className="dashboard-class-section w-full" aria-labelledby="classes-heading">
-                        {classes.length > 0 && (
-                          <div className="dashboard-heading mb-4 sm:mb-6" data-layout={currentDisplay}>
-                            <h1
-                                id="classes-heading"
-                                tabIndex={-1}
-                                style={dashboardTitleStyle(locale)}
-                                className="dashboard-heading__title flex items-center gap-2 sm:gap-2.5 text-xl sm:text-2xl md:text-[1.6rem] lg:text-[2rem] text-stone-900 dark:text-stone-100 leading-snug tracking-tight"
-                            >
-                                <span>{t('dashboard.classes')}</span>
-                                <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
-                            </h1>
-                          </div>
-                        )}
-                                {classes.length === 0 ? (
-                                    <div className="dashboard-empty flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
-                                        <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
+                            {classes.length === 0 ? (
+                                <div className="dashboard-empty flex flex-col items-center justify-center px-4 py-10 text-center sm:px-8 sm:py-14 md:py-16">
+                                    <ClassroomWelcomeIllustration size={168} className="mb-4 sm:mb-5" />
 
-                                        <div className="max-w-md space-y-1.5 px-2">
-                                            <h3 id="classes-heading" tabIndex={-1} className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
-                                                {t('dashboard.emptyTitle')}
-                                            </h3>
-                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">
-                                                {t('dashboard.emptyDescription')}
-                                            </p>
-                                        </div>
-
-                                        <div className="mt-5 sm:mt-6 w-full max-w-xs">
-                                            <AddClassCard
-                                                onCreate={() => {
-                                                    if (welcomeCompleted) {
-                                                        setCreateModalOpen(true);
-                                                    } else {
-                                                        setOnboardingOpen(true);
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                ) : filteredClasses.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card/90 backdrop-blur-md px-4 py-12 text-center shadow-xs">
-                                        <LessonSearchIllustration size={110} className="mb-2" />
-                                        <h3 className="font-serif font-bold text-lg text-foreground mt-2">
-                                            {locale === 'ar' ? 'لا توجد أقسام مطابقة' : 'Aucune classe correspondante'}
+                                    <div className="max-w-md space-y-1.5 px-2">
+                                        <h3 id="classes-heading" tabIndex={-1} className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
+                                            {t('dashboard.emptyTitle')}
                                         </h3>
-                                        <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                                            {locale === 'ar' ? 'اعرض جميع المواد أو أضف قسماً جديداً' : 'Affichez toutes les matières ou créez une classe.'}
+                                        <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">
+                                            {t('dashboard.emptyDescription')}
                                         </p>
-                                        <motion.button
-                                            type="button"
-                                            whileHover={reduceMotion ? undefined : { y: -2 }}
-                                            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                                            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                                            onClick={() => setSubjectFilter('all')}
-                                            className="mt-4 inline-flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
-                                        >
-                                            {locale === 'ar' ? 'جميع الأقسام' : 'Toutes les classes'}
-                                        </motion.button>
                                     </div>
-                                ) : currentDisplay === 'list' ? (
-                                    <div key={currentDisplay} className="dashboard-class-collection dashboard-class-list" role="list" aria-label={t('dashboard.classList')}>
-                                        {filteredClasses.map((classInfo) => {
-                                            const isActiveSession = activeSessionIds.has(classInfo.id);
-                                            return (
-                                            <motion.div
-                                                key={classInfo.id}
-                                                role="listitem"
-                                                layout={reduceMotion ? false : 'position'}
-                                                layoutDependency={classLayoutKey}
-                                                initial={false}
-                                                transition={{ layout: CLASS_MOVE_TRANSITION }}
-                                                className="relative"
-                                                style={{ zIndex: isActiveSession ? 2 : 0 }}
-                                            >
-                                                <ClassListItem
-                                                    classInfo={classInfo}
-                                                    onSelect={() => openNotebook(classInfo)}
-                                                    onConfigure={() => setEditingClass(classInfo)}
-                                                    onOpenEvaluations={entry => onOpenEvaluations(classInfo, entry)}
-                                                    onDelete={() => setClassPendingDelete(classInfo)}
-                                                    isActiveSession={isActiveSession}
-                                                    scheduleStatus={scheduleStatusByClassId.get(classInfo.id)}
-                                                />
-                                            </motion.div>
-                                        )})}
+
+                                    <div className="mt-5 sm:mt-6 w-full max-w-xs">
+                                        <AddClassCard
+                                            onCreate={() => {
+                                                if (welcomeCompleted) {
+                                                    setCreateModalOpen(true);
+                                                } else {
+                                                    setOnboardingOpen(true);
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                ) : (
-                                    <div key={currentDisplay} data-layout={currentDisplay} className="dashboard-class-collection dashboard-class-grid">
-                                        {filteredClasses.map((classInfo, index) => {
-                                            const isActiveSession = activeSessionIds.has(classInfo.id);
-                                            return (
-                                            <motion.div
-                                                key={classInfo.id}
-                                                layout={reduceMotion ? false : 'position'}
-                                                layoutDependency={classLayoutKey}
-                                                initial={false}
-                                                transition={{ layout: CLASS_MOVE_TRANSITION }}
-                                                className="relative h-full w-full flex flex-col"
-                                                style={{ zIndex: isActiveSession ? 2 : 0 }}
-                                            >
-                                                <ClassCard
-                                                    classInfo={classInfo}
-                                                    onSelect={() => openNotebook(classInfo)}
-                                                    onConfigure={() => setEditingClass(classInfo)}
-                                                    onOpenEvaluations={entry => onOpenEvaluations(classInfo, entry)}
-                                                    onDelete={() => setClassPendingDelete(classInfo)}
-                                                    index={index}
-                                                    isActiveSession={isActiveSession}
-                                                    scheduleStatus={scheduleStatusByClassId.get(classInfo.id)}
-                                                />
-                                            </motion.div>
-                                        )})}
-                                        <AddClassCard onCreate={() => setCreateModalOpen(true)} />
                                 </div>
-                            )}
-                            {classes.length > 0 && (currentDisplay === 'list' || filteredClasses.length === 0) && (
-                                <div className="dashboard-class-create-row">
-                                    <AddClassCard variant="row" onCreate={() => setCreateModalOpen(true)} />
+                            ) : filteredClasses.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card/90 backdrop-blur-md px-4 py-12 text-center shadow-xs">
+                                    <LessonSearchIllustration size={110} className="mb-2" />
+                                    <h3 className="font-serif font-bold text-lg text-foreground mt-2">
+                                        {locale === 'ar' ? 'لا توجد أقسام مطابقة' : 'Aucune classe correspondante'}
+                                    </h3>
+                                    <p className="mt-1 text-xs text-muted-foreground max-w-xs">
+                                        {locale === 'ar' ? 'اعرض جميع المواد أو أضف قسماً جديداً' : 'Affichez toutes les matières ou créez une classe.'}
+                                    </p>
+                                    <motion.button
+                                        type="button"
+                                        whileHover={reduceMotion ? undefined : { y: -2 }}
+                                        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                                        transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                                        onClick={() => setSubjectFilter('all')}
+                                        className="mt-4 inline-flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
+                                    >
+                                        {locale === 'ar' ? 'جميع الأقسام' : 'Toutes les classes'}
+                                    </motion.button>
+                                </div>
+                            ) : (
+                                <div className="dashboard-classes-container flex flex-col w-full" role="list" aria-label={t('dashboard.classList')}>
+                                    {groupedClasses.map((group, groupIndex) => (
+                                        <section
+                                            key={group.key}
+                                            className="dashboard-day-group w-full"
+                                            style={{
+                                                marginTop: groupIndex === 0 ? '16px' : '24px',
+                                            }}
+                                        >
+                                            {/* Titre de groupe par jour (« غدا », « الإثنين ») */}
+                                            {group.showTitle && (
+                                                <h2 className="dashboard-day-group__title">
+                                                    {group.label}
+                                                </h2>
+                                            )}
+                                            <div className="dashboard-day-group__cards flex flex-col gap-[12px] w-full">
+                                                {group.items.map((item, itemIdx) => {
+                                                    const isActiveSession = activeSessionIds.has(item.classInfo.id);
+                                                    return (
+                                                        <motion.div
+                                                            key={item.classInfo.id}
+                                                            role="listitem"
+                                                            layout={reduceMotion ? false : 'position'}
+                                                            layoutDependency={classLayoutKey}
+                                                            initial={false}
+                                                            transition={{ layout: CLASS_MOVE_TRANSITION }}
+                                                            className="relative w-full"
+                                                            style={{ zIndex: isActiveSession ? 2 : 0 }}
+                                                        >
+                                                            <ClassCard
+                                                                classInfo={item.classInfo}
+                                                                onSelect={() => openNotebook(item.classInfo)}
+                                                                onConfigure={() => setEditingClass(item.classInfo)}
+                                                                onOpenEvaluations={entry => onOpenEvaluations(item.classInfo, entry)}
+                                                                onDelete={() => setClassPendingDelete(item.classInfo)}
+                                                                index={itemIdx}
+                                                                isActiveSession={isActiveSession}
+                                                                scheduleStatus={scheduleStatusByClassId.get(item.classInfo.id)}
+                                                                palette={item.palette}
+                                                            />
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </section>
+                                    ))}
                                 </div>
                             )}
                         </section>
                     </main>
                 </div>
             </div>
+
+            {/* Bouton flottant « + » (ajout d'un département) : 56x56px, border-radius 18px, fond #6B4F3F */}
+            <motion.button
+                type="button"
+                whileHover={reduceMotion ? undefined : { scale: 1.05 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.94 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                onClick={() => setCreateModalOpen(true)}
+                className="dashboard-floating-add-btn"
+                aria-label={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
+                title={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
+            >
+                <Plus size={26} strokeWidth={2} color="#FFFFFF" aria-hidden="true" />
+            </motion.button>
 
             <ConfirmDialog
                 open={Boolean(classPendingDelete)}

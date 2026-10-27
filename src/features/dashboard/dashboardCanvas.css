@@ -1,4 +1,17 @@
-/* Canevas éditorial dynamique & immersif : esthétique Google Pixel Warm Paper & Samsung One UI 7 */
+/* Canevas éditorial : couleur unie #F6F3EE, zéro pointillé */
+:root {
+    --dash-bg: #F6F3EE;
+    --dash-header-ink: #1F1A16;
+    --dash-group-ink: #6B645C;
+    --dash-btn-bg: #6B4F3F;
+    --dash-btn-shadow: 0 6px 16px rgba(60, 40, 25, 0.25);
+    --dash-robot-badge-bg: #B3402A;
+    --dash-tabbar-bg: #FFFDF9;
+    --dash-tabbar-border: #E5DFD5;
+    --dash-tabbar-sheet-bg: #FBF9F4;
+    --dash-tabbar-inactive: #4A433C;
+    --dash-tabbar-active-bg: #6B4F3F;
+}
 
 [data-dashboard-surface],
 [data-dashboard-root],
@@ -10,28 +23,9 @@
     position: relative;
     min-height: 100dvh;
     font-family: var(--font-sans);
-    --canvas-zenith-hue: 24;
-    --canvas-zenith-sat: 78%;
-    --canvas-nadir-hue: 148;
-    --canvas-nadir-sat: 64%;
-    --canvas-horizon-hue: 220;
-    --canvas-horizon-sat: 70%;
-    --canvas-dot-hue: 36;
-    --canvas-tint-hue: 36;
-    --canvas-dot-lightness: 30%;
-    --canvas-dot-alpha: 0.075;
-    --canvas-dot-subtle-alpha: 0.024;
-    --canvas-dot-micro-alpha: 0.034;
 
-    background-color: var(--canvas-base, hsl(var(--background)));
-    background-image:
-        /* 1. Trame pointillée haute précision façon carnet Pixel */
-        radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.15px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.55px, transparent 1.65px),
-        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 26% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px);
-    background-repeat: repeat;
-    background-size: 24px 24px;
-    background-position: 0 0;
-    background-attachment: scroll;
+    background-color: var(--dash-bg, #F6F3EE) !important;
+    background-image: none !important;
     transition: background-color 240ms var(--pixel-spring);
 }
 
@@ -39,18 +33,8 @@
 .dark [data-dashboard-root],
 .dark .keep-dashboard-canvas,
 .dark .keep-futuristic-surface {
-    background-color: var(--canvas-base-dark, #0e0d12);
-    --canvas-dot-lightness: 78%;
-    --canvas-dot-alpha: 0.085;
-    --canvas-dot-subtle-alpha: 0.03;
-    --canvas-dot-micro-alpha: 0.038;
-    background-image:
-        /* Halos lumineux diffus (glows) qui rappellent subtilement les couleurs pastel des cartes */
-        radial-gradient(circle 600px at 15% 10%, hsl(var(--canvas-zenith-hue, 204) 75% 65% / 0.045), transparent 70%),
-        radial-gradient(circle 500px at 85% 35%, hsl(var(--canvas-horizon-hue, 43) 75% 65% / 0.04), transparent 70%),
-        radial-gradient(circle 550px at 50% 85%, hsl(var(--canvas-nadir-hue, 276) 70% 65% / 0.035), transparent 70%),
-        radial-gradient(circle at 12px 12px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-alpha)) 1.1px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-subtle-alpha)) 1.5px, transparent 1.6px),
-        radial-gradient(circle at 24px 24px, hsl(var(--canvas-dot-hue) 32% var(--canvas-dot-lightness) / var(--canvas-dot-micro-alpha)) 0.65px, transparent 1.1px);
+    background-color: #1a1815 !important;
+    background-image: none !important;
 }
 
 /* Les outils occupent la rangée supérieure ; le titre suit le bord du contenu. */
@@ -205,3 +189,62 @@ html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
         -webkit-backdrop-filter: none;
     }
 }
+
+/* Header de l'écran « أقسامي الدراسية » */
+.dashboard-top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+[dir="rtl"] .dashboard-top-header {
+    flex-direction: row-reverse;
+}
+
+.dashboard-header-title {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: var(--dash-header-ink, #1F1A16) !important;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.dashboard-header-colon,
+.dashboard-header-title > span[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Titres de groupe par jour (« غدا », « الإثنين ») */
+.dashboard-day-group__title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--dash-group-ink, #6B645C) !important;
+    margin-bottom: 10px !important;
+}
+
+/* Bouton flottant « + » (ajout d'un département) */
+.dashboard-floating-add-btn {
+    position: fixed;
+    bottom: 100px;
+    left: 20px;
+    z-index: 45;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background-color: var(--dash-btn-bg, #6B4F3F);
+    box-shadow: var(--dash-btn-shadow, 0 6px 16px rgba(60, 40, 25, 0.25));
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.dashboard-floating-add-btn:active {
+    transform: scale(0.92);
+}
+

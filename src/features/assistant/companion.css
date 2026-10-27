@@ -5,8 +5,8 @@
   --assistant-safe-right: env(safe-area-inset-right, 0px);
   position: relative;
   flex: none;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   text-align: start;
   font-family: var(--font-sans);
 }
@@ -14,8 +14,10 @@
 .assistant-trigger {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   position: relative;
   border: 1px solid color-mix(in srgb, var(--control-ink) 12%, transparent);
   padding: 0;
@@ -41,33 +43,37 @@
   transform: scale(.95);
 }
 
-/* Badge compteur d'attention immédiat sur le déclencheur */
+/* Badge du bouton assistant : cercle 18px, fond #B3402A, chiffre blanc 11px gras, placé en haut à gauche de l'icône */
 .assistant-trigger__badge {
   position: absolute;
-  inset-block-start: 1px;
-  inset-inline-end: 1px;
+  top: -3px;
+  left: -3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 14px;
-  height: 14px;
-  padding: 0 3px;
-  border-radius: 4px;
-  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0;
+  border-radius: 9999px;
+  border: none;
+  background: #B3402A;
+  color: #FFFFFF;
   font-family: var(--font-sans, sans-serif);
-  font-size: .57rem;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1;
-  color: #7c2d12;
   pointer-events: none;
-  box-shadow: 0 1px 2px rgb(55 43 32 / .08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   animation: assistant-badge-pop 200ms cubic-bezier(.34, 1.56, .64, 1) both;
 }
 
 .assistant-anchor[dir="rtl"] .assistant-trigger__badge {
-  inset-inline-end: auto;
-  inset-inline-start: 1px;
+  top: -3px;
+  left: -3px;
+  right: auto;
 }
 
 .assistant-trigger__badge--alert {
