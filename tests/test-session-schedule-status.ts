@@ -84,5 +84,16 @@ test('session schedule status : supporte la locale arabe', () => {
     });
 
     assert.equal(status.state, 'in_progress');
+    assert.equal(status.dayLabel, 'اليوم');
     assert.match(status.label, /حصة جارية · متبقي 44 دقيقة/);
+
+    // Mardi (day: 2) vu depuis Lundi 12h00 -> غدا
+    const tomorrowStatus = computeClassSessionSchedule([{ day: 2, slot: 4, classId: 'cls-1' }], 0, 'cls-1', {
+        now: makeCasablancaDate(2026, 10, 12, 12, 0),
+        locale: 'ar',
+    });
+    assert.equal(tomorrowStatus.state, 'upcoming');
+    assert.equal(tomorrowStatus.dayLabel, 'غدا');
+    assert.equal(tomorrowStatus.dayOffset, 1);
 });
+

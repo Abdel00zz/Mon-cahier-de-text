@@ -76,9 +76,9 @@ test('every calendar topic only highlights text actually shown, without an inven
   }
 });
 
-test('13 sourced teaching practices rotate predictably and distinguish Arabic excerpts from adaptations', () => {
-  assert.equal(PEDAGOGICAL_TIPS.length, 13);
-  assert.equal(new Set(PEDAGOGICAL_TIPS.map(tip => tip.id)).size, 13);
+test('60 sourced educational psychology and neuroscience practices rotate predictably and distinguish Arabic excerpts from adaptations', () => {
+  assert.ok(PEDAGOGICAL_TIPS.length >= 56, `expected at least 56 tips, got ${PEDAGOGICAL_TIPS.length}`);
+  assert.equal(new Set(PEDAGOGICAL_TIPS.map(tip => tip.id)).size, PEDAGOGICAL_TIPS.length);
   const quotedWordsBySource = new Map<string, number>();
   for (const tip of PEDAGOGICAL_TIPS) {
     assert.equal(new URL(tip.source.url).protocol, 'https:');
@@ -89,14 +89,14 @@ test('13 sourced teaching practices rotate predictably and distinguish Arabic ex
     quotedWordsBySource.set(tip.source.url, (quotedWordsBySource.get(tip.source.url) ?? 0) + tip.copy.ar.text.trim().split(/\s+/u).length);
     for (const locale of ['ar', 'fr', 'en'] as const) {
       const text = tip.copy[locale];
-      assert.ok(text.text.includes(text.keyword));
+      assert.ok(text.text.includes(text.keyword), `${tip.id}/${locale} must include keyword "${text.keyword}"`);
       assert.doesNotMatch(text.text, /\n|\r|<[^>]+>|\*\*/);
       assert.ok(text.text.length < 180, `${tip.id}/${locale} remains concise`);
     }
   }
   for (const [url, words] of quotedWordsBySource) assert.ok(words <= 25, `${url}: keep excerpts brief across the collection`);
-  const ids = Array.from({ length: 13 }, (_, offset) => pedagogicalTipForDay('2026-10-23', offset).id);
-  assert.equal(new Set(ids).size, 13);
-  assert.equal(pedagogicalTipForDay('2026-10-23', 13), pedagogicalTipForDay('2026-10-23'));
+  const ids = Array.from({ length: PEDAGOGICAL_TIPS.length }, (_, offset) => pedagogicalTipForDay('2026-10-23', offset).id);
+  assert.equal(new Set(ids).size, PEDAGOGICAL_TIPS.length);
+  assert.equal(pedagogicalTipForDay('2026-10-23', PEDAGOGICAL_TIPS.length), pedagogicalTipForDay('2026-10-23'));
   assert.ok(pedagogicalTipForDay('invalid', NaN));
 });

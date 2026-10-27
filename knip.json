@@ -4,19 +4,9 @@
   "ignoreBinaries": ["whoami.exe", "icacls.exe"],
   "ignoreDependencies": [
     "@fontsource-variable/cairo",
-    "@fontsource-variable/dm-sans",
-    "@fontsource-variable/inter",
-    "@fontsource-variable/outfit",
-    "@fontsource-variable/newsreader",
-    "@fontsource-variable/roboto-slab",
-    "@fontsource-variable/rubik",
-    "@fontsource-variable/source-sans-3",
-    "@fontsource/lato",
-    "@fontsource/special-elite",
     "firebase-tools"
   ],
   "entry": [
-    "src/admin/index.tsx",
     "api/admin.ts",
     "api/auth.ts",
     "api/calendar.ts",
@@ -37,6 +27,7 @@
     "scripts/showcase-preview/main.tsx",
     "scripts/ux-preview/main.tsx",
     "scripts/visual-review/*.tsx",
-    "scripts/assets/*.mjs"
+    "scripts/assets/*.mjs",
+    "scripts/build-curricula*.mjs"
   ]
 }

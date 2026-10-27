@@ -18,9 +18,9 @@ export interface ContentSuggestion {
 }
 
 /** Delay before proposing ready-to-use content on a newly created class (3 hours). */
-export const CONTENT_OFFER_MIN_AGE_MS = 3 * 3_600_000;
+const CONTENT_OFFER_MIN_AGE_MS = 3 * 3_600_000;
 /** Maximum course items considered "too brief" for proactive content assistance. */
-export const BRIEF_CONTENT_MAX_ITEMS = 6;
+const BRIEF_CONTENT_MAX_ITEMS = 6;
 
 const evidenceCache = new WeakMap<LessonsData, NotebookContentEvidence>();
 const timestamp = (value: string | undefined, now: number): number => {
@@ -40,7 +40,7 @@ export function isClassMatureForContentOffer(
 }
 
 /** True when a notebook is empty or its course content is still too brief. */
-export function hasMissingOrBriefContent(evidence: NotebookContentEvidence): boolean {
+function hasMissingOrBriefContent(evidence: NotebookContentEvidence): boolean {
   return evidence.empty || evidence.contentCount <= BRIEF_CONTENT_MAX_ITEMS;
 }
 

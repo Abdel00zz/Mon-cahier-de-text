@@ -1,4 +1,4 @@
-import type { AbsencePeriod, TimetableClockPolicy, TimetableEntry } from '../../types';
+import type { AbsencePeriod, ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../../types';
 import { getDaySessionBlocks } from './timetable';
 import { getBundledCalendar, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
@@ -47,6 +47,7 @@ export interface SessionScheduleOptions {
     calendar?: HolidayCalendar;
     locale?: string;
     absences?: AbsencePeriod[];
+    schedules?: ClassSchedule[];
 }
 
 /**
@@ -60,11 +61,28 @@ export function computeClassSessionSchedule(
     classId: string,
     options: SessionScheduleOptions = {},
 ): SessionScheduleStatus {
-    if (!timetable || timetable.length === 0 || !classId) {
+    if (!classId) {
         return { state: 'none', label: '', shortLabel: '' };
     }
 
-    const hasClassSlots = timetable.some(entry => entry.classId === classId);
+    const effectiveTimetable: TimetableEntry[] =
+        timetable && timetable.length > 0
+            ? timetable
+            : timetable === undefined && options.schedules && options.schedules.length > 0
+              ? options.schedules.flatMap(sched =>
+                    sched.slots.map((slot, idx) => ({
+                        day: slot.weekday,
+                        slot: idx % 8,
+                        classId: sched.classId,
+                    })),
+                )
+              : [];
+
+    if (effectiveTimetable.length === 0) {
+        return { state: 'none', label: '', shortLabel: '' };
+    }
+
+    const hasClassSlots = effectiveTimetable.some(entry => entry.classId === classId);
     if (!hasClassSlots) {
         return { state: 'none', label: '', shortLabel: '' };
     }
@@ -88,7 +106,7 @@ export function computeClassSessionSchedule(
 
     // 1. Analyse des créneaux d'aujourd'hui
     if (!todayBlocked) {
-        const todayBlocks = getDaySessionBlocks(timetable, currentDayOfWeek, clock)
+        const todayBlocks = getDaySessionBlocks(effectiveTimetable, currentDayOfWeek, clock)
             .filter(b => b.classId === classId)
             .sort((a, b) => a.startMin - b.startMin);
 
@@ -120,6 +138,7 @@ export function computeClassSessionSchedule(
                 endMin: activeBlock.endMin,
                 startTimeLabel: startLabel,
                 endTimeLabel: endLabel,
+                dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
             };
         }
@@ -154,6 +173,7 @@ export function computeClassSessionSchedule(
                     endMin: nextBlock.endMin,
                     startTimeLabel: startLabel,
                     endTimeLabel: endLabel,
+                    dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                     dayOffset: 0,
                 };
             }
@@ -178,73 +198,89 @@ export function computeClassSessionSchedule(
                 endMin: nextBlock.endMin,
                 startTimeLabel: startLabel,
                 endTimeLabel: endLabel,
+                dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
             };
         }
     }
 
-    // 2. Recherche de la prochaine séance dans les jours à venir (1 à 7 jours)
+    const buildUpcomingStatus = (offset: number, targetDayOfWeek: number, startMin: number, endMin: number): SessionScheduleStatus => {
+        const startLabel = formatHourMinute(startMin, lang);
+        const endLabel = formatHourMinute(endMin, lang);
+        const isTomorrow = offset === 1;
+        const dayName = DAY_NAMES[lang][targetDayOfWeek] ?? 'Lundi';
+
+        const label = isTomorrow
+            ? lang === 'ar'
+                ? `الحصة القادمة: غداً على الساعة ${startLabel}`
+                : lang === 'en'
+                  ? `Next session: Tomorrow at ${startLabel}`
+                  : `Prochaine séance : Demain à ${startLabel}`
+            : lang === 'ar'
+              ? `الحصة القادمة: ${dayName} على الساعة ${startLabel}`
+              : lang === 'en'
+                ? `Next session: ${dayName} at ${startLabel}`
+                : `Prochaine séance : ${dayName} à ${startLabel}`;
+
+        const shortLabel = isTomorrow
+            ? lang === 'ar'
+                ? `غداً ${startLabel}`
+                : lang === 'en'
+                  ? `Tomorrow at ${startLabel}`
+                  : `Demain à ${startLabel}`
+            : lang === 'ar'
+              ? `${dayName} ${startLabel}`
+              : lang === 'en'
+                ? `${dayName} at ${startLabel}`
+                : `${dayName} à ${startLabel}`;
+
+        return {
+            state: 'upcoming',
+            label,
+            shortLabel,
+            startMin,
+            endMin,
+            startTimeLabel: startLabel,
+            endTimeLabel: endLabel,
+            dayLabel: isTomorrow ? (lang === 'ar' ? 'غدا' : lang === 'en' ? 'Tomorrow' : 'Demain') : dayName,
+            dayOffset: offset,
+        };
+    };
+
+    // 2. Recherche de la prochaine séance dans les jours ouvrés à venir (1 à 21 jours)
     const [y, m, d] = todayIso.split('-').map(Number);
 
-    for (let offset = 1; offset <= 7; offset++) {
+    for (let offset = 1; offset <= 21; offset++) {
         const targetDate = new Date(Date.UTC(y, m - 1, d + offset, 12, 0, 0));
         const targetIso = targetDate.toISOString().slice(0, 10);
         if (isDayBlocked(targetIso)) continue;
 
         const targetDayOfWeek = targetDate.getUTCDay();
-        const targetBlocks = getDaySessionBlocks(timetable, targetDayOfWeek, clock)
+        const targetBlocks = getDaySessionBlocks(effectiveTimetable, targetDayOfWeek, clock)
             .filter(b => b.classId === classId)
             .sort((a, b) => a.startMin - b.startMin);
 
         if (targetBlocks.length > 0) {
             const nextBlock = targetBlocks[0];
-            const startLabel = formatHourMinute(nextBlock.startMin, lang);
-            const endLabel = formatHourMinute(nextBlock.endMin, lang);
-            const isTomorrow = offset === 1;
-            const dayName = DAY_NAMES[lang][targetDayOfWeek] ?? 'Lundi';
+            return buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin);
+        }
+    }
 
-            let label: string;
-            let shortLabel: string;
+    // 3. Repli hebdomadaire : si une période de vacances prolonge l'arrêt au-delà de 21 jours,
+    // on conserve le rattachement au jour hebdomadaire de l'emploi du temps du professeur.
+    for (let offset = 1; offset <= 7; offset++) {
+        const targetDate = new Date(Date.UTC(y, m - 1, d + offset, 12, 0, 0));
+        const targetDayOfWeek = targetDate.getUTCDay();
+        const targetBlocks = getDaySessionBlocks(effectiveTimetable, targetDayOfWeek, clock)
+            .filter(b => b.classId === classId)
+            .sort((a, b) => a.startMin - b.startMin);
 
-            if (isTomorrow) {
-                label = lang === 'ar'
-                    ? `الحصة القادمة: غداً على الساعة ${startLabel}`
-                    : lang === 'en'
-                      ? `Next session: Tomorrow at ${startLabel}`
-                      : `Prochaine séance : Demain à ${startLabel}`;
-
-                shortLabel = lang === 'ar'
-                    ? `غداً ${startLabel}`
-                    : lang === 'en'
-                      ? `Tomorrow at ${startLabel}`
-                      : `Demain à ${startLabel}`;
-            } else {
-                label = lang === 'ar'
-                    ? `الحصة القادمة: ${dayName} على الساعة ${startLabel}`
-                    : lang === 'en'
-                      ? `Next session: ${dayName} at ${startLabel}`
-                      : `Prochaine séance : ${dayName} à ${startLabel}`;
-
-                shortLabel = lang === 'ar'
-                    ? `${dayName} ${startLabel}`
-                    : lang === 'en'
-                      ? `${dayName} at ${startLabel}`
-                      : `${dayName} à ${startLabel}`;
-            }
-
-            return {
-                state: 'upcoming',
-                label,
-                shortLabel,
-                startMin: nextBlock.startMin,
-                endMin: nextBlock.endMin,
-                startTimeLabel: startLabel,
-                endTimeLabel: endLabel,
-                dayLabel: isTomorrow ? (lang === 'ar' ? 'غداً' : lang === 'en' ? 'Tomorrow' : 'Demain') : dayName,
-                dayOffset: offset,
-            };
+        if (targetBlocks.length > 0) {
+            const nextBlock = targetBlocks[0];
+            return buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin);
         }
     }
 
     return { state: 'none', label: '', shortLabel: '' };
 }
+

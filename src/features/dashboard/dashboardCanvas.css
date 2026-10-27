@@ -37,135 +37,8 @@
     background-image: none !important;
 }
 
-/* Les outils occupent la rangée supérieure ; le titre suit le bord du contenu. */
-[data-dashboard-root] .dashboard-heading {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-[dir="rtl"] [data-dashboard-root] .dashboard-heading,
-html[dir="rtl"] [data-dashboard-root] .dashboard-heading,
-html[lang="ar"] [data-dashboard-root] .dashboard-heading {
-    gap: 0.25rem;
-}
-
-[data-dashboard-root] .dashboard-heading__title {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-block-start: 0.25rem;
-    margin-inline-start: -4px;
-    font-family: var(--font-display);
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: hsl(var(--foreground));
-    text-align: start;
-    font-size: 32px;
-    line-height: 1.3;
-}
-
-[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-html[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
-    margin-inline-start: 0;
-    font-weight: 400;
-    letter-spacing: 0;
-}
-
-@media (max-width: 639px) {
-    [data-dashboard-root] .dashboard-heading__title {
-        font-size: 1.3rem;
-        line-height: 1.3;
-        margin-inline-start: 0;
-    }
-    [dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-    html[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-    html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
-        font-size: 1.3rem;
-        margin-inline-start: 0;
-    }
-}
-
-@media (min-width: 640px) and (max-width: 1023px) {
-    [data-dashboard-root] .dashboard-heading__title {
-        font-size: 1.58rem;
-        line-height: 1.3;
-        margin-inline-start: 0;
-    }
-    [dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-    html[dir="rtl"] [data-dashboard-root] .dashboard-heading__title,
-    html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
-        font-size: 1.58rem;
-        margin-inline-start: 0;
-    }
-}
-
-.dashboard-class-collection {
-    animation: dashboard-view-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .dashboard-class-section {
     container-type: inline-size;
-}
-
-
-/* Grille harmonisée avec mesures et proportions One UI / Pixel */
-.dashboard-class-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: stretch;
-    width: 100%;
-    gap: 16px;
-}
-
-.dashboard-class-grid[data-layout="single"] { max-width: 520px; margin-inline: auto; }
-.dashboard-class-grid[data-layout="double"] { max-width: 920px; margin-inline: auto; }
-.dashboard-class-grid[data-layout="triple"] { max-width: 1080px; margin-inline: auto; }
-[data-dashboard-root] .dashboard-heading { width: 100%; margin-inline: auto; max-width: 1080px; }
-[data-dashboard-root] .dashboard-heading[data-layout='double'] { max-width: 920px; }
-[data-dashboard-root] .dashboard-heading[data-layout='single'] { max-width: 520px; }
-
-.dashboard-class-list {
-    display: grid;
-    gap: 12px;
-}
-
-@keyframes dashboard-view-enter {
-    from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.985);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@container (min-width: 520px) {
-    .dashboard-class-grid[data-layout="double"],
-    .dashboard-class-grid[data-layout="triple"] {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@container (min-width: 768px) {
-    .dashboard-class-grid[data-layout="triple"] {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 640px) {
-    .dashboard-class-grid { gap: 20px; }
-}
-
-@media (min-width: 1024px) {
-    .dashboard-class-grid { gap: 24px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .dashboard-class-collection { animation: none; }
 }
 
 [data-dashboard-root] .dashboard-empty {
@@ -190,7 +63,7 @@ html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
     }
 }
 
-/* Header de l'écran « أقسامي الدراسية » */
+/* Header de l'écran « أقسامي الدراسية : » */
 .dashboard-top-header {
     display: flex;
     align-items: center;
@@ -203,6 +76,8 @@ html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
 }
 
 .dashboard-header-title {
+    display: inline-flex;
+    align-items: baseline;
     font-size: 26px !important;
     font-weight: 800 !important;
     color: var(--dash-header-ink, #1F1A16) !important;
@@ -210,17 +85,22 @@ html[lang="ar"] [data-dashboard-root] .dashboard-heading__title {
     letter-spacing: -0.01em;
 }
 
-.dashboard-header-colon,
-.dashboard-header-title > span[aria-hidden="true"] {
-    display: none !important;
+[dir="rtl"] .dashboard-header-title > span[aria-hidden="true"] {
+    margin-inline-start: 0.22em;
 }
 
-/* Titres de groupe par jour (« غدا », « الإثنين ») */
+/* Titres de groupe par jour (« غدا : », « الإثنين : ») */
 .dashboard-day-group__title {
+    display: flex;
+    align-items: baseline;
     font-size: 14px !important;
     font-weight: 700 !important;
     color: var(--dash-group-ink, #6B645C) !important;
     margin-bottom: 10px !important;
+}
+
+[dir="rtl"] .dashboard-day-group__title > span[aria-hidden="true"] {
+    margin-inline-start: 0.2em;
 }
 
 /* Bouton flottant « + » (ajout d'un département) */

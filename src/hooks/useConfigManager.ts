@@ -208,11 +208,20 @@ export const useConfigManager = () => {
                 logger.error('Failed to reload config after cloud pull', error);
             }
         };
+        const onStorage = (event: StorageEvent) => {
+            if (event.key === CONFIG_STORAGE_KEY) reload();
+        };
         const unsubscribePull = subscribe('pull-applied', reload);
         const unsubscribeConfig = subscribe('config-changed', reload);
+        if (typeof window !== 'undefined') {
+            window.addEventListener('storage', onStorage);
+        }
         return () => {
             unsubscribePull();
             unsubscribeConfig();
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('storage', onStorage);
+            }
         };
     }, [setConfig]);
 

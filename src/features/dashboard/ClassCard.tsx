@@ -12,7 +12,6 @@ import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassGroupWatermark';
 import { formatWithOrdinals } from '@/components/typography/ordinalTypography';
 import { useDevice } from '@/hooks/useDevice';
-import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import type { DepartmentPalette } from './departmentPalette';
 import './classCardLoading.css';
 
@@ -24,7 +23,6 @@ interface ClassCardProps {
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
     isActiveSession?: boolean;
-    scheduleStatus?: SessionScheduleStatus;
     palette?: DepartmentPalette;
 }
 
@@ -140,7 +138,6 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && previous.index === next.index
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
-    && previous.scheduleStatus?.label === next.scheduleStatus?.label
     && previous.palette?.bg === next.palette?.bg
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 

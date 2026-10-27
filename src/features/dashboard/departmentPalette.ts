@@ -5,7 +5,7 @@ export interface DepartmentPalette {
   secondary: string;
 }
 
-export const DEPARTMENT_PALETTES = {
+const DEPARTMENT_PALETTES = {
   green: { bg: '#EEF5DF', border: '#D5E5B5', title: '#2D4A14', secondary: '#4F6B2E' },
   rose: { bg: '#F9E8F3', border: '#EBC9DE', title: '#5E2150', secondary: '#86436F' },
   indigo: { bg: '#E9EBFA', border: '#CDD2F0', title: '#27307A', secondary: '#4A55A8' },

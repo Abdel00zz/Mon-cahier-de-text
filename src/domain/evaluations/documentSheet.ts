@@ -48,7 +48,7 @@ const ASSIGNED_TO_STUDENTS = [
 ];
 
 /** Titre de l'élément tel qu'il s'écrit en en-tête : sans la mention « assigné aux élèves ». */
-export const sheetTitleOf = (title: string): string =>
+const sheetTitleOf = (title: string): string =>
   ASSIGNED_TO_STUDENTS.reduce((text, pattern) => text.replace(pattern, ''), title).replace(/\s{2,}/g, ' ').trim();
 
 interface TitlePattern {
@@ -170,7 +170,7 @@ const extractOrdinal = (raw: string): string | null => {
  * (ex: « Devoir maison 1 », « Devoir surveillé 1 ») et non en arabe (« فرض منزلي »).
  * Si le texte est en arabe (RTL), l'en-tête s'affiche en arabe.
  */
-export const harmonizeDocumentHeaderTitle = (title: string, source: string | null | undefined): string => {
+const harmonizeDocumentHeaderTitle = (title: string, source: string | null | undefined): string => {
   if (!source?.trim()) return title;
   const docDir = detectTextDirection(source);
   if (!docDir) return title;

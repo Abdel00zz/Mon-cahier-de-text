@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 
 export type PwaPlatform = 'ios' | 'android' | 'desktop';
 
-export interface BeforeInstallPromptEvent extends Event {
+interface BeforeInstallPromptEvent extends Event {
   readonly platforms?: string[];
   readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
   prompt(): Promise<void>;
@@ -17,7 +17,7 @@ export interface PwaInstallSnapshot {
   readonly guideOpen: boolean;
 }
 
-export const PWA_INSTALLED_STORAGE_KEY = 'cdt_pwa_installed_v1';
+const PWA_INSTALLED_STORAGE_KEY = 'cdt_pwa_installed_v1';
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 let installing = false;
@@ -183,7 +183,7 @@ export async function triggerPwaInstall(): Promise<'accepted' | 'dismissed' | 'g
   return 'guide';
 }
 
-export async function registerPwaServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+async function registerPwaServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   try {
     if (Capacitor.isNativePlatform()) return null;
   } catch {

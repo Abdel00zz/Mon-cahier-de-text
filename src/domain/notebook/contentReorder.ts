@@ -36,7 +36,7 @@ const hasNestedChildren = (item: unknown): boolean => {
     || (Array.isArray(candidate.sections) && candidate.sections.length > 0);
 };
 
-export const isAssessmentOrCorrection = (item: unknown): boolean =>
+const isAssessmentOrCorrection = (item: unknown): boolean =>
   typeof item === 'object'
   && item !== null
   && ASSESSMENT_AND_CORRECTION_TYPES.has(String((item as { type?: unknown }).type))
@@ -422,7 +422,7 @@ export function applyContentMove(draft: Draft<LessonsData>, plan: ContentMovePla
 
 const EXERCISE_TYPE = 'exercice';
 
-export const isExercise = (item: unknown): boolean =>
+const isExercise = (item: unknown): boolean =>
   typeof item === 'object' && item !== null && [EXERCISE_TYPE, 'exercise', 'exo', 'exercice corrigé'].includes(String((item as { type?: unknown }).type).toLowerCase());
 export interface ContentTransferPlan {
   source: { anchor: Indices; parent: unknown; start: number; count: number };

@@ -12,8 +12,7 @@ import { ClassCard } from './ClassCard';
 import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
-import { ClassListItem } from './ClassListItem';
-import { pickDepartmentPalette, type DepartmentPalette, type PaletteKey } from './departmentPalette';
+import { pickDepartmentPalette, type PaletteKey } from './departmentPalette';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
@@ -26,10 +25,11 @@ import { collectTeacherSubjects, subjectKey } from '@/domain/classes/subjectScop
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/domain/classes/classOrder';
-import { computeDynamicCanvasStyle } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
+import { getBundledCalendar, loadHolidayCalendar, type HolidayCalendar } from '@/domain/calendar/calendar';
 import { computeClassSessionSchedule, type SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
+import { subscribe as subscribeSyncBus } from '@/infrastructure/sync/syncBus';
 import { ClassAssistant } from '@/features/assistant/ClassAssistant';
 import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
 
@@ -268,10 +268,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter),
         activeSessionIds,
     ), [persistedClassOrder, classById, subjectFilter, activeSessionIds]);
-    const canvasStyle = useMemo(
-        () => computeDynamicCanvasStyle(filteredClasses, activeSessionClassIds),
-        [filteredClasses, activeSessionClassIds],
-    );
     const assistantVisibleClassIds = useMemo(() => filteredClasses.map(item => item.id), [filteredClasses]);
     // Measure only when order, session title or display mode changes, not on
     // unrelated sync/config renders. Position-only animation keeps text crisp.
@@ -280,22 +276,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
         [classDisplayMode, filteredClasses, activeSessionIds],
     );
 
+    const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
     const [scheduleClockNow, setScheduleClockNow] = useState(() => new Date());
     useEffect(() => {
-        const timer = setInterval(() => {
-            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-                setScheduleClockNow(new Date());
-            }
-        }, 30000);
-        const onVisibility = () => {
-            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        let active = true;
+        void loadHolidayCalendar().then(loaded => {
+            if (active) setCalendar(loaded);
+        });
+        const refreshClock = () => {
+            if (typeof document === 'undefined' || document.visibilityState === 'visible') {
                 setScheduleClockNow(new Date());
             }
         };
-        document.addEventListener('visibilitychange', onVisibility);
+        const timer = setInterval(refreshClock, 30000);
+        const offPull = subscribeSyncBus('pull-applied', refreshClock);
+        const offConfig = subscribeSyncBus('config-changed', refreshClock);
+        const offClasses = subscribeSyncBus('classes-changed', refreshClock);
+        document.addEventListener('visibilitychange', refreshClock);
+        window.addEventListener('focus', refreshClock);
         return () => {
+            active = false;
             clearInterval(timer);
-            document.removeEventListener('visibilitychange', onVisibility);
+            offPull();
+            offConfig();
+            offClasses();
+            document.removeEventListener('visibilitychange', refreshClock);
+            window.removeEventListener('focus', refreshClock);
         };
     }, []);
 
@@ -308,12 +314,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     config.timetable,
                     config.timetableClock,
                     classInfo.id,
-                    { now: scheduleClockNow, locale, absences: config.absences }
+                    {
+                        now: scheduleClockNow,
+                        calendar,
+                        locale,
+                        absences: config.absences,
+                        schedules: config.schedules,
+                    }
                 )
             );
         }
         return map;
-    }, [classes, config.timetable, config.timetableClock, config.absences, locale, scheduleClockNow]);
+    }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, calendar, locale, scheduleClockNow]);
 
     const groupedClasses = useMemo(() => {
         const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number }> }>();
@@ -337,14 +349,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     groupLabel = locale === 'ar' ? 'غدا' : (locale === 'en' ? 'Tomorrow' : 'Demain');
                     groupOrder = 1;
                 } else {
-                    groupKey = `day-${offset}-${schedule.dayLabel ?? ''}`;
-                    groupLabel = schedule.dayLabel ?? (locale === 'ar' ? 'أيام قادمة' : 'Jours à venir');
+                    const label = schedule.dayLabel ?? (locale === 'ar' ? 'أيام قادمة' : 'Jours à venir');
+                    groupKey = `day-${label}`;
+                    groupLabel = label;
                     groupOrder = offset;
                 }
             }
 
             if (!groupsMap.has(groupKey)) {
                 groupsMap.set(groupKey, { label: groupLabel, order: groupOrder, rawItems: [] });
+            } else {
+                const existing = groupsMap.get(groupKey)!;
+                existing.order = Math.min(existing.order, groupOrder);
             }
             groupsMap.get(groupKey)!.rawItems.push({ classInfo, startMin });
         }
@@ -527,10 +543,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 marginTop: groupIndex === 0 ? '16px' : '24px',
                                             }}
                                         >
-                                            {/* Titre de groupe par jour (« غدا », « الإثنين ») */}
+                                            {/* Titre de groupe par jour (« غدا : », « الإثنين : ») */}
                                             {group.showTitle && (
                                                 <h2 className="dashboard-day-group__title">
-                                                    {group.label}
+                                                    <span>{group.label}</span>
+                                                    <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
                                                 </h2>
                                             )}
                                             <div className="dashboard-day-group__cards flex flex-col gap-[12px] w-full">
@@ -555,7 +572,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 onDelete={() => setClassPendingDelete(item.classInfo)}
                                                                 index={itemIdx}
                                                                 isActiveSession={isActiveSession}
-                                                                scheduleStatus={scheduleStatusByClassId.get(item.classInfo.id)}
                                                                 palette={item.palette}
                                                             />
                                                         </motion.div>
