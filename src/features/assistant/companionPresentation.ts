@@ -1,6 +1,11 @@
 import type { AppLocale } from '../../types';
 import type { CompanionBrainSnapshot } from '../../domain/assistant/companionBrain';
-import { classGuidanceMessage, companionInstallAppMessage, type CompanionMessage } from './companionCopy';
+import {
+  classGuidanceMessage,
+  companionEnableNotificationsMessage,
+  companionInstallAppMessage,
+  type CompanionMessage,
+} from './companionCopy';
 import { companionServiceMessage } from './companionServiceCopy';
 import { contentSuggestionMessage } from './contentSuggestionCopy';
 import { companionCalendarMessage } from './companionCalendarCopy';
@@ -11,6 +16,7 @@ import { conversationCopy } from '../messages/conversationCopy';
 export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLocale, today: string, recovering: boolean): CompanionMessage {
   const { decision } = snapshot;
   if (decision.kind === 'install-app') return companionInstallAppMessage(locale);
+  if (decision.kind === 'enable-notifications') return companionEnableNotificationsMessage(locale, decision.mode);
   if (decision.kind === 'calendar') return companionCalendarMessage(decision.notice, locale, snapshot.target?.name);
   let message: CompanionMessage;
   if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale, { askReadyContent: snapshot.canContactTeam });

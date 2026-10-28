@@ -6,6 +6,7 @@ const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
+  '/manifest-ar.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
@@ -59,6 +60,7 @@ function isCacheableStaticPath(pathname) {
     pathname.startsWith('/doc_officiel/') ||
     pathname.startsWith('/guide/') ||
     pathname === '/manifest.webmanifest' ||
+    pathname === '/manifest-ar.webmanifest' ||
     pathname.startsWith('/calendrier_scolaire_maroc_')
   );
 }

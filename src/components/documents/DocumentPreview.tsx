@@ -6,7 +6,7 @@ import { renderDescriptionWithBold } from '../typography/textFormat';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { DocumentPrintButton } from './DocumentPrintButton';
 import { DocumentSheetHeader } from './DocumentSheetHeader';
-import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { detectDocumentContentDirection, parseDocumentSheet } from '../../domain/evaluations/documentSheet';
 import { resolveDocumentDirection, textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
@@ -49,11 +49,17 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     source,
 }) => {
     const { t, isRtl } = useLocale();
-    const page = React.useMemo(
-        () => (isOpen && source?.trim() ? renderDescriptionWithBold(source) : null),
-        [isOpen, source],
+    const sheet = React.useMemo(
+        () => parseDocumentSheet(source, title, classLabel),
+        [source, title, classLabel],
     );
-    const sheetDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, title, isRtl ? 'rtl' : 'ltr');
+    const page = React.useMemo(
+        () => (isOpen && source?.trim() ? renderDescriptionWithBold(sheet.body) : null),
+        [isOpen, source, sheet.body],
+    );
+    const sheetDir = detectDocumentContentDirection(source)
+        ?? textDirectionAttribute(source)
+        ?? resolveDocumentDirection(source, sheet.title ?? title, isRtl ? 'rtl' : 'ltr');
 
     return (
         <Modal
@@ -67,13 +73,13 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 <Button type="button" variant="outline" onClick={onClose} className="rounded-md">{t('common.close')}</Button>
             }
             /* Le document commence directement : aucun contexte ajouté. */
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={title} classLabel={classLabel} className="ms-auto" /></span>}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={sheet.title ?? title} classLabel={sheet.classLabel ?? classLabel} className="ms-auto" /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper border border-border/80 bg-card p-3.5 sm:p-5">
                     {page ? (
                         <div dir={sheetDir}>
-                            <DocumentSheetHeader title={headerTitleFor(title, source)} classLabel={classLabel} dir={sheetDir} />
+                            <DocumentSheetHeader title={sheet.title} classLabel={sheet.classLabel} dir={sheetDir} />
                             <div className="devoir-document mx-auto max-w-[56rem]" dir={sheetDir}>{page}</div>
                         </div>
                     ) : (

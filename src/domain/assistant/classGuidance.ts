@@ -1,4 +1,4 @@
-import type { ClassEvaluationEntry, LessonsData } from '../../types';
+import type { ClassEvaluationEntry, LessonsData, NotificationSettings } from '../../types';
 import { diagnosePedagogicalState, type PedagogicalBrainConfig, type PedagogicalDiagnosis } from '../intelligence/pedagogicalBrain';
 import type { NotebookAdvice } from '../intelligence/notebookAdvisor';
 import type { EvaluationConflict } from '../evaluations/evaluationConflicts';
@@ -33,7 +33,9 @@ export interface GuidanceBrainContext {
   calendar?: HolidayCalendar;
 }
 
-export type GuidanceConfig = PedagogicalBrainConfig;
+export type GuidanceConfig = PedagogicalBrainConfig & {
+  notificationSettings?: Partial<NotificationSettings>;
+};
 
 /**
  * Moteur décisionnel du compagnon connecté au cerveau pédagogique central.

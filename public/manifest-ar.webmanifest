@@ -1,0 +1,85 @@
+{
+  "id": "/",
+  "name": "دفتر نصوصي",
+  "short_name": "دفتر نصوصي",
+  "name_localized": {
+    "ar": { "value": "دفتر نصوصي", "lang": "ar", "dir": "rtl" },
+    "fr": { "value": "Mon cahier de textes", "lang": "fr", "dir": "ltr" }
+  },
+  "short_name_localized": {
+    "ar": { "value": "دفتر نصوصي", "lang": "ar", "dir": "rtl" },
+    "fr": { "value": "Mon cahier de textes", "lang": "fr", "dir": "ltr" }
+  },
+  "description": "دفتر النصوص الرقمي للأستاذ — مطابق للتوجيهات التربوية الرسمية.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#faf9f5",
+  "theme_color": "#faf9f5",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/guide/current/classes-ar.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "لوحة قيادة الأقسام — دفتر نصوصي"
+    },
+    {
+      "src": "/guide/current/editor-ar.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "محرر دفتر النصوص — دفتر نصوصي"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "أقسامي الدراسية",
+      "short_name": "أقسامي",
+      "description": "الولوج المباشر إلى دفاتر النصوص",
+      "url": "/#/",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

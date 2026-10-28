@@ -50,10 +50,10 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Mon Cahier de Text</title>
-  <meta name="application-name" content="Mon Cahier de Text" />
+  <title>Mon cahier de textes</title>
+  <meta name="application-name" content="Mon cahier de textes" />
   <meta name="description" content="Cahier de textes enseignant avec progression, emploi du temps, évaluations et accès hors connexion." />
-  <meta property="og:title" content="Mon Cahier de Text" />
+  <meta property="og:title" content="Mon cahier de textes" />
   <meta property="og:description" content="Cahier de textes enseignant avec progression, emploi du temps, évaluations et accès hors connexion." />
   <meta name="color-scheme" content="light" />
   <meta name="format-detection" content="telephone=no" />
@@ -63,8 +63,27 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Cahier de Text" />
+  <meta name="apple-mobile-web-app-title" content="Mon cahier de textes" />
   <link rel="manifest" href="/manifest.webmanifest" />
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('appConfig_v1');
+        var locale = raw ? (JSON.parse(raw).applicationLocale || 'ar') : 'ar';
+        var isAr = locale === 'ar';
+        var appTitle = isAr ? 'دفتر نصوصي' : 'Mon cahier de textes';
+        document.title = appTitle;
+        var appMeta = document.querySelector('meta[name="application-name"]');
+        if (appMeta) appMeta.setAttribute('content', appTitle);
+        var appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        if (appleTitle) appleTitle.setAttribute('content', appTitle);
+        var ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', appTitle);
+        var manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) manifestLink.setAttribute('href', isAr ? '/manifest-ar.webmanifest' : '/manifest.webmanifest');
+      } catch (_) {}
+    })();
+  </script>
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
 
   <!-- Favicons -->

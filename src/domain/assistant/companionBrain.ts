@@ -3,7 +3,7 @@ import type { HolidayCalendar } from '../calendar/calendar';
 import { diagnosePedagogicalState } from '../intelligence/pedagogicalBrain';
 import { pendingAdminMessages } from '../messages/conversation';
 import { guidanceAction, guidanceFromDiagnosis, type GuidanceAction, type GuidanceConfig } from './classGuidance';
-import { decideCompanion, type CompanionDecision, type CompanionSignals } from './companionDecision';
+import { decideCompanion, type CompanionDecision, type CompanionNotificationPrompt, type CompanionSignals } from './companionDecision';
 import { resolvePedagogicalBehavior, type PedagogicalBehavior } from './companionPedagogicalBehavior';
 import { isClassMatureForContentOffer, orderCompanionClasses, resolveContentSuggestion } from './contentSuggestion';
 import { companionCalendarNotice } from './companionCalendar';
@@ -12,7 +12,10 @@ import type { NotebookActivity } from './notebookActivity';
 import { createNotebookSnapshot } from './notebookSnapshot';
 import { pedagogicalTasks } from './pedagogicalTasks';
 
-type ServiceSignals = Omit<CompanionSignals, 'guidance' | 'hasContentSuggestion' | 'hasNotebookReader' | 'calendarNotice' | 'pwaInstallRequired'>;
+type ServiceSignals = Omit<
+  CompanionSignals,
+  'guidance' | 'hasContentSuggestion' | 'hasNotebookReader' | 'calendarNotice' | 'pwaInstallRequired' | 'notificationPrompt'
+>;
 export interface CompanionBrainInput {
   classes: readonly ClassInfo[];
   config: GuidanceConfig;
@@ -31,14 +34,19 @@ export interface CompanionBrainInput {
   contactedClassIds?: ReadonlySet<string>;
   ignoredClassIds?: ReadonlySet<string>;
   pwaInstallRequired?: boolean;
+  notificationPrompt?: CompanionNotificationPrompt;
   skippedTaskIds?: ReadonlySet<string>;
   skippedMessageKeys?: ReadonlySet<string>;
 }
-export type CompanionAction = GuidanceAction | { type: 'install-app' | 'retry-sync' | 'retry-inbox' | 'read-reply' | 'request-content' | 'none' };
+export type CompanionAction =
+  | GuidanceAction
+  | { type: 'install-app' | 'retry-sync' | 'retry-inbox' | 'read-reply' | 'request-content' | 'none' }
+  | { type: 'enable-notifications'; mode: CompanionNotificationPrompt };
 
 function selectAction(decision: CompanionDecision, fallback: GuidanceAction, checking: boolean): CompanionAction {
   switch (decision.kind) {
     case 'install-app': return { type: 'install-app' };
+    case 'enable-notifications': return { type: 'enable-notifications', mode: decision.mode };
     case 'sync-error': return { type: 'retry-sync' };
     case 'inbox-error': return { type: 'retry-inbox' };
     case 'reply': return { type: 'read-reply' };
@@ -91,6 +99,9 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     const filteredMessages = input.skippedMessageKeys?.size
       ? input.services.messages.filter(msg => !input.skippedMessageKeys!.has(`reply:${msg.id}`))
       : input.services.messages;
+    const effectiveNotificationPrompt = loading || input.skippedMessageKeys?.has('enable-notifications')
+      ? undefined
+      : input.notificationPrompt;
     const decision = decideCompanion({
       ...input.services,
       messages: filteredMessages,
@@ -99,14 +110,17 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       hasNotebookReader: Boolean(snapshot.read),
       hasContentSuggestion: Boolean(contentSuggestion),
       pwaInstallRequired: input.pwaInstallRequired,
+      notificationPrompt: effectiveNotificationPrompt,
     });
     const isInstallApp = decision.kind === 'install-app';
+    const isEnableNotifications = decision.kind === 'enable-notifications';
+    const isDeviceSetup = isInstallApp || isEnableNotifications;
     const reply = decision.kind === 'reply' ? decision.reply : undefined;
-    const targetId = isInstallApp ? undefined : reply?.classId ?? (decision.kind === 'offer' ? contentSuggestion?.target.id
+    const targetId = isDeviceSetup ? undefined : reply?.classId ?? (decision.kind === 'offer' ? contentSuggestion?.target.id
       : 'classId' in guidance ? guidance.classId : undefined);
     const target = input.classes.find(item => item.id === targetId);
     const serviceError = decision.kind === 'sync-error' || decision.kind === 'inbox-error';
-    const service = !['guidance', 'offer', 'reply', 'calendar', 'install-app'].includes(decision.kind);
+    const service = !['guidance', 'offer', 'reply', 'calendar', 'install-app', 'enable-notifications'].includes(decision.kind);
     const guidanceProblem = decision.kind === 'guidance' && (
       guidance.step === 'notebook-unavailable'
       || guidance.step === 'notebook-issue'
@@ -118,12 +132,12 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       && guidance.step === 'notebook-empty'
       && isClassMatureForContentOffer(target, input.now);
     const delayedBriefContent = decision.kind === 'offer' && Boolean(contentSuggestion);
-    const canContactTeam = !isInstallApp && (serviceError || guidanceProblem || delayedEmptyContent || delayedBriefContent);
+    const canContactTeam = !isDeviceSetup && (serviceError || guidanceProblem || delayedEmptyContent || delayedBriefContent);
     const pendingTasks = tasks.filter(task => task.guidance.step !== 'active-session');
     const unreadReplies = input.services.authenticated ? pendingAdminMessages(filteredMessages).length : 0;
-    const attentionCount = pendingTasks.length + unreadReplies + Number(serviceError) + Number(isInstallApp);
+    const attentionCount = pendingTasks.length + unreadReplies + Number(serviceError) + Number(isDeviceSetup);
     let behavior: PedagogicalBehavior = resolvePedagogicalBehavior(guidance);
-    if (isInstallApp) {
+    if (isDeviceSetup) {
       behavior = {
         problemCount: Math.max(1, attentionCount),
         severity: 'minor',
@@ -141,12 +155,13 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       behavior = { ...behavior, robotAction: 'inspect', antennaFlash: false };
     }
     const index = selectedTask ? tasks.indexOf(selectedTask) : -1;
-    const nextTaskId = !isInstallApp && decision.kind === 'guidance' && guidance.step !== 'active-session' && tasks.length > 1
+    const nextTaskId = !isDeviceSetup && decision.kind === 'guidance' && guidance.step !== 'active-session' && tasks.length > 1
       ? tasks[(index + 1) % tasks.length].id : undefined;
     const isTransientLoading = decision.kind === 'checking' || decision.kind === 'syncing'
       || (decision.kind === 'guidance' && guidance.step === 'checking');
     const canSkip = !isInstallApp && !isTransientLoading;
     const skipKey = isInstallApp ? undefined
+      : isEnableNotifications ? 'enable-notifications'
       : decision.kind === 'offer' && contentSuggestion ? `offer:${contentSuggestion.target.id}`
       : decision.kind === 'calendar' && calendarKey ? calendarKey
       : decision.kind === 'reply' && reply ? `reply:${reply.id}`
@@ -167,15 +182,17 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       taskPosition: index + 1,
       action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking'),
       behavior: { ...behavior, problemCount: attentionCount }, nextTaskId,
-      attentionKey: isInstallApp ? 'install-app' : service ? serviceError ? decision.kind : undefined : reply?.id
+      attentionKey: isInstallApp ? 'install-app'
+        : isEnableNotifications ? `enable-notifications:${decision.mode}`
+        : service ? serviceError ? decision.kind : undefined : reply?.id
         ?? (decision.kind === 'guidance' && selectedTask && guidance.step !== 'active-session'
           ? `${selectedTask.id}:${selectedTask.evidence.occurrences}:${guidance.step === 'notebook-followup' ? guidance.lastSessionDate ?? 'first' : selectedTask.evidence.samplePath ?? ''}` : undefined),
       calendarNotice: decision.kind === 'calendar' ? decision.notice : undefined,
-      showTips: !isInstallApp && decision.kind === 'guidance' && guidance.step === 'ready',
-      helpReference: isInstallApp ? undefined : companionHelpReference(decision, guidance),
+      showTips: !isDeviceSetup && decision.kind === 'guidance' && guidance.step === 'ready',
+      helpReference: isDeviceSetup ? undefined : companionHelpReference(decision, guidance),
       // Explanations can be inspected without exposing text, names of pupils or provider secrets.
-      trace: { rule: isInstallApp ? 'install-app' : selectedTask && decision.kind === 'guidance' ? selectedTask.evidence.rule : decision.kind,
-        evidence: !isInstallApp && selectedTask && decision.kind === 'guidance' ? selectedTask.evidence : undefined,
+      trace: { rule: isInstallApp ? 'install-app' : isEnableNotifications ? 'enable-notifications' : selectedTask && decision.kind === 'guidance' ? selectedTask.evidence.rule : decision.kind,
+        evidence: !isDeviceSetup && selectedTask && decision.kind === 'guidance' ? selectedTask.evidence : undefined,
         pending: pendingTasks.length, observedAt: input.now },
     };
   };

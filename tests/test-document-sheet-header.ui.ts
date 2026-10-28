@@ -3,7 +3,13 @@ import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
-import { headerTitleFor } from '../src/domain/evaluations/documentSheet';
+import {
+  classLabelFor,
+  harmonizeDocumentSheetSource,
+  headerTitleFor,
+  parseDocumentSheet,
+  seedDocumentSheetSource,
+} from '../src/domain/evaluations/documentSheet';
 import { DocumentSheetHeader } from '../src/components/documents/DocumentSheetHeader';
 import { DocumentPrintButton } from '../src/components/documents/DocumentPrintButton';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
@@ -108,4 +114,44 @@ test('l’en-tête s’harmonise avec la langue du texte rédigé (français/ara
   assert.equal(headerTitleFor('Devoir surveillé 2', 'التمرين الأول : ليكن $f$ دالة معرفة على'), 'فرض محروس 2');
   assert.equal(headerTitleFor('Correction du devoir maison 1', 'عناصر الإجابة وسلم التنقيط'), 'تصحيح الفرض المنزلي 1');
 });
+
+test('le nom de la classe et l’en-tête transmis suivent la langue du contenu et sont modifiables dans l’éditeur', () => {
+  // Harmonisation du nom de la classe selon la langue détectée dans le contenu
+  assert.equal(
+    classLabelFor('قسم الثانية بكالوريا علوم فيزيائية 1', '## Exercice 1\nCalculer la limite.'),
+    '2ème Bac Sciences Physiques 1',
+  );
+  assert.equal(
+    classLabelFor('2ème Bac Sciences Physiques 1', '## التمرين الأول\nاحسب النهاية التالية.'),
+    'قسم الثانية بكالوريا علوم فيزيائية 1',
+  );
+
+  // L'éditeur (« Source ») reçoit l'en-tête et la classe dans la langue du contenu pour qu'ils soient modifiables
+  const seededFr = seedDocumentSheetSource(
+    '## Exercice 1\nSoit $f(x) = x^2$.',
+    'فرض محروس 1',
+    'قسم الثانية بكالوريا علوم فيزيائية 1',
+  );
+  assert.equal(
+    seededFr,
+    '# Devoir surveillé 1\n2ème Bac Sciences Physiques 1\n\n## Exercice 1\nSoit $f(x) = x^2$.',
+  );
+
+  // Toute modification de l'en-tête ou de la classe dans l'éditeur se reflète dans l'aperçu sans doublon dans le corps
+  const modified = '# Devoir surveillé n°1 — Semestre 1\n2BAC PC — Groupe A\n\n## Exercice 1\nSoit $f(x) = x^2$.';
+  const parsed = parseDocumentSheet(modified, 'Devoir surveillé 1', '2ème Bac Sciences Physiques 1', { seeded: true });
+  assert.equal(parsed.title, 'Devoir surveillé n°1 — Semestre 1');
+  assert.equal(parsed.classLabel, '2BAC PC — Groupe A');
+  assert.equal(parsed.body, '## Exercice 1\nSoit $f(x) = x^2$.');
+
+  // Si l'enseignant colle un sujet en français sous un en-tête initial en arabe, l'en-tête et la classe s'adaptent
+  const harmonized = harmonizeDocumentSheetSource(
+    '# فرض محروس 1\nقسم الثانية بكالوريا علوم فيزيائية 1\n\n## Exercice 1\nCalculer la dérivée.',
+  );
+  assert.equal(
+    harmonized,
+    '# Devoir surveillé 1\n2ème Bac Sciences Physiques 1\n\n## Exercice 1\nCalculer la dérivée.',
+  );
+});
+
 

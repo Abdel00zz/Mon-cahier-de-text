@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { decideCompanion } from '../src/domain/assistant/companionDecision';
+import { decideCompanion, resolveNotificationPrompt } from '../src/domain/assistant/companionDecision';
 import type { AdminMessage } from '../src/types';
 
 const signals: Parameters<typeof decideCompanion>[0] = {
@@ -65,4 +65,88 @@ test('an unread message initiated by the team is not lost just because it has no
   assert.equal(decision.kind, 'reply');
   assert.equal(decision.kind === 'reply' && decision.reply.id, notice.id);
   assert.equal(decideCompanion({ ...signals, messages: [{ ...notice, acknowledgedAt: notice.createdAt }] }).kind, 'offer');
+});
+
+test('notification activation prompt comes strictly after PWA install and follows targeted device/config rules', () => {
+  assert.equal(
+    decideCompanion({ ...signals, pwaInstallRequired: true, notificationPrompt: 'activate' }).kind,
+    'install-app',
+  );
+  assert.deepEqual(
+    decideCompanion({ ...signals, pwaInstallRequired: false, notificationPrompt: 'activate' }),
+    { kind: 'enable-notifications', mode: 'activate' },
+  );
+  assert.deepEqual(
+    decideCompanion({ ...signals, pwaInstallRequired: false, notificationPrompt: 'settings' }),
+    { kind: 'enable-notifications', mode: 'settings' },
+  );
+
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      pwaInstallRequired: true,
+      permission: 'default',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    undefined,
+    'never ask for notifications while PWA install is still pending',
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: false,
+      pwaInstallRequired: false,
+      permission: 'default',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    undefined,
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      checking: true,
+      pwaInstallRequired: false,
+      permission: 'default',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    undefined,
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      pwaInstallRequired: false,
+      permission: 'default',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    'activate',
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      pwaInstallRequired: false,
+      permission: 'granted',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    'activate',
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      pwaInstallRequired: false,
+      permission: 'denied',
+      notificationSettings: { enabled: true, pushEnabled: false },
+    }),
+    'settings',
+  );
+  assert.equal(
+    resolveNotificationPrompt({
+      supported: true,
+      pwaInstallRequired: false,
+      permission: 'granted',
+      delivery: 'local',
+      subscribed: true,
+      notificationSettings: { enabled: true, pushEnabled: true },
+    }),
+    undefined,
+    'silent once native notifications and preferences are active',
+  );
 });

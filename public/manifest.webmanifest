@@ -1,7 +1,15 @@
 {
   "id": "/",
-  "name": "Mon Cahier de Text — دفتر نصوصي",
-  "short_name": "CahierText",
+  "name": "Mon cahier de textes",
+  "short_name": "Mon cahier de textes",
+  "name_localized": {
+    "fr": { "value": "Mon cahier de textes", "lang": "fr", "dir": "ltr" },
+    "ar": { "value": "دفتر نصوصي", "lang": "ar", "dir": "rtl" }
+  },
+  "short_name_localized": {
+    "fr": { "value": "Mon cahier de textes", "lang": "fr", "dir": "ltr" },
+    "ar": { "value": "دفتر نصوصي", "lang": "ar", "dir": "rtl" }
+  },
   "description": "Cahier de textes numérique de l'enseignant — دفتر النصوص الرقمي للأستاذ. Conforme aux orientations pédagogiques officielles.",
   "start_url": "/",
   "scope": "/",
@@ -49,14 +57,14 @@
       "sizes": "1280x720",
       "type": "image/webp",
       "form_factor": "wide",
-      "label": "Tableau de bord des classes — Mon Cahier de Text"
+      "label": "Tableau de bord des classes — Mon cahier de textes"
     },
     {
       "src": "/guide/current/editor-fr.webp",
       "sizes": "1280x720",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Éditeur du cahier de textes — Mon Cahier de Text"
+      "label": "Éditeur du cahier de textes — Mon cahier de textes"
     }
   ],
   "shortcuts": [

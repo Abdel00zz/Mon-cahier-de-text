@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/types';
 import type { ClassGuidance } from '@/domain/assistant/classGuidance';
+import type { CompanionNotificationPrompt } from '@/domain/assistant/companionDecision';
 import { companionClassName } from './companionClassName';
 import { notebookFollowupMessage } from './notebookFollowupCopy';
 
@@ -28,6 +29,15 @@ const COPY = {
       detail: 'Installez l’application sur votre appareil pour accéder instantanément à vos cahiers de textes, même hors connexion.',
       action: 'Installer l’application',
       context: 'Installation',
+    },
+    'enable-notifications': {
+      title: 'Activer les notifications',
+      detail: 'Activez les notifications sur votre téléphone pour recevoir les rappels de vos séances, des dates à attribuer et le suivi de vos évaluations.',
+      action: 'Activer les notifications',
+      settingsDetail: 'Les notifications sont désactivées dans les réglages de votre téléphone. Autorisez-les pour recevoir les rappels de vos séances et de vos cahiers.',
+      settingsAction: 'Ouvrir les paramètres de notification',
+      settingsLink: 'Paramètres de notification',
+      context: 'Notifications',
     },
     create: {
       title: 'On commence ?',
@@ -90,6 +100,15 @@ const COPY = {
       action: 'تثبيت التطبيق',
       context: 'تثبيت التطبيق',
     },
+    'enable-notifications': {
+      title: 'تفعيل الإشعارات',
+      detail: 'فعّل إشعارات التطبيق على هاتفك للتوصل بتذكيرات الحصص وتسجيل التواريخ ومتابعة الفروض والتقويمات في وقتها.',
+      action: 'تفعيل الإشعارات',
+      settingsDetail: 'الإشعارات معطّلة حالياً في إعدادات هاتفك. اسمح بها للتوصل بتذكيرات الحصص ومتابعة دفاتر نصوصك.',
+      settingsAction: 'فتح إعدادات الإشعارات',
+      settingsLink: 'إعدادات الإشعارات',
+      context: 'الإشعارات',
+    },
     create: {
       title: 'مرحباً بك مع رفيقك',
       detail: 'لنبدأ معاً بإضافة قسمك الأول، وسأرافقك خطوة بخطوة في تنظيم دروسك وحصصك.',
@@ -151,6 +170,15 @@ const COPY = {
       action: 'Install application',
       context: 'Installation',
     },
+    'enable-notifications': {
+      title: 'Enable notifications',
+      detail: 'Enable notifications on your phone to receive session reminders, lesson date alerts, and assessment follow-ups on time.',
+      action: 'Enable notifications',
+      settingsDetail: 'Notifications are currently disabled in your phone settings. Allow them to receive session and notebook reminders.',
+      settingsAction: 'Open notification settings',
+      settingsLink: 'Notification settings',
+      context: 'Notifications',
+    },
     create: {
       title: 'Shall we start?',
       detail: 'Add your first class. I’ll guide you through the next step.',
@@ -210,6 +238,20 @@ export function companionInstallAppMessage(locale: AppLocale): CompanionMessage 
     title: base.title,
     detail: base.detail,
     action: base.action,
+    context: base.context,
+  };
+}
+
+export function companionEnableNotificationsMessage(
+  locale: AppLocale,
+  mode: CompanionNotificationPrompt = 'activate',
+): CompanionMessage {
+  const base = COPY[locale]['enable-notifications'];
+  return {
+    id: 'enable-notifications',
+    title: base.title,
+    detail: mode === 'settings' ? base.settingsDetail : base.detail,
+    action: mode === 'settings' ? base.settingsAction : base.action,
     context: base.context,
   };
 }

@@ -18,7 +18,7 @@ interface SettingsPageProps {
     classes: ClassInfo[];
     addClass: (details: ClassDraft) => ClassInfo;
     asPage?: boolean;
-    initialSection?: 'emploi';
+    initialSection?: 'emploi' | 'notifications';
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */

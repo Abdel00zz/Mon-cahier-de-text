@@ -5,7 +5,7 @@ import { useLocale } from '../../i18n/LocaleProvider';
 import { renderDescriptionWithBold } from '../../components/typography/textFormat';
 import { DocumentPrintButton } from '../../components/documents/DocumentPrintButton';
 import { DocumentSheetHeader } from '../../components/documents/DocumentSheetHeader';
-import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { detectDocumentContentDirection, parseDocumentSheet } from '../../domain/evaluations/documentSheet';
 import { resolveDocumentDirection, textDirectionAttribute } from '../../lib/text/textDirection';
 
 /*
@@ -50,8 +50,14 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
 }) => {
     const { t, isRtl } = useLocale();
     const hasDocument = Boolean(source && source.trim());
+    const sheet = React.useMemo(
+        () => parseDocumentSheet(source, heading, classLabel),
+        [source, heading, classLabel],
+    );
     // Le sens suit le document (première lettre hors formules), comme sur la feuille du professeur.
-    const sheetDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, heading, isRtl ? 'rtl' : 'ltr');
+    const sheetDir = detectDocumentContentDirection(source)
+        ?? textDirectionAttribute(source)
+        ?? resolveDocumentDirection(source, sheet.title ?? heading, isRtl ? 'rtl' : 'ltr');
     return (
         <Modal
             isOpen={isOpen}
@@ -59,15 +65,15 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
             maxWidth="3xl"
             className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={heading} classLabel={classLabel} className="ms-auto" /></span>}
+            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={sheet.title ?? heading} classLabel={sheet.classLabel ?? classLabel} className="ms-auto" /></span>}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">
                     {hasDocument ? (
                         <div dir={sheetDir}>
-                            <DocumentSheetHeader title={headerTitleFor(heading, source)} classLabel={classLabel} dir={sheetDir} />
+                            <DocumentSheetHeader title={sheet.title} classLabel={sheet.classLabel} dir={sheetDir} />
                             <div className="devoir-document mx-auto max-w-[56rem]" dir={sheetDir}>
-                                {renderDescriptionWithBold(source)}
+                                {renderDescriptionWithBold(sheet.body)}
                             </div>
                         </div>
                     ) : (

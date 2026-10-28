@@ -353,4 +353,51 @@ test('PWA installation is the first priority request of the robot with no skip (
   assert.equal(sereneAfterSkip.canSkip, true);
 });
 
+test('notification activation prompt appears immediately after PWA install and supports direct activation, settings fallback, and skip', () => {
+  // 1. When PWA is not installed yet, install-app takes strict priority over enable-notifications
+  const beforeInstall = evaluateCompanion(input({
+    config: {},
+    pwaInstallRequired: true,
+    notificationPrompt: 'activate',
+  }));
+  assert.equal(beforeInstall.decision.kind, 'install-app');
+  assert.deepEqual(beforeInstall.action, { type: 'install-app' });
+
+  // 2. Once PWA is installed (pwaInstallRequired: false), enable-notifications appears immediately
+  const activatePrompt = evaluateCompanion(input({
+    config: {},
+    pwaInstallRequired: false,
+    notificationPrompt: 'activate',
+  }));
+  assert.deepEqual(activatePrompt.decision, { kind: 'enable-notifications', mode: 'activate' });
+  assert.deepEqual(activatePrompt.action, { type: 'enable-notifications', mode: 'activate' });
+  assert.equal(activatePrompt.canSkip, true);
+  assert.equal(activatePrompt.skipKey, 'enable-notifications');
+  assert.equal(companionMessage(activatePrompt, 'fr', '2026-10-23', false).action, 'Activer les notifications');
+  assert.equal(companionMessage(activatePrompt, 'ar', '2026-10-23', false).action, 'تفعيل الإشعارات');
+  assert.equal(companionMessage(activatePrompt, 'en', '2026-10-23', false).action, 'Enable notifications');
+
+  // 3. When OS/browser permission is denied, the robot switches to settings mode
+  const settingsPrompt = evaluateCompanion(input({
+    config: {},
+    pwaInstallRequired: false,
+    notificationPrompt: 'settings',
+  }));
+  assert.deepEqual(settingsPrompt.decision, { kind: 'enable-notifications', mode: 'settings' });
+  assert.deepEqual(settingsPrompt.action, { type: 'enable-notifications', mode: 'settings' });
+  assert.equal(companionMessage(settingsPrompt, 'fr', '2026-10-23', false).action, 'Ouvrir les paramètres de notification');
+  assert.equal(companionMessage(settingsPrompt, 'ar', '2026-10-23', false).action, 'فتح إعدادات الإشعارات');
+  assert.equal(companionMessage(settingsPrompt, 'en', '2026-10-23', false).action, 'Open notification settings');
+
+  // 4. Skipping enable-notifications advances to the pedagogical guidance queue
+  const afterSkip = evaluateCompanion(input({
+    config: {},
+    pwaInstallRequired: false,
+    notificationPrompt: 'activate',
+    skippedMessageKeys: new Set(['enable-notifications']),
+  }));
+  assert.equal(afterSkip.decision.kind, 'guidance');
+  assert.equal(afterSkip.guidance.step, 'schedule');
+});
+
 

@@ -42,6 +42,7 @@ interface DashboardProps {
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
     onOpenSchedule?: () => void;
+    onOpenNotifications?: () => void;
 }
 
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
@@ -54,6 +55,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     accountTeacherName = '',
     onOnboardingVisibilityChange,
     onOpenSchedule,
+    onOpenNotifications,
 }) => {
     const { locale, t } = useLocale();
     const reduceMotion = useReducedMotion();
@@ -470,6 +472,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 readLessons={readAssistantLessons}
                                 onCreateClass={() => setCreateModalOpen(true)}
                                 onOpenSchedule={onOpenSchedule}
+                                onOpenNotifications={onOpenNotifications}
+                                onUpdateConfig={updateConfig}
                                 onOpenClass={openNotebook}
                                 onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
                                 onConfigureClass={classInfo => setEditingClass(classInfo)}

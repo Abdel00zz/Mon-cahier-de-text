@@ -277,6 +277,22 @@ const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
   [/^(?:2bac+?\s*(?:sh|lsh|s\.?h\.?|l\.?s\.?h\.?)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
 ];
 
+const ARABIC_INDIC_DIGITS = /[\u0660-\u0669]/g;
+const EXTENDED_ARABIC_INDIC_DIGITS = /[\u06F0-\u06F9]/g;
+
+const normalizeArabicDigits = (value: string): string =>
+  value
+    .replace(ARABIC_INDIC_DIGITS, digit => String(digit.charCodeAt(0) - 0x0660))
+    .replace(EXTENDED_ARABIC_INDIC_DIGITS, digit => String(digit.charCodeAt(0) - 0x06F0));
+
+const ARABIC_DISPLAY_LEVEL_ENTRIES: ReadonlyArray<readonly [string, string]> = Object.entries(CLASS_LEVEL_DISPLAY_NAMES_AR)
+  .sort(([leftKey, leftLabel], [rightKey, rightLabel]) => {
+    if (rightLabel.length !== leftLabel.length) return rightLabel.length - leftLabel.length;
+    const leftCanonical = leftKey in CLASS_LEVEL_DISPLAY_NAMES && CLASS_LEVEL_DISPLAY_NAMES[leftKey] === leftKey ? 1 : 0;
+    const rightCanonical = rightKey in CLASS_LEVEL_DISPLAY_NAMES && CLASS_LEVEL_DISPLAY_NAMES[rightKey] === rightKey ? 1 : 0;
+    return rightCanonical - leftCanonical;
+  });
+
 export const normalizeOfficialClassName = (name: string): string => {
   const trimmed = toDisplayText(name).trim().replace(/\s+/g, ' ');
   for (const [pattern, replacement] of CLASS_LEVEL_RENAMES) {
@@ -284,6 +300,13 @@ export const normalizeOfficialClassName = (name: string): string => {
     if (!match) continue;
     const suffix = trimmed.slice(match[0].length).trim();
     return suffix ? `${replacement} ${suffix}` : replacement;
+  }
+  const withoutArabicClassPrefix = trimmed.replace(/^(?:ال)?قسم\s+/u, '').trim();
+  for (const [canonicalKey, arabicLabel] of ARABIC_DISPLAY_LEVEL_ENTRIES) {
+    if (withoutArabicClassPrefix === arabicLabel || withoutArabicClassPrefix.startsWith(`${arabicLabel} `)) {
+      const suffix = normalizeArabicDigits(withoutArabicClassPrefix.slice(arabicLabel.length).trim());
+      return suffix ? `${canonicalKey} ${suffix}` : canonicalKey;
+    }
   }
   return trimmed;
 };

@@ -37,6 +37,12 @@ export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children
         : 'Mon cahier de textes';
     document.title = appName;
     document.querySelector<HTMLMetaElement>('meta[name="application-name"]')?.setAttribute('content', appName);
+    document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', appName);
+    document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', appName);
+    document.querySelector<HTMLLinkElement>('link[rel="manifest"]')?.setAttribute(
+      'href',
+      locale === 'ar' ? '/manifest-ar.webmanifest' : '/manifest.webmanifest',
+    );
   }, [isRtl, locale, manageDocument]);
 
   const value = useMemo<LocaleContextValue>(() => ({

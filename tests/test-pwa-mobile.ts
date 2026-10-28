@@ -224,15 +224,27 @@ test('PWA : manifest.webmanifest, index.html, sw.js et détection iOS/Android so
   const { detectPwaPlatform, detectStandaloneMode } = await import('../src/platform/pwaInstall');
 
   const manifest = JSON.parse(fs.readFileSync('public/manifest.webmanifest', 'utf8'));
+  assert.equal(manifest.name, 'Mon cahier de textes');
+  assert.equal(manifest.short_name, 'Mon cahier de textes');
+  assert.equal(manifest.name_localized?.ar?.value, 'دفتر نصوصي');
+  assert.equal(manifest.name_localized?.fr?.value, 'Mon cahier de textes');
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.start_url, '/');
   assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 3);
   assert.ok(manifest.icons.some((icon: { sizes: string }) => icon.sizes === '192x192'));
   assert.ok(manifest.icons.some((icon: { sizes: string }) => icon.sizes === '512x512'));
 
+  const manifestAr = JSON.parse(fs.readFileSync('public/manifest-ar.webmanifest', 'utf8'));
+  assert.equal(manifestAr.name, 'دفتر نصوصي');
+  assert.equal(manifestAr.short_name, 'دفتر نصوصي');
+  assert.equal(manifestAr.lang, 'ar');
+  assert.equal(manifestAr.dir, 'rtl');
+  assert.equal(manifestAr.display, 'standalone');
+
   const html = fs.readFileSync('index.html', 'utf8');
   assert.match(html, /rel="manifest"\s+href="\/manifest\.webmanifest"/);
   assert.match(html, /name="apple-mobile-web-app-capable"\s+content="yes"/);
+  assert.match(html, /name="apple-mobile-web-app-title"\s+content="Mon cahier de textes"/);
   assert.match(html, /rel="apple-touch-icon"/);
 
   const sw = fs.readFileSync('public/sw.js', 'utf8');

@@ -3,6 +3,49 @@ import type { ClassGuidance } from './classGuidance';
 import type { CompanionCalendarNotice } from './companionCalendar';
 import { pendingAdminMessages } from '../messages/conversation';
 
+export type CompanionNotificationPrompt = 'activate' | 'settings';
+
+export interface NotificationPromptEvaluationInput {
+  supported: boolean;
+  checking?: boolean;
+  pwaInstallRequired?: boolean;
+  permission: NotificationPermission | 'unsupported';
+  delivery?: 'local';
+  subscribed?: boolean;
+  notificationSettings?: {
+    enabled?: boolean;
+    pushEnabled?: boolean;
+  };
+}
+
+/**
+ * Règles cohérentes et ciblées pour proposer l'activation des notifications :
+ * 1. Toujours APRÈS l'installation PWA (`pwaInstallRequired === false`).
+ * 2. Uniquement si l'appareil/navigateur supporte les notifications et que l'état initial est résolu.
+ * 3. Silencieux dès que la permission est accordée (`granted`), l'appareil souscrit et les rappels activés.
+ * 4. Bascule en mode `'settings'` si la permission système a été bloquée (`denied`).
+ */
+export function resolveNotificationPrompt(
+  input: NotificationPromptEvaluationInput,
+): CompanionNotificationPrompt | undefined {
+  if (input.pwaInstallRequired || input.checking || !input.supported || input.permission === 'unsupported') {
+    return undefined;
+  }
+  const masterEnabled = input.notificationSettings?.enabled !== false;
+  const pushEnabled = input.notificationSettings?.pushEnabled === true;
+  const deviceSubscribed = input.delivery === 'local' ? Boolean(input.subscribed) : true;
+
+  if (input.permission === 'granted' && deviceSubscribed && masterEnabled && pushEnabled) {
+    return undefined;
+  }
+
+  if (input.permission === 'denied') {
+    return 'settings';
+  }
+
+  return 'activate';
+}
+
 export interface CompanionSignals {
   guidance: ClassGuidance;
   authenticated: boolean;
@@ -16,10 +59,12 @@ export interface CompanionSignals {
   hasContentSuggestion?: boolean;
   calendarNotice?: CompanionCalendarNotice;
   pwaInstallRequired?: boolean;
+  notificationPrompt?: CompanionNotificationPrompt;
 }
 
 export type CompanionDecision =
   | { kind: 'install-app' }
+  | { kind: 'enable-notifications'; mode: CompanionNotificationPrompt }
   | { kind: 'reply'; reply: AdminMessage }
   | { kind: 'calendar'; notice: CompanionCalendarNotice }
   | { kind: 'guidance' | 'offer' | 'sync-error' | 'offline' | 'syncing' | 'checking' | 'inbox-error' };
@@ -27,6 +72,7 @@ export type CompanionDecision =
 /** One deterministic arbitration point. Unknown or failed checks never become a success offer. */
 export function decideCompanion(signals: CompanionSignals): CompanionDecision {
   if (signals.pwaInstallRequired) return { kind: 'install-app' };
+  if (signals.notificationPrompt) return { kind: 'enable-notifications', mode: signals.notificationPrompt };
   const { guidance, authenticated, syncStatus, transfer } = signals;
   if (authenticated && signals.online && (syncStatus === 'error' || transfer === 'failed')) return { kind: 'sync-error' };
   if (authenticated && signals.online && signals.inboxFailed) return { kind: 'inbox-error' };

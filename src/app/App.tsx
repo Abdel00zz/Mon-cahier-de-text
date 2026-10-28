@@ -45,7 +45,7 @@ const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageMo
 const App: React.FC = () => {
   const { isPhone } = useDevice();
   const [, setClassActivitiesOpen] = useState(false);
-  const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | undefined>();
+  const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | 'notifications' | undefined>();
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
     try {
@@ -106,6 +106,10 @@ const App: React.FC = () => {
   }, [view]);
   const handleOpenSchedule = useCallback(() => {
     setAssistantSettingsSection('emploi');
+    handleOpenSettings();
+  }, [handleOpenSettings]);
+  const handleOpenNotifications = useCallback(() => {
+    setAssistantSettingsSection('notifications');
     handleOpenSettings();
   }, [handleOpenSettings]);
   /*
@@ -240,6 +244,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onOpenSchedule={handleOpenSchedule}
+        onOpenNotifications={handleOpenNotifications}
         onSelectClass={handleSelectClass}
         onEvaluationVisibilityChange={setClassActivitiesOpen}
         activeSessionClassIds={currentSession.classIds}

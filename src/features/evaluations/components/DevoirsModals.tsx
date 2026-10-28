@@ -17,6 +17,8 @@ import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { bidiIsolate, textDirectionAttribute } from '@/lib/text/textDirection';
 import { translateLocaleMessage } from '@/i18n/messages';
+import { formatLocalizedClassDisplayName } from '@/constants';
+import { detectDocumentContentDirection } from '@/domain/evaluations/documentSheet';
 import { ContentDocumentModal } from './ContentDocumentModal';
 import { EventDateModal } from './EventDateModal';
 import { StudentNamesEditor } from './StudentNamesEditor';
@@ -144,7 +146,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
     ? `${t(`evaluations.type.${submissionsFor.planned.type}`)} ${number.format(submissionsFor.planned.num)}`
     : '';
 
-  const documentDir = textDirectionAttribute(documentOf?.source);
+  const documentDir = detectDocumentContentDirection(documentOf?.source) ?? textDirectionAttribute(documentOf?.source);
   const docLocale: AppLocale = documentDir === 'ltr' ? 'fr' : documentDir === 'rtl' ? 'ar' : locale;
   const docNumber = numberFormat(docLocale);
 
@@ -155,6 +157,10 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
       : documentFor.part === 'correction'
         ? `${translateLocaleMessage(docLocale, 'manageLessons.type.correction_devoir_maison')} ${docNumber.format(documentFor.link.planned.num)}`
         : `${translateLocaleMessage(docLocale, `evaluations.type.${documentFor.link.planned.type}`)} ${docNumber.format(documentFor.link.planned.num)}`;
+
+  const documentClassDisplayName = selectedClass
+    ? formatLocalizedClassDisplayName(selectedClass.name, docLocale)
+    : undefined;
 
   /* « Classe · Devoir 2 » : chaque fragment isolé, l'arabe et le latin ne se réordonnent pas entre eux. */
   const contextOf = (...parts: string[]) => parts.filter(Boolean).map(bidiIsolate).join(' · ');
@@ -222,7 +228,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         onClose={() => setDocumentFor(null)}
         title={documentTitle}
         heading={documentFor?.kind === 'assessment' && documentFor.part === 'correction' ? t('evaluations.action.correctionContent') : undefined}
-        subtitle={selectedClass ? selectedClassDisplayName : undefined}
+        subtitle={documentClassDisplayName}
         document={documentOf}
         onSave={(source) => {
           if (documentFor?.kind === 'event') actions.saveEventDocument(documentFor.event.id, source);

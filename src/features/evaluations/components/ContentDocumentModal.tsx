@@ -5,7 +5,12 @@ import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DocumentPrintButton } from '@/components/documents/DocumentPrintButton';
 import { DocumentSheetHeader } from '@/components/documents/DocumentSheetHeader';
-import { headerTitleFor } from '@/domain/evaluations/documentSheet';
+import {
+  detectDocumentContentDirection,
+  harmonizeDocumentSheetSource,
+  parseDocumentSheet,
+  seedDocumentSheetSource,
+} from '@/domain/evaluations/documentSheet';
 import { Textarea } from '@/components/ui/textarea';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { CONTENT_DOCUMENT_WARN_CHARS, MAX_CONTENT_DOCUMENT_CHARS } from '@/constants/contentDocument';
@@ -73,32 +78,58 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   const [conflictOpen, setConflictOpen] = useState(false);
   const opened = useRef(false);
   const baseline = useRef<ContentDocument | undefined>(undefined);
+  const seededSourceRef = useRef('');
+  const prevBodyDirRef = useRef<'ltr' | 'rtl' | undefined>(undefined);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // Annuler / rétablir au clavier (Ctrl/Cmd + Z, Maj + Z, Y) : une pile interne, aucun bouton.
   const history = useTextHistory({ value: source, setValue: setSource, textareaRef });
   const resetHistory = history.reset;
 
-  // Le document est rechargé à chaque ouverture : deux devoirs ne partagent
-  // jamais le même brouillon, et fermer sans enregistrer laisse le précédent.
+  // Le document est rechargé à chaque ouverture : l'en-tête et le nom de la classe
+  // sont transmis dans la langue du contenu et inscrits en tête de l'éditeur (« Source »)
+  // afin d'être visibles et modifiables directement par l'enseignant.
   useEffect(() => {
     if (!isOpen) { opened.current = false; return; }
     if (opened.current) return;
     opened.current = true;
     baseline.current = saved;
-    resetHistory(saved?.source ?? '');
-    setSource(saved?.source ?? '');
+    const initialSource = seedDocumentSheetSource(saved?.source ?? '', sheetTitle, sheetClass);
+    seededSourceRef.current = initialSource;
+    const initialParts = parseDocumentSheet(initialSource, sheetTitle, sheetClass, { seeded: true });
+    prevBodyDirRef.current = initialParts.body.trim() ? detectDocumentContentDirection(initialParts.body) : undefined;
+    resetHistory(initialSource);
+    setSource(initialSource);
     setTab(saved?.source.trim() ? 'preview' : 'source');
     setShowHelp(false);
     setConflictOpen(false);
-  }, [isOpen, saved, resetHistory]);
+  }, [isOpen, saved, sheetTitle, sheetClass, resetHistory]);
+
+  const sheet = useMemo(
+    () => parseDocumentSheet(source, sheetTitle, sheetClass, { seeded: true }),
+    [source, sheetTitle, sheetClass],
+  );
 
   /* Sens général de la feuille : prose du document, puis titre, puis langue de l'interface. */
-  const documentDir = textDirectionAttribute(source) ?? resolveDocumentDirection(source, sheetTitle, isRtl ? 'rtl' : 'ltr');
-  // Un document qui s'ouvre par son propre titre le dit déjà : l'en-tête ne le répète pas.
-  const headerTitle = headerTitleFor(sheetTitle, source);
+  const documentDir = detectDocumentContentDirection(source)
+    ?? textDirectionAttribute(source)
+    ?? resolveDocumentDirection(source, sheet.title ?? sheetTitle, isRtl ? 'rtl' : 'ltr');
+  const headerTitle = sheet.title;
+  const resolvedClassLabel = sheet.classLabel;
   const length = source.length;
   const isTooLong = length > MAX_CONTENT_DOCUMENT_CHARS;
   const isTight = length > CONTENT_DOCUMENT_WARN_CHARS;
+
+  const handleSourceChange = (nextRaw: string) => {
+    const nextParts = parseDocumentSheet(nextRaw, sheetTitle, sheetClass, { seeded: true });
+    const nextBodyDir = nextParts.body.trim() ? detectDocumentContentDirection(nextParts.body) : undefined;
+    if (nextBodyDir && nextBodyDir !== prevBodyDirRef.current) {
+      prevBodyDirRef.current = nextBodyDir;
+      setSource(harmonizeDocumentSheetSource(nextRaw));
+      return;
+    }
+    prevBodyDirRef.current = nextBodyDir;
+    setSource(nextRaw);
+  };
 
   useEffect(() => {
     if (isOpen && tab === 'source' && !window.document.activeElement?.closest('[role="tablist"]')) {
@@ -109,15 +140,17 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   // L'aperçu n'est composé QUE lorsque son onglet est visible : écrire ne
   // déclenche donc aucune composition KaTeX, aussi longue soit la formule.
   const preview = useMemo(
-    () => (tab === 'preview' && source.trim() ? renderDescriptionWithBold(source) : null),
-    [tab, source],
+    () => (tab === 'preview' && source.trim() ? renderDescriptionWithBold(sheet.body) : null),
+    [tab, source, sheet.body],
   );
 
   const commit = () => {
     if (isTooLong) return;
     try {
-      onSave(source.trim() ? source : '');
-      toast.success(source.trim() ? t('evaluations.doc.saved') : t('evaluations.doc.cleared'));
+      const isUntouchedEmptyTemplate = !saved?.source?.trim() && !sheet.body.trim() && source.trim() === seededSourceRef.current.trim();
+      const valueToSave = !source.trim() || isUntouchedEmptyTemplate ? '' : harmonizeDocumentSheetSource(source);
+      onSave(valueToSave);
+      toast.success(valueToSave ? t('evaluations.doc.saved') : t('evaluations.doc.cleared'));
       onClose();
     } catch {
       toast.error(t('editorNotice.saveError'));
@@ -184,7 +217,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             <Textarea
               ref={textareaRef}
               value={source}
-              onChange={(event) => setSource(event.target.value)}
+              onChange={(event) => handleSourceChange(event.target.value)}
               onKeyDown={history.onKeyDown}
               rows={12}
               /* Source uses native per-paragraph bidi; preview excludes syntax when detecting prose. */
@@ -233,7 +266,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-3 sm:p-5 shadow-xs', !preview && 'min-h-[12rem]')}>
             {preview ? (
               <div dir={documentDir}>
-                <DocumentSheetHeader title={headerTitle} classLabel={sheetClass} dir={documentDir} />
+                <DocumentSheetHeader title={headerTitle} classLabel={resolvedClassLabel} dir={documentDir} />
                 {/* La feuille est une PAGE : colonne de lecture bornée, jamais
                     étirée sur toute la largeur d'un grand écran. */}
                 <div className="devoir-document mx-auto max-w-[56rem]" dir={documentDir}>{preview}</div>
@@ -256,7 +289,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
 
         <div className="document-editor-actions sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur-sm">
           <div className="flex items-center">
-            <DocumentPrintButton source={source} title={sheetTitle} classLabel={sheetClass} />
+            <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} />
           </div>
           <div className="flex items-center gap-2">
             <button

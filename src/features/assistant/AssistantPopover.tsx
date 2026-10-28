@@ -28,6 +28,8 @@ interface AssistantPopoverProps {
   contactLabel?: string;
   onContact?: () => void;
   primaryAction?: ReactNode;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
   dismissLabel?: string;
   onDismiss?: () => void;
   keepOpenOnDismiss?: boolean;
@@ -73,6 +75,7 @@ export function AssistantPopover({
   headRoundness,
   autoSleepMs,
   onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
+  secondaryActionLabel, onSecondaryAction,
   dismissLabel, onDismiss, keepOpenOnDismiss = false, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
 }: AssistantPopoverProps) {
   const { root, trigger, panel, open, setOpen, close } = useAssistantPopover();
@@ -190,6 +193,18 @@ export function AssistantPopover({
                 }}
               >
                 {dismissLabel}
+              </button>
+            )}
+            {onSecondaryAction && secondaryActionLabel && (
+              <button
+                type="button"
+                className="assistant-panel__help"
+                onClick={() => {
+                  close();
+                  onSecondaryAction();
+                }}
+              >
+                {secondaryActionLabel}
               </button>
             )}
             {onNextTask && nextTaskLabel && <button type="button" className="assistant-panel__help" onClick={onNextTask}>{nextTaskLabel}</button>}

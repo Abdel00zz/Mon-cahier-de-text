@@ -5,7 +5,7 @@ import { SheetPrinter } from '../ui/icons';
 import { renderDescriptionWithBold } from '../typography/textFormat';
 import { preparePrintContent, printDocument } from '../../infrastructure/printing/printUtils';
 import { fitDocumentMath } from '../../infrastructure/printing/documentMathLayout';
-import { headerTitleFor } from '../../domain/evaluations/documentSheet';
+import { detectDocumentContentDirection, parseDocumentSheet } from '../../domain/evaluations/documentSheet';
 import { resolveDocumentDirection, textDirectionAttribute } from '../../lib/text/textDirection';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { DocumentSheetHeader } from './DocumentSheetHeader';
@@ -29,6 +29,7 @@ export function DocumentPrintButton({ source, title, classLabel, className }: Do
   const paper = useRef<HTMLDivElement>(null);
   const cleanup = useRef<() => void>(() => {});
   useEffect(() => () => cleanup.current(), []);
+  const sheet = parseDocumentSheet(source, title, classLabel);
   const print = async () => {
     if (!source?.trim() || printing || document.body.hasAttribute('data-document-print')) return;
     let timer: number | undefined;
@@ -41,7 +42,7 @@ export function DocumentPrintButton({ source, title, classLabel, className }: Do
     };
     cleanup.current = release;
     document.body.setAttribute('data-document-print', 'a5');
-    flushSync(() => { setPrinting(true); setSnapshot(source); });
+    flushSync(() => { setPrinting(true); setSnapshot(sheet.body); });
     try {
       if (!paper.current) throw new Error('Print surface unavailable');
       await preparePrintContent(paper.current);
@@ -57,7 +58,9 @@ export function DocumentPrintButton({ source, title, classLabel, className }: Do
     }
   };
   // Même sens que l'aperçu : la première lettre hors formules décide, la langue de l'interface départage.
-  const sheetDir = textDirectionAttribute(snapshot ?? source) ?? resolveDocumentDirection(snapshot ?? source, title, isRtl ? 'rtl' : 'ltr');
+  const sheetDir = detectDocumentContentDirection(source)
+    ?? textDirectionAttribute(snapshot ?? source)
+    ?? resolveDocumentDirection(snapshot ?? source, sheet.title ?? title, isRtl ? 'rtl' : 'ltr');
   return <>
     {/* Icône seule : le nom accessible et l'infobulle disent « Imprimer au format A5 ». */}
     <button type="button" onClick={() => void print()} disabled={printing || !source?.trim()} aria-busy={printing}
@@ -67,7 +70,7 @@ export function DocumentPrintButton({ source, title, classLabel, className }: Do
     </button>
     {snapshot !== null && createPortal(<div className="pedagogical-print-root" ref={paper} dir={sheetDir}>
       <style media="print">{'@page { margin: 7mm 0; }'}</style>
-      <DocumentSheetHeader title={headerTitleFor(title, snapshot)} classLabel={classLabel} dir={sheetDir} />
+      <DocumentSheetHeader title={sheet.title} classLabel={sheet.classLabel} dir={sheetDir} />
       <article className="devoir-document" dir={sheetDir}>{renderDescriptionWithBold(snapshot)}</article>
     </div>, document.body)}
   </>;

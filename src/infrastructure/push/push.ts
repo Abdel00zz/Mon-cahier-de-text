@@ -15,14 +15,23 @@ import { notificationPresentation } from '../../domain/notifications/notificatio
 import { readWorkspaceScope } from '../storage/accountWorkspace';
 import { pendingNativePushCleanup } from './nativePushCleanup';
 
+export const NOTIFICATION_STATE_EVENT = 'cdt-notification-state-change';
+
+function emitNotificationStateChange(): void {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        try {
+            window.dispatchEvent(new Event(NOTIFICATION_STATE_EVENT));
+        } catch {
+            // Ignore in synthetic test environments
+        }
+    }
+}
+
 export const pushSupported = (): boolean =>
     Capacitor.isNativePlatform() || (typeof window !== 'undefined' &&
-    window.isSecureContext &&
+    (window.isSecureContext || window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1') &&
     'Notification' in window &&
-    // Le service worker a été retiré : sans page contrôlée, la page web n'a plus
-    // aucun moyen d'afficher une notification système. On ne promet donc rien.
-    'serviceWorker' in navigator &&
-    Boolean(navigator.serviceWorker.controller));
+    'serviceWorker' in navigator);
 
 /** iOS n'expose les notifications que depuis une page installée sur l'écran d'accueil. */
 export const isStandalone = (): boolean =>
@@ -111,9 +120,17 @@ const requestNotificationPermission = async (): Promise<PushNotificationState> =
 
 /** Autorisation système, puis inscription native si la plateforme le permet. */
 export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
+    if (Capacitor.isNativePlatform()) {
+        (await import('./appBadge')).enableInboxBadge();
+        const state = await (await import('../../platform/nativeNotifications')).nativeNotificationState(true);
+        emitNotificationStateChange();
+        return state;
+    }
+    const permissionPromise = requestNotificationPermission();
     (await import('./appBadge')).enableInboxBadge();
-    if (Capacitor.isNativePlatform()) return (await import('../../platform/nativeNotifications')).nativeNotificationState(true);
-    return requestNotificationPermission();
+    const state = await permissionPromise;
+    emitNotificationStateChange();
+    return state;
 };
 
 /** Lit l'état réel sans jamais déclencher de demande d'autorisation. */
@@ -135,10 +152,12 @@ export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
             (await import('../../platform/nativePush')).disconnectNativePush(),
             (await import('../../platform/nativeNotifications')).disableNativeReminders(),
         ]);
+        emitNotificationStateChange();
         return { ok: serverUnregistered, hadSubscription: true, serverUnregistered, localUnsubscribed: true };
     }
     // Web : plus aucun abonnement distant à retirer, seul le badge reste à nettoyer.
     await (await import('./appBadge')).clearInboxBadge();
+    emitNotificationStateChange();
     return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
 };
 

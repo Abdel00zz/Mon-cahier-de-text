@@ -12,7 +12,7 @@ interface PwaInstallModalProps {
 
 const GUIDE_COPY = {
   fr: {
-    title: 'Installer Mon Cahier de Text',
+    title: 'Installer Mon cahier de textes',
     subtitle: 'Accédez à vos cahiers en plein écran et hors connexion directement depuis votre écran d’accueil.',
     iosTab: 'iPhone / iPad (Safari)',
     androidTab: 'Android / Navigateur',
@@ -48,7 +48,7 @@ const GUIDE_COPY = {
     close: 'إغلاق',
   },
   en: {
-    title: 'Install Mon Cahier de Text',
+    title: 'Install Mon cahier de textes',
     subtitle: 'Access your lesson notebooks full-screen and offline directly from your Home Screen.',
     iosTab: 'iPhone / iPad (Safari)',
     androidTab: 'Android / Browser',

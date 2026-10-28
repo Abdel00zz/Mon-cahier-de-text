@@ -53,7 +53,7 @@ const SETTINGS_MOBILE_DETENTS = [0.72, 0.94];
 interface ConfigModalProps {
   isOpen?: boolean;
   asPage?: boolean;
-  initialSection?: 'emploi';
+  initialSection?: 'emploi' | 'notifications';
   onClose: () => void;
   onOpenGuide: () => void;
   config: AppConfig;
@@ -144,6 +144,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const inSection = sectionOpen && !isDesktop;
   const openSection = useCallback((id: SettingsCategory) => { setActiveCategory(id); setSectionOpen(true); }, []);
+
+  useEffect(() => {
+    if (initialSection) {
+      setActiveCategory(initialSection);
+      setSectionOpen(true);
+    }
+  }, [initialSection]);
 
   const tabsId = React.useId();
 

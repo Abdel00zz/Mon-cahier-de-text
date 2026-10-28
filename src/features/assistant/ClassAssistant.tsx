@@ -1,8 +1,10 @@
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import type { AppLocale, ClassEvaluationEntry, ClassInfo, LessonsData } from '@/types';
+import type { AppConfig, AppLocale, ClassEvaluationEntry, ClassInfo, LessonsData } from '@/types';
 import type { GuidanceConfig } from '@/domain/assistant/classGuidance';
+import { resolveNotificationPrompt } from '@/domain/assistant/companionDecision';
+import { defaultNotificationSettings } from '@/hooks/useConfigManager';
 import { AssistantPopover } from './AssistantPopover';
 import { PwaInstallModal } from './PwaInstallModal';
 import { useCompanionRevision } from './useCompanionRevision';
@@ -16,6 +18,12 @@ import {
   subscribePwaInstall,
   triggerPwaInstall,
 } from '@/platform/pwaInstall';
+import {
+  getNotificationActivationSnapshot,
+  openCompanionNotificationSettings,
+  subscribeNotificationActivation,
+  triggerCompanionNotificationActivation,
+} from '@/platform/notificationActivation';
 import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { hasSupportWhatsApp } from '@/constants/support';
@@ -38,6 +46,8 @@ interface ClassAssistantProps {
   readLessons?: (classId: string) => LessonsData;
   onCreateClass: () => void;
   onOpenSchedule?: () => void;
+  onOpenNotifications?: () => void;
+  onUpdateConfig?: (patch: Partial<AppConfig>) => void;
   onOpenClass: (classInfo: ClassInfo) => void;
   onOpenEvaluations?: (classInfo: ClassInfo, entry?: ClassEvaluationEntry) => void;
   onConfigureClass?: (classInfo: ClassInfo) => void;
@@ -54,6 +64,8 @@ export function ClassAssistant({
   readLessons,
   onCreateClass,
   onOpenSchedule,
+  onOpenNotifications,
+  onUpdateConfig,
   onOpenClass,
   onOpenEvaluations,
   onConfigureClass,
@@ -63,6 +75,24 @@ export function ClassAssistant({
   const copy = conversationCopy(locale);
   const labels = companionLabels(locale);
   const pwaState = useSyncExternalStore(subscribePwaInstall, getPwaInstallSnapshot, getPwaInstallSnapshot);
+  const notificationState = useSyncExternalStore(
+    subscribeNotificationActivation,
+    getNotificationActivationSnapshot,
+    getNotificationActivationSnapshot,
+  );
+  const notificationPrompt = useMemo(
+    () =>
+      resolveNotificationPrompt({
+        supported: notificationState.supported,
+        checking: notificationState.checking,
+        pwaInstallRequired: pwaState.shouldAskInstall,
+        permission: notificationState.permission,
+        delivery: notificationState.delivery,
+        subscribed: notificationState.subscribed,
+        notificationSettings: config.notificationSettings,
+      }),
+    [notificationState, pwaState.shouldAskInstall, config.notificationSettings],
+  );
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStarted, setContactStarted] = useState(false);
   const [contactedClasses, setContactedClasses] = useState<ReadonlySet<string>>(() => new Set());
@@ -101,18 +131,19 @@ export function ClassAssistant({
     readLessons, readActivity: readNotebookActivity, offersEnabled: hasSupportWhatsApp(),
     messageHistory: messaging?.history, contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses,
     pwaInstallRequired: pwaState.shouldAskInstall,
+    notificationPrompt,
     skippedTaskIds: skippedTasks,
     skippedMessageKeys,
     services: { authenticated: Boolean(messaging?.enabled), online, syncStatus, transfer: progress.state,
       inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false, messages: messaging?.messages ?? [] },
   }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds,
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
-    messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, skippedTasks, skippedMessageKeys,
+    messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
     online, syncStatus, progress.state, revision]);
   const brain = useMemo(() => evaluate(selectedTaskId), [evaluate, selectedTaskId]);
   const { decision, behavior, contentSuggestion } = brain;
   const reply = decision.kind === 'reply' ? decision.reply : undefined;
-  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' && decision.kind !== 'calendar' && decision.kind !== 'install-app' ? decision.kind : undefined;
+  const service = decision.kind !== 'guidance' && decision.kind !== 'offer' && decision.kind !== 'reply' && decision.kind !== 'calendar' && decision.kind !== 'install-app' && decision.kind !== 'enable-notifications' ? decision.kind : undefined;
   const serviceError = service === 'sync-error' || service === 'inbox-error';
   const message = companionMessage(brain, locale, today, recovering);
   const retry = async () => {
@@ -154,6 +185,25 @@ export function ClassAssistant({
   const runAction = () => {
     const action = brain.action;
     if (action.type === 'install-app') { void triggerPwaInstall(); }
+    else if (action.type === 'enable-notifications') {
+      if (action.mode === 'settings') {
+        void openCompanionNotificationSettings(onOpenNotifications);
+      } else {
+        void triggerCompanionNotificationActivation({
+          onEnableConfig: () => {
+            onUpdateConfig?.({
+              notificationSettings: {
+                ...defaultNotificationSettings,
+                ...(config.notificationSettings ?? {}),
+                enabled: true,
+                pushEnabled: true,
+              },
+            });
+          },
+          onOpenSettings: onOpenNotifications,
+        });
+      }
+    }
     else if (action.type === 'retry-sync' || action.type === 'retry-inbox') { void retry(); }
     else if (action.type === 'read-reply') openContact();
     else if (action.type === 'create-class') onCreateClass();
@@ -188,6 +238,16 @@ export function ClassAssistant({
         intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
         label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}
         onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
+      secondaryActionLabel={
+        decision.kind === 'enable-notifications' && decision.mode === 'activate' && onOpenNotifications
+          ? labels['enable-notifications'].settingsLink
+          : undefined
+      }
+      onSecondaryAction={
+        decision.kind === 'enable-notifications' && decision.mode === 'activate'
+          ? onOpenNotifications
+          : undefined
+      }
       dismissLabel={brain.canSkip ? labels.skip : undefined}
       onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
       keepOpenOnDismiss={hasMoreTasksAfterSkip}
@@ -201,7 +261,11 @@ export function ClassAssistant({
       headRoundness={behavior.headRoundness}
       autoSleepMs={behavior.autoSleepMs}
       attentionKey={brain.attentionKey}
-      actionBusy={recovering || (decision.kind === 'install-app' && pwaState.installing)}
+      actionBusy={
+        recovering
+        || (decision.kind === 'install-app' && pwaState.installing)
+        || (decision.kind === 'enable-notifications' && notificationState.activating)
+      }
       keepOpenOnAction={serviceError}
       onAction={brain.action.type === 'none' || brain.action.type === 'request-content'
         || (brain.action.type === 'schedule' && !onOpenSchedule) ? undefined : runAction}
