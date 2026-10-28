@@ -1,16 +1,16 @@
 /* Politique commune à toute l'application. Les composants choisissent un rôle,
    jamais une famille locale : titres, interface, sous-titres ou contenu. */
 :root {
-  --font-latin-body: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Latin Modern Sans', 'Inter';
-  --font-latin-display: 'Roboto Slab', 'Samsung Sharp Sans', 'Latin Modern Sans';
-  --font-latin-reading: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Inter', system-ui, sans-serif;
-  --font-arabic-body: 'Elgharib Hayyakum Allah', 'SamsungOne Arabic';
-  --font-arabic-display: 'KOMission Black', 'SamsungOne Arabic';
-  --font-arabic-secondary: 'Elgharib Hayyakum Allah Light', 'SamsungOne Arabic';
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-latin-body: 'Latin Modern Sans', 'Inter';
+  --font-latin-display: 'Roboto Slab', 'Latin Modern Sans';
+  --font-latin-reading: 'Inter';
+  --font-arabic-body: 'Elgharib Hayyakum Allah';
+  --font-arabic-display: 'KOMission Black';
+  --font-arabic-secondary: 'Elgharib Hayyakum Allah Light';
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-feedback: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', system-ui, sans-serif;
-  --content-font-latin: 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
-  --content-font-arabic: 'SamsungOne Arabic', var(--font-arabic-body);
+  --content-font-latin: var(--font-latin-reading);
+  --content-font-arabic: var(--font-arabic-body);
   --ui-font-ar: var(--font-arabic-body);
   --ui-font-latin: var(--font-latin-body);
 }

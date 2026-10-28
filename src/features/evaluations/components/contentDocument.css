@@ -69,7 +69,7 @@
 .content-document-textarea {
   unicode-bidi: plaintext;
   text-align: start;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'SamsungOne Arabic', 'SamsungOne', monospace;
+  font-family: var(--font-mono);
 }
 @keyframes content-document-reveal {
   from { opacity: .6; transform: translateY(2px); }

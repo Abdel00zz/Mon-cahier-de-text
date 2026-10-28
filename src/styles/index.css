@@ -86,6 +86,7 @@
   /* Les rôles et les langues sont centralisés dans typography.css.
      La composition des documents garde sa pile dédiée. */
   --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
+  --font-mono: var(--font-mono);
 
   /* La densité de texte ne redimensionne jamais les espacements ou les cibles. */
   --text-xs: calc(0.75rem * var(--app-text-scale, 1));
@@ -639,40 +640,21 @@ html[lang="ar"] .modal-header h2,
 
 
 
-  /* ── Typographie des contenus du cahier ───────────────────────────────
-     Police Samsung pour les textes de contenu dans la table éditeur, assurant
-     une netteté contemporaine, une grande lisibilité et un confort visuel optimal. */
-  [data-editor-table] {
-    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
-  }
-
-  [data-editor-table][data-content-direction="ltr"] {
-    font-family: 'SamsungOne', 'One UI Sans', 'Samsung Sans', system-ui, sans-serif;
-  }
-
-  [data-editor-table][data-content-direction="rtl"] {
-    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
-  }
-
   [data-content-direction="ltr"] [data-row-content="true"],
   .content-font-latin {
-    font-family: 'SamsungOne', 'One UI Sans', 'Samsung Sans', system-ui, sans-serif;
+    font-family: var(--content-font-latin), var(--content-font-arabic), sans-serif;
   }
 
   [data-content-direction="rtl"] [data-row-content="true"],
   .content-font-arabic {
-    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
+    font-family: var(--content-font-arabic), var(--content-font-latin), sans-serif;
   }
 
-  /* Éditeur : police Samsung pour les textes de contenu */
+  /* Éditeur : polices système fluides pour éviter les blocages de chargement */
   .font-editor-system {
-    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
+    font-family: var(--font-content);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  [data-content-direction="rtl"] .font-editor-system {
-    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif;
   }
 
   .editor-table-content {
@@ -970,38 +952,6 @@ html[lang="ar"] .modal-header h2,
   [data-editor-table][dir="rtl"] .editor-type-item-title,
   [data-editor-table][dir="rtl"] .editor-type-description {
     line-height: 1.5;
-  }
-
-  /*
-   * Typographie Samsung pour toutes les cellules de contenu et remarques de la table éditeur
-   * (Netteté, lisibilité supérieure, alignement parfait et confort visuel pour les titres, notes et descriptions).
-   */
-  [data-editor-table] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
-  [data-editor-table] [data-session-cell="content"] :is(p, div, span, strong, em, bdi, a, button:not(.katex *)),
-  [data-editor-table] .editor-table-content :is(p, div, span, strong, em, bdi, a, button:not(.katex *)) {
-    font-family: 'SamsungOne', 'SamsungOne Arabic', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
-  }
-
-  [data-editor-table][dir="rtl"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
-  [data-editor-table] [dir="rtl"]:is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-item-description, .editor-lesson-row),
-  [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"],
-  [data-editor-table] :is([data-session-cell="content"], [data-session-cell="remark"], [data-row-content]) [dir="rtl"] * {
-    font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
-  }
-
-  /* Version française / latine : police Samsung pour tous les textes de contenu de la table éditeur
-     (titres de définitions, propriétés, théorèmes, remarques, exemples, exercices, descriptions, chapitres, sections) */
-  [data-editor-table][data-content-direction="ltr"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
-  [data-editor-table] [data-content-direction="ltr"] :is(th, [data-session-cell="content"], [data-session-cell="remark"], [data-row-content], .editor-type-remark, .editor-session-note, .editor-type-item-title, .editor-type-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-item-description, .editor-lesson-row),
-  [data-editor-table] [dir="ltr"] :is(.editor-type-item-title, .editor-type-description, .editor-item-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, strong, em, p, span, div),
-  [data-editor-table] :is(.editor-type-item-title, .editor-type-description, .editor-item-description)[dir="ltr"],
-  [data-editor-table]:lang(fr) :is([data-session-cell="content"], .editor-type-item-title, .editor-type-description, .editor-item-description, .editor-type-chapter, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-table-content) {
-    font-family: 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif !important;
-  }
-
-  [data-editor-table] .katex,
-  [data-editor-table] .katex * {
-    font-family: KaTeX_Main, KaTeX_Math, 'Times New Roman', serif !important;
   }
 
   /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
