@@ -131,12 +131,12 @@ const renderChapterTitleStyled = (text: string) => {
 
     return (
       <span dir={textDirectionAttribute(trimmed)} className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
-        <span dir={textDirectionAttribute(chapterPrefix)} className="text-[0.95em] font-bold text-inherit font-sans tracking-tight">
+        <span dir={textDirectionAttribute(chapterPrefix)} className="text-[1em] font-bold text-inherit tracking-tight">
           {renderChapterLabel(chapterPrefix)}
           {separator ? <span className="ms-1 opacity-80">{separator}</span> : null}
         </span>
         {restTitle ? (
-          <span dir={textDirectionAttribute(restTitle)} className="text-[0.85em] font-semibold text-inherit">
+          <span dir={textDirectionAttribute(restTitle)} className="text-[0.94em] font-semibold text-inherit">
             {restTitle}
           </span>
         ) : null}
@@ -145,7 +145,7 @@ const renderChapterTitleStyled = (text: string) => {
   }
 
   return (
-    <span dir={textDirectionAttribute(trimmed)} className="text-[0.85em] font-bold text-inherit">
+    <span dir={textDirectionAttribute(trimmed)} className="text-[1em] font-bold text-inherit">
       {text}
     </span>
   );
@@ -225,7 +225,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
+          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-bold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
               {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
@@ -251,7 +251,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   dir={textDirectionAttribute(item.title)}
                   data-document-title-link="true"
                   data-document-highlight="true"
-                  className="editor-document-highlight group max-w-full text-base sm:text-lg"
+                  className="editor-document-highlight group max-w-full"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDocumentPreview?.(documentPreview);
@@ -294,7 +294,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
+            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsection editor-indent-2 font-semibold text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? indices.subsectionIndex! + 1}.</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -305,7 +305,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsubsection':
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
+            <div dir={textDirectionAttribute(data.name)} className="editor-type-subsubsection editor-indent-3 italic font-semibold text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2 text-start">
                 <bdi dir="ltr" className="shrink-0 whitespace-nowrap">{contentNumber ?? romanNumber(indices.subsubsectionIndex! + 1).toLowerCase()}.</bdi>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -404,7 +404,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 dir={textDirectionAttribute(item.title)}
                 data-document-title-link="true"
                 data-document-highlight="true"
-                className="editor-document-highlight group max-w-full text-sm sm:text-[15px]"
+                className="editor-document-highlight group max-w-full"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenDocumentPreview?.(itemDocumentPreview);

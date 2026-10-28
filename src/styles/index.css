@@ -756,18 +756,18 @@ html[lang="ar"] .modal-header h2,
    le paysage gagne en largeur sans faire regrossir brutalement le texte. */
 @layer components {
   [data-editor-table] {
-    --editor-fs-chapter: 20px;
-    --editor-fs-top: 16px;
-    --editor-fs-section: 15px;
-    --editor-fs-subsection: 14px;
-    --editor-fs-subsubsection: 13px;
-    --editor-fs-item-title: 14px;
+    --editor-fs-chapter: 22px;
+    --editor-fs-top: 19px;
+    --editor-fs-section: 18px;
+    --editor-fs-subsection: 17px;
+    --editor-fs-subsubsection: 16px;
+    --editor-fs-item-title: 15px;
     --editor-fs-description: 14px;
-    --editor-fs-page: 10px;
-    --editor-fs-badge: 10px;
-    --editor-fs-table-side: 11px;
-    --editor-fs-table-main: 12px;
-    --editor-fs-remark: 12px;
+    --editor-fs-remark: 13px;
+    --editor-fs-table-main: 12.5px;
+    --editor-fs-table-side: 11.5px;
+    --editor-fs-page: 11.5px;
+    --editor-fs-badge: 11px;
     --editor-badge-min-width: 30px;
     --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: 6px;
@@ -777,23 +777,26 @@ html[lang="ar"] .modal-header h2,
   }
 
   .editor-type-chapter,
-  .editor-type-chapter > [dir] {
-    font-family: var(--font-sans);
+  .editor-type-chapter > [dir],
+  .editor-type-chapter [dir]:not(.katex, .katex *) {
+    font-family: var(--font-display);
     font-size: var(--editor-fs-chapter);
     line-height: 1.25;
     color: #2b6d73;
   }
   .dark .editor-type-chapter,
-  .dark .editor-type-chapter > [dir] { color: #91cec8; }
+  .dark .editor-type-chapter > [dir],
+  .dark .editor-type-chapter [dir]:not(.katex, .katex *) { color: #91cec8; }
   
-  .editor-type-top {
-    font-family: var(--font-content);
+  .editor-type-top,
+  .editor-type-top [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
     font-size: var(--editor-fs-top);
     line-height: 1.3;
   }
   /*
    * Titre d'un DEVOIR (maison / contrôle continu) : rouge profond, dans la voix
-   * éditoriale des titres de l'application (Newsreader en latin, Maghribi en
+   * éditoriale des titres de l'application (Roboto Slab en latin, KOMission en
    * arabe). C'est un repère de l'année, pas une action : la couleur situe le
    * devoir dans le cahier, elle ne remplace aucune sémantique (le rouge d'alerte
    * et de destruction vit ailleurs). Interligne plus ample que les autres blocs,
@@ -804,26 +807,33 @@ html[lang="ar"] .modal-header h2,
     line-height: 1.45;
     color: #9f1239;
   }
-  .dark .editor-type-evaluation { color: #f0a3b4; }
-  .editor-type-section {
-    font-family: var(--font-content);
-    font-size: var(--editor-fs-section);
-    line-height: 1.3;
+  .editor-type-evaluation [dir]:not(.katex, .katex *) {
+    font-family: var(--font-display);
   }
-  .editor-type-subsection {
-    font-family: var(--font-sans);
+  .dark .editor-type-evaluation { color: #f0a3b4; }
+  .editor-type-section,
+  .editor-type-section [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-section);
+    line-height: 1.32;
+  }
+  .editor-type-subsection,
+  .editor-type-subsection [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
     font-size: var(--editor-fs-subsection);
     line-height: 1.35;
   }
-  .editor-type-subsubsection {
-    font-family: var(--font-sans);
+  .editor-type-subsubsection,
+  .editor-type-subsubsection [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
     font-size: var(--editor-fs-subsubsection);
-    line-height: 1.35;
+    line-height: 1.38;
   }
-  .editor-type-item-title {
-    font-family: var(--font-content);
+  .editor-type-item-title,
+  .editor-type-item-title [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
     font-size: var(--editor-fs-item-title);
-    line-height: 1.5;
+    line-height: 1.45;
   }
   .editor-type-description {
     font-family: var(--font-content);
@@ -859,7 +869,7 @@ html[lang="ar"] .modal-header h2,
   .editor-session-note,
   .editor-list[dir],
   .editor-item-body > bdi[dir],
-  :where(.editor-type-item-title, .editor-type-description, .editor-item-description, .editor-type-remark, .editor-free-content) [dir]:not(.katex, .katex *) {
+  :where(.editor-type-description, .editor-item-description, .editor-type-remark, .editor-free-content) [dir]:not(.katex, .katex *) {
     font-family: var(--font-content);
   }
 
@@ -912,7 +922,7 @@ html[lang="ar"] .modal-header h2,
   /*
    * Surlignage manuscrit de haute qualité sans cadre pour les éléments avec document.
    * Effet coup de surligneur feutre/encre naturel, typographie éditoriale manuscrite
-   * (Newsreader Italic en latin, Maghribi Font 3 en arabe), zéro cadre/bordure.
+   * (Roboto Slab en latin, KOMission en arabe), zéro cadre/bordure.
    */
   .editor-document-highlight {
     display: inline-flex;
@@ -930,9 +940,9 @@ html[lang="ar"] .modal-header h2,
       color-mix(in srgb, hsl(var(--primary)) 15%, transparent) 100%
     );
     color: hsl(var(--primary));
-    font-family: var(--font-display);
+    font-family: var(--font-editor-title);
     font-style: italic;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 700;
     line-height: 1.3;
     letter-spacing: -0.01em;
@@ -947,7 +957,6 @@ html[lang="ar"] .modal-header h2,
   }
   @media (min-width: 640px) {
     .editor-document-highlight {
-      font-size: 1.1rem;
       padding: 0.22rem 0.65rem;
     }
   }
@@ -977,21 +986,16 @@ html[lang="ar"] .modal-header h2,
     font-family: var(--font-display);
     font-style: normal;
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 1em;
     letter-spacing: 0;
   }
-  .editor-document-highlight[dir='ltr'] {
-    font-family: var(--font-display);
+  .editor-document-highlight[dir='ltr'],
+  .editor-document-highlight[dir='ltr'] > [dir='ltr'] {
+    font-family: var(--font-editor-title);
     font-style: italic;
     font-weight: 700;
+    font-size: 1em;
     letter-spacing: -0.01em;
-  }
-  @media (min-width: 640px) {
-    .editor-document-highlight[dir='rtl'],
-    [dir='rtl'] .editor-document-highlight:not([dir='ltr']),
-    html[lang='ar'] .editor-document-highlight:not([dir='ltr']) {
-      font-size: 1.15rem;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
     .editor-document-highlight { transition: none; }
@@ -1023,22 +1027,25 @@ html[lang="ar"] .modal-header h2,
     line-height: 1.6;
   }
 
-  /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
+  /* Échelle typographique strictement proportionnelle selon la hiérarchie pédagogique :
+     Chapitre (1.45) > Bloc/Évaluation (1.25) > Section (1.16) > Sous-section (1.08)
+     > Sous-sous-section (1.02) > Titre de contenu Déf/Prop/Exo (0.96)
+     > Description/Corps (0.90) > Remarque (0.84) > En-tête/Page (0.75) > Badge (0.72). */
   [data-editor-table] {
     --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
     --cdt-table-cols: minmax(4.75rem, 18%) minmax(0, 1fr) minmax(3.5rem, 20%);
-    --editor-fs-chapter: calc(var(--editor-scale) * 1.5);
-    --editor-fs-top: var(--editor-scale);
-    --editor-fs-section: var(--editor-scale);
-    --editor-fs-subsection: calc(var(--editor-scale) * 0.94);
-    --editor-fs-subsubsection: calc(var(--editor-scale) * 0.88);
-    --editor-fs-item-title: var(--editor-scale);
-    --editor-fs-description: max(0.875rem, calc(var(--editor-scale) * 0.94));
+    --editor-fs-chapter: calc(var(--editor-scale) * 1.45);
+    --editor-fs-top: calc(var(--editor-scale) * 1.25);
+    --editor-fs-section: calc(var(--editor-scale) * 1.16);
+    --editor-fs-subsection: calc(var(--editor-scale) * 1.08);
+    --editor-fs-subsubsection: calc(var(--editor-scale) * 1.02);
+    --editor-fs-item-title: calc(var(--editor-scale) * 0.96);
+    --editor-fs-description: calc(var(--editor-scale) * 0.90);
+    --editor-fs-remark: calc(var(--editor-scale) * 0.84);
+    --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
+    --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
     --editor-fs-page: calc(var(--editor-scale) * 0.75);
     --editor-fs-badge: calc(var(--editor-scale) * 0.72);
-    --editor-fs-table-side: max(0.6875rem, calc(var(--editor-scale) * 0.75));
-    --editor-fs-table-main: max(0.75rem, calc(var(--editor-scale) * 0.81));
-    --editor-fs-remark: max(0.75rem, calc(var(--editor-scale) * 0.88));
     --editor-badge-min-width: calc(var(--editor-scale) * 1.95);
     --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);

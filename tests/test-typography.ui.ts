@@ -64,11 +64,40 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const indexCss = readFileSync('src/styles/index.css', 'utf8');
 
+  assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-editor-title:\s*'Roboto Slab'/, 'les titres de contenu LTR utilisent Roboto Slab');
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-content:\s*var\(--font-latin-reading\)/, 'les blocs LTR reçoivent les polices françaises');
   assert.match(typography, /:where\(\[data-content-direction='rtl'\]\)[\s\S]*?--font-content:\s*var\(--font-arabic-body\)/, 'les blocs RTL reçoivent les polices arabes');
-  assert.match(indexCss, /\.editor-type-item-title\s*\{\s*font-family:\s*var\(--font-content\);/, 'les titres de définitions/propriétés/exercices lient --font-content sur leur propre direction');
+  assert.match(indexCss, /\.editor-type-item-title[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de définitions/propriétés/exercices lient --font-editor-title (Roboto Slab en français)');
+  assert.match(indexCss, /\.editor-type-section[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sections lient --font-editor-title');
+  assert.match(indexCss, /\.editor-type-subsection[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sous-sections lient --font-editor-title');
+  assert.match(indexCss, /\.editor-type-subsubsection[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de sous-sous-sections lient --font-editor-title');
   assert.match(indexCss, /\.editor-type-description\s*\{\s*font-family:\s*var\(--font-content\);/, 'les descriptions lient --font-content sur leur propre direction');
   assert.match(indexCss, /\.editor-type-badge\s*\{\s*font-family:\s*var\(--font-secondary\);/, 'les badges lient --font-secondary sur leur propre direction');
+
+  const hierarchyTokens = [
+    '--editor-fs-chapter',
+    '--editor-fs-top',
+    '--editor-fs-section',
+    '--editor-fs-subsection',
+    '--editor-fs-subsubsection',
+    '--editor-fs-item-title',
+    '--editor-fs-description',
+    '--editor-fs-remark',
+    '--editor-fs-table-main',
+    '--editor-fs-table-side',
+    '--editor-fs-badge',
+  ];
+  const multipliers = hierarchyTokens.map(token => {
+    const match = indexCss.match(new RegExp(`${token}:\\s*calc\\(var\\(--editor-scale\\)\\s*\\*\\s*([0-9.]+)\\)`));
+    assert.ok(match, `${token} doit être proportionnel à --editor-scale`);
+    return Number.parseFloat(match[1]);
+  });
+  for (let i = 1; i < multipliers.length; i++) {
+    assert.ok(
+      multipliers[i - 1] > multipliers[i],
+      `la taille de ${hierarchyTokens[i - 1]} (${multipliers[i - 1]}) doit être strictement supérieure à ${hierarchyTokens[i]} (${multipliers[i]})`,
+    );
+  }
 
   const renderInArabicApp = (element: React.ReactElement) =>
     renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'ar', manageDocument: false, children: element }));
@@ -120,6 +149,7 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
     }),
   );
   assert.match(frenchChapterHtml, /dir="ltr" class="editor-type-chapter/, 'le chapitre français reste LTR en app arabe');
+  assert.doesNotMatch(frenchChapterHtml, /font-sans/, 'aucun font-sans codé en dur ne remplace Roboto Slab sur le chapitre');
 
   const arabicChapterHtml = renderInArabicApp(
     React.createElement(ContentRenderer, {
@@ -130,4 +160,5 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   );
   assert.match(arabicChapterHtml, /dir="rtl" class="editor-type-chapter/, 'le chapitre arabe est RTL');
 });
+
 

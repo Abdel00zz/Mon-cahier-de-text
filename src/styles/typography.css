@@ -44,6 +44,7 @@
 :where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir='ltr']):not(.katex, .katex *) {
   --font-sans: var(--font-latin-body), var(--font-arabic-body), system-ui, sans-serif;
   --font-display: var(--font-latin-display), var(--font-arabic-display), serif;
+  --font-editor-title: 'Roboto Slab', var(--font-latin-display), var(--font-arabic-body), serif;
   --font-secondary: var(--font-sans);
   --font-secondary-weight: 400;
   --font-content: var(--font-latin-reading), var(--font-arabic-body), sans-serif;
@@ -56,6 +57,7 @@
 :where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir='rtl']):not(.katex, .katex *) {
   --font-sans: var(--font-arabic-body), var(--font-latin-body), sans-serif;
   --font-display: var(--font-arabic-display), var(--font-latin-display), serif;
+  --font-editor-title: var(--font-arabic-body), var(--font-latin-display), serif;
   --font-secondary: var(--font-arabic-secondary), var(--font-latin-body), sans-serif;
   --font-secondary-weight: 300;
   --font-content: var(--font-arabic-body), var(--font-latin-reading), sans-serif;
