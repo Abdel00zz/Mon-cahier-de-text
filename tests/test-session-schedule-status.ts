@@ -40,8 +40,8 @@ test('session schedule status : détecte une séance imminente (< 60 min)', () =
     });
 
     assert.equal(status.state, 'starting_soon');
-    assert.equal(status.remainingMinutes, 15);
-    assert.match(status.label, /Séance dans 15 min \(10h00\)/);
+    assert.equal(status.remainingMinutes, 20);
+    assert.match(status.label, /Séance dans 20 min \(10h05\)/);
 });
 
 test('session schedule status : détecte une séance plus tard aujourd’hui', () => {
@@ -70,8 +70,8 @@ test('session schedule status : détecte la prochaine séance demain ou un autre
 
     assert.equal(status.state, 'upcoming');
     assert.equal(status.dayOffset, 2);
-    assert.match(status.label, /Prochaine séance : Mercredi à 10h00/);
-    assert.equal(status.shortLabel, 'Mercredi à 10h00');
+    assert.match(status.label, /Prochaine séance : Mercredi à 10h05/);
+    assert.equal(status.shortLabel, 'Mercredi à 10h05');
 });
 
 test('session schedule status : supporte la locale arabe', () => {

@@ -70,10 +70,20 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             headerClassName="border-b border-border/70"
             bodyClassName="document-preview-body overflow-y-auto"
             footer={
-                <Button type="button" variant="outline" onClick={onClose} className="rounded-md">{t('common.close')}</Button>
+                <div className="flex w-full items-center justify-between gap-3">
+                    <DocumentPrintButton source={source} title={sheet.title ?? title} classLabel={sheet.classLabel ?? classLabel} showLabel />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onClose}
+                        className="rounded-xl px-5 h-11 text-xs font-semibold"
+                    >
+                        {t('common.close')}
+                    </Button>
+                </div>
             }
             /* Le document commence directement : aucun contexte ajouté. */
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={sheet.title ?? title} classLabel={sheet.classLabel ?? classLabel} className="ms-auto" /></span>}
+            title={t('documentPreview.heading')}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper border border-border/80 bg-card p-3.5 sm:p-5">

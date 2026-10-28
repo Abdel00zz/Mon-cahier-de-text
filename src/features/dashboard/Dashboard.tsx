@@ -322,15 +322,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         locale,
                         absences: config.absences,
                         schedules: config.schedules,
+                        schoolYearStart: config.schoolYearStart,
                     }
                 )
             );
         }
         return map;
-    }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, calendar, locale, scheduleClockNow]);
+    }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, config.schoolYearStart, calendar, locale, scheduleClockNow]);
+
+    useEffect(() => { setScheduleClockNow(new Date()); }, [activeSessionClassIds]);
 
     const groupedClasses = useMemo(() => {
-        const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number }> }>();
+        const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number; active: boolean }> }>();
 
         for (const classInfo of filteredClasses) {
             const schedule = scheduleStatusByClassId.get(classInfo.id);
@@ -364,13 +367,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 const existing = groupsMap.get(groupKey)!;
                 existing.order = Math.min(existing.order, groupOrder);
             }
-            groupsMap.get(groupKey)!.rawItems.push({ classInfo, startMin });
+            groupsMap.get(groupKey)!.rawItems.push({ classInfo, startMin, active: activeSessionIds.has(classInfo.id) });
         }
 
         const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => a.order - b.order);
 
         for (const group of sortedGroups) {
-            group.rawItems.sort((a, b) => a.startMin - b.startMin);
+            group.rawItems.sort((a, b) => Number(b.active) - Number(a.active) || a.startMin - b.startMin);
         }
 
         let lastPaletteKey: PaletteKey | undefined;
@@ -398,7 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 items,
             };
         });
-    }, [filteredClasses, scheduleStatusByClassId, locale]);
+    }, [filteredClasses, scheduleStatusByClassId, locale, activeSessionIds]);
 
     if (isLoading) {
         return <DashboardSkeleton />;
@@ -469,6 +472,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 preferredClassId={preferredClassId}
                                 visibleClassIds={assistantVisibleClassIds}
                                 activeSessionClassIds={activeSessionClassIds}
+                                scheduleStatusByClassId={scheduleStatusByClassId}
                                 readLessons={readAssistantLessons}
                                 onCreateClass={() => setCreateModalOpen(true)}
                                 onOpenSchedule={onOpenSchedule}

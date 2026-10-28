@@ -1,6 +1,6 @@
 import type { AbsencePeriod, ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../../types';
 import { getDaySessionBlocks } from './timetable';
-import { getBundledCalendar, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
+import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 
 type SessionScheduleState =
@@ -48,6 +48,7 @@ export interface SessionScheduleOptions {
     locale?: string;
     absences?: AbsencePeriod[];
     schedules?: ClassSchedule[];
+    schoolYearStart?: string;
 }
 
 /**
@@ -65,18 +66,8 @@ export function computeClassSessionSchedule(
         return { state: 'none', label: '', shortLabel: '' };
     }
 
-    const effectiveTimetable: TimetableEntry[] =
-        timetable && timetable.length > 0
-            ? timetable
-            : timetable === undefined && options.schedules && options.schedules.length > 0
-              ? options.schedules.flatMap(sched =>
-                    sched.slots.map((slot, idx) => ({
-                        day: slot.weekday,
-                        slot: idx % 8,
-                        classId: sched.classId,
-                    })),
-                )
-              : [];
+    // Legacy schedules have no times: do not invent slots.
+    const effectiveTimetable: TimetableEntry[] = timetable ?? [];
 
     if (effectiveTimetable.length === 0) {
         return { state: 'none', label: '', shortLabel: '' };
@@ -91,12 +82,13 @@ export function computeClassSessionSchedule(
     const now = options.now ?? new Date();
     const todayIso = todayInMorocco(now, calendar);
     const currentMinute = moroccoClockMinutes(now, calendar.fuseau);
+    const schoolYear = getEffectiveSchoolYear(calendar, options.schoolYearStart, todayIso);
     const currentDayOfWeek = new Date(`${todayIso}T12:00:00Z`).getUTCDay();
     const rawLocale = options.locale ?? 'fr';
     const lang: 'fr' | 'ar' | 'en' = rawLocale.startsWith('ar') ? 'ar' : rawLocale.startsWith('en') ? 'en' : 'fr';
 
     const isDayBlocked = (isoDate: string): boolean => {
-        if (isWeeklyRestDay(isoDate)) return true;
+        if (isoDate < schoolYear.debut || isoDate > schoolYear.fin || isWeeklyRestDay(isoDate)) return true;
         if (isHoliday(isoDate, calendar) || isVacation(isoDate, calendar)) return true;
         if (options.absences?.some(period => isoDate >= period.debut && isoDate <= period.fin)) return true;
         return false;
@@ -247,29 +239,15 @@ export function computeClassSessionSchedule(
         };
     };
 
-    // 2. Recherche de la prochaine séance dans les jours ouvrés à venir (1 à 21 jours)
+    // 2. Recherche de la prochaine séance valide dans l’année scolaire.
     const [y, m, d] = todayIso.split('-').map(Number);
 
-    for (let offset = 1; offset <= 21; offset++) {
+    for (let offset = 1; offset <= 370; offset++) {
         const targetDate = new Date(Date.UTC(y, m - 1, d + offset, 12, 0, 0));
         const targetIso = targetDate.toISOString().slice(0, 10);
+        if (targetIso > schoolYear.fin) break;
         if (isDayBlocked(targetIso)) continue;
 
-        const targetDayOfWeek = targetDate.getUTCDay();
-        const targetBlocks = getDaySessionBlocks(effectiveTimetable, targetDayOfWeek, clock)
-            .filter(b => b.classId === classId)
-            .sort((a, b) => a.startMin - b.startMin);
-
-        if (targetBlocks.length > 0) {
-            const nextBlock = targetBlocks[0];
-            return buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin);
-        }
-    }
-
-    // 3. Repli hebdomadaire : si une période de vacances prolonge l'arrêt au-delà de 21 jours,
-    // on conserve le rattachement au jour hebdomadaire de l'emploi du temps du professeur.
-    for (let offset = 1; offset <= 7; offset++) {
-        const targetDate = new Date(Date.UTC(y, m - 1, d + offset, 12, 0, 0));
         const targetDayOfWeek = targetDate.getUTCDay();
         const targetBlocks = getDaySessionBlocks(effectiveTimetable, targetDayOfWeek, clock)
             .filter(b => b.classId === classId)

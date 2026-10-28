@@ -96,7 +96,8 @@ test('la fenêtre affiche une phrase et le document sans contexte ajouté', () =
     const source = readFileSync('src/components/documents/DocumentPreview.tsx', 'utf8');
     // La barre de la fenêtre porte la phrase de cadrage, et rien d’autre :
     // ni nom du devoir, ni classe, ni date — ces données appartiennent au document.
-    assert.match(source, /title=\{<span[^\n]*t\('documentPreview\.heading'\)[^\n]*<DocumentPrintButton/, 'la barre porte la phrase et l’impression A5');
+    assert.match(source, /title=\{t\('documentPreview\.heading'\)\}/, 'la barre porte la phrase');
+    assert.match(source, /footer=\{[\s\S]*?<DocumentPrintButton[\s\S]*?<Button[^>]*onClick=\{onClose\}/, 'le pied de page porte l’impression et la fermeture sur la même ligne');
     assert.doesNotMatch(source, /FileText className="h-5 w-5"/, 'plus de grand cartouche d’en-tête');
     for (const path of ['src/components/documents/DocumentPreview.tsx', 'src/features/evaluations/components/ContentDocumentModal.tsx', 'src/admin/components/AdminDocumentPreview.tsx']) {
         const documentModal = readFileSync(path, 'utf8');

@@ -7,7 +7,7 @@ export interface SafePwaActionEnvironment {
 
 function canApplyPwaAction(): boolean {
   if (document.visibilityState !== 'visible' || document.documentElement.dataset.nativeActive === 'false') return false;
-  if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-pwa-update-blocked="true"], [aria-busy="true"]')) return false;
+  if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-pwa-update-blocked="true"], [data-editor-sorting="true"], [aria-busy="true"]')) return false;
   const focused = document.activeElement;
   return !(focused instanceof HTMLElement && focused.matches('input, textarea, select, [contenteditable]:not([contenteditable="false"])'));
 }
@@ -22,7 +22,7 @@ const browserEnvironment = (): SafePwaActionEnvironment => ({
     const observer = new MutationObserver(changed);
     observer.observe(document.documentElement, {
       childList: true, subtree: true, attributes: true,
-      attributeFilter: ['data-pwa-update-blocked', 'aria-busy', 'role'],
+      attributeFilter: ['data-pwa-update-blocked', 'data-editor-sorting', 'aria-busy', 'role'],
     });
     return () => {
       events.forEach(event => document.removeEventListener(event, changed));

@@ -80,12 +80,12 @@ test('missing timetable/start or expired school year gives no invented dates', (
   assert.equal(analyse(classInfo, [], {}).courseStartDate, undefined);
   assert.equal(analyse(classInfo, lessons, { today: '2027-10-01' }).projectionAvailable, false);
 });
-test('one reminder at 09:55 for a continuous 08–10 session, independent of vibration', () => {
+test('one reminder at 09:50 for a continuous 08–10 session, independent of vibration', () => {
   assert.equal(detect('08:55:00').events.length, 0);
-  assert.equal(detect('09:54:59').events.length, 0);
-  assert.equal(detect('09:55:00').events[0]?.kind, 'end');
-  assert.equal(detect('09:55:59').events.length, 1);
-  assert.equal(detect('10:00:00').events.length, 0);
+  assert.equal(detect('09:49:59').events.length, 0);
+  assert.equal(detect('09:50:00').events[0]?.kind, 'end');
+  assert.equal(detect('09:50:59').events.length, 1);
+  assert.equal(detect('10:00:00').events[0]?.kind, 'missing');
 });
 test('legacy profiles enable omitted session alert options by default', () => {
   const legacySettings: NotificationSettings = { ...config.notificationSettings! };
@@ -93,15 +93,15 @@ test('legacy profiles enable omitted session alert options by default', () => {
   delete legacySettings.missingDateReminderEnabled;
   delete legacySettings.sessionReminderMinutes;
   delete legacySettings.missingDateReminderMinutes;
-  assert.equal(detect('09:55:00', { notificationSettings: legacySettings }).events[0]?.kind, 'end');
-  assert.equal(detect('10:05:00', { notificationSettings: legacySettings }).events[0]?.kind, 'missing');
+  assert.equal(detect('09:50:00', { notificationSettings: legacySettings }).events[0]?.kind, 'end');
+  assert.equal(detect('10:00:00', { notificationSettings: legacySettings }).events[0]?.kind, 'missing');
 });
 test('configurable lead and grace, missing dates checked before generating events', () => {
   const notificationSettings = { ...config.notificationSettings!, sessionReminderMinutes: 5, missingDateReminderMinutes: 10 };
-    assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.kind, 'end');
-    assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.remainingMinutes, 5);
-  assert.equal(detect('10:10:00', { notificationSettings }).events[0]?.kind, 'missing');
-  assert.equal(detect('10:10:00', { notificationSettings }, true).events.length, 0);
+    assert.equal(detect('09:50:00', { notificationSettings }).events[0]?.kind, 'end');
+    assert.equal(detect('09:50:00', { notificationSettings }).events[0]?.remainingMinutes, 5);
+  assert.equal(detect('10:05:00', { notificationSettings }).events[0]?.kind, 'missing');
+  assert.equal(detect('10:05:00', { notificationSettings }, true).events.length, 0);
   assert.equal(detect('11:10:00', { notificationSettings }).events.length, 0);
 });
 test('master switch, teacher absences, deleted classes and holidays silence alerts', () => {
@@ -119,7 +119,7 @@ test('Sunday rest suppresses legacy session alerts and automatic current-class n
     assert.deepEqual(result.current, []);
     assert.deepEqual(result.events, []);
   }
-  const saturday = detectSessionAlerts({ ...sundayConfig, timetable: [{ day: 6, slot: 0, classId: classInfo.id }] }, [classInfo], calendar, new Date('2026-09-12T08:55:00+01:00'), () => false);
+  const saturday = detectSessionAlerts({ ...sundayConfig, timetable: [{ day: 6, slot: 0, classId: classInfo.id }] }, [classInfo], calendar, new Date('2026-09-12T08:50:00+01:00'), () => false);
   assert.equal(saturday.current.length, 1);
   assert.equal(saturday.events.length, 1);
 });
@@ -129,7 +129,7 @@ test('Sunday slots in legacy data never accelerate official progression estimate
   assert.equal(result.rows[0].estimatedEnd, analyse().rows[0].estimatedEnd);
 });
 test('current session has a strict end boundary and lunch is not a continuous session', () => {
-  assert.equal(detect('09:59:00').current.length, 1); assert.equal(detect('10:00:00').current.length, 0);
+  assert.equal(detect('09:54:59').current.length, 1); assert.equal(detect('09:55:00').current.length, 0);
   const timetable = [{ day: 1, slot: 3, classId: 'c1' }, { day: 1, slot: 4, classId: 'c1' }];
   assert.equal(detect('11:55:00', { timetable }).events[0]?.kind, 'end'); assert.equal(detect('12:30:00', { timetable }).current.length, 0);
 });
@@ -137,7 +137,7 @@ test('global timetable clock translates every slot without changing duration or 
   const slots = getHourSlots(30);
   assert.equal(slots[0].startMin, 8 * 60 + 30);
   assert.equal(slots.at(-1)?.endMin, 18 * 60 + 30);
-  assert.ok(slots.every(slot => slot.endMin - slot.startMin === 60));
+  assert.ok(slots.every((slot, index) => slot.endMin - slot.startMin === (index % 4 === 3 ? 60 : 55)));
   assert.equal(slots[4].lunchBefore, true);
   assert.equal(slots[4].startMin - slots[3].endMin, 120);
   assert.equal(normalizeTimetableClock({ offsetMinutes: 7, version: 9, updatedAt: '2026-09-08T00:00:00Z' }).offsetMinutes, 0);
@@ -146,7 +146,7 @@ test('global timetable clock shifts live sessions and reminders together', () =>
   const timetableClock = { offsetMinutes: 30, version: 1, updatedAt: '2026-09-08T00:00:00Z' };
   assert.equal(detect('08:15:00', { timetableClock }).current.length, 0);
   assert.equal(detect('08:45:00', { timetableClock }).current.length, 1);
-  assert.equal(detect('10:25:00', { timetableClock }).events[0]?.kind, 'end');
+  assert.equal(detect('10:20:00', { timetableClock }).events[0]?.kind, 'end');
   assert.equal(detect('10:30:00', { timetableClock }).current.length, 0);
 });
 test('a user timetable override wins over global time and can inherit it again', () => {
@@ -196,7 +196,7 @@ test('session handover and end derive order from the baseline, never the previou
 
 test('simultaneous classes form one event, keeping all navigation targets', () => {
   const other = { ...classInfo, id: 'c2' };
-  const result = detectSessionAlerts({ ...config, timetable: [...config.timetable!, { day: 1, slot: 1, classId: 'c2' }] }, [classInfo, other], calendar, new Date('2026-09-14T09:55:00+01:00'), () => false);
+  const result = detectSessionAlerts({ ...config, timetable: [...config.timetable!, { day: 1, slot: 1, classId: 'c2' }] }, [classInfo, other], calendar, new Date('2026-09-14T09:50:00+01:00'), () => false);
   assert.equal(result.events.length, 1); assert.deepEqual(result.events[0].classIds, ['c1', 'c2']);
 });
 test('Morocco timezone, including Ramadan offset, is independent of the device', () => {

@@ -401,3 +401,22 @@ test('notification activation prompt appears immediately after PWA install and s
 });
 
 
+
+
+test('le robot propose la prochaine classe seulement sans problème prioritaire', () => {
+  const scheduleStatusByClassId = new Map([
+    ['1', { state: 'upcoming' as const, label: 'Demain à 08h00', shortLabel: 'Demain', dayOffset: 1, startMin: 480 }],
+    ['2', { state: 'starting_soon' as const, label: 'Séance dans 5 min (09h00)', shortLabel: 'Dans 5 min', dayOffset: 0, startMin: 540 }],
+  ]);
+  const options = input({ scheduleStatusByClassId, offersEnabled: false });
+  const next = evaluateCompanion(options);
+  assert.equal(next.guidance.step, 'next-session');
+  assert.equal(next.target?.id, '2');
+  assert.deepEqual(next.action, { type: 'open-class', classId: '2' });
+  for (const locale of ['fr', 'ar', 'en'] as const) assert.match(companionMessage(next, locale, options.today, false).detail, /09h00/);
+  const issue = evaluateCompanion({ ...options, readLessons: id => id === '1' ? broken : valid });
+  assert.equal(issue.guidance.step, 'notebook-issue');
+  const active = evaluateCompanion({ ...options, activeSessionClassIds: ['1'] });
+  assert.equal(active.guidance.step, 'active-session');
+  assert.equal(active.target?.id, '1');
+});

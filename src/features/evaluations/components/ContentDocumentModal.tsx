@@ -289,7 +289,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
 
         <div className="document-editor-actions sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur-sm">
           <div className="flex items-center">
-            <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} />
+            <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} showLabel />
           </div>
           <div className="flex items-center gap-2">
             <button

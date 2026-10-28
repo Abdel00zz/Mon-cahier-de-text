@@ -1,4 +1,7 @@
-const SHELL_CACHE = 'cahier-shell-v2';
+// Replaced with a content hash and a complete resource list during the web build.
+const BUILD_ID = 'development';
+const BUILD_ASSETS = [];
+const SHELL_CACHE = `cahier-shell-${BUILD_ID}`;
 const RUNTIME_CACHE = 'cahier-runtime-v2';
 const ACTIVE_CACHES = [SHELL_CACHE, RUNTIME_CACHE];
 
@@ -15,15 +18,18 @@ const PRECACHE_URLS = [
   '/icons/favicon-16.png',
   '/vacances-jourferie.json',
   '/official-student-events.json',
+  ...BUILD_ASSETS,
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
+    // A partial download must never replace a working offline version.
     try {
       const cache = await caches.open(SHELL_CACHE);
-      await Promise.allSettled(PRECACHE_URLS.map(url => cache.add(url)));
-    } catch {
-      // Offline install fallback remains resilient even if a secondary asset is unreachable.
+      await cache.addAll([...new Set(PRECACHE_URLS)]);
+    } catch (error) {
+      await caches.delete(SHELL_CACHE);
+      throw error;
     }
     await self.skipWaiting();
   })());
@@ -33,11 +39,11 @@ self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     try {
       const keys = await caches.keys();
-      await Promise.all(
-        keys
-          .filter(key => !ACTIVE_CACHES.includes(key))
-          .map(key => caches.delete(key))
-      );
+      // Retain the previous shell for tabs still running its hashed chunks.
+      const oldShells = keys.filter(key => key.startsWith('cahier-shell-') && key !== SHELL_CACHE);
+      const keepPrevious = oldShells.at(-1);
+      await Promise.all(keys.filter(key => key.startsWith('cahier-')
+        && !ACTIVE_CACHES.includes(key) && key !== keepPrevious).map(key => caches.delete(key)));
     } catch {
       // Ignore storage cleanup errors in restricted browsing modes.
     }
@@ -55,6 +61,7 @@ function isCacheableStaticPath(pathname) {
   return (
     pathname.startsWith('/assets/') ||
     pathname.startsWith('/fonts/') ||
+    /\.(?:ttf|otf)$/i.test(pathname) ||
     pathname.startsWith('/icons/') ||
     pathname.startsWith('/contenus/') ||
     pathname.startsWith('/doc_officiel/') ||
@@ -80,23 +87,11 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname === '/version.json') return;
 
-  // Navigation requests: Network-first with offline fallback to cached shell
-  if (request.mode === 'navigate') {
+  // Each worker serves its own consistent shell; other pages retain normal navigation.
+  if (request.mode === 'navigate' && (url.pathname === '/' || url.pathname === '/index.html')) {
     event.respondWith((async () => {
-      try {
-        const networkResponse = await fetch(request);
-        if (networkResponse && networkResponse.ok) {
-          const cache = await caches.open(SHELL_CACHE);
-          void cache.put('/index.html', networkResponse.clone());
-        }
-        return networkResponse;
-      } catch {
-        const cachedIndex = await caches.match('/index.html');
-        if (cachedIndex) return cachedIndex;
-        const cachedRoot = await caches.match('/');
-        if (cachedRoot) return cachedRoot;
-        return Response.error();
-      }
+      const shell = await caches.open(SHELL_CACHE);
+      return await shell.match('/index.html') || await shell.match('/') || fetch(request);
     })());
     return;
   }
@@ -104,6 +99,9 @@ self.addEventListener('fetch', event => {
   // Static assets & offline curricula: Stale-while-revalidate
   if (isCacheableStaticPath(url.pathname)) {
     event.respondWith((async () => {
+      const currentShell = await caches.open(SHELL_CACHE);
+      const bundled = await currentShell.match(request);
+      if (bundled) return bundled;
       const cached = await caches.match(request);
       const networkPromise = fetch(request)
         .then(async response => {

@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { BUNDLE_OPTIMIZATION } from './scripts/vite/optimization';
 import { premiumPerformancePlugin } from './scripts/vite/performance-plugin';
 import { nativeAssets } from './scripts/vite/native-assets';
+import { pwaOfflineAssets } from './scripts/vite/pwa-offline-assets';
 import { versionFile } from './scripts/vite/version-file';
 import { modernMathFonts, pruneLegacyMathFonts } from './scripts/vite/modern-math-fonts';
 
@@ -38,7 +39,7 @@ export default defineConfig(({ mode }) => {
             react(),
             tailwindcss(),
             pruneLegacyMathFonts(),
-            ...(nativeBuild ? [nativeAssets()] : []),
+            ...(nativeBuild ? [nativeAssets()] : [pwaOfflineAssets()]),
             versionFile(),
             premiumPerformancePlugin({ report: mode === 'analyze', strict: mode === 'analyze' }),
         ],

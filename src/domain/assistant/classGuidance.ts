@@ -16,6 +16,7 @@ export type ClassGuidance =
   | { step: 'create' }
   | { step: 'schedule'; classId: string; className: string; remaining: number }
   | { step: 'active-session'; classId: string; className: string }
+  | { step: 'next-session'; classId: string; className: string; scheduleLabel: string }
   | { step: 'notebook-issue'; classId: string; className: string; issueCode: NotebookAdvice['code']; count: number; remaining: number }
   | { step: 'evaluation-conflict'; classId: string; className: string; conflictKind: EvaluationConflict['kind']; count: number; remaining: number }
   | { step: 'roster-incomplete'; classId: string; className: string; reason: 'missing-roster' | 'unmerged-names'; count: number; remaining: number }
@@ -164,6 +165,7 @@ export function guidanceKey(guidance: ClassGuidance): string {
   if (guidance.step === 'create') return 'create';
   if (guidance.step === 'ready') return `ready:${guidance.classId}`;
   if (guidance.step === 'active-session') return `session:${guidance.classId}`;
+  if (guidance.step === 'next-session') return `next-session:${guidance.classId}:${guidance.scheduleLabel}`;
   if (guidance.step === 'checking') return `checking:${guidance.classId}`;
   if (guidance.step === 'notebook-unavailable') return `unavailable:${guidance.classId}:${guidance.remaining}`;
   if (guidance.step === 'notebook-issue') return `issue:${guidance.classId}:${guidance.issueCode}:${guidance.count}:${guidance.remaining}`;

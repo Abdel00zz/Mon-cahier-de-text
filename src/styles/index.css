@@ -3170,3 +3170,11 @@ mark.doc-hl .katex-display > .katex {
   .settings-toggle-row__icon { transition: none; }
   .settings-toggle-row.is-on .settings-toggle-row__icon .app-icon { animation: none; }
 }
+
+/* Samsung typography throughout notebook rows and content inputs. */
+@media screen {
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-type-description, .editor-type-page, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-free-content, .editor-session-note, .editor-list, .editor-item-body) :not(.katex, .katex *),
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-type-description, .editor-type-page, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-free-content, .editor-session-note, .editor-list, .editor-item-body),
+  .content-fields :is(input, textarea, [role="combobox"]) { font-family: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, sans-serif; letter-spacing: normal; }
+  .content-fields :is(input, textarea, [role="combobox"]) { font-size: 1rem; line-height: 1.5; }
+}

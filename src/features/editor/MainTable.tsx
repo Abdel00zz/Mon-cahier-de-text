@@ -690,6 +690,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     >
       <TableHeader />
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true"><span key={sort.announcement.sequence}>{sort.announcement.text}</span></span>
+      {(sort.announcement.text === t('editor.reorderStarted') || sort.announcement.text === t('editor.reorderChoose')) && <div className="editor-reorder-notice"><span role="status">{t('editor.reorderChoose')}</span><button type="button" onClick={sort.cancelReorder}>{t('common.cancel')}</button></div>}
       <CardContent className="!p-0">
         <div ref={element => { scrollRef.current = element; sortRootRef.current = element; }} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}
           onPointerDown={sort.onPointerDown} onTouchStart={sort.onTouchStart} onClickCapture={sort.onClickCapture} onDoubleClickCapture={sort.onClickCapture}

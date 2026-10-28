@@ -41,7 +41,7 @@
     "bench:json": "tsx scripts/benchmarks/benchmark-json.ts",
     "check:i18n": "node scripts/validation/audit-i18n.mjs",
     "test:notifications": "tsx tests/test-notification-mechanisms.ts",
-    "test:pwa": "tsx tests/test-pwa-mobile.ts",
+    "test:pwa": "tsx tests/test-pwa-mobile.ts && node --test tests/test-pwa-offline.mjs",
     "test:admin-sync": "tsx tests/test-admin-sync.ts",
     "test:editor": "node tests/run-editor-tests.mjs",
     "test:modals": "tsx tests/test-modal-motion.ts",

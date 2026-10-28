@@ -87,11 +87,14 @@ export function useSessionAlerts(enabled = true) {
     const initialClassIds = [...new Set(initial.current.map(block => block.classId))].sort();
     const initialKey = `${initial.today}:${initial.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;
     setCurrent(previous => previous.key === initialKey ? previous : { key: initialKey, classIds: initialClassIds });
+    // Keep boundary updates alive even if the calendar request never resolves.
+    timer = window.setTimeout(() => setTick(value => value + 1), initial.nextCheckDelay);
     void (async () => {
       const calendar = await loadHolidayCalendar().catch(() => getBundledCalendar());
       if (!fresh()) return;
       const snapshot = detectSessionAlerts(config, classes, calendar, new Date(), (id, date) => collectSessionDates(readCachedLessons(id)).includes(date));
       // Wake only at the next session boundary/reminder or local midnight.
+      if (timer !== undefined) window.clearTimeout(timer);
       timer = window.setTimeout(() => setTick(value => value + 1), snapshot.nextCheckDelay);
       const classIds = [...new Set(snapshot.current.map(block => block.classId))].sort();
       const key = `${snapshot.today}:${snapshot.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;

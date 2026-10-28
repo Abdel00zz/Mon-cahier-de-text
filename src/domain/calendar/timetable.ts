@@ -11,14 +11,14 @@ export interface HourSlot {
 }
 
 const HOUR_SLOTS: HourSlot[] = [
-    { index: 0, label: '08h–09h', startMin: 8 * 60, endMin: 9 * 60 },
-    { index: 1, label: '09h–10h', startMin: 9 * 60, endMin: 10 * 60 },
-    { index: 2, label: '10h–11h', startMin: 10 * 60, endMin: 11 * 60 },
-    { index: 3, label: '11h–12h', startMin: 11 * 60, endMin: 12 * 60 },
-    { index: 4, label: '14h–15h', startMin: 14 * 60, endMin: 15 * 60, lunchBefore: true },
-    { index: 5, label: '15h–16h', startMin: 15 * 60, endMin: 16 * 60 },
-    { index: 6, label: '16h–17h', startMin: 16 * 60, endMin: 17 * 60 },
-    { index: 7, label: '17h–18h', startMin: 17 * 60, endMin: 18 * 60 },
+    { index: 0, label: '08h00–08h55', startMin: 8 * 60, endMin: 8 * 60 + 55 },
+    { index: 1, label: '09h00–09h55', startMin: 9 * 60, endMin: 9 * 60 + 55 },
+    { index: 2, label: '10h05–11h00', startMin: 10 * 60 + 5, endMin: 11 * 60 },
+    { index: 3, label: '11h00–12h00', startMin: 11 * 60, endMin: 12 * 60 },
+    { index: 4, label: '14h00–14h55', startMin: 14 * 60, endMin: 14 * 60 + 55, lunchBefore: true },
+    { index: 5, label: '15h00–15h55', startMin: 15 * 60, endMin: 15 * 60 + 55 },
+    { index: 6, label: '16h05–17h00', startMin: 16 * 60 + 5, endMin: 17 * 60 },
+    { index: 7, label: '17h00–18h00', startMin: 17 * 60, endMin: 18 * 60 },
 ];
 
 const TIMETABLE_CLOCK_MIN_OFFSET = -120;

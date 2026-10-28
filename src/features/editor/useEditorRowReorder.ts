@@ -83,7 +83,8 @@ export function useEditorRowReorder(
       || ('button' in event && (event.button !== 0 || !event.isPrimary))
       || (touchEvent && touchEvent.touches.length !== 1)) return;
     const target = event.target as Element;
-    if (target.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) return;
+    const handle = target.closest('[data-reorder-handle]');
+    if (!handle && target.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) return;
     const surface = target.closest<HTMLElement>('.editor-row-content--sortable');
     const source = surface?.closest<HTMLElement>('[data-editor-sort-row]');
     const sourceKey = source?.dataset.editorSortKey;
@@ -322,7 +323,8 @@ export function useEditorRowReorder(
       end({ pointerId, clientX: point.clientX, clientY: point.clientY });
     };
     cleanup.current = dispose;
-    holdTimer = setTimeout(activate, touch ? 260 : 360);
+    if (handle) activate();
+    else holdTimer = setTimeout(activate, touch ? 260 : 360);
     if (touch) {
       window.addEventListener('touchmove', moveTouch, { passive: false });
       window.addEventListener('touchend', endTouch);
@@ -345,14 +347,16 @@ export function useEditorRowReorder(
 
   const onKeyDown = useCallback((event: ReactKeyboardEvent<HTMLElement>) => {
     const surface = event.target as HTMLElement;
-    if (!surface.matches('.editor-row-content--sortable')) return;
+    const rowSurface = surface.closest<HTMLElement>('.editor-row-content--sortable');
+    if (!rowSurface) return;
+    if (surface !== rowSurface && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault(); ignoreClickUntil.current = 0; surface.click(); return;
     }
     if (drag.current || !callbacks.current.onReorder || !callbacks.current.canReorder || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
     event.preventDefault();
     event.stopPropagation();
-    const source = surface.closest<HTMLElement>('[data-editor-sort-row]');
+    const source = rowSurface.closest<HTMLElement>('[data-editor-sort-row]');
     const sourceKey = source?.dataset.editorSortKey;
     if (!sourceKey) return;
     const visible = rows(rootRef.current);
@@ -385,5 +389,10 @@ export function useEditorRowReorder(
   const onContextMenu = useCallback((event: ReactMouseEvent<HTMLElement>) => {
     if (drag.current) event.preventDefault();
   }, []);
-  return { onPointerDown, onTouchStart: onPointerDown, onKeyDown, onClickCapture, onContextMenu, announcement };
+  const cancelReorder = useCallback(() => {
+    if (!drag.current) return;
+    cleanup.current?.();
+    announce(callbacks.current.messages.cancelled);
+  }, [announce]);
+  return { onPointerDown, onTouchStart: onPointerDown, onKeyDown, onClickCapture, onContextMenu, cancelReorder, announcement };
 }

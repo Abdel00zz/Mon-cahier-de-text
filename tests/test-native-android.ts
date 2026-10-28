@@ -98,7 +98,7 @@ test('une séance continue produit un rappel de fin, futur, localisé et lié à
   const now = new Date('2026-09-14T07:00:00Z');
   const plan = buildNativeReminderPlan(config, [classInfo], now);
   assert.equal(plan.length, 2);
-  assert.equal(plan[0].at.toISOString(), '2026-09-14T08:55:00.000Z');
+  assert.equal(plan[0].at.toISOString(), '2026-09-14T08:50:00.000Z');
   assert.match(plan[0].key, /session-end/);
   assert.match(plan[0].body, /5/);
   assert.equal(plan[0].url, '/#/classe/c1');

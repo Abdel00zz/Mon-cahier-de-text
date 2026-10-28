@@ -40,6 +40,6 @@ test('Android scheduled notifications use exactly the same wording as foreground
     const copy = sessionNotificationCopy('end', ['a'], classes, locale, 5);
     assert.equal(reminder.title, copy.title);
     assert.equal(reminder.body, copy.body);
-    assert.equal(reminder.at.toISOString(), '2026-09-14T14:55:00.000Z');
+    assert.equal(reminder.at.toISOString(), '2026-09-14T14:50:00.000Z');
   }
 });

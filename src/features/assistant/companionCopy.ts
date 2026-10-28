@@ -50,6 +50,7 @@ const COPY = {
       detail: 'Il manque ses créneaux. On les fixe ?',
       action: 'Régler les horaires',
     },
+    'next-session': { title: 'Prochaine séance', detail: 'Votre prochaine séance approche.', action: 'Ouvrir le cahier', context: 'À venir' },
     'active-session': {
       title: 'Séance en cours',
       detail: 'Un contenu terminé ? Sélectionnez-le pour lui attribuer la date de la séance.',
@@ -120,6 +121,7 @@ const COPY = {
       detail: 'ينقصنا تحديد الحصص الأسبوعية في استعمال الزمن لتنظيم مواعيدك بدقة. هل نضبطها معاً؟',
       action: 'ضبط الحصص الآن',
     },
+    'next-session': { title: 'الحصة القادمة', detail: 'حصتك القادمة تقترب.', action: 'فتح الدفتر', context: 'قريباً' },
     'active-session': {
       title: 'حصة جارية الآن',
       detail: 'حصتك جارية حالياً؛ اختر درساً أو نشاطاً منجزاً لإسناد تاريخ اليوم إليه وتثبيته مباشرة.',
@@ -190,6 +192,7 @@ const COPY = {
       detail: 'This class needs its weekly slots. Shall we set them?',
       action: 'Set timetable',
     },
+    'next-session': { title: 'Next session', detail: 'Your next session is coming up.', action: 'Open notebook', context: 'Upcoming' },
     'active-session': {
       title: 'Session in progress',
       detail: 'Finished some content? Select it to assign the session date.',
@@ -289,6 +292,9 @@ export function classGuidanceMessage(
     else if (guidance.step === 'active-session') detail = locale === 'fr' ? `Votre séance avec ${name} est en cours ; sélectionnez le contenu réalisé pour lui attribuer la date de cette séance.`
       : locale === 'ar' ? `حصتك مع قسم ${name} جارية الآن؛ اختر المحتوى المنجز لإسناد تاريخ اليوم إليه وتثبيته مباشرة.`
         : `Your session with ${name} is in progress; select the content covered to assign this session’s date.`;
+    else if (guidance.step === 'next-session') detail = locale === 'fr' ? `Votre prochaine séance avec ${name} : ${guidance.scheduleLabel}.`
+      : locale === 'ar' ? `حصتك القادمة مع قسم ${name}: ${guidance.scheduleLabel}.`
+        : `Your next session with ${name}: ${guidance.scheduleLabel}.`;
     else if (guidance.step === 'notebook-empty') detail = options?.askReadyContent
       ? (locale === 'fr' ? `Le cahier de ${name} attend son contenu ; avez-vous besoin d’un contenu prêt à utiliser à l’aide de votre cours enseigné ?`
         : locale === 'ar' ? `دفتر قسم ${name} في انتظار محتواه؛ هل تحتاج إلى محتوى جاهز للاستعمال انطلاقاً من درسك المعتمد؟`

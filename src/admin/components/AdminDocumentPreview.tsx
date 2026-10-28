@@ -65,7 +65,7 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
             maxWidth="3xl"
             className="document-modal-frame"
             headerClassName="border-b border-border/70"
-            title={<span className="flex w-full items-center gap-3"><span>{t('documentPreview.heading')}</span><DocumentPrintButton source={source} title={sheet.title ?? heading} classLabel={sheet.classLabel ?? classLabel} className="ms-auto" /></span>}
+            title={t('documentPreview.heading')}
         >
             <div className="space-y-3">
                 <div className="document-preview-paper max-h-[60vh] overflow-y-auto border border-border/80 bg-card p-5 sm:p-7">
@@ -80,8 +80,11 @@ export const AdminDocumentPreview: React.FC<AdminDocumentPreviewProps> = ({
                         <p className="py-10 text-center text-xs text-muted-foreground">{emptyLabel}</p>
                     )}
                 </div>
-                <div className="flex items-center justify-end gap-2 border-t border-border/60 pt-3">
-                    <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">Fermer</Button>
+                <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+                    <DocumentPrintButton source={source} title={sheet.title ?? heading} classLabel={sheet.classLabel ?? classLabel} showLabel />
+                    <Button type="button" variant="outline" onClick={onClose} className="rounded-xl px-5 h-11 text-xs font-semibold">
+                        {t('common.close')}
+                    </Button>
                 </div>
             </div>
         </Modal>

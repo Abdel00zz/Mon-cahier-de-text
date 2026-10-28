@@ -13,6 +13,7 @@ import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/hom
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
 import './editorRowStates.css';
+import { GripVertical } from 'lucide-react';
 
 interface TableRowProps {
   data: any;
@@ -455,6 +456,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
+        {sortable && <button type="button" data-reorder-handle onClick={event => { if (event.detail === 0) event.currentTarget.closest<HTMLElement>('.editor-row-content--sortable')?.focus(); }} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
@@ -528,6 +530,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         handleToggle();
       }}
     >
+      {sortable && <button type="button" data-reorder-handle onClick={event => { if (event.detail === 0) event.currentTarget.closest<HTMLElement>('.editor-row-content--sortable')?.focus(); }} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
       <ContentRenderer
         data={data}
         indices={indices}

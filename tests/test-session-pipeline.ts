@@ -31,23 +31,23 @@ const at = (clock: string, config = baseConfig(timetable), date = '2026-09-14') 
 const activeIds = (clock: string, config?: AppConfig, date?: string) =>
   [...new Set(at(clock, config, date).current.map(block => block.classId))].sort();
 
-test('14h–16h : un seul rappel à 15h55, y compris après mise à jour de l’ancien défaut', () => {
+test('14h–16h : un seul rappel à 15h50, y compris après mise à jour de l’ancien défaut', () => {
   const afternoon = baseConfig([{ day: 1, slot: 4, classId: 'a' }, { day: 1, slot: 5, classId: 'a' }]);
   for (const minutes of [undefined, 1, 5]) {
     const config = { ...afternoon, notificationSettings: { ...afternoon.notificationSettings!, sessionReminderMinutes: minutes } };
     const plan = buildNativeReminderPlan(config, classes, new Date('2026-09-14T13:00:00+01:00'));
     const today = plan.filter(item => item.at.toISOString().startsWith('2026-09-14'));
     assert.equal(today.length, 1);
-    assert.equal(today[0].at.toISOString(), '2026-09-14T14:55:00.000Z');
-    for (const time of ['14:55:00', '15:54:59', '15:56:00', '15:59:00', '16:00:00']) {
+    assert.equal(today[0].at.toISOString(), '2026-09-14T14:50:00.000Z');
+    for (const time of ['14:55:00', '15:49:59', '15:51:00', '15:54:00', '16:01:00']) {
       assert.equal(at(time, config).events.length, 0, time);
     }
-    const event = at('15:55:00', config).events[0];
+    const event = at('15:50:00', config).events[0];
     assert.equal(event?.kind, 'end');
     assert.equal(event?.remainingMinutes, 5);
     assert.equal(event?.id, today[0].key);
-    assert.equal(at('15:55:59', config).events.length, 1);
-    assert.deepEqual(activeIds('15:59:00', config), ['a'], 'la durée scolaire reste intacte');
+    assert.equal(at('15:50:59', config).events.length, 1);
+    assert.deepEqual(activeIds('15:54:00', config), ['a'], 'la durée scolaire reste intacte');
   }
 });
 
@@ -56,7 +56,7 @@ test('le délai reste personnalisable après migration, avec parité Android et 
     const config = baseConfig(timetable);
     config.notificationSettings = { ...config.notificationSettings!, sessionReminderMinutes: minutes, sessionReminderTimingVersion: 1 };
     const plan = buildNativeReminderPlan(config, classes, new Date('2026-09-14T07:00:00+01:00'));
-    assert.equal(plan[0].at.toISOString(), `2026-09-14T08:${60 - minutes}:00.000Z`);
+    assert.equal(plan[0].at.toISOString(), `2026-09-14T08:${55 - minutes}:00.000Z`);
     const result = detectSessionAlerts(config, classes, calendar, plan[0].at, () => true);
     assert.equal(result.events[0]?.remainingMinutes, minutes);
     assert.equal(result.events[0]?.id, plan[0].key);
@@ -103,7 +103,7 @@ test('décalage horaire du compte : séance, rappel et alarme native bougent ens
   assert.deepEqual(activeIds('08:45:00', shifted), ['a']);
   assert.deepEqual(activeIds('10:15:00', shifted), ['a'], 'la fin suit aussi le décalage');
   assert.deepEqual(activeIds('10:30:00', shifted), []);
-  assert.equal(at('10:25:00', shifted).events[0]?.kind, 'end');
+  assert.equal(at('10:20:00', shifted).events[0]?.kind, 'end');
 
   // L'alarme native est planifiée exactement 30 minutes plus tard que sans décalage.
   const now = new Date('2026-09-14T06:00:00+01:00');
@@ -116,12 +116,12 @@ test('décalage horaire du compte : séance, rappel et alarme native bougent ens
 });
 
 test('étiquettes des créneaux : elles suivent le décalage et le calcul est mis en mémoire', () => {
-  assert.equal(getHourSlots(0)[0].label, '08h–09h');
-  assert.equal(getHourSlots(30)[0].label, '08h30–09h30');
-  assert.equal(getHourSlots(-15)[0].label, '07h45–08h45');
-  assert.equal(getHourSlots(30)[4].label, '14h30–15h30');
+  assert.equal(getHourSlots(0)[0].label, '08h00–08h55');
+  assert.equal(getHourSlots(30)[0].label, '08h30–09h25');
+  assert.equal(getHourSlots(-15)[0].label, '07h45–08h40');
+  assert.equal(getHourSlots(30)[4].label, '14h30–15h25');
   assert.equal(getHourSlots(30), getHourSlots(30), 'même tableau, pas de recalcul');
-  assert.equal(getHourSlots(7)[0].label, '08h–09h', 'décalage invalide : horaire historique');
+  assert.equal(getHourSlots(7)[0].label, '08h00–08h55', 'décalage invalide : horaire historique');
 });
 
 test('grille et moteur comptent les mêmes séances continues (parité sur 300 emplois du temps)', () => {
@@ -204,4 +204,36 @@ test('calendrier : une requête qui ne répond pas ne bloque pas l’affichage d
     globalThis.fetch = realFetch;
     resetHolidayCalendarCacheForTests();
   }
+});
+
+
+test('horloge réelle : frontières, pauses et cohérence entre carte et moteur', async () => {
+  const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
+  const slots = [
+    ['08:00:00','08:54:59','08:55:00'], ['09:00:00','09:54:59','09:55:00'],
+    ['10:05:00','10:59:59','11:00:00'], ['11:00:00','11:59:59','12:00:00'],
+    ['14:00:00','14:54:59','14:55:00'], ['15:00:00','15:54:59','15:55:00'],
+    ['16:05:00','16:59:59','17:00:00'], ['17:00:00','17:59:59','18:00:00'],
+  ];
+  for (const [index, [start, last, end]] of slots.entries()) {
+    const config = baseConfig([{ day: 1, slot: index, classId: 'a' }]);
+    const status = (time: string) => computeClassSessionSchedule(config.timetable, config.timetableClock, 'a', { calendar, now: new Date(`2026-09-14T${time}+01:00`) });
+    for (const time of [start, last]) {
+      assert.deepEqual(activeIds(time, config), ['a'], time);
+      assert.equal(status(time).state, 'in_progress', time);
+    }
+    assert.deepEqual(activeIds(end, config), [], end);
+    assert.notEqual(status(end).state, 'in_progress', end);
+  }
+  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'b'}])), []);
+  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}])), ['a']);
+});
+
+test('les vacances longues et les anciens horaires sans heures ne produisent pas de date inventée', async () => {
+  const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
+  const longHoliday = { ...calendar, vacances: [{ debut: '2026-09-14', fin: '2026-10-20', nom: 'Congé' }] };
+  const now = new Date('2026-09-14T08:00:00+01:00');
+  const status = computeClassSessionSchedule([{day: 1, slot: 0, classId: 'a'}], 0, 'a', { calendar: longHoliday, now });
+  assert.equal(status.dayOffset, 42);
+  assert.equal(computeClassSessionSchedule(undefined, 0, 'a', { calendar, now, schedules: [{classId: 'a', slots: [{weekday: 1, sessions: 1}]}] }).state, 'none');
 });

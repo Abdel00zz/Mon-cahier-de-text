@@ -1,3 +1,4 @@
+import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import { useTeacherMessaging } from '@/contexts/TeacherMessagingContext';
 import { conversationCopy } from '@/features/messages/conversationCopy';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -43,6 +44,7 @@ interface ClassAssistantProps {
   preferredClassId?: string;
   visibleClassIds?: readonly string[];
   activeSessionClassIds?: readonly string[];
+  scheduleStatusByClassId?: ReadonlyMap<string, SessionScheduleStatus>;
   readLessons?: (classId: string) => LessonsData;
   onCreateClass: () => void;
   onOpenSchedule?: () => void;
@@ -61,6 +63,7 @@ export function ClassAssistant({
   preferredClassId,
   visibleClassIds,
   activeSessionClassIds,
+  scheduleStatusByClassId,
   readLessons,
   onCreateClass,
   onOpenSchedule,
@@ -127,7 +130,7 @@ export function ClassAssistant({
   }, [today, revision]);
   const online = isNetworkOnline();
   const evaluate = useMemo(() => createCompanionEvaluation({
-    classes, config, calendar, today, now: Date.now(), preferredClassId, visibleClassIds, activeSessionClassIds,
+    classes, config, calendar, today, now: Date.now(), preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
     readLessons, readActivity: readNotebookActivity, offersEnabled: hasSupportWhatsApp(),
     messageHistory: messaging?.history, contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses,
     pwaInstallRequired: pwaState.shouldAskInstall,
@@ -136,7 +139,7 @@ export function ClassAssistant({
     skippedMessageKeys,
     services: { authenticated: Boolean(messaging?.enabled), online, syncStatus, transfer: progress.state,
       inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false, messages: messaging?.messages ?? [] },
-  }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds,
+  }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
     messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
     online, syncStatus, progress.state, revision]);

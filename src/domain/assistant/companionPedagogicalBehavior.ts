@@ -38,7 +38,7 @@ export function resolvePedagogicalBehavior(guidance: ClassGuidance): Pedagogical
     problemCount: 0, severity: 'minor', mood: 'attentive', robotAction: 'waiting',
     antennaFlash: false, headRoundness: 90, autoSleepMs: 30000,
   };
-  if (guidance.step === 'ready') {
+  if (guidance.step === 'ready' || guidance.step === 'next-session') {
     return {
       problemCount: 0,
       severity: 'serene',
