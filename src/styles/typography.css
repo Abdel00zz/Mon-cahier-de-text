@@ -34,9 +34,14 @@
   letter-spacing: normal;
 }
 
-/* Recalculer les alias sur chaque frontière de langue empêche une fenêtre
-   française de conserver les alias hérités d'un parent arabe, et inversement. */
-:root, :where([lang]) {
+/* Recalculer les alias sur chaque frontière de langue ou de direction de texte
+   empêche un contenu français dans l'éditeur de conserver les polices arabes
+   de l'application (et inversement pour un contenu arabe en interface française). */
+:root,
+:where([lang]),
+:where([data-content-direction='ltr']),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item):where([dir='ltr']),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir='ltr']):not(.katex, .katex *) {
   --font-sans: var(--font-latin-body), var(--font-arabic-body), system-ui, sans-serif;
   --font-display: var(--font-latin-display), var(--font-arabic-display), serif;
   --font-secondary: var(--font-sans);
@@ -44,7 +49,11 @@
   --font-content: var(--font-latin-reading), var(--font-arabic-body), sans-serif;
 }
 
-:root:lang(ar), :where([lang|='ar' i]) {
+:root:lang(ar),
+:where([lang|='ar' i]),
+:where([data-content-direction='rtl']),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item):where([dir='rtl']),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir='rtl']):not(.katex, .katex *) {
   --font-sans: var(--font-arabic-body), var(--font-latin-body), sans-serif;
   --font-display: var(--font-arabic-display), var(--font-latin-display), serif;
   --font-secondary: var(--font-arabic-secondary), var(--font-latin-body), sans-serif;
@@ -53,7 +62,11 @@
 }
 
 /* Alias historiques partagés par les cartes et les utilitaires existants. */
-:root, :where([lang]) {
+:root,
+:where([lang]),
+:where([data-content-direction]),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item):where([dir]),
+:where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir]):not(.katex, .katex *) {
   --font-class-sheet: var(--font-display);
   --font-samsung: var(--font-sans);
   --font-samsung-display: var(--font-display);

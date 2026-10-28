@@ -130,13 +130,13 @@ const renderChapterTitleStyled = (text: string) => {
     const restTitle = match[3]?.trim();
 
     return (
-      <span className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
-        <span className="text-[0.95em] font-bold text-inherit font-sans tracking-tight">
+      <span dir={textDirectionAttribute(trimmed)} className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
+        <span dir={textDirectionAttribute(chapterPrefix)} className="text-[0.95em] font-bold text-inherit font-sans tracking-tight">
           {renderChapterLabel(chapterPrefix)}
           {separator ? <span className="ms-1 opacity-80">{separator}</span> : null}
         </span>
         {restTitle ? (
-          <span className="text-[0.85em] font-semibold text-inherit">
+          <span dir={textDirectionAttribute(restTitle)} className="text-[0.85em] font-semibold text-inherit">
             {restTitle}
           </span>
         ) : null}
@@ -145,7 +145,7 @@ const renderChapterTitleStyled = (text: string) => {
   }
 
   return (
-    <span className="text-[0.85em] font-bold text-inherit">
+    <span dir={textDirectionAttribute(trimmed)} className="text-[0.85em] font-bold text-inherit">
       {text}
     </span>
   );
@@ -225,7 +225,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
+          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
               {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
@@ -248,6 +248,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               {documentPreview ? (
                 <button
                   type="button"
+                  dir={textDirectionAttribute(item.title)}
                   data-document-title-link="true"
                   data-document-highlight="true"
                   className="editor-document-highlight group max-w-full text-base sm:text-lg"
@@ -332,7 +333,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-free-content text-start min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
               {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
               {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
-              {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
+              {empty && !isPrint && <span dir={textDirectionAttribute(t('addContent.freeHint'))} className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
               {empty && isPrint && <span aria-hidden="true">{'\u00a0'}</span>}
             </div>
           </MaybeKaTeX>
@@ -350,11 +351,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         return (
           <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div dir={textDirectionAttribute(item.title || item.description)} className={`print-lesson-item ${lessonIndentClass} text-start`}>
-              <span className="print-item-kind" data-content-tone={contentBadgeTone(normalizedType)}>{badgeText}{displayNumber ? <> <bdi dir="ltr">{displayNumber}</bdi></> : null}</span>
+              <span dir={textDirectionAttribute(badgeText) ?? 'ltr'} className="print-item-kind" data-content-tone={contentBadgeTone(normalizedType)}>{badgeText}{displayNumber ? <> <bdi dir="ltr">{displayNumber}</bdi></> : null}</span>
               {/* Même composition que l'écran : un titre « Limite $x^2$ » ne
                   doit jamais partir en TeX brut sur le papier. */}
               <span dir={textDirectionAttribute(item.title)} className="print-item-title"><HighlightedText text={item.title} /></span>
-              {item.page && <span className="print-item-page"> p. {item.page}</span>}
+              {item.page && <span dir="ltr" className="print-item-page"> p. {item.page}</span>}
               {allowDescription && (
                 <div
                   dir={textDirectionAttribute(item.description)}
@@ -382,6 +383,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div dir={textDirectionAttribute(item.title || item.description)} className={`editor-lesson-row editor-table-content text-start font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
+            dir={textDirectionAttribute(badgeText) ?? 'ltr'}
             className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
             data-content-type={normalizedType}
             data-content-number={displayNumber ?? ''}
@@ -399,6 +401,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             {itemDocumentPreview ? (
               <button
                 type="button"
+                dir={textDirectionAttribute(item.title)}
                 data-document-title-link="true"
                 data-document-highlight="true"
                 className="editor-document-highlight group max-w-full text-sm sm:text-[15px]"
@@ -414,7 +417,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             ) : item.title ? (
               <HighlightedText text={item.title} query={highlight} />
             ) : (
-              <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>
+              <span dir={textDirectionAttribute(t('editor.titlePlaceholder'))} className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>
             )}
           </div>
 
@@ -431,7 +434,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
           {/* Info page */}
           {item.page && (
-            <div className="col-start-2 editor-type-page flex items-center gap-1 text-muted-foreground italic">
+            <div dir="ltr" className="col-start-2 editor-type-page flex items-center gap-1 text-muted-foreground italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>

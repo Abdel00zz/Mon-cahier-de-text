@@ -469,12 +469,12 @@ html[lang="ar"] .keep-class-title {
   ::selection { background: hsl(var(--primary) / 0.22); color: inherit; }
   input, textarea, [contenteditable="true"] { caret-color: hsl(var(--primary)); }
 
-  /* Les contrôles héritent de la langue locale, même dans une fenêtre traduite. */
+  /* Les contrôles de l'interface héritent de la langue locale, sans écraser les rôles du tableau éditeur. */
   html[lang="ar"] body,
-  html[lang="ar"] button,
-  html[lang="ar"] input,
-  html[lang="ar"] textarea,
-  html[lang="ar"] select {
+  html[lang="ar"] button:not(.editor-document-highlight, [data-editor-table] *),
+  html[lang="ar"] input:not([data-editor-table] *),
+  html[lang="ar"] textarea:not([data-editor-table] *),
+  html[lang="ar"] select:not([data-editor-table] *) {
     font-family: var(--font-sans);
     letter-spacing: normal;
   }
@@ -739,10 +739,9 @@ html[lang="ar"] .modal-header h2,
     border-radius: var(--radius-sm, 6px);
   }
 
-  /* L’arabe ne se compose pas avec l’espacement latin des capitales. */
-  [dir='rtl'] .tracking-wider,
-  [dir='rtl'] .tracking-tight,
-  [dir='rtl'] .tracking-\[0\.09em\] {
+  /* L’arabe ne se compose pas avec l’espacement latin des capitales ;
+     un bloc explicitement français (dir="ltr") conserve son approche latine. */
+  [dir='rtl'] :is(.tracking-wider, .tracking-tight, .tracking-\[0\.09em\]):not([dir='ltr'], [dir='ltr'] *) {
     letter-spacing: normal;
   }
 
@@ -777,10 +776,21 @@ html[lang="ar"] .modal-header h2,
     --editor-description-padding: 8px;
   }
 
-  .editor-type-chapter { font-size: var(--editor-fs-chapter); line-height: 1.25; color: #2b6d73; }
-  .dark .editor-type-chapter { color: #91cec8; }
+  .editor-type-chapter,
+  .editor-type-chapter > [dir] {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-chapter);
+    line-height: 1.25;
+    color: #2b6d73;
+  }
+  .dark .editor-type-chapter,
+  .dark .editor-type-chapter > [dir] { color: #91cec8; }
   
-  .editor-type-top { font-size: var(--editor-fs-top); line-height: 1.3; }
+  .editor-type-top {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-top);
+    line-height: 1.3;
+  }
   /*
    * Titre d'un DEVOIR (maison / contrôle continu) : rouge profond, dans la voix
    * éditoriale des titres de l'application (Newsreader en latin, Maghribi en
@@ -795,19 +805,63 @@ html[lang="ar"] .modal-header h2,
     color: #9f1239;
   }
   .dark .editor-type-evaluation { color: #f0a3b4; }
-  .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
-  .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
-  .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); line-height: 1.35; }
-  .editor-type-item-title { font-size: var(--editor-fs-item-title); line-height: 1.5; }
-  .editor-type-description { font-size: var(--editor-fs-description); line-height: 1.6; }
-  .editor-type-page { font-size: var(--editor-fs-page); line-height: 1.25; }
+  .editor-type-section {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-section);
+    line-height: 1.3;
+  }
+  .editor-type-subsection {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-subsection);
+    line-height: 1.35;
+  }
+  .editor-type-subsubsection {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-subsubsection);
+    line-height: 1.35;
+  }
+  .editor-type-item-title {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-item-title);
+    line-height: 1.5;
+  }
+  .editor-type-description {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-description);
+    line-height: 1.6;
+  }
+  .editor-type-page {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-page);
+    line-height: 1.25;
+  }
   .editor-type-badge {
+    font-family: var(--font-secondary);
     font-size: var(--editor-fs-badge) !important;
     line-height: 1.1 !important;
   }
-  .editor-type-table-side { font-size: var(--editor-fs-table-side); line-height: 1.2; }
-  .editor-type-table-main { font-size: var(--editor-fs-table-main); line-height: 1.2; }
-  .editor-type-remark { font-size: var(--editor-fs-remark); line-height: 1.35; }
+  .editor-type-table-side {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-table-side);
+    line-height: 1.2;
+  }
+  .editor-type-table-main {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-table-main);
+    line-height: 1.2;
+  }
+  .editor-type-remark {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-remark);
+    line-height: 1.35;
+  }
+  .editor-free-content,
+  .editor-session-note,
+  .editor-list[dir],
+  .editor-item-body > bdi[dir],
+  :where(.editor-type-item-title, .editor-type-description, .editor-item-description, .editor-type-remark, .editor-free-content) [dir]:not(.katex, .katex *) {
+    font-family: var(--font-content);
+  }
 
   /*
    * Pastille « Document » : un devoir maison / contrôle continu qui a un sujet
@@ -917,15 +971,25 @@ html[lang="ar"] .modal-header h2,
     outline: 2px dashed hsl(var(--primary));
     outline-offset: 3px;
   }
-  html[lang='ar'] .editor-document-highlight {
+  .editor-document-highlight[dir='rtl'],
+  [dir='rtl'] .editor-document-highlight:not([dir='ltr']),
+  html[lang='ar'] .editor-document-highlight:not([dir='ltr']) {
     font-family: var(--font-display);
     font-style: normal;
     font-weight: 800;
     font-size: 1.05rem;
     letter-spacing: 0;
   }
+  .editor-document-highlight[dir='ltr'] {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
   @media (min-width: 640px) {
-    html[lang='ar'] .editor-document-highlight {
+    .editor-document-highlight[dir='rtl'],
+    [dir='rtl'] .editor-document-highlight:not([dir='ltr']),
+    html[lang='ar'] .editor-document-highlight:not([dir='ltr']) {
       font-size: 1.15rem;
     }
   }
@@ -949,9 +1013,14 @@ html[lang="ar"] .modal-header h2,
     padding-inline-start: var(--editor-description-padding);
   }
 
-  [data-editor-table][dir="rtl"] .editor-type-item-title,
-  [data-editor-table][dir="rtl"] .editor-type-description {
+  .editor-type-item-title[dir="rtl"],
+  .editor-type-description[dir="rtl"],
+  [data-editor-table][dir="rtl"] .editor-type-item-title:not([dir="ltr"]),
+  [data-editor-table][dir="rtl"] .editor-type-description:not([dir="ltr"]) {
     line-height: 1.5;
+  }
+  .editor-type-description[dir="ltr"] {
+    line-height: 1.6;
   }
 
   /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */

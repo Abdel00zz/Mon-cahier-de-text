@@ -109,13 +109,13 @@ const TableHeader: React.FC = React.memo(() => {
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
-        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
+        <span dir={textDirectionAttribute(t('editor.date'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
-        <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
+        <span dir={textDirectionAttribute(t('editor.content'))} className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">
+        <span dir={textDirectionAttribute(t('editor.remark'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">
           <span className="sr-only sm:not-sr-only">{t('editor.remark')}</span>
           <span className="sm:hidden" aria-hidden="true">{t('editor.remarkShort')}</span>
         </span>
@@ -707,7 +707,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
                           <div data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
                               <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><MultiDateCard dates={dates} /></div>
-                              <div className="flex items-center justify-center text-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
+                              <div dir={textDirectionAttribute(t('notifications.absenceCertificate'))} className="flex items-center justify-center text-center border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
                               <div className="flex min-w-0 flex-col justify-center gap-2 whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">
                                   {remarks.map(remark => <div key={remark.dates[0]} dir={textDirectionAttribute(remark.reasons.join(' · '))}>
                                       {remarks.length > 1 && <div className="mb-1 text-xs font-medium tabular-nums">{remark.dates.map(date => <bdi key={date} dir="ltr" title={formatDateDDMMYYYY(date) ?? date} className="inline-block max-w-full me-1">
