@@ -863,13 +863,29 @@ html[lang="ar"] .modal-header h2,
   .editor-type-remark {
     font-family: var(--font-content);
     font-size: var(--editor-fs-remark);
-    line-height: 1.35;
+    line-height: 1.45;
+  }
+  .editor-type-remark[dir='rtl'],
+  .editor-type-remark[dir='rtl'] :not(.katex, .katex *),
+  .editor-type-remark [dir='rtl']:not(.katex, .katex *),
+  .editor-session-note[dir='rtl'],
+  .editor-session-note[dir='rtl'] :not(.katex, .katex *),
+  .editor-session-note [dir='rtl']:not(.katex, .katex *),
+  [data-remark-cell='true'] [dir='rtl']:not(.katex, .katex *) {
+    font-family: var(--font-feedback);
+    letter-spacing: normal;
+  }
+  .editor-type-remark[dir='ltr'],
+  .editor-type-remark [dir='ltr']:not(.katex, .katex *),
+  .editor-session-note[dir='ltr'],
+  .editor-session-note [dir='ltr']:not(.katex, .katex *) {
+    font-family: var(--font-content);
   }
   .editor-free-content,
-  .editor-session-note,
+  .editor-session-note:not([dir='rtl']),
   .editor-list[dir],
   .editor-item-body > bdi[dir],
-  :where(.editor-type-description, .editor-item-description, .editor-type-remark, .editor-free-content) [dir]:not(.katex, .katex *) {
+  :where(.editor-type-description, .editor-item-description, .editor-free-content) [dir]:not(.katex, .katex *) {
     font-family: var(--font-content);
   }
 

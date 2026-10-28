@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
  */
 
 export const SettingsPanel: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="space-y-5 lg:space-y-6">
+  <div className="space-y-4 sm:space-y-5 lg:space-y-6">
     {/* Sous 1024 px, le titre de la rubrique est dans l'en-tête de la fenêtre : il reste lu par les lecteurs d'écran. */}
     <h2 className="text-xl font-bold tracking-tight text-foreground max-lg:sr-only">{title}</h2>
     {children}
@@ -36,22 +36,22 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   className,
 }) => (
   <section className={cn(
-    "settings-section rounded-2xl border border-border/70 bg-background/55 dark:bg-background/35 p-5 sm:p-6 shadow-xs backdrop-blur-sm space-y-4 sm:space-y-5 transition-shadow",
+    "settings-section rounded-[18px] sm:rounded-2xl border border-border/70 bg-card/95 dark:bg-card/85 p-4 sm:p-5 md:p-6 shadow-xs backdrop-blur-sm space-y-3.5 sm:space-y-4 transition-shadow",
     className
   )}>
     {(title || action) && (
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pb-1">
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pb-0.5">
         <div className="min-w-0 grow">
           <div className="flex items-center gap-2.5">
             {Icon && <Icon className="h-5 w-5 text-primary shrink-0 stroke-[1.75]" />}
-            {title && <h3 className="text-base font-semibold text-foreground tracking-tight">{title}</h3>}
+            {title && <h3 className="text-[15px] sm:text-base font-semibold text-foreground tracking-tight">{title}</h3>}
           </div>
           {hint && <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-muted-foreground">{hint}</p>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </header>
     )}
-    <div className={separators ? "settings-section__body divide-y divide-border/40" : "space-y-4 sm:space-y-5"}>
+    <div className={separators ? "settings-section__body divide-y divide-border/45" : "space-y-3.5 sm:space-y-4"}>
       {children}
     </div>
   </section>

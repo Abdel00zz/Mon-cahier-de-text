@@ -36,12 +36,56 @@
   .settings-modal-frame .settings-scroll { padding-block: 16px 24px; }
 }
 
-/* Page navigation: shared keyboard model and transform-based selection indicator. */
-.settings-tab-navigation { min-width: 0; margin-bottom: 16px; padding: 4px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--card)); }
-.settings-tab-navigation [role='tablist'] { padding: 0; gap: 4px; scroll-padding-inline: 8px; }
-.settings-tab-navigation [role='tab'] { min-height: 44px; border-radius: 10px; font-size: 12px; }
-.settings-tab-navigation [role='tab'] svg { width: 17px; height: 17px; stroke-width: 1.4; }
-.settings-tab-navigation [role='tab'][aria-selected='true'] { font-weight: 600; }
+/* Page navigation: frameless iOS-style tab strip with fluid selection capsule. */
+.settings-tab-navigation {
+  --rail-surface: hsl(var(--background));
+  min-width: 0;
+  margin-bottom: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.settings-tab-navigation [role='tablist'] {
+  padding: 2px 0;
+  gap: 6px;
+  scroll-padding-inline: 12px;
+  scroll-snap-type: x proximity;
+}
+.settings-tab-navigation [role='tab'] {
+  min-height: 44px;
+  padding-inline: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+html[lang='ar'] .settings-tab-navigation [role='tab'] {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.settings-tab-navigation [role='tab'][aria-selected='false'] {
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+}
+.settings-tab-navigation [role='tab'][aria-selected='true'] {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+.settings-tab-navigation [role='tab'] > div {
+  border: 0;
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.12);
+  box-shadow: none;
+}
+.dark .settings-tab-navigation [role='tab'] > div {
+  background: hsl(var(--primary) / 0.22);
+}
 .settings-tab-navigation [role='tablist'] > button { scroll-snap-align: center; }
 .settings-tab-navigation [role='tab']:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
 .settings-page-section { animation: settings-section-in 180ms cubic-bezier(.22,1,.36,1); }
@@ -58,7 +102,29 @@
 @media (min-width: 768px) { .settings-profile-save { bottom: 1rem; } }
 .workspace-shell[data-phone-navigation='true'] .settings-profile-save { bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
 @media (max-width: 639px) {
+  .settings-page-root {
+    padding-inline: max(14px, env(safe-area-inset-left, 0px)) max(14px, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .settings-tab-navigation {
+    margin-inline: -4px;
+    margin-bottom: 12px;
+  }
+  .settings-tab-navigation [role='tablist'] {
+    padding-inline: 4px;
+    gap: 4px;
+  }
+  .settings-tab-navigation [role='tab'] {
+    min-height: 44px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+  .settings-section {
+    border-radius: 16px;
+    padding: 14px 15px;
+  }
   .schedule-start-field input[type='date'] { font-size: 16px; }
   .schedule-tab { gap: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .settings-page-section { animation: none; } }
+

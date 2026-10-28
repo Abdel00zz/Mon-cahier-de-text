@@ -368,13 +368,12 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
   if (asPage) {
     return (
-      <div className="settings-page-root w-full max-w-5xl mx-auto py-5 sm:py-8 px-3.5 sm:px-6">
+      <div data-settings-ui className="settings-page-root w-full max-w-5xl mx-auto pt-2 pb-6 sm:py-7 px-4 sm:px-6">
         <SettingsTabNavigation items={SETTING_ITEMS} activeId={activeCategory} onChange={setActiveCategory}
           onPrepare={preloadTabComponent} translate={t} idPrefix={tabsId} label={t('settings.title')} />
 
-        {/* Zone de contenu sous les onglets : encadrée et arrière-plan différent */}
         <main className="settings-page-main min-w-0">
-          <div className="settings-page-panel rounded-2xl border border-border/80 bg-card/90 dark:bg-card/70 shadow-sm p-3 sm:p-5 md:p-6">
+          <div className="settings-page-panel min-w-0">
             <section
               key={activeCategory}
               role="tabpanel"
@@ -391,7 +390,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
         {/* Sauvegarde flottante si profil modifié */}
         {hasProfileChanges && (
-          <div className="settings-profile-save sticky z-20 mt-8 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-md border border-border/80 rounded-2xl shadow-xl">
+          <div className="settings-profile-save sticky z-20 mt-6 max-w-md mx-auto p-3 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-xl">
             {footer}
           </div>
         )}

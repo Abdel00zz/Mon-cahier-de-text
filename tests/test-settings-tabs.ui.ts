@@ -20,6 +20,8 @@ test('settings page tabs expose one keyboard entry point and link to the current
     assert.equal((html.match(/aria-selected="true"/g) ?? []).length, 1);
     assert.equal((html.match(new RegExp(`aria-controls="settings-${locale}-panel"`, 'g')) ?? []).length, 2);
     assert.match(html, new RegExp(`id="settings-${locale}-profile"`));
-    assert.ok(html.includes('Schedule') && html.includes('Profile'), 'labels remain available beside the icons');
+    assert.ok(html.includes('Schedule') && html.includes('Profile'), 'labels remain available');
+    assert.ok(!html.includes('<svg'), 'settings tabs do not render icons');
   }
 });
+
