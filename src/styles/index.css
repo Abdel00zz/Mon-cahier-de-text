@@ -2161,33 +2161,29 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   @keyframes keep-session-focus {
     0%, 100% {
+      border-color: #9A3412;
       box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--keep-accent) 18%, transparent),
-        0 12px 28px -17px color-mix(in srgb, var(--keep-accent) 76%, transparent),
-        0 7px 18px -14px rgb(15 23 42 / 0.3);
+        inset 0 0 0 1px rgb(154 52 18 / 0.28),
+        0 0 0 1px rgb(194 65 12 / 0.22),
+        0 6px 18px -6px rgb(154 52 18 / 0.26);
     }
     50% {
+      border-color: #EA580C;
       box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 22%, transparent),
-        0 0 0 3px color-mix(in srgb, var(--keep-accent) 9%, transparent),
-        0 17px 36px -18px color-mix(in srgb, var(--keep-accent) 86%, transparent),
-        0 10px 24px -15px rgb(15 23 42 / 0.34);
+        inset 0 0 0 1.5px rgb(234 88 12 / 0.72),
+        0 0 0 3px rgb(194 65 12 / 0.28),
+        0 10px 26px -6px rgb(194 65 12 / 0.44);
     }
   }
   .keep-session-active {
     border-width: 2px;
-    border-color: color-mix(in srgb, var(--keep-accent) 74%, var(--keep-border));
-    background-color: color-mix(in srgb, var(--keep-light) 96%, var(--keep-accent) 4%);
+    border-style: solid;
+    border-color: #C2410C;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--keep-accent) 18%, transparent),
-      0 12px 28px -17px color-mix(in srgb, var(--keep-accent) 76%, transparent),
-      0 7px 18px -14px rgb(15 23 42 / 0.3);
-    animation: keep-session-focus 4.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-  .dark .keep-session-active {
-    background-color: color-mix(in srgb, var(--keep-dark) 95%, var(--keep-accent) 5%);
+      inset 0 0 0 1px rgb(154 52 18 / 0.28),
+      0 0 0 1px rgb(194 65 12 / 0.22),
+      0 6px 18px -6px rgb(154 52 18 / 0.26);
+    animation: keep-session-focus 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .keep-session-active .keep-session-footer {
     border-color: color-mix(in srgb, var(--keep-accent) 18%, transparent);
@@ -2250,23 +2246,11 @@ html[data-keyboard='open'] .mobile-tab-bar {
     .keep-session-active:hover,
     .dark .keep-session-active:hover {
       transform: translateY(-2px);
-      border-color: var(--keep-accent);
+      border-color: #EA580C;
       box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 24%, transparent),
-        0 0 0 3px color-mix(in srgb, var(--keep-accent) 12%, transparent),
-        0 20px 42px -20px color-mix(in srgb, var(--keep-accent) 92%, transparent),
-        0 12px 26px -16px rgb(15 23 42 / 0.38);
-      animation-play-state: paused;
-    }
-  }
-  @media (pointer: coarse) {
-    .keep-session-active {
-      animation: none;
-      box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--keep-accent) 16%, transparent),
-        0 10px 24px -17px color-mix(in srgb, var(--keep-accent) 72%, transparent),
-        0 6px 14px -13px rgb(15 23 42 / 0.28);
+        inset 0 0 0 1.5px rgb(234 88 12 / 0.78),
+        0 0 0 3px rgb(194 65 12 / 0.32),
+        0 14px 30px -8px rgb(194 65 12 / 0.48);
     }
   }
   @media (prefers-reduced-motion: reduce) {

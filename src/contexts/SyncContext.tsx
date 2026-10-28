@@ -236,6 +236,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSyncStatus('syncing');
         const work = getPendingWork();
         let succeeded = false;
+        let requiresPull = false;
 
         try {
             const local = readLocalSyncSnapshot();
@@ -306,7 +307,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const pushedIds: string[] = [];
             let serverTime: string | null = null;
             let pushedSettingsAt: string | null = null;
-            let requiresPull = false;
             let failure: { status: number; message?: string; code?: string; retryAfter?: string | null; firstBatch: boolean } | null = null;
             /** La file a continué malgré un cahier trop gros : ce n'est pas une panne de compte. */
             let blockedByOversized = false;
@@ -378,8 +378,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const snapshot = readLocalSyncSnapshot(localStorage, { includeNotebooks: false });
                     const latest = snapshot.config;
                     const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), snapshot.classes.map(item => item.id));
-                    localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
-                    notifyPullApplied();
+                    if (JSON.stringify(latest.classRosters ?? {}) !== JSON.stringify(classRosters)) {
+                        localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
+                        notifyPullApplied();
+                    }
                 }
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
                 if (includeSettings && data.settingsAccepted !== false) pushedSettingsAt = settingsUpdatedAt;
@@ -478,7 +480,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         scheduledPushAtRef.current = null;
                         void push();
                     }, 0);
-                } else if (succeeded && isCurrent() && !hasPendingWork() && !options?.keepalive) {
+                } else if (requiresPull && succeeded && isCurrent() && !hasPendingWork() && !options?.keepalive) {
                     // Reconcile rejected older imports/settings before claiming that
                     // local content is identical to the authoritative cloud version.
                     window.setTimeout(() => { if (isCurrent()) void refreshRef.current?.(); }, 0);

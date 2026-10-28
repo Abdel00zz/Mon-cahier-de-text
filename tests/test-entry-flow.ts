@@ -113,6 +113,16 @@ test("retour au tableau de bord : bouton de l'éditeur câblé et séance marqu�
     /markCurrentSessionHandled\(sessionClaimRef\.current\.scope/,
     "Plus aucun marquage inconditionnel de la séance en cours",
   );
+  assert.doesNotMatch(
+    app,
+    /claimCurrentSessionAutoOpen\(/,
+    "La séance en cours ne force jamais l'ouverture automatique du cahier de la classe",
+  );
+  assert.match(
+    app,
+    /wasInEditorRef[\s\S]{0,240}flushPush\(\)/,
+    "Quitter l'éditeur déclenche l'envoi immédiat des modifications en attente vers le cloud",
+  );
 });
 
 test("nouveau visiteur : entrée principale et inscription après préparation", () => {

@@ -68,6 +68,22 @@ test('séance en cours : la carte de la classe active, et elle seule, porte le r
     // La classe active passe en tête sans modifier l'ordre enregistré des autres.
     if (expected.length === 1) assert.equal(cards[0].id, expected[0]);
   }
+  const classCardsCss = readFileSync('src/features/dashboard/classCards.css', 'utf8');
+  assert.match(
+    classCardsCss,
+    /@keyframes class-session-frame-pulse[\s\S]*?#9A3412[\s\S]*?#EA580C/,
+    'le cadre de la classe active clignote en orange foncé',
+  );
+  assert.match(
+    classCardsCss,
+    /\.class-card--active,[\s\S]*?border-width:\s*2px\s*!important;[\s\S]*?border-color:\s*var\(--session-frame-orange,\s*#C2410C\)\s*!important;[\s\S]*?animation:\s*class-session-frame-pulse/,
+    'seul le cadre de la carte en séance reçoit la bordure et l’animation orange foncé',
+  );
+  assert.match(
+    classCardsCss,
+    /\.class-card:not\(\.class-card--active\):not\(\[data-session-active="true"\]\)\s*\{\s*box-shadow:\s*none\s*!important;/,
+    'les cartes hors séance restent sans ombre tandis que la carte en séance anime son contour',
+  );
 });
 
 test('le groupe fait partie de la même phrase que le nom dans le titre de la carte', () => {

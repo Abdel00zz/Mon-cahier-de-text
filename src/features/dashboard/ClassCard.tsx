@@ -53,14 +53,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         if (!palette) return {};
         return {
             backgroundColor: palette.bg,
-            borderColor: palette.border,
+            borderColor: isActiveSession ? undefined : palette.border,
             color: palette.title,
             ['--card-bg' as string]: palette.bg,
             ['--card-border' as string]: palette.border,
             ['--card-title' as string]: palette.title,
             ['--card-secondary' as string]: palette.secondary,
         } as CSSProperties;
-    }, [palette]);
+    }, [isActiveSession, palette]);
 
     return (
         <div className="dashboard-class-slot w-full">

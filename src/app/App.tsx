@@ -26,7 +26,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useDevice } from '../hooks/useDevice';
 import { TabBar, TabType } from '../components/navigation/TabBar';
 import { DeferredMount } from '../components/ui/DeferredMount';
-import { claimCurrentSessionAutoOpen, markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
+import { markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
@@ -44,7 +44,7 @@ const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageMo
 
 const App: React.FC = () => {
   const { isPhone } = useDevice();
-  const [isClassActivitiesOpen, setClassActivitiesOpen] = useState(false);
+  const [, setClassActivitiesOpen] = useState(false);
   const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | undefined>();
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
@@ -84,11 +84,7 @@ const App: React.FC = () => {
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && !!authUser));
   /*
    * Réclamation de la séance courante : elle n'est consommée que par le cahier
-   * de la séance ELLE-MÊME (`markSessionHandledFor`). Consommer la séance d'une
-   * AUTRE classe coupait l'ouverture automatique des 2ᵉ et 3ᵉ séances de la
-   * journée : rester dans le cahier de 08 h pendant que celui de 09 h démarre
-   * brûlait la réclamation de 09 h, et le retour au tableau de bord n'ouvrait
-   * plus rien.
+   * de la séance ELLE-MÊME (`markSessionHandledFor`).
    */
   const sessionClaimRef = useRef<{ scope: string; key: string; classIds: string[] }>({ scope: 'local', key: '', classIds: [] });
   useEffect(() => {
@@ -114,11 +110,8 @@ const App: React.FC = () => {
   }, [handleOpenSettings]);
   /*
    * Un cahier ouvert vaut pour la séance entière, QUELLE QUE SOIT la voie :
-   * clic sur la carte, ouverture automatique, lien profond d'une notification
-   * ou rechargement direct sur `#/classe/…`. Sans cette règle, quitter le
-   * cahier de la séance ramenait au tableau de bord… pour être aussitôt renvoyé
-   * dedans par l'ouverture automatique : l'enseignant ne pouvait plus rester
-   * sur l'accueil.
+   * clic sur la carte, lien profond d'une notification ou rechargement direct
+   * sur `#/classe/…`.
    */
   useEffect(() => {
     if (view !== 'editor') return;
@@ -191,6 +184,18 @@ const App: React.FC = () => {
     if (view === 'settings') { wasInSettingsRef.current = true; return; }
     if (!wasInSettingsRef.current) return;
     wasInSettingsRef.current = false;
+    flushPush();
+  }, [flushPush, view]);
+
+  /*
+   * Quitter un cahier de textes pousse immédiatement les modifications en
+   * attente vers le cloud sans attendre le délai de debounce.
+   */
+  const wasInEditorRef = useRef(false);
+  useEffect(() => {
+    if (view === 'editor') { wasInEditorRef.current = true; return; }
+    if (!wasInEditorRef.current) return;
+    wasInEditorRef.current = false;
     flushPush();
   }, [flushPush, view]);
 
@@ -275,27 +280,6 @@ const App: React.FC = () => {
 
   const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
-
-  // Ouvre une séance non ambiguë une seule fois. Le créneau est réclamé avant
-  // la navigation : un retour natif vers le Dashboard ne relance donc pas
-  // l'ouverture, même après un nouveau rendu ou un rechargement de la page.
-  useEffect(() => {
-    if (
-      view !== 'dashboard' ||
-      isBooting ||
-      isCurrentlyOnboarding ||
-      isClassActivitiesOpen ||
-      currentSession.classIds.length !== 1 ||
-      !currentSession.key ||
-      document.querySelector('[role="dialog"]')
-    ) return;
-
-    const classInfo = classes.find(item => item.id === currentSession.classIds[0]);
-    if (!classInfo) return;
-
-    if (!claimCurrentSessionAutoOpen(authOwner ?? 'local', currentSession.key)) return;
-    handleSelectClass(classInfo);
-  }, [authOwner, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isClassActivitiesOpen, view]);
 
   const dynamicCanvasStyle = useMemo(() => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
