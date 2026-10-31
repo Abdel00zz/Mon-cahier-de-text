@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { clamp } from 'es-toolkit';
+import { clamp, delay } from 'es-toolkit';
 import { conversationSignature, pendingAdminMessages, pendingTeacherRequests } from '../src/domain/messages/conversation.js';
 import { recordWhatsAppContact, sendTeacherRequest } from './_lib/teacherMessages.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
@@ -25,7 +25,7 @@ const LONG_POLL_LIMIT_MS = 8_000;
 const LONG_POLL_INTERVAL_MS = 1_500;
 const MAX_SIGNATURE_LENGTH = 200;
 
-const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => delay(ms);
 
 /**
  * Signature stable de la boîte : elle change quand un message arrive ou quand un

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { Check, Copy, RotateCcw } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
@@ -313,7 +314,7 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
           {manageStudents}
         </div>
         {!!roster?.names.length ? <div className="space-y-2">
-          <input type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label={t('evaluations.notebook.search')}
+          <Input type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label={t('evaluations.notebook.search')}
             placeholder={t('evaluations.notebook.search')} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 text-base" />
           <div className="grid max-h-64 gap-1 overflow-y-auto sm:grid-cols-2">
             {roster.names.filter(name => studentSearchKey(name).includes(studentSearchKey(query))).map(name => <label key={name}

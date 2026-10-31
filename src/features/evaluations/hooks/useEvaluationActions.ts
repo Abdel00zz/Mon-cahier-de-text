@@ -1,4 +1,4 @@
-import { uniq } from 'es-toolkit';
+import { pickBy, uniq } from 'es-toolkit';
 import type { AppConfig, HomeworkOutcome, ManualAssessment, NotebookCondition, OralOutcome, PedagogicalEvent } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
@@ -43,7 +43,7 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
                 if (event.id !== id) return event;
                 if (!names.length) return { ...event, students: undefined };
                 const kept = <T,>(source?: Record<string, T>) => source
-                    ? Object.fromEntries(Object.entries(source).filter(([name]) => names.includes(name))) as Record<string, T>
+                    ? pickBy(source, (_val, name) => names.includes(name)) as Record<string, T>
                     : undefined;
                 const notebook = event.type === REMARK_EVENT_TYPE ? (conditions ?? kept(event.students?.notebookConditions)) : undefined;
                 const outcomes = review?.oralOutcomes ?? kept(event.students?.oralOutcomes);

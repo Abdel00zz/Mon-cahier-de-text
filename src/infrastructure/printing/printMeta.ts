@@ -1,4 +1,4 @@
-import { uniq } from 'es-toolkit';
+import { pickBy, uniq } from 'es-toolkit';
 import type { AbsenceSession } from '../../domain/notebook/absenceSessions';
 import { LessonsData } from '../../types.js';
 import { addDaysIso } from '../../domain/notebook/dataUtils.js';
@@ -61,8 +61,8 @@ export const readPrintMeta = (classId: string): PrintMeta => {
             const parsed = JSON.parse(raw) as PrintMeta;
             // v1 recorded opening the preview, including cancelled jobs. Keep
             // layout preferences, but never treat those launches as a print.
-            const confirmedContent = parsed.version === 2 && parsed.confirmedContent && typeof parsed.confirmedContent === 'object'
-                ? Object.fromEntries(Object.entries(parsed.confirmedContent).filter(([date, signature]) => date.trim() && typeof signature === 'string' && /^[a-f0-9]{16}$/.test(signature)))
+            const confirmedContent: Record<string, string> = parsed.version === 2 && parsed.confirmedContent && typeof parsed.confirmedContent === 'object'
+                ? pickBy(parsed.confirmedContent, (signature, date) => Boolean(date.trim()) && typeof signature === 'string' && /^[a-f0-9]{16}$/.test(signature)) as Record<string, string>
                 : {};
             const printedDates = normalizeDateKeys(Object.keys(confirmedContent));
             const lastPrintedAt = parsed.version === 2 && typeof parsed.lastPrintedAt === 'string' && !Number.isNaN(Date.parse(parsed.lastPrintedAt))

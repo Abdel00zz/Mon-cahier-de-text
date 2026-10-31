@@ -4,7 +4,7 @@ import { migrateLessonsData } from '../../domain/notebook/dataUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import { maxBy, uniq } from 'es-toolkit';
+import { maxBy, omit, uniq } from 'es-toolkit';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
@@ -695,9 +695,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 ? {
                     ...current,
                     classes: current.classes.filter(item => item.id !== classInfo.id),
-                    assessmentDates: Object.fromEntries(
-                        Object.entries(current.assessmentDates ?? {}).filter(([classId]) => classId !== classInfo.id)
-                    ),
+                    assessmentDates: omit(current.assessmentDates ?? {}, [classInfo.id]),
                     snapshot: current.snapshot
                         ? { ...current.snapshot, classes: current.snapshot.classes.filter(item => item.id !== classInfo.id) }
                         : null,

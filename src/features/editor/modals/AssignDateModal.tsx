@@ -26,6 +26,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
 import type { SessionPatch } from '@/domain/notebook/sessionEditing';
 import type { SessionEditorState } from '../hooks/useSessionAssignment';
@@ -542,7 +543,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                     })()}
                   </span>
                 </button>
-                <input
+                <Input
                   type="date"
                   value={selectedDate}
                   onChange={event => chooseDate(event.target.value)}
@@ -781,7 +782,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                         })() : 'JJ/MM/AAAA'}
                       </span>
                       <CalendarDays className="w-5 h-5 text-muted-foreground" />
-                      <input
+                      <Input
                         id="assign-date-input"
                         type="date"
                         value={selectedDate}
@@ -813,7 +814,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                           })() : 'JJ/MM/AAAA'}
                         </span>
                         <CalendarDays className="w-5 h-5 text-muted-foreground" />
-                        <input
+                        <Input
                           id="assign-end-date-input"
                           type="date"
                           min={selectedDate || undefined}

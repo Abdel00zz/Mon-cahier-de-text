@@ -3,6 +3,7 @@ import { useReducedMotion } from 'framer-motion';
 import * as Dialog from '@radix-ui/react-dialog';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Search, X, ChevronRight, ChevronLeft, Menu, BookOpen } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
@@ -136,13 +137,13 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
             {/* Champ de recherche mobile */}
             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/80 bg-background mb-4">
               <Search size={14} className="shrink-0 text-muted-foreground" />
-              <input
+              <Input
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الدليل...' : 'Rechercher...'}
-                className="min-h-11 min-w-0 w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground outline-none"
+                className="min-h-11 min-w-0 w-full border-0 bg-transparent px-0 text-base text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-0"
               />
               {query.trim() && (
                 <button type="button" className="grid size-11 shrink-0 place-items-center" aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} onClick={() => setQuery('')}>
@@ -181,13 +182,13 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
             {/* Champ de recherche */}
             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/80 bg-background/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
               <Search size={14} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-              <input
+              <Input
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الفهرس...' : 'Rechercher...'}
-                className="w-full bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                className="h-auto w-full border-0 bg-transparent px-0 py-0 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-0"
               />
               {query.trim() && (
                 <button type="button" onClick={() => setQuery('')} aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} className="grid size-11 place-items-center text-muted-foreground hover:text-foreground">

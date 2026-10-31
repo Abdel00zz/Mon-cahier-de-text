@@ -1,3 +1,5 @@
+import { delay } from 'es-toolkit';
+
 /**
  * Attente active de la boîte de réception (direction → professeur).
  *
@@ -27,7 +29,7 @@ export interface InboxLongPollOptions<T extends InboxLongPollPage> {
     backoff?: (failures: number) => number;
 }
 
-const defaultIdle = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+const defaultIdle = (ms: number) => delay(ms);
 const defaultBackoff = (failures: number) => Math.min(500 * 2 ** failures, 30_000);
 
 export async function runInboxLongPoll<T extends InboxLongPollPage>(options: InboxLongPollOptions<T>): Promise<void> {

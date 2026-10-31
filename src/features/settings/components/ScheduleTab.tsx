@@ -19,6 +19,7 @@ import {
 import { useLocale } from '@/i18n/LocaleProvider';
 import { KEEP_TONES } from '@/platform/keepTheme';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import './schedule.css';
 
@@ -238,7 +239,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {startDateOpen && <div id={`${yearStartId}-date-settings`} className="schedule-start-field flex min-w-0 items-center gap-2">
                     <label htmlFor={yearStartId}>{t('schedule.startYear')}</label>
                     <div className="schedule-start-field__input relative">
-                        <input
+                        <Input
                             id={yearStartId}
                             type="date"
                             value={schoolYearStart}

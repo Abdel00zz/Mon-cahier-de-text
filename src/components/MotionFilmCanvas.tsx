@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { clamp } from 'es-toolkit';
 import {
   springValue,
   springRect,
@@ -1146,7 +1147,7 @@ export const MotionFilmCanvas: React.FC<MotionFilmProps> = ({
   const currentBeat = Math.floor(currentFrame / 30) + 1;
 
   const jumpToFrame = (f: number) => {
-    const target = Math.max(0, Math.min(TOTAL_FRAMES, f));
+    const target = clamp(f, 0, TOTAL_FRAMES);
     setCurrentFrame(target);
     triggerAudioAtFrame(target);
     onFrameChange?.(target);

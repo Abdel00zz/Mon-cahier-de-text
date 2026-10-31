@@ -1,3 +1,4 @@
+import { delay } from 'es-toolkit';
 import { isNetworkOnline } from '../platform/networkStatus';
 import { apiFetch } from '@/platform/nativeHttp';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -325,7 +326,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // délai borne la déconnexion pour ne jamais bloquer l'utilisateur.
     await Promise.race([
       unsubscribeFromPush().catch(() => undefined),
-      new Promise<void>(resolve => setTimeout(resolve, 5_000)),
+      delay(5_000),
     ]);
     // Keep unsynced work for the next login of its owner, even when offline.
     const previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
@@ -363,7 +364,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const owner = cached ? accountOwner(cached) : readWorkspaceScope()?.owner ?? null;
     await Promise.race([
       unsubscribeFromPush().catch(() => undefined),
-      new Promise<void>(resolve => setTimeout(resolve, 5_000)),
+      delay(5_000),
     ]);
     await requestSyncJson<{ ok?: boolean }>('/api/auth', {
       method: 'POST',

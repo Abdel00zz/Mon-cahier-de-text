@@ -1,6 +1,7 @@
 import { memo, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { CircleAlert, CircleCheck, CircleHelp, CircleMinus, CircleX } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
@@ -56,7 +57,7 @@ function StudentRowView<T extends string>({ name, value, options, pendingLabel, 
             </div>
             {onGrade && <label className="grade-chip notebook-grade">
                 <span className="sr-only">{gradeLabel}</span>
-                <input type="text" inputMode="decimal" dir="ltr" value={grade ?? ''}
+                <Input type="text" inputMode="decimal" dir="ltr" value={grade ?? ''}
                     enterKeyHint="next" autoComplete="off" autoCorrect="off" spellCheck={false}
                     onKeyDown={event => {
                         if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;

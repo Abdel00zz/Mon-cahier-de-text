@@ -2,6 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { adminLogin } from '../api';
 
 const AdminLoginSchema = z.object({
@@ -51,7 +53,7 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                 </div>
                 <label className="block space-y-1.5">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Code d'accès</span>
-                    <input
+                    <Input
                         type="password"
                         {...register('code')}
                         autoComplete="off"
@@ -66,13 +68,13 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                         {errorMessage}
                     </p>
                 )}
-                <button
+                <Button
                     type="submit"
                     disabled={isSubmitting}
                     className="mt-5 h-11 w-full rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                     {isSubmitting ? 'Vérification…' : 'Accéder au tableau de bord'}
-                </button>
+                </Button>
             </form>
         </div>
     );

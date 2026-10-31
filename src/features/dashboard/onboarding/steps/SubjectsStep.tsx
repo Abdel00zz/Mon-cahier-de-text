@@ -1,7 +1,9 @@
 import { memo, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import { LessonSearchIllustration } from '@/components/ui/DynamicIllustration';
 import { Check } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import type { ModalLang, OnboardingCopy } from '../types';
@@ -52,7 +54,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
           >
             {ar ? 'البحث عن مادة' : 'Rechercher une matière'}
           </label>
-          <input
+          <Input
             ref={searchRef}
             id="onboarding-subject-search"
             type="search"
@@ -110,15 +112,16 @@ export const SubjectsStep = memo<SubjectsStepProps>(
               ? 'لم نجد مادة بهذا الاسم. جرّب كلمة أخرى.'
               : 'Aucune matière trouvée. Essayez un autre mot.'}
             </p>
-            <button type="button" className="mt-3 min-h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
+            <Button type="button" variant="outline" className="mt-3 min-h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
               onClick={() => { setQuery(''); searchRef.current?.focus(); }}>
               {ar ? 'مسح البحث' : 'Effacer la recherche'}
-            </button>
+            </Button>
           </div>
         )}
         {!search && subjects.length > 8 && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             aria-expanded={expanded}
             aria-controls="onboarding-subject-options"
             onClick={() => setExpanded((value) => !value)}
@@ -131,7 +134,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
               : ar
                 ? `عرض جميع المواد (${subjects.length})`
                 : `Voir toutes les matières (${subjects.length})`}
-          </button>
+          </Button>
         )}
       </div>
     );

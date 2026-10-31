@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
+import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Search, X, ChevronRight, ChevronLeft, Menu } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -84,7 +85,7 @@ export const GuideModal = ({ isOpen, onClose, initialReference }: GuideModalProp
           <aside id="guide-navigation" className="guide-navigation" aria-label={toc}>
             <label className="guide-search">
               <Search size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-              <input type="search" value={query} onChange={event => setQuery(event.target.value)}
+              <Input type="search" value={query} onChange={event => setQuery(event.target.value)}
                 aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الدليل…' : 'Rechercher…'} />
               {query.trim() && (

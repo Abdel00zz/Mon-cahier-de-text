@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 
@@ -24,7 +25,7 @@ export function StudentSearchBar({ query, onQueryChange, count, children }: {
     return <div className="student-search-bar">
         <div className="student-search-bar__input">
             <Search className="h-4 w-4 shrink-0 student-search-bar__icon" aria-hidden="true"/>
-            <input
+            <Input
                 ref={input}
                 type="search"
                 dir="auto"

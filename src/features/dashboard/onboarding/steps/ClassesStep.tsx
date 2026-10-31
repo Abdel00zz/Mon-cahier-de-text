@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import {
   formatLocalizedClassDisplayName,
   formatLocalizedSubjectDisplayName,
@@ -359,13 +360,13 @@ export const ClassesStep = memo<ClassesStepProps>(
                     </button>
                   );
                 })}
-                <input
+                <Input
                   type="text"
                   inputMode="numeric"
                   value={groupInput}
                   onChange={(e) => setGroupInput(sanitizeGroupNumberInput(e.target.value))}
                   aria-label={isAr ? 'رقم مخصص' : 'Numéro libre'}
-                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[var(--workspace-active-ink)] focus:outline-none"
+                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card px-1 text-center text-sm font-bold text-foreground focus:border-[var(--workspace-active-ink)] focus:outline-none"
                 />
               </div>
             </div>

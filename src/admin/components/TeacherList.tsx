@@ -9,6 +9,7 @@ import {
     useTable,
 } from '@tanstack/react-table';
 import { meanBy, range, uniq } from 'es-toolkit';
+import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
@@ -568,7 +569,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             </div>
 
             <div className="admin-filter-bar mb-5 flex flex-wrap gap-2">
-                <input
+                <Input
                     ref={searchRef}
                     type="search"
                     value={query}
