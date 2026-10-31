@@ -1,3 +1,4 @@
+import { createStore } from 'zustand/vanilla';
 import { isNetworkOnline } from './networkStatus';
 import { startSafePwaAction } from './safeUpdate';
 
@@ -45,20 +46,19 @@ const browserEnvironment = (): WebUpdateEnvironment => ({
 
 /** Un seul contrôleur pour les vérifications automatiques de version. */
 export function createWebUpdateControl(environment: WebUpdateEnvironment = browserEnvironment()) {
-    let state: WebUpdateState = 'idle';
+    const store = createStore<{ state: WebUpdateState }>(() => ({ state: 'idle' }));
     let cancelApply: (() => void) | undefined;
     let inFlight: Promise<void> | undefined;
-    const listeners = new Set<() => void>();
-    const set = (next: WebUpdateState) => {
-        if (state === next) return;
-        state = next;
-        listeners.forEach(listener => listener());
+    const set = (state: WebUpdateState) => {
+        if (store.getState().state === state) return;
+        store.setState({ state });
     };
     return {
-        getSnapshot: () => state,
-        subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+        getSnapshot: () => store.getState().state,
+        subscribe: (listener: () => void) => store.subscribe(listener),
         check(): Promise<void> {
             if (inFlight) return inFlight;
+            const state = store.getState().state;
             // A focus/network event must not overwrite a queued reload's state.
             if (state === 'pending' || state === 'applying') return Promise.resolve();
             if (!environment.online()) { set('offline'); return Promise.resolve(); }
@@ -74,7 +74,7 @@ export function createWebUpdateControl(environment: WebUpdateEnvironment = brows
         },
         /** Applique la mise à jour dès que l'interface est au calme. */
         apply() {
-            if (state !== 'downloaded' || cancelApply) return;
+            if (store.getState().state !== 'downloaded' || cancelApply) return;
             set('pending');
             cancelApply = environment.schedule(() => {
                 cancelApply = undefined;
@@ -84,7 +84,7 @@ export function createWebUpdateControl(environment: WebUpdateEnvironment = brows
         },
         cancel() {
             if (cancelApply) { cancelApply(); cancelApply = undefined; }
-            if (state === 'pending') set('downloaded');
+            if (store.getState().state === 'pending') set('downloaded');
         },
     };
 }

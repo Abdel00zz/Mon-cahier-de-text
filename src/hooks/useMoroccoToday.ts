@@ -1,30 +1,35 @@
 import { useSyncExternalStore } from 'react';
+import { createStore } from 'zustand/vanilla';
 import { todayInMorocco } from '../domain/calendar/calendar';
 import { millisecondsUntilNextMoroccoDay } from '../platform/mobileScheduling';
 
-const listeners = new Set<() => void>();
-let today = todayInMorocco();
+const todayStore = createStore<{ today: string }>(() => ({ today: todayInMorocco() }));
+let subscribers = 0;
 let timer: number | undefined;
-const snapshot = () => today;
+const snapshot = () => todayStore.getState().today;
 const refresh = () => {
   if (timer !== undefined) window.clearTimeout(timer);
   timer = undefined;
   const next = todayInMorocco();
-  if (today !== next) { today = next; listeners.forEach(listener => listener()); }
-  if (listeners.size && document.visibilityState === 'visible') {
+  if (todayStore.getState().today !== next) {
+    todayStore.setState({ today: next });
+  }
+  if (subscribers > 0 && document.visibilityState === 'visible') {
     timer = window.setTimeout(refresh, millisecondsUntilNextMoroccoDay());
   }
 };
 const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  if (listeners.size === 1) {
+  const unsub = todayStore.subscribe(listener);
+  subscribers += 1;
+  if (subscribers === 1) {
     document.addEventListener('visibilitychange', refresh);
     window.addEventListener('pageshow', refresh);
     refresh();
   }
   return () => {
-    listeners.delete(listener);
-    if (!listeners.size) {
+    unsub();
+    subscribers -= 1;
+    if (!subscribers) {
       if (timer !== undefined) window.clearTimeout(timer);
       timer = undefined;
       document.removeEventListener('visibilitychange', refresh);

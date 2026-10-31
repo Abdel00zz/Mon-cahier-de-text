@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { AppLocale, ClassInfo } from '../../types';
+import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
+import { Textarea } from '../../components/ui/textarea';
 import { useTeacherMessaging } from '../../contexts/TeacherMessagingContext';
 import { SyncRequestError } from '../../infrastructure/sync/syncTransport';
 import { isNetworkOnline } from '../../platform/networkStatus';
@@ -82,12 +84,12 @@ export function TeacherConversation({ open, onClose, locale, target, context, in
                     {replyTo && (
                         <div className="teacher-conversation__replying-pill">
                             <span>{copy.answer} · {inbox.history.find(item => item.id === replyTo)?.title}</span>
-                            <button type="button" disabled={busy} onClick={() => { setReplyTo(undefined); requestId.current = undefined; }} aria-label={copy.cancelReply} className="teacher-conversation__replying-dismiss">✕</button>
+                            <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => { setReplyTo(undefined); requestId.current = undefined; }} aria-label={copy.cancelReply} className="teacher-conversation__replying-dismiss">✕</Button>
                         </div>
                     )}
                 </div>
                 <div className="teacher-conversation__textarea-wrap">
-                    <textarea
+                    <Textarea
                         id={id}
                         ref={field}
                         value={body}
@@ -103,14 +105,14 @@ export function TeacherConversation({ open, onClose, locale, target, context, in
                     <span className="teacher-conversation__counter">
                         {body.length}<span className="teacher-conversation__counter-max">/1200</span>
                     </span>
-                    <button
+                    <Button
                         type="submit"
                         disabled={busy || !body.trim()}
                         aria-busy={busy}
                         className="teacher-conversation__submit-btn"
                     >
                         {busy ? copy.sending : error ? copy.retry : copy.send}
-                    </button>
+                    </Button>
                 </div>
             </form> : <p className="teacher-conversation__login">{copy.login}</p>}
 
@@ -120,7 +122,7 @@ export function TeacherConversation({ open, onClose, locale, target, context, in
             {inbox?.enabled && <section aria-label={copy.history} className="teacher-conversation__history">
                 <h3 className="teacher-conversation__history-title">{copy.history}</h3>
                 {!isNetworkOnline() ? <p role="status" className="teacher-conversation__status-msg">{copy.offline}</p>
-                    : inbox.failed ? <div role="status" className="teacher-conversation__status-msg"><p>{copy.unavailable}</p><button type="button" onClick={() => void inbox.refresh().catch(() => {})}>{copy.retry}</button></div>
+                    : inbox.failed ? <div role="status" className="teacher-conversation__status-msg"><p>{copy.unavailable}</p><Button type="button" variant="ghost" size="sm" onClick={() => void inbox.refresh().catch(() => {})}>{copy.retry}</Button></div>
                     : !inbox.loaded ? <p role="status" className="teacher-conversation__status-msg">{copy.loading}</p>
                     : !history.length ? (
                         <div className="teacher-conversation__empty-history">
@@ -133,8 +135,8 @@ export function TeacherConversation({ open, onClose, locale, target, context, in
                     <p dir="auto">{message.body}</p>
                     {message.sender === 'teacher' ? <small>{message.answeredAt ? copy.answered : copy.pending}</small>
                         : <div className="teacher-conversation__reply-actions">
-                            {!message.acknowledgedAt && <button type="button" disabled={Boolean(acknowledging)} onClick={() => void acknowledge(message.id)}>{acknowledging === message.id ? copy.sending : copy.acknowledge}</button>}
-                            <button type="button" disabled={busy} onClick={() => { setReplyTo(message.id); requestId.current = undefined; setSentId(undefined); field.current?.focus(); }}>{copy.answer}</button>
+                            {!message.acknowledgedAt && <Button type="button" variant="ghost" size="sm" disabled={Boolean(acknowledging)} onClick={() => void acknowledge(message.id)}>{acknowledging === message.id ? copy.sending : copy.acknowledge}</Button>}
+                            <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => { setReplyTo(message.id); requestId.current = undefined; setSentId(undefined); field.current?.focus(); }}>{copy.answer}</Button>
                         </div>}
                 </article>)}
             </section>}

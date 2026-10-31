@@ -1,4 +1,6 @@
 import { Capacitor } from '@capacitor/core';
+import { dequal } from 'dequal';
+import { createStore } from 'zustand/vanilla';
 import {
   NOTIFICATION_STATE_EVENT,
   activateNativeNotifications,
@@ -20,8 +22,7 @@ export interface NotificationActivationSnapshot {
 
 let checking = false;
 let initialized = false;
-const listeners = new Set<() => void>();
-let cachedSnapshot: NotificationActivationSnapshot | null = null;
+const activationStore = createStore<{ snapshot: NotificationActivationSnapshot | null }>(() => ({ snapshot: null }));
 
 function isSupportedOnCurrentDevice(): boolean {
   try {
@@ -57,6 +58,7 @@ function computeInitialSnapshot(): NotificationActivationSnapshot {
 }
 
 function updateSnapshot(patch: Partial<NotificationActivationSnapshot>): void {
+  const cachedSnapshot = activationStore.getState().snapshot;
   const base = cachedSnapshot ?? computeInitialSnapshot();
   const next: NotificationActivationSnapshot = {
     supported: patch.supported ?? base.supported,
@@ -66,21 +68,10 @@ function updateSnapshot(patch: Partial<NotificationActivationSnapshot>): void {
     delivery: patch.delivery !== undefined ? patch.delivery : base.delivery,
     subscribed: patch.subscribed ?? base.subscribed,
   };
-  if (
-    cachedSnapshot &&
-    cachedSnapshot.supported === next.supported &&
-    cachedSnapshot.checking === next.checking &&
-    cachedSnapshot.activating === next.activating &&
-    cachedSnapshot.permission === next.permission &&
-    cachedSnapshot.delivery === next.delivery &&
-    cachedSnapshot.subscribed === next.subscribed
-  ) {
+  if (cachedSnapshot && dequal(cachedSnapshot, next)) {
     return;
   }
-  cachedSnapshot = next;
-  for (const listener of listeners) {
-    listener();
-  }
+  activationStore.setState({ snapshot: next });
 }
 
 async function refreshNotificationActivationState(): Promise<NotificationActivationSnapshot> {
@@ -92,7 +83,7 @@ async function refreshNotificationActivationState(): Promise<NotificationActivat
       permission: 'unsupported',
       subscribed: false,
     });
-    return cachedSnapshot!;
+    return activationStore.getState().snapshot!;
   }
 
   try {
@@ -111,7 +102,7 @@ async function refreshNotificationActivationState(): Promise<NotificationActivat
   } catch {
     updateSnapshot({ checking: false });
   }
-  return cachedSnapshot ?? computeInitialSnapshot();
+  return activationStore.getState().snapshot ?? computeInitialSnapshot();
 }
 
 function ensureListenersAttached(): void {
@@ -143,18 +134,17 @@ function ensureListenersAttached(): void {
 }
 
 export function getNotificationActivationSnapshot(): NotificationActivationSnapshot {
+  let cachedSnapshot = activationStore.getState().snapshot;
   if (!cachedSnapshot) {
     cachedSnapshot = computeInitialSnapshot();
+    activationStore.setState({ snapshot: cachedSnapshot });
   }
   return cachedSnapshot;
 }
 
 export function subscribeNotificationActivation(listener: () => void): () => void {
   ensureListenersAttached();
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  return activationStore.subscribe(listener);
 }
 
 export async function openCompanionNotificationSettings(onOpenAppSettings?: () => void): Promise<void> {
@@ -166,7 +156,7 @@ export async function openCompanionNotificationSettings(onOpenAppSettings?: () =
     }
   })();
 
-  if (isNative && cachedSnapshot?.permission === 'denied') {
+  if (isNative && activationStore.getState().snapshot?.permission === 'denied') {
     try {
       const { openNativeNotificationSettings } = await import('./nativeRuntime');
       await openNativeNotificationSettings();

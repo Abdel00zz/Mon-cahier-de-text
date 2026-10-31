@@ -1,4 +1,6 @@
 import { Capacitor } from '@capacitor/core';
+import { dequal } from 'dequal';
+import { createStore } from 'zustand/vanilla';
 
 export type PwaPlatform = 'ios' | 'android' | 'desktop';
 
@@ -23,8 +25,7 @@ let deferredPrompt: BeforeInstallPromptEvent | null = null;
 let installing = false;
 let guideOpen = false;
 let manualInstalled = false;
-const listeners = new Set<() => void>();
-let cachedSnapshot: PwaInstallSnapshot | null = null;
+const pwaInstallStore = createStore<{ snapshot: PwaInstallSnapshot | null }>(() => ({ snapshot: null }));
 
 function readStoredInstallFlag(): boolean {
   try {
@@ -96,37 +97,26 @@ function computeSnapshot(): PwaInstallSnapshot {
 
 function emitChange(): void {
   const next = computeSnapshot();
-  if (
-    cachedSnapshot &&
-    cachedSnapshot.isStandalone === next.isStandalone &&
-    cachedSnapshot.platform === next.platform &&
-    cachedSnapshot.canPromptNative === next.canPromptNative &&
-    cachedSnapshot.shouldAskInstall === next.shouldAskInstall &&
-    cachedSnapshot.installing === next.installing &&
-    cachedSnapshot.guideOpen === next.guideOpen
-  ) {
+  const cachedSnapshot = pwaInstallStore.getState().snapshot;
+  if (cachedSnapshot && dequal(cachedSnapshot, next)) {
     return;
   }
-  cachedSnapshot = next;
   syncRootAttributes(next);
-  for (const listener of listeners) {
-    listener();
-  }
+  pwaInstallStore.setState({ snapshot: next });
 }
 
 export function getPwaInstallSnapshot(): PwaInstallSnapshot {
+  let cachedSnapshot = pwaInstallStore.getState().snapshot;
   if (!cachedSnapshot) {
     cachedSnapshot = computeSnapshot();
     syncRootAttributes(cachedSnapshot);
+    pwaInstallStore.setState({ snapshot: cachedSnapshot });
   }
   return cachedSnapshot;
 }
 
 export function subscribePwaInstall(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  return pwaInstallStore.subscribe(listener);
 }
 
 export function setPwaGuideOpen(open: boolean): void {
@@ -220,8 +210,9 @@ async function registerPwaServiceWorker(): Promise<ServiceWorkerRegistration | n
 export function initPwaInstall(): () => void {
   if (typeof window === 'undefined') return () => {};
 
-  cachedSnapshot = computeSnapshot();
-  syncRootAttributes(cachedSnapshot);
+  const initialSnapshot = computeSnapshot();
+  syncRootAttributes(initialSnapshot);
+  pwaInstallStore.setState({ snapshot: initialSnapshot });
 
   const onBeforeInstallPrompt = (event: Event) => {
     // Do not call event.preventDefault() so desktop/mobile browsers also display

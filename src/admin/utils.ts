@@ -1,15 +1,9 @@
+import { sumBy } from 'es-toolkit';
 import type { TeacherSnapshot } from '../types';
 
 export const globalCompletion = (teacher: TeacherSnapshot): number => {
-    const totals = teacher.classes.reduce(
-        (acc, c) => {
-            acc.planned += c.plannedCount;
-            acc.total += c.totalItems;
-            return acc;
-        },
-        { planned: 0, total: 0 }
-    );
-    return totals.total === 0 ? 0 : Math.round((totals.planned / totals.total) * 100);
+    const total = sumBy(teacher.classes, c => c.totalItems);
+    return total === 0 ? 0 : Math.round((sumBy(teacher.classes, c => c.plannedCount) / total) * 100);
 };
 
 export const timeAgo = (iso: string | null, now: number = Date.now()): string => {

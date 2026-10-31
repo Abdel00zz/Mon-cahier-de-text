@@ -109,10 +109,10 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
   const rows = curriculum.chapters.map(officialChapter => {
     const indices = linkedIndices.get(officialChapter.id) ?? [];
     const chapters = indices.map(index => lifecycle.chapters.get(index)!);
-    const itemsCount = chapters.reduce((sum, chapter) => sum + chapter.itemsCount, 0);
+    const itemsCount = sumBy(chapters, chapter => chapter.itemsCount);
     const issue = chapters.find(chapter => chapter.issue)?.issue ?? null;
     const rate = !itemsCount || chapters.some(chapter => chapter.completionRate === null) ? null
-      : chapters.reduce((sum, chapter) => sum + chapter.completionRate! * chapter.itemsCount, 0) / itemsCount;
+      : sumBy(chapters, chapter => chapter.completionRate! * chapter.itemsCount) / itemsCount;
     const startDate = chapters[0]?.startDate;
     const completed = chapters.length > 0 && chapters.every(chapter => chapter.state === 'completed');
     const endDate = completed ? chapters.map(chapter => chapter.endDate!).sort().at(-1) : undefined;

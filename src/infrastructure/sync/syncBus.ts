@@ -1,6 +1,8 @@
 // Bus de synchronisation : découple les producteurs de modifications
 // (Editor, useClassManager, ConfigModal) du consommateur (useCloudSync).
 // État module-level : les marqueurs "dirty" survivent aux démontages de composants.
+import { dequal } from 'dequal';
+import { createStore } from 'zustand/vanilla';
 
 export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed';
 
@@ -21,24 +23,20 @@ export interface SyncProgress {
 }
 
 const IDLE_PROGRESS: SyncProgress = { state: 'idle', total: 0, done: 0, classId: null };
-let syncProgress: SyncProgress = IDLE_PROGRESS;
-const progressListeners = new Set<(value: SyncProgress) => void>();
+const progressStore = createStore<SyncProgress>(() => IDLE_PROGRESS);
 
 /** Fusionne un avancement partiel ; une valeur identique ne réveille personne. */
 export const notifySyncProgress = (next: Partial<SyncProgress>): void => {
-    const value: SyncProgress = { ...syncProgress, ...next };
-    if (value.state === syncProgress.state && value.total === syncProgress.total
-        && value.done === syncProgress.done && value.classId === syncProgress.classId) return;
-    syncProgress = value;
-    progressListeners.forEach(listener => listener(value));
+    const current = progressStore.getState();
+    const value: SyncProgress = { ...current, ...next };
+    if (dequal(value, current)) return;
+    progressStore.setState(value, true);
 };
 
-export const readSyncProgress = (): SyncProgress => syncProgress;
+export const readSyncProgress = (): SyncProgress => progressStore.getState();
 
-export const subscribeSyncProgress = (listener: (value: SyncProgress) => void): (() => void) => {
-    progressListeners.add(listener);
-    return () => { progressListeners.delete(listener); };
-};
+export const subscribeSyncProgress = (listener: (value: SyncProgress) => void): (() => void) =>
+    progressStore.subscribe(state => listener(state));
 
 type SyncListener = (source?: symbol, keys?: readonly string[]) => void;
 
