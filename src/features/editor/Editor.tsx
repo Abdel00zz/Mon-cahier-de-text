@@ -1,5 +1,6 @@
 import { assignHomeworkPatch, restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
 import { dequal } from 'dequal';
+import { uniq } from 'es-toolkit';
 import { homeworkMoments } from '@/domain/evaluations/homeworkCycle';
 import { updateClassMetadata } from '@/domain/classes/classMetadata';
 import type { AppConfig } from '@/types';
@@ -1003,7 +1004,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           // La modale peut être restée ouverte pendant une synchronisation ou
           // une suppression : ne jamais enregistrer une date disparue.
           const currentDates = new Set(allDates);
-          const validSelectedDates = Array.from(new Set(selectedDates.filter(date => currentDates.has(date)))).sort();
+          const validSelectedDates = uniq(selectedDates.filter(date => currentDates.has(date))).sort();
           if (validSelectedDates.length === 0) {
               showNotification(t('editorNotice.selectionUnavailable'), 'info');
               return;

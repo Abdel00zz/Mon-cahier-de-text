@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { apiFetch } from '../../platform/nativeHttp.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel), inline par
 // Vite côté navigateur, voir utils/calendar.ts.
@@ -97,7 +98,7 @@ export const validateOfficialStudentEventsFile = (value: unknown): OfficialStude
         if (event.end !== undefined && !validISO(event.end)) throw new Error(`${id} : date de fin invalide.`);
         if (event.end && event.end < event.start) throw new Error(`${id} : la fin précède le début.`);
         if (!Array.isArray(event.levels) || event.levels.length === 0) throw new Error(`${id} : levels est obligatoire.`);
-        const levels = [...new Set(event.levels.map(level => requiredText(level, `${id}.levels`, 30)))];
+        const levels = uniq(event.levels.map(level => requiredText(level, `${id}.levels`, 30)));
         const unknownLevel = levels.find(level => !OFFICIAL_LEVEL_TAGS.includes(level as typeof OFFICIAL_LEVEL_TAGS[number]));
         if (unknownLevel) throw new Error(`${id} : niveau inconnu « ${unknownLevel} ».`);
         if (!OFFICIAL_DATE_KINDS.includes(event.dateKind as OfficialDateKind)) throw new Error(`${id} : dateKind inconnu.`);

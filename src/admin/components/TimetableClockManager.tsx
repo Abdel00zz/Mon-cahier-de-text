@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
+import { Input } from '../../components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { DEFAULT_TIMETABLE_CLOCK, getHourSlots, isValidTimetableClockOffset } from '../../domain/calendar/timetable';
 import { fetchAdminTimetableClock, saveAdminTimetableClock, type AdminTimetableClockState } from '../api';
 
@@ -119,9 +121,9 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
 
     return (
         <div className="mx-auto min-h-dvh max-w-5xl p-4 sm:p-8">
-            <button type="button" onClick={onBack} className="mb-4 inline-flex min-h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground hover:bg-muted">
+            <Button type="button" variant="outline" onClick={onBack} className="mb-4 min-h-11 rounded-xl bg-card px-4 text-sm font-bold text-foreground">
                 ← Retour
-            </button>
+            </Button>
 
             <header className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{phone ? `Compte ${phone}` : 'Référentiel global'}</p>
@@ -141,18 +143,27 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
                     <h2 className="text-base font-black text-foreground">Translation de la journée</h2>
 
                     {phone && (
-                        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1.5" aria-label="Source de l’horaire">
-                            <button type="button" onClick={useGlobal} disabled={isLoading || isSaving} className={`min-h-11 rounded-xl px-3 text-xs font-black transition-colors ${!draftCustom ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                                Horaire général
-                            </button>
-                            <button type="button" onClick={() => { setDraftCustom(true); setMessage(null); }} disabled={isLoading || isSaving} className={`min-h-11 rounded-xl px-3 text-xs font-black transition-colors ${draftCustom ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                                Personnalisé
-                            </button>
-                        </div>
+                        <Tabs
+                            value={draftCustom ? 'custom' : 'global'}
+                            onValueChange={val => {
+                                if (val === 'global') useGlobal();
+                                else { setDraftCustom(true); setMessage(null); }
+                            }}
+                            className="mt-4"
+                        >
+                            <TabsList aria-label="Source de l’horaire" className="grid w-full grid-cols-2 rounded-2xl bg-muted p-1.5">
+                                <TabsTrigger value="global" disabled={isLoading || isSaving} className="min-h-11 rounded-xl text-xs font-black">
+                                    Horaire général
+                                </TabsTrigger>
+                                <TabsTrigger value="custom" disabled={isLoading || isSaving} className="min-h-11 rounded-xl text-xs font-black">
+                                    Personnalisé
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                     )}
 
                     <label className="mt-5 block text-xs font-bold text-foreground" htmlFor="school-day-start">Début du premier créneau</label>
-                    <input
+                    <Input
                         id="school-day-start"
                         type="time"
                         lang="fr-MA"
@@ -162,7 +173,7 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
                         value={timeValue(firstStart)}
                         onChange={event => setStartTime(event.target.value)}
                         disabled={isLoading || isSaving || Boolean(phone && !draftCustom)}
-                        className="mt-2 h-12 w-full rounded-xl border border-border bg-background px-4 text-lg font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/35 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="mt-2 h-12 w-full rounded-xl border-border bg-background px-4 text-lg font-black text-foreground"
                     />
 
                     <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Raccourcis horaires">
@@ -208,7 +219,7 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
                             <h2 className="text-base font-black text-foreground">Aperçu complet</h2>
                             <p className="mt-1 text-xs leading-5 text-muted-foreground">Durée de chaque case : 1 heure. Pause déjeuner conservée entre les créneaux 4 et 5.</p>
                         </div>
-                        <button type="button" onClick={() => void load()} disabled={isLoading || isSaving} className="min-h-11 rounded-xl border border-border px-3 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground">Actualiser</button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => void load()} disabled={isLoading || isSaving} className="min-h-11 rounded-xl px-3 text-xs font-bold">Actualiser</Button>
                     </div>
                     <ol className="mt-4 grid gap-2 sm:grid-cols-2">
                         {slots.map((slot, index) => (

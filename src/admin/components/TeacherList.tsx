@@ -8,7 +8,7 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { uniq } from 'es-toolkit';
+import { range, uniq } from 'es-toolkit';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
@@ -634,7 +634,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
 
             {isLoading && teachers.length === 0 ? (
                 <div className="admin-teacher-grid grid grid-cols-1 gap-3 sm:grid-cols-2" role="status" aria-busy="true" aria-label="Chargement des enseignants">
-                    {Array.from({ length: 6 }, (_, index) => (
+                    {range(6).map(index => (
                         <Skeleton key={index} className="h-[11.5rem] w-full rounded-2xl" />
                     ))}
                 </div>

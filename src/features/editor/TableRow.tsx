@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { DateMergeMeta } from '@/domain/notebook/tableRows';
 import { dateOrderWarnings, type ContentDateOrder } from '@/domain/calendar/dateOrder';
 import React, { useCallback, FC, memo } from 'react';
@@ -148,7 +149,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
     return [d.trim()];
   });
 
-  const parsedDates = [...new Set(allTokens)].flatMap(date => {
+  const parsedDates = uniq(allTokens).flatMap(date => {
     const parsed = parseDate(date, locale);
     return parsed ? [{ ...parsed, source: date }] : [];
   });

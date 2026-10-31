@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { clamp } from 'es-toolkit';
 
 /*
  * L'INFOBULLE UNIQUE DE L'APPLICATION.
@@ -56,12 +57,13 @@ export const GlobalTooltip: React.FC = () => {
       return;
     }
     const { offsetWidth: width, offsetHeight: height } = bubbleRef.current;
-    const x = Math.min(
-      Math.max(tooltip.anchorX - width / 2, EDGE_MARGIN),
+    const x = clamp(
+      tooltip.anchorX - width / 2,
+      EDGE_MARGIN,
       Math.max(EDGE_MARGIN, window.innerWidth - EDGE_MARGIN - width),
     );
     const rawY = tooltip.placement === 'top' ? tooltip.anchorY - 6 - height : tooltip.anchorY + 6;
-    const y = Math.min(Math.max(rawY, EDGE_MARGIN), Math.max(EDGE_MARGIN, window.innerHeight - EDGE_MARGIN - height));
+    const y = clamp(rawY, EDGE_MARGIN, Math.max(EDGE_MARGIN, window.innerHeight - EDGE_MARGIN - height));
     setPosition({ x, y });
   }, [tooltip]);
 

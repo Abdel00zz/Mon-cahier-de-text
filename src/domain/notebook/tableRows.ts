@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { LessonRow } from './lessonRows';
 import { toDisplayText } from '../../lib/text/textValue';
 import { FREE_TYPE } from './freeLineType';
@@ -152,7 +153,7 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
     // texte partout, soit un seul contenu annoté et les autres vides (cas le
     // plus fréquent : « absents » pour la séance). Deux remarques DIFFÉRENTES
     // restent séparées : on ne peut pas en afficher une à la place de l'autre.
-    const presentRemarks = Array.from(new Set(group.map(getMergeableRemark).filter(Boolean)));
+    const presentRemarks = uniq(group.map(getMergeableRemark).filter(Boolean));
     const shouldMergeRemark = isMerged && presentRemarks.length <= 1;
     const sharedRemark = presentRemarks[0] ?? '';
     const isDatedSequenceEnd = end === items.length || !dates[end];

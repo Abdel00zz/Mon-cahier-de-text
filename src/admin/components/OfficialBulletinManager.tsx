@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { countBy } from 'es-toolkit';
 import {
     OFFICIAL_EVENT_CATEGORIES,
     OFFICIAL_LEVEL_TAGS,
@@ -6,6 +7,8 @@ import {
     type OfficialStudentEventsFile,
 } from '../../domain/evaluations/officialStudentEvents';
 import { fetchAdminOfficialEvents, saveAdminOfficialEvents } from '../api';
+import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
 import { Check, Download, FileInput, FileText, Save } from '../../components/ui/icons';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -39,9 +42,10 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
 
     const stats = useMemo(() => {
         if (!bulletin) return [];
+        const counts = countBy(bulletin.events, event => event.category);
         return OFFICIAL_EVENT_CATEGORIES.map(category => ({
             category,
-            count: bulletin.events.filter(event => event.category === category).length,
+            count: counts[category] ?? 0,
         })).filter(item => item.count > 0);
     }, [bulletin]);
 
@@ -121,9 +125,9 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <button onClick={onBack} className="h-10 rounded-xl bg-primary-foreground/10 px-4 text-xs font-bold">Retour</button>
-                    <button onClick={downloadCurrent} disabled={!bulletin} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary-foreground/10 px-4 text-xs font-bold disabled:opacity-40"><Download className="h-3.5 w-3.5" />Exporter</button>
-                    <button onClick={publish} disabled={busy || !jsonText.trim()} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold disabled:opacity-50"><Save className="h-3.5 w-3.5" />Publier</button>
+                    <Button variant="ghost" onClick={onBack} className="h-10 rounded-xl bg-primary-foreground/10 px-4 text-xs font-bold text-primary-foreground hover:bg-primary-foreground/20">Retour</Button>
+                    <Button variant="ghost" onClick={downloadCurrent} disabled={!bulletin} className="h-10 rounded-xl bg-primary-foreground/10 px-4 text-xs font-bold text-primary-foreground hover:bg-primary-foreground/20"><Download className="h-3.5 w-3.5" />Exporter</Button>
+                    <Button onClick={publish} disabled={busy || !jsonText.trim()} className="h-10 rounded-xl px-4 text-xs font-bold"><Save className="h-3.5 w-3.5" />Publier</Button>
                 </div>
             </header>
 
@@ -152,15 +156,15 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
                         <div><h2 className="text-sm font-black">Code JSON du bulletin</h2><p className="text-[11px] text-muted-foreground">Vous pouvez coller le code ou charger un fichier.</p></div>
                         <div className="flex gap-2">
                             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={event => importFile(event.target.files?.[0])} />
-                            <button onClick={() => fileRef.current?.click()} className="inline-flex h-9 items-center gap-1.5 rounded-xl border bg-background px-3 text-xs font-bold"><FileInput className="h-3.5 w-3.5" />Importer JSON</button>
-                            <button onClick={validateText} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs font-bold"><Check className="h-3.5 w-3.5" />Vérifier</button>
+                            <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} className="h-9 rounded-xl bg-background px-3 text-xs font-bold"><FileInput className="h-3.5 w-3.5" />Importer JSON</Button>
+                            <Button size="sm" variant="secondary" onClick={validateText} className="h-9 rounded-xl px-3 text-xs font-bold"><Check className="h-3.5 w-3.5" />Vérifier</Button>
                         </div>
                     </div>
-                    <textarea
+                    <Textarea
                         value={jsonText}
                         onChange={event => { setJsonText(event.target.value); setMessage(''); setError(''); }}
                         spellCheck={false}
-                        className="min-h-[34rem] w-full resize-y rounded-xl border bg-slate-950 p-4 font-mono text-[11px] leading-relaxed text-slate-100 outline-none focus:ring-2 focus:ring-primary/40"
+                        className="min-h-[34rem] w-full resize-y rounded-xl border bg-slate-950 p-4 font-mono text-[11px] leading-relaxed text-slate-100"
                         aria-label="Code JSON du bulletin officiel"
                     />
                 </div>

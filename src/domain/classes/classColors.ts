@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { range } from 'es-toolkit';
 import type { ClassInfo } from '../../types';
 import { KEEP_TONES, keepToneForClass } from '../../platform/keepTheme.js';
 import { classIdentityFor } from './classIdentity.js';
@@ -72,7 +73,7 @@ export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
 
   const usedHues = [...used].map(hueOf);
   // Cache distances to avoid comparing every pair again for each assignment.
-  const candidates = [...KEEP_TONES, ...Array.from({ length: Math.max(32, classes.length * 2) }, (_, i) => `class-hue:${i}`)]
+  const candidates = [...KEEP_TONES, ...range(Math.max(32, classes.length * 2)).map(i => `class-hue:${i}`)]
     .filter(color => !used.has(color))
     .map(color => ({ color, hue: hueOf(color), distance: usedHues.reduce((min, hue) => Math.min(min, hueDistance(hueOf(color), hue)), 180) }));
 

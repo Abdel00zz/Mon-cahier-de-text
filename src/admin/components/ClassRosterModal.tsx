@@ -5,6 +5,7 @@ import { parseStudentNames } from '../../domain/evaluations/studentRoster';
 import { textDirectionAttribute } from '../../lib/text/textDirection';
 import { Modal } from '../../components/ui/modal';
 import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
 import { saveClassRoster } from '../api';
 
 export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublished }: {
@@ -28,8 +29,8 @@ export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublishe
         <div className="space-y-4">
             <p className="text-sm text-muted-foreground">La liste sera transmise à cette classe pour le suivi des élèves, les remises de devoirs et le contrôle continu. Les observations déjà enregistrées par le professeur sont conservées.</p>
             <label className="block space-y-2"><span className="text-sm font-semibold">Noms complets séparés par « ؛ »</span>
-                <textarea value={draft} onChange={event => { setDraft(event.target.value); setError(''); }} disabled={busy} rows={7} dir="auto"
-                    spellCheck={false} aria-describedby="class-roster-format" placeholder="أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين" className="w-full resize-y rounded-xl border border-border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-user-input"/>
+                <Textarea value={draft} onChange={event => { setDraft(event.target.value); setError(''); }} disabled={busy} rows={7} dir="auto"
+                    spellCheck={false} aria-describedby="class-roster-format" placeholder="أحمد العلوي ؛ سلمى الفاسي ؛ يوسف أمين" className="w-full resize-y rounded-xl border-border bg-background p-3 text-sm font-user-input"/>
             </label>
             <p id="class-roster-format" className="text-xs text-muted-foreground">Nom Prénom ؛ Nom Prénom — les séparateurs ؛ et ; sont reconnus. Les espaces du nom complet sont conservés.</p>
             <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{parsed.names.length} / 200 élèves · doublons retirés</span>

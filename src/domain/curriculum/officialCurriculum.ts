@@ -1,4 +1,5 @@
 import bundledJson from '../../../public/doc_officiel/curriculum.json' with { type: 'json' };
+import { clamp, range, sumBy } from 'es-toolkit';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../../types.js';
 import { normalizeOfficialClassName } from '../../constants/class-levels.js';
 import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, schoolYearLabelFromDate, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
@@ -126,7 +127,7 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
   if (courseStartDate && courseStartDate >= year.debut && courseStartDate <= year.fin && curriculum.schoolYear === year.libelle
     && curriculum.schoolYear === schoolYearLabelFromDate(config.schoolYearStart || today)) {
     const classTimetable = config.timetable?.filter(entry => entry.classId === classInfo.id) ?? [];
-    const hoursByWeekday = Array.from({ length: 7 }, (_, day) => getDaySessionBlocks(classTimetable, day).reduce((sum, block) => sum + block.hours, 0));
+    const hoursByWeekday = range(7).map(day => sumBy(getDaySessionBlocks(classTimetable, day), block => block.hours));
     const date = new Date(`${courseStartDate}T12:00:00Z`);
     // Le bulletin officiel ferme les cours avant la fin de l'année (2BAC fin mai, autres fin juin) :
     // aucune heure de programme ne peut être projetée au-delà.
@@ -147,13 +148,13 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
   let uncertain = false;
   // Date-only notebook entries cannot locate the teacher within today's session.
   // Compare against completed calendar days, not an invented live teaching clock.
-  const elapsedScheduledHours = sessions.filter(session => session.date < today).reduce((sum, session) => sum + session.hours, 0);
+  const elapsedScheduledHours = sumBy(sessions.filter(session => session.date < today), session => session.hours);
   let precedingHours = 0;
   for (const row of rows) {
     const hours = row.officialChapter.allocatedHours;
     if (hours === null) uncertain = true;
     if (!uncertain && sessions.length) {
-      row.expectedRate = Math.min(1, Math.max(0, (elapsedScheduledHours - precedingHours) / hours!));
+      row.expectedRate = clamp((elapsedScheduledHours - precedingHours) / hours!, 0, 1);
       precedingHours += hours!;
     }
     if (uncertain || !sessions[cursor]) continue;
@@ -167,8 +168,8 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
       if (consumed >= sessions[cursor].hours) { cursor++; consumed = 0; }
     }
   }
-  const knownHours = rows.reduce((sum, row) => sum + (row.officialChapter.allocatedHours ?? 0), 0);
-  const estimatedHours = rows.reduce((sum, row) => sum + (row.estimatedHoursSpent ?? 0), 0);
+  const knownHours = sumBy(rows, row => row.officialChapter.allocatedHours ?? 0);
+  const estimatedHours = sumBy(rows, row => row.estimatedHoursSpent ?? 0);
   const fullyMapped = rows.every(row => row.indices.length > 0 && row.completionRate !== null && row.officialChapter.allocatedHours !== null);
   const expectedHours = Math.min(knownHours, elapsedScheduledHours);
   const diagnostic = new Set(lifecycle.diagnosticDates);

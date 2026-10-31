@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { partition } from 'es-toolkit';
 import { Button } from '../../components/ui/button';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import {
@@ -214,8 +215,10 @@ export const EvaluationPolicyManager: React.FC<EvaluationPolicyManagerProps> = (
         };
     }, [draft]);
 
-    const continuousKinds = EVALUATION_KIND_ORDER.filter(kind => draft[kind].continuous);
-    const otherKinds = EVALUATION_KIND_ORDER.filter(kind => !draft[kind].continuous);
+    const [continuousKinds, otherKinds] = useMemo(
+        () => partition(EVALUATION_KIND_ORDER, kind => draft[kind].continuous),
+        [draft],
+    );
 
     const renderCard = (kind: EvaluationKindKey) => {
         const policy = draft[kind];
@@ -334,9 +337,9 @@ export const EvaluationPolicyManager: React.FC<EvaluationPolicyManagerProps> = (
 
     return (
         <div className="policy-page mx-auto min-h-dvh max-w-5xl space-y-5 p-4 sm:p-8">
-            <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground hover:bg-muted">
+            <Button type="button" variant="outline" onClick={onBack} className="min-h-11 rounded-xl bg-card px-4 text-sm font-bold text-foreground">
                 ← Retour
-            </button>
+            </Button>
 
             <header className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{phone ? `Compte ${phone}` : 'Politique générale'}</p>

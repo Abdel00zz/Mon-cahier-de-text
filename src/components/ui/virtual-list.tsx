@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { range, uniq } from 'es-toolkit';
 import { cn } from '@/lib/utils';
 import { listViewport, visibleRange } from '@/platform/virtualGeometry';
 import { createScrollActivity } from '@/platform/scrollActivity';
@@ -128,7 +129,7 @@ export const useWindowVirtualizer = ({
 
   const virtualItems = React.useMemo<VirtualItem[]>(() => {
     if (!enabled || count === 0) {
-      return Array.from({ length: count }, (_, index) => {
+      return range(count).map(index => {
         const start = offsets[index] ?? 0;
         const end = offsets[index + 1] ?? start + estimateSize;
         return { index, key: itemKeys[index], start, size: end - start, end };
@@ -140,7 +141,7 @@ export const useWindowVirtualizer = ({
 
     // Indices épinglés (ex: ligne en édition) rendus même hors fenêtre,
     // pour ne jamais démonter un formulaire actif pendant le défilement.
-    const pinned = [...new Set(keepIndices ?? [])].filter(i => i >= 0 && i < count && (i < startIndex || i > endIndex)).sort((a, b) => a - b);
+    const pinned = uniq(keepIndices ?? []).filter(i => i >= 0 && i < count && (i < startIndex || i > endIndex)).sort((a, b) => a - b);
     const pushItem = (index: number) => {
       const start = offsets[index] ?? 0;
       const end = offsets[index + 1] ?? start + estimateSize;

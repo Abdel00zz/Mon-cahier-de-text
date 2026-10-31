@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { ClassSchedule, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../../types.js';
 
 /** Créneaux horaires de la grille (sans la colonne « 24 h » du modèle papier). */
@@ -165,7 +166,7 @@ const areSlotsContiguous = (slotA: number, slotB: number): boolean => {
  */
 const countContiguousSessions = (slots: number[]): number => {
     if (slots.length === 0) return 0;
-    const sorted = Array.from(new Set(slots)).sort((a, b) => a - b);
+    const sorted = uniq(slots).sort((a, b) => a - b);
     let sessions = 1;
     for (let i = 1; i < sorted.length; i++) {
         if (!areSlotsContiguous(sorted[i - 1], sorted[i])) sessions += 1;
@@ -249,7 +250,7 @@ export const getDaySessionBlocks = (
     }
     const blocks: SessionBlock[] = [];
     for (const [classId, slots] of byClass) {
-        const sorted = Array.from(new Set(slots)).sort((a, b) => a - b);
+        const sorted = uniq(slots).sort((a, b) => a - b);
         let runStart = sorted[0];
         let prev = sorted[0];
         const flush = (endSlot: number): void => {

@@ -7,7 +7,8 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { groupBy, uniq } from 'es-toolkit';
+import { groupBy, range, uniq } from 'es-toolkit';
+import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 import { SereneStudyIllustration } from '../../components/ui/DynamicIllustration';
 import { AUDIT_LABELS, type AdminAuditEntry } from '../../domain/admin/auditLog';
@@ -89,9 +90,9 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
 
     return (
         <div className="admin-shell mx-auto min-h-dvh max-w-4xl space-y-5 p-4 sm:p-8" style={{ backgroundColor: 'var(--clr-bg)' }}>
-            <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground hover:bg-muted">
+            <Button type="button" variant="outline" onClick={onBack} className="inline-flex min-h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground hover:bg-muted">
                 ← Retour
-            </button>
+            </Button>
             <header className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Traçabilité</p>
                 <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Journal de la console</h1>
@@ -103,15 +104,16 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
             {kinds.length > 1 && (
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par action">
                     {['all', ...kinds].map(kind => (
-                        <button
+                        <Button
                             key={kind}
                             type="button"
+                            variant="ghost"
                             aria-pressed={filter === kind}
                             onClick={() => setFilter(kind)}
                             className={`min-h-11 rounded-full border px-4 text-xs font-bold transition-colors ${filter === kind ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground hover:bg-muted'}`}
                         >
                             {kind === 'all' ? 'Tout' : AUDIT_LABELS[kind] ?? kind}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             )}
@@ -119,13 +121,13 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
             {error && (
                 <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
                     <span>{error}</span>
-                    <button type="button" onClick={() => void load()} className="min-h-11 rounded-lg border border-destructive/30 bg-card px-4 text-xs font-bold">Réessayer</button>
+                    <Button type="button" variant="outline" onClick={() => void load()} className="min-h-11 rounded-lg border border-destructive/30 bg-card px-4 text-xs font-bold">Réessayer</Button>
                 </div>
             )}
 
             {isLoading && entries.length === 0 ? (
                 <div className="space-y-3" role="status" aria-busy="true" aria-label="Chargement du journal">
-                    {Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="h-16 w-full rounded-2xl" />)}
+                    {range(5).map(index => <Skeleton key={index} className="h-16 w-full rounded-2xl" />)}
                 </div>
             ) : visible.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
@@ -137,9 +139,9 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
                             : 'Choisissez « Tout » pour revoir l’ensemble du journal.'}
                     </p>
                     {entries.length > 0 && (
-                        <button type="button" onClick={() => setFilter('all')} className="min-h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.98] active:brightness-90">
+                        <Button type="button" onClick={() => setFilter('all')} className="min-h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.98] active:brightness-90">
                             Tout afficher
-                        </button>
+                        </Button>
                     )}
                 </div>
             ) : (
@@ -156,14 +158,15 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
                                             {entry.detail && <span className="block text-xs text-muted-foreground">{entry.detail}</span>}
                                         </span>
                                         {entry.phone && (
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant="ghost"
                                                 onClick={() => onOpenTeacher(entry.phone!)}
                                                 className="min-h-11 max-w-full truncate rounded-lg px-3 text-xs font-bold text-primary hover:bg-primary/10"
                                                 dir="ltr"
                                             >
                                                 {entry.phone.startsWith('acct_') ? 'Compte Google' : entry.phone}
-                                            </button>
+                                            </Button>
                                         )}
                                     </li>
                                 ))}

@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { AppConfig, HomeworkOutcome, ManualAssessment, NotebookCondition, OralOutcome, PedagogicalEvent } from '@/types';
 import { REMARK_EVENT_TYPE } from '@/domain/evaluations/notebookCheckRemarks';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
@@ -139,7 +140,7 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
             }
             onChange({
                 manualAssessments: { ...config.manualAssessments, [classId]: (config.manualAssessments?.[classId] ?? []).filter(item => item.id !== id && item.id !== legacyId) },
-                removedAssessments: { ...config.removedAssessments, [classId]: [...new Set([...(config.removedAssessments?.[classId] ?? []), id])] },
+                removedAssessments: { ...config.removedAssessments, [classId]: uniq([...(config.removedAssessments?.[classId] ?? []), id]) },
                 assessmentOrder: { ...config.assessmentOrder, [classId]: (config.assessmentOrder?.[classId] ?? []).filter(item => item !== id && item !== legacyId) },
                 assessmentParticipants: { ...config.assessmentParticipants, [classId]: participants },
                 assessmentDocuments: { ...config.assessmentDocuments, [classId]: documents },

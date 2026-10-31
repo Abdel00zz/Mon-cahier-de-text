@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { AppConfig, ClassInfo, Cycle, DevoirType, ManualAssessment } from '../../types.js';
 import { HolidayCalendar, getEffectiveSchoolYear, getPedagogicalWeek, schoolYearLabelFromDate } from '../calendar/calendar.js';
 import { loadAssessmentReference } from './assessmentRules.js';
@@ -122,7 +123,7 @@ const validatePlanningFile = (value: unknown): PlanningFile => {
         const libelle = requiredText(plan.libelle, `plans[${planIndex}].libelle`);
         if (plan.cycle !== undefined && !validCycle(plan.cycle)) throw new Error(`${libelle} : cycle inconnu.`);
         if (!Array.isArray(plan.niveaux) || plan.niveaux.length === 0) throw new Error(`${libelle} : niveaux est vide.`);
-        const niveaux = [...new Set(plan.niveaux.map((niveau, index) => requiredText(niveau, `${libelle}.niveaux[${index}]`, 100)))];
+        const niveaux = uniq(plan.niveaux.map((niveau, index) => requiredText(niveau, `${libelle}.niveaux[${index}]`, 100)));
         const planKey = `${matiere.toLowerCase()}|${plan.cycle ?? ''}|${niveaux.map(n => n.toLowerCase()).sort().join('|')}`;
         if (planKeys.has(planKey)) throw new Error(`${libelle} : plan dupliqué.`);
         planKeys.add(planKey);

@@ -1,3 +1,4 @@
+import { range } from 'es-toolkit';
 import { isDraft, original, type Draft } from 'immer';
 import type { Indices, LessonsData, TopLevelItem } from '../../types';
 import { findItem } from './dataUtils';
@@ -91,7 +92,7 @@ export function planContentDrop(
       source: { anchor: source.anchor, parent: source.parent, start: source.start, count: source.count },
       container: null,
       index,
-      selection: Array.from({ length: source.count }, (_, offset) => ({ chapterIndex: index + offset })),
+      selection: range(source.count).map(offset => ({ chapterIndex: index + offset })),
     };
   }
 
@@ -111,7 +112,7 @@ export function planContentDrop(
     return {
       source: { anchor: source.anchor, parent: source.parent, start: source.start, count: source.count },
       container, index,
-      selection: Array.from({ length: source.count }, (_, offset) => ({ ...shiftedContainer, itemIndex: index + offset })),
+      selection: range(source.count).map(offset => ({ ...shiftedContainer, itemIndex: index + offset })),
     };
   }
   if (source.start < target.start + target.count && target.start < source.start + source.count) return null;
@@ -124,7 +125,7 @@ export function planContentDrop(
   return {
     ...source,
     destination,
-    selection: Array.from({ length: source.count }, (_, offset) => ({
+    selection: range(source.count).map(offset => ({
       ...source.anchor,
       [field]: destination + offset,
     })),
@@ -335,7 +336,7 @@ export function planContentRelocation(
 
   const destinationField: keyof Indices = side === 'inside' ? 'itemIndex' : neighbourField;
   const destinationParent = side === 'inside' ? neighbour.indices : neighbourParent;
-  const selection = Array.from({ length: block.count }, (_, offset) => ({
+  const selection = range(block.count).map(offset => ({
     ...destinationParent,
     [destinationField]: base + offset,
   }));
@@ -498,7 +499,7 @@ export function planContentTransfer(
     source: { anchor: block.anchor, parent: block.parent, start: block.start, count: block.count },
     container: target,
     index,
-    selection: Array.from({ length: block.count }, (_, offset) => ({ ...target, itemIndex: index + offset })),
+    selection: range(block.count).map(offset => ({ ...target, itemIndex: index + offset })),
   };
 }
 

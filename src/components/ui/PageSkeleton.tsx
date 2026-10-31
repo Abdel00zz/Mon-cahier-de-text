@@ -1,4 +1,5 @@
 import React from 'react';
+import { range } from 'es-toolkit';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -100,13 +101,13 @@ export const DashboardSkeleton: React.FC = () => {
         </div>
       </div>
       <div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
-        {Array.from({ length: 3 }).map((_, index) => (
+        {range(3).map(index => (
           <Skeleton key={index} className="h-[92px] rounded-xl" />
         ))}
       </div>
       <Skeleton className="mb-3.5 h-6 w-32" />
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
+        {range(6).map(index => (
           <Skeleton key={index} className="h-[128px] rounded-2xl" />
         ))}
       </div>
@@ -134,7 +135,7 @@ export const EditorSkeleton: React.FC<{ className?: string }> = ({ className }) 
           <Skeleton className="m-3 h-4 flex-1" />
           <Skeleton className="m-3 h-4 w-[15%]" />
         </div>
-        {Array.from({ length: 9 }).map((_, index) => (
+        {range(9).map(index => (
           <div key={index} className="flex">
             <div className="w-[17%] border-r border-border px-2 py-2 sm:w-[15%]">
               <Skeleton className="mx-auto h-10 w-12" />

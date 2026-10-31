@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { HttpError } from './http.js';
 import { isClassColor } from '../../src/domain/classes/classColors.js';
 import { assertNotebookStructure } from '../../src/domain/notebook/notebookValidation.js';
@@ -108,12 +109,12 @@ export const assertValidTeacherSnapshot = (
     if (!Array.isArray(raw.weekdays) || raw.weekdays.length > 14) {
       throw new HttpError(400, `Jours de la classe ${id} invalides.`);
     }
-    const weekdays = [...new Set(raw.weekdays.map(day => {
+    const weekdays = uniq(raw.weekdays.map(day => {
       if (!Number.isInteger(day) || Number(day) < 0 || Number(day) > 6) {
         throw new HttpError(400, `Jour de la classe ${id} invalide.`);
       }
       return Number(day);
-    }))].sort((left, right) => left - right);
+    })).sort((left, right) => left - right);
     const scheduleSlots = normalizeSnapshotSlots(raw.scheduleSlots, `Créneaux de la classe ${id}`);
     const updatedAt = typeof raw.updatedAt === 'string' && Number.isFinite(Date.parse(raw.updatedAt))
       ? new Date(raw.updatedAt).toISOString()
@@ -200,9 +201,9 @@ export const assertValidTeacherSnapshot = (
     ? value.displayName.trim().slice(0, 80)
     : undefined;
   const subjects = Array.isArray(value.subjects) && value.subjects.length <= 30
-    ? [...new Set(value.subjects.flatMap(raw => (
+    ? uniq(value.subjects.flatMap(raw => (
         typeof raw === 'string' && raw.trim() ? [raw.trim().slice(0, 60)] : []
-      )))]
+      )))
     : undefined;
 
   return {
