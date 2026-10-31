@@ -10,7 +10,7 @@ import { contentBadgeTone } from '@/constants/type-keys';
 import { logger } from '@/lib/logger';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
-import { TriangleAlert } from '@/components/ui/icons';
+import { TriangleAlert, FileText } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { indicesKey } from '@/domain/notebook/lessonRows';
 import { romanNumber } from '@/domain/notebook/contentNumbering';
@@ -259,6 +259,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                   title={t('documentPreview.openAria', { title: documentPreview.title })}
                   aria-label={t('documentPreview.openAria', { title: documentPreview.title })}
                 >
+                  <FileText className="h-3.5 w-3.5 shrink-0 opacity-60 group-hover:opacity-95 transition-opacity pointer-events-none" aria-hidden="true" />
                   <span dir={textDirectionAttribute(item.title)}>
                     <HighlightedText text={item.title} query={highlight} />
                   </span>
@@ -412,6 +413,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 title={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
                 aria-label={t('documentPreview.openAria', { title: itemDocumentPreview.title })}
               >
+                <FileText className="h-3.5 w-3.5 shrink-0 opacity-60 group-hover:opacity-95 transition-opacity pointer-events-none" aria-hidden="true" />
                 <HighlightedText text={item.title} query={highlight} />
               </button>
             ) : item.title ? (
