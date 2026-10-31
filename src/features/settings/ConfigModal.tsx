@@ -33,9 +33,6 @@ const preloadTabComponent = (tab: SettingsCategory) => {
     case 'compte':
       import('./components/ArchivesSection');
       break;
-    case 'absences':
-      import('./components/AbsencesTab');
-      break;
     default:
       break;
   }

@@ -87,7 +87,7 @@ test('reset repart de zéro, et les deux éditeurs de contenu s’en servent san
   const modal = readFileSync('src/features/evaluations/components/ContentDocumentModal.tsx', 'utf8');
   assert.match(modal, /useTextHistory\(\{ value: source/);
   assert.match(modal, /onKeyDown=\{history\.onKeyDown\}/);
-  assert.match(modal, /resetHistory\(saved\?\.source/);
+  assert.match(modal, /resetHistory\(initialSource\)/);
   assert.doesNotMatch(modal, /(Undo2|Redo2)/, 'aucun bouton annuler / rétablir');
   assert.match(readFileSync('src/features/editor/modals/ContextualDescriptionEditor.tsx', 'utf8'), /useTextHistory\(\{ value, setValue: onChange/);
 });

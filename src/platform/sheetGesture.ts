@@ -1,7 +1,9 @@
+import { clamp, uniq } from 'es-toolkit';
+
 /** Shared gesture decisions, independent of rendering and pointer frequency. */
 export const normalizeSheetDetents = (values: number[]): number[] => {
-  const valid = values.filter(Number.isFinite).map(value => Math.min(.96, Math.max(.32, value))).sort((a, b) => a - b);
-  return [...new Set(valid.length ? valid : [.9, .96])];
+  const valid = values.filter(Number.isFinite).map(value => clamp(value, .32, .96)).sort((a, b) => a - b);
+  return uniq(valid.length ? valid : [.9, .96]);
 };
 
 export type SheetReleaseAction = 'expand' | 'collapse' | 'dismiss' | 'settle';

@@ -1,4 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    columnFilteringFeature,
+    createColumnHelper,
+    createFilteredRowModel,
+    filterFn_equalsString,
+    tableFeatures,
+    useTable,
+} from '@tanstack/react-table';
+import { groupBy, uniq } from 'es-toolkit';
 import { Skeleton } from '../../components/ui/skeleton';
 import { SereneStudyIllustration } from '../../components/ui/DynamicIllustration';
 import { AUDIT_LABELS, type AdminAuditEntry } from '../../domain/admin/auditLog';
@@ -15,6 +24,20 @@ interface AuditLogProps {
     onBack: () => void;
     onOpenTeacher: (phone: string) => void;
 }
+
+const auditFeatures = tableFeatures({
+    columnFilteringFeature,
+    filteredRowModel: createFilteredRowModel(),
+    filterFns: { equalsString: filterFn_equalsString },
+});
+
+const columnHelper = createColumnHelper<typeof auditFeatures, AdminAuditEntry>();
+const auditColumns = columnHelper.columns([
+    columnHelper.accessor('at', { header: 'Date' }),
+    columnHelper.accessor('action', { header: 'Action', filterFn: 'equalsString' }),
+    columnHelper.accessor('detail', { header: 'Détail' }),
+    columnHelper.accessor('phone', { header: 'Enseignant' }),
+]);
 
 const dayLabel = (iso: string): string => {
     const label = new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -49,16 +72,20 @@ export const AuditLog: React.FC<AuditLogProps> = ({ onBack, onOpenTeacher }) => 
         return () => controller.abort();
     }, [load]);
 
-    const kinds = useMemo(() => [...new Set(entries.map(entry => entry.action))], [entries]);
-    const visible = useMemo(() => entries.filter(entry => filter === 'all' || entry.action === filter), [entries, filter]);
-    const days = useMemo(() => {
-        const groups = new Map<string, AdminAuditEntry[]>();
-        for (const entry of visible) {
-            const key = dayKey(entry.at);
-            groups.set(key, [...(groups.get(key) ?? []), entry]);
-        }
-        return [...groups.values()];
-    }, [visible]);
+    const kinds = useMemo(() => uniq(entries.map(entry => entry.action)), [entries]);
+    const columnFilters = useMemo(
+        () => (filter === 'all' ? [] : [{ id: 'action', value: filter }]),
+        [filter],
+    );
+    const table = useTable({
+        features: auditFeatures,
+        columns: auditColumns,
+        data: entries,
+        state: { columnFilters },
+        onColumnFiltersChange: () => {},
+    });
+    const visible = table.getRowModel().rows.map(row => row.original);
+    const days = useMemo(() => Object.values(groupBy(visible, entry => dayKey(entry.at))), [visible]);
 
     return (
         <div className="admin-shell mx-auto min-h-dvh max-w-4xl space-y-5 p-4 sm:p-8" style={{ backgroundColor: 'var(--clr-bg)' }}>

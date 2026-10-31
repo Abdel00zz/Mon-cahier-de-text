@@ -1,5 +1,6 @@
 import { sessionNotificationCopy } from '../domain/notifications/sessionNotificationCopy';
 import { useEffect, useState } from 'react';
+import { uniq } from 'es-toolkit';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
 import { writeNotificationVibration } from '../infrastructure/push/notificationDevicePreferences';
@@ -84,7 +85,7 @@ export function useSessionAlerts(enabled = true) {
     // The timetable is local data: display the current class immediately even
     // when the calendar endpoint is unreachable or the session is offline.
     const initial = detectSessionAlerts(config, classes, getBundledCalendar(), new Date(), () => false);
-    const initialClassIds = [...new Set(initial.current.map(block => block.classId))].sort();
+    const initialClassIds = uniq(initial.current.map(block => block.classId)).sort();
     const initialKey = `${initial.today}:${initial.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;
     setCurrent(previous => previous.key === initialKey ? previous : { key: initialKey, classIds: initialClassIds });
     // Keep boundary updates alive even if the calendar request never resolves.
@@ -96,7 +97,7 @@ export function useSessionAlerts(enabled = true) {
       // Wake only at the next session boundary/reminder or local midnight.
       if (timer !== undefined) window.clearTimeout(timer);
       timer = window.setTimeout(() => setTick(value => value + 1), snapshot.nextCheckDelay);
-      const classIds = [...new Set(snapshot.current.map(block => block.classId))].sort();
+      const classIds = uniq(snapshot.current.map(block => block.classId)).sort();
       const key = `${snapshot.today}:${snapshot.current.map(block => `${block.classId}-${block.startMin}-${block.endMin}`).sort().join('|')}`;
       setCurrent(previous => previous.key === key ? previous : { key, classIds });
       const scope = readWorkspaceScope()?.owner ?? 'local';

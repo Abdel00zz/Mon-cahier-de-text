@@ -1,4 +1,14 @@
 import React, { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    columnFilteringFeature,
+    createColumnHelper,
+    createFilteredRowModel,
+    createSortedRowModel,
+    rowSortingFeature,
+    tableFeatures,
+    useTable,
+} from '@tanstack/react-table';
+import { uniq } from 'es-toolkit';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
@@ -81,6 +91,85 @@ const isInactive = (teacher: AdminTeacherSummary): boolean => {
 type SortKey = 'severity' | 'completion' | 'activity' | 'name' | 'establishment';
 type PriorityFilter = LatenessSeverity | 'all' | 'inactive' | 'messages' | 'blocked';
 
+interface EnrichedTeacher {
+    teacher: AdminTeacherSummary;
+    severity: LatenessSeverity;
+    inactive: boolean;
+    completion: number;
+    needsFollowUp: boolean;
+}
+
+const teacherTableFeatures = tableFeatures({
+    columnFilteringFeature,
+    filteredRowModel: createFilteredRowModel(),
+    rowSortingFeature,
+    sortedRowModel: createSortedRowModel(),
+});
+
+const teacherColumnHelper = createColumnHelper<typeof teacherTableFeatures, EnrichedTeacher>();
+const teacherColumns = teacherColumnHelper.columns([
+    teacherColumnHelper.accessor(row => teacherNameOf(row.teacher), {
+        id: 'name',
+        header: 'Nom',
+        filterFn: (row, _id, rawQuery: string) => {
+            const q = rawQuery.trim().toLowerCase();
+            if (!q) return true;
+            const { teacher } = row.original;
+            return (
+                establishmentKey(teacher.establishmentName).includes(establishmentKey(q)) ||
+                teacherNameOf(teacher).toLowerCase().includes(q) ||
+                `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
+                (teacher.email ?? '').toLowerCase().includes(q) ||
+                (teacher.contactPhone ?? teacher.phone).includes(q)
+            );
+        },
+        sortFn: (a, b) =>
+            teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
+    }),
+    teacherColumnHelper.accessor(row => establishmentKey(row.teacher.establishmentName), {
+        id: 'establishment',
+        header: 'Établissement',
+        filterFn: (row, _id, school: string | null) =>
+            school === null || establishmentKey(row.original.teacher.establishmentName) === school,
+        sortFn: (a, b) =>
+            establishmentKey(a.original.teacher.establishmentName).localeCompare(
+                establishmentKey(b.original.teacher.establishmentName),
+                'fr',
+            ) || teacherNameOf(a.original.teacher).localeCompare(teacherNameOf(b.original.teacher), 'fr'),
+    }),
+    teacherColumnHelper.accessor(row => row.severity, {
+        id: 'severity',
+        header: 'Suivi',
+        filterFn: (row, _id, filterValue: PriorityFilter) => {
+            if (filterValue === 'all') return true;
+            const { teacher, severity, inactive } = row.original;
+            if (filterValue === 'inactive') return inactive;
+            if (filterValue === 'messages') return teacher.pendingMessages > 0 || (teacher.pendingRequests ?? 0) > 0;
+            if (filterValue === 'blocked') return Boolean(teacher.blocked);
+            return severity === filterValue;
+        },
+        sortFn: (a, b) =>
+            SEVERITY_RANK[b.original.severity] - SEVERITY_RANK[a.original.severity] ||
+            a.original.completion - b.original.completion,
+    }),
+    teacherColumnHelper.accessor(row => row.completion, {
+        id: 'completion',
+        header: 'Complétion',
+        filterFn: (row, _id, cycle: string) =>
+            cycle === 'all' || (row.original.teacher.classes ?? []).some(c => c.cycle === cycle),
+        sortFn: (a, b) => a.original.completion - b.original.completion,
+    }),
+    teacherColumnHelper.accessor(row => row.teacher.lastSyncAt ?? '', {
+        id: 'activity',
+        header: 'Activité',
+        filterFn: (row, _id, subject: string) =>
+            subject === 'all' || (row.original.teacher.classes ?? []).some(c => c.subject === subject),
+        sortFn: (a, b) =>
+            new Date(b.original.teacher.lastSyncAt ?? 0).getTime() -
+            new Date(a.original.teacher.lastSyncAt ?? 0).getTime(),
+    }),
+]);
+
 interface TeacherCardProps {
     teacher: AdminTeacherSummary;
     severity: LatenessSeverity;
@@ -122,7 +211,7 @@ const TeacherCard = memo(function TeacherCard({ teacher, severity, inactive, com
             </div>
             <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
                 <span>
-                    {Array.from(new Set((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)))
+                    {uniq((teacher.classes ?? []).map(c => c.cycle).filter(Boolean))
                         .map(c => CYCLE_LABEL[c as string] ?? c)
                         .join(' · ') || 'Non renseigné'}
                 </span>
@@ -176,11 +265,10 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
     const now = useNow(30_000);
     const minute = Math.floor(now / 60_000) * 60_000;
 
-    const subjects = useMemo(() => {
-        const set = new Set<string>();
-        teachers.forEach(t => (t.classes ?? []).forEach(c => c.subject && set.add(c.subject)));
-        return Array.from(set).sort();
-    }, [teachers]);
+    const subjects = useMemo(
+        () => uniq(teachers.flatMap(t => (t.classes ?? []).map(c => c.subject).filter((s): s is string => Boolean(s)))).sort(),
+        [teachers]
+    );
     const [subjectFilter, setSubjectFilter] = useState<string>(remembered.subject);
 
     useEffect(() => {
@@ -248,50 +336,28 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
         [enriched]
     );
 
-    const filtered = useMemo(() => {
-        const q = deferredQuery.trim().toLowerCase();
-        const list = enriched.filter(({ teacher, severity, inactive }) => {
-            const matchesQuery =
-                !q ||
-                establishmentKey(teacher.establishmentName).includes(establishmentKey(q)) ||
-                teacherNameOf(teacher).toLowerCase().includes(q) ||
-                `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
-                (teacher.email ?? '').toLowerCase().includes(q) || (teacher.contactPhone ?? teacher.phone).includes(q);
-            const matchesCycle = cycleFilter === 'all' || (teacher.classes ?? []).some(c => c.cycle === cycleFilter);
-            const matchesSubject = subjectFilter === 'all' || (teacher.classes ?? []).some(c => c.subject === subjectFilter);
-            const matchesSeverity =
-                severityFilter === 'all' ||
-                (severityFilter === 'inactive' ? inactive :
-                    severityFilter === 'messages' ? (teacher.pendingMessages > 0 || (teacher.pendingRequests ?? 0) > 0) :
-                        severityFilter === 'blocked' ? teacher.blocked :
-                            severity === severityFilter);
-            return matchesQuery && matchesCycle && matchesSubject && matchesSeverity
-                && (schoolFilter === null || establishmentKey(teacher.establishmentName) === schoolFilter);
-        });
-        const sorted = [...list];
-        switch (sortKey) {
-            case 'establishment':
-                sorted.sort((a, b) => establishmentKey(a.teacher.establishmentName).localeCompare(establishmentKey(b.teacher.establishmentName), 'fr')
-                    || teacherNameOf(a.teacher).localeCompare(teacherNameOf(b.teacher), 'fr'));
-                break;
-            case 'severity':
-                sorted.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] || a.completion - b.completion);
-                break;
-            case 'completion':
-                sorted.sort((a, b) => a.completion - b.completion);
-                break;
-            case 'activity':
-                sorted.sort(
-                    (a, b) =>
-                        new Date(b.teacher.lastSyncAt ?? 0).getTime() - new Date(a.teacher.lastSyncAt ?? 0).getTime()
-                );
-                break;
-            case 'name':
-                sorted.sort((a, b) => teacherNameOf(a.teacher).localeCompare(teacherNameOf(b.teacher), 'fr'));
-                break;
-        }
-        return sorted;
-    }, [enriched, deferredQuery, schoolFilter, cycleFilter, subjectFilter, severityFilter, sortKey]);
+    const columnFilters = useMemo(() => {
+        const filters: { id: string; value: unknown }[] = [];
+        if (deferredQuery.trim()) filters.push({ id: 'name', value: deferredQuery });
+        if (schoolFilter !== null) filters.push({ id: 'establishment', value: schoolFilter });
+        if (severityFilter !== 'all') filters.push({ id: 'severity', value: severityFilter });
+        if (cycleFilter !== 'all') filters.push({ id: 'completion', value: cycleFilter });
+        if (subjectFilter !== 'all') filters.push({ id: 'activity', value: subjectFilter });
+        return filters;
+    }, [deferredQuery, schoolFilter, severityFilter, cycleFilter, subjectFilter]);
+
+    const sorting = useMemo(() => [{ id: sortKey, desc: false }], [sortKey]);
+
+    const table = useTable({
+        features: teacherTableFeatures,
+        columns: teacherColumns,
+        data: enriched,
+        state: { columnFilters, sorting },
+        onColumnFiltersChange: () => {},
+        onSortingChange: () => {},
+    });
+
+    const filtered = table.getRowModel().rows.map(row => row.original);
 
     const filtersActive = hasActiveFilters({ school: schoolFilter, cycle: cycleFilter, subject: subjectFilter, severity: severityFilter, sort: sortKey }) || query.trim() !== '';
     const resetFilters = () => {
@@ -317,7 +383,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             email: teacher.email ?? '',
             phone: teacher.contactPhone ?? (teacher.phone.startsWith('acct_') ? '' : teacher.phone),
             classes: teacher.classes?.length ?? 0,
-            cycles: Array.from(new Set((teacher.classes ?? []).map(c => CYCLE_LABEL[c.cycle as string] ?? c.cycle).filter(Boolean))).join(' / '),
+            cycles: uniq((teacher.classes ?? []).map(c => CYCLE_LABEL[c.cycle as string] ?? c.cycle).filter(Boolean)).join(' / '),
             completion,
             status: teacher.blocked ? 'Compte bloqué' : inactive ? 'Inactif' : SEVERITY_META[severity].label,
             lastSyncAt: teacher.lastSyncAt ?? '',

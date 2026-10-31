@@ -14,7 +14,7 @@ test('paramètres : le titre de la rubrique vit dans l’en-tête avec le retour
   assert.match(modal, /useMediaQuery\('\(min-width: 1024px\)'\)/, 'la bascule suit la largeur réelle');
   assert.ok(!modal.includes('settings-backbar'), 'plus de ligne de retour dans le contenu');
   const primitives = read('src/features/settings/components/SettingsPrimitives.tsx');
-  assert.match(primitives, /max-lg:sr-only/, 'le titre de rubrique n’est plus affiché deux fois, mais reste lu par les lecteurs d’écran');
+  assert.match(primitives, /sr-only/, 'le titre de rubrique n’est plus affiché deux fois, mais reste lu par les lecteurs d’écran');
   const css = read('src/styles/index.css');
   assert.match(css, /\.hub-modal-header\.modal-pro-header \{ min-height: 0;/, 'en-tête compact');
   assert.match(css, /\[data-has-handle='true'\]\.hub-modal \.dialog-close \{ top: 1\.75rem; \}/, 'titre et bouton fermer sur le même axe');

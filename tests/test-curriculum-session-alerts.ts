@@ -320,7 +320,7 @@ test('timetable edits and assessment reservations immediately update expected pa
 test('dashboard identifies the live session on its class card without a duplicate banner', () => {
   const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
   // Le détecteur partagé alimente uniquement le repère de la carte.
-  assert.match(dashboard, /activeSessionClassIds = \[\]/, 'Le tableau de bord reçoit les classes actives');
+  assert.match(dashboard, /const activeSessionClassIds = useMemo/, 'Le tableau de bord reçoit les classes actives');
   assert.doesNotMatch(dashboard, /SessionLiveBanner|data-session-banner/);
   const card = readFileSync('src/features/dashboard/ClassCard.tsx', 'utf8');
   assert.match(card, /isActiveSession &&[\s\S]*?class-card__live[\s\S]*?t\('dashboard.welcome.nowTitle'\)/);

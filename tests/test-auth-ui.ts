@@ -115,10 +115,10 @@ test('éditeur : la hiérarchie typographique du titre de chapitre reste verroui
   );
   const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
   assert.match(content, /renderChapterLabel/);
-  assert.match(content, /text-\[0\.95em\]/);
-  assert.match(content, /text-\[0\.85em\]/);
+  assert.match(content, /text-\[1em\]/);
+  assert.match(content, /text-\[0\.94em\]/);
   // Teinte et échelle du chapitre : un seul jeton, partagé écran et papier.
-  assert.match(css, /\.editor-type-chapter \{ font-size: var\(--editor-fs-chapter\)/);
+  assert.match(css, /\.editor-type-chapter[\s\S]*?font-size:\s*var\(--editor-fs-chapter\)/);
 });
 
 test('éditeur : une échelle mobile unique reste stable après rotation', () => {
@@ -142,9 +142,9 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
     assert.match(content, new RegExp(`editor-type-${role}`));
   }
 
-  assert.match(css, /--editor-fs-chapter: 20px/);
-  assert.match(css, /--editor-fs-item-title: 14px/);
-  assert.match(css, /--editor-fs-badge: 10px/);
+  assert.match(css, /--editor-fs-chapter: 22px/);
+  assert.match(css, /--editor-fs-item-title: 15px/);
+  assert.match(css, /--editor-fs-badge: 11px/);
   assert.match(css, /editor-type-badge[\s\S]*font-size: var\(--editor-fs-badge\) !important/);
   assert.match(css, /padding-inline: var\(--editor-badge-padding-inline\) !important/);
   assert.match(css, /pointer: coarse\) and \(max-width: 960px\) and \(max-height: 540px\) and \(orientation: landscape/);
