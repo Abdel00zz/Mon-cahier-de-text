@@ -6,6 +6,7 @@ import { extractDateRange } from './notebookSyncBridge';
 import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { translateLocaleMessage } from '../../i18n/messages';
 import type { DateWarning } from '../calendar/dateValidation';
+import { dequal } from 'dequal';
 
 export interface EvaluationSlot {
   /** Physical source distinguishes a duplicated row from its legitimate mirror. */
@@ -110,7 +111,7 @@ export function conflictMessage(conflict: EvaluationConflict, locale: AppLocale)
 export function newEvaluationWarnings(before: EvaluationSlot[], after: EvaluationSlot[], locale: AppLocale): DateWarning[] {
   const signature = (item: EvaluationConflict) => JSON.stringify([item.kind, ...[item.candidate, item.existing].map(slot => [slot.key, slot.start, slot.end]).sort()]);
   const previous = new Map(before.map(slot => [slot.key, slot]));
-  const edited = after.filter(slot => JSON.stringify(previous.get(slot.key)) !== JSON.stringify(slot));
+  const edited = after.filter(slot => !dequal(previous.get(slot.key), slot));
   const known = new Set<string>();
   const messages = new Map<string, DateWarning>();
   // O(n + edited*n): ordinary typing does not rescan every pair in the class.

@@ -49,6 +49,7 @@ import { LocalSyncDataError } from '../infrastructure/storage/localJson';
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
 import { readStoredNotebook } from '../infrastructure/storage/notebookStorage';
 import { backupConflictVersion, fetchLessonsBlob, removeDeletedClassReferences, type ServerClassesBlob } from '../infrastructure/sync/pullHelpers';
+import { dequal } from 'dequal';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -287,7 +288,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const snapshot = readLocalSyncSnapshot(localStorage, { includeNotebooks: false });
                     const latest = snapshot.config;
                     const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), snapshot.classes.map(item => item.id));
-                    if (JSON.stringify(latest.classRosters ?? {}) !== JSON.stringify(classRosters)) {
+                    if (!dequal(latest.classRosters ?? {}, classRosters)) {
                         localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
                         notifyPullApplied();
                     }
@@ -498,8 +499,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         const config = localConfig;
                         const timetableClock = server.timetableClock !== undefined ? normalizeTimetableClock(server.timetableClock) : config.timetableClock;
                         const evaluationPolicy = server.evaluationPolicy !== undefined ? normalizeEvaluationPolicy(server.evaluationPolicy) : config.evaluationPolicy;
-                        if (JSON.stringify(config.timetableClock) !== JSON.stringify(timetableClock)
-                            || JSON.stringify(config.evaluationPolicy) !== JSON.stringify(evaluationPolicy)) {
+                        if (!dequal(config.timetableClock, timetableClock) || !dequal(config.evaluationPolicy, evaluationPolicy)) {
                             localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock, evaluationPolicy }));
                             notifyPullApplied();
                         }
@@ -538,7 +538,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     if (index < 0) continue;
                     const previous = mergedClasses[index];
                     const merged = mergeClassMetadata(previous, remote, server.adminClassOverrides?.[remote.id], 'incoming');
-                    if (JSON.stringify(previous) !== JSON.stringify(merged)) {
+                    if (!dequal(previous, merged)) {
                         mergedClasses[index] = merged;
                         localChanged = true;
                     }
@@ -747,8 +747,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ).config;
                 if (
                     !pedagogicalDocumentsEqual(nextConfig, withDocuments) ||
-                    JSON.stringify(nextConfig.assessmentParticipants ?? {}) !== JSON.stringify(withDocuments.assessmentParticipants ?? {}) ||
-                    JSON.stringify(nextConfig.assessmentAbsences ?? {}) !== JSON.stringify(withDocuments.assessmentAbsences ?? {})
+                    !dequal(nextConfig.assessmentParticipants ?? {}, withDocuments.assessmentParticipants ?? {}) ||
+                    !dequal(nextConfig.assessmentAbsences ?? {}, withDocuments.assessmentAbsences ?? {})
                 ) {
                     configChanged = true;
                 }
@@ -758,7 +758,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Receive admin edits without dropping locally pending roster changes.
                 if (settings?.classRosters !== undefined) {
                     const classRosters = rostersForClasses(reconcileClassRosters(localConfig.classRosters, settings.classRosters), mergedClasses.map(item => item.id));
-                    if (JSON.stringify(nextConfig.classRosters ?? {}) !== JSON.stringify(classRosters)) {
+                    if (!dequal(nextConfig.classRosters ?? {}, classRosters)) {
                         nextConfig = { ...nextConfig, classRosters };
                         configChanged = true;
                     }
@@ -770,7 +770,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // pas dans un push utilisateur.
                 if (server.timetableClock !== undefined) {
                     const timetableClock = normalizeTimetableClock(server.timetableClock);
-                    if (JSON.stringify(nextConfig.timetableClock) !== JSON.stringify(timetableClock)) {
+                    if (!dequal(nextConfig.timetableClock, timetableClock)) {
                         nextConfig = { ...nextConfig, timetableClock };
                         configChanged = true;
                     }
@@ -779,7 +779,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // des préférences, et absente de SYNCABLE_KEYS donc jamais renvoyée.
                 if (server.evaluationPolicy !== undefined) {
                     const evaluationPolicy = normalizeEvaluationPolicy(server.evaluationPolicy);
-                    if (JSON.stringify(nextConfig.evaluationPolicy) !== JSON.stringify(evaluationPolicy)) {
+                    if (!dequal(nextConfig.evaluationPolicy, evaluationPolicy)) {
                         nextConfig = { ...nextConfig, evaluationPolicy };
                         configChanged = true;
                     }

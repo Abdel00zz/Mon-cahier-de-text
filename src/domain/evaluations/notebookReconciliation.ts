@@ -8,6 +8,7 @@ import type { PlannedAssessment } from './assessments';
 import { extractDateRange } from './notebookSyncBridge';
 import { normalizeActivityText } from './pedagogicalActivities';
 import { correctionOwner } from './homeworkCorrectionContent';
+import { dequal } from 'dequal';
 
 interface ReconcileOptions {
   previousLessons?: LessonsData;
@@ -16,7 +17,7 @@ interface ReconcileOptions {
   /** Politique de la direction : une nature non transmise reste dans le cahier, la feuille ne la reçoit pas. */
   policy?: EvaluationPolicy;
 }
-const changed = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
+const changed = (a: unknown, b: unknown) => !dequal(a, b);
 const validDate = (value?: string): value is string => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value));
 const eventType = (row: LessonRow) => row.elementType === 'evaluation_diagnostic' || row.elementType === 'correction_controle_continu' || row.elementType === 'examen_blanc' || row.elementType === 'olympiade' || row.elementType === 'concours' || row.data._tempId?.startsWith('event-');
 

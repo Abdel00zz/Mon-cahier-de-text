@@ -9,6 +9,7 @@ import { homeworkAssessmentId } from './homeworkCycle';
 import { buildLessonRows } from '../notebook/lessonRows';
 import { detectEventsFromRemarks } from './notebookReconciliation';
 import { normalizeActivityText } from './pedagogicalActivities';
+import { dequal } from 'dequal';
 
 export { homeworkAssessmentId };
 
@@ -120,12 +121,12 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
         nextEvents.splice(i, 1);
       }
     }
-    if (JSON.stringify(nextEvents) !== JSON.stringify(baseEvents)) {
+    if (!dequal(nextEvents, baseEvents)) {
       result.pedagogicalEvents = { ...config.pedagogicalEvents, [classId]: nextEvents };
     }
   }
 
-  if (overridesModified && JSON.stringify(overrides) !== JSON.stringify(config.sessionRemarkOverrides?.[classId] ?? {})) {
+  if (overridesModified && !dequal(overrides, config.sessionRemarkOverrides?.[classId] ?? {})) {
     result.sessionRemarkOverrides = { ...config.sessionRemarkOverrides, [classId]: overrides };
   }
 

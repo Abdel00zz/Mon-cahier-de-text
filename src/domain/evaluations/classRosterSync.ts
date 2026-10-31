@@ -1,8 +1,9 @@
 import type { AppConfig, ClassRoster } from '../../types.js';
 import { MAX_STUDENTS, normalizeStudentNames, studentIdentityKey } from './studentRoster.js';
+import { dequal } from 'dequal';
 
 const key = studentIdentityKey;
-const equal = (a: readonly string[], b: readonly string[]) => JSON.stringify(a) === JSON.stringify(b);
+const equal = (a: readonly string[], b: readonly string[]) => dequal(a, b);
 
 function pendingBase(edit: NonNullable<ClassRoster['edit']>): string[] {
     const added = new Set((edit.addedNames ?? []).map(key));

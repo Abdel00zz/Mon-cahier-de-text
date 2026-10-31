@@ -1,5 +1,6 @@
 import type { ClassInfo } from '../../types.js';
 import { withCurriculumSettings } from './classCurriculumSettings.js';
+import { dequal } from 'dequal';
 
 const timestamp = (value?: string): number => value && Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
 const FIELDS: readonly (keyof ClassInfo)[] = ['name', 'teacherName', 'subject', 'cycle', 'level', 'branch', 'group', 'courseStartDate', 'curriculumSourceId', 'curriculumChapterMatches', 'notebookContentOrigin'];
@@ -7,7 +8,7 @@ const FIELDS: readonly (keyof ClassInfo)[] = ['name', 'teacherName', 'subject', 
 /** Opening a card must never make its stale identity newer than another device's edit. */
 export function updateClassMetadata(current: ClassInfo, patch: Partial<ClassInfo>, now = Date.now()): ClassInfo {
     const next = { ...current, ...patch, id: current.id, metadataUpdatedAt: current.metadataUpdatedAt };
-    if (FIELDS.some(field => JSON.stringify(current[field]) !== JSON.stringify(next[field]))) {
+    if (FIELDS.some(field => !dequal(current[field], next[field]))) {
         next.metadataUpdatedAt = new Date(Math.max(now, timestamp(current.metadataUpdatedAt) + 1)).toISOString();
     }
     return next;

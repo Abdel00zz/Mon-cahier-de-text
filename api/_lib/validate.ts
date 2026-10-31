@@ -2,6 +2,16 @@ import { HttpError } from './http.js';
 import { isClassColor } from '../../src/domain/classes/classColors.js';
 import { assertNotebookStructure } from '../../src/domain/notebook/notebookValidation.js';
 import { MAX_CONTENT_DOCUMENT_CHARS } from '../../src/constants/contentDocument.js';
+import {
+  ISODateSchema,
+  AppLocaleSchema,
+  AssessmentTypeSchema,
+  PedagogicalEventTypeSchema,
+  CycleSchema,
+  ContentDocumentSchema,
+  ScheduleSlotSchema,
+  StudentRosterSchema,
+} from '../../src/domain/validation/schemas.js';
 import type {
   AppConfig,
   AppLocale,
@@ -15,22 +25,15 @@ import type {
 } from '../../src/types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
-const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);
-const VALID_ASSESSMENT_TYPES = new Set(['controle', 'controle_court', 'controle_global', 'oral', 'maison', 'colle']);
-const VALID_PEDAGOGICAL_TYPES = new Set(['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'controle_cahiers', 'correction_controle_continu', 'autre']);
+const VALID_CYCLES = new Set<string>(CycleSchema.options);
+const VALID_ASSESSMENT_TYPES = new Set<string>(AssessmentTypeSchema.options);
+const VALID_PEDAGOGICAL_TYPES = new Set<string>(PedagogicalEventTypeSchema.options);
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
-const validISODate = (value: unknown): value is string => {
-  if (typeof value !== 'string' || !ISO_DATE.test(value)) return false;
-  const [year, month, day] = value.split('-').map(Number);
-  const parsed = new Date(Date.UTC(year, month - 1, day));
-  return parsed.getUTCFullYear() === year
-    && parsed.getUTCMonth() === month - 1
-    && parsed.getUTCDate() === day;
-};
+const validISODate = (value: unknown): value is string => ISODateSchema.safeParse(value).success;
 
 const snapshotText = (value: unknown, label: string, max: number): string => {
   if (typeof value !== 'string') throw new HttpError(400, `${label} invalide.`);
@@ -51,12 +54,14 @@ const normalizeSnapshotSlots = (value: unknown, label: string): ScheduleSlot[] |
   if (!Array.isArray(value) || value.length > 14) throw new HttpError(400, `${label} invalide.`);
   const sessionsByWeekday = new Map<number, number>();
   for (const raw of value) {
-    if (!isPlainObject(raw) || !Number.isInteger(raw.weekday) || Number(raw.weekday) < 0 || Number(raw.weekday) > 6) {
-      throw new HttpError(400, `${label} contient un jour invalide.`);
+    const slot = ScheduleSlotSchema.safeParse(raw);
+    if (!slot.success) {
+      if (!isPlainObject(raw) || typeof (raw as Record<string, unknown>).weekday !== 'number') {
+        throw new HttpError(400, `${label} contient un jour invalide.`);
+      }
+      throw new HttpError(400, `${label}.sessions invalide.`);
     }
-    const sessions = raw.sessions === undefined ? 1 : snapshotInteger(raw.sessions, `${label}.sessions`, 12);
-    if (sessions < 1) throw new HttpError(400, `${label}.sessions invalide.`);
-    const weekday = Number(raw.weekday);
+    const { weekday, sessions } = slot.data;
     sessionsByWeekday.set(weekday, (sessionsByWeekday.get(weekday) ?? 0) + sessions);
   }
   return [...sessionsByWeekday.entries()]
@@ -166,11 +171,7 @@ export const assertValidTeacherSnapshot = (
     });
   }
 
-  const locale: AppLocale | undefined = value.applicationLocale === 'fr'
-    || value.applicationLocale === 'en'
-    || value.applicationLocale === 'ar'
-    ? value.applicationLocale
-    : undefined;
+  const locale: AppLocale | undefined = AppLocaleSchema.safeParse(value.applicationLocale).data;
   const rawLastSyncAt = value.lastSyncAt;
   const lastSyncAt = options.syncedAt ?? (
     rawLastSyncAt === null
@@ -382,20 +383,15 @@ export const assertValidLessonsPayload = (
  */
 const assertStudentNames = (candidate: unknown, label: string, allowNotebookConditions = false, allowOutcomes = false): void => {
   if (candidate === undefined) return;
-  const value = candidate as { names?: unknown; updatedAt?: unknown; notebookConditions?: unknown; oralOutcomes?: unknown; oralGrades?: unknown };
-  if (!value || typeof value !== 'object' || !Array.isArray(value.names) || value.names.length > 200) {
+  const parsed = StudentRosterSchema.safeParse(candidate);
+  if (!parsed.success) {
     throw new HttpError(400, `Liste d'élèves invalide (${label}).`);
   }
-  if (value.names.some(name => typeof name !== 'string' || !name.trim() || name.length > 120)) {
-    throw new HttpError(400, `Nom d'élève invalide (${label}).`);
-  }
-  if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) {
-    throw new HttpError(400, `Horodatage d'élèves invalide (${label}).`);
-  }
+  const value = candidate as { names: string[]; updatedAt: string; notebookConditions?: unknown; oralOutcomes?: unknown; oralGrades?: unknown };
   if (value.notebookConditions !== undefined) {
     const conditions = value.notebookConditions;
     if (!allowNotebookConditions || !conditions || typeof conditions !== 'object' || Array.isArray(conditions)
-      || Object.entries(conditions).some(([name, condition]) => !(value.names as string[]).includes(name)
+      || Object.entries(conditions).some(([name, condition]) => !value.names.includes(name)
         || !['good', 'average', 'needs_work', 'missing'].includes(condition as string))) {
       throw new HttpError(400, `Suivi de cahier invalide (${label}).`);
     }
@@ -403,7 +399,7 @@ const assertStudentNames = (candidate: unknown, label: string, allowNotebookCond
   // Retour par élève et note /20 d'une activité, quand la direction les active. Les suivis
   // de devoirs (`assessmentParticipants`) portent les mêmes champs mais les valident à part.
   if (allowOutcomes && (value.oralOutcomes !== undefined || value.oralGrades !== undefined)) {
-    const names = value.names as string[];
+    const names = value.names;
     const grades = value.oralGrades;
     if (!validOutcomeMap(names, value.oralOutcomes, ['mastered', 'developing', 'needs_support'])
       || (grades !== undefined && (!grades || typeof grades !== 'object' || Array.isArray(grades)
@@ -421,11 +417,11 @@ const validOutcomeMap = (names: readonly string[], map: unknown, allowed: readon
 /** Document rédigé : texte borné (voir `src/constants/contentDocument.ts`). */
 const assertContentDocument = (candidate: unknown, label: string): void => {
   if (candidate === undefined) return;
-  const value = candidate as { source?: unknown; updatedAt?: unknown };
-  if (!value || typeof value !== 'object' || typeof value.source !== 'string' || value.source.length > MAX_CONTENT_DOCUMENT_CHARS) {
+  const parsed = ContentDocumentSchema.safeParse(candidate);
+  if (!parsed.success || parsed.data.source.length > MAX_CONTENT_DOCUMENT_CHARS) {
     throw new HttpError(400, `Document invalide (${label}).`);
   }
-  if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) {
+  if (!Number.isFinite(Date.parse(parsed.data.updatedAt))) {
     throw new HttpError(400, `Horodatage de document invalide (${label}).`);
   }
 };
