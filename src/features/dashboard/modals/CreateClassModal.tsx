@@ -1,6 +1,9 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { dequal } from 'dequal';
 import { toast } from 'sonner';
+import { ClassDraftSchema, type ClassDraftValues } from '@/domain/validation/schemas';
 import { parseStudentNames } from '@/domain/evaluations/studentRoster';
 import { ClassRosterFields } from './ClassRosterFields';
 import { ClassCreationProgress } from './ClassCreationProgress';
@@ -124,15 +127,35 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const fieldDir = (text: string) => (text ? 'auto' : isRtl ? 'rtl' : 'ltr');
   const copy = COPY[locale] ?? COPY.fr;
   const [initial] = useState(() => initialClassDraft(teacherCycles, uniqueValues(teacherSubjects), defaultCycle, editingClass));
-  const [cycle, setCycle] = useState<Cycle>(initial.cycle);
-  const [level, setLevel] = useState(initial.level);
-  const [levelGroupKey, setLevelGroupKey] = useState<ClassLevelGroupKey | ''>(initial.levelGroupKey);
-  const [group, setGroup] = useState(initial.group);
+  const { watch, setValue } = useForm<ClassDraftValues>({
+    resolver: zodResolver(ClassDraftSchema),
+    defaultValues: {
+      cycle: initial.cycle,
+      level: initial.level,
+      levelGroupKey: initial.levelGroupKey,
+      group: initial.group,
+      subject: initial.subject,
+      customMode: initial.customMode,
+      customLevel: initial.customLevel,
+      customSubject: initial.customSubject,
+    },
+  });
+  const { cycle, level, levelGroupKey, group, subject, customMode, customLevel, customSubject } = watch();
+  const setCycle = (val: Cycle) => setValue('cycle', val, { shouldDirty: true });
+  const setLevel = (val: string) => setValue('level', val, { shouldDirty: true });
+  const setLevelGroupKey = (val: ClassLevelGroupKey | '') => setValue('levelGroupKey', val, { shouldDirty: true });
+  const setGroup = (val: string | ((curr: string) => string)) => {
+    const nextVal = typeof val === 'function' ? val(group) : val;
+    setValue('group', nextVal, { shouldDirty: true });
+  };
+  const setSubject = (val: string) => setValue('subject', val, { shouldDirty: true });
+  const setCustomMode = (val: boolean | ((curr: boolean) => boolean)) => {
+    const nextVal = typeof val === 'function' ? val(customMode) : val;
+    setValue('customMode', nextVal, { shouldDirty: true });
+  };
+  const setCustomLevel = (val: string) => setValue('customLevel', val, { shouldDirty: true });
+  const setCustomSubject = (val: string) => setValue('customSubject', val, { shouldDirty: true });
   const [groupTouched, setGroupTouched] = useState(false);
-  const [subject, setSubject] = useState(initial.subject);
-  const [customMode, setCustomMode] = useState(initial.customMode);
-  const [customLevel, setCustomLevel] = useState(initial.customLevel);
-  const [customSubject, setCustomSubject] = useState(initial.customSubject);
   const [currentStep, setStep] = useState<WizardStep>(initial.step);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);

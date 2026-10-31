@@ -86,3 +86,17 @@ export const ContentNumberingSchema = z.object({
   badgeStyle: z.enum(['decimal', 'roman', 'hierarchical']).optional(),
   scope: z.enum(['chapter', 'section', 'document']).optional(),
 });
+
+/** Schéma de saisie pour la création / modification d'une classe. */
+export const ClassDraftSchema = z.object({
+  cycle: CycleSchema,
+  level: z.string().max(120),
+  levelGroupKey: z.string().max(120),
+  group: z.string().max(10),
+  subject: z.string().max(120),
+  customMode: z.boolean(),
+  customLevel: z.string().max(120),
+  customSubject: z.string().max(120),
+});
+
+export type ClassDraftValues = z.infer<typeof ClassDraftSchema>;
