@@ -25,8 +25,8 @@
   border-color: hsl(var(--primary) / .35);
 }
 .print-settings-modal .paper-segments { min-width: 0; }
-.print-settings-modal .paper-segments [role='tab'] { white-space: normal; min-width: 0; flex: 1; }
-.print-settings-modal .paper-segments [role='tab'][aria-selected='true'] {
+.print-settings-modal .paper-segments [role='radio'] { white-space: normal; min-width: 0; flex: 1; }
+.print-settings-modal .paper-segments [role='radio'][data-state='on'] {
   color: hsl(var(--primary));
   border-color: hsl(var(--primary) / .3);
 }

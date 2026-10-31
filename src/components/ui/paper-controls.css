@@ -31,7 +31,7 @@
     caret-color: hsl(var(--foreground));
   }
   .paper-segments { background: hsl(var(--muted) / .7); box-shadow: inset 0 1px 3px hsl(var(--foreground) / .035); }
-  .paper-segments [aria-selected='true'] { color: hsl(var(--primary)); border-color: hsl(var(--primary) / .2); }
+  .paper-segments [data-state='on'] { color: hsl(var(--primary)); border-color: hsl(var(--primary) / .2); }
   .paper-menu { 
     background-color: hsl(var(--popover) / .96);
     backdrop-filter: blur(16px);

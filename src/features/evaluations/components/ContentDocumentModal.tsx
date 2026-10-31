@@ -1,6 +1,6 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import * as TabsPrimitive from '@radix-ui/react-tabs';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import * as Tabs from '@radix-ui/react-tabs';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -72,7 +72,6 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
   onSave,
 }) => {
   const { t, isRtl } = useLocale();
-  const tabsId = useId();
   const [tab, setTab] = useState<'source' | 'preview'>('preview');
   const [source, setSource] = useState('');
   const [showHelp, setShowHelp] = useState(false);
@@ -171,41 +170,52 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       maxWidth="3xl"
-      className="document-modal-frame evaluation-modal"
+      className="document-modal-frame evaluation-modal content-document-modal"
+      bodyClassName="content-document-body"
+      footerClassName="content-document-footer"
+      footer={<div className="document-editor-actions flex flex-wrap items-center justify-between gap-3 w-full">
+          <div className="flex items-center">
+            <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} showLabel />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 rounded-lg bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isTooLong}
+              className="h-11 rounded-lg bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {t('common.save')}
+            </button>
+          </div>
+        </div>}
       headerClassName="border-b border-border/70"
       title={heading ?? t('documentPreview.heading')}
     >
-      <div className="space-y-3.5">
+      <Tabs.Root value={tab} onValueChange={value => setTab(value as 'source' | 'preview')} dir={isRtl ? 'rtl' : 'ltr'} className="content-document-workspace">
         <ConfirmDialog open={conflictOpen} onOpenChange={setConflictOpen} variant="default"
           title={t('evaluations.doc.concurrentTitle')} description={t('evaluations.doc.concurrentBody')}
           confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
-        <TabsPrimitive.Root value={tab} onValueChange={next => setTab(next as 'source' | 'preview')} dir={isRtl ? 'rtl' : 'ltr'}>
-          <TabsPrimitive.List
-            aria-label={heading ?? t('documentPreview.heading')}
-            dir={isRtl ? 'rtl' : 'ltr'}
-            data-tab={tab}
-            className="content-document-tabs"
-          >
-            {(['preview', 'source'] as const).map((value) => (
-              <TabsPrimitive.Trigger
-                key={value}
-                value={value}
-                id={`${tabsId}-${value}`}
-                aria-controls={`${tabsId}-panel`}
-                className="content-document-tab"
-              >
-                {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
-              </TabsPrimitive.Trigger>
-            ))}
-          </TabsPrimitive.List>
-        </TabsPrimitive.Root>
+        <Tabs.List aria-label={heading ?? t('documentPreview.heading')}
+          dir={isRtl ? 'rtl' : 'ltr'} data-tab={tab} className="content-document-tabs">
+          {(['preview', 'source'] as const).map(value => (
+            <Tabs.Trigger key={value} value={value} className="content-document-tab">
+              {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
+            </Tabs.Trigger>
+          ))}
+        </Tabs.List>
 
-        <div key={tab} id={`${tabsId}-panel`} role="tabpanel" className="content-document-panel"
-          aria-labelledby={`${tabsId}-${tab}`} tabIndex={tab === 'preview' ? 0 : -1}>
+        <Tabs.Content value={tab} data-mode={tab} className="content-document-panel modern-scrollbar">
         {tab === 'source' ? (
-          <div className="space-y-2.5">
+          <div className="content-document-source">
             <Textarea
               ref={textareaRef}
               value={source}
@@ -217,13 +227,13 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               spellCheck={false}
               placeholder={t('evaluations.doc.placeholder')}
               aria-label={t('evaluations.doc.source')}
-              className="content-document-textarea min-h-[16rem] max-h-[58vh] h-[46vh] resize-y rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
+              className="content-document-textarea resize-none rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
             />
             <div className="flex items-center justify-between gap-2 px-1">
               <button
                 type="button"
                 onClick={() => setShowHelp(open => !open)}
-                className="min-h-10 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                className="min-h-11 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                 aria-expanded={showHelp}
               >
                 {t('evaluations.doc.helpToggle')}
@@ -233,7 +243,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               </span>
             </div>
             {showHelp && (
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3.5">
+              <div className="content-document-help modern-scrollbar rounded-xl border border-border/70 bg-muted/30 p-3.5" tabIndex={0} role="region" aria-label={t('evaluations.doc.helpTitle')}>
                 <p className="mb-2 text-[11px] font-bold text-foreground">{t('evaluations.doc.helpTitle')}</p>
                 <dl className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   {SYNTAX_SAMPLES.map(([sample, labelKey]) => (
@@ -255,7 +265,7 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
         ) : (
           /* Le vide est une affaire de contenu : la feuille épouse son texte, sans hauteur
              minimale qui creuserait un blanc sous un sujet court. Seul l'état vide en garde une. */
-          <div className={cn('document-preview-paper max-h-[62vh] overflow-y-auto rounded-xl border border-border/70 bg-card p-3 sm:p-5 shadow-xs', !preview && 'min-h-[12rem]')}>
+          <div className={cn('document-preview-paper rounded-xl border border-border/70 bg-card p-3 sm:p-5 shadow-xs', !preview && 'min-h-[12rem]')}>
             {preview ? (
               <div dir={documentDir}>
                 <DocumentSheetHeader title={headerTitle} classLabel={resolvedClassLabel} dir={documentDir} />
@@ -277,31 +287,10 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             )}
           </div>
         )}
-        </div>
+        </Tabs.Content>
 
-        <div className="document-editor-actions sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur-sm">
-          <div className="flex items-center">
-            <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} showLabel />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-11 rounded-lg bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isTooLong}
-              className="h-11 rounded-lg bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {t('common.save')}
-            </button>
-          </div>
-        </div>
-      </div>
+
+      </Tabs.Root>
     </Modal>
   );
 };
