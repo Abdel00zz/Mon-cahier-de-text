@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
 import { SUBJECTS } from '@/constants';
 import type { CycleOption, ModalLang, OnboardingCopy } from './types';
@@ -9,7 +10,7 @@ export const ONBOARDING_CYCLES: CycleOption[] = [
 ];
 
 export const subjectOptionsFor = (selectedSubjects: string[] | undefined): string[] =>
-    Array.from(new Set([...SUBJECTS, ...(selectedSubjects ?? [])]));
+    uniq([...SUBJECTS, ...(selectedSubjects ?? [])]);
 
 const TEXTS: Record<ModalLang, OnboardingCopy> = {
     fr: {

@@ -1,3 +1,5 @@
+import { clamp } from 'es-toolkit';
+
 interface Box { left: number; top: number; width: number; height: number }
 
 /** The flow host stays untransformed, so repeated measurements never accumulate offsets. */
@@ -18,8 +20,8 @@ export function assistantPlacement(anchor: Box, panel: Pick<Box, 'width' | 'heig
   const maxHeight = Math.max(0, Math.min(400, viewport.height - margin * 2, side === 'above' ? above : below));
   const height = Math.min(panel.height, maxHeight);
   const desiredY = side === 'above' ? anchor.top - gap - height : anchor.top + anchor.height + gap;
-  const y = Math.max(viewport.top + margin, Math.min(desiredY, viewport.top + viewport.height - margin - height));
-  return { left: Math.max(minX, Math.min(desiredX, maxX)) - anchor.left, top: y - anchor.top, maxHeight, maxWidth: Math.max(0, viewport.width - margin * 2), side };
+  const y = clamp(desiredY, viewport.top + margin, Math.max(viewport.top + margin, viewport.top + viewport.height - margin - height));
+  return { left: clamp(desiredX, minX, maxX) - anchor.left, top: y - anchor.top, maxHeight, maxWidth: Math.max(0, viewport.width - margin * 2), side };
 }
 
 /** Observes only while open; event bursts share one frame, without React renders. */

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { chunk, range, uniq } from 'es-toolkit';
 import { Timestamp, type DocumentReference, type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { firebaseDb, teacherUid } from './firebaseAdmin.js';
 
@@ -65,9 +66,9 @@ export class FirestoreView {
   constructor(private db: Firestore, private tx?: Transaction) {}
 
   async prefetch(paths: string[]): Promise<void> {
-    const uncached = [...new Set(paths)].filter(path => !this.cache.has(path));
-    for (let offset = 0; offset < uncached.length; offset += 100) {
-      const refs = uncached.slice(offset, offset + 100).map(path => this.db.doc(path));
+    const uncached = uniq(paths).filter(path => !this.cache.has(path));
+    for (const batch of chunk(uncached, 100)) {
+      const refs = batch.map(path => this.db.doc(path));
       if (refs.length === 0) continue;
       const snapshots = this.tx ? await this.tx.getAll(...refs) : await this.db.getAll(...refs);
       for (const snapshot of snapshots) {
@@ -89,7 +90,7 @@ export class FirestoreView {
     let value: unknown = null;
     if (snapshot.exists && (!data.expiresAt || data.expiresAt.toMillis() > Date.now())) {
       if (data.parts) {
-        const refs = Array.from({ length: data.parts }, (_, i) => ref.collection('parts').doc(String(i)));
+        const refs = range(data.parts).map(i => ref.collection('parts').doc(String(i)));
         const parts = this.tx ? await this.tx.getAll(...refs) : await this.db.getAll(...refs);
         if (parts.some(part => typeof part.data()?.json !== 'string')) throw new Error('Incomplete cloud record');
         value = JSON.parse(parts.map(part => part.data()!.json).join(''));

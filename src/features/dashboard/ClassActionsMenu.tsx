@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId } from 'react';
+import { create } from 'zustand';
 import { MoreVertical, Settings, CalendarCheck } from 'lucide-react';
 import { Trash2 } from '@/components/ui/icons';
 import {
@@ -12,15 +13,14 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
 
-/** Registre global assurant qu'un seul menu de classe ne peut être ouvert à la fois */
-let activeMenuId: string | null = null;
-const menuListeners = new Set<(id: string | null) => void>();
-
-function setActiveMenu(id: string | null) {
-    if (activeMenuId === id) return;
-    activeMenuId = id;
-    menuListeners.forEach(listener => listener(id));
-}
+/** Registre global Zustand assurant qu'un seul menu de classe ne peut être ouvert à la fois */
+const useActiveClassMenuStore = create<{
+    activeMenuId: string | null;
+    setActiveMenu: (id: string | null) => void;
+}>((set) => ({
+    activeMenuId: null,
+    setActiveMenu: (id) => set({ activeMenuId: id }),
+}));
 
 export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete, onOpenEvaluations }: {
     name: string; triggerClassName: string; onConfigure: () => void; onDelete?: () => void;
@@ -30,28 +30,24 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
     const { impact } = useHapticFeedback();
     const generatedId = useId();
     const menuId = `${name}-${generatedId}`;
-    const [isOpen, setIsOpen] = useState(false);
+    const isOpen = useActiveClassMenuStore(state => state.activeMenuId === menuId);
+    const setActiveMenu = useActiveClassMenuStore(state => state.setActiveMenu);
 
     useEffect(() => {
-        const listener = (currentId: string | null) => {
-            setIsOpen(currentId === menuId);
-        };
-        menuListeners.add(listener);
         return () => {
-            menuListeners.delete(listener);
-            if (activeMenuId === menuId) {
-                activeMenuId = null;
+            if (useActiveClassMenuStore.getState().activeMenuId === menuId) {
+                setActiveMenu(null);
             }
         };
-    }, [menuId]);
+    }, [menuId, setActiveMenu]);
 
     const handleOpenChange = useCallback((open: boolean) => {
         if (open) {
             setActiveMenu(menuId);
-        } else if (activeMenuId === menuId) {
+        } else if (useActiveClassMenuStore.getState().activeMenuId === menuId) {
             setActiveMenu(null);
         }
-    }, [menuId]);
+    }, [menuId, setActiveMenu]);
 
     const open = (entry: ClassEvaluationEntry) => {
         impact('light');

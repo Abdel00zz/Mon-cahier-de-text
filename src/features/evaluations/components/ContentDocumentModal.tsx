@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
@@ -180,35 +181,26 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
-        <div role="tablist" aria-label={heading ?? t('documentPreview.heading')}
-          dir={isRtl ? 'rtl' : 'ltr'} data-tab={tab} className="content-document-tabs">
-          {(['preview', 'source'] as const).map((value) => {
-            const isActive = tab === value;
-            return (
-              <button
+        <TabsPrimitive.Root value={tab} onValueChange={next => setTab(next as 'source' | 'preview')} dir={isRtl ? 'rtl' : 'ltr'}>
+          <TabsPrimitive.List
+            aria-label={heading ?? t('documentPreview.heading')}
+            dir={isRtl ? 'rtl' : 'ltr'}
+            data-tab={tab}
+            className="content-document-tabs"
+          >
+            {(['preview', 'source'] as const).map((value) => (
+              <TabsPrimitive.Trigger
                 key={value}
-                type="button"
-                role="tab"
+                value={value}
                 id={`${tabsId}-${value}`}
                 aria-controls={`${tabsId}-panel`}
-                aria-selected={isActive}
-                tabIndex={isActive ? 0 : -1}
-                onClick={() => setTab(value)}
-                onKeyDown={event => {
-                  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-                  event.preventDefault();
-                  const next = event.key === 'Home' ? 'preview' : event.key === 'End' ? 'source'
-                    : value === 'preview' ? 'source' : 'preview';
-                  window.document.getElementById(`${tabsId}-${next}`)?.focus();
-                  setTab(next);
-                }}
                 className="content-document-tab"
               >
                 {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
-              </button>
-            );
-          })}
-        </div>
+              </TabsPrimitive.Trigger>
+            ))}
+          </TabsPrimitive.List>
+        </TabsPrimitive.Root>
 
         <div key={tab} id={`${tabsId}-panel`} role="tabpanel" className="content-document-panel"
           aria-labelledby={`${tabsId}-${tab}`} tabIndex={tab === 'preview' ? 0 : -1}>

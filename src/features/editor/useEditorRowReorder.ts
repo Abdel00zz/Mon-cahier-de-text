@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { clamp } from 'es-toolkit';
 
 type Side = 'before' | 'after';
 type Reorder = (sourceKey: string, targetKey: string, side: Side) => boolean;
@@ -169,17 +170,17 @@ export function useEditorRowReorder(
       if (ended || !current.ghost) return;
       const vp = viewport();
       // Keep the preview inside the visual viewport and above the finger.
-      const previewWidth = Math.max(0, Math.min(260, vp.width - 24));
-      const previewX = Math.max(vp.left + 12, Math.min(x + 16, vp.left + vp.width - previewWidth - 12));
-      const previewY = Math.max(vp.top + 12, Math.min(y - (touch ? 84 : 30), vp.top + vp.height - 72));
+      const previewWidth = clamp(vp.width - 24, 0, 260);
+      const previewX = clamp(x + 16, vp.left + 12, Math.max(vp.left + 12, vp.left + vp.width - previewWidth - 12));
+      const previewY = clamp(y - (touch ? 84 : 30), vp.top + 12, Math.max(vp.top + 12, vp.top + vp.height - 72));
       const toolbar = document.querySelector<HTMLElement>('.editor-toolbar-row')?.getBoundingClientRect();
       const selection = document.querySelector<HTMLElement>('.selection-bar')?.getBoundingClientRect();
       const upper = Math.max(vp.top + 12, toolbar && toolbar.bottom > vp.top && toolbar.top < vp.top + 120 ? toolbar.bottom + 8 : vp.top + 12);
       const lower = Math.min(vp.top + vp.height - 16, selection && selection.top > upper ? selection.top - 8 : vp.top + vp.height - 16);
-      const edge = Math.max(24, Math.min(72, (lower - upper) / 4));
+      const edge = clamp((lower - upper) / 4, 24, 72);
       // Ease into the edge zone instead of jumping to full speed on a phone.
-      const intensity = y < upper + edge ? -Math.min(1, Math.max(0, (upper + edge - y) / edge))
-        : y > lower - edge ? Math.min(1, Math.max(0, (y - lower + edge) / edge)) : 0;
+      const intensity = y < upper + edge ? -clamp((upper + edge - y) / edge, 0, 1)
+        : y > lower - edge ? clamp((y - lower + edge) / edge, 0, 1) : 0;
       const table = rootRef.current?.getBoundingClientRect();
       const insideHorizontalBounds = table && x >= Math.max(vp.left, table.left) && x <= Math.min(vp.left + vp.width, table.right);
       const canScroll = insideHorizontalBounds && (intensity < 0 ? table.top < upper : table.bottom > lower);

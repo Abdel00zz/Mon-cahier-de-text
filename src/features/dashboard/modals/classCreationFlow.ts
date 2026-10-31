@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { ClassInfo, Cycle } from '@/types';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, normalizeOfficialClassName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
@@ -19,7 +20,7 @@ export const availableCycles = (selected: readonly Cycle[] = [], editingCycle?: 
   const preferred = normalizeTeacherCycles(selected);
   const ordered = [...preferred, ...TEACHING_CYCLES.filter(cycle => !preferred.includes(cycle))];
   if (editingCycle && TEACHING_CYCLES.includes(editingCycle) && !ordered.includes(editingCycle)) ordered.push(editingCycle);
-  return [...new Set(ordered)];
+  return uniq(ordered);
 };
 
 /**

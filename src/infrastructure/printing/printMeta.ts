@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { AbsenceSession } from '../../domain/notebook/absenceSessions';
 import { LessonsData } from '../../types.js';
 import { addDaysIso } from '../../domain/notebook/dataUtils.js';
@@ -34,12 +35,12 @@ const key = (classId: string) => `printMeta_v1_${classId}`;
 
 const normalizeDateKeys = (value: unknown): string[] => {
     if (!Array.isArray(value)) return [];
-    return Array.from(new Set(
+    return uniq(
         value
             .filter((date): date is string => typeof date === 'string')
             .map(date => date.trim())
             .filter(Boolean)
-    )).sort();
+    ).sort();
 };
 
 const normalizePrintPrefs = (value: unknown): PrintPrefs | undefined => {

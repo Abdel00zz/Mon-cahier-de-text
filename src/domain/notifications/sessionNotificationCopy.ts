@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { AppLocale, ClassInfo } from '../../types';
 import { formatLocalizedClassDisplayName } from '../../constants/class-levels';
 import { classIdentityFor } from '../classes/classIdentity';
@@ -10,7 +11,7 @@ import { conciseNotificationText } from './notificationPresentation';
 export function sessionNotificationCopy(kind: 'end' | 'missing', classIds: readonly string[],
   classes: readonly ClassInfo[], locale: AppLocale, minutes = 5): { title: string; body: string } {
   const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
-  const ids = [...new Set(classIds)];
+  const ids = uniq(classIds);
   const labels = ids.slice(0, 2).map(id => {
     const name = classes.find(item => item.id === id)?.name?.trim();
     if (!name) return bidiIsolate(t('sessionAlert.classFallback'));

@@ -576,7 +576,7 @@ export function setupMockApi(app: express.Express) {
                             ? body.title.trim().slice(0, 80)
                             : 'Message de la direction';
                         const message = {
-                            id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                            id: `admin-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
                             title,
                             body: content,
                             createdAt: new Date().toISOString(),

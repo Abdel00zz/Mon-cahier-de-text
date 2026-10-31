@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { LessonsData } from '../../types';
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { addDaysIso, parseDateInput } from '../notebook/dataUtils';
@@ -16,9 +17,9 @@ export function sessionDateKey(raw?: string): string {
   return first && parseDateInput(first) ? addDaysIso(first, 0) : '';
 }
 
-export const sessionDateKeys = (raw?: string): string[] => [...new Set(
+export const sessionDateKeys = (raw?: string): string[] => uniq(
   (raw?.match(/\d{4}-\d{2}-\d{2}|\d{1,2}[/.-]\d{1,2}[/.-]\d{4}/g) ?? []).map(sessionDateKey).filter(Boolean),
-)];
+);
 
 export function getLastNotebookDate(lessons?: LessonsData): string | undefined {
   if (!lessons || !lessons.length) return undefined;

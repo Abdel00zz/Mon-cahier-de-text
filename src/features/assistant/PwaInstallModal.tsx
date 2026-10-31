@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AppLocale } from '@/types';
 import type { PwaPlatform } from '@/platform/pwaInstall';
 
@@ -80,111 +83,91 @@ export function PwaInstallModal({
     setActiveTab(platform === 'ios' ? 'ios' : 'android');
   }, [platform, open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
   const copy = GUIDE_COPY[locale];
   const steps = activeTab === 'ios' ? copy.iosSteps : copy.androidSteps;
 
   return (
-    <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xs sm:items-center sm:p-4"
-      dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      lang={locale}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="pwa-install-modal-title"
-      onClick={onClose}
-    >
-      <div
-        className="max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl transition-all"
-        onClick={event => event.stopPropagation()}
-      >
-        <div className="flex items-center gap-3.5">
-          <img
-            src="/icons/apple-touch-icon-180.png"
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-12 shrink-0 rounded-xl border border-border/60 object-cover shadow-xs"
-          />
-          <div className="min-w-0 flex-1">
-            <h2 id="pwa-install-modal-title" className="text-base font-bold text-foreground">
-              {copy.title}
-            </h2>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-              {copy.subtitle}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-xl bg-muted/70 p-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab('ios')}
-            className={`min-h-11 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-              activeTab === 'ios'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+    <DialogPrimitive.Root open={open} onOpenChange={nextOpen => { if (!nextOpen) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-xs" />
+        <DialogPrimitive.Content
+          dir={locale === 'ar' ? 'rtl' : 'ltr'}
+          lang={locale}
+          className="fixed inset-0 z-[120] flex items-end justify-center px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] outline-none sm:items-center sm:p-4"
+          onClick={onClose}
+        >
+          <div
+            className="max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl transition-all"
+            onClick={event => event.stopPropagation()}
           >
-            {copy.iosTab}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('android')}
-            className={`min-h-11 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-              activeTab === 'android'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {copy.androidTab}
-          </button>
-        </div>
+            <div className="flex items-center gap-3.5">
+              <img
+                src="/icons/apple-touch-icon-180.png"
+                alt=""
+                width={48}
+                height={48}
+                className="h-12 w-12 shrink-0 rounded-xl border border-border/60 object-cover shadow-xs"
+              />
+              <div className="min-w-0 flex-1">
+                <DialogPrimitive.Title id="pwa-install-modal-title" className="text-base font-bold text-foreground">
+                  {copy.title}
+                </DialogPrimitive.Title>
+                <DialogPrimitive.Description className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  {copy.subtitle}
+                </DialogPrimitive.Description>
+              </div>
+            </div>
 
-        <ol className="mt-4 space-y-2.5">
-          {steps.map((step, index) => (
-            <li
-              key={index}
-              className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/60 p-3 text-xs leading-relaxed text-foreground"
+            <Tabs
+              value={activeTab}
+              onValueChange={val => setActiveTab(val as 'ios' | 'android')}
+              dir={locale === 'ar' ? 'rtl' : 'ltr'}
+              className="mt-4"
             >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
-                {index + 1}
-              </span>
-              <span className="pt-0.5">{step}</span>
-            </li>
-          ))}
-        </ol>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="ios" className="min-h-11 text-xs">
+                  {copy.iosTab}
+                </TabsTrigger>
+                <TabsTrigger value="android" className="min-h-11 text-xs">
+                  {copy.androidTab}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
-          <button
-            type="button"
-            onClick={onConfirmInstalled}
-            className="min-h-[44px] flex-1 rounded-xl bg-[#695343] px-4 py-2.5 text-xs font-semibold text-[#faf7f2] transition-transform active:scale-[0.98]"
-          >
-            {copy.confirmInstalled}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-[44px] rounded-xl border border-border bg-transparent px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            {copy.close}
-          </button>
-        </div>
-      </div>
-    </div>
+            <ol className="mt-4 space-y-2.5">
+              {steps.map((step, index) => (
+                <li
+                  key={index}
+                  className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/60 p-3 text-xs leading-relaxed text-foreground"
+                >
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="pt-0.5">{step}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+              <Button
+                type="button"
+                onClick={onConfirmInstalled}
+                className="min-h-11 flex-1 rounded-xl text-xs font-semibold"
+              >
+                {copy.confirmInstalled}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="min-h-11 rounded-xl text-xs font-medium"
+              >
+                {copy.close}
+              </Button>
+            </div>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

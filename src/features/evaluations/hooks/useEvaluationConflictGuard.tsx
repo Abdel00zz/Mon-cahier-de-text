@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { uniq } from 'es-toolkit';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -21,7 +22,7 @@ export function useEvaluationConflictGuard(slots: EvaluationSlot[], revision: un
     if (duplicate) { toast.error(conflictMessage(duplicate, locale)); return; }
     if (!conflicts.length) { commit(); return; }
     setPending({
-      message: [...new Set(conflicts.map(conflict => conflictMessage(conflict, locale)))].join('\n'),
+      message: uniq(conflicts.map(conflict => conflictMessage(conflict, locale))).join('\n'),
       commit: () => {
         if (latest.current !== revision) { toast.info(t('evaluations.conflict.stale')); return; }
         commit();

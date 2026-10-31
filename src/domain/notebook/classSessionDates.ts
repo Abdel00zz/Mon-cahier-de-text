@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { LessonsData, TimetableClockPolicy, TimetableEntry } from '@/types';
 import { classSessionsDuring, notebookSessionDates } from './absenceInjection';
 
@@ -44,7 +45,7 @@ export function resolveClassSessionDatesInRange(
   if (lessonsData) {
     const recorded = notebookSessionDates(lessonsData).filter(d => d > debut && d <= fin);
     if (recorded.length > 0) {
-      return Array.from(new Set([debut, ...recorded])).sort();
+      return uniq([debut, ...recorded]).sort();
     }
   }
 

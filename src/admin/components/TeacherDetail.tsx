@@ -3,6 +3,8 @@ import { buildAbsenceSessions, type AbsenceSession } from '../../domain/notebook
 import { migrateLessonsData } from '../../domain/notebook/dataUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
+import * as TabsPrimitive from '@radix-ui/react-tabs';
+import { uniq } from 'es-toolkit';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
@@ -528,7 +530,6 @@ const AssessmentDateEditor: React.FC<{
 };
 
 type TeacherDetailTab = 'classes' | 'assessments' | 'messages';
-const TEACHER_DETAIL_TAB_ORDER: TeacherDetailTab[] = ['classes', 'assessments', 'messages'];
 
 export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onManageTimetable: () => void; onManageEvaluationPolicy: () => void }> = ({ phone, onBack, onManageTimetable, onManageEvaluationPolicy }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
@@ -581,23 +582,6 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     /** Document du professeur en cours de relecture (lecture seule). */
     const [preview, setPreview] = useState<DocumentPreviewTarget | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
-
-    const selectTab = (tab: TeacherDetailTab, focus = false) => {
-        setActiveTab(tab);
-        if (focus) window.requestAnimationFrame(() => document.getElementById(`teacher-tab-${tab}`)?.focus());
-    };
-
-    const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, tab: TeacherDetailTab) => {
-        const currentIndex = TEACHER_DETAIL_TAB_ORDER.indexOf(tab);
-        let nextIndex: number | null = null;
-        if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % TEACHER_DETAIL_TAB_ORDER.length;
-        if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + TEACHER_DETAIL_TAB_ORDER.length) % TEACHER_DETAIL_TAB_ORDER.length;
-        if (event.key === 'Home') nextIndex = 0;
-        if (event.key === 'End') nextIndex = TEACHER_DETAIL_TAB_ORDER.length - 1;
-        if (nextIndex === null) return;
-        event.preventDefault();
-        selectTab(TEACHER_DETAIL_TAB_ORDER[nextIndex], true);
-    };
 
     const runAction = async (fn: () => Promise<string>, propagateError = false) => {
         setBusy(true);
@@ -786,7 +770,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         let absenceSessions = target.absenceSessions;
         if (mode === 'custom') {
             const available = new Set(printDates);
-            const chosen = Array.from(new Set((selectedDates ?? []).filter(date => available.has(date)))).sort();
+            const chosen = uniq((selectedDates ?? []).filter(date => available.has(date))).sort();
             if (chosen.length === 0) {
                 setActionMessage('Aucune séance valide sélectionnée.');
                 return;
@@ -987,8 +971,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         )}
                     </header>
 
-                    <div className="admin-detail__tabs sticky top-0 z-20 mb-6 overflow-x-auto rounded-2xl border border-border/80 bg-background/90 p-1.5 shadow-sm backdrop-blur-md">
-                        <div role="tablist" aria-label="Sections de la fiche professeur" aria-orientation="horizontal" className="flex min-w-max gap-1 sm:min-w-0">
+                    <TabsPrimitive.Root
+                        value={activeTab}
+                        onValueChange={next => setActiveTab(next as TeacherDetailTab)}
+                        className="admin-detail__tabs sticky top-0 z-20 mb-6 overflow-x-auto rounded-2xl border border-border/80 bg-background/90 p-1.5 shadow-sm backdrop-blur-md"
+                    >
+                        <TabsPrimitive.List aria-label="Sections de la fiche professeur" className="flex min-w-max gap-1 sm:min-w-0">
                             {([
                                 { id: 'classes', label: 'Classes & cahiers', count: classes.length, icon: BookOpen },
                                 { id: 'assessments', label: 'Devoirs', count: null, icon: CalendarCheck },
@@ -996,16 +984,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             ] as const).map(tab => {
                                 const TabIcon = tab.icon;
                                 return (
-                                    <button
+                                    <TabsPrimitive.Trigger
                                         key={tab.id}
+                                        value={tab.id}
                                         id={`teacher-tab-${tab.id}`}
-                                        type="button"
-                                        role="tab"
-                                        aria-selected={activeTab === tab.id}
                                         aria-controls={`teacher-panel-${tab.id}`}
-                                        tabIndex={activeTab === tab.id ? 0 : -1}
-                                        onClick={() => selectTab(tab.id)}
-                                        onKeyDown={event => handleTabKeyDown(event, tab.id)}
                                         className={`flex h-11 min-w-[9rem] shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-w-0 sm:flex-1 ${
                                             activeTab === tab.id
                                                 ? 'bg-card text-primary shadow-xs ring-1 ring-border'
@@ -1019,11 +1002,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                                                 {tab.count}
                                             </span>
                                         )}
-                                    </button>
+                                    </TabsPrimitive.Trigger>
                                 );
                             })}
-                        </div>
-                    </div>
+                        </TabsPrimitive.List>
+                    </TabsPrimitive.Root>
 
                     <div
                         id="teacher-panel-messages"
@@ -1108,8 +1091,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         editingClass={editingClass}
                         existingClasses={classes}
                         defaultCycle={editingClass?.cycle ?? classes[0]?.cycle ?? 'college'}
-                        teacherCycles={[...new Set(classes.map(item => item.cycle).filter((cycle): cycle is Cycle => Boolean(cycle)))]}
-                        teacherSubjects={[...new Set(classes.map(item => item.subject).filter(Boolean))]}
+                        teacherCycles={uniq(classes.map(item => item.cycle).filter((cycle): cycle is Cycle => Boolean(cycle)))}
+                        teacherSubjects={uniq(classes.map(item => item.subject).filter(Boolean))}
                         onCreate={details => handleSaveClass(details)}
                         onUpdate={(id, updates) => handleSaveClass({
                             ...updates,

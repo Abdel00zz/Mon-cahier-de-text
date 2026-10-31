@@ -1,3 +1,4 @@
+import { clamp } from 'es-toolkit';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface DualProgressBarProps {
@@ -7,7 +8,7 @@ interface DualProgressBarProps {
 }
 
 const percentage = (value: number | null | undefined) => typeof value === 'number' && Number.isFinite(value)
-  ? Math.min(100, Math.max(0, value)) : null;
+  ? clamp(value, 0, 100) : null;
 
 /** A green track marks completed work; the separate marker retains the target. */
 export function DualProgressBar({ value, target, label }: DualProgressBarProps) {

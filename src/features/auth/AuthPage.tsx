@@ -1,6 +1,4 @@
 import React, {
-  lazy,
-  Suspense,
   useEffect,
   useId,
   useRef,
@@ -24,6 +22,7 @@ import {
 import type { AppLocale } from "@/types";
 import { AuthShowcase } from "./AuthShowcase";
 import { LandingPage } from "./LandingPage";
+import { RegistrationOnboarding } from "./RegistrationOnboarding";
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { prepareGoogleAuth } from '@/platform/googleAuth';
 import { apiFetch } from '@/platform/nativeHttp';
@@ -47,11 +46,6 @@ import {
   type AuthView,
 } from "./authNavigation";
 
-const RegistrationOnboarding = lazy(() =>
-  import("./RegistrationOnboarding").then((module) => ({
-    default: module.RegistrationOnboarding,
-  })),
-);
 type AuthLocale = Extract<AppLocale, "ar" | "fr">;
 const AUTH_COPY = {
   fr: {
@@ -513,26 +507,17 @@ export const AuthPage: React.FC<{
         />
       )}
       {view === "onboarding" && (
-        <Suspense
-          fallback={
-            <main className="mx-auto w-full max-w-3xl p-6" aria-busy="true">
-              <div className="mb-6 h-8 w-2/3 rounded-lg skeleton-shimmer" />
-              <div className="keep-surface h-64 skeleton-shimmer" />
-            </main>
-          }
-        >
-          <RegistrationOnboarding
-            locale={displayLocale}
-            draft={draft}
-            onChange={(next) => {
-              setDraft(next);
-              setSetup(null);
-              setupRef.current = null;
-            }}
-            onComplete={completePreparation}
-            onLogin={() => navigateTo("auth", "login")}
-          />
-        </Suspense>
+        <RegistrationOnboarding
+          locale={displayLocale}
+          draft={draft}
+          onChange={(next) => {
+            setDraft(next);
+            setSetup(null);
+            setupRef.current = null;
+          }}
+          onComplete={completePreparation}
+          onLogin={() => navigateTo("auth", "login")}
+        />
       )}
       {view === "auth" && (
         <div className="auth-view-enter auth-access-layout">

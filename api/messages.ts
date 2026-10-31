@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { clamp } from 'es-toolkit';
 import { conversationSignature, pendingAdminMessages, pendingTeacherRequests } from '../src/domain/messages/conversation.js';
 import { recordWhatsAppContact, sendTeacherRequest } from './_lib/teacherMessages.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
@@ -103,7 +104,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const { phone } = await requireUser(req);
         if (req.headers['x-workspace-owner'] !== undefined) assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
         if (req.method === 'GET') {
-            const wait = Math.min(Math.max(Number(getQueryParam(req, 'wait')) || 0, 0), LONG_POLL_LIMIT_MS);
+            const wait = clamp(Number(getQueryParam(req, 'wait')) || 0, 0, LONG_POLL_LIMIT_MS);
             const since = (getQueryParam(req, 'since') ?? '').slice(0, MAX_SIGNATURE_LENGTH);
             return await handleList(res, phone, wait, since);
         }

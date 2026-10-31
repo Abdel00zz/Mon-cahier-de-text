@@ -1,9 +1,11 @@
+import { clamp as esClamp } from 'es-toolkit';
+
 const FRAME_MS = 1000 / 60;
-const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
+const clamp = (value: number, limit: number) => esClamp(value, -limit, limit);
 
 /** Lerp à 0,1 par image à 60 Hz, corrigé du temps pour garder la même réponse à 120 Hz. */
 export function motionLerp(current: number, target: number, elapsedMs: number): number {
-  const alpha = 1 - Math.pow(0.9, Math.max(0, Math.min(elapsedMs, 64)) / FRAME_MS);
+  const alpha = 1 - Math.pow(0.9, esClamp(elapsedMs, 0, 64) / FRAME_MS);
   return current + (target - current) * alpha;
 }
 
@@ -12,7 +14,7 @@ export function attachMotionSurface(root: HTMLElement | SVGElement, layer: HTMLE
   const doc = root.ownerDocument;
   const view = doc.defaultView;
   if (!view) return () => {};
-  const travel = Number.isFinite(travelPx) ? Math.max(0, Math.min(travelPx, 12)) : 5;
+  const travel = Number.isFinite(travelPx) ? esClamp(travelPx, 0, 12) : 5;
   const reduced = view.matchMedia('(prefers-reduced-motion: reduce)');
   const fine = view.matchMedia('(any-hover: hover) and (any-pointer: fine)');
   let visible = false;

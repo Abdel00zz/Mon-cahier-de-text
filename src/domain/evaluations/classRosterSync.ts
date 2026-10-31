@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { AppConfig, ClassRoster } from '../../types.js';
 import { MAX_STUDENTS, normalizeStudentNames, studentIdentityKey } from './studentRoster.js';
 import { dequal } from 'dequal';
@@ -72,7 +73,7 @@ export function historicalStudentNames(config: Partial<AppConfig>, classId: stri
     const records = [...Object.values(config.assessmentParticipants?.[classId] ?? {}),
         ...Object.values(config.assessmentAbsences?.[classId] ?? {}),
         ...(config.pedagogicalEvents?.[classId] ?? []).flatMap(event => event.students ? [event.students] : [])];
-    return [...new Set(records.flatMap(record => record.names))].slice(0, MAX_STUDENTS);
+    return uniq(records.flatMap(record => record.names)).slice(0, MAX_STUDENTS);
 }
 
 export function classRosterPatch(config: Partial<AppConfig>, classId: string, base: string[], names: string[]): Partial<AppConfig> {

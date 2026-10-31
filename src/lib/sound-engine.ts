@@ -1,3 +1,5 @@
+import { clamp } from 'es-toolkit';
+
 /**
  * Sound Design Procédural en Temps Réel (Web Audio API)
  * Synthèse sonore pure par code sans aucun fichier audio externe.
@@ -89,7 +91,7 @@ class SoundEngine {
   }
 
   public setVolume(volume: number) {
-    this.volume = Math.max(0, Math.min(1, volume));
+    this.volume = clamp(volume, 0, 1);
     if (this.masterGain && this.ctx && !this.muted) {
       this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
     }

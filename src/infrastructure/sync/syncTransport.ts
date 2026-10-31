@@ -1,3 +1,4 @@
+import { clamp } from 'es-toolkit';
 import { apiFetch } from '../../platform/nativeHttp';
 import { MAX_SYNC_EXPANDED_BYTES, MAX_SYNC_WIRE_BYTES, SYNC_ENCODING } from './syncProtocol';
 export const syncJsonBytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
@@ -66,7 +67,7 @@ export const retryDelayMs = (attempt: number, retryAfter?: string | null, now = 
   const requested = retryAfter
     ? (Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - now)
     : 0;
-  const backoff = Math.min(120_000, 5_000 * 2 ** Math.min(Math.max(0, attempt), 5));
+  const backoff = Math.min(120_000, 5_000 * 2 ** clamp(attempt, 0, 5));
   return Math.min(600_000, Math.max(backoff * (0.8 + random * 0.4), Number.isFinite(requested) ? requested : 0));
 };
 

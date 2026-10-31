@@ -2,6 +2,7 @@ import { registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 import type { AppLocale } from '../types';
 import { readWorkspaceScope, captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { requestSyncJson } from '../infrastructure/sync/syncTransport';
+import { clearInboxBadge } from '../infrastructure/push/appBadge';
 import { pendingNativePushCleanup, rememberNativePushCleanup, forgetNativePushCleanup } from '../infrastructure/push/nativePushCleanup';
 
 interface NativeDeviceState { available: boolean; token?: string; binding?: string; installationId?: string }
@@ -83,7 +84,7 @@ export async function disconnectNativePush(): Promise<boolean> {
   const current = captureWorkspaceLease();
   let device: NativeDeviceState | undefined;
   try { if (owner) device = await NativePush.getState({ owner }); }
-  finally { if (current()) await (await import('../infrastructure/push/appBadge')).clearInboxBadge(); }
+  finally { if (current()) await clearInboxBadge(); }
   if (!owner || !current()) return false;
   if (device?.token && device.binding) rememberNativePushCleanup(owner, device.token, device.binding);
   return retryCleanup(owner, current, device?.token && device.binding ? { token: device.token, binding: device.binding } : undefined);

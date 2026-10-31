@@ -13,6 +13,7 @@ import type { PushNotificationKind } from '../../domain/notifications/notificati
 import type { AppLocale } from '../../types';
 import { notificationPresentation } from '../../domain/notifications/notificationPresentation';
 import { readWorkspaceScope } from '../storage/accountWorkspace';
+import { clearInboxBadge, enableInboxBadge } from './appBadge';
 import { pendingNativePushCleanup } from './nativePushCleanup';
 
 export const NOTIFICATION_STATE_EVENT = 'cdt-notification-state-change';
@@ -121,13 +122,13 @@ const requestNotificationPermission = async (): Promise<PushNotificationState> =
 /** Autorisation système, puis inscription native si la plateforme le permet. */
 export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
     if (Capacitor.isNativePlatform()) {
-        (await import('./appBadge')).enableInboxBadge();
+        enableInboxBadge();
         const state = await (await import('../../platform/nativeNotifications')).nativeNotificationState(true);
         emitNotificationStateChange();
         return state;
     }
     const permissionPromise = requestNotificationPermission();
-    (await import('./appBadge')).enableInboxBadge();
+    enableInboxBadge();
     const state = await permissionPromise;
     emitNotificationStateChange();
     return state;
@@ -156,7 +157,7 @@ export const unsubscribeFromPush = async (): Promise<PushUnsubscribeResult> => {
         return { ok: serverUnregistered, hadSubscription: true, serverUnregistered, localUnsubscribed: true };
     }
     // Web : plus aucun abonnement distant à retirer, seul le badge reste à nettoyer.
-    await (await import('./appBadge')).clearInboxBadge();
+    await clearInboxBadge();
     emitNotificationStateChange();
     return { ok: true, hadSubscription: false, serverUnregistered: true, localUnsubscribed: true };
 };

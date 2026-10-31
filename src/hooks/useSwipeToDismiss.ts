@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, type PointerEvent, type MouseEvent } from 'react';
+import { clamp } from 'es-toolkit';
 import { sheetReleaseAction, sheetReleaseVelocity, type SheetPointerSample } from '@/platform/sheetGesture';
 
 interface SwipeToDismissOptions {
@@ -131,7 +132,7 @@ export const useSwipeToDismiss = (options: SwipeToDismissOptions) => {
     offset.current = deltaY < 0
       ? -Math.min(Math.abs(deltaY) * .24, 48)
       : Math.min(deltaY, current.height * .8);
-    const progress = Math.min(Math.max(offset.current / (current.height * 0.4 || 200), 0), 1);
+    const progress = clamp(offset.current / (current.height * 0.4 || 200), 0, 1);
 
     // Détection de snap magnétique prédictif avec micro-retour haptique
     const dismissThreshold = Math.min(112, current.height * 0.24);

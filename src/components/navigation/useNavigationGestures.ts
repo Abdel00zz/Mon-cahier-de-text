@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
+import { clamp } from 'es-toolkit';
 import { navigationSwipeTarget, type TabType, type WorkspaceTab } from './navigationConfig';
 
 /** A horizontal gesture must dominate vertical movement before changing tabs. */
@@ -55,7 +56,7 @@ export function useSidebarGesture(expanded: boolean, isRtl: boolean, close: () =
       if (!expanded || !start.current || !ref.current) return;
       const dx = event.touches[0].clientX - start.current.x;
       if (Math.abs(dx) <= Math.abs(event.touches[0].clientY - start.current.y)) return;
-      delta.current = isRtl ? Math.min(100, Math.max(0, dx)) : Math.max(-100, Math.min(0, dx));
+      delta.current = isRtl ? clamp(dx, 0, 100) : clamp(dx, -100, 0);
       ref.current.style.transform = `translateX(${delta.current}px)`;
     },
     onTouchEnd: () => { const shouldClose = Math.abs(delta.current) > 40; reset(); if (shouldClose) close(); },

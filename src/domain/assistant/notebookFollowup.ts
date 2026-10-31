@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import type { AppConfig, ClassInfo, LessonsData, ScheduleSlot } from '../../types';
 import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, listExpectedSessionDates, todayInMorocco, type HolidayCalendar } from '../calendar/calendar';
 import { DEFAULT_INACTIVITY_DAYS } from '../calendar/lateness';
@@ -30,7 +31,7 @@ function recordedSessionDates(lessons: LessonsData): readonly string[] {
     onBudgetExceeded: () => { throw new Error('Notebook exceeds analysis limits'); },
   });
   // A whole class often shares one date: parse each distinct raw value only once.
-  const result = [...new Set([...rawDates].flatMap(raw => sessionDateKeys(raw)))].sort();
+  const result = uniq([...rawDates].flatMap(raw => sessionDateKeys(raw))).sort();
   dateCache.set(lessons, result);
   return result;
 }

@@ -1,6 +1,8 @@
+import { uniq } from 'es-toolkit';
+
 /** Literal highlights only: no HTML/Markdown parsing, including class names supplied by users. */
 export function companionTextParts(text: string, highlights: readonly string[]) {
-  const terms = [...new Set(highlights.filter(Boolean))].sort((a, b) => b.length - a.length);
+  const terms = uniq(highlights.filter(Boolean)).sort((a, b) => b.length - a.length);
   const parts: { text: string; strong: boolean }[] = [];
   let cursor = 0;
   while (cursor < text.length) {

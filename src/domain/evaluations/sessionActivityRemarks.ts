@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit';
 import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
@@ -43,7 +44,7 @@ export function buildSessionRemarkEntries(config: ActivitySettings, classId: str
   const removed = new Set(config.removedAssessments?.[classId] ?? []);
   const dates = config.assessmentDates?.[classId] ?? {};
   const manual = config.manualAssessments?.[classId] ?? [];
-  const knownIds = [...new Set([...Object.keys(dates), ...manual.map(item => item.id)])];
+  const knownIds = uniq([...Object.keys(dates), ...manual.map(item => item.id)]);
   const canonical = (id: string) => {
     if (id.includes(':')) return id;
     const candidates = knownIds.filter(key => key.endsWith(`:${id}`));
@@ -102,9 +103,9 @@ export function buildSessionActivityRemarks(config: ActivitySettings, classId: s
 
 export function sessionRemarkTextMap(entries: ReadonlyMap<string, readonly SessionRemarkEntry[]>): Map<string, string> {
   return new Map([...entries]
-    .map(([date, entries]) => [date, [...new Set(entries.filter(entry => !entry.hidden && entry.text.trim()).map(entry => entry.text.trim()))].join('\n')] as const)
+    .map(([date, entries]) => [date, uniq(entries.filter(entry => !entry.hidden && entry.text.trim()).map(entry => entry.text.trim())).join('\n')] as const)
     .filter(([, text]) => !!text));
 }
 
 export const remarksForSessionDates = (remarks: ReadonlyMap<string, string>, raw?: string): string | undefined =>
-  [...new Set(sessionDateKeys(raw).flatMap(date => remarks.get(date)?.split('\n') ?? []))].join('\n') || undefined;
+  uniq(sessionDateKeys(raw).flatMap(date => remarks.get(date)?.split('\n') ?? [])).join('\n') || undefined;

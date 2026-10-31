@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { dequal } from 'dequal';
+import { uniq } from 'es-toolkit';
 import { toast } from 'sonner';
 import { ClassDraftSchema, type ClassDraftValues } from '@/domain/validation/schemas';
 import { parseStudentNames } from '@/domain/evaluations/studentRoster';
@@ -90,7 +91,7 @@ const COPY: Record<AppLocale, {
   },
 };
 
-const uniqueValues = (values: string[]) => Array.from(new Set(values.map(value => value.trim()).filter(Boolean)));
+const uniqueValues = (values: string[]) => uniq(values.map(value => value.trim()).filter(Boolean));
 const EMPTY_SUBJECTS: string[] = [];
 const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];

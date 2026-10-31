@@ -28,6 +28,7 @@ import { startAppUpdateChecks } from '../platform/appUpdates';
 import { initAppViewport } from '../platform/appViewport';
 import { initNativeRuntime } from '../platform/nativeRuntime';
 import { initPwaInstall } from '../platform/pwaInstall';
+import { requestPersistentStorage } from '../infrastructure/storage/safeStorage';
 import '../styles/index.css';
 
 // Un onglet reste ouvert pendant un deploiement peut demander un fragment
@@ -67,7 +68,7 @@ import.meta.hot?.dispose(() => {
 });
 void initNativeRuntime().catch(error => console.warn('Native initialization failed', error));
 // Protège les cahiers locaux contre l'éviction automatique du navigateur.
-void import('../infrastructure/storage/safeStorage').then(module => module.requestPersistentStorage()).catch(() => {});
+void requestPersistentStorage().catch(() => {});
 startAppUpdateChecks();
 
 const rootElement = document.getElementById('root');

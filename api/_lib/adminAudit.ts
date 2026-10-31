@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { clamp } from 'es-toolkit';
 import { appendAudit, auditDetailFor, normalizeAudit, type AdminAuditEntry } from '../../src/domain/admin/auditLog.js';
 import { KEYS, type RedisClient } from './redis.js';
 
@@ -31,4 +32,4 @@ export const recordAdminAudit = async (
 };
 
 export const readAdminAudit = async (redis: RedisClient, limit = 100): Promise<AdminAuditEntry[]> =>
-  normalizeAudit(await redis.get(KEYS.adminAudit)).slice(0, Math.max(1, Math.min(limit, 300)));
+  normalizeAudit(await redis.get(KEYS.adminAudit)).slice(0, clamp(limit, 1, 300));

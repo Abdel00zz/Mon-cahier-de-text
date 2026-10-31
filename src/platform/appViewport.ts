@@ -1,3 +1,5 @@
+import { clamp } from 'es-toolkit';
+
 const isIOSDevice = (): boolean => {
     const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
     return /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -37,7 +39,7 @@ export const initAppViewport = (): (() => void) => {
         } else if (!editable || window.innerHeight > restingHeight) {
             restingHeight = window.innerHeight;
         }
-        const threshold = Math.max(100, Math.min(160, restingHeight * 0.22));
+        const threshold = clamp(restingHeight * 0.22, 100, 160);
         const keyboardOpen = editable && (viewport?.scale ?? 1) === 1
             && Math.max(window.innerHeight - height, restingHeight - height) > threshold;
         const values = { '--app-viewport-height': `${height}px`, '--app-viewport-offset-top': `${Math.round(viewport?.offsetTop ?? 0)}px` };

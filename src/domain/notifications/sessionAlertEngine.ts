@@ -1,3 +1,4 @@
+import { clamp } from 'es-toolkit';
 import type { AppConfig, ClassInfo } from '../../types.js';
 import { getDaySessionBlocks, getDayTeachingBlocks, type SessionBlock } from '../calendar/timetable.js';
 import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
@@ -7,7 +8,7 @@ import { sessionReminderMinutes } from './sessionReminderTiming.js';
 
 interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number; remainingMinutes?: number }
 const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
-  Number.isFinite(value) ? Math.min(max, Math.max(1, Math.round(value!))) : fallback;
+  Number.isFinite(value) ? clamp(Math.round(value!), 1, max) : fallback;
 export const moroccoClockMinutes = (now: Date, zone = 'Africa/Casablanca'): number => {
   const parts = dateTimeFormat('en', { timeZone: zone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(now);
   const part = (type: string) => Number(parts.find(value => value.type === type)?.value ?? 0);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { uniq } from 'es-toolkit';
 import { TYPE_MAP, contentBadgeClass } from '@/constants';
 import { ChevronUp, ChevronDown } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,7 @@ interface DescriptionVisibilityControlProps {
 }
 
 /** types de contenu descriptibles (dédupliqués depuis TYPE_MAP) */
-const getUniqueTypes = (): string[] => Array.from(new Set(Object.values(TYPE_MAP)));
+const getUniqueTypes = (): string[] => uniq(Object.values(TYPE_MAP));
 
 /** sélection par défaut lorsqu'on bascule en mode « Sélection » sans choix préalable */
 const DEFAULT_SELECTED = ['exemple', 'application'];

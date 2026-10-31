@@ -1,4 +1,5 @@
 import React, { useId, useMemo, useState } from 'react';
+import { uniq } from 'es-toolkit';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +14,7 @@ import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { ContentDirection } from '@/types';
 import type { ContentDraft, ContentField } from '@/domain/notebook/contentDraft';
 
-const ALL_TYPES = [...new Set(Object.values(TYPE_MAP))];
+const ALL_TYPES = uniq(Object.values(TYPE_MAP));
 interface ContentFieldsProps {
   value: ContentDraft;
   onChange: (value: ContentDraft) => void;

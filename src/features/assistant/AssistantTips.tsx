@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { range, shuffle } from 'es-toolkit';
 import type { AppLocale } from '../../types';
 import { PEDAGOGICAL_TIPS, pedagogicalTipForDay } from '../../constants/pedagogicalTips';
 import { CompanionText } from './CompanionText';
@@ -8,11 +9,7 @@ let memoryDeck: number[] = [];
 let lastPickedOffset: number | null = null;
 
 function createShuffledDeck(total: number, avoidFirst?: number | null): number[] {
-  const deck = Array.from({ length: total }, (_, i) => i);
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
+  const deck = shuffle(range(total));
   if (avoidFirst !== null && avoidFirst !== undefined && deck.length > 1 && deck[0] === avoidFirst) {
     const swapIdx = 1 + Math.floor(Math.random() * (deck.length - 1));
     [deck[0], deck[swapIdx]] = [deck[swapIdx], deck[0]];

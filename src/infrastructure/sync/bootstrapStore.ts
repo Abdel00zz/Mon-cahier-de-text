@@ -1,29 +1,28 @@
+import { createStore } from 'zustand/vanilla';
 import { IDLE_BOOTSTRAP, type BootstrapSignals } from '../../domain/sync/bootstrapProgress';
 
 /**
- * Signaux du premier chargement, partagés hors React : la synchronisation les
- * marque depuis un contexte, l'écran de chargement les lit. Les étapes ne
- * reviennent jamais en arrière pendant la session, sinon la barre reculerait.
+ * Signaux du premier chargement, partagés hors React via Zustand vanilla :
+ * la synchronisation les marque depuis un contexte, l'écran de chargement les lit.
+ * Les étapes ne reviennent jamais en arrière pendant la session, sinon la barre reculerait.
  */
-let signals: BootstrapSignals = IDLE_BOOTSTRAP;
-const listeners = new Set<() => void>();
+const vanillaBootstrapStore = createStore<BootstrapSignals>(() => IDLE_BOOTSTRAP);
 
 const publish = (next: BootstrapSignals) => {
-    if (next.timetable === signals.timetable && next.classes === signals.classes) return;
-    signals = next;
-    listeners.forEach(listener => listener());
+    const current = vanillaBootstrapStore.getState();
+    if (next.timetable === current.timetable && next.classes === current.classes) return;
+    vanillaBootstrapStore.setState(next, true);
 };
 
 export const bootstrapStore = {
     subscribe(listener: () => void): () => void {
-        listeners.add(listener);
-        return () => { listeners.delete(listener); };
+        return vanillaBootstrapStore.subscribe(() => listener());
     },
-    getSnapshot: (): BootstrapSignals => signals,
+    getSnapshot: (): BootstrapSignals => vanillaBootstrapStore.getState(),
     /** L'emploi du temps et les réglages viennent d'être appliqués localement. */
-    markTimetable: () => publish({ ...signals, timetable: true }),
+    markTimetable: () => publish({ ...vanillaBootstrapStore.getState(), timetable: true }),
     /** La liste des classes vient d'être appliquée localement. */
-    markClasses: () => publish({ ...signals, classes: true }),
+    markClasses: () => publish({ ...vanillaBootstrapStore.getState(), classes: true }),
     /** Déconnexion ou changement de compte : le prochain chargement repart de zéro. */
     reset: () => publish(IDLE_BOOTSTRAP),
 };

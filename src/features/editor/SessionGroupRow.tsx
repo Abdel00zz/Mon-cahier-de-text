@@ -1,4 +1,5 @@
 import React from 'react';
+import { uniq } from 'es-toolkit';
 import type { Indices } from '@/types';
 import type { ContentDateOrder } from '@/domain/calendar/dateOrder';
 import { getMergeableDate, getMergeableRemark, type FlatDataItem } from '@/domain/notebook/tableRows';
@@ -83,12 +84,12 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
         });
     };
     const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
-    const uniqueDates = Array.from(new Set(allDates));
+    const uniqueDates = uniq(allDates);
     const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
     const hasWarning = warnings.length > 0;
     // Une seule source de vérité : la séance fusionnée porte sa remarque
     // unifiée et centrée pour tout le groupe de contenus.
-    const allRemarks = Array.from(new Set(items.map(getMergeableRemark).filter(Boolean)));
+    const allRemarks = uniq(items.map(getMergeableRemark).filter(Boolean));
     const sharedRemark = items[0].dateMerge?.sharedRemark ?? allRemarks.join('\n');
     const displayRemark = sharedRemark || allRemarks.join('\n');
     const homeworkNote = splitRemarkContent(displayRemark).homeworkLine;
