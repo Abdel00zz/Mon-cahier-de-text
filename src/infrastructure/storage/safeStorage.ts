@@ -12,7 +12,7 @@ const JOURNAL_PREFIX = 'editJournal_v1_';
 const JOURNAL_KEEP_UNDER_PRESSURE = 10;
 const MAX_QUARANTINE_COPIES = 3;
 
-export class LocalQuotaError extends Error {
+class LocalQuotaError extends Error {
   constructor(key: string, cause?: unknown) {
     super(`Espace de stockage plein (${key}). Les données précédentes sont conservées.`, { cause });
     this.name = 'LocalQuotaError';
@@ -96,13 +96,6 @@ export function removeQuarantine(classId: string, storage: WritableStorage = loc
   for (const key of storageKeys(storage)) if (key.startsWith(prefix)) storage.removeItem(key);
 }
 
-export interface StorageHealth {
-  persisted: boolean | null;
-  usageBytes: number | null;
-  quotaBytes: number | null;
-  quarantinedCopies: number;
-}
-
 /** Demande la persistance (protège contre l'éviction automatique) ; sans effet si non supporté. */
 export async function requestPersistentStorage(): Promise<boolean | null> {
   const manager = typeof navigator !== 'undefined' ? navigator.storage : undefined;
@@ -112,19 +105,4 @@ export async function requestPersistentStorage(): Promise<boolean | null> {
   } catch {
     return null;
   }
-}
-
-export async function readStorageHealth(storage: WritableStorage = localStorage): Promise<StorageHealth> {
-  const manager = typeof navigator !== 'undefined' ? navigator.storage : undefined;
-  let persisted: boolean | null = null;
-  let usageBytes: number | null = null;
-  let quotaBytes: number | null = null;
-  try { persisted = manager?.persisted ? await manager.persisted() : null; } catch { /* non supporté */ }
-  try {
-    const estimate = manager?.estimate ? await manager.estimate() : undefined;
-    usageBytes = estimate?.usage ?? null;
-    quotaBytes = estimate?.quota ?? null;
-  } catch { /* non supporté */ }
-  const quarantinedCopies = storageKeys(storage).filter(key => key.startsWith(QUARANTINE_PREFIX)).length;
-  return { persisted, usageBytes, quotaBytes, quarantinedCopies };
 }
