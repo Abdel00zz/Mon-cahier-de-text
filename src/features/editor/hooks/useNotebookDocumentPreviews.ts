@@ -5,6 +5,7 @@ import { useMoroccoToday } from '../../../hooks/useMoroccoToday';
 import { findNotebookAssessments, linkAssessments, notebookDocumentPreviews, type NotebookDocumentPreview } from '../../../domain/evaluations/assessmentSync';
 import { activityDocumentPreviews } from '@/domain/evaluations/activityDocumentPreviews';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { buildLessonRows } from '@/domain/notebook/lessonRows';
 
 /*
  * Sujets écrits par le professeur, rangés par la LIGNE du cahier qui les porte.
@@ -25,6 +26,31 @@ import { useLocale } from '@/i18n/LocaleProvider';
  *  chaque rendu (sinon les mémoïsations de la table se cassent). */
 const NO_PREVIEWS = { rows: new Map<string, NotebookDocumentPreview>(), sessions: new Map<string, NotebookDocumentPreview[]>() };
 
+const EVALUATION_TYPES = new Set<string>([
+    'devoir_maison',
+    'maison',
+    'controle_continu',
+    'controle',
+    'controle_court',
+    'controle_global',
+    'oral',
+    'evaluation_diagnostic',
+    'correction_devoir_maison',
+    'correction_controle_continu',
+    'examen_blanc',
+    'olympiade',
+    'concours',
+    'colle',
+]);
+
+const hasInlineAssessmentContent = (lessons: LessonsData): boolean => {
+    return buildLessonRows(lessons).some(row => {
+        const isEval = EVALUATION_TYPES.has(row.elementType)
+            || ('type' in row.data && typeof row.data.type === 'string' && EVALUATION_TYPES.has(row.data.type));
+        return isEval && 'description' in row.data && typeof row.data.description === 'string' && row.data.description.trim().length > 0;
+    });
+};
+
 export const useNotebookDocumentPreviews = (
     classInfo: ClassInfo,
     config: AppConfig,
@@ -35,14 +61,36 @@ export const useNotebookDocumentPreviews = (
     const events = config.pedagogicalEvents?.[classInfo.id];
     const { assessments } = useClassAssessments(classInfo, config);
     const today = useMoroccoToday();
-    const hasDocuments = (!!documents && Object.keys(documents).length > 0) || events?.some(event => event.document?.source.trim());
+    const hasDocuments = (!!documents && Object.keys(documents).length > 0)
+        || events?.some(event => event.document?.source?.trim())
+        || hasInlineAssessmentContent(lessonsData);
 
     return useMemo(() => {
         if (!hasDocuments || lessonsData.length === 0) return NO_PREVIEWS;
         const entries = findNotebookAssessments(lessonsData);
         const links = linkAssessments(assessments, entries, today);
         const previews = activityDocumentPreviews(config, classInfo.id, lessonsData, links, t);
-        notebookDocumentPreviews(links.filter(link => link.planned.type !== 'maison'), documents).forEach((preview, key) => previews.rows.set(key, preview));
+        notebookDocumentPreviews(links, documents).forEach((preview, key) => previews.rows.set(key, preview));
+
+        // Détection de contenu direct saisi sur la ligne d'évaluation du cahier (sujet ou énoncé en description)
+        const notebookRows = buildLessonRows(lessonsData);
+        for (const row of notebookRows) {
+            if (previews.rows.has(row.key)) continue;
+            const isEvaluation = EVALUATION_TYPES.has(row.elementType)
+                || ('type' in row.data && typeof row.data.type === 'string' && EVALUATION_TYPES.has(row.data.type));
+            if (!isEvaluation) continue;
+            const desc = 'description' in row.data && typeof row.data.description === 'string' ? row.data.description.trim() : '';
+            if (!desc) continue;
+            const rowTitle = ('title' in row.data && typeof row.data.title === 'string' && row.data.title.trim())
+                ? row.data.title.trim()
+                : (t(`evaluations.type.${row.elementType}`) || 'Document');
+            previews.rows.set(row.key, {
+                document: { source: desc, updatedAt: '' },
+                title: rowTitle,
+                assessmentId: row.data._tempId ?? row.key,
+            });
+        }
+
         return previews;
     }, [hasDocuments, documents, assessments, lessonsData, today, config, classInfo.id, t]);
 };

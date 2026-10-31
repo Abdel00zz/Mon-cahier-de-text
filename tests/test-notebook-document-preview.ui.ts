@@ -5,7 +5,11 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { ContentRenderer } from '../src/features/editor/ContentRenderer';
-import type { NotebookDocumentPreview } from '../src/domain/evaluations/assessmentSync';
+import { activityDocumentPreviews } from '../src/domain/evaluations/activityDocumentPreviews';
+import { findNotebookAssessments, linkAssessments, notebookDocumentPreviews, type NotebookDocumentPreview } from '../src/domain/evaluations/assessmentSync';
+import { homeworkCorrectionDocumentId } from '../src/domain/evaluations/homeworkIds';
+import type { AppConfig, LessonsData } from '../src/types';
+import type { PlannedAssessment } from '../src/domain/evaluations/assessments';
 
 /*
  * Pastille « Document » dans la table du cahier.
@@ -112,3 +116,116 @@ test('la fenêtre affiche une phrase et le document sans contexte ajouté', () =
     assert.match(messages, /'documentPreview\.heading': 'Votre document pédagogique'/);
     assert.equal(messages.includes("'documentPreview.lede'"), false, 'aucune clé abandonnée derrière elle');
 });
+
+test('détection du sujet et corrigé de devoir maison et contrôle continu dans la table', () => {
+    const plannedHomework: PlannedAssessment = {
+        id: '2026-2027:s1-maison1',
+        dateISO: '2026-10-05',
+        type: 'maison',
+        num: 1,
+        schoolYear: '2026-2027',
+        semestre: 1,
+        label: 'Devoir maison 1',
+        semaine: 5,
+        confidence: 'high',
+        predictionStatus: 'manual',
+        predictionReason: 'test',
+    };
+    const plannedControle: PlannedAssessment = {
+        id: '2026-2027:s1-controle1',
+        dateISO: '2026-10-15',
+        type: 'controle',
+        num: 1,
+        schoolYear: '2026-2027',
+        semestre: 1,
+        label: 'Contrôle continu 1',
+        semaine: 6,
+        confidence: 'high',
+        predictionStatus: 'manual',
+        predictionReason: 'test',
+    };
+
+    const lessons: LessonsData = [
+        { type: 'devoir_maison', title: 'Devoir maison 1', date: '2026-10-05' },
+        { type: 'correction_devoir_maison', title: 'Correction du devoir maison 1', date: '2026-10-19' },
+        { type: 'controle_continu', title: 'Contrôle continu 1', date: '2026-10-15' },
+    ];
+
+    const config: AppConfig = {
+        establishmentName: '',
+        defaultTeacherName: '',
+        printShowDescriptions: true,
+        assessmentDocuments: {
+            c1: {
+                '2026-2027:s1-maison1': { source: 'Sujet du devoir maison 1', updatedAt: '2026-10-05T08:00:00Z' },
+                [homeworkCorrectionDocumentId('2026-2027:s1-maison1')]: { source: 'Corrigé du devoir maison 1', updatedAt: '2026-10-19T08:00:00Z' },
+                '2026-2027:s1-controle1': { source: 'Sujet du contrôle continu 1', updatedAt: '2026-10-15T08:00:00Z' },
+            },
+        },
+    };
+
+    const entries = findNotebookAssessments(lessons);
+    const links = linkAssessments([plannedHomework, plannedControle], entries, '2026-10-20');
+    const previews = activityDocumentPreviews(config, 'c1', lessons, links, key => key);
+    notebookDocumentPreviews(links, config.assessmentDocuments?.c1).forEach((p, k) => previews.rows.set(k, p));
+
+    // 1. La ligne du devoir maison porte le sujet
+    const homeworkPreview = previews.rows.get('0||||');
+    assert.ok(homeworkPreview, 'le devoir maison porte un preview');
+    assert.equal(homeworkPreview?.document.source, 'Sujet du devoir maison 1');
+
+    // 2. La ligne de la correction porte le corrigé
+    const correctionPreview = previews.rows.get('1||||');
+    assert.ok(correctionPreview, 'la correction porte un preview');
+    assert.equal(correctionPreview?.document.source, 'Corrigé du devoir maison 1');
+
+    // 3. La ligne du contrôle continu porte son sujet
+    const controlePreview = previews.rows.get('2||||');
+    assert.ok(controlePreview, 'le contrôle continu porte un preview');
+    assert.equal(controlePreview?.document.source, 'Sujet du contrôle continu 1');
+
+    // Vérification du rendu HTML : le surlignage moderne est activé sur chaque ligne
+    for (const [index, expectedTitle] of [[0, 'Devoir maison 1'], [1, 'Correction du devoir maison 1'], [2, 'Contrôle continu 1']] as const) {
+        const html = renderToStaticMarkup(
+            React.createElement(LocaleProvider, {
+                locale: 'fr',
+                children: React.createElement(ContentRenderer, {
+                    data: lessons[index],
+                    indices: { chapterIndex: index },
+                    elementType: lessons[index].type as never,
+                    getDocumentPreview: () => previews.rows.get(`${index}||||`),
+                    onOpenDocumentPreview: () => undefined,
+                }),
+            }),
+        );
+        assert.match(html, /data-document-highlight="true"/, `${expectedTitle} affiche le surlignage moderne`);
+        assert.match(html, /editor-document-highlight/, `${expectedTitle} porte la classe de surlignage`);
+    }
+});
+
+test('détection d’un devoir ou contrôle avec énoncé directement saisi en description', () => {
+    const inlineLesson: LessonsData = [
+        { type: 'controle_continu', title: 'Contrôle continu 2', description: 'Soit $f(x)=x^2+1$, calculer $f\'(x)$' },
+    ];
+    const previewFromDescription: NotebookDocumentPreview = {
+        document: { source: inlineLesson[0].description!, updatedAt: '' },
+        title: 'Contrôle continu 2',
+        assessmentId: '0||||',
+    };
+
+    const html = renderToStaticMarkup(
+        React.createElement(LocaleProvider, {
+            locale: 'fr',
+            children: React.createElement(ContentRenderer, {
+                data: inlineLesson[0],
+                indices: { chapterIndex: 0 },
+                elementType: 'controle_continu',
+                getDocumentPreview: () => previewFromDescription,
+                onOpenDocumentPreview: () => undefined,
+            }),
+        }),
+    );
+    assert.match(html, /data-document-highlight="true"/, 'la description en ligne déclenche le surlignage');
+    assert.match(html, /editor-document-highlight/, 'la classe de surlignage manuscrit est appliquée');
+});
+

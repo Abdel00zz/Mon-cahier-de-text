@@ -182,6 +182,11 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
     const full = toDisplayText(name).trim().replace(/\s+/g, ' ');
     if (!full) return { ...EMPTY_IDENTITY, full };
 
+    if (ARABIC_SCRIPT.test(full)) {
+        const arabic = arabicIdentity(full, locale);
+        if (arabic) return { ...arabic, full };
+    }
+
     const canonical = lookupClassLevelIdentity(full);
     if (canonical) {
         const { group, rest } = splitGroup(canonical.suffix);

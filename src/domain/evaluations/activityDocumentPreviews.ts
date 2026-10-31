@@ -2,10 +2,10 @@ import { localizedActivityTitle } from './activityTitle';
 import type { AppConfig, LessonsData } from '../../types';
 import { buildLessonRows } from '../notebook/lessonRows';
 import { coveredDates } from './notebookCheckRemarks';
-import type { AssessmentLink, NotebookDocumentPreview } from './assessmentSync';
+import { parseTrailingNumber, type AssessmentLink, type NotebookDocumentPreview } from './assessmentSync';
 import { homeworkSessionResolver, sessionDateKeys } from './homeworkPlacement';
 import { homeworkCorrectionDocumentId } from './homeworkIds';
-import { correctionOwner } from './homeworkCorrectionContent';
+import { correctionBlockId, correctionOwner } from './homeworkCorrectionContent';
 
 export const documentsForSessionDates = (documents: ReadonlyMap<string, readonly NotebookDocumentPreview[]>, raw: string) =>
     [...new Map(sessionDateKeys(raw).flatMap(date => documents.get(date) ?? []).map(document => [document.assessmentId, document])).values()];
@@ -27,7 +27,14 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
         const exactId = notebook.find(row => row.data._tempId === 'event-' + event.id);
         const candidates = notebook.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-')
             && !!event.date && (row.data.date === event.date || row.data.date?.includes(event.date)));
-        const target = exactId ?? (candidates.length === 1 ? candidates[0] : undefined);
+        const typeCandidates = notebook.filter(row => row.elementType === event.type && !row.data._tempId?.startsWith('event-'));
+        const eventNum = parseTrailingNumber(event.title);
+        const numCandidates = eventNum !== null
+            ? typeCandidates.filter(row => parseTrailingNumber('title' in row.data ? row.data.title : undefined) === eventNum)
+            : [];
+        const fallback = (numCandidates.length === 1 ? numCandidates[0] : undefined)
+            ?? (typeCandidates.length === 1 ? typeCandidates[0] : undefined);
+        const target = exactId ?? (candidates.length === 1 ? candidates[0] : undefined) ?? fallback;
         if (target && !rows.has(target.key)) rows.set(target.key, preview);
         else coveredDates(event).forEach(date => addSession(date, preview));
     }
@@ -43,7 +50,12 @@ export function activityDocumentPreviews(config: AppConfig, classId: string, les
             const correction = documents?.[homeworkCorrectionDocumentId(planned.id)]
                 ?? (planned.legacyId ? documents?.[homeworkCorrectionDocumentId(planned.legacyId)] : undefined);
             const owner = manual.get(planned.id) ?? (planned.legacyId ? manual.get(planned.legacyId) : undefined);
-            const target = owner && notebook.find(row => correctionOwner(row, [owner]));
+            const exactTarget = notebook.find(row => row.data._tempId === correctionBlockId(planned.id) || (planned.legacyId && row.data._tempId === correctionBlockId(planned.legacyId)));
+            const ownerTarget = owner ? notebook.find(row => correctionOwner(row, [owner])) : undefined;
+            const candidates = notebook.filter(row => row.elementType === 'correction_devoir_maison'
+                && parseTrailingNumber('title' in row.data ? row.data.title : undefined) === planned.num);
+            const fallbackTarget = candidates.length === 1 ? candidates[0] : undefined;
+            const target = exactTarget ?? ownerTarget ?? fallbackTarget;
             if (correction?.source.trim() && target) {
                 rows.set(target.key, {
                     document: correction,
