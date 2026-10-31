@@ -1,38 +1,24 @@
-import { useCallback, useEffect, useRef } from 'react';
-
+import { useEffect, useMemo, useRef } from 'react';
+import { debounce } from 'es-toolkit';
 
 /**
- * React hook version of debounce that returns a stable debounced callback.
+ * React hook version of debounce backed by es-toolkit.
  * Ensures the debounced function identity is stable across renders
- * and clears the pending timeout on unmount to avoid leaks.
+ * and cancels pending execution on unmount.
  */
 export function useDebouncedCallback<T extends (...args: any[]) => void>(
   callback: T,
   delay: number
 ): T {
   const cbRef = useRef(callback);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // keep latest callback
   cbRef.current = callback;
 
-  const debounced = useCallback((...args: Parameters<T>) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    timerRef.current = setTimeout(() => {
-      cbRef.current(...args);
-    }, delay);
-  }, [delay]) as unknown as T;
+  const debounced = useMemo(
+    () => debounce((...args: Parameters<T>) => { cbRef.current(...args); }, delay),
+    [delay]
+  );
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
+  useEffect(() => () => { debounced.cancel(); }, [debounced]);
 
-  return debounced;
+  return debounced as unknown as T;
 }

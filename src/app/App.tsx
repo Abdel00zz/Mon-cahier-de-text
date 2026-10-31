@@ -31,6 +31,7 @@ import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
 import { teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { SubjectScopeProvider } from '../contexts/SubjectScopeContext';
 import { useAppNavigation } from './navigation/useAppNavigation';
+import { useCommandPaletteStore } from '../stores/useCommandPaletteStore';
 import { computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -46,7 +47,7 @@ const App: React.FC = () => {
   const { isPhone } = useDevice();
   const [, setClassActivitiesOpen] = useState(false);
   const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | 'notifications' | undefined>();
-  const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const { isOpen: isCommandPaletteOpen, close: closeCommandPalette, toggle: toggleCommandPalette } = useCommandPaletteStore();
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('cdt_sidebar_expanded_v1');
@@ -61,12 +62,12 @@ const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setCommandPaletteOpen(prev => !prev);
+        toggleCommandPalette();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [toggleCommandPalette]);
 
   const { classes, addClass, updateClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
@@ -350,19 +351,19 @@ const App: React.FC = () => {
           <Suspense fallback={null}>
             <CommandPalette
               isOpen={isCommandPaletteOpen}
-              onClose={() => setCommandPaletteOpen(false)}
+              onClose={closeCommandPalette}
               classes={classes}
               onSelectClass={(classInfo) => {
                 handleSelectClass(classInfo);
-                setCommandPaletteOpen(false);
+                closeCommandPalette();
               }}
               onOpenSettings={() => {
                 handleOpenSettings();
-                setCommandPaletteOpen(false);
+                closeCommandPalette();
               }}
               onOpenGuide={() => {
                 handleOpenHelp();
-                setCommandPaletteOpen(false);
+                closeCommandPalette();
               }}
               isDarkMode={config.theme === 'dark'}
               onToggleDarkMode={() => {
