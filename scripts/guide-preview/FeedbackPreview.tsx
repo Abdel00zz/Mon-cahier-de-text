@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../src/components/ui/button';
 import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
-import { FluidTabRail } from '../../src/components/ui/FluidTabRail';
+import { Segmented } from '../../src/components/ui/segmented';
 import { StatusNotice } from '../../src/components/ui/status-notice';
 import { Toaster } from '../../src/components/ui/sonner';
 import { useLocale } from '../../src/i18n/LocaleProvider';
@@ -60,10 +60,10 @@ export function FeedbackPreview() {
   const [calls, setCalls] = useState(0);
   const attempts = useRef(0);
   const items = [
-    { id: 'save' as const, label: ar ? 'حفظ' : 'Enregistrement' },
-    { id: 'unavailable' as const, label: ar ? 'غير متاح' : 'Indisponible', disabled: true },
-    { id: 'retry' as const, label: ar ? 'إعادة المحاولة' : 'Échec et reprise' },
-    { id: 'delete' as const, label: ar ? 'حذف' : 'Suppression' },
+    { value: 'save' as const, label: ar ? 'حفظ' : 'Enregistrement' },
+    { value: 'unavailable' as const, label: ar ? 'غير متاح' : 'Indisponible', disabled: true },
+    { value: 'retry' as const, label: ar ? 'إعادة المحاولة' : 'Échec et reprise' },
+    { value: 'delete' as const, label: ar ? 'حذف' : 'Suppression' },
   ];
   const destructive = scenario === 'delete';
   const confirm = async () => {
@@ -80,7 +80,7 @@ export function FeedbackPreview() {
       <h1 className="text-xl font-semibold">{ar ? 'الملاحظات والتأكيدات' : 'Messages et confirmations'}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{ar ? 'معاينة ببيانات افتراضية فقط.' : 'Aperçu avec des données fictives uniquement.'}</p>
     </div>
-    <FluidTabRail items={items} activeId={scenario} onChange={value => {
+    <Segmented options={items} value={scenario} onChange={value => {
       setScenario(value); setCompleted(false); setCalls(0); attempts.current = 0;
     }} ariaLabel={ar ? 'حالات التأكيد' : 'Cas de confirmation'} />
     <div className="divide-y divide-border/60">

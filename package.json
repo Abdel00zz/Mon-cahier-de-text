@@ -91,6 +91,7 @@
     "capacitor-webview-print": "^7.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "dequal": "^2.0.3",
     "es-toolkit": "^1.53.1",
     "express": "^5.2.1",

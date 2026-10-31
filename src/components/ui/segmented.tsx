@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Tabs, TabsList, TabsTrigger } from './tabs';
 import { cn } from '@/lib/utils';
 
 interface SegmentedProps<T extends string> {
@@ -10,7 +11,7 @@ interface SegmentedProps<T extends string> {
 }
 
 /**
- * Contrôle segmenté générique (onglets / sélecteurs compacts) avec auto-centrage fluide.
+ * Contrôle segmenté générique (onglets / sélecteurs compacts) basé sur Radix Tabs.
  */
 export function Segmented<T extends string>({ value, onChange, options, className, ariaLabel }: SegmentedProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -24,58 +25,39 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
       const activeRect = activeEl.getBoundingClientRect();
       const diff = (activeRect.left + activeRect.width / 2) - (containerRect.left + containerRect.width / 2);
       if (Math.abs(diff) > 2) {
+        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
         try {
-          container.scrollBy({ left: diff, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+          container.scrollBy({ left: diff, behavior });
         } catch {
-          activeEl.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+          activeEl.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
         }
       }
     }
   }, [value]);
 
   return (
-    <div
-      ref={containerRef}
-      role="tablist"
-      aria-label={ariaLabel}
-      className={cn('paper-segments inline-flex max-w-full items-center overflow-x-auto no-scrollbar rounded-xl border border-border/70 bg-muted/60 p-1', className)}
-    >
-      {options.map(option => {
-        const active = value === option.value;
-        return (
-          <button
-            key={option.value}
-            ref={active ? activeRef : null}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            tabIndex={active || (!options.some(item => item.value === value && !item.disabled) && option === options.find(item => !item.disabled)) ? 0 : -1}
-            disabled={option.disabled}
-            onClick={() => onChange(option.value as T)}
-            onKeyDown={event => {
-              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-              const tabs = Array.from(containerRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
-              const current = tabs.indexOf(event.currentTarget);
-              if (current < 0 || tabs.length === 0) return;
-              const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
-              const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
-                : (current + ((event.key === 'ArrowRight') !== rtl ? 1 : -1) + tabs.length) % tabs.length;
-              event.preventDefault();
-              tabs[next].focus();
-              tabs[next].click();
-            }}
-            className={cn(
-              'flex min-h-11 shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors duration-200 motion-reduce:transition-none active:scale-[0.98] cursor-pointer',
-              active
-                ? 'border border-border/80 bg-card text-foreground shadow-xs font-semibold'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
-              option.disabled && 'cursor-not-allowed opacity-40'
-            )}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
+    <Tabs value={value} onValueChange={val => onChange(val as T)}>
+      <TabsList
+        ref={containerRef}
+        aria-label={ariaLabel}
+        className={cn('paper-segments inline-flex max-w-full items-center overflow-x-auto no-scrollbar rounded-xl border border-border/70 bg-muted/60 p-1', className)}
+      >
+        {options.map(option => {
+          const active = value === option.value;
+          return (
+            <TabsTrigger
+              key={option.value}
+              ref={active ? activeRef : null}
+              value={option.value}
+              disabled={option.disabled}
+              tabIndex={active || (!options.some(item => item.value === value && !item.disabled) && option === options.find(item => !item.disabled)) ? 0 : -1}
+              className="flex min-h-11 shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium"
+            >
+              {option.label}
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+    </Tabs>
   );
 }
