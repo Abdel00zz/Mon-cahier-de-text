@@ -18,7 +18,7 @@ import {
 } from '@/domain/calendar/timetable';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { KEEP_TONES } from '@/platform/keepTheme';
-import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import './schedule.css';
 
@@ -201,7 +201,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     // Dès qu'une classe existe, la grille sert à FINIR sa configuration : on
     // évite de répéter « créer une classe » dans chacune des 48 cases.
     const canCreateFromSchedule = !!onCreateClass && noClassesYet;
-    const periodTabItems: FluidTabItem<SchedulePeriod>[] = React.useMemo(() => [
+    const periodTabItems: { id: SchedulePeriod; label: string }[] = React.useMemo(() => [
         { id: 'morning', label: t('schedule.viewMorning') },
         { id: 'afternoon', label: t('schedule.viewAfternoon') },
         { id: 'all', label: t('schedule.viewAll') },
@@ -216,21 +216,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <div className="schedule-tab space-y-3 pb-1 sm:pb-2">
+        <Tabs value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
             <div className="schedule-controls">
               <div className="schedule-controls__row">
                 <div className="schedule-periods">
                     <span className="schedule-periods__label">{t('schedule.periodLabel')} :</span>
-                    <FluidTabRail<SchedulePeriod>
-                        items={periodTabItems}
-                        activeId={visiblePeriod}
-                        onChange={setVisiblePeriod}
-                        layoutId="schedule-period-subpill"
-                        size="sm"
-                        ariaLabel={t('schedule.viewLabel')}
-                        className="w-full sm:w-max"
-                        tabClassName="text-xs h-11 px-2 sm:px-2.5"
-                    />
+                    <TabsList aria-label={t('schedule.viewLabel')} className="w-full sm:w-auto h-auto p-1 bg-muted/60 border border-border/40">
+                        {periodTabItems.map(item => (
+                            <TabsTrigger key={item.id} value={item.id} className="text-xs min-h-11 px-2.5 sm:px-3">
+                                {item.label}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
                 </div>
                 <button type="button" className="schedule-date-toggle" aria-expanded={startDateOpen}
                   aria-controls={`${yearStartId}-date-settings`} onClick={() => setStartDateOpen(value => !value)}>
@@ -268,8 +265,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             )}
 
             {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
-            <div className="overflow-x-auto overscroll-x-contain">
-                <table aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
+            <TabsContent value={visiblePeriod} className="mt-0">
+                <div className="overflow-x-auto overscroll-x-contain">
+                    <table aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
                             <th scope="col" className={`schedule-grid__day-heading sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center text-muted-foreground`}>
@@ -384,6 +382,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     </tbody>
                 </table>
             </div>
+            </TabsContent>
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
                 aussitôt sur le créneau qui l'a demandée. */}
             {onCreateClass && (
@@ -403,6 +402,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     existingClasses={classes}
                 />
             )}
-        </div>
+        </Tabs>
     );
 };

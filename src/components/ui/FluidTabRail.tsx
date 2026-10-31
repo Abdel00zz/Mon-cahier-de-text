@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
-export interface FluidTabItem<T extends string = string> {
+interface FluidTabItem<T extends string = string> {
   id: T;
   label: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
