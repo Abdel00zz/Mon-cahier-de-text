@@ -11,6 +11,10 @@ import {
   ContentDocumentSchema,
   ScheduleSlotSchema,
   StudentRosterSchema,
+  PhoneSchema,
+  AbsencePeriodSchema,
+  TimetableEntrySchema,
+  ContentNumberingSchema,
 } from '../../src/domain/validation/schemas.js';
 import type {
   AppConfig,
@@ -160,13 +164,14 @@ export const assertValidTeacherSnapshot = (
   if (value.absences !== undefined) {
     if (!Array.isArray(value.absences) || value.absences.length > 200) throw new HttpError(400, 'Absences du snapshot invalides.');
     absences = value.absences.map(raw => {
-      if (!isPlainObject(raw) || !validISODate(raw.debut) || !validISODate(raw.fin) || raw.fin < raw.debut) {
+      const parsed = AbsencePeriodSchema.safeParse(raw);
+      if (!parsed.success) {
         throw new HttpError(400, 'Période d’absence du snapshot invalide.');
       }
       return {
-        debut: raw.debut,
-        fin: raw.fin,
-        ...(typeof raw.motif === 'string' && raw.motif.trim() ? { motif: raw.motif.trim().slice(0, 240) } : {}),
+        debut: parsed.data.debut,
+        fin: parsed.data.fin,
+        ...(parsed.data.motif ? { motif: parsed.data.motif } : {}),
       };
     });
   }
@@ -219,11 +224,11 @@ export const normalizePhone = (value: unknown): string => {
   if (typeof value !== 'string') {
     throw new HttpError(400, 'Numéro de téléphone manquant.');
   }
-  const digits = value.replace(/[^\d]/g, '').replace(/^00/, '');
-  if (digits.length < 8 || digits.length > 15) {
+  const parsed = PhoneSchema.safeParse(value);
+  if (!parsed.success) {
     throw new HttpError(400, 'Numéro de téléphone invalide (8 à 15 chiffres attendus).');
   }
-  return digits;
+  return parsed.data;
 };
 
 export const assertName = (value: unknown, label: string): string => {
@@ -326,17 +331,20 @@ export const assertValidTimetable = (timetable: unknown, validClassIds: Set<stri
   if (!Array.isArray(timetable)) throw new HttpError(400, 'Emploi du temps invalide.');
   if (timetable.length > 600) throw new HttpError(400, 'Emploi du temps trop volumineux.');
   return timetable.map(raw => {
-    if (!raw || typeof raw !== 'object') throw new HttpError(400, 'Créneau invalide.');
-    const entry = raw as Partial<TimetableEntry>;
-    if (typeof entry.day !== 'number' || entry.day < 0 || entry.day > 6) throw new HttpError(400, 'Jour de créneau invalide.');
-    if (typeof entry.slot !== 'number' || entry.slot < 0 || entry.slot > 12) throw new HttpError(400, 'Heure de créneau invalide.');
-    const classId = assertStringField(entry.classId, 'Classe du créneau', 120);
-    if (!validClassIds.has(classId)) throw new HttpError(400, 'Créneau rattaché à une classe inconnue.');
+    const parsed = TimetableEntrySchema.safeParse(raw);
+    if (!parsed.success) {
+      if (!raw || typeof raw !== 'object') throw new HttpError(400, 'Créneau invalide.');
+      const entry = raw as Partial<TimetableEntry>;
+      if (typeof entry.day !== 'number' || entry.day < 0 || entry.day > 6) throw new HttpError(400, 'Jour de créneau invalide.');
+      if (typeof entry.slot !== 'number' || entry.slot < 0 || entry.slot > 12) throw new HttpError(400, 'Heure de créneau invalide.');
+      throw new HttpError(400, 'Classe du créneau invalide.');
+    }
+    if (!validClassIds.has(parsed.data.classId)) throw new HttpError(400, 'Créneau rattaché à une classe inconnue.');
     return {
-      day: entry.day,
-      slot: entry.slot,
-      classId,
-      room: typeof entry.room === 'string' ? entry.room.slice(0, 80) : undefined,
+      day: parsed.data.day,
+      slot: parsed.data.slot,
+      classId: parsed.data.classId,
+      room: parsed.data.room,
     };
   });
 };
@@ -435,17 +443,11 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
     throw new HttpError(400, 'Numéro de téléphone du profil invalide (64 caractères maximum).');
   }
   if (result.contentNumbering !== undefined) {
-    const numbering = result.contentNumbering;
-    if (!isPlainObject(numbering) || typeof numbering.enabled !== 'boolean'
-      || (numbering.structureStyle !== undefined && !['legacy', 'decimal', 'roman'].includes(String(numbering.structureStyle)))
-      || (numbering.badgeStyle !== undefined && !['decimal', 'roman', 'hierarchical'].includes(String(numbering.badgeStyle)))
-      || (numbering.scope !== undefined && !['chapter', 'section', 'document'].includes(String(numbering.scope)))) {
+    const parsed = ContentNumberingSchema.safeParse(result.contentNumbering);
+    if (!parsed.success) {
       throw new HttpError(400, 'Numérotation des contenus invalide.');
     }
-    result.contentNumbering = { enabled: numbering.enabled,
-      ...(numbering.structureStyle !== undefined ? { structureStyle: numbering.structureStyle } : {}),
-      ...(numbering.badgeStyle !== undefined ? { badgeStyle: numbering.badgeStyle } : {}),
-      ...(numbering.scope !== undefined ? { scope: numbering.scope } : {}) };
+    result.contentNumbering = parsed.data;
   }
 
   // La politique du contrôle continu aussi : elle est résolue par le serveur à chaque pull.

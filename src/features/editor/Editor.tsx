@@ -1,4 +1,5 @@
 import { assignHomeworkPatch, restoreSessionRemarkSettings, sessionRemarkSettingsPatch } from '@/domain/evaluations/sessionRemarkChanges';
+import { dequal } from 'dequal';
 import { homeworkMoments } from '@/domain/evaluations/homeworkCycle';
 import { updateClassMetadata } from '@/domain/classes/classMetadata';
 import type { AppConfig } from '@/types';
@@ -422,7 +423,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const recordSessionSettings = useCallback((patch: Partial<AppConfig>) => {
     const before = Object.fromEntries(Object.keys(patch).map(key => [key, config[key as keyof AppConfig]])) as Partial<AppConfig>;
-    if (JSON.stringify(before) === JSON.stringify(patch)) return undefined;
+    if (dequal(before, patch)) return undefined;
     updateConfig(patch);
     const restore = (from: Partial<AppConfig>, to: Partial<AppConfig>) => {
       if (!workspaceIsActive()) return;

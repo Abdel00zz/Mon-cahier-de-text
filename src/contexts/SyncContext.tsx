@@ -655,7 +655,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         if (localIndex === -1) {
                             mergedClasses.push(serverClass);
                         }
-                        if (localIndex === -1 || JSON.stringify(mergedClasses[localIndex]) !== JSON.stringify(localClasses.find(c => c.id === serverClass.id))) localChanged = true;
+                        if (localIndex === -1 || !dequal(mergedClasses[localIndex], localClasses.find(c => c.id === serverClass.id))) localChanged = true;
                     } else if (action === 'requeue') {
                         // le local va écraser le cloud au prochain push : archiver la version cloud perdante
                         if (conflict) {

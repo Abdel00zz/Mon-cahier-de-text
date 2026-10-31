@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 'react';
+import { dequal } from 'dequal';
 import './settingsModal.css';
 import { SettingsTabNavigation } from './components/SettingsTabNavigation';
 import { cn } from '@/lib/utils';
@@ -121,7 +122,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const [profileDraft, setProfileDraft] = useState<Partial<AppConfig>>({});
   const [pendingExit, setPendingExit] = useState<'close' | 'guide' | null>(null);
   const hasProfileChanges = useMemo(() => Object.entries(profileDraft).some(([key, value]) =>
-    JSON.stringify(value) !== JSON.stringify(config[key as keyof AppConfig])), [profileDraft, config]);
+    !dequal(value, config[key as keyof AppConfig])), [profileDraft, config]);
   const finishExit = (destination: 'close' | 'guide') => {
     setProfileDraft({});
     setPendingExit(null);

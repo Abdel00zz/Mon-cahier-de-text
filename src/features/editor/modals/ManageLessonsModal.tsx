@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { dequal } from 'dequal';
 import { AppConfig, type ContentNumbering, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { ChevronDown, ChevronUp, Eye, FolderTree, Hash, Layers, TriangleAlert } from '@/components/ui/icons';
@@ -67,7 +68,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const descriptionsChanged = localDesc.mode !== (config.screenDescriptionMode ?? 'all')
     || localDesc.types.length !== (config.screenDescriptionTypes ?? []).length
     || localDesc.types.some(type => !(config.screenDescriptionTypes ?? []).includes(type));
-  const numberingChanged = JSON.stringify(localNumbering) !== JSON.stringify(config.contentNumbering ?? { enabled: true });
+  const numberingChanged = !dequal(localNumbering, config.contentNumbering ?? { enabled: true });
   const hasChanges = lessonsChanged || descriptionsChanged || numberingChanged;
 
   const itemKey = (item: TopLevelItem): string => {

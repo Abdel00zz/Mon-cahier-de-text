@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { dequal } from 'dequal';
 import { toast } from 'sonner';
 import { parseStudentNames } from '@/domain/evaluations/studentRoster';
 import { ClassRosterFields } from './ClassRosterFields';
@@ -145,7 +146,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     try { return { names: parseStudentNames(rosterText), invalid: false }; }
     catch { return { names: [], invalid: true }; }
   }, [rosterText]);
-  const rosterDirty = parsedRoster.invalid || JSON.stringify(parsedRoster.names) !== JSON.stringify(rosterBase);
+  const rosterDirty = parsedRoster.invalid || !dequal(parsedRoster.names, rosterBase);
   const rosterSection = Boolean(editingClass && onRosterSave && section === 'students');
   const requestClose = () => {
     if (submittingRef.current) return;
@@ -454,7 +455,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
           <div hidden={rosterSection}>{editConfiguration}</div>
           {editingClass && onRosterSave && <div hidden={!rosterSection}>
             <ClassRosterFields value={rosterText} onChange={setRosterText} names={parsedRoster.names} invalid={parsedRoster.invalid}
-              changed={JSON.stringify(roster?.names ?? []) !== JSON.stringify(rosterBase)} suggestedNames={suggestedStudentNames} />
+              changed={!dequal(roster?.names ?? [], rosterBase)} suggestedNames={suggestedStudentNames} />
           </div>}
           </fieldset>
         </form>

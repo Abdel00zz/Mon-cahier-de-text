@@ -58,3 +58,31 @@ export const StudentRosterSchema = z.object({
   names: z.array(z.string().trim().min(1).max(120)).max(200),
   updatedAt: z.string().refine(val => Number.isFinite(Date.parse(val)), 'Horodatage invalide'),
 });
+
+/** Numéro de téléphone standardisé (8 à 15 chiffres). */
+export const PhoneSchema = z.string()
+  .transform(val => val.replace(/[^\d]/g, '').replace(/^00/, ''))
+  .refine(val => val.length >= 8 && val.length <= 15, 'Numéro de téléphone invalide (8 à 15 chiffres attendus).');
+
+/** Période d'absence officielle. */
+export const AbsencePeriodSchema = z.object({
+  debut: ISODateSchema,
+  fin: ISODateSchema,
+  motif: z.string().trim().max(240).optional(),
+}).refine(data => data.fin >= data.debut, 'La date de fin doit être postérieure ou égale à la date de début.');
+
+/** Entrée d'emploi du temps hebdomadaire. */
+export const TimetableEntrySchema = z.object({
+  day: z.number().int().min(0).max(6),
+  slot: z.number().int().min(0).max(12),
+  classId: z.string().trim().min(1).max(120),
+  room: z.string().max(80).optional(),
+});
+
+/** Configuration de numérotation automatique des contenus. */
+export const ContentNumberingSchema = z.object({
+  enabled: z.boolean(),
+  structureStyle: z.enum(['legacy', 'decimal', 'roman']).optional(),
+  badgeStyle: z.enum(['decimal', 'roman', 'hierarchical']).optional(),
+  scope: z.enum(['chapter', 'section', 'document']).optional(),
+});

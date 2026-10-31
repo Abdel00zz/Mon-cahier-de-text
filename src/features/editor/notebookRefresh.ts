@@ -1,6 +1,7 @@
 import type { ContentDirection, LessonsData } from '@/types';
 import { readStoredContentDirection } from '@/domain/notebook/contentDirection';
 import { migrateLessonsData } from '@/domain/notebook/dataUtils';
+import { dequal } from 'dequal';
 
 /** Compare le contenu pédagogique du disque à la saisie en mémoire,
  * après migration. Une copie administrative historique ne déclenche pas
@@ -17,7 +18,7 @@ export const storedNotebookChanged = (raw: string | null, memory: NotebookInMemo
         const stored = JSON.parse(raw);
         const incoming = migrateLessonsData(Array.isArray(stored) ? stored : (stored.lessonsData ?? []));
         const incomingDirection = readStoredContentDirection(stored);
-        if (JSON.stringify(incoming) !== JSON.stringify(memory.lessons)) return true;
+        if (!dequal(incoming, memory.lessons)) return true;
         // Le contenu est identique : seul le SENS d'écriture a pu être décidé
         // ailleurs (détection persistée), et le tableau doit le suivre.
         return Boolean(incomingDirection) && incomingDirection !== memory.direction;

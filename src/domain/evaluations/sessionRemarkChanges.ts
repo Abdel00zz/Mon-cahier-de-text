@@ -184,7 +184,7 @@ export function sessionRemarkSettingsPatch(config: AppConfig, classId: string, s
  * edit of the same identity takes precedence; other classes/activities survive. */
 export function restoreSessionRemarkSettings(current: AppConfig, classId: string, from: Partial<AppConfig>, to: Partial<AppConfig>): Partial<AppConfig> {
   const result: Partial<AppConfig> = {};
-  const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  const equal = dequal;
   for (const key of ['sessionRemarkOverrides', 'assessmentDates'] as const) {
     if (from[key] === undefined && to[key] === undefined) continue;
     const previous = from[key]?.[classId] ?? {};
