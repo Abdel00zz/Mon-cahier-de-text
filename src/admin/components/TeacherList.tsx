@@ -8,7 +8,7 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { range, uniq } from 'es-toolkit';
+import { meanBy, range, uniq } from 'es-toolkit';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
@@ -371,7 +371,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
     // Vue d'ensemble chiffrée de ce qui est affiché : la moyenne de complétion et la part des comptes vivants.
     const summary = useMemo(() => {
         if (enriched.length === 0) return null;
-        const average = Math.round(enriched.reduce((sum, item) => sum + item.completion, 0) / enriched.length);
+        const average = Math.round(meanBy(enriched, item => item.completion));
         const syncedToday = enriched.filter(item => item.teacher.lastSyncAt && now - new Date(item.teacher.lastSyncAt).getTime() < 24 * 3600 * 1000).length;
         return { average, syncedToday };
     }, [enriched, now]);

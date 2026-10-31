@@ -1,3 +1,5 @@
+import { sumBy } from 'es-toolkit';
+
 /*
  * LISTES TAPÉES À LA MAIN, AVEC LEURS SOUS-QUESTIONS.
  *
@@ -34,7 +36,7 @@ const MARKER = /^([ \t]*)(?:(\d+|[\u0660-\u0669\u06F0-\u06F9]+)[.)]|([a-z])[.)]|
 const WORTH_PARSING = /^[ \t]+(?:\d+[.)]|[-+]|[a-z][.)])[ \t]|^\d+[.)][ \t]*$/m;
 
 const STRUCTURAL_LINE = /^[ \t]*(?:#{1,3}[ \t]+\S|\\(?:begin|end|item)\b)/;
-const indentOf = (whitespace: string): number => [...whitespace].reduce((total, char) => total + (char === '\t' ? 4 : 1), 0);
+const indentOf = (whitespace: string): number => sumBy([...whitespace], char => (char === '\t' ? 4 : 1));
 
 function parseMarker(line: string): Marker | null {
   const match = MARKER.exec(line);

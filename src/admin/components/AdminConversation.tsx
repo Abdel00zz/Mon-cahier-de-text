@@ -1,3 +1,4 @@
+import { Button } from '../../components/ui/button';
 import type { AdminMessage } from '../../types';
 const formatDateTimeFr = (iso: string) => new Date(iso).toLocaleString('fr-FR');
 
@@ -20,7 +21,7 @@ export function AdminConversation({ messages, onReply }: { messages: AdminMessag
                 <span className="text-xs text-muted-foreground">{message.sender === 'teacher'
                     ? message.answeredAt ? 'Réponse envoyée' : 'À traiter'
                     : message.acknowledgedAt ? 'Lu par l’enseignant' : 'Lecture attendue'}</span>
-                {message.sender === 'teacher' && <button type="button" onClick={() => onReply(message)} className="min-h-11 rounded-lg bg-primary/10 px-4 text-sm text-primary hover:bg-primary/15">Répondre</button>}
+                {message.sender === 'teacher' && <Button type="button" variant="ghost" onClick={() => onReply(message)} className="min-h-11 rounded-lg bg-primary/10 px-4 text-sm text-primary hover:bg-primary/15">Répondre</Button>}
             </div>}
         </article>)}
     </section>;

@@ -1,4 +1,5 @@
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { sumBy } from 'es-toolkit';
 import { Modal } from '@/components/ui/modal';
 import { FileDown, FileUp, HardDriveDownload, HardDriveUpload, Loader2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -149,12 +150,12 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
    * posée par l'éditeur au moment d'écrire le fichier.
    */
   const weight = useMemo(() => {
-    const total = chapters.reduce((sum, chapter) => sum + chapter.bytes, 0);
+    const total = sumBy(chapters, chapter => chapter.bytes);
     const chosen = chapters.filter(chapter => picked.includes(chapter.index));
     return {
       all: total,
-      picked: chosen.reduce((sum, chapter) => sum + chapter.bytes, 0),
-      items: chosen.reduce((sum, chapter) => sum + chapter.items, 0),
+      picked: sumBy(chosen, chapter => chapter.bytes),
+      items: sumBy(chosen, chapter => chapter.items),
       tooManyBytes: total > MAX_JSON_FILE_BYTES,
     };
   }, [chapters, picked]);

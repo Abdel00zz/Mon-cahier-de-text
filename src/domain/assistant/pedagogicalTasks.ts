@@ -1,3 +1,4 @@
+import { sumBy } from 'es-toolkit';
 import type { PedagogicalDiagnosis } from '../intelligence/pedagogicalBrain';
 import type { ClassGuidance } from './classGuidance';
 
@@ -33,12 +34,12 @@ export function pedagogicalTasks(diagnosis: PedagogicalDiagnosis, preferredClass
   if (diagnosis.activeSessionClass) add({ step: 'active-session', classId: diagnosis.activeSessionClass.id, className: diagnosis.activeSessionClass.name }, 120);
   for (const item of diagnosis.unreadableNotebookClasses ?? []) add({ step: 'notebook-unavailable', classId: item.id, className: item.name,
     remaining: diagnosis.unreadableNotebookClasses!.length }, item.id === diagnosis.activeSessionClass?.id ? 130 : 110);
-  const issuesCount = diagnosis.notebookIssues.reduce((sum, item) => sum + item.advices.length, 0);
+  const issuesCount = sumBy(diagnosis.notebookIssues, item => item.advices.length);
   for (const item of diagnosis.notebookIssues) {
     for (const advice of item.advices) add({ step: 'notebook-issue', classId: item.classInfo.id, className: item.classInfo.name,
       issueCode: advice.code, count: advice.count, remaining: issuesCount }, ISSUE_PRIORITY[advice.code], advice.count, advice.samplePath);
   }
-  const conflictsCount = (diagnosis.evaluationConflicts ?? []).reduce((sum, item) => sum + item.conflictCount, 0);
+  const conflictsCount = sumBy(diagnosis.evaluationConflicts ?? [], item => item.conflictCount);
   for (const item of diagnosis.evaluationConflicts ?? []) {
     add({
       step: 'evaluation-conflict',

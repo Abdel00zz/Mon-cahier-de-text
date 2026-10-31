@@ -1,3 +1,4 @@
+import { sumBy } from 'es-toolkit';
 import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../../types.js';
 import { assignClassColors } from '../../domain/classes/classColors.js';
 import { assertNotebookStructure } from '../../domain/notebook/notebookValidation.js';
@@ -146,7 +147,7 @@ export function inspectBackup(value: unknown) {
         version: backup.version,
         exportedAt: typeof backup.exportedAt === 'string' && Number.isFinite(Date.parse(backup.exportedAt)) ? backup.exportedAt : null,
         classes: backup.classes.length,
-        blocks: backup.classes.reduce((total, entry) => total + entry.lessonsData.length, 0),
+        blocks: sumBy(backup.classes, entry => entry.lessonsData.length),
     };
 }
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { dequal } from 'dequal';
+import { sumBy } from 'es-toolkit';
 import { AppConfig, type ContentNumbering, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { ChevronDown, ChevronUp, Eye, FolderTree, Hash, Layers, TriangleAlert } from '@/components/ui/icons';
@@ -30,11 +31,11 @@ interface PendingDelete {
 const countNestedContents = (value: unknown): number => {
   if (!value || typeof value !== 'object') return 0;
   const node = value as Record<string, unknown>;
-  return ['sections', 'subsections', 'subsubsections', 'items'].reduce((total, key) => {
+  return sumBy(['sections', 'subsections', 'subsubsections', 'items'], key => {
     const children = node[key];
-    if (!Array.isArray(children)) return total;
-    return total + children.reduce((sum, child) => sum + 1 + countNestedContents(child), 0);
-  }, 0);
+    if (!Array.isArray(children)) return 0;
+    return sumBy(children, child => 1 + countNestedContents(child));
+  });
 };
 
 export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
@@ -65,9 +66,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
 
   const lessonsChanged = localLessons.length !== lessons.length
     || localLessons.some((item, index) => item !== lessons[index]);
-  const descriptionsChanged = localDesc.mode !== (config.screenDescriptionMode ?? 'all')
-    || localDesc.types.length !== (config.screenDescriptionTypes ?? []).length
-    || localDesc.types.some(type => !(config.screenDescriptionTypes ?? []).includes(type));
+  const descriptionsChanged = !dequal(localDesc, {
+    mode: config.screenDescriptionMode ?? 'all',
+    types: config.screenDescriptionTypes ?? [],
+  });
   const numberingChanged = !dequal(localNumbering, config.contentNumbering ?? { enabled: true });
   const hasChanges = lessonsChanged || descriptionsChanged || numberingChanged;
 

@@ -4,7 +4,7 @@ import { migrateLessonsData } from '../../domain/notebook/dataUtils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import { uniq } from 'es-toolkit';
+import { maxBy, uniq } from 'es-toolkit';
 import { startForegroundPolling } from '../../platform/mobileScheduling';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type AdminActivityDocument, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../domain/calendar/calendar';
@@ -15,6 +15,8 @@ import { documentIndicator, documentRequirementForAssessment, documentRequiremen
 import { homeworkCorrectionDocumentId } from '../../domain/evaluations/homeworkIds';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
 import {
     ArrowLeft,
     Clock,
@@ -95,7 +97,7 @@ interface ChapterSummary {
 const summarizeChapter = (chapter: any): ChapterSummary => {
     const leaves = collectLeafItems(chapter);
     const dated = leaves.filter(l => typeof l.date === 'string' && l.date);
-    const lastDate = dated.reduce((max, l) => ((l.date as string) > max ? (l.date as string) : max), '') || null;
+    const lastDate = maxBy(dated, l => Date.parse(l.date as string))?.date ?? null;
     return {
         title: chapter?.title || chapter?.name || 'Sans titre',
         totalItems: leaves.length,
@@ -495,7 +497,7 @@ const AssessmentDateEditor: React.FC<{
                                     {row.label} · {indicator === 'attached' ? 'sujet rédigé' : indicator === 'missing' ? 'sujet manquant' : 'sans sujet'}{dueDate ? ` · à rendre avant le ${dueDate}` : ''}
                                 </span>
                             </button>
-                            <input
+                            <Input
                                 type="date"
                                 value={dates[row.classId]?.[row.id] ?? row.dateISO}
                                 onChange={event => void change(row, event.target.value)}
@@ -1061,7 +1063,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         <div className="space-y-4">
                             <label className="block space-y-1.5 text-xs font-bold text-foreground">
                                 Objet
-                                <input
+                                <Input
                                     value={messageTitle}
                                     onChange={event => setMessageTitle(event.target.value)}
                                     maxLength={80}
@@ -1071,7 +1073,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                             </label>
                             <label className="block space-y-1.5 text-xs font-bold text-foreground">
                                 Message
-                                <textarea
+                                <Textarea
                                     value={messageBody}
                                     onChange={event => setMessageBody(event.target.value)}
                                     maxLength={1200}

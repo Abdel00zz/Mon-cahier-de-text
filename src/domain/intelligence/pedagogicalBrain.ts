@@ -1,3 +1,4 @@
+import { maxBy, sumBy } from 'es-toolkit';
 import type { AppConfig, ClassInfo, DevoirType, LessonsData } from '../../types';
 import { effectiveSchedules, getHourSlots, TIMETABLE_DAYS } from '../calendar/timetable';
 import { analyseNotebook, type NotebookAdvice } from './notebookAdvisor';
@@ -373,7 +374,7 @@ export function diagnosePedagogicalState({
   if (notebookIssues.length > 0) {
     // On priorise la classe sélectionnée si elle a une anomalie, sinon la première
     const targetIssue = notebookIssues.find(i => i.classInfo.id === preferredClassId) ?? notebookIssues[0];
-    const totalAdvicesCount = notebookIssues.reduce((sum, curr) => sum + curr.advices.length, 0);
+    const totalAdvicesCount = sumBy(notebookIssues, curr => curr.advices.length);
 
     return {
       ...findings,
@@ -389,7 +390,7 @@ export function diagnosePedagogicalState({
   // Conflits de dates ou de numérotation d'évaluations
   if (evaluationConflicts.length > 0) {
     const targetConflict = evaluationConflicts.find(c => c.classInfo.id === preferredClassId) ?? evaluationConflicts[0];
-    const totalConflicts = evaluationConflicts.reduce((sum, curr) => sum + curr.conflictCount, 0);
+    const totalConflicts = sumBy(evaluationConflicts, curr => curr.conflictCount);
     return {
       ...findings,
       step: 'evaluation-conflict',
@@ -432,7 +433,7 @@ export function diagnosePedagogicalState({
 
   if (notebookFollowups.length) {
     const target = notebookFollowups.find(item => item.classInfo.id === preferredClassId)
-      ?? notebookFollowups.reduce((first, item) => item.followup.elapsedDays > first.followup.elapsedDays ? item : first);
+      ?? maxBy(notebookFollowups, item => item.followup.elapsedDays)!;
     return {
       ...findings,
       step: 'notebook-followup',

@@ -1,9 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
+import { useForm } from 'react-hook-form';
 import type { AppConfig, ClassInfo } from '@/types';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import './absencesTab.css';
 import { X, FileSignature } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { StatusNotice } from '@/components/ui/status-notice';
 import { SettingsSection } from './SettingsPrimitives';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -21,18 +23,20 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
     const { t } = useLocale();
     const absences = useMemo(() => config.absences ?? [], [config.absences]);
     const startInput = useRef<HTMLInputElement>(null);
-    const [debut, setDebut] = useState('');
-    const [fin, setFin] = useState('');
-    const [motif, setMotif] = useState('');
+
+    const { watch, setValue, reset } = useForm<{ debut: string; fin: string; motif: string }>({
+        defaultValues: { debut: '', fin: '', motif: '' },
+    });
+    const debut = watch('debut');
+    const fin = watch('fin');
+    const motif = watch('motif');
     const invalidRange = Boolean(debut && fin && fin < debut);
 
     const addAbsence = () => {
         if (!debut || invalidRange) return;
         const effectiveFin = fin && fin >= debut ? fin : debut;
         onConfigChange({ absences: [...absences, { debut, fin: effectiveFin, motif: motif.trim() || undefined }] });
-        setDebut('');
-        setFin('');
-        setMotif('');
+        reset({ debut: '', fin: '', motif: '' });
         startInput.current?.focus();
     };
 
@@ -59,14 +63,16 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                                 {absence.fin !== absence.debut && <> – <bdi dir="ltr">{formatDateDDMMYYYY(absence.fin)}</bdi></>}
                                 {absence.motif && <span className="mt-1 block text-xs font-normal text-muted-foreground">{absence.motif}</span>}
                             </span>
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => removeAbsence(index)}
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                                 aria-label={t('notifications.deleteAbsence')}
                             >
                                 <X className="h-3.5 w-3.5" />
-                            </button>
+                            </Button>
                         </li>
                     ))}
                 </ul>
@@ -75,23 +81,23 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
             <form onSubmit={event => { event.preventDefault(); addAbsence(); }} className="absence-form grid grid-cols-2 items-end gap-3">
                 <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
                     <span>{t('notifications.absenceStart')}</span>
-                    <input
+                    <Input
                         type="date"
                         ref={startInput}
                         required
                         value={debut}
-                        onChange={e => setDebut(e.target.value)}
+                        onChange={e => setValue('debut', e.target.value)}
                         className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                         aria-label={t('notifications.absenceStart')}
                     />
                 </label>
                 <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
                     <span>{t('notifications.absenceEnd')}</span>
-                    <input
+                    <Input
                         type="date"
                         value={fin}
                         min={debut || undefined}
-                        onChange={e => setFin(e.target.value)}
+                        onChange={e => setValue('fin', e.target.value)}
                         className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                         aria-label={t('notifications.absenceEnd')}
                         aria-invalid={invalidRange || undefined}
@@ -99,15 +105,15 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                     />
                 </label>
                 <label className="col-span-full space-y-1.5 text-sm text-muted-foreground">
-                  <span>{t('notifications.reasonOptional')}</span>
-                  <input
-                    type="text"
-                    value={motif}
-                    onChange={e => setMotif(e.target.value)}
-                    placeholder={t('notifications.reasonOptional')}
-                    aria-label={t('notifications.reasonOptional')}
-                    className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+                    <span>{t('notifications.reasonOptional')}</span>
+                    <Input
+                        type="text"
+                        value={motif}
+                        onChange={e => setValue('motif', e.target.value)}
+                        placeholder={t('notifications.reasonOptional')}
+                        aria-label={t('notifications.reasonOptional')}
+                        className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
                 </label>
                 <Button
                     type="submit"

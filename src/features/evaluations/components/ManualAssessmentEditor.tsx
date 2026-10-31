@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import type { Cycle, DevoirType, ManualAssessment } from '@/types';
 import { isKindOffered } from '@/domain/evaluations/kindAvailability';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { nextAssessmentNumber } from '@/domain/evaluations/assessments';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 /*
@@ -39,12 +42,34 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
   // La numérotation officielle repart à 1 à chaque semestre : le suivant se calcule DANS le semestre.
   const inSemester = (semester: 1 | 2) => assessments.filter(item => item.semestre === undefined || item.semestre === semester);
   const nextNumFor = (nextType: DevoirType, semester: 1 | 2): number => nextAssessmentNumber(inSemester(semester), nextType, initial?.id);
-  const [type, setType] = useState<DevoirType>(initialKind);
   const initialSemester: 1 | 2 = initial?.semestre ?? semesterOfDate(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today)) ?? 1;
-  const [num, setNum] = useState(String(initial?.num ?? nextNumFor(initialKind, initialSemester)));
-  const [date, setDate] = useState(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today));
-  const [duree, setDuree] = useState(initial?.duree ?? '');
-  const [semestre, setSemestre] = useState<1 | 2>(initialSemester);
+
+  const { watch, setValue, register } = useForm<{
+    type: DevoirType;
+    num: string;
+    date: string;
+    duree: string;
+    semestre: 1 | 2;
+  }>({
+    defaultValues: {
+      type: initialKind,
+      num: String(initial?.num ?? nextNumFor(initialKind, initialSemester)),
+      date: initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today),
+      duree: initial?.duree ?? '',
+      semestre: initialSemester,
+    },
+  });
+
+  const type = watch('type');
+  const num = watch('num');
+  const date = watch('date');
+  const duree = watch('duree');
+  const semestre = watch('semestre');
+  const setType = (next: DevoirType) => setValue('type', next);
+  const setNum = (next: string) => setValue('num', next);
+  const setDate = (next: string) => setValue('date', next);
+  const setSemestre = (next: 1 | 2) => setValue('semestre', next);
+
   /** Un semestre choisi à la main n'est plus recalculé depuis la date. */
   const [semesterTouched, setSemesterTouched] = useState(false);
   const [error, setError] = useState('');
@@ -119,7 +144,7 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualNum')}</span>
-            <input
+            <Input
               type="number"
               min={1}
               value={num}
@@ -134,7 +159,7 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
           </label>
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualDate')}</span>
-            <input
+            <Input
               type="date"
               value={date}
               onChange={(event) => {
@@ -153,9 +178,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
           <span className="text-xs font-bold text-foreground">
             {t('evaluations.manualDuree')} <span className="font-normal text-muted-foreground">({t('evaluations.optional')})</span>
           </span>
-          <input
-            value={duree}
-            onChange={(event) => setDuree(event.target.value)}
+          <Input
+            {...register('duree')}
             placeholder={t('evaluations.manualDureePlaceholder')}
             dir="auto"
             className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -169,20 +193,21 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
         )}
 
         <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onCancel}
             className="min-h-11 rounded-xl bg-muted px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={submit}
             className="min-h-11 rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer"
           >
             {t(initial ? 'evaluations.saveAssessment' : 'evaluations.addDevoir')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

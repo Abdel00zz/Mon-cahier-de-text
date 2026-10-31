@@ -1,4 +1,5 @@
 // Imports RELATIFS avec extension : module pur, aussi chargé par l'API (voir `check:api`).
+import { sumBy } from 'es-toolkit';
 import type {
   DevoirType,
   EvaluationDocumentMode,
@@ -217,7 +218,7 @@ export const resolveAllKindPolicies = (policyValue: EvaluationPolicy | undefined
   Object.fromEntries(EVALUATION_KIND_ORDER.map(kind => [kind, resolveKindPolicy(policyValue, kind)])) as Record<EvaluationKindKey, EvaluationKindPolicy>;
 
 export const countPolicyChanges = (policyValue: EvaluationPolicy | undefined | null): number =>
-  Object.values(policyValue?.kinds ?? {}).reduce((total, entry) => total + Object.keys(entry ?? {}).length, 0);
+  sumBy(Object.values(policyValue?.kinds ?? {}), entry => Object.keys(entry ?? {}).length);
 
 // ── Questions posées par les écrans (une seule réponse pour tous) ────────────────
 

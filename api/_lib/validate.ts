@@ -1,4 +1,4 @@
-import { uniq } from 'es-toolkit';
+import { sumBy, uniq } from 'es-toolkit';
 import { HttpError } from './http.js';
 import { isClassColor } from '../../src/domain/classes/classColors.js';
 import { assertNotebookStructure } from '../../src/domain/notebook/notebookValidation.js';
@@ -139,7 +139,7 @@ export const assertValidTeacherSnapshot = (
       weekdays: scheduleSlots?.map(slot => slot.weekday) ?? weekdays,
       ...(scheduleSlots ? { scheduleSlots } : {}),
       sessionsPerWeek: scheduleSlots
-        ? scheduleSlots.reduce((total, slot) => total + (slot.sessions ?? 1), 0)
+        ? sumBy(scheduleSlots, slot => slot.sessions ?? 1)
         : snapshotInteger(raw.sessionsPerWeek, `Séances hebdomadaires de la classe ${id}`, 84),
       updatedAt,
     };

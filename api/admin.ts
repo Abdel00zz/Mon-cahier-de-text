@@ -1,3 +1,4 @@
+import { sumBy } from 'es-toolkit';
 import { pendingAdminMessages, pendingTeacherRequests } from '../src/domain/messages/conversation.js';
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { createHash, randomUUID } from 'node:crypto';
@@ -824,8 +825,7 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
         lastDate: stats.lastDate,
         weekdays: previousClassSnapshot?.weekdays ?? schedule?.slots.map(slot => slot.weekday) ?? [],
         sessionsPerWeek: previousClassSnapshot?.sessionsPerWeek
-            ?? schedule?.slots.reduce((total, slot) => total + (slot.sessions ?? 1), 0)
-            ?? 0,
+            ?? (schedule ? sumBy(schedule.slots, slot => slot.sessions ?? 1) : 0),
         updatedAt: now,
     };
     const snapshotBase: TeacherSnapshot = storedSnapshot ?? {

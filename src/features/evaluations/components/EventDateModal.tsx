@@ -1,8 +1,10 @@
 import { type FC, useEffect, useMemo, useState } from 'react';
+import { range } from 'es-toolkit';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { dateTimeFormat } from '@/lib/formatters';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
@@ -241,35 +243,33 @@ export const EventDateModal: FC<EventDateModalProps> = ({
 
         {/* Mode Date unique vs Période (si activé) */}
         {allowRange && (
-          <div className="flex items-center justify-between gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/50">
-            <button
-              type="button"
-              onClick={() => { setIsRange(false); setActiveTarget('start'); }}
-              className={cn(
-                "flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center",
-                !isRange
-                  ? "bg-background text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {copy.singleDateMode}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
+          <Tabs
+            value={isRange ? 'range' : 'single'}
+            onValueChange={(val) => {
+              if (val === 'single') {
+                setIsRange(false);
+                setActiveTarget('start');
+              } else {
                 setIsRange(true);
                 if (!endDate) setEndDate(startDate || today);
-              }}
-              className={cn(
-                "flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center",
-                isRange
-                  ? "bg-background text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {copy.rangeMode}
-            </button>
-          </div>
+              }
+            }}
+          >
+            <TabsList className="flex w-full items-center justify-between gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/50 h-auto">
+              <TabsTrigger
+                value="single"
+                className="flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:font-bold text-muted-foreground hover:text-foreground"
+              >
+                {copy.singleDateMode}
+              </TabsTrigger>
+              <TabsTrigger
+                value="range"
+                className="flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:font-bold text-muted-foreground hover:text-foreground"
+              >
+                {copy.rangeMode}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         )}
 
         {/* Raccourcis : ils suivent le sens de lecture de la langue */}
@@ -379,12 +379,12 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               bande continue pour une période */}
           <div className="date-cal__grid grid grid-cols-7 gap-y-0.5">
             {/* Cases vides pour le décalage */}
-            {Array.from({ length: emptyPrefixCount }).map((_, idx) => (
+            {range(emptyPrefixCount).map((idx) => (
               <div key={`empty-${idx}`} className="h-[38px] w-full" aria-hidden="true" />
             ))}
 
             {/* Jours du mois */}
-            {Array.from({ length: daysCount }).map((_, idx) => {
+            {range(daysCount).map((idx) => {
               const day = idx + 1;
               const iso = `${viewYear}-${pad(viewMonth)}-${pad(day)}`;
               const isSelectedStart = iso === startDate;

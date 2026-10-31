@@ -1,3 +1,4 @@
+import { sumBy } from 'es-toolkit';
 import { AbsencePeriod, AppLocale, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, ScheduleSlot, TeacherSnapshot } from '../../types.js';
 import { normalizeContentType } from '../../constants/type-keys.js';
 import { flattenLessons } from '../notebook/dataUtils.js';
@@ -157,7 +158,7 @@ const computeClassSnapshot = (
             weekday: slot.weekday,
             sessions: Math.max(1, Math.trunc(slot.sessions ?? 1)),
         })),
-        sessionsPerWeek: slots.reduce((sum, slot) => sum + (slot.sessions ?? 1), 0),
+        sessionsPerWeek: sumBy(slots, slot => slot.sessions ?? 1),
         updatedAt: new Date().toISOString(),
     };
 };
