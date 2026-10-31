@@ -438,6 +438,7 @@ export const AuthPage: React.FC<{
   return (
     <div
       ref={pageRef}
+      data-auth-view={view}
       data-pwa-update-blocked={isSubmitting || Boolean(email || phone || password || confirmPassword || nom || prenom || setup || draft.cycle)}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
@@ -502,7 +503,13 @@ export const AuthPage: React.FC<{
         <LandingPage
           locale={displayLocale}
           onLogin={() => navigateTo("auth", "login")}
-          onRegister={() => navigateTo("onboarding")}
+          onRegister={completePreparation}
+          draft={draft}
+          onDraftChange={(next) => {
+            setDraft(next);
+            setSetup(null);
+            setupRef.current = null;
+          }}
         />
       )}
       {view === "onboarding" && (
@@ -523,6 +530,7 @@ export const AuthPage: React.FC<{
               setupRef.current = null;
             }}
             onComplete={completePreparation}
+            onLogin={() => navigateTo("auth", "login")}
           />
         </Suspense>
       )}

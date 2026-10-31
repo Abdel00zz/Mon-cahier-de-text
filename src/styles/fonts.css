@@ -1,3 +1,15 @@
+@font-face { font-family: 'Lora'; src: url('@fontsource-variable/lora/files/lora-latin-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-036F, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: 'Lora'; src: url('@fontsource-variable/lora/files/lora-latin-ext-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; unicode-range: U+0100-024F, U+1E00-1EFF; }
+/* Roboto est embarquée pour le cahier, même sur les appareils hors Android. */
+@font-face { font-family: 'Roboto'; src: url('@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-036F, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: 'Roboto'; src: url('@fontsource-variable/roboto/files/roboto-latin-ext-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; unicode-range: U+0100-024F, U+1E00-1EFF; }
+@font-face { font-family: 'Amiri'; src: url('@fontsource/amiri/files/amiri-arabic-400-normal.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: 'Amiri'; src: url('@fontsource/amiri/files/amiri-arabic-700-normal.woff2') format('woff2'); font-style: normal; font-weight: 700; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: 'Aref Ruqaa'; src: url('@fontsource/aref-ruqaa/files/aref-ruqaa-arabic-400-normal.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: 'Aref Ruqaa'; src: url('@fontsource/aref-ruqaa/files/aref-ruqaa-arabic-700-normal.woff2') format('woff2'); font-style: normal; font-weight: 700; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: 'Readex Pro'; src: url('@fontsource-variable/readex-pro/files/readex-pro-latin-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 300 700; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-036F, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: 'Readex Pro'; src: url('@fontsource-variable/readex-pro/files/readex-pro-arabic-wght-normal.woff2') format('woff2'); font-style: normal; font-weight: 300 700; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF; }
+
 /* One local variable file per family; offline fallbacks preserved. */
 /* Les fontes arabes ne capturent pas les glyphes latins d'une interface traduite. */
 @font-face {
@@ -49,26 +61,6 @@
        url('/Elgharib-Hayyakum-Allah-Taweel-Medium.ttf') format('truetype');
   font-style: normal; font-weight: 300 700; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
-}
-@font-face {
-  font-family: 'Aref Ruqaa';
-  src: local('Aref Ruqaa'), local('ArefRuqaa'), local('ArefRuqaa-Regular'),
-       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
-  font-style: normal; font-weight: 400 700; font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
-}
-@font-face {
-  font-family: 'Amiri';
-  src: local('Amiri'), local('Amiri-Regular'),
-       url('/fonts/SamsungOneArabic-400.ttf') format('truetype');
-  font-style: normal; font-weight: 400 700; font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
-}
-@font-face {
-  font-family: 'Readex Pro';
-  src: local('Readex Pro'), local('ReadexPro'), local('ReadexPro-Regular'),
-       url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2');
-  font-style: normal; font-weight: 300 700; font-display: swap;
 }
 @font-face {
   font-family: 'Outfit';

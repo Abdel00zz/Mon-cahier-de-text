@@ -54,12 +54,14 @@ test('les fontes arabes et latines ont des plages unicode disjointes sans mélan
   assert.deepEqual(seenLatin, latinFamilies);
 });
 
-test('les toasts, le statut de synchronisation et les cellules de remarque en arabe utilisent la police Samsung', () => {
+test('les remarques du cahier partagent la famille de lecture sans modifier les retours système', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
-  const indexCss = readFileSync('src/styles/index.css', 'utf8');
-  assert.match(typography, /--font-feedback:\s*'SamsungOne Arabic',\s*'SamsungOne'/, 'jeton de police Samsung pour les retours');
-  assert.match(typography, /\[data-sonner-toaster\]:lang\(ar\)[\s\S]*?\[data-sonner-toast\]:lang\(ar\)[\s\S]*?\.editor-sync-status:lang\(ar\)[\s\S]*?\.editor-type-remark\[dir='rtl'\][\s\S]*?\{\s*font-family:\s*var\(--font-feedback\);/, 'toasts, statut de synchronisation et remarques arabes utilisent Samsung');
-  assert.match(indexCss, /\.editor-type-remark\[dir='rtl'\][\s\S]*?\[data-remark-cell='true'\] \[dir='rtl'\]:not\(\.katex, \.katex \*\) \{\s*font-family:\s*var\(--font-feedback\);/, 'la cellule remarque arabe force la police Samsung dans le tableau');
+  const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
+  assert.ok(typography.includes("--font-feedback: 'SamsungOne Arabic'"));
+  assert.ok(!typography.includes(".editor-type-remark[dir='rtl']"));
+  assert.ok(editor.includes("--notebook-reading: 'Inter', 'Readex Pro', sans-serif"));
+  assert.ok(editor.includes('.editor-type-remark, .editor-session-note'));
+  assert.ok(editor.includes(':not(.katex, .katex *)'), 'les fontes mathématiques restent autonomes');
 });
 
 test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="ltr" vs dir="rtl") même en interface arabe', () => {

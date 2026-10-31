@@ -226,7 +226,49 @@ test('horloge réelle : frontières, pauses et cohérence entre carte et moteur'
     assert.notEqual(status(end).state, 'in_progress', end);
   }
   assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'b'}])), []);
-  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}])), ['a']);
+  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}])), []);
+});
+
+test('les pauses arrêtent le statut actif, la reprise le rétablit et le rappel reste unique', async () => {
+  const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
+  for (const [firstSlot, pause, resume, reminder] of [
+    [0, '08:55:00', '09:00:00', '09:50:00'],
+    [1, '09:55:00', '10:05:00', '10:55:00'],
+    [4, '14:55:00', '15:00:00', '15:50:00'],
+    [5, '15:55:00', '16:05:00', '16:55:00'],
+  ] as const) {
+    const config = baseConfig([{ day: 1, slot: firstSlot, classId: 'a' }, { day: 1, slot: firstSlot + 1, classId: 'a' }]);
+    for (const locale of ['fr', 'ar', 'en']) {
+      const status = (time: string) => computeClassSessionSchedule(config.timetable, 0, 'a', { calendar, locale, now: new Date(`2026-09-14T${time}+01:00`) });
+      assert.equal(status(pause).state, 'paused');
+      assert.equal(status(pause).dayOffset, 0);
+      assert.equal(status(resume).state, 'in_progress');
+    }
+    assert.deepEqual(activeIds(pause, config), []);
+    assert.deepEqual(activeIds(resume, config), ['a']);
+    assert.equal(at(pause, config).events.length, 0);
+    assert.equal(at(reminder, config).events.filter(event => event.kind === 'end').length, 1);
+    const expectedDelay = (new Date(`2026-09-14T${resume}+01:00`).getTime() - new Date(`2026-09-14T${pause}+01:00`).getTime()) + 100;
+    assert.equal(at(pause, config).nextCheckDelay, expectedDelay, 'réveil à la reprise exacte');
+  }
+  const continuous = baseConfig([{ day: 1, slot: 2, classId: 'a' }, { day: 1, slot: 3, classId: 'a' }]);
+  assert.deepEqual(activeIds('11:00:00', continuous), ['a'], 'aucune interruption quand les horaires se touchent');
+  assert.equal(at('11:00:00', continuous).current[0].endMin, 720);
+  const shifted = baseConfig(timetable, { timetableClock: { version: 1, offsetMinutes: 30, updatedAt: '2026-09-01' } });
+  assert.deepEqual(activeIds('09:27:00', shifted), [], 'la pause suit le décalage du compte');
+  assert.deepEqual(activeIds('09:30:00', shifted), ['a']);
+});
+
+test('la classe terminée conserve son repère aujourd’hui tout en exposant sa prochaine séance au robot', async () => {
+  const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
+  const entries = [{ day: 1, slot: 0, classId: 'a' }, { day: 2, slot: 0, classId: 'a' }];
+  const status = computeClassSessionSchedule(entries, 0, 'a', { calendar, now: new Date('2026-09-14T08:55:00+01:00') });
+  assert.equal(status.state, 'upcoming');
+  assert.equal(status.dayOffset, 1);
+  assert.equal(status.hadSessionToday, true);
+  const tomorrow = computeClassSessionSchedule(entries, 0, 'a', { calendar, now: new Date('2026-09-15T00:00:00+01:00') });
+  assert.equal(tomorrow.hadSessionToday, undefined);
+  assert.equal(tomorrow.dayOffset, 0);
 });
 
 test('les vacances longues et les anciens horaires sans heures ne produisent pas de date inventée', async () => {

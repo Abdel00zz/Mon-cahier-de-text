@@ -99,7 +99,7 @@ export function PwaInstallModal({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 p-3 backdrop-blur-xs sm:items-center sm:p-4"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xs sm:items-center sm:p-4"
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
       lang={locale}
       role="dialog"
@@ -108,7 +108,7 @@ export function PwaInstallModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl transition-all"
+        className="max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl transition-all"
         onClick={event => event.stopPropagation()}
       >
         <div className="flex items-center gap-3.5">
@@ -133,7 +133,7 @@ export function PwaInstallModal({
           <button
             type="button"
             onClick={() => setActiveTab('ios')}
-            className={`min-h-[38px] rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            className={`min-h-11 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
               activeTab === 'ios'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -144,7 +144,7 @@ export function PwaInstallModal({
           <button
             type="button"
             onClick={() => setActiveTab('android')}
-            className={`min-h-[38px] rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            className={`min-h-11 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
               activeTab === 'android'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'

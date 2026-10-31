@@ -98,46 +98,54 @@ self.addEventListener('fetch', event => {
 
   // Static assets & offline curricula: Stale-while-revalidate
   if (isCacheableStaticPath(url.pathname)) {
-    event.respondWith((async () => {
-      const currentShell = await caches.open(SHELL_CACHE);
-      const bundled = await currentShell.match(request);
-      if (bundled) return bundled;
-      const cached = await caches.match(request);
-      const networkPromise = fetch(request)
-        .then(async response => {
-          if (response && response.ok && response.type === 'basic') {
-            const cache = await caches.open(RUNTIME_CACHE);
-            await cache.put(request, response.clone());
-          }
-          return response;
-        })
-        .catch(() => null);
+    const result = (async () => {
+      let cached;
+      try {
+        const currentShell = await caches.open(SHELL_CACHE);
+        const bundled = await currentShell.match(request);
+        if (bundled) return { response: bundled };
+        cached = await caches.match(request);
+      } catch { /* Storage may be unavailable or full in private browsing. */ }
 
-      if (cached) {
-        void networkPromise;
-        return cached;
-      }
-      const networkResponse = await networkPromise;
-      return networkResponse || Response.error();
-    })());
+      const network = fetch(request).catch(() => null);
+      const refresh = network.then(async response => {
+        if (!response || !response.ok || response.type !== 'basic') return;
+        try {
+          const cache = await caches.open(RUNTIME_CACHE);
+          await cache.put(request, response.clone());
+        } catch { /* A quota error must not discard a successful response. */ }
+      });
+      return { response: cached || await network || Response.error(), refresh };
+    })();
+    event.respondWith(result.then(value => value.response));
+    // A cached response can finish before revalidation; keep the worker alive.
+    event.waitUntil(result.then(value => value.refresh).catch(() => {}));
   }
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/#/';
+  if (event.action === 'dismiss') return;
+  const requested = event.notification.data && event.notification.data.url;
+  const targetUrl = typeof requested === 'string' && requested.length <= 400
+    && /^\/#\/(?:classe\/[^/?#]+|parametres|)$/.test(requested) ? requested : '/#/';
   event.waitUntil((async () => {
     const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const client of windowClients) {
+    const target = new URL(targetUrl, self.location.origin).href;
+    const candidates = windowClients.filter(client => {
       try {
-        if (new URL(client.url).origin === self.location.origin) {
-          await client.focus();
-          client.postMessage({ type: 'NOTIFICATION_CLICK', url: targetUrl });
-          return;
-        }
-      } catch {
-        // Ignore inaccessible client frames
-      }
+        const url = new URL(client.url);
+        return url.origin === self.location.origin && (url.pathname === '/' || url.pathname === '/index.html');
+      } catch { return false; }
+    }).sort((a, b) => Number(b.url === target) - Number(a.url === target)
+      || Number(b.focused) - Number(a.focused)
+      || Number(b.visibilityState === 'visible') - Number(a.visibilityState === 'visible'));
+    for (const client of candidates) {
+      try {
+        await client.focus();
+        if (client.url !== target) client.postMessage({ type: 'NOTIFICATION_CLICK', url: targetUrl });
+        return;
+      } catch { /* A closed window must not block another window or a new one. */ }
     }
     if (self.clients.openWindow) {
       await self.clients.openWindow(targetUrl);

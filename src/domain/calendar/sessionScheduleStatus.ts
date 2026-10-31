@@ -1,10 +1,11 @@
 import type { AbsencePeriod, ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../../types';
-import { getDaySessionBlocks } from './timetable';
+import { getDaySessionBlocks, getDayTeachingBlocks } from './timetable';
 import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 
 type SessionScheduleState =
     | 'in_progress'
+    | 'paused'
     | 'starting_soon'
     | 'today_later'
     | 'today_ended'
@@ -24,6 +25,8 @@ export interface SessionScheduleStatus {
     endTimeLabel?: string;
     dayLabel?: string;
     dayOffset?: number;
+    /** Keep a class taught today in today's dashboard group until midnight. */
+    hadSessionToday?: boolean;
 }
 
 const formatHourMinute = (minutes: number, locale = 'fr'): string => {
@@ -98,7 +101,7 @@ export function computeClassSessionSchedule(
 
     // 1. Analyse des créneaux d'aujourd'hui
     if (!todayBlocked) {
-        const todayBlocks = getDaySessionBlocks(effectiveTimetable, currentDayOfWeek, clock)
+        const todayBlocks = getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
             .filter(b => b.classId === classId)
             .sort((a, b) => a.startMin - b.startMin);
 
@@ -142,6 +145,16 @@ export function computeClassSessionSchedule(
             const diffMin = Math.ceil(nextBlock.startMin - currentMinute);
             const startLabel = formatHourMinute(nextBlock.startMin, lang);
             const endLabel = formatHourMinute(nextBlock.endMin, lang);
+
+            const paused = getDaySessionBlocks(effectiveTimetable, currentDayOfWeek, clock)
+                .some(b => b.classId === classId && currentMinute >= b.startMin && currentMinute < b.endMin);
+            if (paused) {
+                const label = lang === 'ar' ? `استراحة · استئناف الحصة على الساعة ${startLabel}`
+                    : lang === 'en' ? `Break · resumes at ${startLabel}` : `Pause · reprise à ${startLabel}`;
+                return { state: 'paused', label, shortLabel: label, remainingMinutes: diffMin,
+                    startMin: nextBlock.startMin, endMin: nextBlock.endMin,
+                    startTimeLabel: startLabel, endTimeLabel: endLabel, dayOffset: 0 };
+            }
 
             if (diffMin <= 60) {
                 const label = lang === 'ar'
@@ -255,10 +268,14 @@ export function computeClassSessionSchedule(
 
         if (targetBlocks.length > 0) {
             const nextBlock = targetBlocks[0];
-            return buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin);
+            return { ...buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin),
+                hadSessionToday: !todayBlocked && getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
+                    .some(b => b.classId === classId && currentMinute >= b.endMin) };
         }
     }
 
-    return { state: 'none', label: '', shortLabel: '' };
+    return { state: 'none', label: '', shortLabel: '',
+        hadSessionToday: !todayBlocked && getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
+            .some(b => b.classId === classId && currentMinute >= b.endMin) };
 }
 

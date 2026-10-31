@@ -45,13 +45,14 @@ interface DashboardProps {
     onOpenNotifications?: () => void;
 }
 
+const NO_ACTIVE_SESSION_IDS: string[] = [];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
 const readAssistantLessons = (classId: string) => readStoredNotebook(classId).lessonsData;
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     onEvaluationVisibilityChange,
-    activeSessionClassIds = [],
+    activeSessionClassIds: sessionBoundaryIds = NO_ACTIVE_SESSION_IDS,
     accountTeacherName = '',
     onOnboardingVisibilityChange,
     onOpenSchedule,
@@ -83,6 +84,66 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = hasCompletedOnboarding(config, accountUser);
+    const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
+    const [scheduleClockNow, setScheduleClockNow] = useState(() => new Date());
+    useEffect(() => {
+        let active = true;
+        void loadHolidayCalendar().then(loaded => {
+            if (active) setCalendar(loaded);
+        });
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const refreshClock = () => {
+            clearTimeout(timer);
+            if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+                setScheduleClockNow(new Date());
+                timer = setTimeout(refreshClock, 60000 - Date.now() % 60000 + 20);
+            }
+        };
+        refreshClock();
+        const offPull = subscribeSyncBus('pull-applied', refreshClock);
+        const offConfig = subscribeSyncBus('config-changed', refreshClock);
+        const offClasses = subscribeSyncBus('classes-changed', refreshClock);
+        document.addEventListener('visibilitychange', refreshClock);
+        window.addEventListener('focus', refreshClock);
+        return () => {
+            active = false;
+            clearTimeout(timer);
+            offPull();
+            offConfig();
+            offClasses();
+            document.removeEventListener('visibilitychange', refreshClock);
+            window.removeEventListener('focus', refreshClock);
+        };
+    }, []);
+
+    const scheduleStatusByClassId = useMemo(() => {
+        const map = new Map<string, SessionScheduleStatus>();
+        for (const classInfo of classes) {
+            map.set(
+                classInfo.id,
+                computeClassSessionSchedule(
+                    config.timetable,
+                    config.timetableClock,
+                    classInfo.id,
+                    {
+                        now: scheduleClockNow,
+                        calendar,
+                        locale,
+                        absences: config.absences,
+                        schedules: config.schedules,
+                        schoolYearStart: config.schoolYearStart,
+                    }
+                )
+            );
+        }
+        return map;
+    }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, config.schoolYearStart, calendar, locale, scheduleClockNow]);
+
+    useEffect(() => { setScheduleClockNow(new Date()); }, [sessionBoundaryIds]);
+
+    // Card, grouping and companion consume the same timestamp and calendar.
+    const activeSessionClassIds = useMemo(() => [...scheduleStatusByClassId]
+        .filter(([, status]) => status.state === 'in_progress').map(([id]) => id), [scheduleStatusByClassId]);
     const preferredClassId = activeSessionClassIds.length === 1 ? activeSessionClassIds[0] : undefined;
 
     // Si le cloud sait que l'accueil est terminé (config.hasCompletedWelcome) mais que
@@ -267,7 +328,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         persistedClassOrder
             .map(id => classById.get(id))
             .filter((classInfo): classInfo is ClassInfo => Boolean(classInfo))
-            .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter),
+            .filter(classInfo => activeSessionIds.has(classInfo.id) || subjectFilter === 'all' || classInfo.subject === subjectFilter),
         activeSessionIds,
     ), [persistedClassOrder, classById, subjectFilter, activeSessionIds]);
     const assistantVisibleClassIds = useMemo(() => filteredClasses.map(item => item.id), [filteredClasses]);
@@ -278,59 +339,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         [classDisplayMode, filteredClasses, activeSessionIds],
     );
 
-    const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
-    const [scheduleClockNow, setScheduleClockNow] = useState(() => new Date());
-    useEffect(() => {
-        let active = true;
-        void loadHolidayCalendar().then(loaded => {
-            if (active) setCalendar(loaded);
+    // Assign palette before temporal sorting so a session never changes a class's color.
+    const paletteByClassId = useMemo(() => {
+        let previousKey: PaletteKey | undefined;
+        const map = new Map<string, ReturnType<typeof pickDepartmentPalette>['palette']>();
+        persistedClassOrder.forEach((id, index) => {
+            const item = classById.get(id);
+            if (!item) return;
+            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey);
+            previousKey = key;
+            map.set(id, palette);
         });
-        const refreshClock = () => {
-            if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-                setScheduleClockNow(new Date());
-            }
-        };
-        const timer = setInterval(refreshClock, 30000);
-        const offPull = subscribeSyncBus('pull-applied', refreshClock);
-        const offConfig = subscribeSyncBus('config-changed', refreshClock);
-        const offClasses = subscribeSyncBus('classes-changed', refreshClock);
-        document.addEventListener('visibilitychange', refreshClock);
-        window.addEventListener('focus', refreshClock);
-        return () => {
-            active = false;
-            clearInterval(timer);
-            offPull();
-            offConfig();
-            offClasses();
-            document.removeEventListener('visibilitychange', refreshClock);
-            window.removeEventListener('focus', refreshClock);
-        };
-    }, []);
-
-    const scheduleStatusByClassId = useMemo(() => {
-        const map = new Map<string, SessionScheduleStatus>();
-        for (const classInfo of classes) {
-            map.set(
-                classInfo.id,
-                computeClassSessionSchedule(
-                    config.timetable,
-                    config.timetableClock,
-                    classInfo.id,
-                    {
-                        now: scheduleClockNow,
-                        calendar,
-                        locale,
-                        absences: config.absences,
-                        schedules: config.schedules,
-                        schoolYearStart: config.schoolYearStart,
-                    }
-                )
-            );
-        }
         return map;
-    }, [classes, config.timetable, config.schedules, config.timetableClock, config.absences, config.schoolYearStart, calendar, locale, scheduleClockNow]);
-
-    useEffect(() => { setScheduleClockNow(new Date()); }, [activeSessionClassIds]);
+    }, [persistedClassOrder, classById]);
 
     const groupedClasses = useMemo(() => {
         const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number; active: boolean }> }>();
@@ -342,9 +363,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             let groupOrder = 999;
             let startMin = 9999;
 
-            if (schedule && schedule.state !== 'none') {
-                const offset = schedule.dayOffset ?? 0;
-                startMin = schedule.startMin ?? 9999;
+            if (schedule && (schedule.state !== 'none' || schedule.hadSessionToday)) {
+                const offset = schedule.hadSessionToday ? 0 : schedule.dayOffset ?? 0;
+                startMin = schedule.hadSessionToday ? 9999 : schedule.startMin ?? 9999;
                 if (offset === 0) {
                     groupKey = 'day-0';
                     groupLabel = locale === 'ar' ? 'اليوم' : (locale === 'en' ? 'Today' : 'Aujourd’hui');
@@ -376,14 +397,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             group.rawItems.sort((a, b) => Number(b.active) - Number(a.active) || a.startMin - b.startMin);
         }
 
-        let lastPaletteKey: PaletteKey | undefined;
-        let globalIndex = 0;
-
         return sortedGroups.map(group => {
             const items = group.rawItems.map(item => {
-                const { key, palette } = pickDepartmentPalette(item.classInfo.color, item.classInfo.subject, globalIndex, lastPaletteKey);
-                lastPaletteKey = key;
-                globalIndex++;
+                const palette = paletteByClassId.get(item.classInfo.id);
                 return {
                     classInfo: item.classInfo,
                     startMin: item.startMin,
@@ -401,7 +417,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 items,
             };
         });
-    }, [filteredClasses, scheduleStatusByClassId, locale, activeSessionIds]);
+    }, [filteredClasses, scheduleStatusByClassId, locale, activeSessionIds, paletteByClassId]);
 
     if (isLoading) {
         return <DashboardSkeleton />;

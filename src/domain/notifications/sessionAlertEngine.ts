@@ -1,5 +1,5 @@
 import type { AppConfig, ClassInfo } from '../../types.js';
-import { getDaySessionBlocks, type SessionBlock } from '../calendar/timetable.js';
+import { getDaySessionBlocks, getDayTeachingBlocks, type SessionBlock } from '../calendar/timetable.js';
 import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from '../calendar/calendar.js';
 import { dateTimeFormat } from '../../lib/formatters.js';
 import { millisecondsUntilNextMoroccoDay } from '../../platform/mobileScheduling.js';
@@ -29,11 +29,13 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
     new Date(`${today}T12:00:00Z`).getUTCDay(),
     config.timetableClock,
   ).filter(block => ids.has(block.classId));
-  const current = holidays ? [] : blocks.filter(block => minute >= block.startMin && minute < block.endMin);
+  const teachingBlocks = getDayTeachingBlocks(config.timetable, new Date(`${today}T12:00:00Z`).getUTCDay(), config.timetableClock)
+    .filter(block => ids.has(block.classId));
+  const current = holidays ? [] : teachingBlocks.filter(block => minute >= block.startMin && minute < block.endMin);
   const wakeAt = (boundary: number) => {
     if (boundary > minute) nextCheckDelay = Math.min(nextCheckDelay, (boundary - minute) * 60_000 + 100);
   };
-  if (!holidays) blocks.forEach(block => { wakeAt(block.startMin); wakeAt(block.endMin); });
+  if (!holidays) teachingBlocks.forEach(block => { wakeAt(block.startMin); wakeAt(block.endMin); });
   if (!(settings?.enabled ?? true) || ((settings?.quietDuringVacations ?? true) && holidays)) return { current, events: [] as SessionAlert[], today, nextCheckDelay };
   const groups = new Map<number, SessionBlock[]>();
   blocks.forEach(block => groups.set(block.endMin, [...groups.get(block.endMin) ?? [], block]));

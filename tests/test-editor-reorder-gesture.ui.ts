@@ -22,10 +22,10 @@ function sensor(context: TestContext) {
   };
   const node = (key: string, top: number) => ({
     ...hub(), dataset: { editorSortKey: key, editorSortId: key, editorSortLabel: key } as Record<string, string>,
-    style: {} as Record<string, string>, attrs: new Map<string, string>(), offsetWidth: 120, offsetHeight: 40,
+    style: {} as Record<string, string>, attrs: new Map<string, string>(), children: [] as any[], textContent: '', className: '', offsetWidth: 120, offsetHeight: 40,
     setAttribute(name: string, value: string) { this.attrs.set(name, value); },
     removeAttribute(name: string) { this.attrs.delete(name); },
-    append: (..._children: unknown[]) => {},
+    append(...children: unknown[]) { this.children.push(...children); },
     getBoundingClientRect: () => ({ left: 0, right: 375, top, bottom: top + 60, width: 375, height: 60 }),
     closest(selector: string): unknown { return selector === '[data-editor-sort-row]' ? this : null; },
   });
@@ -37,6 +37,10 @@ function sensor(context: TestContext) {
   const surface = {
     closest: (selector: string) => selector === '[data-editor-sort-row]' ? source : selector === '.editor-row-content--sortable' ? surface : null,
     matches: () => true, focus: () => {}, click: () => { clicks++; },
+  };
+  const handle = {
+    closest: (selector: string) => selector === '[data-reorder-handle]' ? handle : selector === '.editor-row-content--sortable' ? surface : null,
+    focus: () => {},
   };
   const root = {
     ...node('root', 0), contains: () => true, querySelectorAll: () => [source, target],
@@ -72,20 +76,20 @@ function sensor(context: TestContext) {
   }
   renderToStaticMarkup(React.createElement(Probe));
   const point = (y = 130) => ({ identifier: 1, clientX: 150, clientY: y });
-  const start = () => actions.onTouchStart({ target: surface, touches: [point()] } as unknown as React.TouchEvent<HTMLElement>);
+  const start = (target: unknown = handle) => actions.onTouchStart({ target, touches: [point()] } as unknown as React.TouchEvent<HTMLElement>);
   const end = (y = 130) => win.emit('touchend', { changedTouches: [point(y)] });
   const flush = () => { const queued = [...frames.values()]; frames.clear(); queued.forEach(callback => callback(16)); };
-  return { actions, start, end, point, flush, win, root, source, target, surface, ghosts, moves, frames, clicks: () => clicks, captures: () => captures };
+  return { actions, start, end, point, flush, win, root, source, target, surface, handle, ghosts, moves, frames, clicks: () => clicks, captures: () => captures };
 }
 
 test('contenu tactile : un tap sélectionne normalement et un balayage garde le défilement', context => {
   const s = sensor(context);
-  s.start(); context.mock.timers.tick(120); s.end(); context.mock.timers.tick(300);
+  s.start(s.surface); context.mock.timers.tick(120); s.end(); context.mock.timers.tick(300);
   assert.equal(s.ghosts.length, 0);
   let prevented = false;
   s.actions.onClickCapture({ target: s.surface, preventDefault: () => { prevented = true; }, stopPropagation: () => {} } as unknown as React.MouseEvent<HTMLElement>);
   assert.equal(prevented, false, 'le tap reste disponible au gestionnaire de sélection');
-  s.start();
+  s.start(s.surface);
   s.win.emit('touchmove', { touches: [s.point(160)], preventDefault: () => { prevented = true; } });
   context.mock.timers.tick(300);
   assert.equal(prevented, false, 'le balayage ne bloque pas le défilement natif');
@@ -94,7 +98,7 @@ test('contenu tactile : un tap sélectionne normalement et un balayage garde le 
   assert.equal(s.win.count(), 0);
 });
 
-test('contenu tactile : maintenir soulève, glisser dépose et le clic final ne change pas la sélection', context => {
+test('poignée tactile : glisser dépose et le clic final ne change pas la sélection', context => {
   const s = sensor(context);
   s.start(); context.mock.timers.tick(260);
   assert.equal(s.ghosts.length, 1);
@@ -108,6 +112,25 @@ test('contenu tactile : maintenir soulève, glisser dépose et le clic final ne 
   assert.equal(s.ghosts.length, 0); assert.equal(s.win.count(), 0);
   s.actions.onClickCapture({ target: s.surface, preventDefault: () => { prevented = false; }, stopPropagation: () => {} } as unknown as React.MouseEvent<HTMLElement>);
   assert.equal(prevented, false, 'le clic synthétique du dépôt est intercepté');
+});
+
+test('aperçu suit le doigt, indique la destination valide et disparaît après annulation', context => {
+  const s = sensor(context);
+  s.source.dataset.editorSortLabel = 'Les fractions';
+  s.source.dataset.editorSortDetail = '14/09/2026';
+  s.start();
+  const ghost = s.ghosts[0] as { children: Array<{ textContent: string }>; style: Record<string, string>; dataset: Record<string, string>; attrs: Map<string, string> };
+  assert.equal(ghost.attrs.get('aria-hidden'), 'true');
+  assert.deepEqual(ghost.children.map(child => child.textContent), ['Les fractions', '14/09/2026']);
+  s.win.emit('touchmove', { touches: [s.point(230)], cancelable: true, preventDefault: () => {} });
+  s.flush();
+  assert.equal(ghost.dataset.valid, 'true');
+  assert.equal(ghost.style.visibility, 'visible');
+  assert.match(ghost.style.transform, /^translate3d\(/);
+  assert.equal(s.target.attrs.get('data-editor-drop-side'), 'after');
+  s.actions.cancelReorder();
+  assert.equal(s.ghosts.length, 0);
+  assert.equal(s.target.attrs.has('data-editor-drop-side'), false);
 });
 
 test('contenu tactile : un deuxième doigt annule sans mutation ni aperçu résiduel', context => {
@@ -154,11 +177,26 @@ test('contenu souris : perte de capture annule et Entrée reste une sélection a
   s.actions.onPointerDown({ target: s.surface, pointerType: 'mouse', pointerId: 2, clientX: 150, clientY: 130,
     button: 0, isPrimary: true, preventDefault: () => {} } as unknown as React.PointerEvent<HTMLElement>);
   assert.equal(s.captures(), 0, 'un simple clic reste destiné au contenu pour sélectionner');
+  s.actions.onPointerDown({ target: s.handle, pointerType: 'mouse', pointerId: 2, clientX: 150, clientY: 130,
+    button: 0, isPrimary: true, preventDefault: () => {} } as unknown as React.PointerEvent<HTMLElement>);
   s.win.emit('pointermove', { pointerId: 2, clientX: 150, clientY: 160, preventDefault: () => {} });
-  assert.equal(s.captures(), 1, 'seul le glissement capture le pointeur');
+  assert.equal(s.captures(), 1, 'seule la poignée capture le pointeur');
   assert.equal(s.ghosts.length, 1);
   s.root.emit('lostpointercapture', { pointerId: 2 });
   assert.equal(s.ghosts.length, 0); assert.equal(s.moves.length, 0); assert.equal(s.win.count(), 0);
   s.actions.onKeyDown({ target: s.surface, key: 'Enter', preventDefault: () => {} } as unknown as React.KeyboardEvent<HTMLElement>);
   assert.equal(s.clicks(), 1);
+});
+
+test('les flèches déplacent uniquement depuis la poignée', context => {
+  const s = sensor(context);
+  let prevented = 0;
+  const key = (target: unknown) => s.actions.onKeyDown({ target, key: 'ArrowDown',
+    preventDefault: () => { prevented++; }, stopPropagation: () => {} } as unknown as React.KeyboardEvent<HTMLElement>);
+  key(s.surface);
+  assert.equal(prevented, 0);
+  assert.equal(s.moves.length, 0);
+  key(s.handle);
+  assert.equal(prevented, 1);
+  assert.deepEqual(s.moves, [['source', 'target', 'after']]);
 });

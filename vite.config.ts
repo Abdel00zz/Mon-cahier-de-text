@@ -23,8 +23,7 @@ export default defineConfig(({ mode }) => {
     return {
         define: {
             __NATIVE_API_ORIGIN__: JSON.stringify(env.VITE_NATIVE_API_ORIGIN || 'https://mon-cahier-de-text.vercel.app'),
-            // Comparée à /version.json : la page n'a plus de service worker pour
-            // préparer une mise à jour en arrière-plan.
+            // Version de la page utilisée par le contrôle de mise à jour.
             __APP_VERSION__: JSON.stringify(PACKAGE_VERSION),
         },
         server: {

@@ -17,6 +17,7 @@ import type { ClassDisplayMode } from '../../src/features/dashboard/classDisplay
 import '../../src/features/dashboard/dashboardCanvas.css';
 import { computeDynamicCanvasStyle } from '../../src/features/dashboard/dashboardCanvas';
 import { ClassCard } from '../../src/features/dashboard/ClassCard';
+import { pickDepartmentPalette } from '../../src/features/dashboard/departmentPalette';
 import { AddClassCard } from '../../src/features/dashboard/AddClassCard';
 import { ClassListItem } from '../../src/features/dashboard/ClassListItem';
 import { CreateClassModal } from '../../src/features/dashboard/modals/CreateClassModal';
@@ -408,17 +409,17 @@ function Preview() {
 
       {(screen === 'dashboard' || screen === 'classes') && <AuthProvider>
         <div data-dashboard-root className="pb-24 sm:ps-[84px]" style={computeDynamicCanvasStyle(classes, [classes[0]?.id])} >
-          <div className="dashboard-heading mb-4" data-layout={display}>
-            <DashboardActions mode={display} onModeChange={setDisplay}>
+          <div className="dashboard-top-header mb-4" data-layout={display} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+            <DashboardActions mode={display} onModeChange={setDisplay} showDisplayModes={false}>
               <ClassAssistant locale={locale} classes={classes} config={config}
                 onCreateClass={() => assist({ type: 'create-class' })} onOpenSchedule={() => assist({ type: 'schedule' })}
                 onOpenClass={item => assist({ type: 'open-class', classId: item.id })} />
             </DashboardActions>
-            <h1 className="dashboard-heading__title text-2xl sm:text-3xl flex items-center gap-2.5" style={dashboardTitleStyle(locale)}><span>{t('dashboard.classes')}</span><span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
+            <h1 className="dashboard-header-title" style={dashboardTitleStyle(locale)}><span>{t('dashboard.classes')}</span><span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>
           </div>
           <div className="dashboard-class-section">
-            <div data-layout={display} className="dashboard-class-collection dashboard-class-grid">
-              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={i === 0} />)}
+            <div className="dashboard-day-group__cards flex flex-col gap-3 w-full">
+              {classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} index={i} onSelect={noop} onConfigure={() => setEditingClass(classInfo)} isActiveSession={i === 0} palette={pickDepartmentPalette(classInfo.color, classInfo.subject, i).palette} />)}
               <AddClassCard onCreate={() => setDashboardCreateOpen(true)} />
             </div>
           </div>

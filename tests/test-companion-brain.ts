@@ -420,3 +420,17 @@ test('le robot propose la prochaine classe seulement sans problème prioritaire'
   assert.equal(active.guidance.step, 'active-session');
   assert.equal(active.target?.id, '1');
 });
+
+test('le robot annonce la reprise pendant une pause au lieu de prétendre que la séance continue', () => {
+  const scheduleStatusByClassId: CompanionBrainInput['scheduleStatusByClassId'] = new Map([
+    ['1', { state: 'upcoming', label: 'Demain à 08h00', shortLabel: 'Demain', dayOffset: 1, startMin: 480 }],
+    ['2', { state: 'paused', label: 'Pause · reprise à 09h00', shortLabel: 'Pause', dayOffset: 0, startMin: 540 }],
+  ]);
+  const options = input({ scheduleStatusByClassId, activeSessionClassIds: [], offersEnabled: false });
+  const paused = evaluateCompanion(options);
+  assert.equal(paused.guidance.step, 'next-session');
+  assert.equal(paused.target?.id, '2');
+  assert.match(companionMessage(paused, 'fr', options.today, false).detail, /Pause · reprise à 09h00/);
+  const resumed = evaluateCompanion({ ...options, activeSessionClassIds: ['2'] });
+  assert.equal(resumed.guidance.step, 'active-session');
+});

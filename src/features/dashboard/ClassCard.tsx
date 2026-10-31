@@ -119,7 +119,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 </div>
 
                 {isActiveSession && (
-                    <div className="class-card__footer sr-only">
+                    <div className="class-card__footer">
                         <span className="class-card__live">
                             <span>{t('dashboard.welcome.nowTitle')}</span>
                         </span>

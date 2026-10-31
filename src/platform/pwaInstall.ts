@@ -48,6 +48,18 @@ export function detectPwaPlatform(
   return 'desktop';
 }
 
+function isStandaloneDisplay(win: Window | undefined, nav: Navigator | undefined, doc: Document | undefined): boolean {
+  if (!win) return false;
+  const matchStandalone =
+    win.matchMedia?.('(display-mode: standalone)')?.matches ||
+    win.matchMedia?.('(display-mode: fullscreen)')?.matches ||
+    win.matchMedia?.('(display-mode: window-controls-overlay)')?.matches;
+  if (matchStandalone) return true;
+  if ((nav as unknown as { standalone?: boolean } | undefined)?.standalone === true) return true;
+  if (doc?.referrer?.startsWith('android-app://')) return true;
+  return false;
+}
+
 export function detectStandaloneMode(
   win: Window | undefined = typeof window !== 'undefined' ? window : undefined,
   nav: Navigator | undefined = typeof navigator !== 'undefined' ? navigator : undefined,
@@ -58,17 +70,7 @@ export function detectStandaloneMode(
   } catch {
     // Ignore when Capacitor bridge is not initialized in unit tests
   }
-  if (!win) return false;
-  if (manualInstalled || readStoredInstallFlag()) return true;
-  const matchStandalone =
-    win.matchMedia?.('(display-mode: standalone)')?.matches ||
-    win.matchMedia?.('(display-mode: fullscreen)')?.matches ||
-    win.matchMedia?.('(display-mode: window-controls-overlay)')?.matches;
-  if (matchStandalone) return true;
-  if ((nav as unknown as { standalone?: boolean } | undefined)?.standalone === true) return true;
-  if (doc?.referrer?.startsWith('android-app://')) return true;
-  if (doc?.documentElement?.dataset?.standalone === 'true') return true;
-  return false;
+  return Boolean(win && (manualInstalled || readStoredInstallFlag() || isStandaloneDisplay(win, nav, doc)));
 }
 
 function syncRootAttributes(snapshot: PwaInstallSnapshot): void {
@@ -226,13 +228,11 @@ export function initPwaInstall(): () => void {
     // the native "App available" / "Installer" chip in the browser address bar
     // while keeping event.prompt() available for our in-app robot button.
     deferredPrompt = event as BeforeInstallPromptEvent;
-    try {
-      if (typeof localStorage !== 'undefined' && !detectStandaloneMode(window, navigator, document)) {
-        localStorage.removeItem(PWA_INSTALLED_STORAGE_KEY);
-        manualInstalled = false;
-      }
-    } catch {
-      // Ignore storage access errors
+    // A fresh browser install prompt after uninstall invalidates the old flag.
+    // Check the actual display mode, not our own persisted/DOM snapshot.
+    if (!isStandaloneDisplay(window, navigator, document)) {
+      manualInstalled = false;
+      try { localStorage.removeItem(PWA_INSTALLED_STORAGE_KEY); } catch { /* Storage unavailable. */ }
     }
     emitChange();
   };

@@ -1652,7 +1652,7 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   // Théorème : famille terracotta / brique crimson ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
   assert.equal(contentBadgeClass('théorème').includes('#fcf0ed'), true);
-  assert.equal(contentBadgeClass('exemple').includes('#edf6f0'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#eef7f2'), true);
   assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());

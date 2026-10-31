@@ -90,7 +90,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     let guidance: import('./classGuidance').ClassGuidance = selectedTask?.guidance ?? (allTasksSkipped ? skippedFallback : guidanceFromDiagnosis(diagnosis));
     if (guidance.step === 'ready' && !allTasksSkipped && input.scheduleStatusByClassId) {
       const next = input.classes.map(classInfo => ({ classInfo, status: input.scheduleStatusByClassId!.get(classInfo.id) }))
-        .filter(item => item.status && ['starting_soon', 'today_later', 'upcoming'].includes(item.status.state))
+        .filter(item => item.status && ['paused', 'starting_soon', 'today_later', 'upcoming'].includes(item.status.state))
         .sort((a, b) => (a.status!.dayOffset ?? 999) - (b.status!.dayOffset ?? 999)
           || (a.status!.startMin ?? 9999) - (b.status!.startMin ?? 9999))[0];
       if (next?.status) guidance = { step: 'next-session', classId: next.classInfo.id, className: next.classInfo.name, scheduleLabel: next.status.label };

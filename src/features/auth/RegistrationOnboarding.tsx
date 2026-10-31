@@ -28,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
 import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
-import { ProudTeacherIllustration } from '@/components/ui/DynamicIllustration';
 import './authMotion.css';
 
 const CYCLES: Cycle[] = ["college", "lycee", "prepa"];
@@ -78,11 +77,13 @@ export function RegistrationOnboarding({
   draft,
   onChange,
   onComplete,
+  onLogin,
 }: {
   locale: "fr" | "ar";
   draft: RegistrationDraft;
   onChange: (draft: RegistrationDraft) => void;
   onComplete: (setup: RegistrationSetup) => void;
+  onLogin?: () => void;
 }) {
   const ar = locale === "ar";
   const id = useId();
@@ -120,7 +121,6 @@ export function RegistrationOnboarding({
       </ol>
       <div className="registration-hero">
       <div>
-      <p className="onboarding-eyebrow">{ar ? 'بداية على مقاسك' : 'Un départ à votre image'}</p>
       <h1
         tabIndex={-1}
         className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
@@ -133,7 +133,13 @@ export function RegistrationOnboarding({
           : "Votre classe, votre matière, un cahier prêt à personnaliser. Le compte vient à l’étape suivante."}
       </p>
       </div>
-      <ProudTeacherIllustration size={168} />
+      <svg className="registration-notebook" viewBox="0 0 120 130" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="24" y="12" width="68" height="98" rx="9" />
+        <rect x="46" y="26" width="34" height="9" rx="4.5" className="registration-notebook-accent" stroke="none" />
+        <path d="M46 52h30M46 66h22M46 80h27" />
+        <circle cx="24" cy="36" r="3.4" /><circle cx="24" cy="62" r="3.4" /><circle cx="24" cy="88" r="3.4" />
+        <path d="M84 84l17-17 9 9-17 17-12 3zM95 73l9 9" />
+      </svg>
       </div>
       <div
         role="progressbar"
@@ -180,7 +186,7 @@ export function RegistrationOnboarding({
                     })
                   }
                 >
-                  <Icon size={23} />
+                  <span className="registration-cycle-icon"><Icon size={23} /></span>
                   <span>{CYCLE_LABELS[locale][value]}</span>
                   <span className="registration-cycle-check" aria-hidden="true">{cycle === value && <Check size={12} />}</span>
                 </Chip>
@@ -332,6 +338,9 @@ export function RegistrationOnboarding({
           >
             {ar ? "متابعة التسجيل" : "Continuer l’inscription"}
           </Button>
+          {onLogin && <button type="button" className="registration-login" onClick={onLogin}>
+            {ar ? 'لديك حساب؟ تسجيل الدخول' : 'Vous avez déjà un compte ? Se connecter'}
+          </button>}
         </div>
     </main>
   );

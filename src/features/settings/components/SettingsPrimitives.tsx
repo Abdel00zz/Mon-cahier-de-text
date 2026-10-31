@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 
 export const SettingsPanel: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-    {/* Sous 1024 px, le titre de la rubrique est dans l'en-tête de la fenêtre : il reste lu par les lecteurs d'écran. */}
-    <h2 className="text-xl font-bold tracking-tight text-foreground max-lg:sr-only">{title}</h2>
+    {/* The active tab or modal header already names this panel visually. */}
+    <h2 className="sr-only">{title}</h2>
     {children}
   </div>
 );

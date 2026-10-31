@@ -54,7 +54,8 @@ test('le highlight ne part jamais à l’impression', () => {
 test('la table passe la lecture du sujet jusqu’aux rangées mémoïsées', () => {
     // Piège connu : une prop ajoutée sans mise à jour du comparateur fige le
     // rendu. Les deux comparateurs doivent donc connaître la pastille.
-    const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
+    const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8')
+      + readFileSync('src/features/editor/SessionGroupRow.tsx', 'utf8');
     const tableRow = readFileSync('src/features/editor/TableRow.tsx', 'utf8');
     for (const source of [table, tableRow]) {
         assert.match(source, /prev(?:ious)?\.getDocumentPreview !== next\.getDocumentPreview/, 'comparateur de table à jour');

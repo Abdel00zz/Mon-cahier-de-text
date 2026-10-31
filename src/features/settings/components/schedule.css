@@ -1,0 +1,57 @@
+.schedule-tab {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid hsl(var(--border) / .75);
+  border-radius: 22px;
+  background: hsl(var(--card) / .8);
+  box-shadow: 0 8px 24px -22px hsl(var(--foreground) / .18);
+}
+.schedule-controls { display: flex; flex-direction: column; gap: 6px; padding: 0 0 10px; border-bottom: 1px solid hsl(var(--border) / .65); }
+.schedule-controls__row { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; min-width: 0; }
+.schedule-periods { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
+.schedule-periods__label { flex: 0 0 auto; font-size: 13px; font-weight: 600; color: hsl(var(--foreground) / .8); }
+.schedule-periods > div { min-width: 0; }
+.schedule-date-toggle { display: inline-flex; flex: 0 1 auto; align-items: center; gap: 4px; min-width: 0; max-width: 45%; min-height: 44px; padding: 4px 6px; border-radius: 10px; color: hsl(var(--muted-foreground)); font-size: 12px; font-weight: 400; line-height: 1.45; cursor: pointer; text-align: start; }
+.schedule-date-toggle:hover { color: hsl(var(--foreground)); background: hsl(var(--muted) / .45); }
+.schedule-date-toggle:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.schedule-date-toggle > svg { flex-shrink: 0; }
+.schedule-date-settings__chevron { transition: transform 180ms ease; }
+.schedule-date-toggle[aria-expanded='true'] .schedule-date-settings__chevron { transform: rotate(180deg); }
+.schedule-controls .schedule-start-field { padding: 2px 6px 8px; }
+.schedule-tab .schedule-start-field > label { color: hsl(var(--foreground) / .8); font-size: 13px; font-weight: 600; }
+.schedule-tab .schedule-start-field__input { width: 162px; max-width: 100%; flex-basis: 162px; min-width: 0; }
+.schedule-tab .schedule-start-field input { min-height: 46px; border-radius: 12px; }
+.schedule-tab .schedule-periods [role='tablist'] { gap: 5px; }
+.schedule-tab .schedule-periods [role='tab'] { min-height: 44px; padding-inline: 12px; border-radius: 12px; font-size: 13px; }
+.schedule-grid { margin-top: 4px; }
+.schedule-tab .schedule-grid__day-heading, .schedule-tab .schedule-grid__hour { height: 46px; background: hsl(var(--muted) / .38); font-size: 12px; font-weight: 650; }
+.schedule-tab .schedule-grid__day { font-size: 13px; font-weight: 650; background: hsl(var(--card)); }
+.schedule-hour-label { display: inline-flex; align-items: center; justify-content: center; gap: 1px; direction: ltr; white-space: nowrap; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.schedule-cell--empty { background: hsl(var(--background) / .42); }
+.schedule-cell--assigned select { background: color-mix(in srgb, var(--keep-cell) 62%, hsl(var(--card))); }
+.dark .schedule-cell--assigned select { background: var(--keep-cell); }
+.schedule-cell__add { color: hsl(var(--muted-foreground) / .55); }
+.schedule-cell__label { font-size: 13px; }
+@media (hover: hover) {
+  .schedule-cell--empty:hover { background: hsl(var(--muted) / .45); border-color: hsl(var(--muted-foreground) / .55); }
+  .schedule-cell--empty:hover .schedule-cell__add { color: hsl(var(--foreground) / .75); }
+}
+@media (max-width: 639px) {
+  .schedule-tab { padding: 16px 10px 14px; border-radius: 18px; }
+  .schedule-controls { padding-inline: 4px; }
+  .schedule-periods { gap: 3px; }
+  .schedule-tab .schedule-periods [role='tab'] { padding-inline: 8px; font-size: 12px; }
+  .schedule-tab .schedule-grid__hour { font-size: 12px; }
+  .schedule-hour-label { flex-direction: column; gap: 2px; }
+  .schedule-hour-separator { display: none; }
+  .schedule-hour-label > span:last-child::before { content: '– '; }
+  .schedule-cell__label { font-size: 13px; }
+}
+@media (max-width: 360px) {
+  .schedule-tab { padding-inline: 6px; }
+  .schedule-tab .schedule-grid__day { font-size: 12px; }
+  .schedule-cell__label { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .schedule-tab *, .schedule-tab *::before, .schedule-tab *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}

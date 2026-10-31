@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState, FC } from 'react';
-import { motion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
+import * as Dialog from '@radix-ui/react-dialog';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Search, X, ChevronRight, ChevronLeft, Menu, BookOpen } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
 import { APP_VERSION } from '@/platform/appVersion';
-import { cn } from '@/lib/utils';
+import { GUIDE_GROUPS, GuideNavigationList } from './GuideNavigationList';
 import './guide.css';
 
 export interface GuidePageProps {
@@ -14,42 +15,9 @@ export interface GuidePageProps {
   onClose?: () => void;
 }
 
-interface GuideGroup {
-  id: string;
-  titleAr: string;
-  titleFr: string;
-  chapterIds: string[];
-}
-
-const GUIDE_GROUPS: GuideGroup[] = [
-  {
-    id: 'onboarding',
-    titleAr: 'الانطلاقة والتهيئة',
-    titleFr: 'Prise en main & Profil',
-    chapterIds: ['start', 'profile', 'schedule', 'classes', 'students'],
-  },
-  {
-    id: 'daily',
-    titleAr: 'التدبير والتوثيق اليومي',
-    titleFr: 'Gestion & Rédaction',
-    chapterIds: ['content', 'editor', 'types', 'dates', 'math'],
-  },
-  {
-    id: 'pedagogy',
-    titleAr: 'التأطير التربوي والتقويم',
-    titleFr: 'Pédagogie & Évaluations',
-    chapterIds: ['curriculum', 'legal', 'assessments', 'notifications'],
-  },
-  {
-    id: 'tools',
-    titleAr: 'المظهر والبيانات والطباعة',
-    titleFr: 'Outils, Impression & Données',
-    chapterIds: ['appearance', 'print', 'devices', 'backup', 'troubleshooting'],
-  },
-];
-
 export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
   const { locale } = useLocale();
+  const reducedMotion = useReducedMotion();
   const lang = locale === 'ar' ? 'ar' : 'fr';
   const isAr = lang === 'ar';
   const entries = isAr ? GUIDE_AR : GUIDE_FR;
@@ -60,7 +28,7 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const results = useMemo(() => searchGuide(entries, query), [entries, query]);
-  const active = results.find(entry => entry.id === chapterId) ?? results[0] ?? entries[0];
+  const active = results.find(entry => entry.id === chapterId) ?? results[0];
   const activeIndex = entries.findIndex(entry => entry.id === active?.id);
 
   const prevEntry = activeIndex > 0 ? entries[activeIndex - 1] : null;
@@ -73,14 +41,22 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
   }, [locale]);
 
   useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => { if (desktop.matches) setMobileDrawerOpen(false); };
+    desktop.addEventListener('change', closeOnDesktop);
+    closeOnDesktop();
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
+  useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
   }, [chapterId]);
 
-  const selectChapter = (id: string, clearSearch = false) => {
+  const selectChapter = (id: string, clearSearch = true) => {
     if (clearSearch) setQuery('');
     setChapterId(id);
     setMobileDrawerOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   };
 
   const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
@@ -90,96 +66,6 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
   const currentGroup = GUIDE_GROUPS.find(g => g.chapterIds.includes(active?.id ?? ''));
   const currentGroupTitle = currentGroup ? (isAr ? currentGroup.titleAr : currentGroup.titleFr) : null;
 
-  const renderNavList = () => {
-    if (query.trim()) {
-      return (
-        <div className="space-y-1">
-          <p className="text-[11px] font-semibold text-muted-foreground px-2 py-1 mb-1">
-            {isAr ? `${results.length} نتيجة مطابقة` : `${results.length} résultat${results.length > 1 ? 's' : ''}`}
-          </p>
-          {results.length === 0 ? (
-            <div className="p-4 text-center text-xs text-muted-foreground">
-              {isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'Aucun résultat trouvé'}
-            </div>
-          ) : (
-            results.map(entry => {
-              const activeItem = entry.id === active?.id;
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  aria-current={activeItem ? 'page' : undefined}
-                  onClick={() => selectChapter(entry.id)}
-                  className={cn(
-                    'relative flex items-center justify-between gap-2.5 w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors text-start cursor-pointer select-none',
-                    activeItem
-                      ? 'text-primary-foreground font-semibold'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                  )}
-                >
-                  {activeItem && (
-                    <motion.span
-                      layoutId="guide-toc-active-pill"
-                      className="absolute inset-0 rounded-xl bg-primary shadow-xs"
-                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                    />
-                  )}
-                  <span className="relative z-10 leading-snug line-clamp-2 flex-1">{entry.title}</span>
-                  {activeItem && <span className="relative z-10 size-1.5 rounded-full bg-primary-foreground shrink-0" />}
-                </button>
-              );
-            })
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {GUIDE_GROUPS.map(group => {
-          const groupTitle = isAr ? group.titleAr : group.titleFr;
-          return (
-            <div key={group.id} className="space-y-1">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-2 py-0.5">
-                {groupTitle}
-              </h3>
-              <div className="space-y-0.5">
-                {group.chapterIds.map(id => {
-                  const entry = entries.find(e => e.id === id);
-                  if (!entry) return null;
-                  const activeItem = entry.id === active?.id;
-                  return (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      aria-current={activeItem ? 'page' : undefined}
-                      onClick={() => selectChapter(entry.id)}
-                      className={cn(
-                        'relative flex items-center justify-between gap-2.5 w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors text-start cursor-pointer select-none',
-                        activeItem
-                          ? 'text-primary-foreground font-semibold'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                      )}
-                    >
-                      {activeItem && (
-                        <motion.span
-                          layoutId="guide-toc-active-pill"
-                          className="absolute inset-0 rounded-xl bg-primary shadow-xs"
-                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                        />
-                      )}
-                      <span className="relative z-10 leading-snug line-clamp-2 flex-1">{entry.title}</span>
-                      {activeItem && <span className="relative z-10 size-1.5 rounded-full bg-primary-foreground shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
 
   return (
     <div
@@ -205,10 +91,11 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
       </header>
 
       {/* Bouton de sélection rapide sur mobile et tablette */}
+      <Dialog.Root open={isMobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
       <div className="lg:hidden mb-5">
-        <button
+        <Dialog.Trigger asChild><button
           type="button"
-          onClick={() => setMobileDrawerOpen(true)}
+          aria-label={toc}
           className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-border/75 bg-card/85 dark:bg-card/60 shadow-xs backdrop-blur-sm cursor-pointer"
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -225,30 +112,25 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
           <span className="text-xs font-semibold text-primary px-2.5 py-1 rounded-xl bg-primary/10 shrink-0">
             {isAr ? 'الفهرس' : 'Sommaire'}
           </span>
-        </button>
+        </button></Dialog.Trigger>
       </div>
 
       {/* Tiroir / Sheet Mobile pour le Sommaire */}
-      {isMobileDrawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileDrawerOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="relative z-10 w-full max-h-[85vh] bg-card border-t border-border/80 rounded-t-3xl p-5 flex flex-col shadow-2xl">
+      <Dialog.Portal>
+          <Dialog.Overlay className="guide-drawer-overlay lg:hidden" />
+          <Dialog.Content dir={isAr ? 'rtl' : 'ltr'} lang={lang} className="guide-drawer lg:hidden" aria-describedby={undefined}>
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
               <div className="flex items-center gap-2">
                 <BookOpen size={18} className="text-primary" />
-                <span className="font-bold text-sm text-foreground">{toc}</span>
+                <Dialog.Title className="font-bold text-sm text-foreground">{toc}</Dialog.Title>
               </div>
-              <button
+              <Dialog.Close asChild><button
                 type="button"
-                onClick={() => setMobileDrawerOpen(false)}
-                className="size-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+                aria-label={isAr ? 'إغلاق الفهرس' : 'Fermer le sommaire'}
+                className="size-11 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
               >
-                <X size={16} />
-              </button>
+                <X size={16} aria-hidden="true" />
+              </button></Dialog.Close>
             </div>
 
             {/* Champ de recherche mobile */}
@@ -258,23 +140,24 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
+                aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الدليل...' : 'Rechercher...'}
-                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                className="min-h-11 min-w-0 w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground outline-none"
               />
               {query.trim() && (
-                <button type="button" onClick={() => setQuery('')}>
-                  <X size={14} className="text-muted-foreground" />
+                <button type="button" className="grid size-11 shrink-0 place-items-center" aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} onClick={() => setQuery('')}>
+                  <X size={14} aria-hidden="true" className="text-muted-foreground" />
                 </button>
               )}
             </label>
 
             {/* Liste scrollable */}
-            <div className="flex-1 overflow-y-auto modern-scrollbar pe-1">
-              {renderNavList()}
-            </div>
-          </div>
-        </div>
-      )}
+            <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain modern-scrollbar pe-1" aria-label={toc}>
+              <GuideNavigationList entries={entries} results={results} query={query} activeId={active?.id} isAr={isAr} onSelect={selectChapter} />
+            </nav>
+          </Dialog.Content>
+      </Dialog.Portal>
+      </Dialog.Root>
 
       {/* Layout principal : Sidebar fixe & Article pleine page */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
@@ -302,11 +185,12 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
+                aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
                 placeholder={isAr ? 'بحث في الفهرس...' : 'Rechercher...'}
                 className="w-full bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
               {query.trim() && (
-                <button type="button" onClick={() => setQuery('')} className="text-muted-foreground hover:text-foreground">
+                <button type="button" onClick={() => setQuery('')} aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} className="grid size-11 place-items-center text-muted-foreground hover:text-foreground">
                   <X size={13} />
                 </button>
               )}
@@ -315,7 +199,7 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
 
           {/* Liste des chapitres scrollable indépendamment */}
           <nav className="flex-1 overflow-y-auto modern-scrollbar pe-1" aria-label={toc}>
-            {renderNavList()}
+            <GuideNavigationList entries={entries} results={results} query={query} activeId={active?.id} isAr={isAr} onSelect={selectChapter} />
           </nav>
 
           {/* Pied de sidebar */}

@@ -28,6 +28,54 @@
   box-shadow: 0 22px 54px -12px rgb(0 0 0 / 0.7);
 }
 
+.guide-page-root {
+  --guide-surface: hsl(var(--card));
+  --guide-soft: hsl(var(--muted) / .72);
+  --guide-border: hsl(var(--border) / .85);
+  --guide-ink: hsl(var(--foreground));
+  --guide-muted: hsl(var(--muted-foreground));
+  --guide-accent: hsl(var(--primary));
+  --guide-link: hsl(var(--primary));
+}
+
+.guide-drawer-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: hsl(var(--foreground) / .42);
+  animation: guide-overlay-in 180ms ease-out;
+}
+.guide-drawer {
+  position: fixed;
+  z-index: 101;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: min(85dvh, calc(var(--app-viewport-height, 100dvh) - 12px));
+  display: flex;
+  flex-direction: column;
+  padding: 20px max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  border: 1px solid hsl(var(--border) / .8);
+  border-radius: 24px 24px 0 0;
+  background: hsl(var(--card));
+  box-shadow: 0 -12px 36px hsl(var(--foreground) / .12);
+  outline: none;
+  animation: guide-drawer-in 220ms cubic-bezier(.2,.8,.2,1);
+}
+@keyframes guide-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes guide-drawer-in { from { opacity: .7; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 639px) {
+  .guide-page-root { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
+  .guide-page-panel { padding: 16px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .guide-page-panel .guide-article h2 { font-size: 1.25rem; }
+  .guide-page-panel .guide-article section p, .guide-page-panel .guide-steps,
+  .guide-page-panel .guide-terms, .guide-page-panel .guide-tip { font-size: 15px; line-height: 1.65; }
+  .guide-page-panel .guide-summary { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-drawer, .guide-drawer-overlay { animation: none; }
+}
+
 /* En-tête serré et compact */
 .learning-guide .learning-guide-header {
   background: var(--guide-surface);

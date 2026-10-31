@@ -15,18 +15,11 @@
   --ui-font-latin: var(--font-latin-body);
 }
 
-/* Short operational messages and Arabic remark cells use Samsung font. */
+/* Short operational messages and printed Arabic remarks use Samsung font. */
 [data-sonner-toaster]:lang(ar),
 [data-sonner-toast]:lang(ar),
 [data-sonner-toast]:lang(ar) :is([data-title], [data-description], button),
 .editor-sync-status:lang(ar),
-.editor-type-remark[dir='rtl'],
-.editor-type-remark[dir='rtl'] :not(.katex, .katex *),
-.editor-type-remark [dir='rtl']:not(.katex, .katex *),
-.editor-session-note[dir='rtl'],
-.editor-session-note[dir='rtl'] :not(.katex, .katex *),
-.editor-session-note [dir='rtl']:not(.katex, .katex *),
-[data-remark-cell='true'] [dir='rtl']:not(.katex, .katex *),
 .print-col-remark[dir='rtl'],
 .print-col-remark [dir='rtl']:not(.katex, .katex *),
 .print-session-remark[dir='rtl'],

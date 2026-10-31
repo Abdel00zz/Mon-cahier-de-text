@@ -269,3 +269,29 @@ test('PWA : manifest.webmanifest, index.html, sw.js et détection iOS/Android so
   ), true);
 });
 
+test('un nouveau signal d’installation efface le marqueur périmé après désinstallation', async context => {
+  const { initPwaInstall, markPwaInstalled, getPwaInstallSnapshot } = await import('../src/platform/pwaInstall');
+  const listeners = new Map<string, EventListener>();
+  const values = new Map<string, string>();
+  const win = { isSecureContext: false, location: { hostname: 'example.test' },
+    matchMedia: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
+    addEventListener: (name: string, fn: EventListener) => listeners.set(name, fn),
+    removeEventListener: (name: string) => listeners.delete(name) };
+  const doc = { referrer: '', documentElement: { dataset: {} } };
+  const storage = { getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key) };
+  for (const [key, value] of Object.entries({ window: win, document: doc, navigator: { userAgent: 'Android' }, localStorage: storage })) {
+    const previous = Object.getOwnPropertyDescriptor(globalThis, key);
+    Object.defineProperty(globalThis, key, { configurable: true, value });
+    context.after(() => { if (previous) Object.defineProperty(globalThis, key, previous); else Reflect.deleteProperty(globalThis, key); });
+  }
+  const dispose = initPwaInstall();
+  markPwaInstalled();
+  assert.equal(getPwaInstallSnapshot().isStandalone, true);
+  listeners.get('beforeinstallprompt')?.({} as Event);
+  assert.equal(getPwaInstallSnapshot().isStandalone, false);
+  assert.equal(getPwaInstallSnapshot().canPromptNative, true);
+  assert.equal(values.has('cdt_pwa_installed_v1'), false);
+  dispose();
+});
+

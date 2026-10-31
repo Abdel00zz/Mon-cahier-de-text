@@ -231,7 +231,7 @@ export function FluidTabRail<T extends string = string>({
         style={{
           scrollBehavior,
           WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-x',
+          touchAction: 'manipulation',
         }}
       >
         {items.map((item, index) => {

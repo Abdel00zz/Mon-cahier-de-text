@@ -5,6 +5,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GuideFigure } from '../src/features/guide/GuideFigure';
 import { GuideText } from '../src/features/guide/GuideText';
+import { GuideNavigationList } from '../src/features/guide/GuideNavigationList';
 
 assert.deepEqual(GUIDE_FR.map(entry => entry.id), GUIDE_AR.map(entry => entry.id), 'Same chapters and order in FR/AR');
 const ids = new Set(GUIDE_FR.map(entry => entry.id));
@@ -51,6 +52,14 @@ for (const entries of [GUIDE_FR, GUIDE_AR]) {
 assert.ok(searchGuide(GUIDE_FR, 'élèves liste').some(entry => entry.id === 'students'));
 assert.ok(searchGuide(GUIDE_AR, 'لائحة تلاميذ').some(entry => entry.id === 'students'));
 assert.ok(searchGuide(GUIDE_FR, 'déplacement').some(entry => entry.id === 'editor'));
+const contents = renderToStaticMarkup(createElement(GuideNavigationList, { entries: GUIDE_FR, results: GUIDE_FR,
+  query: '', activeId: 'editor', isAr: false, onSelect: () => {} }));
+assert.equal((contents.match(/aria-current="page"/g) ?? []).length, 1);
+assert.equal((contents.match(/<button/g) ?? []).length, GUIDE_FR.length);
+const noResults = renderToStaticMarkup(createElement(GuideNavigationList, { entries: GUIDE_AR, results: [],
+  query: 'xyz', isAr: true, onSelect: () => {} }));
+assert.ok(noResults.includes('لا توجد نتائج مطابقة لبحثك'));
+assert.doesNotMatch(noResults, /<button/);
 const richText = renderToStaticMarkup(createElement(GuideText, { children: 'Paramètres → Profil, الإعدادات, $x^2$ <script>alert(1)</script>' }));
 assert.ok(richText.includes('<strong>Paramètres → Profil</strong>'));
 assert.ok(richText.includes('<strong>الإعدادات</strong>'));

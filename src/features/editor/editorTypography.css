@@ -1,0 +1,47 @@
+/* Écran uniquement : le document imprimé conserve ses métriques propres.
+   Inter pour la lecture ; Samsung pour les titres. Les replis restent locaux. */
+@media screen {
+  :is([data-editor-root], [data-editor-table], .content-fields) {
+    --font-latin-body: 'Inter';
+    --font-latin-reading: 'Inter';
+    --font-latin-display: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'Inter';
+    --font-arabic-body: 'Readex Pro';
+    --font-arabic-display: 'SamsungOne Arabic';
+    --font-arabic-secondary: 'Readex Pro';
+    --notebook-reading: 'Inter', 'Readex Pro', sans-serif;
+    --notebook-heading: 'SamsungOne', 'Samsung Sans', 'One UI Sans', 'SamsungOne Arabic', 'Inter', sans-serif;
+    font-family: var(--notebook-reading);
+  }
+
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-date-value),
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-date-value) :not(.katex, .katex *) {
+    font-family: var(--notebook-heading);
+    letter-spacing: normal;
+  }
+
+  [data-editor-table] :is(.editor-type-description, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-session-note, .editor-type-page, .editor-free-content, .editor-list),
+  [data-editor-table] :is(.editor-type-description, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-session-note, .editor-type-page, .editor-free-content, .editor-list) :not(.katex, .katex *),
+  .content-fields :is(input, textarea, [role='combobox']) {
+    font-family: var(--notebook-reading);
+    letter-spacing: normal;
+  }
+
+  [data-editor-table] .editor-type-item-title { font-weight: 500; line-height: 1.55; }
+  [data-editor-table] .editor-type-description { font-weight: 400; line-height: 1.65; }
+  [data-editor-table] .editor-type-chapter { font-weight: 600; line-height: 1.4; }
+  [data-editor-table] .editor-type-badge { font-weight: 600; }
+  [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 500; }
+  [data-editor-table] :is(.editor-type-remark, .editor-session-note) {
+    font-size: max(.75rem, var(--editor-fs-remark));
+    font-weight: 400;
+    line-height: 1.55;
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 639px) {
+    /* Les paddings imbriqués laissaient moins de 30 px pour lire une remarque. */
+    [data-editor-table] [data-remark-cell] { padding-inline: 2px; }
+    [data-editor-table] :is(.editor-type-remark, .editor-session-note) { text-wrap: pretty; }
+  }
+}

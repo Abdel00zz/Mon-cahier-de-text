@@ -3,7 +3,7 @@ import { chapter } from './model';
 export const editor = chapter('editor', ["types", "dates", "assessments"], {
     "title": "Sélectionner et déplacer un contenu",
     "summary": "Travaillez sur un élément précis, même lorsque plusieurs contenus partagent une date.",
-    "keywords": "déplacement glisser appui long contenu regroupé même date exercice chapitre paragraphe",
+    "keywords": "déplacement glisser poignée six points contenu regroupé même date exercice chapitre paragraphe",
     "image": {
         "key": "editor",
         "caption": "Tableau du cahier : dates, contenus et remarques de séance."
@@ -19,11 +19,11 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
         },
         {
             "id": "move", "title": "Déplacer directement un élément",
-            "body": "Maintenez le contenu jusqu’à son soulèvement, puis faites-le glisser vers un emplacement autorisé. Le repère indique sa destination. Vous pouvez aussi maintenir, relâcher, puis toucher la destination. Sur téléphone, un balayage sans maintien fait défiler le tableau. Échap annule un déplacement en cours."
+            "body": "Faites glisser la poignée à six points vers un emplacement autorisé. Vous pouvez aussi toucher la poignée, puis la destination. Au clavier, utilisez les flèches haut et bas sur la poignée. Le contenu reste disponible pour la sélection et le défilement. Échap annule un déplacement en cours."
         },
         {
             "title": "Même date, contenus distincts",
-            "body": "Des contenus regroupés parce qu’ils ont la même date restent indépendants. Sélectionnez le contenu concerné pour le déplacer ou changer sa date ; il se dissocie automatiquement si nécessaire. Ce regroupement est différent d’une fusion de contenus identiques."
+            "body": "Des contenus regroupés parce qu’ils ont la même date restent indépendants. Utilisez la poignée du contenu pour le déplacer ou sélectionnez-le pour changer sa date ; il se dissocie automatiquement si nécessaire. Ce regroupement est différent d’une fusion de contenus identiques."
         },
         {
             "title": "Renommer ou reprogrammer",
@@ -49,11 +49,11 @@ export const editor = chapter('editor', ["types", "dates", "assessments"], {
         },
         {
             "id": "move", "title": "نقل عنصر مباشرة",
-            "body": "اضغط مطولاً على المحتوى حتى يرتفع، ثم اسحبه إلى موضع مسموح. يوضح المؤشر وجهة الإدراج. يمكنك أيضاً الضغط المطول ثم الإفلات ولمس الوجهة. على الهاتف، السحب دون انتظار يمرّر الجدول. يلغي مفتاح Échap النقل الجاري."
+            "body": "اسحب مقبض النقاط الست إلى موضع مسموح، أو المس المقبض ثم الوجهة. باستخدام لوحة المفاتيح، استعمل سهمي الأعلى والأسفل على المقبض. يبقى المحتوى متاحاً للتحديد والتمرير. يلغي مفتاح Échap النقل الجاري."
         },
         {
             "title": "تاريخ واحد ومحتويات مستقلة",
-            "body": "تبقى المحتويات المجمّعة بسبب التاريخ نفسه مستقلة. حدّد المحتوى المعني لنقله أو تغيير تاريخه؛ ينفصل تلقائياً عند الحاجة. يختلف هذا التجميع عن دمج محتويات متطابقة."
+            "body": "تبقى المحتويات المجمّعة بسبب التاريخ نفسه مستقلة. استخدم مقبض المحتوى لنقله أو حدّده لتغيير تاريخه؛ ينفصل تلقائياً عند الحاجة. يختلف هذا التجميع عن دمج محتويات متطابقة."
         },
         {
             "title": "العنوان والتاريخ",

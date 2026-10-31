@@ -76,7 +76,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggl
                 <button
                   type="button"
                   onClick={() => setExpanded(value => !value)}
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                   <span>{expanded ? t('settings.subjectsSeeLess') : t('settings.subjectsSeeMore')}</span>
                   {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
@@ -96,7 +96,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggl
                   onClick={() => onToggleSubject(subject)}
                   className={cn(
                     settingsChoiceClass(active),
-                    'min-h-10 text-xs sm:text-sm py-2 px-3.5 rounded-xl border transition-all'
+                    'min-h-11 text-xs sm:text-sm py-2 px-3.5 rounded-xl border transition-all'
                   )}
                 >
                   {active && <Check className="size-3.5 stroke-[2.5] text-primary" />}

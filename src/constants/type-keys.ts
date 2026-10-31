@@ -87,10 +87,10 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 
 // Palette artistique, élégante et moderne : teintes subtiles et nobles,
 // contrastes de galerie éditoriale avec bordure de précision.
-const BADGE_BLUE = 'bg-[#edf4fc] text-[#0d549b] dark:bg-[#122842] dark:text-[#8fc3ff]';
+const BADGE_BLUE = 'bg-[#eef4f9] text-[#1565c0] dark:bg-[#122842] dark:text-[#8fc3ff]';
 const BADGE_NEUTRAL = 'bg-[#f4f5f7] text-[#3e444e] dark:bg-[#20252d] dark:text-[#cbd5e1]';
 const BADGE_RED = 'bg-[#fcf0ed] text-[#ad2d24] dark:bg-[#381614] dark:text-[#fca597]';
-const BADGE_GREEN = 'bg-[#edf6f0] text-[#196336] dark:bg-[#122b1c] dark:text-[#8de3a6]';
+const BADGE_GREEN = 'bg-[#eef7f2] text-[#2e7d32] dark:bg-[#122b1c] dark:text-[#8de3a6]';
 
 /** Interne : les surfaces passent par `contentBadgeClass`, pas par la palette. */
 const BADGE_COLOR_MAP: { [key: string]: string } = {

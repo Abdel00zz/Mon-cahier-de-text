@@ -26,6 +26,22 @@ test('each content of a shared session has its own drag target', () => {
   assert.match(html, /data-session-cell="content"[^>]*data-editor-sort-key="0\|\|\|\|1"[^>]*data-editor-sort-transfer="true"/);
 });
 
+test('each handle follows the language of its own row, independently of the notebook', () => {
+  const lessons: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
+    { type: 'cours', title: 'Texte français' },
+    { type: 'cours', title: 'نص عربي' },
+    { type: 'cours', title: '$x^2$', description: 'شرح عربي' },
+  ] }];
+  for (const contentDirection of ['ltr', 'rtl'] as const) {
+    const html = render(React.createElement(MainTable, { lessonsData: lessons, visibleRows: buildLessonRows(lessons),
+      contentDirection, onClearSearch: noop, onOpenAddContentModal: noop, selectedKeys: new Set<string>(),
+      onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [], onReorder: () => true, canReorder: () => true }));
+    assert.equal((html.match(/data-reorder-direction="ltr"/g) ?? []).length, 2);
+    assert.equal((html.match(/data-reorder-direction="rtl"/g) ?? []).length, 2);
+    assert.equal((html.match(/data-reorder-handle="true"/g) ?? []).length, 4);
+  }
+});
+
 test('the last row of a merged session owns the scroll anchor, not its entire group', () => {
   const lessons: LessonsData = [{ type: 'chapter', title: 'درس', items: [
     { type: 'cours', title: 'أول سطر', date: '2026-09-01' },

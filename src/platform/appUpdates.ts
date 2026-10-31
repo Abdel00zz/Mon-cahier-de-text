@@ -2,13 +2,8 @@ import { isNetworkOnline } from './networkStatus';
 import { startSafePwaAction } from './safeUpdate';
 
 /*
- * Mise à jour du site web, sans service worker.
- *
- * Le service worker PWA a été retiré : la page ne peut plus « préparer » une
- * nouvelle version en arrière-plan. Elle compare donc la version publiée
- * (`/version.json`) à celle qu'elle exécute (`__APP_VERSION__`, injectée au
- * build) et propose un simple rechargement, différé tant qu'une saisie ou une
- * modale est en cours.
+ * Vérification de la version publiée, indépendante du cache PWA. Un
+ * rechargement demandé reste différé tant qu'une saisie ou une modale est ouverte.
  */
 export type WebUpdateState = 'idle' | 'checking' | 'current' | 'downloaded' | 'pending' | 'applying' | 'offline' | 'unavailable' | 'error';
 

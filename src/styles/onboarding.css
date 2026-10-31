@@ -46,8 +46,8 @@
   text-align: start; border: 1px solid hsl(var(--border)); border-radius: 20px;
   background: hsl(var(--card)); box-shadow: inset 0 1px 0 hsl(var(--background) / .65), 0 4px 12px -8px hsl(var(--foreground) / .12);
 }
-.onboarding-cycle-symbol { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; color: hsl(var(--muted-foreground)); }
-.onboarding-cycle-symbol .app-icon { width: 34px; height: 34px; }
+.onboarding-cycle-symbol { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: hsl(var(--muted) / .65); color: hsl(var(--muted-foreground)); }
+.onboarding-cycle-symbol .app-icon { display: block; width: 26px; height: 26px; }
 .onboarding-cycle-card[aria-pressed="true"] .onboarding-cycle-symbol { color: var(--setup-ink); }
 .onboarding-cycle-copy { min-width: 0; flex: 1; }
 .onboarding-cycle-check { width: 21px; height: 21px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; border: 1px solid hsl(var(--border)); color: var(--setup-ink); }
@@ -83,13 +83,17 @@
 .registration-hero { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .registration-hero>div { min-width: 0; flex: 1; }
 .registration-hero>.dynamic-illustration { flex: 0 0 168px; }
+.registration-notebook { display: block; width: 104px; height: 114px; flex: 0 0 104px; }
 .registration-form { border: 1px solid hsl(var(--border)); border-radius: 24px; padding: 22px; background: hsl(var(--card)); box-shadow: 0 10px 30px -24px hsl(var(--foreground) / .18); }
 .registration-studio .auth-choice { border-radius: 12px; font-weight: 500; }
 .registration-studio .auth-choice[aria-pressed="true"] { background: var(--setup-fill); border-color: var(--setup-ink); color: var(--setup-ink); }
 .registration-cycle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
 .registration-cycle-grid .auth-choice { position: relative; min-width: 0; min-height: 116px; flex-direction: column; gap: 12px; padding: 16px 7px; font-size: 12px; line-height: 1.5; border-radius: 17px; }
-.registration-cycle-grid .auth-choice>span:not(.registration-cycle-check) { min-height: 36px; display: flex; align-items: center; }
-.registration-cycle-check { position: absolute; top: 7px; inset-inline-end: 7px; display: grid; place-items: center; width: 14px; height: 14px; }
+.registration-cycle-grid .auth-choice>span:not(.registration-cycle-icon, .registration-cycle-check) { min-height: 36px; display: flex; align-items: center; justify-content: center; }
+.registration-cycle-grid .registration-cycle-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; background: hsl(var(--muted)); }
+.registration-cycle-icon .app-icon { display: block; width: 24px; height: 24px; }
+.registration-cycle-check { position: absolute; top: 8px; inset-inline-end: 8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; }
+.auth-choice[aria-pressed='true'] .registration-cycle-check { background: var(--setup-ink); color: hsl(var(--card)); }
 .registration-studio input, .registration-studio [role="combobox"] { border-radius: 12px; min-height: 48px; }
 .registration-preview { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 15px; border: 1px solid hsl(var(--border)); border-radius: 15px; background: hsl(var(--muted) / .4); }
 .registration-preview>div { min-width: 0; flex: 1; }
@@ -105,6 +109,10 @@
   .onboarding-studio main { padding-top: 22px; }
 }
 @media (max-width: 639px) {
+  .onboarding-artisan-header > div { flex-wrap: wrap; }
+  .onboarding-artisan-header > div > div:last-child { margin-inline-start: auto; }
+  .onboarding-pill-rail button { min-width: 44px; min-height: 44px; padding-inline: 10px; }
+  .registration-notebook { width: 72px; height: 82px; flex-basis: 72px; }
   .onboarding-studio main { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
   .onboarding-studio .onboarding-heading { min-height: 122px; }
   .onboarding-heading-illustration { width: 118px; flex-basis: 118px; }
@@ -129,6 +137,14 @@
   .registration-cycle-grid .auth-choice { min-height: 112px; padding-inline: 6px; font-size: 11px; }
   .registration-dock { position: fixed; z-index: 30; bottom: 0; inset-inline: 0; padding: 10px 16px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid hsl(var(--border) / .7); background: hsl(var(--background) / .95); backdrop-filter: blur(18px) saturate(140%); }
   .registration-dock>p { font-size: 11px; margin-bottom: 8px; }
+}
+@media (max-width: 420px) {
+  /* Le logo conserve sa place ; les cinq commandes restent tactiles sans
+     repousser les choix pédagogiques sous la ligne de flottaison. */
+  .onboarding-artisan-header > div > div:first-child > span {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .onboarding-progress-ring circle { transition: none; }

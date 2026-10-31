@@ -51,13 +51,13 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             type="button"
             onClick={() => onConfigChange({ theme: 'light', appTextSize: 'md' })}
             disabled={isDefault}
-            className="min-h-9 cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-40"
+            className="min-h-11 cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-40"
           >
             {t('settings.appearance.resetDefaults')}
           </button>
         }
       >
-        <div className="grid grid-cols-3 gap-2.5 pt-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-0.5">
           {THEME_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
             <button
               key={id}
@@ -110,7 +110,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         <SettingsRow
           label={<span className="flex items-center gap-2">{t('language.settings.active')} :</span>}
         >
-          <div className="flex gap-2.5">
+          <div className="flex flex-wrap justify-end gap-2.5">
             {INTERFACE_LOCALES.map(option => (
               <button
                 key={option.value}
@@ -119,7 +119,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 onClick={() => onConfigChange({ applicationLocale: option.value as AppLocale })}
                 className={cn(
                   settingsChoiceClass(currentLocale === option.value),
-                  'min-h-10 px-4 rounded-xl text-sm font-medium'
+                  'min-h-11 px-4 rounded-xl text-sm font-medium'
                 )}
               >
                 <span lang={option.value}>{option.nativeName}</span>

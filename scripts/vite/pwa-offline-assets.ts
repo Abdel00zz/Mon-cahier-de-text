@@ -26,11 +26,15 @@ export function pwaOfflineAssets(): Plugin {
       }
       files.sort();
       const hash = createHash('sha256');
+      const workerPath = path.join(outDir, 'sw.js');
+      const workerSource = fs.readFileSync(workerPath, 'utf8');
+      // Worker-only updates need a new cache: a failed install must not delete
+      // the shell currently serving an installed app.
+      hash.update('sw.js').update(workerSource);
       for (const name of ['index.html', ...files]) {
         hash.update(name).update(fs.readFileSync(path.join(outDir, name)));
       }
-      const workerPath = path.join(outDir, 'sw.js');
-      const worker = fs.readFileSync(workerPath, 'utf8')
+      const worker = workerSource
         .replace("const BUILD_ID = 'development';", `const BUILD_ID = '${hash.digest('hex').slice(0, 16)}';`)
         .replace('const BUILD_ASSETS = [];', `const BUILD_ASSETS = ${JSON.stringify(files.map(file => `/${file}`))};`);
       fs.writeFileSync(workerPath, worker);

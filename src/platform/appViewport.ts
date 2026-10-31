@@ -10,12 +10,11 @@ const isIOSDevice = (): boolean => {
  * hauteur réellement visible lorsque le clavier virtuel s'ouvre, plateforme
  * détectée, et état « clavier ouvert » pour les barres et les feuilles modales.
  *
- * Ce module a remplacé `applePlatform.ts` : le mode d'installation PWA
- * (`display-mode`, `data-standalone`) est parti avec l'application installable.
+ * L'état d'installation PWA est géré séparément par `pwaInstall.ts`.
  */
 export const initAppViewport = (): (() => void) => {
     const root = document.documentElement;
-    root.dataset.platform = isIOSDevice() ? 'ios' : 'web';
+    root.dataset.platform = isIOSDevice() ? 'ios' : /android/i.test(navigator.userAgent) ? 'android' : 'web';
 
     let viewportFrame: number | null = null;
     let layoutWidth = window.innerWidth;

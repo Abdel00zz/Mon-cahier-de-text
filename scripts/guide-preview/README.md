@@ -19,12 +19,14 @@ notifications système ni utiliser un compte enseignant pour réaliser les captu
    reporter leurs dimensions exactes dans `GuideFigure.tsx`.
 6. Exécuter `npm run test:guide`, `npm run check:architecture` et `npm run build`.
 
-Les captures réelles de l'application ont été entièrement renouvelées en haute résolution
-le 19 octobre 2026 via `scripts/generate-guide-images.mjs`. Elles sont fidèles à l'interface
-actuelle (cartes de classes, grille d'emploi du temps, éditeur avec cartes de notions sans arrondi,
-modale d'ajout, calendrier et date, paramètres de notifications et d'apparence).
-De nouvelles captures ont été intégrées pour les rubriques majeures : Évaluations et activités
-(`assessments`), Gestion des élèves (`students`) et Impression officielle du cahier (`print`).
+Captures renouvelées le 29 octobre 2026 : dix écrans bilingues (20 images)
+et deux vues mobiles utilisées dans le téléphone de la connexion.
+
+Pour les régénérer, démarrer `npm run dev` (port 3000), puis exécuter
+`node scripts/generate-guide-images.mjs`. Le script ouvre un profil Edge isolé,
+attend le contenu et les polices locales, masque les barres de défilement et
+encode les captures en WebP. Vérifier ensuite les images et lancer
+`npm run test:guide`. Aucun compte réel n'est nécessaire.
 
 ## Maintenance
 

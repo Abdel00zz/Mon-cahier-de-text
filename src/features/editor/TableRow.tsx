@@ -8,7 +8,7 @@ import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/lib/formatters';
 import { parseDateInput } from '@/domain/notebook/dataUtils';
-import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { detectTextDirection, textDirectionAttribute } from '@/lib/text/textDirection';
 import { hasHomeworkMention, splitRemarkContent } from '@/domain/evaluations/homeworkNumbering';
 import { renderDescriptionWithBold } from '@/components/typography/textFormat';
 import type { NotebookDocumentPreview } from '@/domain/evaluations/assessmentSync';
@@ -128,7 +128,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
     if (rangeOrPair) {
       const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
       return (
-        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.85rem] font-semibold leading-snug tabular-nums sm:text-[0.95rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.85rem] font-semibold leading-snug tabular-nums sm:text-[0.95rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
           <span data-date-token className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
             <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.start.day}/{rangeOrPair.start.numericMonth}</bdi>
             <span className="font-normal text-foreground text-xs">{conjunction}</span>
@@ -155,7 +155,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
   if (parsedDates.length === 0) return null;
   const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.9rem] font-semibold leading-snug tabular-nums sm:text-[1.0125rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.9rem] font-semibold leading-snug tabular-nums sm:text-[1.0125rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
       {parsedDates.map((date, index) => (
         <span key={date.source} data-date-token className="inline-flex shrink-0 items-baseline gap-0.5 whitespace-nowrap">
           {index > 0 ? <span className="font-normal text-foreground">{conjunction}</span> : null}
@@ -326,6 +326,9 @@ const TableRowComponent: FC<TableRowProps> = ({
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale, t } = useLocale();
 
+  // La langue de chaque ligne prévaut sur celle de l'interface et du cahier.
+  const reorderDirection = detectTextDirection(data.title) ?? detectTextDirection(data.name) ?? detectTextDirection(data.description) ?? undefined;
+
   const handleContentDoubleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!onDoubleClickEdit) return;
 
@@ -444,8 +447,8 @@ const TableRowComponent: FC<TableRowProps> = ({
       <div
         className={`relative flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
+        data-reorder-direction={reorderDirection}
         tabIndex={sortable ? 0 : undefined}
-        aria-description={sortable ? t('editor.reorderHandle') : undefined}
         onClick={event => {
           const target = event.target as HTMLElement | null;
           if (target?.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) {
@@ -456,7 +459,7 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
-        {sortable && <button type="button" data-reorder-handle onClick={event => { if (event.detail === 0) event.currentTarget.closest<HTMLElement>('.editor-row-content--sortable')?.focus(); }} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
+        {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
@@ -518,8 +521,8 @@ const TableRowComponent: FC<TableRowProps> = ({
     <div
       className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors duration-150 ${contentBottomBorder}`}
       data-row-content="true"
+      data-reorder-direction={reorderDirection}
       tabIndex={sortable ? 0 : undefined}
-      aria-description={sortable ? t('editor.reorderHandle') : undefined}
       onClick={event => {
         const target = event.target as HTMLElement | null;
         if (target?.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) {
@@ -530,7 +533,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         handleToggle();
       }}
     >
-      {sortable && <button type="button" data-reorder-handle onClick={event => { if (event.detail === 0) event.currentTarget.closest<HTMLElement>('.editor-row-content--sortable')?.focus(); }} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
+      {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
       <ContentRenderer
         data={data}
         indices={indices}

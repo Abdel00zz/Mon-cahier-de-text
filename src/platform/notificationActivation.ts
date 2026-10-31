@@ -19,7 +19,6 @@ export interface NotificationActivationSnapshot {
 }
 
 let checking = false;
-let activating = false;
 let initialized = false;
 const listeners = new Set<() => void>();
 let cachedSnapshot: NotificationActivationSnapshot | null = null;
@@ -50,7 +49,7 @@ function computeInitialSnapshot(): NotificationActivationSnapshot {
   return {
     supported,
     checking: isNative && supported,
-    activating,
+    activating: false,
     permission: isNative ? 'default' : webPermission,
     delivery: isNative ? 'local' : undefined,
     subscribed: !isNative && webPermission === 'granted',
@@ -84,7 +83,7 @@ function updateSnapshot(patch: Partial<NotificationActivationSnapshot>): void {
   }
 }
 
-export async function refreshNotificationActivationState(): Promise<NotificationActivationSnapshot> {
+async function refreshNotificationActivationState(): Promise<NotificationActivationSnapshot> {
   const supported = isSupportedOnCurrentDevice();
   if (!supported) {
     updateSnapshot({
@@ -183,7 +182,7 @@ export async function triggerCompanionNotificationActivation(options: {
   onEnableConfig?: () => void;
   onOpenSettings?: () => void;
 }): Promise<'activated' | 'settings' | 'dismissed'> {
-  if (activating) return 'dismissed';
+  if (getNotificationActivationSnapshot().activating) return 'dismissed';
 
   const current = getNotificationActivationSnapshot();
   if (current.permission === 'denied') {

@@ -417,56 +417,24 @@
   --class-live-fill: hsl(342 30% 78%);
 }
 
-/* Cadre de la séance active : seul le contour clignote en orange foncé moderne */
+/* Une seule pulsation d'opacité : la teinte vient de la carte, sans
+   animation d'ombre ni de couleur recalculée à chaque image. */
 :is(.class-card, .class-list-item) {
-  --session-frame-orange-deep: #9A3412;
-  --session-frame-orange: #C2410C;
-  --session-frame-orange-bright: #EA580C;
+  --session-accent: var(--card-secondary, var(--class-accent));
 }
-
-.dark :is(.class-card, .class-list-item) {
-  --session-frame-orange-deep: #C2410C;
-  --session-frame-orange: #EA580C;
-  --session-frame-orange-bright: #F97316;
-}
-
 @keyframes class-session-frame-pulse {
-  0%, 100% {
-    border-color: var(--session-frame-orange-deep, #9A3412);
-    box-shadow:
-      inset 0 0 0 1px rgb(154 52 18 / 0.28),
-      0 0 0 1px rgb(194 65 12 / 0.22),
-      0 6px 18px -6px rgb(154 52 18 / 0.26);
-  }
-  50% {
-    border-color: var(--session-frame-orange-bright, #EA580C);
-    box-shadow:
-      inset 0 0 0 1.5px rgb(234 88 12 / 0.72),
-      0 0 0 3px rgb(194 65 12 / 0.28),
-      0 10px 26px -6px rgb(194 65 12 / 0.44);
-  }
+  0%, 100% { opacity: .18; }
+  50% { opacity: .55; }
 }
-
-@keyframes class-session-frame-ring {
-  0%, 100% {
-    opacity: 0.32;
-    border-color: var(--session-frame-orange-deep, #9A3412);
-  }
-  50% {
-    opacity: 1;
-    border-color: var(--session-frame-orange-bright, #EA580C);
-  }
-}
-
 .class-card--active,
 .class-card[data-session-active="true"],
 .class-list-item[data-session-active="true"] {
-  border-width: 2px !important;
-  border-style: solid !important;
-  border-color: var(--session-frame-orange, #C2410C) !important;
-  animation: class-session-frame-pulse 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  border-color: color-mix(in srgb, var(--session-accent) 45%, var(--card-border, hsl(var(--border)))) !important;
 }
-
+.class-card.class-card--active {
+  min-height: 112px !important;
+  padding-block: 14px 42px;
+}
 .class-card--active::after,
 .class-card[data-session-active="true"]::after,
 .class-list-item[data-session-active="true"]::after {
@@ -475,13 +443,30 @@
   inset: 0;
   z-index: 3;
   border-radius: inherit;
-  border: 2px solid var(--session-frame-orange-bright, #EA580C);
+  border: 1px solid var(--session-accent);
   pointer-events: none;
-  animation: class-session-frame-ring 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: class-session-frame-pulse 2.8s ease-in-out infinite;
 }
-
-.class-card--active .class-card__sheet {
-  border-color: var(--session-frame-orange, #C2410C);
+.class-card--active .class-card__footer {
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 12px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  text-align: center;
+}
+.class-card--active .class-card__live {
+  color: var(--card-title, var(--class-ink));
+  background: color-mix(in srgb, var(--card-title, var(--class-ink)) 7%, var(--card-bg, hsl(var(--card))));
+  border-color: color-mix(in srgb, var(--card-title, var(--class-ink)) 12%, transparent);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 3px 12px;
+  justify-content: center;
 }
 
 /* Desktop feedback is enabled only for a precise pointer. */
