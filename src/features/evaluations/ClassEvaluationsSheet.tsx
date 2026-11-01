@@ -4,6 +4,8 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { Modal } from '@/components/ui/modal';
+import { pickDepartmentPalette } from '@/features/dashboard/departmentPalette';
+import { HeroRoundedShapes, HeroWavyUnderline } from './components/SectionPanelBadge';
 import './evaluationReference.css';
 import { DevoirsView } from './DevoirsView';
 
@@ -18,8 +20,12 @@ interface ClassEvaluationsSheetProps {
     onLessonsChange?: (newLessons: LessonsData) => void;
 }
 
+const SHEET_MOBILE_DETENTS = [0.94, 0.96];
+
 /**
- * Évaluations d'une classe : Modale de gestion pédagogique avancée
+ * Évaluations d'une classe : Fiche classe avec bandeau héros coloré,
+ * titre en Lalezar souligné d'une vague, étiquette blanche inclinée sous le titre,
+ * 4 panneaux colorés et tickets d'évaluation.
  */
 export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     open,
@@ -35,20 +41,39 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     const className = formatLocalizedClassDisplayName(classInfo.name, locale);
     /* Une seule matière ne se distingue de rien : pas de pastille redondante. */
     const showsSubjectLabels = useShowsSubjectLabels();
+    const { key: paletteKey } = pickDepartmentPalette(classInfo.color, classInfo.subject, 0);
 
     return (
         <Modal
             isOpen={open}
             onClose={() => onOpenChange(false)}
-            maxWidth="5xl"
-            className="evaluation-modal evaluation-reference sm:max-w-5xl sm:rounded-xl"
-            headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
+            maxWidth="4xl"
+            mobileDetents={SHEET_MOBILE_DETENTS}
+            initialMobileDetent={0.96}
+            swipeToDismiss={true}
+            swipeFromBody={true}
+            className={`evaluation-modal evaluation-reference eval-hero-tone-${paletteKey} sm:max-w-[46rem] sm:rounded-3xl`}
+            headerClassName={`evaluation-hero-header eval-hero-tone-${paletteKey}`}
             title={
-                <span className="main-title inline-flex items-baseline flex-wrap gap-x-2 gap-y-0.5 max-w-full">
-                    {/* « : » précédé d'une espace insécable en français seulement. */}
-                    <span className="shrink-0">{t('evaluationsSheet.title')}{t('evaluationsSheet.separator')}</span>
-                    <span className="class-tag min-w-0 font-bold break-words" dir="auto">{className}</span>
-                </span>
+                <div className="eval-hero-banner">
+                    <HeroRoundedShapes />
+                    <div className="eval-hero-content">
+                        <span className="main-title eval-hero-title">
+                            <span className="eval-hero-title__text">{t('evaluationsSheet.title')}</span>
+                            <HeroWavyUnderline className="eval-hero-wave" />
+                        </span>
+                        <div className="eval-hero-tags">
+                            <span className="class-tag eval-course-white-tag" dir="auto">
+                                {className}
+                            </span>
+                            {showsSubjectLabels && classInfo.subject && (
+                                <span className="eval-subject-tilted-tag" dir="auto">
+                                    {classInfo.subject}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
             }
             description={showsSubjectLabels && classInfo.subject ? `${className} · ${classInfo.subject}` : className}
         >

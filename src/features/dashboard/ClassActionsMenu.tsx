@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useId } from 'react';
+import { useCallback, useEffect, useId, type CSSProperties } from 'react';
 import { create } from 'zustand';
-import { MoreVertical, Settings, CalendarCheck } from 'lucide-react';
+import { MoreVertical, Pencil, CalendarCheck } from 'lucide-react';
 import { Trash2 } from '@/components/ui/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
+import { pickDepartmentPalette, type DepartmentPalette } from './departmentPalette';
+import { HeroRoundedShapes, HeroWavyUnderline } from '@/features/evaluations/components/SectionPanelBadge';
 
 /** Registre global Zustand assurant qu'un seul menu de classe ne peut être ouvert à la fois */
 const useActiveClassMenuStore = create<{
@@ -22,16 +23,34 @@ const useActiveClassMenuStore = create<{
     setActiveMenu: (id) => set({ activeMenuId: id }),
 }));
 
-export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete, onOpenEvaluations }: {
-    name: string; triggerClassName: string; onConfigure: () => void; onDelete?: () => void;
+export function ClassActionsMenu({
+    name,
+    triggerClassName,
+    onConfigure,
+    onDelete,
+    onOpenEvaluations,
+    tier,
+    subject,
+    color,
+    palette,
+}: {
+    name: string;
+    triggerClassName: string;
+    onConfigure: () => void;
+    onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
+    tier?: string | null;
+    subject?: string | null;
+    color?: string | null;
+    palette?: DepartmentPalette;
 }) {
-    const { t, isRtl } = useLocale();
+    const { t, locale, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
     const generatedId = useId();
     const menuId = `${name}-${generatedId}`;
     const isOpen = useActiveClassMenuStore(state => state.activeMenuId === menuId);
     const setActiveMenu = useActiveClassMenuStore(state => state.setActiveMenu);
+    const resolvedPalette = palette ?? pickDepartmentPalette(color ?? undefined, subject ?? undefined, 0).palette;
 
     useEffect(() => {
         return () => {
@@ -55,6 +74,16 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
         onOpenEvaluations?.(entry);
     };
 
+    const miniCardStyle: CSSProperties = {
+        ['--hero-bg' as string]: resolvedPalette.bg,
+        ['--hero-border' as string]: resolvedPalette.border,
+        ['--hero-ink' as string]: resolvedPalette.title,
+        ['--hero-secondary' as string]: resolvedPalette.secondary,
+    };
+
+    const editLabel = locale === 'ar' ? 'تعديل' : t('dashboard.classSettings');
+    const deleteLabel = locale === 'ar' ? 'حذف' : t('dashboard.delete');
+
     return (
         <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'} open={isOpen} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
@@ -70,36 +99,52 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align={isRtl ? 'start' : 'end'}
-                sideOffset={5}
-                className="class-actions-menu w-auto min-w-[13rem] max-w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl border border-border/70 bg-popover/95 p-1.5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10"
+                sideOffset={6}
+                style={miniCardStyle}
+                className="class-actions-menu w-[16.5rem] max-w-[calc(100vw-1.5rem)] rounded-[24px] border border-border/80 bg-popover/98 p-2.5 shadow-2xl backdrop-blur-xl"
             >
-                {onOpenEvaluations && (
+                {/* Mini-carte du cours en couleur (héros coloré + formes arrondies + titre Lalezar souligné d'une vague + étiquette inclinée) */}
+                <div className="class-menu-mini-card">
+                    <HeroRoundedShapes />
+                    <div className="class-menu-mini-card__body">
+                        <div className="class-menu-mini-card__title-wrap">
+                            <span className="class-menu-mini-card__title" dir="auto">{name}</span>
+                            <HeroWavyUnderline className="class-menu-mini-card__wave" />
+                        </div>
+                        {(tier || subject) && (
+                            <span className="class-menu-mini-card__tag" dir="auto">
+                                {tier || subject}
+                            </span>
+                        )}
+                    </div>
+                    {onOpenEvaluations && (
+                        <DropdownMenuItem
+                            onSelect={() => open('all')}
+                            className="class-menu-eval-pill"
+                        >
+                            <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2.2]" aria-hidden="true" />
+                            <span className="truncate">{t('dashboard.openEvaluations')}</span>
+                        </DropdownMenuItem>
+                    )}
+                </div>
+
+                {/* Deux grandes tuiles rondes « تعديل » et « حذف » à la place d'une liste */}
+                <div className="class-menu-round-tiles">
                     <DropdownMenuItem
-                        onSelect={() => open('all')}
-                        className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-accent/70 focus:bg-accent/70 cursor-pointer"
+                        onSelect={() => {
+                            impact('light');
+                            setActiveMenu(null);
+                            onConfigure();
+                        }}
+                        className="class-menu-round-tile class-menu-round-tile--edit"
                     >
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/12 text-amber-700 dark:bg-amber-400/18 dark:text-amber-300 transition-transform duration-180 group-hover/item:scale-105">
-                            <CalendarCheck className="h-3.5 w-3.5 stroke-[2.2]" aria-hidden="true" />
+                        <span className="class-menu-round-tile__icon" aria-hidden="true">
+                            <Pencil className="h-5 w-5 stroke-[2.2]" />
                         </span>
-                        <span className="flex-1 text-start leading-snug">{t('dashboard.openEvaluations')}</span>
+                        <span className="class-menu-round-tile__label">{editLabel}</span>
                     </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                    onSelect={() => {
-                        impact('light');
-                        setActiveMenu(null);
-                        onConfigure();
-                    }}
-                    className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-accent/70 focus:bg-accent/70 cursor-pointer"
-                >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary transition-transform duration-180 group-hover/item:scale-105">
-                        <Settings className="h-3.5 w-3.5 stroke-[2.2]" aria-hidden="true" />
-                    </span>
-                    <span className="flex-1 text-start leading-snug">{t('dashboard.classSettings')}</span>
-                </DropdownMenuItem>
-                {onDelete && (
-                    <>
-                        <DropdownMenuSeparator className="my-1 border-t border-border/50" />
+
+                    {onDelete && (
                         <DropdownMenuItem
                             destructive
                             onSelect={() => {
@@ -107,15 +152,15 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
                                 setActiveMenu(null);
                                 onDelete();
                             }}
-                            className="group/item flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+                            className="class-menu-round-tile class-menu-round-tile--delete"
                         >
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/12 text-destructive dark:bg-destructive/18 dark:text-destructive transition-transform duration-180 group-hover/item:scale-105">
-                                <Trash2 size={16} aria-hidden="true" />
+                            <span className="class-menu-round-tile__icon" aria-hidden="true">
+                                <Trash2 size={20} aria-hidden="true" />
                             </span>
-                            <span className="flex-1 text-start leading-snug">{t('dashboard.delete')}</span>
+                            <span className="class-menu-round-tile__label">{deleteLabel}</span>
                         </DropdownMenuItem>
-                    </>
-                )}
+                    )}
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     );

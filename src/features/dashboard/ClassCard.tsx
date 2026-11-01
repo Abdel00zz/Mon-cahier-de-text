@@ -110,6 +110,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     <div className="class-card__actions-block">
                         <ClassActionsMenu
                             name={label.fullName}
+                            tier={label.tier}
+                            subject={classInfo.subject}
+                            color={classInfo.color}
+                            palette={palette}
                             onConfigure={onConfigure}
                             onDelete={onDelete}
                             onOpenEvaluations={onOpenEvaluations}

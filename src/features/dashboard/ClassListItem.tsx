@@ -118,8 +118,16 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                 aria-label={t('dashboard.classActions', { className: displayName })}
                 className="class-list-item__actions"
             >
-                <ClassActionsMenu name={displayName} onConfigure={onConfigure} onDelete={onDelete} onOpenEvaluations={onOpenEvaluations}
-                        triggerClassName="class-list-item__menu"/>
+                <ClassActionsMenu
+                    name={displayName}
+                    tier={label.tier}
+                    subject={classInfo.subject}
+                    color={classInfo.color}
+                    onConfigure={onConfigure}
+                    onDelete={onDelete}
+                    onOpenEvaluations={onOpenEvaluations}
+                    triggerClassName="class-list-item__menu"
+                />
             </div>
         </article>
     );

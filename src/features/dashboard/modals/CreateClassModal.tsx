@@ -27,6 +27,7 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
 import type { ClassIdentityDraft } from '@/types';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
+import { HeroRoundedShapes, HeroWavyUnderline } from '@/features/evaluations/components/SectionPanelBadge';
 import './createClassModal.css';
 
 interface CreateClassModalProps {
@@ -352,10 +353,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const editingLevelOptions = CLASS_LEVELS_BY_CYCLE[cycle] ?? [];
   const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.group;
 
-  const groupControl = <div className="class-create-stepper flex min-w-0 items-center rounded-xl border border-border bg-background p-1 shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-    <button type="button" onClick={() => changeGroup(-1)} disabled={!adjacentFreeGroup(-1)} aria-label={copy.decrementGroup} className="class-create-step class-create-step-down flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl font-medium text-foreground transition-[transform,background-color] duration-200 hover:bg-muted active:scale-95 disabled:opacity-40 motion-reduce:transition-none">−</button>
-    <Input id="class-group" value={group} onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 min-w-0 flex-1 border-0 bg-transparent text-center text-lg font-bold tabular-nums text-foreground shadow-none focus-visible:ring-0" />
-    <button type="button" onClick={() => changeGroup(1)} disabled={!adjacentFreeGroup(1)} aria-label={copy.incrementGroup} className="class-create-step class-create-step-up flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-foreground transition-[transform,background-color] duration-200 hover:bg-muted active:scale-95 disabled:opacity-40 motion-reduce:transition-none"><Plus aria-hidden="true" className="h-5 w-5" /></button>
+  const activeColorTone = classColor || 'coral';
+  const groupControl = <div className="class-create-stepper flex min-w-0 items-center justify-center gap-3 rounded-full border border-border bg-background/90 px-2.5 py-1.5 shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+    <button type="button" onClick={() => changeGroup(-1)} disabled={!adjacentFreeGroup(-1)} aria-label={copy.decrementGroup} className="class-create-step class-create-step-down flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl font-bold text-foreground transition-[transform,background-color] duration-200 hover:bg-muted active:scale-95 disabled:opacity-40 motion-reduce:transition-none">−</button>
+    <Input id="class-group" value={group} onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="class-create-group-input h-12 min-w-0 flex-1 border-0 bg-transparent text-center text-3xl font-bold tabular-nums text-foreground shadow-none focus-visible:ring-0" />
+    <button type="button" onClick={() => changeGroup(1)} disabled={!adjacentFreeGroup(1)} aria-label={copy.incrementGroup} className="class-create-step class-create-step-up flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-foreground transition-[transform,background-color] duration-200 hover:bg-muted active:scale-95 disabled:opacity-40 motion-reduce:transition-none"><Plus aria-hidden="true" className="h-5 w-5" /></button>
   </div>;
 
   const editConfiguration = editingClass && (
@@ -416,18 +418,22 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
     <>
       <Modal isOpen={isOpen} onClose={requestClose} blockDismiss={submitting} hideClose={submitting} title={
         <div className="class-create-heading">
+          <HeroRoundedShapes />
           <span className="class-create-heading-icon" aria-hidden="true">
             <Users />
           </span>
-          <span className="min-w-0">
+          <span className="class-create-heading-copy min-w-0">
+            <span className="class-create-title-wrap">
+              <span className="class-create-title">{editingClass ? copy.editTitle : copy.createTitle}</span>
+              <HeroWavyUnderline className="class-create-wave" />
+            </span>
             <span className="class-create-eyebrow">{hasCycleChoice ? copy.guidedLabel : copy.cycleLabels[cycle]}</span>
-            <span className="class-create-title">{editingClass ? copy.editTitle : copy.createTitle}</span>
           </span>
         </div>
       } maxWidth="md" mobileDetents={CLASS_MODAL_DETENTS}
         elevation="high"
         className="class-create-modal sm:max-w-md sm:rounded-2xl"
-        headerClassName="class-create-header"
+        headerClassName={cn('class-create-header', `create-hero-tone-${activeColorTone}`)}
         bodyClassName="class-create-body"
         footerClassName="class-create-actions"
         footer={<fieldset disabled={submitting} className="class-create-footer flex w-full min-w-0 items-center gap-2">
@@ -480,7 +486,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
           {step === 'branch' && activeLevelGroup && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
-          {step === 'details' && <section className="space-y-2.5"><div className="class-create-summary space-y-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:p-4">
+          {step === 'details' && <section className="space-y-2.5"><div data-color-tone={activeColorTone} className="class-create-summary space-y-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:p-4">
             <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-0.5 break-words text-base font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
             <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-group" className="block text-xs font-bold text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
             {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-2.5 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}

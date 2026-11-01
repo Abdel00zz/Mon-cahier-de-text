@@ -298,3 +298,20 @@ test('la fenêtre du rendu se dit « Rendu du devoir », sans la phrase « élè
     }
   }
 });
+
+test('fiche classe : panneaux colorés (pêche/loupe, lavande/crayon, vert/maison, bleu/livre) et petite feuille de calendrier (jour + MM/YYYY)', async () => {
+  const { parseCalendarSheetDate, resolveSectionPanelVariant } = await import('../src/features/evaluations/components/SectionPanelBadge');
+  assert.deepEqual(parseCalendarSheetDate('2026-09-14'), { day: '14', monthYear: '09/2026' });
+  assert.deepEqual(parseCalendarSheetDate('2026-09-14', '2026-09-18'), { day: '14–18', monthYear: '09/2026' });
+  assert.equal(parseCalendarSheetDate(''), null);
+
+  assert.deepEqual(resolveSectionPanelVariant('evaluation_diagnostic', 0), { tone: 'peach', glyph: 'loupe' });
+  assert.deepEqual(resolveSectionPanelVariant('controle', 1), { tone: 'lavender', glyph: 'crayon' });
+  assert.deepEqual(resolveSectionPanelVariant('maison', 2), { tone: 'green', glyph: 'maison' });
+  assert.deepEqual(resolveSectionPanelVariant('controle_cahiers', 3), { tone: 'blue', glyph: 'livre' });
+
+  const dated = renderSheet([event('d1', 'evaluation_diagnostic', 'Diagnostic', '2026-09-14')]);
+  assert.match(dated, /data-panel-tone="peach" data-panel-glyph="loupe"/);
+  assert.match(dated, /class="ev-cal-sheet"[^>]*><span class="ev-cal-sheet__day">14<\/span><span class="ev-cal-sheet__my">09\/2026<\/span><\/span>/);
+});
+
