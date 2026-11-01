@@ -36,10 +36,10 @@ export function ClassRosterFields({ value, onChange, names, invalid, changed, su
         </div>
 
         <div className="space-y-2" hidden={viewMode === 'list' && names.length > 0}>
-            <label htmlFor={id} className="block text-xs font-semibold text-[#7a7169] dark:text-muted-foreground">{t('classRoster.label')}</label>
-            <Textarea id={id} value={value} onChange={event => onChange(event.target.value)} rows={4} dir="auto" spellCheck={false}
+            <label htmlFor={id} className="block text-[0.86rem] font-medium text-[#7a7169] dark:text-muted-foreground">{t('classRoster.label')}</label>
+            <Textarea id={id} value={value} onChange={event => onChange(event.target.value)} rows={5} dir="auto" spellCheck={false}
                 aria-describedby={`${id}-help`} aria-invalid={invalid} placeholder={t('classRoster.placeholder')}
-                className="class-roster-textarea min-h-28 w-full resize-y rounded-[1.1rem] border border-[#ebe5dc] bg-white px-3.5 py-3 text-sm leading-7 text-[#2f2822] focus-visible:outline-none focus-visible:border-[#7a5a49] dark:border-border dark:bg-background dark:text-foreground" />
+                className="class-roster-textarea min-h-32 w-full resize-y rounded-[1rem] border-0 bg-[#ffffffd9] px-4 py-3.5 text-base leading-[1.95] text-[#2f2822] shadow-none focus-visible:bg-white focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#7a5a49]/22 dark:bg-card dark:text-foreground" />
             <p id={`${id}-help`} className="text-xs leading-relaxed text-[#7a7169] dark:text-muted-foreground">{t('classRoster.format')}</p>
         </div>
 

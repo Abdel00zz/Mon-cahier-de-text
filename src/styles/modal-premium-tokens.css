@@ -21,9 +21,9 @@
   --glow-primary: 0 0 28px -10px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
 
   /* ── Elevation Shadows (Z-Depth) ───────────────────────────────────────── */
-  --modal-shadow-low: 0 4px 14px -4px rgb(0 0 0 / 0.08);
-  --modal-shadow-mid: 0 12px 32px -12px rgb(0 0 0 / 0.18);
-  --modal-shadow-high: 0 24px 56px -16px rgb(0 0 0 / 0.28);
+  --modal-shadow-low: 0 4px 14px -4px rgb(47 40 34 / 0.08);
+  --modal-shadow-mid: 0 -10px 50px rgb(47 40 34 / 0.16);
+  --modal-shadow-high: 0 -12px 60px rgb(47 40 34 / 0.20);
 
   /* ── Timing Orchestration (150ms–300ms Tactile Spring) ─────────────────── */
   --modal-timing-backdrop: 200ms;
@@ -32,21 +32,21 @@
   --modal-timing-stagger: 50ms;
 
   /* ── Palette Artistique des Surfaces Modales (60-30-10 & Color Tinting) ── */
-  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 93%, hsl(39 48% 96%) 7%);
+  --modal-surface-bg: color-mix(in srgb, #f6d9bd 10%, #fffdfa);
   --modal-surface-tint: radial-gradient(
     120% 70% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 4.5%, hsla(38, 70%, 92%, 0.45)) 0%,
+    color-mix(in srgb, hsl(var(--primary)) 3.5%, hsla(32, 65%, 94%, 0.4)) 0%,
     transparent 72%
   );
-  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 90%, hsl(40 50% 98%) 10%);
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(38 38% 95%) 8%);
-  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 82%, hsl(35 28% 80%) 18%);
-  --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.42) 92%, hsl(var(--primary) / 0.08));
+  --modal-header-bg: color-mix(in srgb, #f6d9bd 12%, #fffdfa);
+  --modal-footer-bg: color-mix(in srgb, #f6d9bd 8%, #fffdfa);
+  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 70%, #ebe5dc 30%);
+  --modal-scrim-bg: #2f28224d;
 
   /* ── Magnetic & Ambient Breath Tokens ──────────────────────────────────── */
   --modal-magnetic-glow: 0 0 34px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
-  --modal-ambient-glow: 0 0 24px -8px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
-  --modal-ambient-glow-peak: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+  --modal-ambient-glow: 0 0 24px -8px color-mix(in srgb, hsl(var(--primary)) 16%, transparent);
+  --modal-ambient-glow-peak: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 28%, transparent);
 }
 
 .dark {

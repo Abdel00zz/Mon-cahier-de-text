@@ -9,8 +9,9 @@
 
 .class-create-modal {
   --create-surface: color-mix(in srgb, hsl(38 34% 96.5%) 94%, hsl(var(--card)) 6%);
-  --create-field: #ffffff;
+  --create-field: #ffffffd9;
   --create-edge: #ebe5dc;
+  --pad: clamp(1rem, 4.6cqi, 1.9rem);
 
   /* Couleur dynamique du héros et de la carte du bas (pêche PAL par défaut) */
   --hero-bg: #fdeede;
@@ -18,7 +19,8 @@
   --hero-ink: #6b3a12;
   --hero-secondary: #a8642a;
 
-  background: #faf8f4;
+  background: color-mix(in srgb, var(--hero-border, #f6d9bd) 10%, #fffdfa) !important;
+  background-image: none !important;
   font-family: "Readex Pro", var(--font-sans);
   color: #2f2822;
 }
@@ -27,25 +29,26 @@
   --create-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(30 14% 14%) 6%);
   --create-field: hsl(var(--card));
   --create-edge: color-mix(in srgb, hsl(var(--border)) 88%, hsl(30 14% 28%) 12%);
-  background: var(--create-surface);
+  background: var(--create-surface) !important;
   color: hsl(var(--foreground));
 }
 
-/* Hauteur maximale 43rem avec pied de page fixe (.sheet) */
+/* Hauteur fluide avec pied de page fixe (.sheet) */
 .class-create-modal.modal-motion-surface {
-  max-height: min(43rem, 92dvh) !important;
+  container: sheet / inline-size;
+  max-height: min(46rem, 94dvh) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-radius: 1.8rem 1.8rem 0 0 !important;
   border: 0 !important;
-  box-shadow: 0 24px 60px #1f1a152e !important;
+  box-shadow: 0 -10px 50px #2f282233 !important;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 720px) {
   .class-create-modal.modal-motion-surface {
-    max-width: 32rem !important;
-    width: min(32rem, calc(100vw - 2rem));
+    max-width: min(100%, clamp(26rem, 52vw, 38rem)) !important;
+    width: min(100%, clamp(26rem, 52vw, 38rem));
     border-radius: 1.8rem !important;
     border-end-start-radius: 0.6rem !important;
   }
@@ -145,7 +148,7 @@
   background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 85%, #ffffff), transparent) !important;
   color: var(--hero-ink) !important;
   border-bottom: 0 !important;
-  padding: 1.1rem 1.3rem 0.7rem;
+  padding: 1rem var(--pad, 1.3rem) 0.75rem;
   transition: background 220ms ease, color 220ms ease;
 }
 
@@ -155,7 +158,7 @@
 
 @media (max-width: 639px) {
   .class-create-modal .class-create-header {
-    padding: 1.8rem 1.3rem 0.7rem;
+    padding: 1.7rem var(--pad, 1.25rem) 0.75rem;
   }
 }
 
@@ -169,10 +172,15 @@
   color: #2f2822 !important;
   border: 0 !important;
   box-shadow: none !important;
+  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
 }
 
 .class-create-modal .dialog-close:hover {
   background: #ffffff !important;
+}
+
+.class-create-modal .dialog-close:active {
+  transform: scale(0.86);
 }
 
 .dark .class-create-modal .dialog-close {
@@ -183,24 +191,20 @@
 .class-create-modal .class-create-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 0.35rem 1.25rem 1.2rem;
+  padding: 0.4rem var(--pad, 1.3rem) 1rem;
   background: transparent;
 }
 
-/* Pied de page fixe (.mf) */
+/* Pied de page minimaliste sans bordure dure (.wf / .mf) */
 .class-create-modal .class-create-actions {
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
   z-index: 15;
-  background: #faf8f4 !important;
-  border-top: 1px solid #ebe5dc;
-  padding: 0.75rem 1.25rem;
-}
-
-.dark .class-create-modal .class-create-actions {
-  background: var(--create-surface) !important;
-  border-top-color: var(--create-edge);
+  background: transparent !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+  padding: 0.35rem var(--pad, 1.3rem) 0.85rem;
 }
 
 .class-create-heading {
@@ -208,7 +212,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.8rem;
 }
 
 /* Badge icône asymétrique (.wi) */
@@ -221,7 +225,7 @@
   width: 2.9rem;
   height: 2.9rem;
   border-radius: 1rem;
-  border-end-start-radius: 0.4rem;
+  border-end-start-radius: 0.45rem;
   background: #ffffffcc;
   color: var(--hero-secondary);
   border: 0;
@@ -234,9 +238,9 @@
 }
 
 .class-create-heading-icon svg {
-  width: 1.35rem;
-  height: 1.35rem;
-  stroke-width: 1.8;
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke-width: 2;
 }
 
 .class-create-heading-copy {
@@ -257,7 +261,7 @@
 /* Titre Readex Pro 600 (.hero h2) */
 .class-create-title {
   display: block;
-  font: 600 1.25rem/1.35 "Readex Pro", var(--font-sans);
+  font: 600 clamp(1.15rem, 3.4cqi + 0.55rem, 1.45rem)/1.4 "Readex Pro", var(--font-sans);
   letter-spacing: -0.01em;
   color: #2f2822;
   text-wrap: balance;
@@ -279,7 +283,7 @@
   background: transparent;
   color: #7a7169;
   border: 0;
-  font: 400 0.78rem/1.35 "Readex Pro", var(--font-sans);
+  font: 400 0.78rem/1.3 "Readex Pro", var(--font-sans);
   transform: none;
   box-shadow: none;
 }
@@ -288,28 +292,21 @@
   color: hsl(var(--muted-foreground));
 }
 
-/* ── Les 3 étapes (.steps) : 3 pastilles rondes reliées par un trait fin ; la pastille en cours grossit ── */
+/* ── Les 3 étapes épurées sans filet de liaison (.steps) ── */
 .class-create-progress {
   position: relative;
-  padding-block: 0.35rem 0.65rem;
+  padding-block: 0.25rem 0.45rem;
 }
 
 .class-create-progress ol {
   position: relative;
   display: grid;
   align-items: start;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
-/* Trait horizontal fin reliant les pastilles */
 .class-create-progress ol::before {
-  content: '';
-  position: absolute;
-  inset-inline: 16%;
-  top: 1.05rem;
-  border-top: 1.5px solid color-mix(in srgb, var(--hero-secondary) 30%, transparent);
-  z-index: 0;
-  pointer-events: none;
+  display: none;
 }
 
 .class-create-progress li {
@@ -326,12 +323,11 @@
 
 .class-create-progress button,
 .class-create-progress-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.28rem;
-  min-height: 44px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.25rem;
+  min-height: max(44px, 2.75rem);
   width: 100%;
   padding: 0;
   border: 0;
@@ -352,27 +348,27 @@
   height: 2.1rem;
   border-radius: 50%;
   background: #ffffffb3;
-  color: #7a7169;
+  color: #2f2822;
   font: 600 0.85rem/1 "Readex Pro", var(--font-sans);
   font-variant-numeric: tabular-nums;
-  transition: transform 0.25s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.3s ease, color 0.2s ease;
 }
 
 .dark .class-create-progress-number {
   background: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--foreground));
 }
 
 .class-create-progress-number svg {
   width: 0.95rem;
   height: 0.95rem;
-  stroke-width: 2.2;
+  stroke-width: 3;
 }
 
 [data-state='complete'] .class-create-progress-number {
   background: #ffffff;
   color: #2f7a4d;
-  box-shadow: 0 1px 3px #2f282214;
+  box-shadow: none;
 }
 
 .dark [data-state='complete'] .class-create-progress-number {
@@ -380,16 +376,20 @@
   color: #4ade80;
 }
 
-/* La pastille de l'étape en cours grossit (.steps > div[data-st="now"] b) */
+/* La pastille de l'étape en cours grossit (.steps [aria-current] i) */
 [data-state='current'] > .class-create-progress-item .class-create-progress-number {
   background: #7a5a49;
   color: #ffffff;
   transform: scale(1.12);
-  box-shadow: 0 4px 12px #7a5a4945;
+  box-shadow: none;
+}
+
+[data-state='upcoming'] .class-create-progress-item {
+  opacity: 0.55;
 }
 
 .class-create-progress-label {
-  font: 500 0.72rem/1.3 "Readex Pro", var(--font-sans);
+  font: 500 0.78rem/1.3 "Readex Pro", var(--font-sans);
   color: #7a7169;
   text-align: center;
   overflow-wrap: anywhere;
@@ -405,8 +405,23 @@
 }
 
 .class-create-stage h3 {
-  font: 500 0.8rem/1.45 "Readex Pro", var(--font-sans);
-  color: #7a7169;
+  font: 600 0.96rem/1.45 "Readex Pro", var(--font-sans);
+  color: #2f2822;
+}
+
+.dark .class-create-stage h3 {
+  color: hsl(var(--foreground));
+}
+
+/* Barre segmentée des cycles (.seg) */
+.class-create-seg {
+  background: #f0ebe3;
+  padding: 0.25rem;
+  border-radius: 1.1rem;
+}
+
+.dark .class-create-seg {
+  background: hsl(var(--muted));
 }
 
 /* ── Les niveaux et filières sont des tuiles pastel asymétriques (.tile) ── */
@@ -419,103 +434,91 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   width: 100%;
   min-height: 48px;
-  padding: 0.95rem 1.1rem;
+  padding: 0.45rem 0.55rem 0.45rem 1rem;
   border: 0;
   border-radius: 1.3rem;
   border-end-start-radius: 0.45rem;
   background: var(--tile-bg);
   color: var(--tile-ink);
   text-align: start;
-  font: 600 0.98rem/1.4 "Readex Pro", var(--font-sans);
+  font: 600 0.98rem/1.35 "Readex Pro", var(--font-sans);
   cursor: pointer;
   touch-action: manipulation;
   box-shadow: none;
-  transition: transform 0.16s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 0.35s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 180ms ease, box-shadow 250ms ease;
 }
 
-.class-create-option:nth-child(6n + 1),
-.class-create-choice:nth-child(6n + 1) {
+.class-create-option:nth-child(6n + 1) {
   --tile-bg: #fdeede;
   --tile-border: #f6d9bd;
   --tile-ink: #6b3a12;
   --tile-secondary: #a8642a;
 }
-.class-create-option:nth-child(6n + 2),
-.class-create-choice:nth-child(6n + 2) {
+.class-create-option:nth-child(6n + 2) {
   --tile-bg: #ece9f7;
   --tile-border: #d9d4ee;
   --tile-ink: #2e2766;
   --tile-secondary: #5d55a3;
 }
-.class-create-option:nth-child(6n + 3),
-.class-create-choice:nth-child(6n + 3) {
+.class-create-option:nth-child(6n + 3) {
   --tile-bg: #e6f3e9;
   --tile-border: #cfe6d5;
   --tile-ink: #14503a;
   --tile-secondary: #3f7f63;
 }
-.class-create-option:nth-child(6n + 4),
-.class-create-choice:nth-child(6n + 4) {
+.class-create-option:nth-child(6n + 4) {
   --tile-bg: #e0eefa;
   --tile-border: #c6dff2;
   --tile-ink: #0f3f6b;
   --tile-secondary: #3a78a8;
 }
-.class-create-option:nth-child(6n + 5),
-.class-create-choice:nth-child(6n + 5) {
+.class-create-option:nth-child(6n + 5) {
   --tile-bg: #f7f0d4;
   --tile-border: #ebe0ad;
   --tile-ink: #5c4a05;
   --tile-secondary: #8f7a1c;
 }
-.class-create-option:nth-child(6n + 6),
-.class-create-choice:nth-child(6n + 6) {
+.class-create-option:nth-child(6n + 6) {
   --tile-bg: #fbe6ee;
   --tile-border: #f2cddb;
   --tile-ink: #6e1c3e;
   --tile-secondary: #a8486f;
 }
 
-.dark .class-create-option:nth-child(6n + 1),
-.dark .class-create-choice:nth-child(6n + 1) {
+.dark .class-create-option:nth-child(6n + 1) {
   --tile-bg: #332218;
   --tile-border: #573826;
   --tile-ink: #fce7d4;
   --tile-secondary: #e7bfa0;
 }
-.dark .class-create-option:nth-child(6n + 2),
-.dark .class-create-choice:nth-child(6n + 2) {
+.dark .class-create-option:nth-child(6n + 2) {
   --tile-bg: #25213b;
   --tile-border: #413968;
   --tile-ink: #eae6fb;
   --tile-secondary: #c5bdf0;
 }
-.dark .class-create-option:nth-child(6n + 3),
-.dark .class-create-choice:nth-child(6n + 3) {
+.dark .class-create-option:nth-child(6n + 3) {
   --tile-bg: #182e22;
   --tile-border: #2a513b;
   --tile-ink: #dcf4e5;
   --tile-secondary: #a8dec0;
 }
-.dark .class-create-option:nth-child(6n + 4),
-.dark .class-create-choice:nth-child(6n + 4) {
+.dark .class-create-option:nth-child(6n + 4) {
   --tile-bg: #182b3b;
   --tile-border: #2b4b67;
   --tile-ink: #ddeefb;
   --tile-secondary: #abd1ee;
 }
-.dark .class-create-option:nth-child(6n + 5),
-.dark .class-create-choice:nth-child(6n + 5) {
+.dark .class-create-option:nth-child(6n + 5) {
   --tile-bg: #312714;
   --tile-border: #524121;
   --tile-ink: #f7ecd1;
   --tile-secondary: #dec99a;
 }
-.dark .class-create-option:nth-child(6n + 6),
-.dark .class-create-choice:nth-child(6n + 6) {
+.dark .class-create-option:nth-child(6n + 6) {
   --tile-bg: #351b24;
   --tile-border: #582d3c;
   --tile-ink: #fbe3ea;
@@ -523,7 +526,7 @@
 }
 
 .class-create-option[data-selected='true'] {
-  box-shadow: inset 0 0 0 2px var(--tile-ink);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 60%, transparent);
 }
 
 .class-create-option > span:first-child {
@@ -538,7 +541,7 @@
   flex-shrink: 0;
   width: 2.2rem;
   height: 2.2rem;
-  color: var(--tile-secondary);
+  color: var(--tile-ink);
   background: #ffffffb3;
   border: 0;
   border-radius: 50%;
@@ -559,47 +562,38 @@
   transform: scaleX(-1);
 }
 
-.class-create-modal .class-create-choice {
-  background: var(--tile-bg, var(--create-field));
-  border-color: transparent;
-  color: var(--tile-ink, hsl(var(--foreground)));
-  border-radius: 1.3rem;
-  border-end-start-radius: 0.45rem;
-  font-weight: 600;
-}
-
-/* ── Étape 3 : Carte du bas teintée (.c3 : 1.4rem / 0.5rem) et stepper (.sp) ── */
+/* ── Étape 3 : Carte du bas teintée sans filets internes (.c3) et stepper (.sp) ── */
 .class-create-modal .class-create-summary {
   border: 0 !important;
   background: var(--hero-bg, var(--create-field)) !important;
   color: var(--hero-ink, hsl(var(--foreground))) !important;
-  border-radius: 1.4rem !important;
-  border-end-start-radius: 0.5rem !important;
+  border-radius: 1.3rem !important;
+  border-end-start-radius: 0.45rem !important;
   padding: 1.1rem !important;
   box-shadow: none !important;
-  transition: background-color 250ms ease, color 250ms ease;
+  transition: background-color 0.5s ease, color 0.3s ease;
 }
 
 .class-create-summary > div:first-child > p:first-child {
-  font: 400 0.74rem/1.4 "Readex Pro", var(--font-sans);
+  font: 400 0.8rem/1.4 "Readex Pro", var(--font-sans);
   text-transform: none;
   letter-spacing: normal;
   color: var(--hero-secondary, #7a7169);
 }
 
 .class-create-summary > div:first-child > p:last-child {
-  font: 600 1.05rem/1.4 "Readex Pro", var(--font-sans);
+  font: 600 1.2rem/1.4 "Readex Pro", var(--font-sans);
   color: var(--hero-ink, #2f2822);
 }
 
 .class-create-summary label {
-  font: 500 0.78rem/1.4 "Readex Pro", var(--font-sans);
-  color: var(--hero-secondary, #7a7169);
+  font: 500 0.88rem/1.4 "Readex Pro", var(--font-sans);
+  color: var(--hero-ink, #2f2822);
 }
 
 /* Contrôle du numéro de fournée (.sp) */
 .class-create-modal .class-create-stepper {
-  width: min(100%, 16rem);
+  width: 100%;
   margin-inline: auto;
   background: #ffffff99;
   border: 0;
@@ -622,6 +616,7 @@
   color: var(--hero-ink);
   border: 0;
   box-shadow: none;
+  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
 
 .dark .class-create-modal .class-create-step {
@@ -629,7 +624,7 @@
 }
 
 .class-create-modal .class-create-step:active:not(:disabled) {
-  transform: scale(0.9);
+  transform: scale(0.86);
 }
 
 /* Numéro de fournée en Readex Pro 600 (.sp output) */
@@ -644,30 +639,57 @@
   font-size: 1rem;
 }
 
-/* Boutons du pied de page (.b-pri, .b-sec) */
+/* Boutons du pied de page (.pri, .gh, .bk, .dl) */
 .class-create-modal .class-create-primary {
   background: #7a5a49 !important;
   color: #ffffff !important;
-  min-height: max(44px, 2.75rem);
+  min-height: 3.1rem;
   border: 0 !important;
-  border-radius: 1rem !important;
-  font: 600 0.9rem/1.4 "Readex Pro", var(--font-sans);
-  box-shadow: 0 6px 16px #7a5a4938 !important;
+  border-radius: 1.1rem !important;
+  font: 600 0.92rem/1.4 "Readex Pro", var(--font-sans);
+  box-shadow: none !important;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+
+.class-create-modal .class-create-primary:disabled {
+  opacity: 0.38 !important;
 }
 
 .class-create-modal .class-create-back,
 .class-create-modal .class-create-cancel {
-  background: #f0ebe3 !important;
-  color: #2f2822 !important;
+  background: transparent !important;
+  color: #7a7169 !important;
   border: 0 !important;
-  border-radius: 1rem !important;
-  font: 500 0.88rem/1.4 "Readex Pro", var(--font-sans);
+  border-radius: 1.1rem !important;
+  min-height: 3.1rem;
+  font: 600 0.88rem/1.4 "Readex Pro", var(--font-sans);
+  box-shadow: none !important;
+}
+
+.class-create-modal .class-create-back:hover,
+.class-create-modal .class-create-cancel:hover {
+  background: color-mix(in srgb, #f0ebe3 60%, transparent) !important;
+  color: #2f2822 !important;
 }
 
 .dark .class-create-modal .class-create-back,
 .dark .class-create-modal .class-create-cancel {
-  background: hsl(var(--muted)) !important;
-  color: hsl(var(--foreground)) !important;
+  background: transparent !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.class-create-modal .class-edit-delete {
+  background: #fbe9ec !important;
+  color: #c2455c !important;
+  border: 0 !important;
+  border-radius: 1.1rem !important;
+  min-height: 3.1rem;
+  box-shadow: none !important;
+}
+
+.dark .class-create-modal .class-edit-delete {
+  background: rgba(244, 63, 94, 0.16) !important;
+  color: #fda4af !important;
 }
 
 .class-create-footer {
@@ -695,7 +717,7 @@
 .class-create-progress button:focus-visible,
 .class-create-step:focus-visible,
 .class-create-choice:focus-visible {
-  outline: 2px solid #7a5a49;
+  outline: 2px solid color-mix(in srgb, #7a5a49 70%, transparent);
   outline-offset: 2px;
 }
 
@@ -707,17 +729,17 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .class-create-stage {
-    animation: class-create-enter 200ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
+    animation: class-create-enter 320ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
   }
   .class-create-option:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
   }
 }
 
 @keyframes class-create-enter {
   from {
     opacity: 0;
-    transform: translate3d(0, 6px, 0);
+    transform: translate3d(0, 10px, 0);
   }
   to {
     opacity: 1;
@@ -760,24 +782,33 @@
   }
 }
 
-/* ── Pastilles de couleur (.clrs / .dotc) ── */
+/* ── Dock de couleurs minimaliste (.dock / .sw / .dotc) ── */
 .class-create-colors {
   min-width: 0;
   border: 0;
   padding: 0;
+  margin: 0;
 }
-.class-create-colors legend {
-  font: 500 0.78rem/1.5 "Readex Pro", var(--font-sans);
+.class-create-colors__dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.6rem;
+}
+.class-create-colors__label {
+  font: 500 0.82rem/1.5 "Readex Pro", var(--font-sans);
   color: #7a7169;
-  margin-bottom: 0.35rem;
+}
+.dark .class-create-colors__label {
+  color: hsl(var(--muted-foreground));
 }
 .class-create-colors__options {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.35rem;
+  align-items: center;
 }
 .class-create-colors__options label {
+  position: relative;
   display: grid;
   place-items: center;
   width: max(44px, 2.75rem);
@@ -786,37 +817,40 @@
   cursor: pointer;
 }
 .class-create-colors__options label:has(input:focus-visible) {
-  outline: 2px solid #7a5a49;
+  outline: 2px solid color-mix(in srgb, #7a5a49 70%, transparent);
   outline-offset: 2px;
 }
 .class-create-colors__options label > span {
   display: grid;
   place-items: center;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
-  border: 2.5px solid #ffffff;
-  box-shadow: 0 2px 6px #2f282220;
-  transition: transform 0.2s cubic-bezier(0.3, 1.35, 0.5, 1), box-shadow 0.2s ease;
+  border: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 28%, transparent);
+  transition: transform 0.35s cubic-bezier(0.3, 1.35, 0.5, 1), box-shadow 0.2s ease;
 }
 .class-create-colors__options label:has(input:checked) > span {
-  transform: scale(1.16);
-  box-shadow: 0 0 0 2px #2f2822;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px #fffdfa, 0 0 0 3.5px currentColor;
+}
+.dark .class-create-colors__options label:has(input:checked) > span {
+  box-shadow: 0 0 0 2px hsl(var(--card)), 0 0 0 3.5px currentColor;
 }
 .class-create-colors__options svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 2.5;
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.6;
 }
 
-/* ══ Modale 4 : Modification de la classe (.tabs, .fcard, .stp, .nm-l) ══ */
+/* ══ Modale 4 : Modification de la classe (.tabs, .fld, .inp, .stp, .names) ══ */
 .class-edit-tabs {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: 0.25rem;
-  border-radius: 1rem;
-  background: #f0ebe3;
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--hero-border, #f6d9bd) 22%, #f0ebe3);
 }
 .dark .class-edit-tabs {
   background: hsl(var(--muted));
@@ -827,10 +861,10 @@
   bottom: 0.25rem;
   inset-inline-start: 0.25rem;
   width: calc(50% - 0.25rem);
-  border-radius: 0.8rem;
+  border-radius: 0.85rem;
   background: #ffffff;
-  box-shadow: 0 2px 8px #2f282214;
-  transition: transform 0.28s cubic-bezier(0.22, 0.9, 0.3, 1);
+  box-shadow: 0 1px 4px #2f282214;
+  transition: transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1);
   pointer-events: none;
 }
 .dark .class-edit-tabs > i {
@@ -845,17 +879,18 @@
 .class-edit-tab-btn {
   position: relative;
   z-index: 1;
-  min-height: 2.5rem;
-  border-radius: 0.8rem;
+  min-height: max(44px, 2.75rem);
+  border-radius: 0.85rem;
   border: 0;
   background: transparent;
-  font: 500 0.86rem/1 "Readex Pro", var(--font-sans);
+  font: 500 0.9rem/1 "Readex Pro", var(--font-sans);
   color: #7a7169;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
   cursor: pointer;
+  transition: color 0.25s ease;
 }
 .class-edit-tab-btn[aria-pressed='true'] {
   color: #2f2822;
@@ -866,69 +901,70 @@
 }
 .class-edit-tab-btn em {
   font-style: normal;
-  font-size: 0.72rem;
-  padding: 0.05rem 0.45rem;
-  border-radius: 99px;
-  background: #f0ebe3;
-  color: #7a7169;
-}
-.class-edit-tab-btn[aria-pressed='true'] em {
-  background: #7a5a49;
-  color: #ffffff;
+  font-size: 0.76rem;
+  padding: 0;
+  background: transparent;
+  color: var(--hero-secondary, #7a7169);
 }
 
+/* Champs calmes sans boîtes englobantes (.fld, .fl-h, .inp) */
 .class-edit-fcard {
-  background: #ffffff;
-  border-radius: 1.2rem;
-  border-end-start-radius: 0.45rem;
-  padding: 0.85rem 1rem;
-}
-.dark .class-edit-fcard {
-  background: hsl(var(--card));
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 1.1rem;
 }
 .class-edit-fcard--row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: block;
 }
 .class-edit-fl {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.4rem;
-  font-size: 0.78rem;
+  min-height: 1.8rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.86rem;
+  font-weight: 500;
   color: #7a7169;
 }
 .class-edit-custom-link {
   border: 0;
   background: transparent;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: #7a5a49;
+  min-height: 44px;
+  padding: 0 0.3rem;
   cursor: pointer;
 }
 .class-edit-row-label {
-  font-size: 0.82rem;
+  display: block;
+  font-size: 0.86rem;
   font-weight: 500;
   color: #7a7169;
+  margin-bottom: 0.35rem;
 }
 .class-edit-select,
 .class-edit-input {
   width: 100%;
-  height: max(44px, 2.75rem) !important;
-  border-radius: 0.9rem !important;
-  border: 1px solid #ebe5dc !important;
-  background: #faf8f4 !important;
-  padding-inline: 0.85rem !important;
-  font: 500 0.9rem/1.4 "Readex Pro", var(--font-sans) !important;
+  height: 3.1rem !important;
+  border-radius: 1rem !important;
+  border: 0 !important;
+  background: #ffffffd9 !important;
+  padding-inline: 1.1rem !important;
+  font: 500 1rem/1.4 "Readex Pro", var(--font-sans) !important;
   color: #2f2822 !important;
   box-shadow: none !important;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.class-edit-select:focus,
+.class-edit-input:focus {
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #7a5a49 22%, transparent) !important;
 }
 .dark .class-edit-select,
 .dark .class-edit-input {
-  border-color: hsl(var(--border)) !important;
-  background: hsl(var(--background)) !important;
+  background: hsl(var(--card)) !important;
   color: hsl(var(--foreground)) !important;
 }
 
@@ -936,40 +972,47 @@
 .class-edit-inline-stp {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  background: #faf8f4;
-  padding: 0.2rem;
-  border-radius: 0.9rem;
-  border: 1px solid #ebe5dc;
+  gap: 0.2rem;
+  background: #ffffffd9;
+  padding: 0.25rem;
+  border-radius: 1.1rem;
+  border: 0;
 }
 .dark .class-edit-inline-stp {
-  background: hsl(var(--background));
-  border-color: hsl(var(--border));
+  background: hsl(var(--card));
 }
 .class-edit-inline-stp > button {
-  width: 2.3rem;
-  height: 2.3rem;
-  border-radius: 0.7rem;
+  width: max(44px, 2.75rem);
+  height: max(44px, 2.75rem);
+  border-radius: 0.85rem;
   border: 0;
-  background: #ffffff;
+  background: #f0ebe3;
   color: #2f2822;
-  font: 600 1.05rem/1 "Readex Pro", var(--font-sans);
+  font: 600 1.15rem/1 "Readex Pro", var(--font-sans);
+  display: grid;
+  place-items: center;
   cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.class-edit-inline-stp > button:active:not(:disabled) {
+  transform: scale(0.86);
 }
 .dark .class-edit-inline-stp > button {
-  background: hsl(var(--card));
+  background: hsl(var(--muted));
   color: hsl(var(--foreground));
 }
 .class-edit-inline-stp > button:disabled {
   opacity: 0.35;
 }
 .class-edit-stp-input {
-  width: 3rem !important;
-  height: 2.3rem !important;
+  min-width: 3.4rem !important;
+  width: 3.4rem !important;
+  height: 2.5rem !important;
   border: 0 !important;
   background: transparent !important;
   text-align: center;
-  font: 600 1.05rem/1 "Readex Pro", var(--font-sans) !important;
+  font: 600 1.15rem/1 "Readex Pro", var(--font-sans) !important;
+  font-variant-numeric: tabular-nums;
   color: #2f2822 !important;
   padding: 0 !important;
   box-shadow: none !important;
@@ -978,25 +1021,26 @@
   color: hsl(var(--foreground)) !important;
 }
 
-/* Onglet 2 : Élèves (.cap, .bar, .mode, .nm-l) */
+/* Onglet 2 : Élèves (.cap, .bar, .mode, .names) */
 .class-roster-cap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.8rem;
+  gap: 0.8rem;
+  font-size: 0.82rem;
   color: #7a7169;
 }
 .class-roster-cap b {
   color: #2f2822;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .dark .class-roster-cap b {
   color: hsl(var(--foreground));
 }
 .class-roster-bar {
-  height: 0.38rem;
-  border-radius: 99px;
+  height: 0.3rem;
+  border-radius: 9px;
   background: #f0ebe3;
   overflow: hidden;
 }
@@ -1006,32 +1050,36 @@
 .class-roster-bar > i {
   display: block;
   height: 100%;
-  border-radius: 99px;
-  background: #7a5a49;
-  transition: width 0.25s cubic-bezier(0.22, 0.9, 0.3, 1);
+  border-radius: 9px;
+  background: var(--hero-secondary, #7a5a49);
+  transition: width 0.5s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
 .class-roster-mode {
   display: inline-flex;
+  gap: 0.2rem;
   background: #f0ebe3;
   padding: 0.2rem;
-  border-radius: 0.7rem;
+  border-radius: 0.95rem;
 }
 .dark .class-roster-mode {
   background: hsl(var(--muted));
 }
 .class-roster-mode > button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 0.55rem;
+  min-height: 2.4rem;
+  padding: 0 1.1rem;
+  border-radius: 0.75rem;
   border: 0;
   background: transparent;
-  font: 500 0.76rem/1.2 "Readex Pro", var(--font-sans);
+  font: 500 0.84rem/1.2 "Readex Pro", var(--font-sans);
   color: #7a7169;
   cursor: pointer;
+  transition: background-color 0.25s ease;
 }
 .class-roster-mode > button[data-on='1'] {
   background: #ffffff;
   color: #2f2822;
-  box-shadow: 0 1px 3px #2f282212;
+  font-weight: 600;
+  box-shadow: 0 1px 4px #2f282214;
 }
 .dark .class-roster-mode > button[data-on='1'] {
   background: hsl(var(--card));
@@ -1040,41 +1088,41 @@
 
 .class-roster-names {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 0.45rem;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.1rem 1rem;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 .class-roster-name-item {
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.7rem;
-  border-radius: 0.85rem;
-  background: #ffffff;
-  font-size: 0.84rem;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.92rem;
   color: #2f2822;
 }
 .dark .class-roster-name-item {
-  background: hsl(var(--card));
+  background: transparent;
   color: hsl(var(--foreground));
 }
 .class-roster-name-item > i {
   font-style: normal;
   min-width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 50%;
-  background: #f0ebe3;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
   color: #7a7169;
-  display: grid;
-  place-items: center;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 .dark .class-roster-name-item > i {
-  background: hsl(var(--muted));
+  background: transparent;
   color: hsl(var(--muted-foreground));
 }
+
 

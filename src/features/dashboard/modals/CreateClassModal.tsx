@@ -456,11 +456,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             variant="ghost"
             size="md"
             onClick={() => setConfirmDelete(true)}
-            className="h-11 shrink-0 rounded-xl px-3 text-destructive hover:bg-destructive/5 hover:text-destructive sm:me-auto sm:px-4"
+            className="class-edit-delete h-12 shrink-0 rounded-2xl px-3.5 text-[#c2455c] sm:me-auto sm:px-4"
           />}
-          {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="class-create-back h-11 shrink-0 rounded-2xl px-3.5 text-xs font-semibold sm:me-auto sm:px-4 sm:text-sm">{copy.back}</Button>}
-          <Button type="button" variant="ghost" onClick={requestClose} className="class-create-cancel h-11 shrink-0 rounded-2xl px-3.5 text-sm sm:ms-auto sm:px-4">{copy.cancel}</Button>
-          {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="class-create-primary h-11 min-w-0 flex-1 px-3 text-xs font-semibold shadow-sm sm:flex-none sm:px-5 sm:text-sm">{copy.next}</Button>}
+          {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="class-create-back h-12 shrink-0 rounded-2xl px-3.5 text-xs font-semibold sm:me-auto sm:px-4 sm:text-sm">{copy.back}</Button>}
+          <Button type="button" variant="ghost" onClick={requestClose} className="class-create-cancel h-12 shrink-0 rounded-2xl px-3.5 text-sm sm:ms-auto sm:px-4">{copy.cancel}</Button>
+          {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="class-create-primary h-12 min-w-0 flex-1 px-3 text-xs font-semibold shadow-none sm:flex-none sm:px-5 sm:text-sm">{copy.next}</Button>}
           {(editingClass || step === 'details') && <AnimatedSubmitButton
             type="submit"
             form={formId}
@@ -470,7 +470,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             icon={editingClass ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             label={editingClass ? copy.save : copy.create}
             loadingLabel={copy.saving}
-            className="class-create-primary h-11 min-w-0 flex-1 rounded-2xl px-3 text-xs font-semibold shadow-sm sm:flex-none sm:px-5 sm:text-sm"
+            className="class-create-primary h-12 min-w-0 flex-1 rounded-2xl px-3 text-xs font-semibold shadow-none sm:flex-none sm:px-5 sm:text-sm"
           />}
         </fieldset>}
       >
@@ -490,38 +490,40 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             onReturn={previous => { haptics.onSelect(); setStep(previous); }} />}
 
           {!editingClass && <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="class-create-stage outline-none">
-          {step === 'cycle' && hasCycleChoice && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="grid gap-2 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-start text-sm font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'border-primary/55 bg-primary/5 text-foreground' : 'border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/40')}><span>{copy.cycleLabels[item]}</span>{item === cycle && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />}</button>)}</div></section>}
+          {step === 'cycle' && hasCycleChoice && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="class-create-seg grid gap-1 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" aria-pressed={item === cycle} onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-center text-xs font-medium transition-[transform,background-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'bg-white text-foreground font-semibold shadow-xs' : 'bg-transparent text-muted-foreground hover:text-foreground')}><span>{copy.cycleLabels[item]}</span></button>)}</div></section>}
 
           {step === 'level' && <section className="space-y-2.5">
-            <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => setCustomMode(value => !value)} className="min-h-11 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
+            <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-medium text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => setCustomMode(value => !value)} className="min-h-11 px-2 text-xs font-medium text-[#7a5a49] hover:opacity-80 focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
             {/* Le cycle n'est pas un filtre du profil : si le profil n'en liste
                 qu'un, l'étape est masquée mais reste à un clic (collège → prépa). */}
             {!customMode && !hasCycleChoice && <button type="button" onClick={() => { setShowAllCycles(true); setStep('cycle'); }} className="min-h-11 rounded-xl border border-dashed border-border/90 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground cursor-pointer"><span className="sm:hidden">{copy.otherCycle}</span><span className="hidden sm:inline">{copy.otherCycle} · {cycleOptions.map(item => copy.cycleLabels[item]).join(' / ')}</span></button>}
-            {customMode ? <div className="space-y-2"><label htmlFor="class-custom-level" className="block text-xs font-semibold text-foreground">{copy.customLevel}</label><Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="h-11 rounded-xl border border-border bg-background text-foreground px-3.5" autoFocus /></div> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} selected={item.key === (levelGroupKey || activeLevelGroup?.key)} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
+            {customMode ? <div className="space-y-2"><label htmlFor="class-custom-level" className="block text-xs font-semibold text-foreground">{copy.customLevel}</label><Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="class-edit-input h-12" autoFocus /></div> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} selected={item.key === (levelGroupKey || activeLevelGroup?.key)} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
           </section>}
 
-          {step === 'branch' && activeLevelGroup && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
+          {step === 'branch' && activeLevelGroup && <section className="space-y-2.5"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
-          {step === 'details' && <section className="space-y-2.5"><div data-color-tone={activeColorTone} className="class-create-summary space-y-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:p-4">
-            <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-0.5 break-words text-base font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
-            <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-group" className="block text-xs font-bold text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
-            {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-2.5 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
+          {step === 'details' && <section className="space-y-2.5"><div data-color-tone={activeColorTone} className="class-create-summary space-y-3 rounded-2xl p-4 text-card-foreground">
+            <div className="min-w-0"><p className="text-xs font-normal text-muted-foreground">{copy.selectedClass}</p><p className="mt-0.5 break-words text-lg font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
+            <div className="space-y-1.5 pt-1"><label htmlFor="class-group" className="block text-xs font-medium text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
+            {showSubjectChoice ? <div className="space-y-1.5 pt-1"><label htmlFor="class-subject" className="block text-xs font-medium text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-2xl border-0 bg-white/80 text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-2xl border-0 bg-white/80 text-sm shadow-none"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 pt-1 text-xs"><span className="font-medium opacity-80">{copy.subject} :</span><span className="min-w-0 break-words font-semibold">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
           </div></section>}
           </div>}
           {((!editingClass && step === 'details') || (editingClass && !rosterSection)) && (
             <fieldset className="class-create-colors">
-              <legend>{locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}</legend>
-              <div className="class-create-colors__options">
-                {CLASS_COLOR_OPTIONS.map(option => (
-                  <label key={option.value} title={option.label[locale]}>
-                    <input type="radio" name={`${formId}-color`} value={option.value} className="sr-only"
-                      aria-label={option.label[locale]} checked={classColor === option.value}
-                      onChange={() => { haptics.onSelect(); setClassColor(option.value); }} />
-                    <span style={{ backgroundColor: option.background, color: option.ink }} aria-hidden="true">
-                      {classColor === option.value && <Check />}
-                    </span>
-                  </label>
-                ))}
+              <div className="class-create-colors__dock">
+                <span className="class-create-colors__label">{locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}</span>
+                <div className="class-create-colors__options">
+                  {CLASS_COLOR_OPTIONS.map(option => (
+                    <label key={option.value} title={option.label[locale]}>
+                      <input type="radio" name={`${formId}-color`} value={option.value} className="sr-only"
+                        aria-label={option.label[locale]} checked={classColor === option.value}
+                        onChange={() => { haptics.onSelect(); setClassColor(option.value); }} />
+                      <span style={{ backgroundColor: option.background, color: option.ink }} aria-hidden="true">
+                        {classColor === option.value && <Check />}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </fieldset>
           )}
