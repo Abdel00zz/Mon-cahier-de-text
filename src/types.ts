@@ -30,7 +30,7 @@ export interface ClassInfo {
 
 /** Classe en cours de création : le gestionnaire complète l'identifiant, la
     date de création et la couleur. Source unique du contrat `addClass`. */
-export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color' | 'metadataUpdatedAt'>;
+export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color' | 'metadataUpdatedAt'> & { color?: string };
 
 /** Identité d'une classe saisie par l'assistant de création (professeur comme
     direction). `level`, `branch` et `group` sont transmis en plus du nom

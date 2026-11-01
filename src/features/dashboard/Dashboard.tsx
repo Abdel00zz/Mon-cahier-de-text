@@ -215,7 +215,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onSelectClass(classInfo);
     }, [onSelectClass]);
 
-    const createClass = useCallback((details: ClassIdentityDraft): ClassInfo => {
+    const createClass = useCallback((details: ClassIdentityDraft & { color?: string }): ClassInfo => {
         const created = addClass({
             ...details,
             cycle: details.cycle ?? selectedCycle,
@@ -237,7 +237,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         })
     ), [addClass, config.selectedCycles, t, teacherName]);
 
-    const handleCreateClass = (details: ClassIdentityDraft) => {
+    const handleCreateClass = (details: ClassIdentityDraft & { color?: string }) => {
         createClass(details);
         setCreateModalOpen(false);
     };
@@ -473,7 +473,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 sm:px-6 lg:px-8 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-[540px] px-5 pt-9 sm:pt-12 pl-safe pr-safe">
                     {/* En-tête : Titre à droite (26px, gras, #1F1A16), Robot à gauche (44x44px) en RTL */}
                     <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions
@@ -560,11 +560,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             ) : (
                                 <div className="dashboard-classes-container flex flex-col w-full" role="list" aria-label={t('dashboard.classList')}>
                                     {groupedClasses.map((group, groupIndex) => (
-                                        <section
+                                        <motion.section
                                             key={group.key}
                                             className="dashboard-day-group w-full"
+                                            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1], delay: reduceMotion ? 0 : Math.min(groupIndex, 5) * 0.08 }}
                                             style={{
-                                                marginTop: groupIndex === 0 ? '16px' : '24px',
+                                                marginTop: '38px',
                                             }}
                                         >
                                             {/* Titre de groupe par jour (« غدا : », « الإثنين : ») */}
@@ -602,7 +605,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     );
                                                 })}
                                             </div>
-                                        </section>
+                                        </motion.section>
                                     ))}
                                 </div>
                             )}

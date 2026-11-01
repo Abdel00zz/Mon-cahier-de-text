@@ -121,7 +121,7 @@
 .evaluation-reference .main-title,
 .evaluation-reference .modal-header [data-ui-title] {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: -0.015em;
   color: var(--text-dark);
   line-height: 1.35;
@@ -130,13 +130,13 @@
 .evaluation-reference .main-title {
   font-family: var(--font-display);
   font-size: 19px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: -0.015em;
 }
 
 .evaluation-reference .class-tag {
   color: var(--color-terracotta) !important;
-  font-weight: 700;
+  font-weight: 500;
   margin-inline-start: 4px;
 }
 
@@ -216,7 +216,7 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-dark);
   min-width: 0;
   flex: 1;
@@ -225,7 +225,7 @@
 .evaluation-reference .ev-accordion__label-text {
   font-family: var(--font-display);
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.4;
   letter-spacing: normal;
   color: var(--text-dark);
@@ -235,7 +235,7 @@
 /* Arabe : ni approche négative ni capitales ; lisibilité optimale */
 html[lang='ar'] .evaluation-reference :is(.main-title, .ev-accordion__label-text) {
   letter-spacing: normal;
-  font-weight: 700;
+  font-weight: 500;
 }
 html[lang='ar'] .evaluation-reference .evaluations-category-title { font-size: 18.5px; line-height: 1.4; }
 html[lang='ar'] .evaluation-reference .ev-accordion__label-text { font-size: 17px; line-height: 1.6; }
@@ -347,7 +347,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   padding: 0 !important;
   margin: 0 !important;
   font-size: 11.5px !important;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
   color: var(--text-dark);
   text-align: start;
@@ -397,7 +397,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   max-width: 100%;
   justify-content: center;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   color: hsl(var(--primary));
   border: 1px solid hsl(var(--primary) / 0.2) !important;
   background: hsl(var(--primary) / 0.08) !important;
@@ -424,7 +424,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   width: auto;
   justify-content: center;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-muted);
   background: var(--header-row-bg);
   border: 1px dashed var(--border-card);
@@ -465,7 +465,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   border-radius: 7px !important;
   gap: 0;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   touch-action: manipulation;
@@ -491,7 +491,7 @@ html[lang='ar'] .evaluation-reference .ev-board__head { letter-spacing: 0; text-
   border-radius: 4px;
   background: var(--eval-card);
   font-family: var(--font-sans);
-  font-weight: 700;
+  font-weight: 500;
   font-size: 9px;
   font-variant-numeric: tabular-nums;
   unicode-bidi: isolate;

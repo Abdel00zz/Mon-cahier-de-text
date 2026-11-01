@@ -65,7 +65,7 @@ export function ClassActionsMenu({ name, triggerClassName, onConfigure, onDelete
                     title={t('dashboard.classActions', { className: name })}
                     aria-label={t('dashboard.classActions', { className: name })}
                 >
-                    <MoreVertical className="h-[18px] w-[18px] stroke-[2.2]" aria-hidden="true" />
+                    <MoreVertical className="h-[18px] w-[18px] stroke-[1.75]" aria-hidden="true" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent

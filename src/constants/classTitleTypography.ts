@@ -29,16 +29,16 @@ export type TitleFontRole = 'card' | 'list' | 'page';
 /** Graisse par rôle, sans gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 400, tracking: '0' },
-        arabic: { weight: 400, tracking: '0' },
+        latin: { weight: 500, tracking: '0' },
+        arabic: { weight: 500, tracking: '0' },
     },
     list: {
-        latin: { weight: 400, tracking: '0' },
-        arabic: { weight: 400, tracking: '0' },
+        latin: { weight: 500, tracking: '0' },
+        arabic: { weight: 500, tracking: '0' },
     },
     page: {
-        latin: { weight: 600, tracking: '-0.024em' },
-        arabic: { weight: 700, tracking: '0' },
+        latin: { weight: 500, tracking: '-0.024em' },
+        arabic: { weight: 500, tracking: '0' },
     },
 };
 

@@ -55,3 +55,12 @@
 @media (prefers-reduced-motion: reduce) {
   .schedule-tab *, .schedule-tab *::before, .schedule-tab *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* Match each saved class tone to its warm-paper card in the light theme. */
+:root:not(.dark) .schedule-cell[data-keep-tone='coral'] { --keep-cell: #fcefdf; --keep-cell-ink: #69381c; }
+:root:not(.dark) .schedule-cell:is([data-keep-tone='lavender'], [data-keep-tone='indigo']) { --keep-cell: #eeecfa; --keep-cell-ink: #362e6e; }
+:root:not(.dark) .schedule-cell:is([data-keep-tone='mint'], [data-keep-tone='lime']) { --keep-cell: #e7f4ec; --keep-cell-ink: #1f5438; }
+:root:not(.dark) .schedule-cell[data-keep-tone='sky'] { --keep-cell: #e9f3fa; --keep-cell-ink: #1f4b6e; }
+:root:not(.dark) .schedule-cell[data-keep-tone='sand'] { --keep-cell: #f9f2df; --keep-cell-ink: #634918; }
+:root:not(.dark) .schedule-cell[data-keep-tone='rose'] { --keep-cell: #fae9ee; --keep-cell-ink: #6b273a; }
+:root:not(.dark) .schedule-cell--assigned select { background: var(--keep-cell); }

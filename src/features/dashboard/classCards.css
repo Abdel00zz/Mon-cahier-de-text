@@ -43,7 +43,7 @@
   transition: transform 180ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 220ms ease;
 }
 
-.class-card:not(.class-card--active):not([data-session-active="true"]) {
+.class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
   box-shadow: none !important;
 }
 
@@ -196,8 +196,8 @@
 }
 
 .class-card__title {
-  font-size: 16px !important;
-  font-weight: 700 !important;
+  font-size: 16.5px !important;
+  font-weight: 500 !important;
   color: var(--card-title, #2D4A14) !important;
   line-height: 1.35;
   margin: 0;
@@ -207,11 +207,11 @@
 }
 
 .class-card__tier-plain {
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   font-weight: 400 !important;
   color: var(--card-secondary, #4F6B2E) !important;
   line-height: 1.3;
-  margin-top: 2px;
+  margin-top: 4px;
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
@@ -472,23 +472,10 @@
 /* Desktop feedback is enabled only for a precise pointer. */
 @media (hover: hover) and (pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .class-card:has(.class-card__open:hover) {
-    transform: translateY(-3px);
-    will-change: transform;
+    transform: translateY(-2.5px);
   }
-  .class-card:has(.class-card__open:hover) .class-card__sheet {
-    border-inline-end-width: 7px;
-  }
-  .class-card:has(.class-card__open:hover) .class-card__tier {
-    transform: translateX(2px) scale(1.03);
-  }
-  .class-card:has(.class-card__open:hover) .class-card__title {
-    transform: translateX(3px);
-  }
-  .class-card[dir="rtl"]:has(.class-card__open:hover) .class-card__tier {
-    transform: translateX(-2px) scale(1.03);
-  }
-  .class-card[dir="rtl"]:has(.class-card__open:hover) .class-card__title {
-    transform: translateX(-3px);
+  .class-card:has(.class-card__open:hover) {
+    box-shadow: 0 6px 18px -8px rgba(68, 48, 32, .12);
   }
 }
 
@@ -726,3 +713,20 @@ html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
 @media (prefers-reduced-motion: reduce) {
   .class-list-item, .class-list-item__menu { transition: none; }
 }
+
+/* Le menu reflète son état sans modifier la surface tactile. */
+.class-card__menu svg { transition: transform 200ms cubic-bezier(.22,1,.36,1); }
+.class-card__menu[data-state='open'] svg { transform: rotate(90deg); }
+.dashboard-class-slot:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
+.dashboard-day-group:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
+@media (prefers-reduced-motion: reduce) { .class-card__menu svg { transition: none; } }
+
+/* Des surfaces assombries conservent la teinte sans réduire la lisibilité. */
+.dark .class-card {
+  background-color: color-mix(in srgb, var(--card-bg, #e7f4ec) 12%, hsl(var(--card))) !important;
+  border-color: color-mix(in srgb, var(--card-border, #c1e2ce) 28%, hsl(var(--border))) !important;
+}
+.dark .class-card__title { color: hsl(var(--foreground)) !important; }
+.dark .class-card__tier-plain { color: hsl(var(--muted-foreground)) !important; }
+.dark .class-card__menu { color: hsl(var(--foreground) / .85) !important; }
+.dark .class-card .class-card__group.keep-group-watermark { color: inherit !important; }

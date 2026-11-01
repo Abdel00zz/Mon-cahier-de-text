@@ -50,3 +50,12 @@ test('explicit notebook setup survives validation, cloud merging and admin ident
     assert.equal(assertValidClasses([base])[0].notebookContentOrigin, undefined);
     assert.throws(() => assertValidClasses([{ ...base, notebookContentOrigin: 'guessed' }]));
 });
+
+ test('une couleur choisie reste synchronisable entre appareils', () => {
+    const selected = updateClassMetadata(base, { color: 'rose' }, 1000);
+    const stored = assertValidClasses([selected])[0];
+    assert.equal(stored.color, 'rose');
+    assert.equal(mergeClassMetadata(base, stored).color, 'rose');
+    assert.equal(mergeClassMetadata(stored, base).color, 'rose');
+    assert.equal(updateClassMetadata(stored, { color: 'rose' }, 2000).metadataUpdatedAt, stored.metadataUpdatedAt);
+});

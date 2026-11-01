@@ -5,7 +5,7 @@ import { assignClassColors, classColorFamily, isClassColor } from '../src/domain
 import type { ClassInfo } from '../src/types';
 
 const classFor = (name: string, id: string): ClassInfo => ({
-  name, id, cycle: 'lycee', subject: 'Mathématiques', teacherName: '', color: 'mint', createdAt: '2026-09-01',
+  name, id, cycle: 'lycee', subject: 'Mathématiques', teacherName: '', color: '', createdAt: '2026-09-01',
 });
 
 test('les familles restent reconnues mais chaque classe obtient une couleur distincte', () => {
@@ -33,7 +33,7 @@ test('les familles restent reconnues mais chaque classe obtient une couleur dist
   assert.deepEqual(assignClassColors([...source].reverse()).reverse(), migrated);
   assert.deepEqual(assignClassColors(JSON.parse(JSON.stringify(migrated))), migrated);
   assert.ok(assignClassColors(migrated).every((item, index) => item === migrated[index]));
-  assert.ok(source.every(item => item.color === 'mint'), 'la migration ne modifie pas la source');
+  assert.ok(source.every(item => item.color === ''), 'la migration ne modifie pas la source');
 });
 
 test('ajout, suppression et renommage conservent les couleurs déjà attribuées', () => {
@@ -49,14 +49,11 @@ test('ajout, suppression et renommage conservent les couleurs déjà attribuées
   assert.notEqual(collision[0].color, collision[1].color);
 });
 
-test('trois classes de sciences indigo et une classe menthe deviennent quatre repères distincts', () => {
+test('les couleurs choisies restent intactes même pour plusieurs classes', () => {
   const source = ['2ème Bac Sciences Physiques 3', '2ème Bac SVT 2', '2ème Bac Sciences Physiques 4', 'Tronc Commun Lettres 6']
     .map((name, i) => ({ ...classFor(name, `class-${i}`), color: i === 3 ? 'mint' : 'indigo' }));
-  const colors = assignClassColors(source);
-  assert.equal(new Set(colors.map(item => item.color)).size, 4);
-  assert.equal(colors[0].color, 'indigo');
-  assert.equal(colors[3].color, 'mint');
-  assert.equal(assignClassColors(colors), colors, 'les couleurs enregistrées ne sont pas recalculées');
+  assert.equal(assignClassColors(source), source);
+  assert.deepEqual(assignClassColors(JSON.parse(JSON.stringify(source))), source);
 });
 
 test('les huit aplats du dashboard sont distincts et les textes conservent un contraste AA', () => {

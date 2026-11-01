@@ -96,6 +96,14 @@ const EMPTY_SUBJECTS: string[] = [];
 const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
 const CLASS_MODAL_DETENTS = [0.72, 0.92];
+const CLASS_COLOR_OPTIONS: ReadonlyArray<{ value: string; background: string; ink: string; label: Record<AppLocale, string> }> = [
+  { value: 'coral', background: '#f6d5b8', ink: '#69381c', label: { fr: 'Pêche', ar: 'خوخي', en: 'Peach' } },
+  { value: 'lavender', background: '#d8d3f5', ink: '#362e6e', label: { fr: 'Lavande', ar: 'خزامى', en: 'Lavender' } },
+  { value: 'mint', background: '#c5e6d2', ink: '#1f5438', label: { fr: 'Vert', ar: 'أخضر', en: 'Green' } },
+  { value: 'sky', background: '#c7e0f4', ink: '#1f4b6e', label: { fr: 'Ciel', ar: 'سماوي', en: 'Sky' } },
+  { value: 'sand', background: '#ede0b9', ink: '#634918', label: { fr: 'Sable', ar: 'رملي', en: 'Sand' } },
+  { value: 'rose', background: '#f2ccd8', ink: '#6b273a', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
+];
 
 const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; selected?: boolean }> = ({ children, onClick, selected }) => (
   <button
@@ -156,6 +164,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   };
   const setCustomLevel = (val: string) => setValue('customLevel', val, { shouldDirty: true });
   const setCustomSubject = (val: string) => setValue('customSubject', val, { shouldDirty: true });
+  const [classColor, setClassColor] = useState(editingClass?.color ?? '');
   const [groupTouched, setGroupTouched] = useState(false);
   const [currentStep, setStep] = useState<WizardStep>(initial.step);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -316,6 +325,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       level: identity?.level,
       branch: identity?.branch || undefined,
       group: normalizedGroup,
+      ...(classColor ? { color: classColor } : {}),
     };
     try {
       if (editingClass) {
@@ -476,6 +486,23 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             {showSubjectChoice ? <div className="space-y-1.5 border-t border-border/70 pt-2.5"><label htmlFor="class-subject" className="block text-xs font-bold text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 border-t border-border/70 pt-2.5 text-xs"><span className="font-semibold text-muted-foreground">{copy.subject} :</span><span className="min-w-0 break-words font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
           </div></section>}
           </div>}
+          {((!editingClass && step === 'details') || (editingClass && !rosterSection)) && (
+            <fieldset className="class-create-colors">
+              <legend>{locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}</legend>
+              <div className="class-create-colors__options">
+                {CLASS_COLOR_OPTIONS.map(option => (
+                  <label key={option.value} title={option.label[locale]}>
+                    <input type="radio" name={`${formId}-color`} value={option.value} className="sr-only"
+                      aria-label={option.label[locale]} checked={classColor === option.value}
+                      onChange={() => { haptics.onSelect(); setClassColor(option.value); }} />
+                    <span style={{ backgroundColor: option.background, color: option.ink }} aria-hidden="true">
+                      {classColor === option.value && <Check />}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
           <div hidden={rosterSection}>{editConfiguration}</div>
           {editingClass && onRosterSave && <div hidden={!rosterSection}>
             <ClassRosterFields value={rosterText} onChange={setRosterText} names={parsedRoster.names} invalid={parsedRoster.invalid}

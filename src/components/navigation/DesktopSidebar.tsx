@@ -13,7 +13,7 @@ export function DesktopSidebar({ activeTab, goTo, copy, teacherName, expanded, t
     <div className="flex min-h-10 lg:min-h-11 items-center gap-2.5 lg:gap-3 px-2.5 lg:px-4">
       <button type="button" onClick={toggle} aria-expanded={expanded} aria-label={expanded ? copy.collapse : copy.expand}
         className="workspace-menu-toggle flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground transition-colors">
-        <Menu className="size-5 lg:size-[22px]" strokeWidth={1.5} aria-hidden />
+        <Menu className="size-5 lg:size-[22px]" strokeWidth={1.75} aria-hidden />
       </button>
       {expanded && <div className="min-w-0 flex-1"><p className="truncate text-xs lg:text-sm font-semibold text-foreground" dir="auto">{teacherName}</p>
         <p className="mt-0.5 truncate text-[9px] lg:text-[10px] text-muted-foreground">{copy.teacherSpace}</p></div>}

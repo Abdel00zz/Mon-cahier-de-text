@@ -65,8 +65,8 @@ html[data-keyboard='open'] .mobile-tab-sheet {
 }
 .mobile-tab-label { max-width: 100%; text-align: center; overflow-wrap: anywhere; font-size: 12px; }
 .workspace-shell {
-  --workspace-rail-width: 84px;
-  --workspace-expanded-width: 252px;
+  --workspace-rail-width: 76px;
+  --workspace-expanded-width: 236px;
 }
 .workspace-sidebar[data-expanded='true'] { width: var(--workspace-expanded-width); }
 .app-settings-parent[data-workspace-navigation='true'] {
@@ -78,8 +78,8 @@ html[data-keyboard='open'] .mobile-tab-sheet {
 /* A shared width keeps tablet navigation and the content gutter aligned. */
 @media (min-width: 768px) and (max-width: 1199px) {
   .workspace-shell {
-    --workspace-rail-width: 64px;
-    --workspace-expanded-width: clamp(168px, 20vw, 196px);
+    --workspace-rail-width: 76px;
+    --workspace-expanded-width: min(236px, 35vw);
   }
   .workspace-sidebar {
     padding-top: max(0.875rem, env(safe-area-inset-top, 0px));
@@ -114,9 +114,9 @@ html[data-keyboard='open'] .mobile-tab-sheet {
 .workspace-nav-button--compact { justify-content: center; padding-inline: 0.25rem; }
 .workspace-nav-button--mobile {
   position: relative;
-  width: 92px;
-  height: 56px;
-  min-height: 56px;
+  width: 88px;
+  height: 48px;
+  min-height: 48px;
   min-width: 0;
   flex-direction: column;
   align-items: center;
@@ -149,14 +149,14 @@ html[data-keyboard='open'] .mobile-tab-sheet {
   inset: 0;
   border-radius: 16px;
   border: none;
-  background: #6B4F3F;
+  background: #6b4c35;
   box-shadow: none;
   pointer-events: none;
 }
 .workspace-nav-button--mobile[aria-current='page'],
 .workspace-nav-button--mobile[aria-current='page'] svg {
-  color: #FFFFFF !important;
-  font-weight: 700 !important;
+  color: #faf7f2 !important;
+  font-weight: 500 !important;
 }
 .workspace-nav-button--mobile:not([aria-current='page']) {
   color: #4A433C;
@@ -171,8 +171,8 @@ html[data-keyboard='open'] .mobile-tab-sheet {
   line-height: 1.2;
 }
 .workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label {
-  font-weight: 700 !important;
-  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  color: #faf7f2 !important;
 }
 .workspace-nav-button--mobile:not([aria-current='page']) .mobile-tab-label {
   font-weight: 400 !important;
@@ -209,3 +209,11 @@ html[data-keyboard='open'] .workspace-shell[data-phone-navigation='true'] .app-s
 
 html[lang='ar'] .workspace-nav-button--desktop .workspace-nav-label { font-size: 15px; }
 html[lang='ar'] .workspace-sidebar [dir='auto'] { font-size: 13px; }
+
+/* Warm, elevated sidebar; the application theme remains authoritative in dark mode. */
+:root:not(.dark) .workspace-sidebar { background: #f6f1e8; border-inline-end: 1px solid #e6ded4; border-start-end-radius: 22px; border-end-end-radius: 22px; }
+:root:not(.dark) .workspace-menu-toggle { background: #efe8de; border: 1px solid #e2d8ca; border-radius: 50%; }
+.workspace-nav-button[aria-current='page'] { font-weight: 500; }
+.dark .workspace-nav-button--mobile:not([aria-current='page']),
+.dark .workspace-nav-button--mobile:not([aria-current='page']) svg,
+.dark .workspace-nav-button--mobile:not([aria-current='page']) .mobile-tab-label { color: #e0d5ca !important; }

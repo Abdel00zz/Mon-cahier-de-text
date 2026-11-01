@@ -6,18 +6,20 @@ export interface DepartmentPalette {
 }
 
 const DEPARTMENT_PALETTES = {
-  green: { bg: '#EEF5DF', border: '#D5E5B5', title: '#2D4A14', secondary: '#4F6B2E' },
-  rose: { bg: '#F9E8F3', border: '#EBC9DE', title: '#5E2150', secondary: '#86436F' },
-  indigo: { bg: '#E9EBFA', border: '#CDD2F0', title: '#27307A', secondary: '#4A55A8' },
-  orange: { bg: '#FDEADF', border: '#F3CDB8', title: '#7A2E10', secondary: '#96401A' },
+  peach: { bg: '#fcefdf', border: '#f0cfb4', title: '#69381c', secondary: '#825034' },
+  lavender: { bg: '#eeecfa', border: '#d3cef0', title: '#362e6e', secondary: '#595092' },
+  green: { bg: '#e7f4ec', border: '#c1e2ce', title: '#1f5438', secondary: '#356b4c' },
+  sky: { bg: '#e9f3fa', border: '#c3dcf0', title: '#1f4b6e', secondary: '#396b90' },
+  sand: { bg: '#f9f2df', border: '#e6d5ab', title: '#634918', secondary: '#765c27' },
+  rose: { bg: '#fae9ee', border: '#eec7d3', title: '#6b273a', secondary: '#90475b' },
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
-const PALETTE_CYCLE: readonly PaletteKey[] = ['green', 'orange', 'indigo', 'rose'];
+const PALETTE_CYCLE: readonly PaletteKey[] = ['green', 'peach', 'lavender', 'sky', 'sand', 'rose'];
 
 /**
- * Déduit les 4 tons d'une matière (fond, bordure, titre, secondaire)
- * et garantit que deux matières voisines n'ont pas la même famille de couleur.
+ * Déduit les tons d'une matière (fond, bordure, titre, secondaire)
+ * en respectant en priorité la couleur enregistrée de chaque classe.
  */
 export function pickDepartmentPalette(
   tone: string | undefined,
@@ -27,24 +29,20 @@ export function pickDepartmentPalette(
 ): { key: PaletteKey; palette: DepartmentPalette } {
   const s = (subject || '').toLowerCase();
   const t = (tone || '').toLowerCase();
-  let key: PaletteKey = 'green';
-
-  if (s.includes('svt') || s.includes('vie') || s.includes('terre') || t === 'lime' || t === 'mint') {
-    key = 'green';
-  } else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl') || t === 'lavender' || t === 'rose') {
-    key = 'rose';
-  } else if (s.includes('4') || t === 'indigo' || t === 'sky') {
-    key = 'indigo';
-  } else if (s.includes('phys') || s.includes('chim') || t === 'coral' || t === 'sand') {
-    key = 'orange';
-  } else {
-    key = PALETTE_CYCLE[index % PALETTE_CYCLE.length];
-  }
-
-  // Évite deux couleurs proches ou identiques consécutives
-  if (previousKey && key === previousKey) {
-    const prevIdx = PALETTE_CYCLE.indexOf(previousKey);
-    key = PALETTE_CYCLE[(prevIdx + 1) % PALETTE_CYCLE.length];
+  const tones: Record<string, PaletteKey> = {
+    coral: 'peach', peach: 'peach', lavender: 'lavender', indigo: 'lavender',
+    mint: 'green', lime: 'green', green: 'green', sky: 'sky', sand: 'sand', rose: 'rose',
+  };
+  // A saved choice is stable across sorting and never overwritten by its neighbours.
+  const saved = tones[t];
+  let key: PaletteKey = saved ?? PALETTE_CYCLE[index % PALETTE_CYCLE.length];
+  if (!saved) {
+    if (s.includes('svt') || s.includes('vie') || s.includes('terre')) key = 'green';
+    else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl')) key = 'rose';
+    else if (s.includes('phys') || s.includes('chim')) key = 'peach';
+    if (previousKey && key === previousKey) {
+      key = PALETTE_CYCLE[(PALETTE_CYCLE.indexOf(previousKey) + 1) % PALETTE_CYCLE.length];
+    }
   }
 
   return { key, palette: DEPARTMENT_PALETTES[key] };

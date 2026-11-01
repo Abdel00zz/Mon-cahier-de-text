@@ -272,24 +272,24 @@ html[lang="ar"] .keep-class-title {
        secondaire passe AA haut la main (34 % → 8:1 sur carte). L’accent terre
        cuite reste la seule couleur d’action ; le vert ne sert qu’au succès,
        le rouge qu’aux ruptures. Les gris gardent une teinte chaude de 2 à 5 %. */
-    --background: 45 27% 93%;      /* #F3EFE7 papier profond */
-    --foreground: 45 12% 11%;      /* encre chaude, jamais noir pur */
-    --card: 42 36% 98%;            /* #FCFAF4 carte un cran au-dessus */
-    --card-foreground: 45 12% 11%;
-    --popover: 42 36% 98%;
-    --popover-foreground: 45 12% 11%;
-    --primary: 15 55% 45%;         /* terre cuite #B35230 */
-    --primary-foreground: 45 40% 98%;
-    --secondary: 45 20% 89%;
+    --background: 37.5 44.44% 96.47%; /* #faf7f2 */
+    --foreground: 25 35.29% 13.33%; /* #2e2016 */
+    --card: 40 100% 98.82%; /* #fffdf9 */
+    --card-foreground: 25 35.29% 13.33%;
+    --popover: 40 100% 98.82%;
+    --popover-foreground: 25 35.29% 13.33%;
+    --primary: 25.56 33.75% 31.37%; /* #6b4c35 */
+    --primary-foreground: 37.5 44.44% 96.47%;
+    --secondary: 35.29 34.69% 90.39%;
     --secondary-foreground: 45 12% 16%;
-    --muted: 45 22% 90%;           /* #EBE7DE aplat muet */
-    --muted-foreground: 45 9% 34%; /* #5E594E : AA sur papier ET sur carte */
+    --muted: 38.57 43.75% 93.73%; /* #f6f1e8 */
+    --muted-foreground: 27.57 20.22% 35.88%; /* #6e5a49 */
     --accent: 18 42% 89%;          /* argile de survol */
     --accent-foreground: 15 55% 25%;
-    --border: 45 18% 80%;          /* filet réellement visible */
-    --input: 42 32% 97%;
-    --ring: 15 60% 44%;
-    --destructive: 352 58% 38%; /* Cramoisi : distinct de l'accent terre cuite. */
+    --border: 34.74 26.76% 86.08%; /* #e5ddd2 */
+    --input: 33 22.22% 82.35%; /* #dcd3c8 */
+    --ring: 26 34% 31%;
+    --destructive: 4.62 56.52% 45.10%; /* #b43c32 */
     --destructive-foreground: 45 40% 98%;
     --success: 130 28% 26%;
     --warning: 38 92% 45%;
@@ -343,7 +343,7 @@ html[lang="ar"] .keep-class-title {
     --accent: 18 20% 22%;
     --accent-foreground: 18 58% 84%;
     --border: 38 7% 26%;
-    --input: 38 6% 18%;
+    --input: 38 8% 40%;
     --ring: 15 58% 62%;
     --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
     --destructive-foreground: 352 45% 12%;

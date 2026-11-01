@@ -43,10 +43,8 @@ const hueDistance = (a: number, b: number): number => {
   return Math.min(delta, 360 - delta);
 };
 
-/** Stable per workspace. Preserve unique saved colors and repair old family
- * duplicates or visually ambiguous sister-class colors.
- * Guarantees that classes of the same level and branch receive distinct,
- * well-separated, harmonious background colors. */
+/** Preserve every saved choice, including shared colors. Assign distinct tones
+ * where possible only to classes which do not already have a valid color. */
 export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
   const assigned = new Map<string, string>();
   const used = new Set<string>();
@@ -57,9 +55,7 @@ export function assignClassColors(classes: ClassInfo[]): ClassInfo[] {
     const family = classColorFamily(item.name);
     const itemHue = isClassColor(item.color) ? hueOf(item.color) : -1;
     const existingFamilyHues = family ? familyUsedHues.get(family) ?? [] : [];
-    const familyCollision = existingFamilyHues.some(h => hueDistance(h, itemHue) < 45);
-
-    if (isClassColor(item.color) && !used.has(item.color) && !familyCollision) {
+    if (isClassColor(item.color)) {
       assigned.set(item.id, item.color);
       used.add(item.color);
       if (family) {

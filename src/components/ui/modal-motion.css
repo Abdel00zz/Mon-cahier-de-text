@@ -10,8 +10,8 @@
 
 /* Le voile suit la palette du thème et s'anime avec la surface. */
 .modal-motion-overlay {
-  --modal-scrim-blur: 7px;
-  background: var(--modal-scrim-bg, hsl(var(--foreground) / .42));
+  --modal-scrim-blur: 2px;
+  background: var(--modal-scrim-bg, rgba(43, 33, 25, .25));
   -webkit-backdrop-filter: blur(var(--modal-scrim-blur)) saturate(135%);
   backdrop-filter: blur(var(--modal-scrim-blur)) saturate(135%);
 }
@@ -569,3 +569,7 @@
     }
   }
 }
+
+/* Typographic hierarchy for the warm paper interface. */
+.modal-motion-surface .modal-header [data-ui-title] { font-family: var(--font-sans); font-size: 17px; font-weight: 500; letter-spacing: normal; }
+.modal-motion-surface .modal-header [data-description] { font-family: var(--font-sans); font-weight: 400; }

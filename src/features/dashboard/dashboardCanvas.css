@@ -1,16 +1,24 @@
 /* Canevas éditorial : couleur unie #F6F3EE, zéro pointillé */
 :root {
-    --dash-bg: #F6F3EE;
-    --dash-header-ink: #1F1A16;
-    --dash-group-ink: #6B645C;
-    --dash-btn-bg: #6B4F3F;
+    --dash-bg: #faf7f2;
+    --dash-header-ink: #2e2016;
+    --dash-group-ink: #6e5a49;
+    --dash-btn-bg: #6b4c35;
     --dash-btn-shadow: 0 6px 16px rgba(60, 40, 25, 0.25);
     --dash-robot-badge-bg: #B3402A;
     --dash-tabbar-bg: #FFFDF9;
     --dash-tabbar-border: #E5DFD5;
     --dash-tabbar-sheet-bg: #FBF9F4;
     --dash-tabbar-inactive: #4A433C;
-    --dash-tabbar-active-bg: #6B4F3F;
+    --dash-tabbar-active-bg: #6b4c35;
+}
+.dark {
+    --dash-header-ink: #f2eae0;
+    --dash-group-ink: #c9bbb0;
+    --dash-btn-bg: #a67d60;
+    --dash-tabbar-bg: #29241f;
+    --dash-tabbar-sheet-bg: #211d19;
+    --dash-tabbar-border: #51463c;
 }
 
 [data-dashboard-surface],
@@ -66,20 +74,17 @@
 /* Header de l'écran « أقسامي الدراسية : » */
 .dashboard-top-header {
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 }
 
-[dir="rtl"] .dashboard-top-header {
-    flex-direction: row-reverse;
-}
-
 .dashboard-header-title {
     display: inline-flex;
     align-items: baseline;
-    font-size: 26px !important;
-    font-weight: 800 !important;
+    font-size: 25px !important;
+    font-weight: 500 !important;
     color: var(--dash-header-ink, #1F1A16) !important;
     line-height: 1.25;
     letter-spacing: -0.01em;
@@ -93,8 +98,8 @@
 .dashboard-day-group__title {
     display: flex;
     align-items: baseline;
-    font-size: 14px !important;
-    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
     color: var(--dash-group-ink, #6B645C) !important;
     margin-bottom: 10px !important;
 }
@@ -128,3 +133,10 @@
     transform: scale(0.92);
 }
 
+
+@media (max-width: 639px) { .dashboard-header-title { font-size: 23px !important; } }
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .dashboard-floating-add-btn:hover svg { transform: rotate(90deg); }
+  .dashboard-floating-add-btn svg { transition: transform 200ms cubic-bezier(.22,1,.36,1); }
+}

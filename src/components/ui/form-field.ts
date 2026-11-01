@@ -2,7 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 export const formFieldVariants = cva(
   [
-    'paper-field flex w-full items-center border border-border bg-card text-base sm:text-sm text-foreground',
+    'paper-field flex w-full items-center border border-input bg-card text-base sm:text-sm text-foreground',
     'transition-[border-color,background-color,box-shadow] duration-200 motion-reduce:transition-none',
     'placeholder:text-muted-foreground/70',
     'hover:border-primary/50',

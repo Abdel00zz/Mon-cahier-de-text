@@ -87,10 +87,11 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 
 // Palette artistique, élégante et moderne : teintes subtiles et nobles,
 // contrastes de galerie éditoriale avec bordure de précision.
-const BADGE_BLUE = 'bg-[#eef4f9] text-[#1565c0] dark:bg-[#122842] dark:text-[#8fc3ff]';
+const BADGE_BLUE = 'bg-[#e6f0fa] text-[#24588a] border-[#c9dff4] dark:bg-[#122842] dark:text-[#8fc3ff]';
 const BADGE_NEUTRAL = 'bg-[#f4f5f7] text-[#3e444e] dark:bg-[#20252d] dark:text-[#cbd5e1]';
-const BADGE_RED = 'bg-[#fcf0ed] text-[#ad2d24] dark:bg-[#381614] dark:text-[#fca597]';
-const BADGE_GREEN = 'bg-[#eef7f2] text-[#2e7d32] dark:bg-[#122b1c] dark:text-[#8de3a6]';
+const BADGE_RED = 'bg-[#fbe9e7] text-[#993931] border-[#f2cbc6] dark:bg-[#381614] dark:text-[#fca597]';
+const BADGE_PURPLE = 'bg-[#f3ebfa] text-[#573d80] border-[#dfd0f0] dark:bg-[#30243d] dark:text-[#dfc8f4]';
+const BADGE_GREEN = 'bg-[#e5f4ec] text-[#236b45] border-[#c4e5d2] dark:bg-[#122b1c] dark:text-[#8de3a6]';
 
 /** Interne : les surfaces passent par `contentBadgeClass`, pas par la palette. */
 const BADGE_COLOR_MAP: { [key: string]: string } = {
@@ -115,7 +116,7 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
     'principe': BADGE_RED,
     'sécurité': BADGE_RED,
     // Vert menthe : exemples, activité et mise en pratique (Act./App.)
-    'activité': BADGE_GREEN,
+    'activité': BADGE_PURPLE,
     'application': BADGE_GREEN,
     'exemple': BADGE_GREEN,
     'exercice': BADGE_GREEN,
@@ -134,9 +135,9 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
 };
 
 /** Same semantic family on paper, with a light palette independent of the screen theme. */
-export const contentBadgeTone = (type: string): 'blue' | 'red' | 'green' | 'neutral' => {
+export const contentBadgeTone = (type: string): 'blue' | 'red' | 'green' | 'purple' | 'neutral' => {
   const color = BADGE_COLOR_MAP[type];
-  return color === BADGE_BLUE ? 'blue' : color === BADGE_RED ? 'red' : color === BADGE_GREEN ? 'green' : 'neutral';
+  return color === BADGE_PURPLE ? 'purple' : color === BADGE_BLUE ? 'blue' : color === BADGE_RED ? 'red' : color === BADGE_GREEN ? 'green' : 'neutral';
 };
 
 /**
