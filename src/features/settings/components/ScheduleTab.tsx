@@ -217,7 +217,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <Tabs value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
+        <Tabs dir={locale === 'ar' ? 'rtl' : 'ltr'} value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
             <div className="schedule-controls">
               <div className="schedule-controls__row">
                 <div className="schedule-periods">
@@ -268,7 +268,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
             <TabsContent value={visiblePeriod} className="mt-0">
                 <div className="overflow-x-auto overscroll-x-contain">
-                    <table aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
+                    <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-[20rem] sm:min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
                             <th scope="col" className={`schedule-grid__day-heading sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center text-muted-foreground`}>

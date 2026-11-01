@@ -16,6 +16,7 @@ test('grille mobile bilingue : horaires, cellules tactiles et séance fusionnée
     const html = renderToStaticMarkup(createElement(LocaleProvider, { locale, manageDocument: false,
       children: createElement(ScheduleTab, { classes: [classInfo], config, onChange: () => {} }) }));
     assert.equal((html.match(/scope="row"/g) ?? []).length, 6);
+    assert.match(html, locale === 'ar' ? /<table dir="rtl"/ : /<table dir="ltr"/);
     assert.equal((html.match(/<select/g) ?? []).length, 23);
     assert.match(html, /colSpan="2"/i);
     assert.match(html, /schedule-cell__add/);

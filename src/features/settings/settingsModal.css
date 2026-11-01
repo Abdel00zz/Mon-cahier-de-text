@@ -36,7 +36,7 @@
   .settings-modal-frame .settings-scroll { padding-block: 16px 24px; }
 }
 
-/* Page navigation: frameless iOS-style tab strip with fluid selection capsule. */
+/* Only the selected section has a surface; the strip scrolls in both directions. */
 .settings-tab-navigation {
   --rail-surface: hsl(var(--background));
   min-width: 0;
@@ -48,21 +48,26 @@
   box-shadow: none;
 }
 .settings-tab-navigation [role='tablist'] {
-  padding: 2px 0;
-  gap: 6px;
-  scroll-padding-inline: 12px;
-  scroll-snap-type: x proximity;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 4px 2px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.settings-tab-navigation [role='tablist']::-webkit-scrollbar { display: none; }
 .settings-tab-navigation [role='tab'] {
   min-height: 44px;
   padding-inline: 14px;
-  border: 0;
-  border-radius: 999px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.01em;
   box-shadow: none;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 html[lang='ar'] .settings-tab-navigation [role='tab'] {
@@ -76,17 +81,14 @@ html[lang='ar'] .settings-tab-navigation [role='tab'] {
 .settings-tab-navigation [role='tab'][aria-selected='true'] {
   color: hsl(var(--primary));
   font-weight: 600;
+  background: hsl(var(--primary) / .12);
+  border-color: hsl(var(--primary) / .16);
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .06);
 }
-.settings-tab-navigation [role='tab'] > div {
-  border: 0;
-  border-radius: 999px;
-  background: hsl(var(--primary) / 0.12);
-  box-shadow: none;
+.dark .settings-tab-navigation [role='tab'][aria-selected='true'] { background: hsl(var(--primary) / .2); }
+@media (hover: hover) {
+  .settings-tab-navigation [role='tab'][aria-selected='false']:hover { background: hsl(var(--muted) / .65); color: hsl(var(--foreground)); }
 }
-.dark .settings-tab-navigation [role='tab'] > div {
-  background: hsl(var(--primary) / 0.22);
-}
-.settings-tab-navigation [role='tablist'] > button { scroll-snap-align: center; }
 .settings-tab-navigation [role='tab']:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
 .settings-page-section { animation: settings-section-in 180ms cubic-bezier(.22,1,.36,1); }
 @keyframes settings-section-in { from { opacity: .65; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
@@ -131,5 +133,8 @@ html[lang='ar'] .settings-tab-navigation [role='tab'] {
   .settings-section { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .schedule-tab { gap: 12px; }
 }
-@media (prefers-reduced-motion: reduce) { .settings-page-section { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .settings-page-section { animation: none; }
+  .settings-tab-navigation [role='tab'] { transition: none; }
+}
 
