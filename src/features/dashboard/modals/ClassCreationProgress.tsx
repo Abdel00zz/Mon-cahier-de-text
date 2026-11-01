@@ -11,8 +11,12 @@ interface ClassCreationProgressProps {
 
 /** Completed steps remain reachable without clearing the teacher's draft. */
 export function ClassCreationProgress({ steps, currentIndex, label, stepLabel, onReturn }: ClassCreationProgressProps) {
+  const progressRatio = steps.length > 1 ? Math.min(1, Math.max(0, currentIndex / (steps.length - 1))) : 0;
   return <nav className="class-create-progress" aria-label={label}>
-    <ol style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+    <ol style={{
+      gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
+      ['--step-progress' as string]: String(progressRatio),
+    }}>
       {steps.map((step, index) => {
         const complete = index < currentIndex;
         const state = complete ? 'complete' : index === currentIndex ? 'current' : 'upcoming';

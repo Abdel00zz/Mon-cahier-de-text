@@ -211,12 +211,12 @@ export const EventDateModal: FC<EventDateModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="sm"
       mobilePresentation="sheet"
-      className="evaluation-modal sm:rounded-xl"
-      headerClassName="border-b border-border/50 bg-background/95 px-4 py-3 sm:px-5 sm:py-3.5"
-      bodyClassName="px-4 py-3.5 sm:px-5 sm:py-4 space-y-3.5"
-      footerClassName="px-4 py-3 sm:px-5 sm:py-3.5"
+      className="evaluation-modal date-cal-modal sm:max-w-[25rem] sm:rounded-2xl"
+      headerClassName="date-cal-modal__header border-b-0 bg-transparent px-4 pt-4 pb-2 pe-14 sm:px-5 sm:pt-4 sm:pb-2 sm:pe-14"
+      bodyClassName="date-cal-modal__body px-4 py-2 sm:px-5 sm:py-2.5 space-y-2.5"
+      footerClassName="date-cal-modal__footer border-t-0 bg-transparent px-4 pt-2 pb-3.5 sm:px-5 sm:pt-2 sm:pb-4"
       footer={
         <div className="flex w-full items-center justify-between gap-2">
           {(startDate || event?.date) ? (
@@ -225,17 +225,17 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={handleClearDate}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-11 rounded-xl"
+              className="date-cal-modal__clear h-11 rounded-xl px-3 text-xs font-semibold"
             />
           ) : <div />}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 ms-auto">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-xs font-medium rounded-xl px-3.5"
+              className="date-cal-modal__cancel h-11 rounded-xl px-3.5 text-xs font-semibold"
             >
               {copy.cancel}
             </Button>
@@ -244,7 +244,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               size="sm"
               onClick={handleApply}
               disabled={!startDate}
-              className="text-xs font-bold rounded-xl px-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
+              className="date-cal-modal__apply h-11 rounded-xl px-4 text-xs font-semibold shadow-none"
             >
               {copy.apply}
             </Button>
@@ -253,22 +253,23 @@ export const EventDateModal: FC<EventDateModalProps> = ({
       }
       title={
         <div className="min-w-0">
-          <span className="block text-[15px] font-extrabold leading-tight tracking-[-0.015em] text-foreground rtl:tracking-normal sm:text-base">{copy.title}</span>
-          <p className="line-clamp-1 text-xs text-muted-foreground mt-0.5" dir="auto">{effectiveTitle}</p>
+          <span className="date-cal-modal__title block text-[16px] font-bold leading-tight tracking-[-0.01em] text-foreground rtl:tracking-normal sm:text-[17px]">
+            {copy.title}
+          </span>
         </div>
       }
     >
-      <div className="date-cal-theme space-y-3.5 font-sans">
+      <div className="date-cal-theme space-y-2.5 font-sans">
         {/* Aperçu dynamique de la date sélectionnée */}
-        <div className="flex items-center justify-between rounded-lg bg-muted/40 border border-border/60 px-3.5 py-2.5">
+        <div className="date-cal-preview flex items-center justify-between gap-2 rounded-xl px-3.5 py-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
-            <span className="text-xs sm:text-[13px] font-bold text-foreground capitalize truncate">
+            <span className="date-cal-preview__dot h-2 w-2 rounded-full shrink-0" />
+            <span className="text-xs sm:text-[13px] font-semibold text-foreground capitalize truncate">
               {formattedSelectedDate}
             </span>
           </div>
           {startDate && (
-            <span className="text-[11px] font-semibold text-muted-foreground tabular-nums shrink-0" dir="ltr">
+            <span className="date-cal-preview__iso text-[11px] font-semibold text-muted-foreground tabular-nums shrink-0" dir="ltr">
               {startDate.split('-').reverse().join('/')}
             </span>
           )}
@@ -288,16 +289,16 @@ export const EventDateModal: FC<EventDateModalProps> = ({
               }
             }}
           >
-            <TabsList className="flex w-full items-center justify-between gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/50 h-auto">
+            <TabsList className="date-cal-tabs flex w-full items-center justify-between gap-1 p-1 rounded-xl h-auto">
               <TabsTrigger
                 value="single"
-                className="flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:font-bold text-muted-foreground hover:text-foreground"
+                className="date-cal-tab flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none text-center"
               >
                 {copy.singleDateMode}
               </TabsTrigger>
               <TabsTrigger
                 value="range"
-                className="flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer select-none text-center data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:font-bold text-muted-foreground hover:text-foreground"
+                className="date-cal-tab flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none text-center"
               >
                 {copy.rangeMode}
               </TabsTrigger>
@@ -305,52 +306,52 @@ export const EventDateModal: FC<EventDateModalProps> = ({
           </Tabs>
         )}
 
-        {/* Raccourcis : ils suivent le sens de lecture de la langue */}
-        <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto pb-1 scrollbar-none">
+        {/* Raccourcis rapides : compacts et fluides */}
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none">
           <button
             type="button"
             onClick={() => applyPreset(0)}
-            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="date-cal-preset"
           >
             {copy.todayBtn}
           </button>
           <button
             type="button"
             onClick={() => applyPreset(1)}
-            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="date-cal-preset"
           >
             {copy.tomorrowBtn}
           </button>
           <button
             type="button"
             onClick={() => applyPreset(7)}
-            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="date-cal-preset"
           >
             {copy.plusWeekBtn}
           </button>
           <button
             type="button"
             onClick={() => applyPreset(14)}
-            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="date-cal-preset"
           >
             {copy.plusTwoWeeksBtn}
           </button>
           <button
             type="button"
             onClick={applyEndOfMonth}
-            className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/50 hover:border-primary/40 cursor-pointer transition-all active:scale-95"
+            className="date-cal-preset"
           >
             {copy.endMonthBtn}
           </button>
         </div>
 
         {/* Sélecteur de mois & année direct (SANS FLÈCHE) */}
-        <div className="space-y-1.5 pt-1 border-t border-border/40">
+        <div className="space-y-1.5 pt-0.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider rtl:tracking-normal">
+            <span className="text-[11px] font-semibold text-muted-foreground">
               {copy.month}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="date-cal-years flex items-center gap-1 rounded-lg p-0.5">
               {[2025, 2026, 2027].map((year) => (
                 <button
                   key={year}
@@ -358,12 +359,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
                   onClick={() => setViewYear(year)}
                   aria-pressed={viewYear === year}
                   data-active={viewYear === year ? '' : undefined}
-                  className={cn(
-                    "date-cal-chip px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer",
-                    viewYear === year
-                      ? "shadow-xs"
-                      : "text-muted-foreground hover:text-foreground bg-muted/40"
-                  )}
+                  className="date-cal-chip date-cal-chip--year px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer tabular-nums"
                 >
                   {year}
                 </button>
@@ -371,7 +367,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
             {MONTHS_LIST.map((month) => {
               const { m } = month;
               const label = month[locale] ?? month.fr;
@@ -383,12 +379,7 @@ export const EventDateModal: FC<EventDateModalProps> = ({
                   onClick={() => setViewMonth(m)}
                   aria-pressed={isActive}
                   data-active={isActive ? '' : undefined}
-                  className={cn(
-                    "date-cal-chip px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                    isActive
-                      ? "shadow-xs"
-                      : "bg-muted/30 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                  )}
+                  className="date-cal-chip px-2.5 py-1 rounded-lg text-[11.5px] font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0"
                 >
                   {label}
                 </button>

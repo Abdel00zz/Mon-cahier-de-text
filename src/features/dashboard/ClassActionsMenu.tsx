@@ -12,7 +12,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
 import { pickDepartmentPalette, type DepartmentPalette } from './departmentPalette';
-import { HeroRoundedShapes, HeroWavyUnderline } from '@/features/evaluations/components/SectionPanelBadge';
 
 /** Registre global Zustand assurant qu'un seul menu de classe ne peut être ouvert à la fois */
 const useActiveClassMenuStore = create<{
@@ -102,35 +101,25 @@ export function ClassActionsMenu({
                 align={isRtl ? 'start' : 'end'}
                 sideOffset={6}
                 style={miniCardStyle}
-                className="class-actions-menu w-[21rem] max-w-[calc(100vw-1.5rem)]"
+                className="class-actions-menu w-[16.25rem] max-w-[calc(100vw-1.5rem)]"
             >
-                {/* Bandeau dégradé doux (.hero.qh) avec poignée, titre Readex Pro et sous-titre */}
-                <div className="class-menu-mini-card">
-                    <HeroRoundedShapes />
-                    <div className="class-menu-grab" aria-hidden="true" />
-                    <div className="class-menu-mini-card__body">
-                        <div className="class-menu-mini-card__title-wrap">
-                            <span className="class-menu-mini-card__title" dir="auto">{name}</span>
-                            <HeroWavyUnderline className="class-menu-mini-card__wave" />
-                        </div>
-                        {(tier || subject) && (
-                            <span className="class-menu-mini-card__tag" dir="auto">
-                                {tier || subject}
-                            </span>
-                        )}
-                    </div>
-                    {onOpenEvaluations && (
+                <div className="class-menu-grab" aria-hidden="true" />
+
+                {onOpenEvaluations && (
+                    <div className="class-menu-top-action">
                         <DropdownMenuItem
                             onSelect={() => open('all')}
                             className="class-menu-eval-pill"
                         >
-                            <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
+                            <span className="class-menu-eval-pill__icon" aria-hidden="true">
+                                <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2]" />
+                            </span>
                             <span className="truncate">{t('dashboard.openEvaluations')}</span>
                         </DropdownMenuItem>
-                    )}
-                </div>
+                    </div>
+                )}
 
-                {/* Deux cartes blanches asymétriques « تعديل » et « حذف » (.qa) */}
+                {/* Deux boutons compacts et modernes « تعديل » et « حذف » */}
                 <div className="class-menu-round-tiles">
                     <DropdownMenuItem
                         onSelect={() => {
@@ -141,7 +130,7 @@ export function ClassActionsMenu({
                         className="class-menu-round-tile class-menu-round-tile--edit"
                     >
                         <span className="class-menu-round-tile__icon" aria-hidden="true">
-                            <Pencil className="h-5 w-5 stroke-[1.8]" />
+                            <Pencil className="h-4 w-4 stroke-[2]" />
                         </span>
                         <span className="class-menu-round-tile__label">{editLabel}</span>
                     </DropdownMenuItem>
@@ -157,7 +146,7 @@ export function ClassActionsMenu({
                             className="class-menu-round-tile class-menu-round-tile--delete"
                         >
                             <span className="class-menu-round-tile__icon" aria-hidden="true">
-                                <Trash2 size={20} aria-hidden="true" />
+                                <Trash2 size={16} aria-hidden="true" />
                             </span>
                             <span className="class-menu-round-tile__label">{deleteLabel}</span>
                         </DropdownMenuItem>

@@ -1,22 +1,50 @@
 /* ══════════════════════════════════════════════════════════════
-   Calendrier d'affectation de date — palette calme
-   Encre #222741 · gris #99A4AE (assombri pour le contraste AA) ·
-   bleu #66DCEC (texte encre, jamais blanc : contraste 9:1) ·
-   fond #F8FAFA · jour du jour #F2F6F8 + ombre douce.
+   Calendrier d'affectation de date — palette calme & moderne
+   Surface harmonisée, boutons et textes resserrés, contraste AA+.
    ══════════════════════════════════════════════════════════════ */
 
+.date-cal-modal.modal-motion-surface {
+    background: color-mix(in srgb, #f6d9bd 12%, #fffdfa) !important;
+    border: 0 !important;
+    box-shadow: 0 -10px 50px #2f28222e, 0 20px 50px #2f282226 !important;
+}
+
+.dark .date-cal-modal.modal-motion-surface {
+    background: hsl(var(--card)) !important;
+}
+
+.date-cal-modal .dialog-close {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    background: #f0ebe3 !important;
+    color: #2f2822 !important;
+    border: 0 !important;
+}
+
+.date-cal-modal .dialog-close:hover {
+    background: #e5dfd5 !important;
+}
+
+.dark .date-cal-modal .dialog-close {
+    background: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
 .date-cal-theme {
-    --cal-ink: hsl(var(--foreground));
-    --cal-muted: hsl(var(--muted-foreground));
-    --cal-line: hsl(var(--border) / 0.8);
-    --cal-soft: hsl(var(--muted) / 0.7);
-    --cal-surface: hsl(var(--card));
-    --cal-item: hsl(var(--foreground) / 0.9);
-    --cal-accent: hsl(var(--primary));
-    --cal-accent-ink: hsl(var(--primary-foreground));
-    --cal-band: hsl(var(--primary) / 0.14);
-    --cal-radius: 14px;
-    --cal-pad: 8px;
+    --cal-ink: #2f2822;
+    --cal-muted: #7a7169;
+    --cal-line: #ebe5dc;
+    --cal-soft: #f0ebe3;
+    --cal-surface: #ffffffd9;
+    --cal-item: #2f2822;
+    --cal-accent: #6b4c3b;
+    --cal-accent-ink: #ffffff;
+    --cal-band: rgba(107, 76, 59, 0.13);
+    --cal-radius: 1.15rem;
+    --cal-pad: 0.55rem;
 }
 
 .dark .date-cal-theme {
@@ -25,10 +53,110 @@
     --cal-line: rgba(255, 255, 255, 0.1);
     --cal-soft: rgba(255, 255, 255, 0.08);
     --cal-surface: hsl(var(--card));
-    --cal-item: hsl(var(--foreground) / 0.9);
+    --cal-item: hsl(var(--foreground) / 0.92);
     --cal-accent: hsl(var(--primary));
     --cal-accent-ink: hsl(var(--primary-foreground));
     --cal-band: hsl(var(--primary) / 0.2);
+}
+
+.date-cal-preview {
+    background: #ffffffd9;
+    border: 1px solid #ebe5dc;
+}
+
+.dark .date-cal-preview {
+    background: hsl(var(--muted) / 0.45);
+    border-color: hsl(var(--border) / 0.6);
+}
+
+.date-cal-preview__dot {
+    background: #6b4c3b;
+}
+
+.dark .date-cal-preview__dot {
+    background: hsl(var(--primary));
+}
+
+.date-cal-tabs {
+    background: #f0ebe3 !important;
+    border: 0 !important;
+}
+
+.dark .date-cal-tabs {
+    background: hsl(var(--muted)) !important;
+}
+
+.date-cal-tab {
+    color: #7a7169;
+    transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.date-cal-tab[data-state='active'] {
+    background: #ffffff !important;
+    color: #2f2822 !important;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(47, 40, 34, 0.08);
+}
+
+.dark .date-cal-tab[data-state='active'] {
+    background: hsl(var(--card)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+.date-cal-preset {
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.65rem;
+    font-size: 11px;
+    font-weight: 600;
+    background: #ffffffcc;
+    color: #2f2822;
+    border: 1px solid #ebe5dc;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.date-cal-preset:hover {
+    background: #ffffff;
+    border-color: #d6cec2;
+}
+
+.date-cal-preset:active {
+    transform: scale(0.95);
+}
+
+.dark .date-cal-preset {
+    background: hsl(var(--muted) / 0.5);
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border) / 0.6);
+}
+
+.date-cal-years {
+    background: #f0ebe3;
+}
+
+.dark .date-cal-years {
+    background: hsl(var(--muted));
+}
+
+.date-cal-chip {
+    background: #f4f0e8;
+    color: #6e655d;
+    border: 0;
+}
+
+.date-cal-chip--year {
+    background: transparent;
+}
+
+.date-cal-chip:hover:not([data-active]) {
+    background: #e9e2d8;
+    color: #2f2822;
+}
+
+.dark .date-cal-chip {
+    background: hsl(var(--muted) / 0.4);
+    color: hsl(var(--muted-foreground));
 }
 
 .date-cal {
@@ -39,13 +167,12 @@
 }
 
 .date-cal__weekday {
-    padding-block: 2px 5px;
+    padding-block: 2px 4px;
     text-align: center;
     color: var(--cal-muted);
     font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .date-cal__day {
@@ -54,7 +181,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 38px;
+    height: 35px;
     border: 0;
     background: transparent;
     cursor: pointer;
@@ -78,11 +205,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: 999px;
     color: var(--cal-item);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, filter 150ms ease,
@@ -98,8 +225,8 @@
 .date-cal__day[data-inactive] .date-cal__num { color: var(--cal-muted); font-weight: 500; }
 
 .date-cal__day[data-today] .date-cal__num {
-    background: hsl(var(--primary) / 0.12);
-    color: hsl(var(--primary));
+    background: rgba(107, 76, 59, 0.12);
+    color: var(--cal-accent);
     font-weight: 700;
 }
 
@@ -109,7 +236,7 @@
     background: var(--cal-accent);
     color: var(--cal-accent-ink);
     font-weight: 700;
-    box-shadow: 0 4px 12px -3px hsl(var(--primary) / 0.45);
+    box-shadow: 0 3px 10px -2px rgba(107, 76, 59, 0.35);
 }
 
 .date-cal__day[data-selected]:hover .date-cal__num { filter: brightness(1.06); }
@@ -122,7 +249,41 @@
     font-weight: 700;
 }
 
+.date-cal-modal__apply {
+    background: #6b4c3b !important;
+    color: #ffffff !important;
+    border: 0 !important;
+}
+
+.date-cal-modal__apply:hover:not(:disabled) {
+    filter: brightness(1.07);
+}
+
+.date-cal-modal__cancel {
+    background: transparent !important;
+    color: #7a7169 !important;
+    border: 0 !important;
+}
+
+.date-cal-modal__cancel:hover {
+    background: #f0ebe3 !important;
+    color: #2f2822 !important;
+}
+
+.date-cal-modal__clear {
+    background: #fbe9ec !important;
+    color: #c2455c !important;
+    border: 0 !important;
+}
+
+.date-cal-modal__clear:hover {
+    background: #f7d6dc !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .date-cal__num { transition: none; }
-    .date-cal__day:active .date-cal__num { transform: none; }
+    .date-cal__num,
+    .date-cal-preset,
+    .date-cal-tab { transition: none; }
+    .date-cal__day:active .date-cal__num,
+    .date-cal-preset:active { transform: none; }
 }

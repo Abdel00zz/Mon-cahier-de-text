@@ -1,36 +1,54 @@
 /* Écran uniquement : le document imprimé conserve ses métriques propres.
-   Readex Pro pour la lecture et les titres ; les formules gardent leurs propres fontes. */
+   Table Editor : Lato Light 300 Italic (titres), Open Sans Regular 400 Italic (paragraphes & textes),
+   Roboto Light 300 (badges, dates, pages & cellules) ; les formules KaTeX gardent leurs propres fontes. */
 @media screen {
   :is([data-editor-root], [data-editor-table], .content-fields) {
-    --font-latin-body: 'Readex Pro';
-    --font-latin-reading: 'Readex Pro';
-    --font-latin-display: 'Readex Pro';
+    --font-latin-body: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro';
+    --font-latin-reading: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro';
+    --font-latin-display: 'Lato', 'Open Sans', 'Roboto', 'Readex Pro';
     --font-arabic-body: 'Readex Pro';
     --font-arabic-display: 'Readex Pro';
     --font-arabic-secondary: 'Readex Pro';
     --notebook-reading: 'Readex Pro', system-ui, sans-serif;
-    --notebook-heading: 'Readex Pro', system-ui, sans-serif;
-    font-family: var(--notebook-reading);
+    --notebook-heading: 'Lato', 'Open Sans', 'Roboto', 'Readex Pro', system-ui, sans-serif;
+    --notebook-paragraph: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro', system-ui, sans-serif;
+    --notebook-meta: 'Roboto', 'Lato', 'Open Sans', 'Readex Pro', system-ui, sans-serif;
+    font-family: var(--notebook-paragraph);
   }
 
-  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-date-value),
-  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title, .editor-date-value) :not(.katex, .katex *) {
-    font-family: var(--notebook-heading);
+  /* Titres & sous-titres du tableau : Lato Light 300 Italic (et Open Sans / Roboto) */
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title),
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title) :not(.katex, .katex *) {
+    font-family: var(--notebook-heading) !important;
+    font-weight: 300 !important;
+    font-style: italic;
     letter-spacing: normal;
   }
 
-  [data-editor-table] :is(.editor-type-description, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-session-note, .editor-type-page, .editor-free-content, .editor-list),
-  [data-editor-table] :is(.editor-type-description, .editor-type-badge, .editor-type-table-side, .editor-type-table-main, .editor-type-remark, .editor-session-note, .editor-type-page, .editor-free-content, .editor-list) :not(.katex, .katex *),
+  /* Paragraphes, descriptions, listes & remarques : Regular 400 Italic Open Sans */
+  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-remark, .editor-session-note),
+  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-remark, .editor-session-note) :not(.katex, .katex *),
   .content-fields :is(input, textarea, [role='combobox']) {
-    font-family: var(--notebook-reading);
+    font-family: var(--notebook-paragraph) !important;
+    font-weight: 400;
+    font-style: italic;
     letter-spacing: normal;
   }
 
-  [data-editor-table] .editor-type-item-title { font-weight: 500; line-height: 1.55; }
+  /* Badges, dates, numéros de page et en-têtes/cellules du tableau : Light 300 Roboto */
+  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-doc-chip, .editor-date-value, .editor-type-page, .editor-type-table-side, .editor-type-table-main),
+  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-doc-chip, .editor-date-value, .editor-type-page, .editor-type-table-side, .editor-type-table-main) :not(.katex, .katex *) {
+    font-family: var(--notebook-meta) !important;
+    font-weight: 300 !important;
+    font-style: normal;
+    letter-spacing: normal;
+  }
+
+  [data-editor-table] .editor-type-item-title { font-weight: 300; line-height: 1.55; }
   [data-editor-table] .editor-type-description { font-weight: 400; line-height: 1.65; }
-  [data-editor-table] .editor-type-chapter { font-weight: 500; line-height: 1.4; }
-  [data-editor-table] .editor-type-badge { font-weight: 500; }
-  [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 500; }
+  [data-editor-table] .editor-type-chapter { font-weight: 300; line-height: 1.4; }
+  [data-editor-table] .editor-type-badge { font-weight: 300; }
+  [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 300; }
   [data-editor-table] :is(.editor-type-remark, .editor-session-note) {
     font-size: max(.75rem, var(--editor-fs-remark));
     font-weight: 400;
