@@ -171,7 +171,13 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   };
   const setCustomLevel = (val: string) => setValue('customLevel', val, { shouldDirty: true });
   const setCustomSubject = (val: string) => setValue('customSubject', val, { shouldDirty: true });
-  const [classColor, setClassColor] = useState(editingClass?.color ?? '');
+  const defaultTone = useMemo(() => {
+    if (editingClass?.color) return editingClass.color;
+    const usedTones = new Set(existingClasses.map(c => c.color).filter(Boolean));
+    const available = CLASS_COLOR_OPTIONS.find(opt => !usedTones.has(opt.value));
+    return available ? available.value : CLASS_COLOR_OPTIONS[existingClasses.length % CLASS_COLOR_OPTIONS.length].value;
+  }, [editingClass, existingClasses]);
+  const [classColor, setClassColor] = useState(defaultTone);
   const [groupTouched, setGroupTouched] = useState(false);
   const [currentStep, setStep] = useState<WizardStep>(initial.step);
   const [confirmDelete, setConfirmDelete] = useState(false);

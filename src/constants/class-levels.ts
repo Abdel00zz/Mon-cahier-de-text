@@ -249,32 +249,45 @@ export const formatLocalizedClassDisplayName = (
 };
 
 const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
-  // Collège (1AC, 2AC, 3AC et variantes APIC / ASC / Année Collégiale)
-  [/^(?:1\s*apic|1\s*asc|1ère\s*année\s*collégiale|1ere\s*annee\s*collegiale|1ère\s*ac|1re\s*ac)(?![\p{L}\p{N}_])/iu, '1AC'],
-  [/^(?:2\s*apic|2\s*asc|2ème\s*année\s*collégiale|2eme\s*annee\s*collegiale|2ème\s*ac|2e\s*ac)(?![\p{L}\p{N}_])/iu, '2AC'],
-  [/^(?:3\s*apic|3\s*asc|3ème\s*année\s*collégiale|3eme\s*annee\s*collegiale|3ème\s*ac|3e\s*ac)(?![\p{L}\p{N}_])/iu, '3AC'],
+  // Collège (1AC, 2AC, 3AC et variantes APIC / ASC / Année Collégiale / avec ou sans espaces)
+  [/^(?:1\s*apic|1\s*asc|1[èeé]re?\s*année\s*collégiale|1ere\s*annee\s*collegiale|1[èeé]re?\s*ac|1re\s*ac|1\s*ac)(?=[0-9\s]|$)/iu, '1AC'],
+  [/^(?:2\s*apic|2\s*asc|2[èeé]me?\s*année\s*collégiale|2eme\s*annee\s*collegiale|2[èeé]me?\s*ac|2e\s*ac|2\s*ac)(?=[0-9\s]|$)/iu, '2AC'],
+  [/^(?:3\s*apic|3\s*asc|3[èeé]me?\s*année\s*collégiale|3eme\s*annee\s*collegiale|3[èeé]me?\s*ac|3e\s*ac|3\s*ac)(?=[0-9\s]|$)/iu, '3AC'],
 
-  // Tronc Commun (TCS, TCL, TCT)
-  [/^(?:tcs\s*biof|tcs|trc|tc\s*sciences?|tc\s*scientifique|tronc\s+commun\s+sciences?|tronc\s+commun\s+scientifique)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Scientifique'],
-  [/^(?:tcl|tc\s*lettres?|tronc\s+commun\s+lettres?(?:\s+et\s+sciences?\s+humaines?)?)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Lettres et Sciences Humaines'],
-  [/^(?:tct|tc\s*technologique|tronc\s+commun\s+technologique)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Technologique'],
+  // Tronc Commun (TCS, TCL, TCT, BIOF, etc.)
+  [/^(?:tcs\s*biof|tcs|trc|tc\s*sciences?|tc\s*scientifique|tc\s*biof|tronc\s+commun\s+sciences?|tronc\s+commun\s+scientifique|tronc\s+commun\s+biof|tronc\s+commun\s+sci|tc\s*sci)(?=[0-9\s]|$)/iu, 'Tronc Commun Scientifique'],
+  [/^(?:tcl|tc\s*lettres?|tc\s*lsh|tronc\s+commun\s+lettres?(?:\s+et\s+sciences?\s+humaines?)?|tronc\s+commun\s+lsh)(?=[0-9\s]|$)/iu, 'Tronc Commun Lettres et Sciences Humaines'],
+  [/^(?:tct|tc\s*technologique|tc\s*tech|tronc\s+commun\s+technologique|tronc\s+commun\s+tech)(?=[0-9\s]|$)/iu, 'Tronc Commun Technologique'],
 
   // 1er Bac / 1BAC
-  [/^(?:1bac+?\s*(?:se|sef|biof)|1[eé]r\s*bac+?\s*(?:se|sef|biof)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Expérimentales'],
-  [/^(?:1bac+?\s*(?:sm|smf|s\.?m\.?)|1[eé]r\s*bac+?\s*(?:sm|smf|s\.?m\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
-  [/^(?:1bac+?\s*(?:lsh|l\.?s\.?h\.?)|1bac+?\s*l|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
-  [/^(?:1bac+?\s*(?:eco|seg|seco|s\.?e\.?g\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
+  [/^(?:1bac+?\s*(?:se|sef|biof)|1[eé]r\s*bac+?\s*(?:se|sef|biof)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1re\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?|1ere\s*annee\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?|exp))(?![\p{L}_])/iu, '1er Bac Sciences Expérimentales'],
+  [/^(?:1bac+?\s*(?:sm|smf|s\.?m\.?)|1[eé]r\s*bac+?\s*(?:sm|smf|s\.?m\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1re\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?|1ere\s*annee\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?|math))(?![\p{L}_])/iu, '1er Bac Sciences Mathématiques'],
+  [/^(?:1bac+?\s*(?:lsh|l\.?s\.?h\.?)|1bac+?\s*l|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1re\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?|1ere\s*annee\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}_])/iu, '1er Bac Lettres et Sciences Humaines'],
+  [/^(?:1bac+?\s*(?:eco|seg|seco|s\.?e\.?g\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1re\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?|1ere\s*annee\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|eco\.?|économiques?(?:\s+et\s+gestion)?|economiques?(?:\s+et\s+gestion)?))(?![\p{L}_])/iu, '1er Bac Sciences Économiques et Gestion'],
 
   // 2ème Bac / 2BAC
-  [/^(?:2bac+?\s*(?:pc|p\.?c\.?|physique)\s*biof|2bac+?\s*(?:pc|p\.?c\.?)|2[èeé]me\s*bac+?\s*(?:pc|p\.?c\.?)|2e\s*bac+?\s*(?:pc|p\.?c\.?)|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc|p\.?c\.?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
-  [/^(?:2bac+?\s*(?:svt|s\.?v\.?t\.?)\s*biof|2bac+?\s*(?:svt|s\.?v\.?t\.?)|2[èeé]me\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|2e\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt|s\.?v\.?t\.?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
-  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*a|2bac+?\s*sma|2bac+?\s*sc\.?\s*maths?\s*a|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*b|2bac+?\s*smb|2bac+?\s*sc\.?\s*maths?\s*b|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
-  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)|2bac+?\s*sc\.?\s*maths?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac+?\s*(?:eco|seco)|2bac+?\s*sc\.?\s*éco\.?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*économiques?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Économiques'],
-  [/^(?:2bac+?\s*(?:sgc|s\.?g\.?c\.?)|2bac+?\s*sc\.?\s*gestion\s*comptable|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
-  [/^(?:2bac+?\s*l|2bac+?\s*lettres?|2[èeé]me\s*bac+?\s*lettres?)(?![\p{L}\p{N}_])/iu, '2ème Bac Lettres'],
-  [/^(?:2bac+?\s*(?:sh|lsh|s\.?h\.?|l\.?s\.?h\.?)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
+  [/^(?:2bac+?\s*(?:pc|p\.?c\.?|physique)\s*biof|2bac+?\s*(?:pc|p\.?c\.?)|2[èeé]me\s*bac+?\s*(?:pc|p\.?c\.?)|2e\s*bac+?\s*(?:pc|p\.?c\.?)|2bac+?\s*biof|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2de\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?|2eme\s*annee\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:physiques?|phys\.?|pc|p\.?c\.?)|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?|2eme\s*annee\s*bac(?:calauréat)?)\s*sciences?\s*physiques?)(?![\p{L}_])/iu, '2ème Bac Sciences Physiques'],
+  [/^(?:2bac+?\s*(?:svt|s\.?v\.?t\.?)\s*biof|2bac+?\s*(?:svt|s\.?v\.?t\.?)|2[èeé]me\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|2e\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?|2eme\s*annee\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt|s\.?v\.?t\.?)|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?)\s*sciences?\s*svt)(?![\p{L}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*a|2bac+?\s*sma|2bac+?\s*sc\.?\s*maths?\s*a|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?|math)\s*a|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?)\s*sciences?\s*maths?\s*a)(?![\p{L}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*b|2bac+?\s*smb|2bac+?\s*sc\.?\s*maths?\s*b|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?|math)\s*b|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?)\s*sciences?\s*maths?\s*b)(?![\p{L}_])/iu, '2ème Bac Sciences Mathématiques B'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)|2bac+?\s*sc\.?\s*maths?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?|2[èeé]me\s*année\s*bac(?:calauréat)?)\s*sciences?\s*maths?)(?![\p{L}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*(?:se|sef|sexp|sc\.?\s*exp)|2[èeé]me\s*bac+?\s*(?:se|sef|sexp|sc\.?\s*exp)|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?)\s*(?:sc\.?|sciences?)\s*exp(?:érimentales?)?)(?![\p{L}_])/iu, '2ème Bac Sciences Physiques'],
+  [/^(?:2bac+?\s*(?:eco|seco)|2bac+?\s*sc\.?\s*éco\.?|2bac+?\s*sc\.?\s*eco\.?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*économiques?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*economiques?|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?)\s*sciences?\s*éco(?:nomiques?)?)(?![\p{L}_])/iu, '2ème Bac Sciences Économiques'],
+  [/^(?:2bac+?\s*(?:sgc|s\.?g\.?c\.?)|2bac+?\s*sc\.?\s*gestion\s*comptable|2bac+?\s*sc\.?\s*gestion|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s*comptable|2[èeé]me\s*bac+?\s*gestion\s*comptable)(?![\p{L}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
+  [/^(?:2bac+?\s*l|2bac+?\s*lettres?|2[èeé]me\s*bac+?\s*lettres?|2e\s*bac+?\s*lettres?)(?![\p{L}_])/iu, '2ème Bac Lettres'],
+  [/^(?:2bac+?\s*(?:sh|lsh|s\.?h\.?|l\.?s\.?h\.?)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?|(?:2bac+?|2[èeé]me\s*bac+?|2e\s*bac+?)\s*sciences?\s*humaines?)(?![\p{L}_])/iu, '2ème Bac Sciences Humaines'],
+
+  // CPGE (Classes Préparatoires)
+  [/^(?:(?:cpge\s+)?(?:1[reèé]re?\s*année|1ere\s*annee)\s+mpsi|cpge\s+mpsi)(?![\p{L}_])/iu, '1re année MPSI'],
+  [/^(?:(?:cpge\s+)?(?:1[reèé]re?\s*année|1ere\s*annee)\s+pcsi|cpge\s+pcsi)(?![\p{L}_])/iu, '1re année PCSI'],
+  [/^(?:(?:cpge\s+)?(?:1[reèé]re?\s*année|1ere\s*annee)\s+tsi|cpge\s+tsi)(?![\p{L}_])/iu, '1re année TSI'],
+  [/^(?:(?:cpge\s+)?(?:1[reèé]re?\s*année|1ere\s*annee)\s+ecs|cpge\s+ecs)(?![\p{L}_])/iu, '1re année ECS'],
+  [/^(?:(?:cpge\s+)?(?:1[reèé]re?\s*année|1ere\s*annee)\s+ect|cpge\s+ect)(?![\p{L}_])/iu, '1re année ECT'],
+  [/^(?:(?:cpge\s+)?(?:2[èeé]me?\s*année|2e\s*année|2eme\s*annee)\s+mp|cpge\s+mp)(?!si)(?![\p{L}_])/iu, '2e année MP'],
+  [/^(?:(?:cpge\s+)?(?:2[èeé]me?\s*année|2e\s*année|2eme\s*annee)\s+psi|cpge\s+psi)(?![\p{L}_])/iu, '2e année PSI'],
+  [/^(?:(?:cpge\s+)?(?:2[èeé]me?\s*année|2e\s*année|2eme\s*annee)\s+tsi)(?![\p{L}_])/iu, '2e année TSI'],
+  [/^(?:(?:cpge\s+)?(?:2[èeé]me?\s*année|2e\s*année|2eme\s*annee)\s+ecs)(?![\p{L}_])/iu, '2e année ECS'],
+  [/^(?:(?:cpge\s+)?(?:2[èeé]me?\s*année|2e\s*année|2eme\s*annee)\s+ect)(?![\p{L}_])/iu, '2e année ECT'],
 ];
 
 const ARABIC_INDIC_DIGITS = /[\u0660-\u0669]/g;

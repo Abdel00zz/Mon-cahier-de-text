@@ -1,27 +1,27 @@
 /* Écran uniquement : le document imprimé conserve ses métriques propres.
-   Table Editor — Duo éditorial innovant Regular 400 & Regular 400 Italic (Lato, Open Sans, Roboto) :
-   - Titres structurels (Chapitres, Sections, Blocs) : Lato / Open Sans Regular 400 (droit) avec sous-titres en Regular 400 Italic
-   - Intitulés de cours & théorèmes (Définitions, Propriétés, Évaluations, Sous-sections) : Lato / Open Sans Regular 400 Italic (style édition académique)
+   Table Editor — Duo éditorial innovant Regular 400 & Regular 400 Italic (Barlow, Open Sans, Roboto) :
+   - Titres structurels (Chapitres, Sections, Blocs) : Barlow / Open Sans Regular 400 (droit) avec sous-titres en Regular 400 Italic
+   - Intitulés de cours & théorèmes (Définitions, Propriétés, Évaluations, Sous-sections) : Barlow / Open Sans Regular 400 Italic (style édition académique)
    - Paragraphes, descriptions & corps de séance : Open Sans / Roboto Regular 400 (droit) + emphases & remarques en Regular 400 Italic
    - Badges, dates, cellules & références de pages : Roboto Regular 400 (dates/badges) & Roboto Regular 400 Italic (pages/puces document)
    Les formules KaTeX gardent leurs propres fontes mathématiques. */
 @media screen {
   :is([data-editor-root], [data-editor-table], .content-fields) {
-    --font-latin-body: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro';
-    --font-latin-reading: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro';
-    --font-latin-display: 'Lato', 'Open Sans', 'Roboto', 'Readex Pro';
+    --font-latin-body: 'Open Sans', 'Barlow', 'Roboto', 'Readex Pro';
+    --font-latin-reading: 'Open Sans', 'Barlow', 'Roboto', 'Readex Pro';
+    --font-latin-display: 'Barlow', 'Open Sans', 'Roboto', 'Readex Pro';
     --font-arabic-body: 'Readex Pro';
     --font-arabic-display: 'Readex Pro';
     --font-arabic-secondary: 'Readex Pro';
     --notebook-reading: 'Readex Pro', system-ui, sans-serif;
-    --notebook-heading: 'Lato', 'Open Sans', 'Roboto', 'Readex Pro', system-ui, sans-serif;
-    --notebook-paragraph: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro', system-ui, sans-serif;
-    --notebook-meta: 'Roboto', 'Open Sans', 'Lato', 'Readex Pro', system-ui, sans-serif;
+    --notebook-heading: 'Barlow', 'Open Sans', 'Roboto', 'Readex Pro', system-ui, sans-serif;
+    --notebook-paragraph: 'Open Sans', 'Barlow', 'Roboto', 'Readex Pro', system-ui, sans-serif;
+    --notebook-meta: 'Roboto', 'Open Sans', 'Barlow', 'Readex Pro', system-ui, sans-serif;
     font-family: var(--notebook-paragraph);
     font-weight: 400;
   }
 
-  /* 1. Ancres structurelles (Chapitres, Blocs de tête, Sections A/B/C) : Lato / Open Sans Regular 400 droit */
+  /* 1. Ancres structurelles (Chapitres, Blocs de tête, Sections A/B/C) : Barlow / Open Sans Regular 400 droit */
   [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section),
   [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section) :not(.katex, .katex *) {
     font-family: var(--notebook-heading) !important;
@@ -70,7 +70,7 @@
     font-style: italic;
   }
 
-  /* 4. Voix marginale (Remarques, notes de séance, références de pages & liens de sujet) : Open Sans / Lato Regular 400 Italic */
+  /* 4. Voix marginale (Remarques, notes de séance, références de pages & liens de sujet) : Open Sans / Barlow Regular 400 Italic */
   [data-editor-table] :is(.editor-type-remark, .editor-session-note, .editor-type-page, .editor-doc-chip, .editor-document-highlight),
   [data-editor-table] :is(.editor-type-remark, .editor-session-note, .editor-type-page, .editor-doc-chip, .editor-document-highlight) :not(.katex, .katex *) {
     font-family: var(--notebook-paragraph) !important;

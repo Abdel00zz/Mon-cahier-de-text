@@ -30,6 +30,7 @@ import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { getAcademyById } from '@/domain/classes/moroccoEducation';
 import { isArabicText, renderDescriptionWithBold } from '@/components/typography/textFormat';
 import { textDirectionAttribute } from '@/lib/text/textDirection';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
 // Props interfaces
@@ -281,7 +282,9 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData: so
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'القسم / الفوج :' : 'Classe :'}</span>
-                    <strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>{classInfo.name || (isRtlPrint ? 'غير محدد' : 'Non spécifiée')}</strong>
+                    <strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>
+                        {classInfo.name ? formatLocalizedClassDisplayName(classInfo.name, isRtlPrint ? 'ar' : 'fr') : (isRtlPrint ? 'غير محدد' : 'Non spécifiée')}
+                    </strong>
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'المادة الدراسية :' : 'Matière :'}</span>

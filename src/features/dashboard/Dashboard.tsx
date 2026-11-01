@@ -342,12 +342,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     // Assign palette before temporal sorting so a session never changes a class's color.
     const paletteByClassId = useMemo(() => {
         let previousKey: PaletteKey | undefined;
+        const usedKeys = new Set<PaletteKey>();
         const map = new Map<string, ReturnType<typeof pickDepartmentPalette>['palette']>();
         persistedClassOrder.forEach((id, index) => {
             const item = classById.get(id);
             if (!item) return;
-            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey);
+            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey, usedKeys);
             previousKey = key;
+            usedKeys.add(key);
             map.set(id, palette);
         });
         return map;

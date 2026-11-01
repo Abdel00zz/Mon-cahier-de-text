@@ -15,17 +15,18 @@ const DEPARTMENT_PALETTES = {
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
-const PALETTE_CYCLE: readonly PaletteKey[] = ['green', 'peach', 'lavender', 'sky', 'sand', 'rose'];
+const PALETTE_CYCLE: readonly PaletteKey[] = ['peach', 'lavender', 'green', 'sky', 'sand', 'rose'];
 
 /**
  * Déduit les tons d'une matière (fond, bordure, titre, secondaire)
- * en respectant en priorité la couleur enregistrée de chaque classe.
+ * en garantissant qu'aucune classe ne partage la même couleur de carte.
  */
 export function pickDepartmentPalette(
   tone: string | undefined,
   subject: string | undefined,
   index: number,
   previousKey?: PaletteKey,
+  usedKeys?: Set<PaletteKey> | readonly PaletteKey[],
 ): { key: PaletteKey; palette: DepartmentPalette } {
   const s = (subject || '').toLowerCase();
   const t = (tone || '').toLowerCase();
@@ -33,15 +34,30 @@ export function pickDepartmentPalette(
     coral: 'peach', peach: 'peach', lavender: 'lavender', indigo: 'lavender',
     mint: 'green', lime: 'green', green: 'green', sky: 'sky', sand: 'sand', rose: 'rose',
   };
-  // A saved choice is stable across sorting and never overwritten by its neighbours.
   const saved = tones[t];
-  let key: PaletteKey = saved ?? PALETTE_CYCLE[index % PALETTE_CYCLE.length];
-  if (!saved) {
-    if (s.includes('svt') || s.includes('vie') || s.includes('terre')) key = 'green';
-    else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl')) key = 'rose';
-    else if (s.includes('phys') || s.includes('chim')) key = 'peach';
-    if (previousKey && key === previousKey) {
-      key = PALETTE_CYCLE[(PALETTE_CYCLE.indexOf(previousKey) + 1) % PALETTE_CYCLE.length];
+  const used = usedKeys instanceof Set ? usedKeys : new Set(usedKeys ?? []);
+
+  let key: PaletteKey;
+  if (saved && !used.has(saved)) {
+    key = saved;
+  } else {
+    let preferred: PaletteKey | undefined = saved;
+    if (!preferred) {
+      if (s.includes('svt') || s.includes('vie') || s.includes('terre')) preferred = 'green';
+      else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl')) preferred = 'rose';
+      else if (s.includes('phys') || s.includes('chim')) preferred = 'peach';
+    }
+
+    const freeKeys = PALETTE_CYCLE.filter(k => !used.has(k));
+    if (freeKeys.length > 0) {
+      if (preferred && freeKeys.includes(preferred)) {
+        key = preferred;
+      } else {
+        key = freeKeys[index % freeKeys.length];
+      }
+    } else {
+      const pool = PALETTE_CYCLE.filter(k => k !== previousKey);
+      key = pool.length > 0 ? pool[index % pool.length] : PALETTE_CYCLE[index % PALETTE_CYCLE.length];
     }
   }
 
