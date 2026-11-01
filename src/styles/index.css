@@ -124,9 +124,6 @@
   --ui-space-section: clamp(1rem, 2.5vw, 1.5rem);
 }
 
-
-/* ── shadcn/ui · Modern Clean Academic Theme ────────────────────────────── */
-
 /* ── 1. Dynamic Fluid Typography Utility Classes ───────────────────────── */
 @media screen and (max-width: 639px),
        screen and (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
@@ -188,17 +185,6 @@ html {
   }
 }
 
-/* Bouton d'action flottant mobile (FAB de l'éditeur).
-   Ancre le bouton juste au-dessus de la barre d'onglets mobile (68px de haut,
-   posée à 0.65rem du bas) sans jamais passer sous l'encoche ni sous la barre
-   gestuelle. Sans cette règle, `position: fixed` sans `bottom` laissait le FAB
-   à sa position statique, donc sous la barre d'onglets sur la plupart des
-   téléphones. */
-/* Le FAB disparaît avec la barre d'onglets quand le clavier virtuel s'ouvre :
-   il ne doit jamais flotter au-dessus de la zone de saisie. */
-/* ── Survol réservé aux appareils à pointeur fin ─────────────────────────
-   Sur tactile, `:hover` s'applique au tap puis reste « collé » jusqu'au tap
-   suivant : les cartes restaient soulevées et les boutons éclaircis. */
 /* ── Cibles tactiles des menus ──────────────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
@@ -259,18 +245,7 @@ html {
   }
 }
 
-.font-maghribi {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.font-lato {
-  font-family: var(--font-lato);
-}
-
-/* Alias historique : la famille du titre suit désormais la langue du panneau. */
-html[lang="ar"] .font-maghribi,
+/* La famille du titre suit la langue du panneau. */
 html[lang="ar"] .keep-class-title {
   font-family: var(--font-display);
   font-weight: 600;

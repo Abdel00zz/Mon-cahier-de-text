@@ -1,5 +1,5 @@
-import { type FC, useEffect, useMemo, useState } from 'react';
-import { range } from 'es-toolkit';
+import { type FC, useEffect, useMemo, useRef, useState } from 'react';
+import { DayPicker, type DayButtonProps } from 'react-day-picker';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { dateTimeFormat } from '@/lib/formatters';
 import { Modal } from '@/components/ui/modal';
@@ -47,6 +47,15 @@ const WEEKDAYS = {
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Conversion locale à midi : évite tout décalage de date lié au fuseau horaire ou à l'heure d'été. */
+const isoToLocalDate = (iso: string): Date => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y || 2026, (m || 9) - 1, d || 1, 12, 0, 0, 0);
+};
+
+const localDateToIso = (date: Date): string =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
 export const EventDateModal: FC<EventDateModalProps> = ({
   isOpen,
@@ -121,9 +130,8 @@ export const EventDateModal: FC<EventDateModalProps> = ({
     onClose();
   };
 
-  // Sélection d'un jour dans le calendrier interactif
-  const selectDay = (day: number) => {
-    const iso = `${viewYear}-${pad(viewMonth)}-${pad(day)}`;
+  // Sélection d'un jour dans le calendrier interactif (sans décalage de fuseau horaire)
+  const selectIsoDate = (iso: string) => {
     if (!isRange || activeTarget === 'start') {
       setStartDate(iso);
       if (isRange && endDate && iso > endDate) {
@@ -162,29 +170,19 @@ export const EventDateModal: FC<EventDateModalProps> = ({
     jumpToDate(iso);
   };
 
-  // Calcul des cases de la grille du mois
-  const { emptyPrefixCount, daysCount } = useMemo(() => {
-    const daysInCurrentMonth = new Date(viewYear, viewMonth, 0).getDate();
-    // 0 = Lundi, 6 = Dimanche
-    const firstDayIndex = (new Date(viewYear, viewMonth - 1, 1).getDay() + 6) % 7;
-    return {
-      emptyPrefixCount: firstDayIndex,
-      daysCount: daysInCurrentMonth,
-    };
-  }, [viewYear, viewMonth]);
+  const displayedMonth = useMemo(
+    () => new Date(viewYear, viewMonth - 1, 1, 12, 0, 0, 0),
+    [viewYear, viewMonth],
+  );
 
   // Libellé en clair de la date choisie
   const formattedSelectedDate = useMemo(() => {
     if (!startDate) return t('dateModal.none');
     try {
       const format = dateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-      const asDate = (iso: string) => {
-        const [y, m, d] = iso.split('-').map(Number);
-        return new Date(y, m - 1, d);
-      };
-      const formattedStart = format.format(asDate(startDate));
+      const formattedStart = format.format(isoToLocalDate(startDate));
       if (isRange && endDate && endDate !== startDate) {
-        return t('evaluations.dateRange', { start: formattedStart, end: format.format(asDate(endDate)) });
+        return t('evaluations.dateRange', { start: formattedStart, end: format.format(isoToLocalDate(endDate)) });
       }
       return formattedStart;
     } catch {
@@ -218,6 +216,41 @@ export const EventDateModal: FC<EventDateModalProps> = ({
       className="evaluation-modal sm:rounded-xl"
       headerClassName="border-b border-border/50 bg-background/95 px-4 py-3 sm:px-5 sm:py-3.5"
       bodyClassName="px-4 py-3.5 sm:px-5 sm:py-4 space-y-3.5"
+      footerClassName="px-4 py-3 sm:px-5 sm:py-3.5"
+      footer={
+        <div className="flex w-full items-center justify-between gap-2">
+          {(startDate || event?.date) ? (
+            <AnimatedTrashButton
+              label={copy.clearDate}
+              variant="ghost"
+              size="sm"
+              onClick={handleClearDate}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-11 rounded-xl"
+            />
+          ) : <div />}
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="text-xs font-medium rounded-xl px-3.5"
+            >
+              {copy.cancel}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleApply}
+              disabled={!startDate}
+              className="text-xs font-bold rounded-xl px-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
+            >
+              {copy.apply}
+            </Button>
+          </div>
+        </div>
+      }
       title={
         <div className="min-w-0">
           <span className="block text-[15px] font-extrabold leading-tight tracking-[-0.015em] text-foreground rtl:tracking-normal sm:text-base">{copy.title}</span>
@@ -364,94 +397,72 @@ export const EventDateModal: FC<EventDateModalProps> = ({
           </div>
         </div>
 
-        {/* Grille calendrier interactive */}
-        <div className="date-cal">
-          {/* En-tête des jours de la semaine */}
-          <div className="grid grid-cols-7 text-center" aria-hidden="true">
-            {weekdaysHeader.map((d, idx) => (
-              <span key={idx} className="date-cal__weekday">
-                {d}
-              </span>
-            ))}
-          </div>
-
-          {/* Grille des jours du mois : lundi en tête de ligne, à droite en arabe ;
-              bande continue pour une période */}
-          <div className="date-cal__grid grid grid-cols-7 gap-y-0.5">
-            {/* Cases vides pour le décalage */}
-            {range(emptyPrefixCount).map((idx) => (
-              <div key={`empty-${idx}`} className="h-[38px] w-full" aria-hidden="true" />
-            ))}
-
-            {/* Jours du mois */}
-            {range(daysCount).map((idx) => {
-              const day = idx + 1;
-              const iso = `${viewYear}-${pad(viewMonth)}-${pad(day)}`;
+        {/* Grille calendrier interactive via react-day-picker (navigation clavier, RTL et plages continues) */}
+        <DayPicker
+          month={displayedMonth}
+          onMonthChange={(nextMonth) => {
+            setViewYear(nextMonth.getFullYear());
+            setViewMonth(nextMonth.getMonth() + 1);
+          }}
+          weekStartsOn={1}
+          dir={locale === 'ar' ? 'rtl' : 'ltr'}
+          hideNavigation
+          showOutsideDays={false}
+          onDayClick={(date) => selectIsoDate(localDateToIso(date))}
+          formatters={{
+            formatWeekdayName: (date) => weekdaysHeader[(date.getDay() + 6) % 7] ?? '',
+          }}
+          classNames={{
+            root: 'date-cal',
+            months: 'block',
+            month: 'block',
+            month_caption: 'sr-only',
+            month_grid: 'w-full border-collapse table-fixed',
+            weekdays: 'grid grid-cols-7 text-center',
+            weekday: 'date-cal__weekday',
+            weeks: 'block',
+            week: 'date-cal__grid grid grid-cols-7 gap-y-0.5',
+            day: 'p-0 h-[38px] w-full',
+            day_button: 'date-cal__day',
+          }}
+          components={{
+            DayButton: ({ day, modifiers, ...buttonProps }: DayButtonProps) => {
+              const btnRef = useRef<HTMLButtonElement>(null);
+              useEffect(() => {
+                if (modifiers.focused) btnRef.current?.focus();
+              }, [modifiers.focused]);
+              const iso = localDateToIso(day.date);
               const isSelectedStart = iso === startDate;
               const isSelectedEnd = isRange && iso === endDate;
-              const isInRange = isRange && startDate && endDate && iso > startDate && iso < endDate;
+              const isInRange = isRange && Boolean(startDate) && Boolean(endDate) && iso > startDate && iso < endDate;
               const hasSpan = isRange && Boolean(startDate) && Boolean(endDate) && endDate > startDate;
-              const range = !hasSpan ? undefined
+              const rangeState = !hasSpan ? undefined
                 : isSelectedStart ? 'start'
                 : isSelectedEnd ? 'end'
                 : isInRange ? 'middle'
                 : undefined;
               const isToday = iso === today;
-              const isSunday = (emptyPrefixCount + idx) % 7 === 6;
+              const isSunday = day.date.getDay() === 0;
 
               return (
                 <button
-                  key={day}
+                  {...buttonProps}
+                  ref={btnRef}
                   type="button"
-                  onClick={() => selectDay(day)}
                   aria-pressed={isSelectedStart || isSelectedEnd}
                   aria-current={isToday ? 'date' : undefined}
                   data-selected={isSelectedStart || isSelectedEnd ? '' : undefined}
-                  data-range={range}
+                  data-range={rangeState}
                   data-today={isToday ? '' : undefined}
                   data-inactive={isSunday ? '' : undefined}
                   className="date-cal__day"
                 >
-                  <span className="date-cal__num">{day}</span>
+                  <span className="date-cal__num">{day.date.getDate()}</span>
                 </button>
               );
-            })}
-          </div>
-        </div>
-
-        {/* Pied de modal avec actions */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
-          {(startDate || event?.date) ? (
-            <AnimatedTrashButton
-              label={copy.clearDate}
-              variant="ghost"
-              size="sm"
-              onClick={handleClearDate}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-semibold px-2.5 h-9 rounded-xl"
-            />
-          ) : <div />}
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="text-xs font-medium h-9 px-3.5 rounded-xl"
-            >
-              {copy.cancel}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleApply}
-              disabled={!startDate}
-              className="text-xs font-bold h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
-            >
-              {copy.apply}
-            </Button>
-          </div>
-        </div>
+            },
+          }}
+        />
       </div>
     </Modal>
   );

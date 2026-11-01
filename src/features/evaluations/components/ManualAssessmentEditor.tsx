@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import type { Cycle, DevoirType, ManualAssessment } from '@/types';
+import { ManualAssessmentDraftSchema, type ManualAssessmentDraftValues } from '@/domain/validation/schemas';
 import { isKindOffered } from '@/domain/evaluations/kindAvailability';
 import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { nextAssessmentNumber } from '@/domain/evaluations/assessments';
@@ -44,13 +46,8 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
   const nextNumFor = (nextType: DevoirType, semester: 1 | 2): number => nextAssessmentNumber(inSemester(semester), nextType, initial?.id);
   const initialSemester: 1 | 2 = initial?.semestre ?? semesterOfDate(initial?.dateISO ?? (initialKind === 'maison' && homeworkDate ? homeworkDate : today)) ?? 1;
 
-  const { watch, setValue, register } = useForm<{
-    type: DevoirType;
-    num: string;
-    date: string;
-    duree: string;
-    semestre: 1 | 2;
-  }>({
+  const { watch, setValue, register } = useForm<ManualAssessmentDraftValues>({
+    resolver: zodResolver(ManualAssessmentDraftSchema),
     defaultValues: {
       type: initialKind,
       num: String(initial?.num ?? nextNumFor(initialKind, initialSemester)),
@@ -86,7 +83,7 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
       setError(t('evaluations.manualNumRequired'));
       return;
     }
-    if (!date) {
+    if (!date || !ManualAssessmentDraftSchema.shape.date.safeParse(date).success) {
       setError(t('evaluations.startDateRequired'));
       return;
     }

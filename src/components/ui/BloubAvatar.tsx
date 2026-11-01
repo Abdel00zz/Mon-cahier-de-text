@@ -111,11 +111,13 @@ export const BloubAvatar = memo(function BloubAvatar({
   useEffect(() => {
     const el = avatarRef.current;
     if (!el) return;
+    const prefersReduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    const effectiveAnimate = animate && !prefersReduced;
     if (typeof el.setPointerFollow === 'function') {
-      el.setPointerFollow(animate);
+      el.setPointerFollow(effectiveAnimate);
     }
     if (typeof el.setAntennaFlash === 'function') {
-      el.setAntennaFlash(antennaFlash ?? attention);
+      el.setAntennaFlash(effectiveAnimate && Boolean(antennaFlash ?? attention));
     }
     if (typeof el.setHeadRoundness === 'function' && headRoundness !== undefined) {
       el.setHeadRoundness(headRoundness);

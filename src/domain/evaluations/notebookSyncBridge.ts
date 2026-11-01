@@ -4,6 +4,8 @@ import { extractCorrectionNumber, isHomeworkCorrectionLine } from './homeworkNum
 import { buildLessonRows, type LessonRow } from '../notebook/lessonRows';
 import { findItem } from '../notebook/dataUtils';
 import { produce } from 'immer';
+import { extractDateRange, extractEarliestDate } from './dateRange';
+export { extractDateRange, extractEarliestDate } from './dateRange';
 export { syncNotebookToEvaluations, syncNotebookSessionToEvaluations } from './notebookReconciliation';
 
 /*
@@ -152,48 +154,6 @@ export function formatPedagogicalDateCell(
   // on relie les bornes de la plage par le connecteur pédagogique ('et' / 'و')
   const connector = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return `${startDate} ${connector} ${endDate}`;
-}
-
-/**
- * Extrait la date ISO de départ (pour le tri et le placement chronologique).
- */
-export function extractEarliestDate(rawDate: string | undefined): string | undefined {
-  if (!rawDate) return undefined;
-  const isoMatch = rawDate.match(/\b\d{4}-\d{2}-\d{2}\b/);
-  if (isoMatch) return isoMatch[0];
-  const ddmmyyyyMatch = rawDate.match(/\b\d{1,2}[/.-]\d{1,2}[/.-]\d{4}\b/);
-  if (ddmmyyyyMatch) {
-    const parts = ddmmyyyyMatch[0].split(/[/.-]/);
-    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-  }
-  return rawDate.trim() || undefined;
-}
-
-/**
- * Extrait les dates ISO de début et de fin d'une cellule date (simple ou plage avec 'et' ou 'Du...au').
- */
-export function extractDateRange(rawDate: string | undefined): { startDate?: string; endDate?: string } {
-  if (!rawDate) return {};
-  const isoMatches = rawDate.match(/\b\d{4}-\d{2}-\d{2}\b/g);
-  if (isoMatches && isoMatches.length > 0) {
-    return {
-      startDate: isoMatches[0],
-      endDate: isoMatches.length > 1 && isoMatches.at(-1) !== isoMatches[0] ? isoMatches.at(-1) : undefined,
-    };
-  }
-  const ddmmyyyyMatches = rawDate.match(/\b\d{1,2}[/.-]\d{1,2}[/.-]\d{4}\b/g);
-  if (ddmmyyyyMatches && ddmmyyyyMatches.length > 0) {
-    const toIso = (s: string) => {
-      const parts = s.split(/[/.-]/);
-      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-    };
-    return {
-      startDate: toIso(ddmmyyyyMatches[0]),
-      endDate: ddmmyyyyMatches.length > 1 && ddmmyyyyMatches.at(-1) !== ddmmyyyyMatches[0] ? toIso(ddmmyyyyMatches.at(-1)!) : undefined,
-    };
-  }
-  const single = extractEarliestDate(rawDate);
-  return { startDate: single };
 }
 
 /**

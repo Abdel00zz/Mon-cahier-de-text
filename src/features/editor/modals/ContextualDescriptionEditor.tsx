@@ -121,6 +121,19 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
   const history = useTextHistory({ value, setValue: onChange, textareaRef });
   const [showColorMenu, setShowColorMenu] = useState(false);
 
+  const focusSelection = useCallback((selectionStart: number, selectionEnd = selectionStart) => {
+    window.requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      textarea?.focus();
+      textarea?.setSelectionRange(selectionStart, selectionEnd);
+    });
+  }, [textareaRef]);
+
+  const commitSelectionEdit = useCallback((nextValue: string, selectionStart: number, selectionEnd = selectionStart) => {
+    onChange(nextValue);
+    focusSelection(selectionStart, selectionEnd);
+  }, [focusSelection, onChange]);
+
   const applyFormat = useCallback((action: FormatAction) => {
     const textarea = textareaRef.current;
     const start = textarea?.selectionStart ?? value.length;
@@ -137,39 +150,24 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
         const cleanedLine = currentLine.replace(/^\s*(?:[-*]|\d+[.)])\s+/, '');
         const nextLine = currentLine.startsWith(prefix) ? cleanedLine : `${prefix}${cleanedLine}`;
         const nextValue = `${value.slice(0, lineStart)}${nextLine}${value.slice(lineEnd)}`;
-        onChange(nextValue);
-        const nextCursor = lineStart + nextLine.length;
-        window.requestAnimationFrame(() => {
-          textarea?.focus();
-          textarea?.setSelectionRange(nextCursor, nextCursor);
-        });
+        commitSelectionEdit(nextValue, lineStart + nextLine.length);
         return;
       }
       const formatted = formatSelection(action, '');
       const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(start)}`;
-      onChange(nextValue);
-      const nextCursor = start + formatted.inset;
-      window.requestAnimationFrame(() => {
-        textarea?.focus();
-        textarea?.setSelectionRange(nextCursor, nextCursor);
-      });
+      commitSelectionEdit(nextValue, start + formatted.inset);
       return;
     }
 
     const selectedText = value.slice(start, end);
     const formatted = formatSelection(action, selectedText);
     const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(end)}`;
-    onChange(nextValue);
-
     const nextStart = start + formatted.inset;
     const nextEnd = action === 'bullets' || action === 'numbered'
       ? start + formatted.value.length
       : nextStart + selectedText.length;
-    window.requestAnimationFrame(() => {
-      textarea?.focus();
-      textarea?.setSelectionRange(nextStart, nextEnd);
-    });
-  }, [onChange, textareaRef, value]);
+    commitSelectionEdit(nextValue, nextStart, nextEnd);
+  }, [commitSelectionEdit, textareaRef, value]);
 
   const applyColor = useCallback((colorId: string) => {
     const textarea = textareaRef.current;
@@ -179,48 +177,30 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
 
     if (!hasSelection) {
       if (colorId === 'clear') {
-        window.requestAnimationFrame(() => {
-          textarea?.focus();
-          textarea?.setSelectionRange(start, start);
-        });
+        focusSelection(start);
         return;
       }
       const before = colorId === 'highlight' ? '==' : `[color:${colorId}]`;
       const after = colorId === 'highlight' ? '==' : '[/color]';
       const nextValue = `${value.slice(0, start)}${before}${after}${value.slice(start)}`;
-      onChange(nextValue);
-      const nextCursor = start + before.length;
-      window.requestAnimationFrame(() => {
-        textarea?.focus();
-        textarea?.setSelectionRange(nextCursor, nextCursor);
-      });
+      commitSelectionEdit(nextValue, start + before.length);
       return;
     }
 
     if (colorId === 'highlight') {
       const edit = toggleHighlight(value, start, end);
       if (edit.value === value) return;
-      onChange(edit.value);
-      window.requestAnimationFrame(() => {
-        textarea?.focus();
-        textarea?.setSelectionRange(edit.start, edit.end);
-      });
+      commitSelectionEdit(edit.value, edit.start, edit.end);
       return;
     }
 
     const selectedText = value.slice(start, end);
     const formatted = formatColorSelection(colorId, selectedText);
     const nextValue = `${value.slice(0, start)}${formatted.value}${value.slice(end)}`;
-    onChange(nextValue);
-
     const nextStart = start + formatted.inset;
     const nextEnd = nextStart + formatted.coreLength;
-
-    window.requestAnimationFrame(() => {
-      textarea?.focus();
-      textarea?.setSelectionRange(nextStart, nextEnd);
-    });
-  }, [onChange, textareaRef, value]);
+    commitSelectionEdit(nextValue, nextStart, nextEnd);
+  }, [commitSelectionEdit, focusSelection, textareaRef, value]);
 
   return (
     <div className="content-composer">

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
@@ -148,10 +149,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const activityKey = (kind: EvaluationKind) => `${kind.family}:${kind.type}`;
   const firstActivity = classActivities[0]?.entries[0]?.kind;
   const openKeys = openActivityKeys ?? (firstActivity ? [activityKey(firstActivity)] : []);
-  const toggleActivity = (kind: EvaluationKind) => {
-    const key = activityKey(kind);
-    setOpenActivityKeys(openKeys.includes(key) ? openKeys.filter((open) => open !== key) : [...openKeys, key]);
-  };
 
   const linksOfKind = (kind: EvaluationKind): AssessmentLink[] =>
     (kind.family === 'devoir' ? links.filter((link) => link.planned.type === kind.type) : []);
@@ -587,7 +584,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <AccordionPrimitive.Root
+        type="multiple"
+        value={openKeys}
+        onValueChange={setOpenActivityKeys}
+        className="space-y-4"
+      >
         {classActivities.length === 0 ? (
           <ActivitiesEmptyState />
         ) : classActivities.map(({ group, entries }) => {
@@ -600,63 +602,74 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               />
               <div className="ev-board">
                 {entries.map(({ kind, count }) => {
-                  const isOpen = openKeys.includes(activityKey(kind));
+                  const itemKey = activityKey(kind);
+                  const isOpen = openKeys.includes(itemKey);
                   const label = t(kindLabelKey(kind));
                   const countLabel = `${number.format(count)} ${kind.family === 'devoir'
                     ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
                     : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
                   return (
-                    <div key={kind.type} className="ev-accordion" data-activity-kind={kind.type} data-open={isOpen ? 'true' : undefined}>
-                      <button
-                        type="button"
-                        onClick={() => toggleActivity(kind)}
-                        aria-expanded={isOpen}
-                        aria-label={`${label} — ${countLabel}`}
-                        className="ev-accordion__toggle"
-                      >
-                        <span className="ev-accordion__label">
-                          <span className="ev-accordion__label-text">{label}</span>
-                        </span>
-                        <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
-                          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
-                        </span>
-                        <span className="sr-only">{isOpen ? t('evaluations.collapse') : t('evaluations.expand')}</span>
-                      </button>
+                    <AccordionPrimitive.Item
+                      key={kind.type}
+                      value={itemKey}
+                      className="ev-accordion"
+                      data-activity-kind={kind.type}
+                      data-open={isOpen ? 'true' : undefined}
+                    >
+                      <AccordionPrimitive.Header asChild>
+                        <div>
+                          <AccordionPrimitive.Trigger
+                            aria-expanded={isOpen}
+                            aria-label={`${label} — ${countLabel}`}
+                            className="ev-accordion__toggle"
+                          >
+                            <span className="ev-accordion__label">
+                              <span className="ev-accordion__label-text">{label}</span>
+                            </span>
+                            <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
+                              <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
+                            </span>
+                            <span className="sr-only">{isOpen ? t('evaluations.collapse') : t('evaluations.expand')}</span>
+                          </AccordionPrimitive.Trigger>
+                        </div>
+                      </AccordionPrimitive.Header>
 
                       {isOpen && (
-                        <div className="ev-accordion__body">
-                          {count === 0 ? (
-                            <ActivitiesEmptyState compact />
-                          ) : kind.family === 'event' ? (
-                            <PedagogicalEventsSection
-                              events={eventsOfKind(kind)}
-                              showHeader={false}
-                              onDateChange={changeEventDate}
-                              onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
-                              onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
-                              onOpenStudents={(event) => setStudentsFor(event)}
-                              policy={policy}
-                            />
-                          ) : (
-                            <div className="ev-board__rows">
-                              <div className="ev-board__head" aria-hidden="true">
-                                <span>{t('evaluations.titleLabel')}</span>
-                                <span>{t('evaluations.manualDate')}</span>
-                                <span>{t('evaluations.colActions')}</span>
+                        <AccordionPrimitive.Content forceMount asChild>
+                          <div className="ev-accordion__body">
+                            {count === 0 ? (
+                              <ActivitiesEmptyState compact />
+                            ) : kind.family === 'event' ? (
+                              <PedagogicalEventsSection
+                                events={eventsOfKind(kind)}
+                                showHeader={false}
+                                onDateChange={changeEventDate}
+                                onDelete={event => setDeletingEvent({ id: event.id, title: activityLabelOf(event) })}
+                                onOpenDocument={(event) => setDocumentFor({ kind: 'event', event })}
+                                onOpenStudents={(event) => setStudentsFor(event)}
+                                policy={policy}
+                              />
+                            ) : (
+                              <div className="ev-board__rows">
+                                <div className="ev-board__head" aria-hidden="true">
+                                  <span>{t('evaluations.titleLabel')}</span>
+                                  <span>{t('evaluations.manualDate')}</span>
+                                  <span>{t('evaluations.colActions')}</span>
+                                </div>
+                                {renderAssessmentRows(linksOfKind(kind))}
                               </div>
-                              {renderAssessmentRows(linksOfKind(kind))}
-                            </div>
-                          )}
-                        </div>
+                            )}
+                          </div>
+                        </AccordionPrimitive.Content>
                       )}
-                    </div>
+                    </AccordionPrimitive.Item>
                   );
                 })}
               </div>
             </section>
           );
         })}
-      </div>
+      </AccordionPrimitive.Root>
 
       <DevoirsModals
         onConfigChange={onConfigChange}

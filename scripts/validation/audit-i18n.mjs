@@ -1,22 +1,30 @@
 // Audit i18n : (1) parité FR/EN/AR, (2) clés t('...') utilisées dans le code
 // mais absentes des messages (affichage de la clé brute).
 // Usage : npm run check:i18n
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const LOCALE_FILE = join(ROOT, 'src', 'i18n', 'messages.ts');
+const DOMAINS_DIR = join(ROOT, 'src', 'i18n', 'domains');
 
-const file = readFileSync(LOCALE_FILE, 'utf8');
+const localeFiles = [
+  LOCALE_FILE,
+  ...(existsSync(DOMAINS_DIR)
+    ? readdirSync(DOMAINS_DIR).filter(f => f.endsWith('.ts')).map(f => join(DOMAINS_DIR, f))
+    : []),
+];
 
-const extract = (name) => {
+const extract = (name) => localeFiles.map((filePath) => {
+  const content = readFileSync(filePath, 'utf8');
   const startMarker = `  ${name}: {\n`;
-  const start = file.indexOf(startMarker);
+  const start = content.indexOf(startMarker);
+  if (start === -1) return '';
   const bodyStart = start + startMarker.length;
-  const end = file.indexOf('\n  },', bodyStart);
-  return file.slice(bodyStart, end);
-};
+  const end = content.indexOf('\n  },', bodyStart);
+  return end === -1 ? '' : content.slice(bodyStart, end);
+}).join('\n');
 
 const decode = (s) => s.replace(/\\'/g, "'").replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
 

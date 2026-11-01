@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import * as Tabs from '@radix-ui/react-tabs';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DocumentPrintButton } from '@/components/documents/DocumentPrintButton';
 import { DocumentSheetHeader } from '@/components/documents/DocumentSheetHeader';
@@ -178,42 +179,46 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             <DocumentPrintButton source={source} title={headerTitle} classLabel={resolvedClassLabel} showLabel />
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={onClose}
-              className="h-11 rounded-lg bg-muted px-4 text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground cursor-pointer"
+              className="rounded-lg px-4 text-xs font-semibold"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="default"
+              size="sm"
               onClick={handleSave}
               disabled={isTooLong}
-              className="h-11 rounded-lg bg-primary px-5 text-xs font-semibold text-primary-foreground shadow-xs transition-[filter,transform] duration-200 hover:brightness-110 active:brightness-90 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="rounded-lg px-5 text-xs font-semibold shadow-xs"
             >
               {t('common.save')}
-            </button>
+            </Button>
           </div>
         </div>}
       headerClassName="border-b border-border/70"
       title={heading ?? t('documentPreview.heading')}
     >
-      <Tabs.Root value={tab} onValueChange={value => setTab(value as 'source' | 'preview')} dir={isRtl ? 'rtl' : 'ltr'} className="content-document-workspace">
+      <Tabs value={tab} onValueChange={value => setTab(value as 'source' | 'preview')} dir={isRtl ? 'rtl' : 'ltr'} className="content-document-workspace">
         <ConfirmDialog open={conflictOpen} onOpenChange={setConflictOpen} variant="default"
           title={t('evaluations.doc.concurrentTitle')} description={t('evaluations.doc.concurrentBody')}
           confirmLabel={t('evaluations.doc.keepDraft')} onConfirm={commit} />
         {/* Deux onglets plutôt que deux colonnes : sur téléphone, la feuille est
             haute et étroite — on commence par l'aperçu, puis on bascule sur la rédaction. */}
-        <Tabs.List aria-label={heading ?? t('documentPreview.heading')}
+        <TabsList aria-label={heading ?? t('documentPreview.heading')}
           dir={isRtl ? 'rtl' : 'ltr'} data-tab={tab} className="content-document-tabs">
           {(['preview', 'source'] as const).map(value => (
-            <Tabs.Trigger key={value} value={value} className="content-document-tab">
+            <TabsTrigger key={value} value={value} className="content-document-tab">
               {t(value === 'preview' ? 'evaluations.doc.preview' : 'evaluations.doc.source')}
-            </Tabs.Trigger>
+            </TabsTrigger>
           ))}
-        </Tabs.List>
+        </TabsList>
 
-        <Tabs.Content value={tab} data-mode={tab} className="content-document-panel modern-scrollbar">
+        <TabsContent value={tab} data-mode={tab} className="content-document-panel modern-scrollbar mt-0">
         {tab === 'source' ? (
           <div className="content-document-source">
             <Textarea
@@ -230,14 +235,16 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
               className="content-document-textarea resize-none rounded-xl border-border/70 bg-card font-mono text-[13px] leading-relaxed p-3.5 shadow-2xs"
             />
             <div className="flex items-center justify-between gap-2 px-1">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowHelp(open => !open)}
-                className="min-h-11 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                className="min-h-11 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10 hover:text-primary"
                 aria-expanded={showHelp}
               >
                 {t('evaluations.doc.helpToggle')}
-              </button>
+              </Button>
               <span className={cn('text-[11px] font-semibold tabular-nums', isTooLong ? 'text-destructive' : isTight ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
                 {t('evaluations.doc.counter', { count: length, max: MAX_CONTENT_DOCUMENT_CHARS })}
               </span>
@@ -276,21 +283,23 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
             ) : (
               <div className="space-y-3 py-12 text-center text-xs text-muted-foreground">
                 <p>{t('evaluations.doc.empty')}</p>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setTab('source'); textareaRef.current?.focus(); }}
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 cursor-pointer"
+                  className="rounded-md bg-primary/10 px-4 text-xs font-semibold text-primary hover:bg-primary/20 hover:text-primary"
                 >
                   <span>{t('evaluations.doc.source')}</span>
-                </button>
+                </Button>
               </div>
             )}
           </div>
         )}
-        </Tabs.Content>
+        </TabsContent>
 
 
-      </Tabs.Root>
+      </Tabs>
     </Modal>
   );
 };

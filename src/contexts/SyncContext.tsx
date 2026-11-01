@@ -1,12 +1,10 @@
 import { isNetworkOnline } from '../platform/networkStatus';
 import { rostersForClasses } from '../domain/evaluations/studentRoster';
 import { reconcileClassRosters } from '../domain/evaluations/classRosterSync';
-import type { ClassRoster } from '../types';
+import type { ClassRoster, LessonsData } from '../types';
 import { apiFetch } from '@/platform/nativeHttp';
 import { accountOwner } from '../domain/auth/accountIdentity';
-import { needsProfilePhoneSync } from '../domain/auth/profilePhone';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ClassInfo, LessonsData } from '../types';
 import { computeTeacherSnapshot } from '../domain/curriculum/progression';
 import { teacherDeclaredSubjects, teacherDisplayName } from '../domain/classes/teacherIdentity';
 import { toast } from 'sonner';
@@ -27,9 +25,7 @@ import {
 } from '../infrastructure/sync/syncBus';
 import { useAuth } from './AuthContext';
 import { logger } from '../lib/logger';
-import { SyncableSettings, extractSyncableSettings, mergeStudentFollowUpRecords, mergeSyncableSettings } from '../infrastructure/sync/syncSettings';
-import { mergePedagogicalDocuments, pedagogicalDocumentsEqual } from '../domain/evaluations/documentSync';
-import { reconcileClassesEvaluationConfig } from '../domain/evaluations/notebookReconciliation';
+import { extractSyncableSettings } from '../infrastructure/sync/syncSettings';
 import { effectiveSchedules, normalizeTimetableClock } from '../domain/calendar/timetable';
 import { normalizeEvaluationPolicy } from '../domain/evaluations/evaluationPolicy';
 import { translateLocaleMessage } from '../i18n/messages';
@@ -38,7 +34,6 @@ import { readWorkspaceScope, workspaceIsCurrent } from '../infrastructure/storag
 import { bootstrapStore } from '../infrastructure/sync/bootstrapStore';
 import { notifySyncProgress } from '../infrastructure/sync/syncBus';
 import { measurements, MEASURES } from '../platform/performanceMarks';
-import { mergeClassMetadata } from '../domain/classes/classMetadata';
 import { assignClassColors } from '../domain/classes/classColors';
 import { isForegroundOnline, startForegroundPolling } from '../platform/mobileScheduling';
 import { requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError, planPushBatches } from '../infrastructure/sync/syncTransport';
@@ -48,7 +43,14 @@ import { settingsPushDelay, touchesImmediateSettings } from '../infrastructure/s
 import { LocalSyncDataError } from '../infrastructure/storage/localJson';
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
 import { readStoredNotebook } from '../infrastructure/storage/notebookStorage';
-import { backupConflictVersion, fetchLessonsBlob, removeDeletedClassReferences, type ServerClassesBlob } from '../infrastructure/sync/pullHelpers';
+import {
+    backupConflictVersion,
+    computePullDecisions,
+    fetchLessonsBlob,
+    mergeRemoteClassList,
+    reconcilePulledSettings,
+    type ServerClassesBlob,
+} from '../infrastructure/sync/pullHelpers';
 import { dequal } from 'dequal';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
@@ -529,21 +531,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return;
                 }
 
-                const mergedClasses = [...localVisibleClasses];
-                let localChanged = mergedClasses.length !== localClasses.length;
-                let metadataNeedsPush = false;
-                // Receive a renamed group even when its notebook has not changed.
-                for (const remote of server.classes ?? []) {
-                    const index = mergedClasses.findIndex(item => item.id === remote.id);
-                    if (index < 0) continue;
-                    const previous = mergedClasses[index];
-                    const merged = mergeClassMetadata(previous, remote, server.adminClassOverrides?.[remote.id], 'incoming');
-                    if (!dequal(previous, merged)) {
-                        mergedClasses[index] = merged;
-                        localChanged = true;
-                    }
-                    if (merged === previous && previous.metadataUpdatedAt !== remote.metadataUpdatedAt) metadataNeedsPush = true;
-                }
+                const {
+                    mergedClasses,
+                    localChanged: initialClassesChanged,
+                    metadataNeedsPush,
+                } = mergeRemoteClassList(localVisibleClasses, localClasses.length, server);
+                let localChanged = initialClassesChanged;
                 const conflictNames: string[] = [];
                 const commits: Array<() => void> = [];
 
@@ -564,46 +557,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
 
                 // ── Phase 1 : décisions (synchrone, LWW + détection de conflit) ──
-                interface PullDecision {
-                    serverClass: ClassInfo;
-                    serverUpdatedAt?: string;
-                    localIndex: number;
-                    action: 'apply' | 'requeue' | 'none';
-                    conflict: boolean;
-                    hasAdminOverride: boolean;
-                    serverIsNewer: boolean;
-                }
-                const decisions: PullDecision[] = (server.classes ?? [])
-                    .filter(serverClass => !deletedIds.has(serverClass.id))
-                    .map(serverClass => {
-                    const serverUpdatedAt = server.classMeta?.[serverClass.id]?.updatedAt;
-                    const meta = syncMeta[serverClass.id];
-                    const localUpdatedAt = meta?.localUpdatedAt;
-                    const lastSyncedAt = meta?.lastSyncedAt;
-                    const localIndex = mergedClasses.findIndex(c => c.id === serverClass.id);
-
-                    const serverIsNewer =
-                        !!serverUpdatedAt && (!localUpdatedAt || serverUpdatedAt > localUpdatedAt);
-
-                    // vrai conflit : local ET cloud ont chacun avancé depuis leur
-                    // dernier point commun (édition sur deux appareils hors-ligne)
-                    const conflict =
-                        localIndex !== -1 &&
-                        ((queuedClassIds.has(serverClass.id) && serverIsNewer) ||
-                        (!!serverUpdatedAt && !!localUpdatedAt && !!lastSyncedAt &&
-                        serverUpdatedAt > lastSyncedAt && localUpdatedAt > lastSyncedAt &&
-                        serverUpdatedAt !== localUpdatedAt));
-                    const hasAdminOverride = !!server.adminClassOverrides?.[serverClass.id];
-
-                    const action: PullDecision['action'] =
-                        localIndex === -1 || serverIsNewer || hasAdminOverride
-                            ? 'apply'
-                            : localUpdatedAt && (!serverUpdatedAt || localUpdatedAt > serverUpdatedAt)
-                                ? 'requeue' // modifications locales jamais poussées : on les remet en file
-                                : 'none';
-
-                    return { serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer };
-                    });
+                const decisions = computePullDecisions(
+                    server,
+                    mergedClasses,
+                    deletedIds,
+                    syncMeta,
+                    queuedClassIds,
+                );
 
                 // Only validate notebooks about to be replaced/backed up. An unchanged
                 // pull never reparses every course; the strict reader shares the bounded cache.
@@ -697,73 +657,16 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  * local), on restaure l'ensemble depuis le cloud. Sinon on
                  * respecte les réglages locaux (l'état push reste par appareil).
                  */
-                const cleanedConfig = removeDeletedClassReferences(localConfig, deletedIds);
-                let nextConfig = cleanedConfig.config;
-                let configChanged = cleanedConfig.changed;
-                const settings: SyncableSettings | undefined =
-                    server.settings ??
-                    (server.schedules || server.timetable
-                        ? ({ schedules: server.schedules, timetable: server.timetable } as SyncableSettings)
-                        : undefined);
-                const settingsMeta = readSettingsSyncMeta();
-                const remoteSettingsAt = server.settingsUpdatedAt || server.updatedAt || '';
-                const localHasSettings =
-                    (nextConfig.schedules?.length ?? 0) > 0 ||
-                    (nextConfig.timetable?.length ?? 0) > 0 ||
-                    !!nextConfig.establishmentName ||
-                    Object.keys(nextConfig.assessmentDates ?? {}).length > 0 ||
-                    Object.keys(nextConfig.assessmentDocuments ?? {}).length > 0 ||
-                    Object.keys(nextConfig.pedagogicalEvents ?? {}).length > 0 ||
-                    Object.keys(nextConfig.manualAssessments ?? {}).length > 0 ||
-                    Object.keys(nextConfig.assessmentParticipants ?? {}).length > 0 ||
-                    Object.keys(nextConfig.assessmentAbsences ?? {}).length > 0 ||
-                    Object.keys(nextConfig.classRosters ?? {}).length > 0;
-                const shouldApplyRemoteSettings =
-                    !!settings &&
-                    (
-                        (!localHasSettings && !settingsMeta.localUpdatedAt) ||
-                        (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt
-                            && remoteSettingsAt !== settingsMeta.lastSyncedAt)
-                    );
-                let appliedSettingsAt: string | undefined;
-                let settingsNeedPush = false;
-                if (settings && shouldApplyRemoteSettings) {
-                    nextConfig = mergeSyncableSettings(nextConfig, settings);
-                    if (remoteSettingsAt) appliedSettingsAt = remoteSettingsAt;
-                    configChanged = true;
-                } else if (settings && localHasSettings && !settingsMeta.localUpdatedAt && remoteSettingsAt) {
-                    settingsNeedPush = true;
-                }
-
-                // Réparer les profils des versions où le contact était local seulement,
-                // après avoir reçu les réglages cloud pour préserver leur priorité.
-                if (needsProfilePhoneSync(nextConfig.teacherPhone, settings?.teacherPhone)) settingsNeedPush = true;
-
-                // Recover formerly local-only subjects and merge content & student tracking even
-                // when the settings watermark itself did not change.
-                const withDocuments = removeDeletedClassReferences(
-                    mergeStudentFollowUpRecords(mergePedagogicalDocuments(nextConfig, settings ?? {}), settings ?? {}),
+                const reconciledSettings = reconcilePulledSettings(
+                    localConfig,
+                    server,
                     deletedIds,
-                ).config;
-                if (
-                    !pedagogicalDocumentsEqual(nextConfig, withDocuments) ||
-                    !dequal(nextConfig.assessmentParticipants ?? {}, withDocuments.assessmentParticipants ?? {}) ||
-                    !dequal(nextConfig.assessmentAbsences ?? {}, withDocuments.assessmentAbsences ?? {})
-                ) {
-                    configChanged = true;
-                }
-                nextConfig = withDocuments;
-                if (!pedagogicalDocumentsEqual(nextConfig, settings ?? {})) settingsNeedPush = true;
-
-                // Receive admin edits without dropping locally pending roster changes.
-                if (settings?.classRosters !== undefined) {
-                    const classRosters = rostersForClasses(reconcileClassRosters(localConfig.classRosters, settings.classRosters), mergedClasses.map(item => item.id));
-                    if (!dequal(nextConfig.classRosters ?? {}, classRosters)) {
-                        nextConfig = { ...nextConfig, classRosters };
-                        configChanged = true;
-                    }
-                    if (Object.values(classRosters).some(roster => roster.edit)) settingsNeedPush = true;
-                }
+                    readSettingsSyncMeta(),
+                    mergedClasses,
+                    classId => readStoredNotebook(classId).lessonsData,
+                );
+                let { nextConfig, configChanged } = reconciledSettings;
+                const { appliedSettingsAt, settingsNeedPush } = reconciledSettings;
 
                 // L'horloge de la direction n'entre jamais dans le LWW des
                 // préférences professeur : elle est autoritaire et ne repart
@@ -783,19 +686,6 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         nextConfig = { ...nextConfig, evaluationPolicy };
                         configChanged = true;
                     }
-                }
-
-                // Réconcilier les remarques et blocs des cahiers tirés avec les activités et évaluations
-                // afin que « Contrôle des cahiers » et le contrôle continu soient immédiatement visibles dans le suivi.
-                const reconciledNotebooks = reconcileClassesEvaluationConfig(
-                    mergedClasses,
-                    nextConfig,
-                    classId => readStoredNotebook(classId).lessonsData,
-                );
-                if (reconciledNotebooks.updated) {
-                    nextConfig = reconciledNotebooks.config;
-                    configChanged = true;
-                    settingsNeedPush = true;
                 }
 
                 if (configChanged) {

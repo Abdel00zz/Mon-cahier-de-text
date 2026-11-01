@@ -118,3 +118,15 @@ test('sidebar background harmonizes with canvas background in index.css and icon
   assert.ok(tabBar.includes('size-[22px]'), 'sidebar icons are rebalanced to 20.5px');
   assert.ok(!tabBar.includes('size-[23px]'), 'old oversized 23px icons removed');
 });
+
+test('EventDateModal integrates react-day-picker with timezone-safe ISO helpers and ConfirmDialog uses Radix AlertDialog', () => {
+  const modalCode = readFileSync('src/features/evaluations/components/EventDateModal.tsx', 'utf8');
+  assert.match(modalCode, /from 'react-day-picker'/, 'EventDateModal uses react-day-picker');
+  assert.match(modalCode, /isoToLocalDate/, 'timezone-safe ISO to Date helper');
+  assert.match(modalCode, /localDateToIso/, 'timezone-safe Date to ISO helper');
+  assert.match(modalCode, /footer=\{/, 'modal actions live in fixed footer');
+
+  const confirmCode = readFileSync('src/components/ui/confirm-dialog.tsx', 'utf8');
+  assert.match(confirmCode, /@radix-ui\/react-alert-dialog/, 'ConfirmDialog uses Radix AlertDialog semantics');
+  assert.match(confirmCode, /AlertDialogPrimitive\.Cancel/, 'Cancel action wired to AlertDialogPrimitive.Cancel');
+});

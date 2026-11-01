@@ -39,6 +39,7 @@ const EDGE_MARGIN = 8;
 const TOUCH_FOCUS_GRACE_MS = 700;
 /** Cadres embarqués : leur `title` est leur nom accessible, jamais une infobulle. */
 const PROTECTED_TAGS = new Set(['IFRAME', 'OBJECT', 'EMBED']);
+const GLOBAL_TOOLTIP_ID = 'global-ui-tooltip';
 
 export const GlobalTooltip: React.FC = () => {
   const [tooltip, setTooltip] = useState<TooltipPayload | null>(null);
@@ -69,38 +70,25 @@ export const GlobalTooltip: React.FC = () => {
 
   useEffect(() => {
     const stashedTitles = new WeakMap<HTMLElement, string>();
+    const stashedDescribedBy = new WeakMap<HTMLElement, string | null>();
     let visible = false;
     let active: { target: HTMLElement } | null = null;
     let press: { timer: number; x: number; y: number; target: HTMLElement } | null = null;
     let lastTouchAt = 0;
 
-    /** L'élément porteur d'infobulle le plus proche — API EXPLICITE prioritaire, puis remplacement du title natif. */
+    /** L'élément porteur d'infobulle le plus proche — API EXPLICITE `data-tippy-content` uniquement. */
     const findTarget = (node: EventTarget | null): { target: HTMLElement; text: string } | null => {
       const element = node instanceof HTMLElement ? node : null;
       if (!element || !element.isConnected) return null;
 
-      // Aucune infobulle sur les cartes et lignes de classe (le nom est déjà affiché en grand)
       if (element.closest('.class-card, .class-list-item') && !element.closest('.class-card__menu, .class-list-item__menu')) {
         return null;
       }
 
-      // 1. Source explicite prioritaire
       const target = element.closest<HTMLElement>('[data-tippy-content]') ?? null;
       if (target && target.isConnected && !PROTECTED_TAGS.has(target.tagName)) {
         const text = (target.getAttribute('data-tippy-content') ?? target.getAttribute('title') ?? '').trim();
         if (text) return { target, text };
-      }
-
-      // 2. Contrôles et éléments porteurs de title natif :
-      //    Remplacement de l'infobulle système native par le style UI raffiné du compagnon.
-      const titled = element.closest<HTMLElement>(
-        'button[title], a[title], [role="button"][title], [data-mode][title], summary[title], input[title], select[title], [tabindex][title], [data-tooltip], [aria-label][title], span[title], svg[title]'
-      ) ?? null;
-      if (titled && titled.isConnected && !PROTECTED_TAGS.has(titled.tagName)) {
-        const text = (titled.getAttribute('title') ?? '').trim();
-        if (text && text !== titled.textContent?.trim()) {
-          return { target: titled, text };
-        }
       }
 
       return null;
@@ -123,6 +111,11 @@ export const GlobalTooltip: React.FC = () => {
 
     const showFor = (found: { target: HTMLElement; text: string }) => {
       stashTitle(found.target);
+      if (!stashedDescribedBy.has(found.target)) {
+        stashedDescribedBy.set(found.target, found.target.getAttribute('aria-describedby'));
+      }
+      const prevDesc = stashedDescribedBy.get(found.target);
+      found.target.setAttribute('aria-describedby', prevDesc ? `${prevDesc} ${GLOBAL_TOOLTIP_ID}` : GLOBAL_TOOLTIP_ID);
       const rect = found.target.getBoundingClientRect();
       const placement = rect.top > 96 ? 'top' : 'bottom';
       active = { target: found.target };
@@ -136,7 +129,17 @@ export const GlobalTooltip: React.FC = () => {
     };
 
     const hide = () => {
-      if (active) restoreTitle(active.target);
+      if (active) {
+        restoreTitle(active.target);
+        if (stashedDescribedBy.has(active.target)) {
+          const prevDesc = stashedDescribedBy.get(active.target);
+          stashedDescribedBy.delete(active.target);
+          if (active.target.isConnected) {
+            if (prevDesc) active.target.setAttribute('aria-describedby', prevDesc);
+            else active.target.removeAttribute('aria-describedby');
+          }
+        }
+      }
       active = null;
       visible = false;
       setTooltip(null);
@@ -255,6 +258,7 @@ export const GlobalTooltip: React.FC = () => {
 
   return createPortal(
     <span
+      id={GLOBAL_TOOLTIP_ID}
       ref={bubbleRef}
       role="tooltip"
       className="global-ui-tooltip pointer-events-none fixed z-[200] w-max max-w-[min(20rem,calc(100vw-1rem))] rounded-lg border border-border/80 bg-card/95 backdrop-blur-md px-2.5 py-1.5 text-start text-[12px] font-medium leading-snug text-foreground shadow-md shadow-black/5"

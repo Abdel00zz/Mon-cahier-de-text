@@ -244,9 +244,7 @@ export function ModalBottomSheet({
             mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-2rem)] max-w-md rounded-[24px] pb-0 border',
             // Focus outline
             'outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-0',
-            className,
-            // Position fixe non-remplaçable
-            '!fixed'
+            className
           )}
           style={{
             '--sheet-detent': activeDetent,
@@ -326,12 +324,9 @@ export function ModalBottomSheet({
             <div
               className={cn(
                 'modal-header modal-pro-header relative z-10 shrink-0 bg-transparent text-foreground flex flex-col justify-center text-start',
-                // Spacing optimisé mobile/desktop garantissant un dégagement confortable
                 'min-h-[3.75rem] sm:min-h-[4.25rem]',
                 'px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6',
-                // Espacement pour le bouton X (padding-end augmenté)
-                !hideClose ? 'pe-[3.75rem] sm:pe-[4.25rem] ps-5 sm:ps-7' : 'px-5 sm:px-7',
-                // Spacing drag handle sur mobile
+                !hideClose && 'pe-[3.75rem] sm:pe-[4.25rem]',
                 isCompactSheet && dragHandle && 'pt-[3.25rem]',
                 headerClassName
               )}
@@ -375,16 +370,14 @@ export function ModalBottomSheet({
             </DialogPrimitive.Close>
           )}
 
-          {/* Scrollable Body - Optimisé scroll mobile */}
+          {/* Scrollable Body - Structure commune : en-tête et pied fixes, zone de contenu défilante */}
           <div
             data-swipe-scroll-region
             className={cn(
-              'modal-body modern-scrollbar min-h-0 min-w-0 flex-auto overflow-y-auto overscroll-contain',
+              'modal-body modern-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain',
               'px-5 py-4 sm:px-7 sm:py-6 landscape:py-4 landscape:px-6',
               '[overflow-anchor:none] [-webkit-overflow-scrolling:touch]',
-              // Padding-top si pas de header
               !(title || description) && 'pt-[3.5rem] sm:pt-7 landscape:pt-5',
-              // Padding-bottom si pas de footer (respect du safe area)
               !footer && 'pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6',
               bodyClassName
             )}

@@ -5,9 +5,9 @@ import { schoolYearLabelFromDate } from '../calendar/calendar';
 import { findNotebookAssessments, linkAssessments, parseTrailingNumber, type NotebookAssessmentEntry } from './assessmentSync';
 import { withHomeworkCorrection } from './homeworkCycle';
 import type { PlannedAssessment } from './assessments';
-import { extractDateRange } from './notebookSyncBridge';
+import { extractDateRange } from './dateRange';
 import { normalizeActivityText } from './pedagogicalActivities';
-import { correctionOwner } from './homeworkCorrectionContent';
+import { correctionOwner } from './homeworkCorrectionIdentity';
 import { dequal } from 'dequal';
 
 interface ReconcileOptions {

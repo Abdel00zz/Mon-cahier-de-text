@@ -4,13 +4,15 @@
 }
 .content-document-modal .content-document-body {
   display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   scrollbar-gutter: auto;
   padding-block: 1rem;
 }
 .content-document-workspace {
   display: flex;
-  flex: 1;
+  flex: 1 1 0%;
   flex-direction: column;
   gap: .75rem;
   min-height: 0;
@@ -18,9 +20,10 @@
 }
 .content-document-workspace > .content-document-tabs { flex-shrink: 0; }
 .content-document-workspace > .content-document-panel {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
