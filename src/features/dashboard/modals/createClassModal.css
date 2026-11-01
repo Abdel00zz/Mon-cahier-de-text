@@ -9,20 +9,20 @@
 
 .class-create-modal {
   --create-surface: color-mix(in srgb, hsl(38 34% 96.5%) 94%, hsl(var(--card)) 6%);
-  --create-field: #ffffffeb;
-  --create-edge: #e4dfd6;
-  --pad: clamp(1rem, 4.6cqi, 1.85rem);
+  --create-field: #fffdf9eb;
+  --create-edge: #e5ddd2;
+  --pad: clamp(1.2rem, 5cqi, 1.95rem);
 
-  /* Couleur dynamique du héros et de la carte du bas (Lavande Royale par défaut) */
-  --hero-bg: #eef0ff;
-  --hero-border: #d5dbff;
-  --hero-ink: #272262;
-  --hero-secondary: #4e46b4;
+  /* Couleur dynamique du héros et de la carte du bas (Argile chaude par défaut, cohérente avec #faf7f2) */
+  --hero-bg: #f6ede2;
+  --hero-border: #e4d4c3;
+  --hero-ink: #2e2016;
+  --hero-secondary: #6b4c35;
 
-  background: color-mix(in srgb, var(--hero-border, #d5dbff) 11%, #fffdfa) !important;
-  background-image: none !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg, #f6ede2) 38%, #faf7f2) 0%, var(--create-surface) 44%, #fffdf9 100%) !important;
+  background-image: none;
   font-family: "Readex Pro", var(--font-sans);
-  color: #26221e;
+  color: #2e2016;
 }
 
 .dark .class-create-modal {
@@ -33,69 +33,69 @@
   color: hsl(var(--foreground));
 }
 
-/* Hauteur fluide avec pied de page fixe (.sheet) */
+/* Hauteur fluide et respiration aérée avec pied de page fixe (.sheet) */
 .class-create-modal.modal-motion-surface {
   container: sheet / inline-size;
   max-height: min(46rem, 94dvh) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 1.8rem 1.8rem 0 0 !important;
-  border: 0 !important;
-  box-shadow: 0 -10px 50px #26221e2e, 0 22px 54px #26221e24 !important;
+  border-radius: 1.85rem 1.85rem 0 0 !important;
+  border: 1px solid color-mix(in srgb, var(--hero-border, #e4d4c3) 65%, #e5ddd2) !important;
+  box-shadow: 0 -10px 44px rgba(46, 32, 22, 0.14), 0 24px 56px rgba(46, 32, 22, 0.14) !important;
 }
 
 @media (min-width: 720px) {
   .class-create-modal.modal-motion-surface {
-    max-width: min(100%, clamp(26rem, 52vw, 38rem)) !important;
-    width: min(100%, clamp(26rem, 52vw, 38rem));
-    border-radius: 1.8rem !important;
-    border-end-start-radius: 0.6rem !important;
+    max-width: min(100%, clamp(28rem, 54vw, 39.5rem)) !important;
+    width: min(100%, clamp(28rem, 54vw, 39.5rem));
+    border-radius: 1.85rem !important;
+    border-end-start-radius: 0.65rem !important;
   }
 }
 
-/* Tons dynamiques harmonisés (PAL) pour le bandeau héros ET la carte du bas à l'étape 3 */
-.create-hero-tone-lavender,
-.class-create-summary[data-color-tone='lavender'] {
-  --hero-bg: #eef0ff;
-  --hero-border: #d5dbff;
-  --hero-ink: #272262;
-  --hero-secondary: #4e46b4;
-}
-.create-hero-tone-sky,
-.class-create-summary[data-color-tone='sky'] {
-  --hero-bg: #e6f2fe;
-  --hero-border: #c5e0fb;
-  --hero-ink: #123e6b;
-  --hero-secondary: #256eb8;
-}
-.create-hero-tone-mint,
-.class-create-summary[data-color-tone='mint'] {
-  --hero-bg: #e5f6ed;
-  --hero-border: #c4e7d4;
-  --hero-ink: #124d38;
-  --hero-secondary: #1e825f;
-}
+/* Tons dynamiques harmonisés avec le fond papier d'argile (#faf7f2) */
 .create-hero-tone-coral,
 .class-create-summary[data-color-tone='coral'] {
-  --hero-bg: #feefe3;
-  --hero-border: #f8d6bc;
-  --hero-ink: #6c3310;
-  --hero-secondary: #c0581b;
-}
-.create-hero-tone-rose,
-.class-create-summary[data-color-tone='rose'] {
-  --hero-bg: #fcebf2;
-  --hero-border: #f4ccdd;
-  --hero-ink: #6d1b40;
-  --hero-secondary: #b8376a;
+  --hero-bg: #f6ede2;
+  --hero-border: #e4d3c1;
+  --hero-ink: #2e2016;
+  --hero-secondary: #6b4c35;
 }
 .create-hero-tone-sand,
 .class-create-summary[data-color-tone='sand'] {
-  --hero-bg: #faf2d6;
-  --hero-border: #ede0ad;
-  --hero-ink: #594507;
-  --hero-secondary: #967315;
+  --hero-bg: #f6eed8;
+  --hero-border: #e5d7b2;
+  --hero-ink: #47360f;
+  --hero-secondary: #7c5e1b;
+}
+.create-hero-tone-mint,
+.class-create-summary[data-color-tone='mint'] {
+  --hero-bg: #e9f3ec;
+  --hero-border: #cbe0d2;
+  --hero-ink: #1a3f2d;
+  --hero-secondary: #2e6b4e;
+}
+.create-hero-tone-sky,
+.class-create-summary[data-color-tone='sky'] {
+  --hero-bg: #eaf1f8;
+  --hero-border: #ccdbe9;
+  --hero-ink: #1c3954;
+  --hero-secondary: #36638c;
+}
+.create-hero-tone-lavender,
+.class-create-summary[data-color-tone='lavender'] {
+  --hero-bg: #efecf7;
+  --hero-border: #d7d1ea;
+  --hero-ink: #2f2854;
+  --hero-secondary: #584c96;
+}
+.create-hero-tone-rose,
+.class-create-summary[data-color-tone='rose'] {
+  --hero-bg: #f8eaef;
+  --hero-border: #e8cdd7;
+  --hero-ink: #542033;
+  --hero-secondary: #8f3b5b;
 }
 
 .dark .create-hero-tone-coral,
@@ -141,14 +141,14 @@
   --hero-secondary: #e5b5c4;
 }
 
-/* Bandeau Héros en dégradé doux (.hero) */
+/* Bandeau Héros aéré en dégradé chaud (.hero) */
 .class-create-modal .class-create-header {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 88%, #ffffff) 0%, transparent 100%) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 82%, #fffdf9) 0%, transparent 100%) !important;
   color: var(--hero-ink) !important;
   border-bottom: 0 !important;
-  padding: 0.95rem var(--pad, 1.3rem) 0.55rem;
+  padding: 1.15rem var(--pad, 1.5rem) 0.7rem;
   transition: background 220ms ease, color 220ms ease;
 }
 
@@ -158,20 +158,20 @@
 
 @media (max-width: 639px) {
   .class-create-modal .class-create-header {
-    padding: 1.55rem var(--pad, 1.25rem) 0.55rem;
+    padding: 1.65rem var(--pad, 1.35rem) 0.7rem;
   }
 }
 
 .class-create-modal .dialog-close {
-  width: max(44px, 2.6rem) !important;
-  height: max(44px, 2.6rem) !important;
+  width: max(44px, 2.65rem) !important;
+  height: max(44px, 2.65rem) !important;
   min-width: 44px !important;
   min-height: 44px !important;
   border-radius: 50% !important;
-  background: #ffffffd9 !important;
-  color: #26221e !important;
-  border: 1px solid color-mix(in srgb, var(--hero-border) 55%, transparent) !important;
-  box-shadow: 0 2px 6px rgba(38, 34, 30, 0.05) !important;
+  background: #fffdf9e6 !important;
+  color: #2e2016 !important;
+  border: 1px solid color-mix(in srgb, var(--hero-border) 65%, #e5ddd2) !important;
+  box-shadow: 0 2px 8px rgba(46, 32, 22, 0.05) !important;
   transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
 }
 
@@ -191,11 +191,11 @@
 .class-create-modal .class-create-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 0.3rem var(--pad, 1.3rem) 0.9rem;
+  padding: 0.45rem var(--pad, 1.5rem) 1.15rem;
   background: transparent;
 }
 
-/* Pied de page minimaliste sans bordure dure (.wf / .mf) */
+/* Pied de page minimaliste et aéré (.wf / .mf) */
 .class-create-modal .class-create-actions {
   flex-shrink: 0;
   position: sticky;
@@ -204,7 +204,7 @@
   background: transparent !important;
   border-top: 0 !important;
   box-shadow: none !important;
-  padding: 0.35rem var(--pad, 1.3rem) 0.85rem;
+  padding: 0.5rem var(--pad, 1.5rem) 1.1rem;
 }
 
 .class-create-heading {
@@ -212,7 +212,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 /* Badge icône asymétrique (.wi) */
@@ -222,14 +222,14 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2.65rem;
-  height: 2.65rem;
-  border-radius: 0.9rem;
-  border-end-start-radius: 0.4rem;
-  background: #ffffffeb;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.95rem;
+  border-end-start-radius: 0.42rem;
+  background: #fffdf9f2;
   color: var(--hero-secondary);
-  border: 1px solid color-mix(in srgb, var(--hero-border) 60%, transparent);
-  box-shadow: 0 2px 8px rgba(38, 34, 30, 0.05);
+  border: 1px solid color-mix(in srgb, var(--hero-border) 70%, #e5ddd2);
+  box-shadow: 0 3px 10px rgba(46, 32, 22, 0.05);
   transform: none;
 }
 
@@ -238,8 +238,8 @@
 }
 
 .class-create-heading-icon svg {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.22rem;
+  height: 1.22rem;
   stroke-width: 2.1;
 }
 
@@ -257,12 +257,12 @@
   align-items: flex-start;
 }
 
-/* Titre Readex Pro 600 (.hero h2) */
+/* Titre Readex Pro 700 (.hero h2) */
 .class-create-title {
   display: block;
-  font: 700 clamp(1.15rem, 3.2cqi + 0.52rem, 1.38rem)/1.35 "Readex Pro", var(--font-sans);
+  font: 700 clamp(1.2rem, 3.4cqi + 0.55rem, 1.44rem)/1.35 "Readex Pro", var(--font-sans);
   letter-spacing: -0.01em;
-  color: #26221e;
+  color: #2e2016;
   text-wrap: balance;
 }
 
@@ -274,18 +274,18 @@
   display: none !important;
 }
 
-/* ── Circuit d'étapes inspiré de Google One (.class-create-progress) ── */
+/* ── Circuit d'étapes inspiré de Google One, aéré et harmonisé avec le fond (.class-create-progress) ── */
 .class-create-progress {
   position: relative;
-  padding: 0.65rem 0.75rem 0.55rem;
-  border-radius: 1.15rem;
-  background: #ffffffbf;
-  border: 1px solid color-mix(in srgb, var(--hero-border, #d5dbff) 55%, #e6e0d6);
-  box-shadow: 0 2px 10px rgba(38, 34, 30, 0.03);
+  padding: 0.8rem 1rem 0.7rem;
+  border-radius: 1.25rem;
+  background: #fffdf9d9;
+  border: 1px solid color-mix(in srgb, var(--hero-border, #e4d3c1) 60%, #e5ddd2);
+  box-shadow: 0 4px 14px rgba(46, 32, 22, 0.035);
 }
 
 .dark .class-create-progress {
-  background: hsl(var(--card) / 0.75);
+  background: hsl(var(--card) / 0.78);
   border-color: hsl(var(--border));
 }
 
@@ -293,18 +293,18 @@
   position: relative;
   display: grid;
   align-items: start;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 /* Ligne de circuit continue en arrière-plan (piste Google One) */
 .class-create-progress ol::before {
   content: '';
   position: absolute;
-  top: 1.05rem;
+  top: 1.1rem;
   inset-inline: 16.5%;
   height: 2.5px;
   border-radius: 999px;
-  background: #e2dcd2;
+  background: #e5ddd2;
   z-index: 0;
 }
 
@@ -316,12 +316,12 @@
 .class-create-progress ol::after {
   content: '';
   position: absolute;
-  top: 1.05rem;
+  top: 1.1rem;
   inset-inline-start: 16.5%;
   width: calc(67% * var(--step-progress, 0));
   height: 2.5px;
   border-radius: 999px;
-  background: var(--hero-secondary, #4e46b4);
+  background: var(--hero-secondary, #6b4c35);
   z-index: 0;
   transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1), background-color 250ms ease;
 }
@@ -343,13 +343,13 @@
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 0.32rem;
-  min-height: max(44px, 2.75rem);
+  gap: 0.38rem;
+  min-height: max(44px, 2.85rem);
   width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #6e665e;
+  color: #6e5a49;
   box-shadow: none;
 }
 
@@ -361,15 +361,15 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 50%;
-  background: #ffffff;
-  color: #5c544d;
-  border: 1.5px solid #d5cec3;
-  font: 700 0.82rem/1 "Readex Pro", var(--font-sans);
+  background: #fffdf9;
+  color: #6e5a49;
+  border: 1.5px solid #dcd2c5;
+  font: 700 0.84rem/1 "Readex Pro", var(--font-sans);
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 1px 3px rgba(38, 34, 30, 0.05);
+  box-shadow: 0 2px 5px rgba(46, 32, 22, 0.05);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease, color 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -385,47 +385,47 @@
   stroke-width: 2.8;
 }
 
-/* Étape validée : pastille teintée avec coche nette */
+/* Étape validée : pastille teintée chaude avec coche nette */
 [data-state='complete'] .class-create-progress-number {
-  background: var(--hero-bg, #eef0ff);
-  color: var(--hero-secondary, #4e46b4);
-  border-color: var(--hero-secondary, #4e46b4);
-  box-shadow: 0 0 0 3px #ffffff;
+  background: var(--hero-bg, #f6ede2);
+  color: var(--hero-secondary, #6b4c35);
+  border-color: var(--hero-secondary, #6b4c35);
+  box-shadow: 0 0 0 3px #fffdf9;
 }
 
 .dark [data-state='complete'] .class-create-progress-number {
   background: hsl(var(--card));
-  color: #818cf8;
-  border-color: #818cf8;
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
 }
 
 /* Étape active : cercle plein + anneau lumineux style Google One */
 [data-state='current'] > .class-create-progress-item .class-create-progress-number {
-  background: var(--hero-secondary, #4e46b4);
-  color: #ffffff;
-  border-color: var(--hero-secondary, #4e46b4);
+  background: var(--hero-secondary, #6b4c35);
+  color: #fffdf9;
+  border-color: var(--hero-secondary, #6b4c35);
   transform: scale(1.08);
-  box-shadow: 0 0 0 3px #ffffff, 0 0 0 6px color-mix(in srgb, var(--hero-secondary, #4e46b4) 22%, transparent);
+  box-shadow: 0 0 0 3px #fffdf9, 0 0 0 6px color-mix(in srgb, var(--hero-secondary, #6b4c35) 20%, transparent);
 }
 
 [data-state='upcoming'] .class-create-progress-item {
-  opacity: 0.85;
+  opacity: 0.88;
 }
 
 .class-create-progress-label {
-  font: 500 0.75rem/1.25 "Readex Pro", var(--font-sans);
-  color: #6e665e;
+  font: 500 0.76rem/1.3 "Readex Pro", var(--font-sans);
+  color: #6e5a49;
   text-align: center;
   overflow-wrap: anywhere;
 }
 
 [data-state='current'] .class-create-progress-label {
-  color: var(--hero-ink, #26221e);
+  color: var(--hero-ink, #2e2016);
   font-weight: 700;
 }
 
 [data-state='complete'] .class-create-progress-label {
-  color: #3d3731;
+  color: #3d2c1e;
   font-weight: 600;
 }
 
@@ -434,37 +434,38 @@
 }
 
 .class-create-stage h3 {
-  font: 700 0.92rem/1.4 "Readex Pro", var(--font-sans);
-  color: #26221e;
+  font: 700 0.94rem/1.4 "Readex Pro", var(--font-sans);
+  color: #2e2016;
 }
 
 .dark .class-create-stage h3 {
   color: hsl(var(--foreground));
 }
 
-/* Bouton « مستوى مخصص » / « Autre niveau » en pilule discrète */
+/* Bouton « مستوى مخصص » / « Autre niveau » en pilule chaude cohérente */
 .class-create-custom-pill {
-  background: color-mix(in srgb, var(--hero-bg, #eef0ff) 75%, #ffffff);
-  color: var(--hero-secondary, #4e46b4);
-  border: 1px solid color-mix(in srgb, var(--hero-border, #d5dbff) 80%, transparent);
+  background: #f5efe6;
+  color: #6b4c35;
+  border: 1px solid #e4d8c8;
 }
 
 .class-create-custom-pill:hover {
-  background: var(--hero-bg, #eef0ff);
+  background: #efe5d8;
+  color: #2e2016;
 }
 
-/* Sélecteur rapide « سلك آخر » élégant et unifié (sans pointillés) */
+/* Sélecteur rapide « سلك آخر » aéré et unifié avec le fond */
 .class-create-cycle-switch {
-  background: #f3efe8;
-  color: #5c544d;
-  border: 1px solid #e4dfd6;
+  background: #f5efe6;
+  color: #5c4938;
+  border: 1px solid #e5ddd2;
   text-align: center;
 }
 
 .class-create-cycle-switch:hover {
-  background: #ffffff;
-  color: #26221e;
-  border-color: var(--hero-border, #d5dbff);
+  background: #fffdf9;
+  color: #2e2016;
+  border-color: #d4c4b0;
 }
 
 .dark .class-create-cycle-switch {
@@ -475,78 +476,66 @@
 
 /* Barre segmentée des cycles (.seg) */
 .class-create-seg {
-  background: #f0ebe3;
-  padding: 0.25rem;
-  border-radius: 1.1rem;
+  background: #f2ece2;
+  padding: 0.3rem;
+  border-radius: 1.15rem;
 }
 
 .dark .class-create-seg {
   background: hsl(var(--muted));
 }
 
-/* ── Cartes de niveaux et filières cohérentes, lumineuses et élégantes (.class-create-option) ── */
+/* ── Cartes de niveaux et filières aérées, modernes et cohérentes avec le fond (#faf7f2) ── */
 .class-create-option {
-  --tile-bg: #eef0ff;
-  --tile-border: #d5dbff;
-  --tile-ink: #272262;
-  --tile-secondary: #4e46b4;
+  --tile-bg: #f6ede2;
+  --tile-border: #e4d4c3;
+  --tile-ink: #2e2016;
+  --tile-secondary: #6b4c35;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.8rem;
   width: 100%;
   min-height: 48px;
-  padding: 0.55rem 0.65rem 0.55rem 1rem;
-  border: 1.5px solid color-mix(in srgb, var(--tile-border) 68%, #e5dfd5);
-  border-radius: 1.15rem;
-  border-end-start-radius: 0.45rem;
-  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--tile-bg) 52%, #ffffff) 100%);
-  color: #26221e;
+  padding: 0.72rem 0.8rem 0.72rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--tile-border) 55%, #e5ddd2);
+  border-radius: 1.2rem;
+  border-end-start-radius: 0.48rem;
+  background: linear-gradient(135deg, #fffdf9 0%, color-mix(in srgb, var(--tile-bg) 42%, #fffdf9) 100%);
+  color: #2e2016;
   text-align: start;
-  font: 600 0.94rem/1.35 "Readex Pro", var(--font-sans);
+  font: 600 0.95rem/1.4 "Readex Pro", var(--font-sans);
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 2px 8px rgba(38, 34, 30, 0.035);
+  box-shadow: 0 3px 12px rgba(46, 32, 22, 0.04);
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 180ms ease, border-color 180ms ease, box-shadow 220ms ease;
 }
 
-/* Harmonie chromatique douce et cohérente (Indigo, Azur, Émeraude, Ambre, Rose, Sable) */
-.class-create-option:nth-child(6n + 1) {
-  --tile-bg: #eef0ff;
-  --tile-border: #cfd6ff;
-  --tile-ink: #272262;
-  --tile-secondary: #4e46b4;
+/* Palette terre & argile douce : 100% cohérente avec le fond #faf7f2 */
+.class-create-option:nth-child(4n + 1) {
+  --tile-bg: #f7ece0;
+  --tile-border: #e5d2be;
+  --tile-ink: #3d2514;
+  --tile-secondary: #7a5235;
 }
-.class-create-option:nth-child(6n + 2) {
-  --tile-bg: #e6f2fe;
-  --tile-border: #c2defb;
-  --tile-ink: #123e6b;
-  --tile-secondary: #256eb8;
+.class-create-option:nth-child(4n + 2) {
+  --tile-bg: #f5efe0;
+  --tile-border: #e2d5b7;
+  --tile-ink: #3f3112;
+  --tile-secondary: #7d6225;
 }
-.class-create-option:nth-child(6n + 3) {
-  --tile-bg: #e5f6ed;
-  --tile-border: #c0e6d2;
-  --tile-ink: #124d38;
-  --tile-secondary: #1e825f;
+.class-create-option:nth-child(4n + 3) {
+  --tile-bg: #ebf3ed;
+  --tile-border: #cde0d1;
+  --tile-ink: #1b3d2b;
+  --tile-secondary: #35694d;
 }
-.class-create-option:nth-child(6n + 4) {
-  --tile-bg: #feefe3;
-  --tile-border: #f7d3b6;
-  --tile-ink: #6c3310;
-  --tile-secondary: #c0581b;
-}
-.class-create-option:nth-child(6n + 5) {
-  --tile-bg: #fcebf2;
-  --tile-border: #f3c8db;
-  --tile-ink: #6d1b40;
-  --tile-secondary: #b8376a;
-}
-.class-create-option:nth-child(6n + 6) {
-  --tile-bg: #faf2d6;
-  --tile-border: #ebdca5;
-  --tile-ink: #594507;
-  --tile-secondary: #967315;
+.class-create-option:nth-child(4n + 4) {
+  --tile-bg: #f3ece8;
+  --tile-border: #dfd2cb;
+  --tile-ink: #382722;
+  --tile-secondary: #6e4e44;
 }
 
 .dark .class-create-option {
@@ -556,15 +545,15 @@
 }
 
 .class-create-option:hover {
-  border-color: var(--tile-secondary);
-  box-shadow: 0 5px 14px rgba(38, 34, 30, 0.07);
+  border-color: color-mix(in srgb, var(--tile-secondary) 65%, #d5c7b8);
+  box-shadow: 0 6px 18px rgba(46, 32, 22, 0.075);
 }
 
 .class-create-option[data-selected='true'] {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-bg) 82%, #ffffff) 0%, var(--tile-bg) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-bg) 78%, #fffdf9) 0%, var(--tile-bg) 100%);
   border-color: var(--tile-secondary);
   color: var(--tile-ink);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 28%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 24%, transparent);
 }
 
 .class-create-option > span:first-child {
@@ -577,11 +566,11 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2rem;
-  height: 2rem;
+  width: 2.1rem;
+  height: 2.1rem;
   color: var(--tile-secondary);
-  background: var(--tile-bg);
-  border: 1px solid color-mix(in srgb, var(--tile-border) 80%, transparent);
+  background: color-mix(in srgb, var(--tile-bg) 82%, #fffdf9);
+  border: 1px solid color-mix(in srgb, var(--tile-border) 85%, transparent);
   border-radius: 50%;
   transform: none;
   transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
@@ -590,7 +579,7 @@
 .class-create-option:hover .class-create-option-mark,
 .class-create-option[data-selected='true'] .class-create-option-mark {
   background: var(--tile-secondary);
-  color: #ffffff;
+  color: #fffdf9;
   border-color: var(--tile-secondary);
 }
 
@@ -610,13 +599,13 @@
 
 /* ── Étape 3 : Carte du bas teintée sans filets internes (.c3) et stepper (.sp) ── */
 .class-create-modal .class-create-summary {
-  border: 1px solid color-mix(in srgb, var(--hero-border) 75%, transparent) !important;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--hero-bg) 75%, #ffffff) 0%, var(--hero-bg) 100%) !important;
+  border: 1px solid color-mix(in srgb, var(--hero-border) 75%, #e5ddd2) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--hero-bg) 70%, #fffdf9) 0%, var(--hero-bg) 100%) !important;
   color: var(--hero-ink, hsl(var(--foreground))) !important;
-  border-radius: 1.3rem !important;
-  border-end-start-radius: 0.45rem !important;
-  padding: 1.1rem !important;
-  box-shadow: 0 4px 16px rgba(38, 34, 30, 0.04) !important;
+  border-radius: 1.35rem !important;
+  border-end-start-radius: 0.48rem !important;
+  padding: 1.2rem !important;
+  box-shadow: 0 5px 18px rgba(46, 32, 22, 0.045) !important;
   transition: background 0.35s ease, color 0.25s ease, border-color 0.25s ease;
 }
 

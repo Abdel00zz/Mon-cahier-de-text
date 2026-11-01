@@ -1,6 +1,10 @@
 /* Écran uniquement : le document imprimé conserve ses métriques propres.
-   Table Editor : Lato Light 300 Italic (titres), Open Sans Regular 400 Italic (paragraphes & textes),
-   Roboto Light 300 (badges, dates, pages & cellules) ; les formules KaTeX gardent leurs propres fontes. */
+   Table Editor — Duo éditorial innovant Regular 400 & Regular 400 Italic (Lato, Open Sans, Roboto) :
+   - Titres structurels (Chapitres, Sections, Blocs) : Lato / Open Sans Regular 400 (droit) avec sous-titres en Regular 400 Italic
+   - Intitulés de cours & théorèmes (Définitions, Propriétés, Évaluations, Sous-sections) : Lato / Open Sans Regular 400 Italic (style édition académique)
+   - Paragraphes, descriptions & corps de séance : Open Sans / Roboto Regular 400 (droit) + emphases & remarques en Regular 400 Italic
+   - Badges, dates, cellules & références de pages : Roboto Regular 400 (dates/badges) & Roboto Regular 400 Italic (pages/puces document)
+   Les formules KaTeX gardent leurs propres fontes mathématiques. */
 @media screen {
   :is([data-editor-root], [data-editor-table], .content-fields) {
     --font-latin-body: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro';
@@ -12,46 +16,93 @@
     --notebook-reading: 'Readex Pro', system-ui, sans-serif;
     --notebook-heading: 'Lato', 'Open Sans', 'Roboto', 'Readex Pro', system-ui, sans-serif;
     --notebook-paragraph: 'Open Sans', 'Lato', 'Roboto', 'Readex Pro', system-ui, sans-serif;
-    --notebook-meta: 'Roboto', 'Lato', 'Open Sans', 'Readex Pro', system-ui, sans-serif;
+    --notebook-meta: 'Roboto', 'Open Sans', 'Lato', 'Readex Pro', system-ui, sans-serif;
     font-family: var(--notebook-paragraph);
+    font-weight: 400;
   }
 
-  /* Titres & sous-titres du tableau : Lato Light 300 Italic (et Open Sans / Roboto) */
-  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title),
-  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-evaluation, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title) :not(.katex, .katex *) {
+  /* 1. Ancres structurelles (Chapitres, Blocs de tête, Sections A/B/C) : Lato / Open Sans Regular 400 droit */
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section),
+  [data-editor-table] :is(.editor-type-chapter, .editor-type-top, .editor-type-section) :not(.katex, .katex *) {
     font-family: var(--notebook-heading) !important;
-    font-weight: 300 !important;
+    font-weight: 400 !important;
+    font-style: normal;
+    letter-spacing: -0.01em;
+  }
+
+  /* Contraste éditorial innovant : l'intitulé secondaire d'un chapitre (après « : ») bascule en Regular 400 Italic */
+  [data-editor-table] .editor-type-chapter span > span + span:not(.katex, .katex *) {
+    font-family: var(--notebook-heading) !important;
+    font-weight: 400 !important;
+    font-style: italic;
+  }
+
+  /* 2. Titres académiques (Évaluations, Sous-sections, Sous-sous-sections, Titres d'items/théorèmes/définitions) : Regular 400 Italic */
+  [data-editor-table] :is(.editor-type-evaluation, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title),
+  [data-editor-table] :is(.editor-type-evaluation, .editor-type-subsection, .editor-type-subsubsection, .editor-type-item-title) :not(.katex, .katex *) {
+    font-family: var(--notebook-heading) !important;
+    font-weight: 400 !important;
     font-style: italic;
     letter-spacing: normal;
   }
 
-  /* Paragraphes, descriptions, listes & remarques : Regular 400 Italic Open Sans */
-  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-remark, .editor-session-note),
-  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-remark, .editor-session-note) :not(.katex, .katex *),
+  /* Le numéro de sous-section (« 1. », « a. ») reste droit en Regular 400 pour ancrer la marge */
+  [data-editor-table] :is(.editor-type-subsection, .editor-type-subsubsection) > bdi {
+    font-family: var(--notebook-meta) !important;
+    font-weight: 400 !important;
+    font-style: normal;
+  }
+
+  /* 3. Paragraphes, descriptions, listes & corps de séance : Open Sans / Roboto Regular 400 droit */
+  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-table-main),
+  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content, .editor-list, .editor-item-body, .editor-type-table-main) :not(.katex, .katex *),
   .content-fields :is(input, textarea, [role='combobox']) {
     font-family: var(--notebook-paragraph) !important;
-    font-weight: 400;
-    font-style: italic;
-    letter-spacing: normal;
-  }
-
-  /* Badges, dates, numéros de page et en-têtes/cellules du tableau : Light 300 Roboto */
-  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-doc-chip, .editor-date-value, .editor-type-page, .editor-type-table-side, .editor-type-table-main),
-  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-doc-chip, .editor-date-value, .editor-type-page, .editor-type-table-side, .editor-type-table-main) :not(.katex, .katex *) {
-    font-family: var(--notebook-meta) !important;
-    font-weight: 300 !important;
+    font-weight: 400 !important;
     font-style: normal;
     letter-spacing: normal;
   }
 
-  [data-editor-table] .editor-type-item-title { font-weight: 300; line-height: 1.55; }
-  [data-editor-table] .editor-type-description { font-weight: 400; line-height: 1.65; }
-  [data-editor-table] .editor-type-chapter { font-weight: 300; line-height: 1.4; }
-  [data-editor-table] .editor-type-badge { font-weight: 300; }
-  [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 300; }
+  /* Emphases, citations et sous-titres libres dans les descriptions : Open Sans Regular 400 Italic */
+  [data-editor-table] :is(.editor-type-description, .editor-item-description, .editor-free-content) :is(em, i, strong, b, .italic):not(.katex, .katex *) {
+    font-family: var(--notebook-paragraph) !important;
+    font-weight: 400 !important;
+    font-style: italic;
+  }
+
+  /* 4. Voix marginale (Remarques, notes de séance, références de pages & liens de sujet) : Open Sans / Lato Regular 400 Italic */
+  [data-editor-table] :is(.editor-type-remark, .editor-session-note, .editor-type-page, .editor-doc-chip, .editor-document-highlight),
+  [data-editor-table] :is(.editor-type-remark, .editor-session-note, .editor-type-page, .editor-doc-chip, .editor-document-highlight) :not(.katex, .katex *) {
+    font-family: var(--notebook-paragraph) !important;
+    font-weight: 400 !important;
+    font-style: italic;
+    letter-spacing: normal;
+  }
+
+  /* 5. Repères tabulaires (Badges, dates, colonnes latérales) : Roboto Regular 400 avec numéro en Regular 400 Italic */
+  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-date-value, .editor-type-table-side),
+  [data-editor-table] :is(.editor-type-badge, .editor-kind-badge, .editor-date-value, .editor-type-table-side) :not(.katex, .katex *) {
+    font-family: var(--notebook-meta) !important;
+    font-weight: 400 !important;
+    font-style: normal;
+    letter-spacing: normal;
+  }
+
+  [data-editor-table] .editor-kind-badge > bdi {
+    font-family: var(--notebook-heading) !important;
+    font-weight: 400 !important;
+    font-style: italic;
+  }
+
+  [data-editor-table] .editor-type-item-title { font-weight: 400; font-style: italic; line-height: 1.55; }
+  [data-editor-table] .editor-type-description { font-weight: 400; font-style: normal; line-height: 1.65; }
+  [data-editor-table] .editor-type-chapter { font-weight: 400; font-style: normal; line-height: 1.4; }
+  [data-editor-table] .editor-type-badge { font-weight: 400; font-style: normal; }
+  [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 400; }
   [data-editor-table] :is(.editor-type-remark, .editor-session-note) {
     font-size: max(.75rem, var(--editor-fs-remark));
     font-weight: 400;
+    font-style: italic;
     line-height: 1.55;
     word-break: normal;
     overflow-wrap: anywhere;
