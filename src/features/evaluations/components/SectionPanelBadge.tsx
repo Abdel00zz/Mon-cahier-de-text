@@ -46,62 +46,41 @@ export function resolveSectionPanelVariant(kindType: string, index: number): {
   return { tone: TONE_CYCLE[slot], glyph: GLYPH_CYCLE[slot] };
 }
 
-/** Icône du panneau de section : loupe, crayon, maison ou livre. */
+/** Icône du panneau de section : loupe, crayon, maison ou livre (.ci). */
 export const SectionPanelGlyph: React.FC<{ glyph: SectionPanelGlyphKind }> = ({ glyph }) => (
   <span className="ev-panel-glyph" data-glyph={glyph} aria-hidden="true">
     {glyph === 'loupe' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="6.5" />
         <path d="m20 20-4.35-4.35" />
       </svg>
     )}
     {glyph === 'crayon' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
         <path d="m15 5 4 4" />
       </svg>
     )}
     {glyph === 'maison' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 10.5 12 3l9 7.5" />
         <path d="M5 9.5V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.5" />
         <path d="M9.5 21v-6h5v6" />
       </svg>
     )}
     {glyph === 'livre' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20" />
       </svg>
     )}
   </span>
 );
 
-/** Vague décorative soulignant les titres en Lalezar. */
-export const HeroWavyUnderline: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    viewBox="0 0 120 10"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    className={className ?? 'course-hero-wave'}
-  >
-    <path
-      d="M2 6 C 16 1.5, 28 9.5, 42 5.5 C 56 1.5, 68 9.5, 82 5.5 C 96 1.5, 108 9, 118 5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.6"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+/** Conservé pour compatibilité : supprimé dans le style espace de travail serein. */
+export const HeroWavyUnderline: React.FC<{ className?: string }> = () => null;
 
-/** Formes arrondies douces en arrière-plan du bandeau héros. */
-export const HeroRoundedShapes: React.FC<{ className?: string }> = ({ className }) => (
-  <span className={className ?? 'course-hero-shapes'} aria-hidden="true">
-    <span className="course-hero-shape course-hero-shape--one" />
-    <span className="course-hero-shape course-hero-shape--two" />
-    <span className="course-hero-shape course-hero-shape--three" />
-  </span>
-);
+/** Conservé pour compatibilité : supprimé dans le style espace de travail serein. */
+export const HeroRoundedShapes: React.FC<{ className?: string }> = () => null;
 
 /** Découpe une date ISO YYYY-MM-DD en { day: '14', monthYear: '09/2026' } pour la petite feuille de calendrier. */
 export function parseCalendarSheetDate(iso: string, endDate?: string): { day: string; monthYear: string } | null {
@@ -124,7 +103,7 @@ export function parseCalendarSheetDate(iso: string, endDate?: string): { day: st
   };
 }
 
-/** Petite feuille de calendrier : le jour en grand, puis « 09/2026 » dessous. */
+/** Petite feuille de calendrier (.lf) : le jour en grand, puis « 09/2026 » dessous. */
 export const CalendarSheetVisual: React.FC<{ iso: string; endDate?: string }> = ({ iso, endDate }) => {
   const parsed = parseCalendarSheetDate(iso, endDate);
   if (!parsed) return null;
@@ -136,17 +115,7 @@ export const CalendarSheetVisual: React.FC<{ iso: string; endDate?: string }> = 
   );
 };
 
-/** Fin trait courbe en pointillés reliant la correction du devoir au devoir. */
+/** Connecteur coudé arrondi continu (.tk.ch::before) reliant la correction du devoir au devoir. */
 export const CorrectionCurveConnector: React.FC = () => (
-  <span className="ev-correction-connector" aria-hidden="true">
-    <svg viewBox="0 0 28 36" fill="none">
-      <path
-        d="M 14 0 L 14 14 Q 14 26 26 26"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeDasharray="3.2 3.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  </span>
+  <span className="ev-correction-connector" aria-hidden="true" />
 );

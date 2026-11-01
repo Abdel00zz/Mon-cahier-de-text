@@ -7,12 +7,12 @@ test('a saved colour stays stable beside another class of the same colour', () =
   const second = pickDepartmentPalette('coral', 'Physique', 1, first.key);
   assert.equal(first.key, 'peach');
   assert.equal(second.key, first.key);
-  assert.equal(second.palette.bg, '#fcefdf');
+  assert.equal(second.palette.bg, '#fdeede');
 });
 
 test('the six selectable class colours each resolve to a distinct paper palette', () => {
   const colours = ['coral', 'lavender', 'mint', 'sky', 'sand', 'rose'];
   const palettes = colours.map((colour, index) => pickDepartmentPalette(colour, 'Physique', index));
   assert.equal(new Set(palettes.map(item => item.key)).size, 6);
-  assert.deepEqual(palettes.map(item => item.palette.bg), ['#fcefdf', '#eeecfa', '#e7f4ec', '#e9f3fa', '#f9f2df', '#fae9ee']);
+  assert.deepEqual(palettes.map(item => item.palette.bg), ['#fdeede', '#ece9f7', '#e6f3e9', '#e0eefa', '#f7f0d4', '#fbe6ee']);
 });

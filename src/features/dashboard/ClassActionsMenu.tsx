@@ -83,6 +83,7 @@ export function ClassActionsMenu({
 
     const editLabel = locale === 'ar' ? 'تعديل' : t('dashboard.classSettings');
     const deleteLabel = locale === 'ar' ? 'حذف' : t('dashboard.delete');
+    const cancelLabel = locale === 'ar' ? 'إلغاء' : locale === 'en' ? 'Cancel' : 'Annuler';
 
     return (
         <DropdownMenu dir={isRtl ? 'rtl' : 'ltr'} open={isOpen} onOpenChange={handleOpenChange}>
@@ -101,11 +102,12 @@ export function ClassActionsMenu({
                 align={isRtl ? 'start' : 'end'}
                 sideOffset={6}
                 style={miniCardStyle}
-                className="class-actions-menu w-[16.5rem] max-w-[calc(100vw-1.5rem)] rounded-[24px] border border-border/80 bg-popover/98 p-2.5 shadow-2xl backdrop-blur-xl"
+                className="class-actions-menu w-[21rem] max-w-[calc(100vw-1.5rem)]"
             >
-                {/* Mini-carte du cours en couleur (héros coloré + formes arrondies + titre Lalezar souligné d'une vague + étiquette inclinée) */}
+                {/* Bandeau dégradé doux (.hero.qh) avec poignée, titre Readex Pro et sous-titre */}
                 <div className="class-menu-mini-card">
                     <HeroRoundedShapes />
+                    <div className="class-menu-grab" aria-hidden="true" />
                     <div className="class-menu-mini-card__body">
                         <div className="class-menu-mini-card__title-wrap">
                             <span className="class-menu-mini-card__title" dir="auto">{name}</span>
@@ -122,13 +124,13 @@ export function ClassActionsMenu({
                             onSelect={() => open('all')}
                             className="class-menu-eval-pill"
                         >
-                            <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2.2]" aria-hidden="true" />
+                            <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
                             <span className="truncate">{t('dashboard.openEvaluations')}</span>
                         </DropdownMenuItem>
                     )}
                 </div>
 
-                {/* Deux grandes tuiles rondes « تعديل » et « حذف » à la place d'une liste */}
+                {/* Deux cartes blanches asymétriques « تعديل » et « حذف » (.qa) */}
                 <div className="class-menu-round-tiles">
                     <DropdownMenuItem
                         onSelect={() => {
@@ -139,7 +141,7 @@ export function ClassActionsMenu({
                         className="class-menu-round-tile class-menu-round-tile--edit"
                     >
                         <span className="class-menu-round-tile__icon" aria-hidden="true">
-                            <Pencil className="h-5 w-5 stroke-[2.2]" />
+                            <Pencil className="h-5 w-5 stroke-[1.8]" />
                         </span>
                         <span className="class-menu-round-tile__label">{editLabel}</span>
                     </DropdownMenuItem>
@@ -161,6 +163,14 @@ export function ClassActionsMenu({
                         </DropdownMenuItem>
                     )}
                 </div>
+
+                <button
+                    type="button"
+                    onClick={() => setActiveMenu(null)}
+                    className="class-menu-cancel"
+                >
+                    {cancelLabel}
+                </button>
             </DropdownMenuContent>
         </DropdownMenu>
     );

@@ -6,12 +6,12 @@ export interface DepartmentPalette {
 }
 
 const DEPARTMENT_PALETTES = {
-  peach: { bg: '#fcefdf', border: '#f0cfb4', title: '#69381c', secondary: '#825034' },
-  lavender: { bg: '#eeecfa', border: '#d3cef0', title: '#362e6e', secondary: '#595092' },
-  green: { bg: '#e7f4ec', border: '#c1e2ce', title: '#1f5438', secondary: '#356b4c' },
-  sky: { bg: '#e9f3fa', border: '#c3dcf0', title: '#1f4b6e', secondary: '#396b90' },
-  sand: { bg: '#f9f2df', border: '#e6d5ab', title: '#634918', secondary: '#765c27' },
-  rose: { bg: '#fae9ee', border: '#eec7d3', title: '#6b273a', secondary: '#90475b' },
+  peach: { bg: '#fdeede', border: '#f6d9bd', title: '#6b3a12', secondary: '#a8642a' },
+  lavender: { bg: '#ece9f7', border: '#d9d4ee', title: '#2e2766', secondary: '#5d55a3' },
+  green: { bg: '#e6f3e9', border: '#cfe6d5', title: '#14503a', secondary: '#3f7f63' },
+  sky: { bg: '#e0eefa', border: '#c6dff2', title: '#0f3f6b', secondary: '#3a78a8' },
+  sand: { bg: '#f7f0d4', border: '#ebe0ad', title: '#5c4a05', secondary: '#8f7a1c' },
+  rose: { bg: '#fbe6ee', border: '#f2cddb', title: '#6e1c3e', secondary: '#a8486f' },
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
