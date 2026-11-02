@@ -603,7 +603,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
               {step === 'cycle' && hasCycleChoice && (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">{copy.cycle}</h3>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2.5">
                     {cycleOptions.map(item => (
                       <ChoiceCard key={item} selected={item === cycle} onClick={() => chooseCycle(item)}>
                         {copy.cycleLabels[item]}
