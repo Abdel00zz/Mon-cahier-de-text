@@ -4,8 +4,6 @@ import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { Modal } from '@/components/ui/modal';
-import { pickDepartmentPalette } from '@/features/dashboard/departmentPalette';
-import { HeroRoundedShapes, HeroWavyUnderline } from './components/SectionPanelBadge';
 import './evaluationReference.css';
 import { DevoirsView } from './DevoirsView';
 
@@ -41,7 +39,6 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     const className = formatLocalizedClassDisplayName(classInfo.name, locale);
     /* Une seule matière ne se distingue de rien : pas de pastille redondante. */
     const showsSubjectLabels = useShowsSubjectLabels();
-    const { key: paletteKey } = pickDepartmentPalette(classInfo.color, classInfo.subject, 0);
 
     return (
         <Modal
@@ -56,6 +53,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             className="claude-sheet-dialog claude-sheet-dialog--eval"
             headerClassName="border-b-0 px-5 pt-3 pb-2 bg-transparent"
             bodyClassName="px-4 py-2 sm:px-6 sm:py-3"
+            description={className}
             title={
                 <div className="claude-sheet-header p-0">
                     <div className="flex-1 min-w-0">

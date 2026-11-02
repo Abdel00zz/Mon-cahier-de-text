@@ -8,7 +8,7 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
 import { pickDepartmentPalette, type DepartmentPalette } from './departmentPalette';
 
-const CLASS_MENU_DETENTS = [0.38, 0.52];
+const CLASS_MENU_DETENTS: [number, number] = [0.38, 0.48];
 
 /** Registre global Zustand assurant qu'un seul menu de classe ne peut être ouvert à la fois */
 const useActiveClassMenuStore = create<{
@@ -25,7 +25,7 @@ export function ClassActionsMenu({
     onConfigure,
     onDelete,
     onOpenEvaluations,
-    tier,
+    tier: _tier,
     subject,
     color,
     palette,
@@ -108,12 +108,12 @@ export function ClassActionsMenu({
                     swipeToDismiss
                     swipeFromBody
                     mobilePresentation="sheet"
-                    mobileDetents={[0.38, 0.48]}
+                    mobileDetents={CLASS_MENU_DETENTS}
                     maxWidth="sm"
                     className="claude-sheet-dialog"
                     bodyClassName="p-0 pb-4"
                 >
-                    <div className="flex flex-col text-start pt-3">
+                    <div className="flex flex-col text-start pt-3" style={sheetStyle}>
                         {/* Liste groupée iOS 3 lignes (56px min chacune) */}
                         <div className="claude-grouped-list my-1">
                             {onOpenEvaluations && (

@@ -140,11 +140,11 @@ test('ignoring a content suggestion falls back to timetable or notebook problems
   const readyGuidance = resolveClassGuidance(classes, allScheduled, undefined, { readLessons: () => lessons });
   assert.equal(readyGuidance.step, 'ready');
 
-  // Both Arabic and French messages contain "bravo" / "برافو"
+  // Both Arabic and French messages celebrate organized notebooks
   const msgAr = classGuidanceMessage(readyGuidance, 'ar');
   const msgFr = classGuidanceMessage(readyGuidance, 'fr');
-  assert.match(msgAr.detail, /برافو/);
-  assert.match(msgFr.detail, /bravo/i);
+  assert.match(msgAr.detail, /منظم|ممتاز/);
+  assert.match(msgFr.detail, /organis/i);
 });
 
 test('newly created classes wait a few hours before proposing content, and rich notebooks are not spammed', () => {

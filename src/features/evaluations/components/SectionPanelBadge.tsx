@@ -76,12 +76,6 @@ export const SectionPanelGlyph: React.FC<{ glyph: SectionPanelGlyphKind }> = ({ 
   </span>
 );
 
-/** Conservé pour compatibilité : supprimé dans le style espace de travail serein. */
-export const HeroWavyUnderline: React.FC<{ className?: string }> = () => null;
-
-/** Conservé pour compatibilité : supprimé dans le style espace de travail serein. */
-export const HeroRoundedShapes: React.FC<{ className?: string }> = () => null;
-
 /** Découpe une date ISO YYYY-MM-DD en { day: '14', monthYear: '09/2026' } pour la petite feuille de calendrier. */
 export function parseCalendarSheetDate(iso: string, endDate?: string): { day: string; monthYear: string } | null {
   if (!iso) return null;

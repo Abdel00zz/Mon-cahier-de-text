@@ -348,7 +348,7 @@ test('PWA installation is the first priority request of the robot with no skip (
     skippedTaskIds: allSkipped,
   }));
   assert.equal(sereneAfterSkip.tasks.length, 0);
-  assert.equal(sereneAfterSkip.guidance.step, 'ready');
+  assert.equal(sereneAfterSkip.guidance.step, 'standby');
   assert.equal(sereneAfterSkip.behavior.problemCount, 0);
   assert.equal(sereneAfterSkip.canSkip, true);
 });

@@ -211,13 +211,24 @@ export interface SessionBlock {
     hours: number;
 }
 
-/** Actual teaching time. Adjacent slots and contiguous 2-hour blocks form one unified pedagogical session. */
+/** Actual teaching time. Unlike pedagogical groups, a five-minute break
+ * ends the active interval; adjacent slots with no gap still form one interval. */
 export const getDayTeachingBlocks = (
     timetable: TimetableEntry[] | undefined,
     day: number,
     clock?: Pick<TimetableClockPolicy, 'offsetMinutes'> | number | null,
 ): SessionBlock[] => {
-    return getDaySessionBlocks(timetable, day, clock);
+    const slots = getHourSlots(clock);
+    const result: SessionBlock[] = [];
+    for (const entry of [...(timetable ?? [])].filter(e => e.day === day).sort((a, b) => a.slot - b.slot)) {
+        const slot = slots.find(s => s.index === entry.slot);
+        if (!slot) continue;
+        if (result.some(b => b.classId === entry.classId && b.startMin <= slot.startMin && b.endMin >= slot.endMin)) continue;
+        const previous = result.find(b => b.classId === entry.classId && b.endMin === slot.startMin);
+        if (previous) { previous.endMin = slot.endMin; previous.hours++; }
+        else result.push({ classId: entry.classId, day, startMin: slot.startMin, endMin: slot.endMin, hours: 1 });
+    }
+    return result;
 };
 
 /**

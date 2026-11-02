@@ -1,16 +1,13 @@
 import { type FC, useEffect, useMemo, useRef, useState } from 'react';
 import { DayPicker, type DayButtonProps } from 'react-day-picker';
-import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
 import { dateTimeFormat } from '@/lib/formatters';
 import { Modal } from '@/components/ui/modal';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
 import type { PedagogicalEvent } from '@/types';
 import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
-import { cn } from '@/lib/utils';
 import './dateCalendar.css';
 
 export interface EventDateModalProps {

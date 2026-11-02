@@ -11,13 +11,10 @@ import { ClassCreationProgress } from './ClassCreationProgress';
 import type { ClassRoster } from '@/types';
 import type { ClassInfo, Cycle } from '@/types';
 import { Modal } from '@/components/ui/modal';
-import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Plus, Users } from '@/components/ui/icons';
-import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
-import { AnimatedTrashButton } from '@/components/ui/AnimatedTrashButton';
+import { Check } from '@/components/ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -27,7 +24,6 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
 import type { ClassIdentityDraft } from '@/types';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
-import { HeroRoundedShapes, HeroWavyUnderline } from '@/features/evaluations/components/SectionPanelBadge';
 import './createClassModal.css';
 
 interface CreateClassModalProps {
@@ -363,7 +359,6 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const editingLevelOptions = CLASS_LEVELS_BY_CYCLE[cycle] ?? [];
   const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.group;
 
-  const activeColorTone = classColor || 'coral';
   const [deletePending, setDeletePending] = useState(false);
 
   const groupControl = (
@@ -483,7 +478,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         maxWidth="sm"
         mobilePresentation="sheet"
         mobileDetents={CLASS_MODAL_DETENTS}
-        className="claude-sheet-dialog"
+        className="class-create-modal sm:max-w-md sm:rounded-2xl"
         headerClassName="border-b-0 px-5 pt-3 pb-1 bg-transparent"
         bodyClassName="px-5 py-3 space-y-4"
         footerClassName="border-t-0 px-5 py-3.5 bg-transparent"

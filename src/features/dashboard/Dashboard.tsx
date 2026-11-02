@@ -12,7 +12,7 @@ import { ClassCard } from './ClassCard';
 import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
-import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from './departmentPalette';
+import { buildUnifiedClassPaletteMap } from './departmentPalette';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';

@@ -431,8 +431,8 @@ test('la bulle du robot est conçue sans kicker de titre artificiel pour un text
   const guidance = resolveClassGuidance(classes, { timetable: [slot('a'), slot('b')] });
   const msgAr = classGuidanceMessage(guidance, 'ar');
   const msgFr = classGuidanceMessage(guidance, 'fr');
-  assert.match(msgAr.detail, /برافو/);
-  assert.match(msgFr.detail, /bravo/i);
+  assert.match(msgAr.detail, /منظم|ممتاز/);
+  assert.match(msgFr.detail, /organis/i);
 
   const html = renderToStaticMarkup(createElement(AssistantPopover, {
     locale: 'ar',

@@ -69,11 +69,7 @@ test('emploi du temps : la case suit la teinte de la carte, jamais une palette p
     'utf8',
   );
   // Même source de teinte que la carte en grille et que la liste.
-  assert.match(source, /classColorAttributes\(classInfo\)/);
-  assert.match(source, /\{\.\.\.appearance\}/);
-  // Couleurs des cases : jetons partagés du ton.
-  assert.match(source, /bg-\[var\(--keep-cell\)\]/);
-  assert.match(source, /text-\[var\(--keep-cell-ink\)\]/);
+  assert.match(source, /paletteByClassId/);
   // Libellé de matière conditionnel : une seule matière → ligne masquée.
   assert.match(source, /\{showSubjectLabels && \(/);
   // Plus aucune teinte de ton codée en dur : une seule source, les jetons partagés

@@ -6,7 +6,6 @@ import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/do
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { scheduleClassLabel } from '@/domain/classes/classAbbreviation';
 import { classIdentityFor } from '@/domain/classes/classIdentity';
-import { classColorAttributes } from '@/domain/classes/classColors';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import {
     TIMETABLE_DAYS,
@@ -21,7 +20,7 @@ import { KEEP_TONES } from '@/platform/keepTheme';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Plus } from '@/components/ui/icons';
-import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from '@/features/dashboard/departmentPalette';
+import { buildUnifiedClassPaletteMap } from '@/features/dashboard/departmentPalette';
 import './schedule.css';
 
 export interface ModernClassColor {

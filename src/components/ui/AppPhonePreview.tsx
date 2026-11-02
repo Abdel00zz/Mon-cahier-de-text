@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { AppLocale } from '@/types';
-import { BookOpen, CalendarCheck, CheckCircle2, Clock, Sparkles, Users, Settings, CircleHelp } from './icons';
+import { BookOpen, CalendarCheck, CircleCheck, Clock, Sparkles, Users, Settings, CircleHelp } from './icons';
 import './app-phone-preview.css';
 
 interface PreviewClass {
@@ -113,7 +113,7 @@ export function AppPhonePreview({ locale, compact = false, className }: {
         {/* Floating pedagogical badge — Top */}
         <div className="phone-preview__float phone-preview__float--top" aria-hidden="true">
           <span className="phone-preview__float-icon phone-preview__float-icon--emerald">
-            <CheckCircle2 className="size-3.5" />
+            <CircleCheck className="size-3.5" />
           </span>
           <div className="phone-preview__float-text">
             <strong>{ar ? 'دفتر النصوص محيّن' : 'Cahier à jour'}</strong>

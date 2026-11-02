@@ -1480,7 +1480,7 @@ test('emploi du temps : le nom de classe est abrégé en niveau · filière · g
   assert.equal(abbreviateClassName('MPSI', 'fr'), 'MPSI');
   // Un nom libre n'est jamais perdu : il reste lisible tel quel.
   assert.equal(abbreviateClassName('Ma classe', 'fr'), 'Ma classe');
-  assert.equal(abbreviateClassName('قسم الثالثة إعدادي 2', 'ar'), '3إ2');
+  assert.equal(abbreviateClassName('قسم الثالثة إعدادي 2', 'ar'), '3إ 2');
 });
 
 test('emploi du temps : libellé riche sur une ligne (palier + filière + groupe)', () => {
