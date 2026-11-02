@@ -22,7 +22,7 @@ const COPY = {
     'notebook-unavailable': { title: 'Vérifions ce cahier', detail: 'Je n’arrive pas à lire ce cahier. On essaie de l’ouvrir ?', context: 'Lecture indisponible', action: 'Ouvrir le cahier' },
     open: 'Ouvrir le compagnon',
     close: 'Fermer le message',
-    skip: 'Passer',
+    skip: 'Ignorer',
     attention: 'Action requise',
     'install-app': {
       title: 'Installer l’application',
@@ -81,9 +81,15 @@ const COPY = {
       action: 'Gérer les élèves',
       context: 'Élèves',
     },
+    standby: {
+      title: 'Rappels mis de côté',
+      detail: 'Vous avez choisi d’ignorer ce rappel. Je reste discret et à votre disposition.',
+      action: undefined,
+      context: 'En veille',
+    },
     ready: {
       title: 'Tout est en ordre',
-      detail: 'Aucun point à signaler dans les vérifications disponibles. Bravo pour le suivi de vos cahiers !',
+      detail: 'Vos cahiers de textes et votre emploi du temps sont parfaitement organisés.',
       action: 'Ouvrir le cahier',
       context: 'Prêt',
     },
@@ -93,7 +99,7 @@ const COPY = {
     'notebook-unavailable': { title: 'معاينة الدفتر', detail: 'تعذرت قراءة هذا الدفتر تلقائياً. هل نحاول فتحه معاً؟', context: 'القراءة غير متاحة', action: 'فتح الدفتر' },
     open: 'فتح الرفيق',
     close: 'إغلاق الرسالة',
-    skip: 'تخطي',
+    skip: 'تجاهل',
     attention: 'تنبيه تربوي',
     'install-app': {
       title: 'تثبيت التطبيق',
@@ -152,9 +158,15 @@ const COPY = {
       action: 'تنظيم التلاميذ',
       context: 'التلاميذ',
     },
+    standby: {
+      title: 'التنبيهات مؤجلة',
+      detail: 'تم تجاهل التنبيه بناءً على اختيارك. سأبقى في وضع الانتظار الهادئ دون إزعاج.',
+      action: undefined,
+      context: 'في الانتظار',
+    },
     ready: {
       title: 'كل شيء على ما يرام',
-      detail: 'لم يظهر ما يستدعي المراجعة في الفحوص المتاحة. برافو على متابعة دفاترك!',
+      detail: 'دفاتر نصوصك واستعمال زمنك في حالة ممتازة ومضبوطة بدقة.',
       action: 'فتح الدفتر',
       context: 'جاهز',
     },
@@ -164,7 +176,7 @@ const COPY = {
     'notebook-unavailable': { title: 'Let’s check this notebook', detail: 'I couldn’t read this notebook. Shall we try opening it?', context: 'Reading unavailable', action: 'Open notebook' },
     open: 'Open companion',
     close: 'Close message',
-    skip: 'Skip',
+    skip: 'Ignore',
     attention: 'Action needed',
     'install-app': {
       title: 'Install application',
@@ -223,9 +235,15 @@ const COPY = {
       action: 'Manage roster',
       context: 'Students',
     },
+    standby: {
+      title: 'Standing by',
+      detail: 'You have skipped this reminder. Standing by quietly whenever you need.',
+      action: undefined,
+      context: 'Standby',
+    },
     ready: {
       title: 'All set and ready',
-      detail: 'Nothing to flag in the available checks. Bravo for keeping track of your notebooks!',
+      detail: 'Your lesson notebooks and schedule are fully organized.',
       action: 'Open notebook',
       context: 'Ready',
     },
@@ -265,6 +283,15 @@ export function classGuidanceMessage(
   options?: { askReadyContent?: boolean },
 ): CompanionMessage {
   if (guidance.step === 'notebook-followup') return notebookFollowupMessage(guidance, locale);
+  if (guidance.step === 'standby') {
+    const base = COPY[locale].standby;
+    return {
+      id: 'standby',
+      title: base.title,
+      detail: base.detail,
+      context: base.context,
+    };
+  }
   const base = COPY[locale][guidance.step];
   let context: string | undefined = 'context' in base ? base.context : undefined;
   let detail: string = base.detail;
@@ -302,9 +329,9 @@ export function classGuidanceMessage(
       : (locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
         : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
           : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`);
-    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Aucun point à signaler pour ${name} dans les vérifications disponibles. Bravo pour le suivi de votre cahier !`
-      : locale === 'ar' ? `لم يظهر ما يستدعي المراجعة لقسم ${name} في الفحوص المتاحة. برافو على متابعة دفترك!`
-        : `Nothing to flag for ${name} in the available checks. Bravo for keeping track of your notebook!`;
+    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Vos séances et le cahier de ${name} sont parfaitement organisés.`
+      : locale === 'ar' ? `دفتر قسم ${name} واستعمال زمنه منظم ومضبوط بشكل ممتاز.`
+        : `Lessons and notebook for ${name} are fully organized.`;
     else detail = `${locale === 'ar' ? `في دفتر قسم ${name}، ` : locale === 'en' ? `For ${name}: ` : `Dans le cahier de ${name} : `}${detail}`;
     detailEmphasis = name;
   }

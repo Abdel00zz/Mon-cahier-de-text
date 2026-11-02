@@ -38,6 +38,10 @@ export function resolvePedagogicalBehavior(guidance: ClassGuidance): Pedagogical
     problemCount: 0, severity: 'minor', mood: 'attentive', robotAction: 'waiting',
     antennaFlash: false, headRoundness: 90, autoSleepMs: 30000,
   };
+  if (guidance.step === 'standby') return {
+    problemCount: 0, severity: 'serene', mood: 'attentive', robotAction: 'waiting',
+    antennaFlash: false, headRoundness: 95, autoSleepMs: 25000,
+  };
   if (guidance.step === 'ready' || guidance.step === 'next-session') {
     return {
       problemCount: 0,

@@ -45,7 +45,7 @@ export type CompanionAction =
   | { type: 'install-app' | 'retry-sync' | 'retry-inbox' | 'read-reply' | 'request-content' | 'none' }
   | { type: 'enable-notifications'; mode: CompanionNotificationPrompt };
 
-function selectAction(decision: CompanionDecision, fallback: GuidanceAction, checking: boolean): CompanionAction {
+function selectAction(decision: CompanionDecision, fallback: GuidanceAction, checking: boolean, isStandby = false): CompanionAction {
   switch (decision.kind) {
     case 'install-app': return { type: 'install-app' };
     case 'enable-notifications': return { type: 'enable-notifications', mode: decision.mode };
@@ -53,7 +53,7 @@ function selectAction(decision: CompanionDecision, fallback: GuidanceAction, che
     case 'inbox-error': return { type: 'retry-inbox' };
     case 'reply': return { type: 'read-reply' };
     case 'offer': return { type: 'request-content' };
-    case 'guidance': return checking ? { type: 'none' } : fallback;
+    case 'guidance': return checking || isStandby ? { type: 'none' } : fallback;
     default: return { type: 'none' };
   }
 }
@@ -85,7 +85,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       : tasks.find(task => task.id === selectedTaskId) ?? tasks[0];
     const allTasksSkipped = rawTasks.length > 0 && tasks.length === 0;
     const skippedFallback = diagnosis.targetClass
-      ? { step: 'ready' as const, classId: diagnosis.targetClass.id, className: diagnosis.targetClass.name }
+      ? { step: 'standby' as const, classId: diagnosis.targetClass.id, className: diagnosis.targetClass.name, skippedCount: rawTasks.length }
       : { step: 'create' as const };
     let guidance: import('./classGuidance').ClassGuidance = selectedTask?.guidance ?? (allTasksSkipped ? skippedFallback : guidanceFromDiagnosis(diagnosis));
     if (guidance.step === 'ready' && !allTasksSkipped && input.scheduleStatusByClassId) {
@@ -189,7 +189,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       canSkip,
       skipKey,
       taskPosition: index + 1,
-      action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking'),
+      action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking', guidance.step === 'standby'),
       behavior: { ...behavior, problemCount: attentionCount }, nextTaskId,
       attentionKey: isInstallApp ? 'install-app'
         : isEnableNotifications ? `enable-notifications:${decision.mode}`

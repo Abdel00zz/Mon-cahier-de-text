@@ -244,15 +244,24 @@ export function ClassAssistant({
       secondaryActionLabel={
         decision.kind === 'enable-notifications' && decision.mode === 'activate' && onOpenNotifications
           ? labels['enable-notifications'].settingsLink
+          : brain.guidance.step === 'standby'
+          ? (locale === 'ar' ? 'استعادة التنبيهات' : locale === 'en' ? 'Restore reminders' : 'Réactiver les rappels')
           : undefined
       }
       onSecondaryAction={
         decision.kind === 'enable-notifications' && decision.mode === 'activate'
           ? onOpenNotifications
+          : brain.guidance.step === 'standby'
+          ? () => {
+              setSkippedTasks(new Set());
+              setSkippedMessageKeys(new Set());
+              setIgnoredClasses(new Set());
+              setSelectedTaskId(undefined);
+            }
           : undefined
       }
-      dismissLabel={brain.canSkip ? labels.skip : undefined}
-      onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
+      dismissLabel={brain.canSkip && brain.guidance.step !== 'standby' ? labels.skip : undefined}
+      onDismiss={brain.canSkip && brain.guidance.step !== 'standby' ? handleSkipCurrentMessage : undefined}
       keepOpenOnDismiss={hasMoreTasksAfterSkip}
       nextTaskLabel={brain.nextTaskId ? `${locale === 'ar' ? 'النقطة التالية' : locale === 'en' ? 'Next point' : 'Point suivant'} · ${new Intl.NumberFormat(locale).format(brain.taskPosition)}/${new Intl.NumberFormat(locale).format(brain.tasks.length)}` : undefined}
       onNextTask={brain.nextTaskId ? () => setSelectedTaskId(brain.nextTaskId) : undefined}

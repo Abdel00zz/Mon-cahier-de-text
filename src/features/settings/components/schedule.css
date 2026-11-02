@@ -27,10 +27,9 @@
 .schedule-tab .schedule-grid__day-heading, .schedule-tab .schedule-grid__hour { height: 46px; background: hsl(var(--muted) / .38); font-size: 12px; font-weight: 650; }
 .schedule-tab .schedule-grid__day-heading { background: hsl(var(--muted)); }
 .schedule-tab .schedule-grid__day { font-size: 13px; font-weight: 650; background: hsl(var(--card)); }
-.schedule-hour-label { display: inline-flex; align-items: center; justify-content: center; gap: 1px; direction: ltr; white-space: nowrap; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .schedule-cell--empty { background: hsl(var(--background) / .42); }
-.schedule-cell--assigned select { background: color-mix(in srgb, var(--keep-cell) 62%, hsl(var(--card))); }
-.dark .schedule-cell--assigned select { background: var(--keep-cell); }
+.schedule-cell--assigned select { background: transparent; }
+.dark .schedule-cell--assigned select { background: transparent; }
 .schedule-cell__add { color: hsl(var(--muted-foreground) / .55); }
 .schedule-cell__label { font-size: 13px; }
 @media (hover: hover) {
@@ -69,12 +68,3 @@
 @media (prefers-reduced-motion: reduce) {
   .schedule-tab *, .schedule-tab *::before, .schedule-tab *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
-
-/* Match each saved class tone to its warm-paper card in the light theme. */
-:root:not(.dark) .schedule-cell[data-keep-tone='coral'] { --keep-cell: #fcefdf; --keep-cell-ink: #69381c; }
-:root:not(.dark) .schedule-cell:is([data-keep-tone='lavender'], [data-keep-tone='indigo']) { --keep-cell: #eeecfa; --keep-cell-ink: #362e6e; }
-:root:not(.dark) .schedule-cell:is([data-keep-tone='mint'], [data-keep-tone='lime']) { --keep-cell: #e7f4ec; --keep-cell-ink: #1f5438; }
-:root:not(.dark) .schedule-cell[data-keep-tone='sky'] { --keep-cell: #e9f3fa; --keep-cell-ink: #1f4b6e; }
-:root:not(.dark) .schedule-cell[data-keep-tone='sand'] { --keep-cell: #f9f2df; --keep-cell-ink: #634918; }
-:root:not(.dark) .schedule-cell[data-keep-tone='rose'] { --keep-cell: #fae9ee; --keep-cell-ink: #6b273a; }
-:root:not(.dark) .schedule-cell--assigned select { background: var(--keep-cell); }
