@@ -274,19 +274,19 @@
   display: none !important;
 }
 
-/* ── Circuit d'étapes inspiré de Google One, aéré et harmonisé avec le fond (.class-create-progress) ── */
+/* ── Circuit d'étapes épuré sans zone cadre (.class-create-progress) ── */
 .class-create-progress {
   position: relative;
-  padding: 0.8rem 1rem 0.7rem;
-  border-radius: 1.25rem;
-  background: #fffdf9d9;
-  border: 1px solid color-mix(in srgb, var(--hero-border, #e4d3c1) 60%, #e5ddd2);
-  box-shadow: 0 4px 14px rgba(46, 32, 22, 0.035);
+  padding: 0.35rem 0.25rem 0.2rem;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .dark .class-create-progress {
-  background: hsl(var(--card) / 0.78);
-  border-color: hsl(var(--border));
+  background: transparent;
+  border-color: transparent;
 }
 
 .class-create-progress ol {
@@ -296,15 +296,15 @@
   gap: 0.35rem;
 }
 
-/* Ligne de circuit continue en arrière-plan (piste Google One) */
+/* Ligne de circuit continue en arrière-plan */
 .class-create-progress ol::before {
   content: '';
   position: absolute;
-  top: 1.1rem;
-  inset-inline: 16.5%;
-  height: 2.5px;
+  top: 0.85rem;
+  inset-inline: 18%;
+  height: 1.5px;
   border-radius: 999px;
-  background: #e5ddd2;
+  background: color-mix(in srgb, var(--hero-border, #e4d3c1) 75%, #e5ddd2);
   z-index: 0;
 }
 
@@ -316,10 +316,10 @@
 .class-create-progress ol::after {
   content: '';
   position: absolute;
-  top: 1.1rem;
-  inset-inline-start: 16.5%;
-  width: calc(67% * var(--step-progress, 0));
-  height: 2.5px;
+  top: 0.85rem;
+  inset-inline-start: 18%;
+  width: calc(64% * var(--step-progress, 0));
+  height: 2px;
   border-radius: 999px;
   background: var(--hero-secondary, #6b4c35);
   z-index: 0;
@@ -343,13 +343,13 @@
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 0.38rem;
-  min-height: max(44px, 2.85rem);
+  gap: 0.28rem;
+  min-height: max(44px, 2.65rem);
   width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #6e5a49;
+  color: #7a6858;
   box-shadow: none;
 }
 
@@ -357,26 +357,28 @@
   cursor: pointer;
 }
 
+/* Numéro d'étape libre sans cadre ni boîte englobante */
 .class-create-progress-number {
-  display: grid;
+  display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 50%;
-  background: #fffdf9;
-  color: #6e5a49;
-  border: 1.5px solid #dcd2c5;
-  font: 700 0.84rem/1 "Readex Pro", var(--font-sans);
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--create-surface, #faf7f2);
+  color: #8a7766;
+  border: 0;
+  font: 700 0.92rem/1 "Readex Pro", var(--font-sans);
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 2px 5px rgba(46, 32, 22, 0.05);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease, color 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
 }
 
 .dark .class-create-progress-number {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--border));
+  background: var(--create-surface);
+  color: hsl(var(--muted-foreground));
+  border: 0;
 }
 
 .class-create-progress-number svg {
@@ -385,36 +387,37 @@
   stroke-width: 2.8;
 }
 
-/* Étape validée : pastille teintée chaude avec coche nette */
+/* Étape validée : coche nette sans cadre */
 [data-state='complete'] .class-create-progress-number {
-  background: var(--hero-bg, #f6ede2);
+  background: var(--create-surface, #faf7f2);
   color: var(--hero-secondary, #6b4c35);
-  border-color: var(--hero-secondary, #6b4c35);
-  box-shadow: 0 0 0 3px #fffdf9;
+  border: 0;
+  box-shadow: none;
 }
 
 .dark [data-state='complete'] .class-create-progress-number {
-  background: hsl(var(--card));
+  background: var(--create-surface);
   color: hsl(var(--primary));
-  border-color: hsl(var(--primary));
 }
 
-/* Étape active : cercle plein + anneau lumineux style Google One */
+/* Étape active : numéro mis en valeur sans boîte encadrée */
 [data-state='current'] > .class-create-progress-item .class-create-progress-number {
-  background: var(--hero-secondary, #6b4c35);
-  color: #fffdf9;
-  border-color: var(--hero-secondary, #6b4c35);
-  transform: scale(1.08);
-  box-shadow: 0 0 0 3px #fffdf9, 0 0 0 6px color-mix(in srgb, var(--hero-secondary, #6b4c35) 20%, transparent);
+  background: var(--create-surface, #faf7f2);
+  color: var(--hero-secondary, #6b4c35);
+  border: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  transform: scale(1.1);
+  box-shadow: none;
 }
 
 [data-state='upcoming'] .class-create-progress-item {
-  opacity: 0.88;
+  opacity: 0.72;
 }
 
 .class-create-progress-label {
-  font: 500 0.76rem/1.3 "Readex Pro", var(--font-sans);
-  color: #6e5a49;
+  font: 500 0.75rem/1.3 "Readex Pro", var(--font-sans);
+  color: #7a6858;
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -485,7 +488,7 @@
   background: hsl(var(--muted));
 }
 
-/* ── Cartes de niveaux et filières aérées, modernes et cohérentes avec le fond (#faf7f2) ── */
+/* ── Cartes de niveaux et filières épurées et modernes sans flèche (.class-create-option) ── */
 .class-create-option {
   --tile-bg: #f6ede2;
   --tile-border: #e4d4c3;
@@ -495,21 +498,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: 0.65rem;
   width: 100%;
   min-height: 48px;
-  padding: 0.72rem 0.8rem 0.72rem 1.1rem;
-  border: 1px solid color-mix(in srgb, var(--tile-border) 55%, #e5ddd2);
-  border-radius: 1.2rem;
-  border-end-start-radius: 0.48rem;
-  background: linear-gradient(135deg, #fffdf9 0%, color-mix(in srgb, var(--tile-bg) 42%, #fffdf9) 100%);
-  color: #2e2016;
+  padding: 0.82rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--tile-border) 62%, #e5ddd2);
+  border-radius: 1.15rem;
+  border-end-start-radius: 0.45rem;
+  background: linear-gradient(135deg, #fffdf9 0%, color-mix(in srgb, var(--tile-bg) 48%, #fffdf9) 100%);
+  color: var(--tile-ink);
   text-align: start;
-  font: 600 0.95rem/1.4 "Readex Pro", var(--font-sans);
+  font: 600 0.94rem/1.4 "Readex Pro", var(--font-sans);
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 3px 12px rgba(46, 32, 22, 0.04);
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 180ms ease, border-color 180ms ease, box-shadow 220ms ease;
+  box-shadow: 0 2px 10px rgba(46, 32, 22, 0.035);
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), background 180ms ease, border-color 180ms ease, box-shadow 200ms ease;
 }
 
 /* Palette terre & argile douce : 100% cohérente avec le fond #faf7f2 */
@@ -546,14 +549,15 @@
 
 .class-create-option:hover {
   border-color: color-mix(in srgb, var(--tile-secondary) 65%, #d5c7b8);
-  box-shadow: 0 6px 18px rgba(46, 32, 22, 0.075);
+  background: linear-gradient(135deg, #ffffff 0%, color-mix(in srgb, var(--tile-bg) 68%, #fffdf9) 100%);
+  box-shadow: 0 5px 16px rgba(46, 32, 22, 0.065);
 }
 
 .class-create-option[data-selected='true'] {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-bg) 78%, #fffdf9) 0%, var(--tile-bg) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-bg) 82%, #fffdf9) 0%, var(--tile-bg) 100%);
   border-color: var(--tile-secondary);
   color: var(--tile-ink);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 24%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tile-secondary) 22%, transparent);
 }
 
 .class-create-option > span:first-child {
@@ -561,40 +565,23 @@
   overflow-wrap: anywhere;
 }
 
-/* Badge flèche rond teinté (.tile .ar) */
+/* Indicateur discret de sélection uniquement (sans flèche) */
 .class-create-option-mark {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2.1rem;
-  height: 2.1rem;
-  color: var(--tile-secondary);
-  background: color-mix(in srgb, var(--tile-bg) 82%, #fffdf9);
-  border: 1px solid color-mix(in srgb, var(--tile-border) 85%, transparent);
-  border-radius: 50%;
-  transform: none;
-  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.class-create-option:hover .class-create-option-mark,
-.class-create-option[data-selected='true'] .class-create-option-mark {
-  background: var(--tile-secondary);
+  width: 1.55rem;
+  height: 1.55rem;
   color: #fffdf9;
-  border-color: var(--tile-secondary);
-}
-
-.dark .class-create-option-mark {
-  background: color-mix(in srgb, #ffffff 12%, var(--tile-bg));
+  background: var(--tile-secondary);
+  border-radius: 50%;
+  transition: transform 180ms ease;
 }
 
 .class-create-option-mark svg {
-  width: 0.95rem;
-  height: 0.95rem;
-  stroke-width: 2.2;
-}
-
-[dir='ltr'] .class-create-option-mark svg {
-  transform: scaleX(-1);
+  width: 0.85rem;
+  height: 0.85rem;
+  stroke-width: 2.5;
 }
 
 /* ── Étape 3 : Carte du bas teintée sans filets internes (.c3) et stepper (.sp) ── */

@@ -293,10 +293,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       config.assessmentDates?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
-    const absents = (
+    const absenceRecord = (
       config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
-    )?.names ?? [];
+    );
+    const absents = absenceRecord?.names ?? [];
+    const hasVerifiedZeroAbsences = Boolean(absenceRecord) && absents.length === 0;
     // Remise du devoir maison : ce que l'enseignant a constaté, élève par élève.
     const submissions = a.type === 'maison'
       ? config.assessmentParticipants?.[selectedClass!.id]?.[a.id]
@@ -442,7 +444,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   type="button"
                   onClick={() => setAbsencesFor(link)}
                   className="ev-action shrink-0"
-                  data-filled={absents.length > 0 ? 'danger' : undefined}
+                  data-filled={absents.length > 0 ? 'danger' : hasVerifiedZeroAbsences ? 'ok' : undefined}
                   data-tippy-content={absentsTooltip}
                   aria-label={absents.length > 0
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })

@@ -1,5 +1,6 @@
 import { memo, useMemo, type CSSProperties, type FC } from 'react';
 import type { ClassInfo, ClassEvaluationEntry } from '@/types';
+import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { ClassActionsMenu } from './ClassActionsMenu';
@@ -23,6 +24,7 @@ interface ClassCardProps {
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
     isActiveSession?: boolean;
+    scheduleStatus?: SessionScheduleStatus;
     palette?: DepartmentPalette;
 }
 
@@ -33,6 +35,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     onDelete,
     onOpenEvaluations,
     isActiveSession,
+    scheduleStatus,
     palette,
 }) => {
     const { impact } = useHapticFeedback();
@@ -43,6 +46,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { surfaceRef, rippleRef, surfaceHandlers } = useCardSurface();
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const colorAttrs = classColorAttributes(classInfo);
+    const multiHourBadge = scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1
+        ? (locale === 'ar' ? `${scheduleStatus.sessionHours}س` : `${scheduleStatus.sessionHours}h`)
+        : null;
+    const showScheduleLine = !isActiveSession && scheduleStatus && scheduleStatus.state !== 'none' && Boolean(scheduleStatus.shortLabel);
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -70,6 +77,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 dir={isRtl ? 'rtl' : 'ltr'}
                 {...colorAttrs}
                 data-session-active={isActiveSession ? 'true' : undefined}
+                data-session-state={scheduleStatus?.state && scheduleStatus.state !== 'none' ? scheduleStatus.state : undefined}
+                data-session-hours={scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1 ? String(scheduleStatus.sessionHours) : undefined}
                 data-device-phone={isPhone ? 'true' : undefined}
                 data-platform-native={isNative ? 'true' : undefined}
                 style={cardStyle}
@@ -101,10 +110,24 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                                 </span>
                             </h3>
                         </div>
-                        {label.tier && (
-                            <span className="class-card__tier-plain">
-                                {label.tier}
-                            </span>
+                        {(label.tier || showScheduleLine) && (
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                                {label.tier && (
+                                    <span className="class-card__tier-plain">
+                                        {label.tier}
+                                    </span>
+                                )}
+                                {showScheduleLine && scheduleStatus && (
+                                    <span className="class-card__schedule" title={scheduleStatus.label}>
+                                        <span>{scheduleStatus.shortLabel}</span>
+                                        {multiHourBadge && (
+                                            <span className="inline-flex items-center rounded-md px-1.5 py-0.2 text-[10px] font-semibold opacity-90 bg-black/5 dark:bg-white/10">
+                                                {multiHourBadge}
+                                            </span>
+                                        )}
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                     <div className="class-card__actions-block">
@@ -125,7 +148,18 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 {isActiveSession && (
                     <div className="class-card__footer">
                         <span className="class-card__live">
+                            <span className="class-card__live-dot" aria-hidden="true" />
                             <span>{t('dashboard.welcome.nowTitle')}</span>
+                            {scheduleStatus?.remainingMinutes && (
+                                <span className="class-card__live-remaining">
+                                    · {locale === 'ar' ? `${scheduleStatus.remainingMinutes} د` : `${scheduleStatus.remainingMinutes} min`}
+                                </span>
+                            )}
+                            {multiHourBadge && (
+                                <span className="class-card__live-remaining">
+                                    · {multiHourBadge}
+                                </span>
+                            )}
                         </span>
                     </div>
                 )}
@@ -142,6 +176,9 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && previous.index === next.index
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
+    && previous.scheduleStatus?.state === next.scheduleStatus?.state
+    && previous.scheduleStatus?.shortLabel === next.scheduleStatus?.shortLabel
+    && previous.scheduleStatus?.sessionHours === next.scheduleStatus?.sessionHours
     && previous.palette?.bg === next.palette?.bg
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 

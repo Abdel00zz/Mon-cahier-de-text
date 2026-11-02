@@ -106,12 +106,6 @@ const CLASS_COLOR_OPTIONS: ReadonlyArray<{ value: string; background: string; in
   { value: 'rose', background: '#f9e8ee', ink: '#63223b', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
 ];
 
-const TileChevronIcon: React.FC = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m15 18-6-6 6-6" />
-  </svg>
-);
-
 const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; selected?: boolean }> = ({ children, onClick, selected }) => (
   <button
     type="button"
@@ -121,7 +115,7 @@ const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; sel
     className="class-create-option"
   >
     <span>{children}</span>
-    <span className="class-create-option-mark" aria-hidden="true">{selected ? <Check /> : <TileChevronIcon />}</span>
+    {selected && <span className="class-create-option-mark" aria-hidden="true"><Check /></span>}
   </button>
 );
 

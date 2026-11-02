@@ -613,6 +613,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 onDelete={() => setClassPendingDelete(item.classInfo)}
                                                                 index={itemIdx}
                                                                 isActiveSession={isActiveSession}
+                                                                scheduleStatus={scheduleStatusByClassId.get(item.classInfo.id)}
                                                                 palette={item.palette}
                                                             />
                                                         </motion.div>

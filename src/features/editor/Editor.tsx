@@ -522,12 +522,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     }
   }, [resetState, getStorageKey, showNotification, setEditorState, t, locale, workspaceIsActive, classInfo.id]);
 
+  const isSelfPersistingRef = useRef(false);
   const persistCurrentData = useCallback((withVisualStatus: boolean): boolean => {
     if (!workspaceIsActive()) return false;
     if (saveStatusRef.current === 'saved') return true;
     if (withVisualStatus) setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
-      saveNotebook(classInfo.id, lessonsDataRef.current, contentDirectionRef.current);
+      isSelfPersistingRef.current = true;
+      try {
+        saveNotebook(classInfo.id, lessonsDataRef.current, contentDirectionRef.current);
+      } finally {
+        isSelfPersistingRef.current = false;
+      }
       rememberNotebookActivity(classInfo.id, historyContext.current.operationType, historyContext.current.historyAction);
       saveStatusRef.current = 'saved';
       if (withVisualStatus) {
@@ -669,7 +675,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   // Relecture après synchronisation, sans recouvrir une saisie encore non enregistrée.
   const reloadStoredNotebook = useCallback(() => {
-    if (!workspaceIsActive() || saveStatusRef.current !== 'saved') return;
+    if (isSelfPersistingRef.current || !workspaceIsActive() || saveStatusRef.current !== 'saved') return;
     try {
       const raw = localStorage.getItem(getStorageKey());
       if (!storedNotebookChanged(raw, { lessons: lessonsDataRef.current, direction: contentDirectionRef.current })) return;
