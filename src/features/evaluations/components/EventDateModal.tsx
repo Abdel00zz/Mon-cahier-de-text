@@ -9,6 +9,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { todayInMorocco } from '@/domain/calendar/calendar';
 import { addDaysIso } from '@/domain/notebook/dataUtils';
 import type { PedagogicalEvent } from '@/types';
+import { localizedActivityTitle } from '@/domain/evaluations/activityTitle';
 import { cn } from '@/lib/utils';
 import './dateCalendar.css';
 
@@ -69,7 +70,12 @@ export const EventDateModal: FC<EventDateModalProps> = ({
   onApplyDate,
 }) => {
   const { locale, t } = useLocale();
-  const effectiveTitle = propTitle || event?.title || t('dateModal.fallbackTitle');
+  const effectiveEventTitle = useMemo(() => {
+    if (propTitle) return propTitle;
+    if (event?.title) return localizedActivityTitle(event.title, event.type, locale);
+    return null;
+  }, [propTitle, event, locale]);
+
   const today = useMemo(() => todayInMorocco(), []);
 
   const [startDate, setStartDate] = useState('');
@@ -213,49 +219,53 @@ export const EventDateModal: FC<EventDateModalProps> = ({
       onClose={onClose}
       maxWidth="sm"
       mobilePresentation="sheet"
-      className="evaluation-modal date-cal-modal sm:max-w-[25rem] sm:rounded-2xl"
-      headerClassName="date-cal-modal__header border-b-0 bg-transparent px-4 pt-4 pb-2 pe-14 sm:px-5 sm:pt-4 sm:pb-2 sm:pe-14"
-      bodyClassName="date-cal-modal__body px-4 py-2 sm:px-5 sm:py-2.5 space-y-2.5"
-      footerClassName="date-cal-modal__footer border-t-0 bg-transparent px-4 pt-2 pb-3.5 sm:px-5 sm:pt-2 sm:pb-4"
-      footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          {(startDate || event?.date) ? (
-            <AnimatedTrashButton
-              label={copy.clearDate}
-              variant="ghost"
-              size="sm"
-              onClick={handleClearDate}
-              className="date-cal-modal__clear h-11 rounded-xl px-3 text-xs font-semibold"
-            />
-          ) : <div />}
-
-          <div className="flex items-center gap-1.5 ms-auto">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="date-cal-modal__cancel h-11 rounded-xl px-3.5 text-xs font-semibold"
-            >
-              {copy.cancel}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleApply}
-              disabled={!startDate}
-              className="date-cal-modal__apply h-11 rounded-xl px-4 text-xs font-semibold shadow-none"
-            >
-              {copy.apply}
-            </Button>
+      className="claude-sheet-dialog"
+      headerClassName="border-b-0 px-5 pt-3 pb-1 bg-transparent"
+      bodyClassName="px-5 py-2 space-y-2.5 font-sans"
+      footerClassName="border-t-0 px-5 py-3 bg-transparent"
+      title={
+        <div className="claude-sheet-header p-0">
+          <div className="flex-1 min-w-0">
+            <h2 className="claude-sheet-title">
+              {copy.title}
+            </h2>
+            {effectiveEventTitle && effectiveEventTitle !== copy.title && (
+              <p className="claude-sheet-subtitle truncate font-medium">
+                {effectiveEventTitle}
+              </p>
+            )}
           </div>
         </div>
       }
-      title={
-        <div className="min-w-0">
-          <span className="date-cal-modal__title block text-[16px] font-bold leading-tight tracking-[-0.01em] text-foreground rtl:tracking-normal sm:text-[17px]">
-            {copy.title}
-          </span>
+      footer={
+        <div className="flex w-full items-center justify-between gap-2">
+          {(startDate || event?.date) ? (
+            <button
+              type="button"
+              onClick={handleClearDate}
+              className="claude-btn-danger h-11 px-3 text-xs"
+            >
+              <span>{copy.clearDate}</span>
+            </button>
+          ) : <div />}
+
+          <div className="flex items-center gap-2 ms-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className="claude-btn-cancel h-11 px-4 text-xs font-semibold"
+            >
+              {copy.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={!startDate}
+              className="claude-btn-primary h-11 px-4 text-xs font-semibold w-auto"
+            >
+              {copy.apply}
+            </button>
+          </div>
         </div>
       }
     >

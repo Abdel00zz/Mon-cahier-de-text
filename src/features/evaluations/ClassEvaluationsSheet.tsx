@@ -48,26 +48,26 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             isOpen={open}
             onClose={() => onOpenChange(false)}
             maxWidth="4xl"
+            mobilePresentation="sheet"
             mobileDetents={SHEET_MOBILE_DETENTS}
-            initialMobileDetent={0.96}
+            initialMobileDetent={0.94}
             swipeToDismiss={true}
             swipeFromBody={true}
-            className={`evaluation-modal evaluation-reference eval-hero-tone-${paletteKey} sm:max-w-[46rem] sm:rounded-3xl`}
-            headerClassName={`evaluation-hero-header eval-hero-tone-${paletteKey}`}
+            className="claude-sheet-dialog claude-sheet-dialog--eval"
+            headerClassName="border-b-0 px-5 pt-3 pb-2 bg-transparent"
+            bodyClassName="px-4 py-2 sm:px-6 sm:py-3"
             title={
-                <div className="eval-hero-banner">
-                    <HeroRoundedShapes />
-                    <div className="eval-hero-content">
-                        <span className="main-title eval-hero-title">
-                            <span className="eval-hero-title__text">{t('evaluationsSheet.title')}</span>
-                            <HeroWavyUnderline className="eval-hero-wave" />
-                        </span>
-                        <div className="eval-hero-tags">
-                            <span className="class-tag eval-course-white-tag" dir="auto">
+                <div className="claude-sheet-header p-0">
+                    <div className="flex-1 min-w-0">
+                        <h2 className="claude-sheet-title">
+                            {t('evaluationsSheet.title')}
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            <span className="inline-flex items-center rounded-lg bg-[var(--cm-sunken)] px-2.5 py-0.5 text-xs font-semibold text-foreground" dir="auto">
                                 {className}
                             </span>
                             {showsSubjectLabels && classInfo.subject && (
-                                <span className="eval-subject-tilted-tag" dir="auto">
+                                <span className="inline-flex items-center rounded-lg bg-black/5 dark:bg-white/10 px-2 py-0.5 text-[11px] font-medium text-muted-foreground" dir="auto">
                                     {classInfo.subject}
                                 </span>
                             )}
@@ -75,7 +75,6 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                     </div>
                 </div>
             }
-            description={showsSubjectLabels && classInfo.subject ? `${className} · ${classInfo.subject}` : className}
         >
             <DevoirsView
                 key={`${classInfo.id}-${entry}`}

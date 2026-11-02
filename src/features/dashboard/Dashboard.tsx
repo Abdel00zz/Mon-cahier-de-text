@@ -12,7 +12,7 @@ import { ClassCard } from './ClassCard';
 import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
-import { pickDepartmentPalette, type PaletteKey } from './departmentPalette';
+import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from './departmentPalette';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
@@ -341,19 +341,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     // Assign palette before temporal sorting so a session never changes a class's color.
     const paletteByClassId = useMemo(() => {
-        let previousKey: PaletteKey | undefined;
-        const usedKeys = new Set<PaletteKey>();
-        const map = new Map<string, ReturnType<typeof pickDepartmentPalette>['palette']>();
-        persistedClassOrder.forEach((id, index) => {
-            const item = classById.get(id);
-            if (!item) return;
-            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey, usedKeys);
-            previousKey = key;
-            usedKeys.add(key);
-            map.set(id, palette);
-        });
-        return map;
-    }, [persistedClassOrder, classById]);
+        return buildUnifiedClassPaletteMap(classes, persistedClassOrder);
+    }, [classes, persistedClassOrder]);
 
     const groupedClasses = useMemo(() => {
         const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number; active: boolean }> }>();

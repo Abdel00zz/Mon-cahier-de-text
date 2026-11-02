@@ -21,7 +21,7 @@ import { KEEP_TONES } from '@/platform/keepTheme';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Plus } from '@/components/ui/icons';
-import { pickDepartmentPalette, type DepartmentPalette, type PaletteKey } from '@/features/dashboard/departmentPalette';
+import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from '@/features/dashboard/departmentPalette';
 import './schedule.css';
 
 export interface ModernClassColor {
@@ -123,17 +123,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [classes]);
 
     const paletteByClassId = React.useMemo(() => {
-        let previousKey: PaletteKey | undefined;
-        const usedKeys = new Set<PaletteKey>();
-        const map = new Map<string, DepartmentPalette>();
-        classes.forEach((item, index) => {
-            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey, usedKeys);
-            previousKey = key;
-            usedKeys.add(key);
-            map.set(item.id, palette);
-        });
-        return map;
-    }, [classes]);
+        return buildUnifiedClassPaletteMap(classes, config.dashboardClassOrder);
+    }, [classes, config.dashboardClassOrder]);
     /**
      * Libellé de matière : affiché **seulement** si l'enseignant couvre
      * plusieurs matières (règle partagée, calculée dans `App`). Avec une seule,

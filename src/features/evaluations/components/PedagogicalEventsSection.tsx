@@ -194,6 +194,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
         isOpen={Boolean(editingDateEvent)}
         onClose={() => setEditingDateEvent(null)}
         event={editingDateEvent}
+        title={editingDateEvent ? localizedActivityTitle(editingDateEvent.title, editingDateEvent.type, locale) : undefined}
         onSave={onDateChange}
       />
     </section>

@@ -357,56 +357,56 @@
 }
 
 .evaluation-reference .ev-accordion[data-panel-tone='peach'] {
-  --panel-bg: #fdeede;
-  --panel-border: #f6d9bd;
-  --panel-ink: #6b3a12;
-  --panel-secondary: #a8642a;
+  --panel-bg: oklch(0.96 0.04 65);
+  --panel-border: oklch(0.85 0.08 65);
+  --panel-ink: oklch(0.35 0.12 65);
+  --panel-secondary: oklch(0.48 0.14 65);
 }
 
 .evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
-  --panel-bg: #ece9f7;
-  --panel-border: #d9d4ee;
-  --panel-ink: #2e2766;
-  --panel-secondary: #5d55a3;
+  --panel-bg: oklch(0.96 0.04 290);
+  --panel-border: oklch(0.85 0.08 290);
+  --panel-ink: oklch(0.35 0.12 290);
+  --panel-secondary: oklch(0.48 0.14 290);
 }
 
 .evaluation-reference .ev-accordion[data-panel-tone='green'] {
-  --panel-bg: #e6f3e9;
-  --panel-border: #cfe6d5;
-  --panel-ink: #14503a;
-  --panel-secondary: #3f7f63;
+  --panel-bg: oklch(0.96 0.04 155);
+  --panel-border: oklch(0.85 0.08 155);
+  --panel-ink: oklch(0.35 0.12 155);
+  --panel-secondary: oklch(0.48 0.14 155);
 }
 
 .evaluation-reference .ev-accordion[data-panel-tone='blue'] {
-  --panel-bg: #e0eefa;
-  --panel-border: #c6dff2;
-  --panel-ink: #0f3f6b;
-  --panel-secondary: #3a78a8;
+  --panel-bg: oklch(0.96 0.04 245);
+  --panel-border: oklch(0.85 0.08 245);
+  --panel-ink: oklch(0.35 0.12 245);
+  --panel-secondary: oklch(0.48 0.14 245);
 }
 
 .dark .evaluation-reference .ev-accordion[data-panel-tone='peach'] {
-  --panel-bg: #2e2018;
-  --panel-border: #523626;
-  --panel-ink: #fbe6d4;
-  --panel-secondary: #e7bfa0;
+  --panel-bg: oklch(0.25 0.04 65);
+  --panel-border: oklch(0.38 0.08 65);
+  --panel-ink: oklch(0.88 0.08 65);
+  --panel-secondary: oklch(0.72 0.12 65);
 }
 .dark .evaluation-reference .ev-accordion[data-panel-tone='lavender'] {
-  --panel-bg: #231f38;
-  --panel-border: #3e3763;
-  --panel-ink: #e9e5fb;
-  --panel-secondary: #c5bdf0;
+  --panel-bg: oklch(0.25 0.04 290);
+  --panel-border: oklch(0.38 0.08 290);
+  --panel-ink: oklch(0.88 0.08 290);
+  --panel-secondary: oklch(0.72 0.12 290);
 }
 .dark .evaluation-reference .ev-accordion[data-panel-tone='green'] {
-  --panel-bg: #172b20;
-  --panel-border: #284d39;
-  --panel-ink: #dbf4e5;
-  --panel-secondary: #a8dec0;
+  --panel-bg: oklch(0.25 0.04 155);
+  --panel-border: oklch(0.38 0.08 155);
+  --panel-ink: oklch(0.88 0.08 155);
+  --panel-secondary: oklch(0.72 0.12 155);
 }
 .dark .evaluation-reference .ev-accordion[data-panel-tone='blue'] {
-  --panel-bg: #172838;
-  --panel-border: #294863;
-  --panel-ink: #dceefb;
-  --panel-secondary: #abd1ee;
+  --panel-bg: oklch(0.25 0.04 245);
+  --panel-border: oklch(0.38 0.08 245);
+  --panel-ink: oklch(0.88 0.08 245);
+  --panel-secondary: oklch(0.72 0.12 245);
 }
 
 .evaluation-reference .ev-accordion__toggle {
@@ -841,7 +841,7 @@
 /* ── Correction du devoir (.tk.ch) : reliée au devoir par un connecteur coudé arrondi continu ── */
 .evaluation-reference .ev-board__rows > .ev-row.ev-row--correction {
   position: relative;
-  margin-inline-start: 1.25rem;
+  margin-inline-start: 28px;
   margin-top: 0;
   border: 0;
   background: var(--eval-card);

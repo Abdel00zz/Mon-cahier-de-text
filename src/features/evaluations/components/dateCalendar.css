@@ -34,29 +34,29 @@
 }
 
 .date-cal-theme {
-    --cal-ink: #2f2822;
-    --cal-muted: #7a7169;
-    --cal-line: #ebe5dc;
-    --cal-soft: #f0ebe3;
-    --cal-surface: #ffffffd9;
-    --cal-item: #2f2822;
-    --cal-accent: #6b4c3b;
+    --cal-ink: var(--cm-text, #141413);
+    --cal-muted: var(--cm-text-muted, #73726C);
+    --cal-line: var(--cm-border, rgba(20, 20, 19, 0.15));
+    --cal-soft: var(--cm-sunken, #F0EEE6);
+    --cal-surface: var(--cm-surface, #ffffff);
+    --cal-item: var(--cm-text, #141413);
+    --cal-accent: var(--cm-accent, #C6613F);
     --cal-accent-ink: #ffffff;
-    --cal-band: rgba(107, 76, 59, 0.13);
-    --cal-radius: 1.15rem;
+    --cal-band: rgba(198, 97, 63, 0.15);
+    --cal-radius: 14px;
     --cal-pad: 0.55rem;
 }
 
 .dark .date-cal-theme {
-    --cal-ink: hsl(var(--foreground));
-    --cal-muted: hsl(var(--muted-foreground));
-    --cal-line: rgba(255, 255, 255, 0.1);
-    --cal-soft: rgba(255, 255, 255, 0.08);
-    --cal-surface: hsl(var(--card));
-    --cal-item: hsl(var(--foreground) / 0.92);
-    --cal-accent: hsl(var(--primary));
-    --cal-accent-ink: hsl(var(--primary-foreground));
-    --cal-band: hsl(var(--primary) / 0.2);
+    --cal-ink: var(--cm-text, #FAF9F5);
+    --cal-muted: var(--cm-text-muted, #9C9A92);
+    --cal-line: var(--cm-border, rgba(250, 249, 245, 0.15));
+    --cal-soft: var(--cm-sunken, #1F1E1D);
+    --cal-surface: var(--cm-surface, #30302E);
+    --cal-item: var(--cm-text, #FAF9F5);
+    --cal-accent: var(--cm-accent, #D97757);
+    --cal-accent-ink: #ffffff;
+    --cal-band: rgba(217, 119, 87, 0.22);
 }
 
 .date-cal-preview {

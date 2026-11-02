@@ -96,14 +96,14 @@ const uniqueValues = (values: string[]) => uniq(values.map(value => value.trim()
 const EMPTY_SUBJECTS: string[] = [];
 const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
-const CLASS_MODAL_DETENTS = [0.72, 0.92];
+const CLASS_MODAL_DETENTS = [0.85, 0.94];
 const CLASS_COLOR_OPTIONS: ReadonlyArray<{ value: string; background: string; ink: string; label: Record<AppLocale, string> }> = [
-  { value: 'coral', background: '#f9ebe0', ink: '#5e3419', label: { fr: 'Argile', ar: 'طيني', en: 'Clay' } },
-  { value: 'sand', background: '#f6eed8', ink: '#574312', label: { fr: 'Sable', ar: 'رملي', en: 'Sand' } },
-  { value: 'mint', background: '#e8f3ec', ink: '#1b4b36', label: { fr: 'Sauge', ar: 'مريمي', en: 'Sage' } },
-  { value: 'sky', background: '#e8f0f8', ink: '#1c3f60', label: { fr: 'Azur', ar: 'سماوي', en: 'Sky' } },
-  { value: 'lavender', background: '#eeeaf7', ink: '#352c66', label: { fr: 'Lavande', ar: 'خزامى', en: 'Lavender' } },
-  { value: 'rose', background: '#f9e8ee', ink: '#63223b', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
+  { value: 'rose', background: 'oklch(0.70 0.14 355)', ink: '#ffffff', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
+  { value: 'lavender', background: 'oklch(0.68 0.14 295)', ink: '#ffffff', label: { fr: 'Violet', ar: 'بنفسجي', en: 'Purple' } },
+  { value: 'sky', background: 'oklch(0.68 0.14 245)', ink: '#ffffff', label: { fr: 'Bleu', ar: 'أزرق', en: 'Blue' } },
+  { value: 'mint', background: 'oklch(0.70 0.14 150)', ink: '#ffffff', label: { fr: 'Vert', ar: 'أخضر', en: 'Green' } },
+  { value: 'sand', background: 'oklch(0.75 0.10 95)', ink: '#ffffff', label: { fr: 'Sable', ar: 'رملي', en: 'Sand' } },
+  { value: 'coral', background: 'oklch(0.72 0.14 45)', ink: '#ffffff', label: { fr: 'Orange', ar: 'برتقالي', en: 'Orange' } },
 ];
 
 const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; selected?: boolean }> = ({ children, onClick, selected }) => (
@@ -112,10 +112,14 @@ const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; sel
     onClick={onClick}
     data-selected={selected ? 'true' : undefined}
     aria-pressed={selected}
-    className="class-create-option"
+    className="claude-choice-card"
   >
-    <span>{children}</span>
-    {selected && <span className="class-create-option-mark" aria-hidden="true"><Check /></span>}
+    <span className="font-medium text-[15px] sm:text-[16px]">{children}</span>
+    {selected && (
+      <span className="claude-choice-check" aria-hidden="true">
+        <Check className="h-3.5 w-3.5 stroke-[2.5]" />
+      </span>
+    )}
   </button>
 );
 
@@ -360,66 +364,107 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.group;
 
   const activeColorTone = classColor || 'coral';
-  const groupControl = <div className="class-create-stepper flex min-w-0 items-center justify-center gap-3 px-2.5 py-1.5">
-    <button type="button" onClick={() => changeGroup(-1)} disabled={!adjacentFreeGroup(-1)} aria-label={copy.decrementGroup} className="class-create-step class-create-step-down flex h-11 w-11 shrink-0 items-center justify-center text-xl font-semibold text-foreground transition-[transform,background-color] duration-200 active:scale-95 disabled:opacity-40 motion-reduce:transition-none">−</button>
-    <Input id="class-group" value={group} onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="class-create-group-input h-12 min-w-0 flex-1 border-0 bg-transparent text-center text-2xl font-semibold tabular-nums text-foreground shadow-none focus-visible:ring-0" />
-    <button type="button" onClick={() => changeGroup(1)} disabled={!adjacentFreeGroup(1)} aria-label={copy.incrementGroup} className="class-create-step class-create-step-up flex h-11 w-11 shrink-0 items-center justify-center text-foreground transition-[transform,background-color] duration-200 active:scale-95 disabled:opacity-40 motion-reduce:transition-none"><Plus aria-hidden="true" className="h-5 w-5" /></button>
-  </div>;
+  const [deletePending, setDeletePending] = useState(false);
+
+  const groupControl = (
+    <div className="flex items-center justify-center py-2">
+      <div className="claude-stepper">
+        <button
+          type="button"
+          onClick={() => changeGroup(-1)}
+          disabled={!adjacentFreeGroup(-1)}
+          aria-label={copy.decrementGroup}
+          className="claude-stepper-btn"
+        >
+          −
+        </button>
+        <input
+          id="class-group"
+          value={group}
+          onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }}
+          onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }}
+          placeholder="1"
+          inputMode="numeric"
+          enterKeyHint="done"
+          maxLength={2}
+          aria-describedby="group-help"
+          aria-invalid={Boolean(groupError)}
+          className="claude-stepper-value bg-transparent border-0 outline-none p-0 w-12 text-center"
+        />
+        <button
+          type="button"
+          onClick={() => changeGroup(1)}
+          disabled={!adjacentFreeGroup(1)}
+          aria-label={copy.incrementGroup}
+          className="claude-stepper-btn"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
 
   const editConfiguration = editingClass && (
     <section className="space-y-3">
       {hasCycleChoice && (
-        <div className="class-edit-fcard">
-          <div className="class-edit-fl">
-            <span>{copy.cycle} :</span>
-          </div>
+        <div className="space-y-1">
+          <label htmlFor="edit-class-cycle" className="block text-xs font-medium text-muted-foreground">
+            {copy.cycle} :
+          </label>
           <Select value={cycle} onValueChange={value => {
             const nextCycle = value as Cycle;
             setCycle(nextCycle);
             setLevel('');
             setLevelGroupKey('');
           }}>
-            <SelectTrigger id="edit-class-cycle" className="class-edit-select"><SelectValue placeholder={copy.cyclePlaceholder} /></SelectTrigger>
+            <SelectTrigger id="edit-class-cycle" className="h-[52px] rounded-[14px] border border-border bg-card">
+              <SelectValue placeholder={copy.cyclePlaceholder} />
+            </SelectTrigger>
             <SelectContent className="rounded-2xl">{cycleOptions.map(item => <SelectItem key={item} value={item}>{copy.cycleLabels[item]}</SelectItem>)}</SelectContent>
           </Select>
         </div>
       )}
 
-      <div className="class-edit-fcard">
-        <div className="class-edit-fl">
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
           <label htmlFor="edit-class-level">{copy.level} :</label>
-          <button type="button" onClick={() => setCustomMode(value => !value)} className="class-edit-custom-link">
+          <button type="button" onClick={() => setCustomMode(value => !value)} className="text-[13px] text-[var(--cm-accent)] hover:underline">
             {customMode ? copy.switchToOfficial : copy.createCustom}
           </button>
         </div>
         {customMode ? (
-          <Input id="edit-class-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="class-edit-input" />
+          <Input id="edit-class-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-[52px] rounded-[14px] border border-border bg-card" />
         ) : (
           <Select value={level} onValueChange={value => { setLevel(value); setLevelGroupKey(levelGroups.find(item => item.levels.includes(value))?.key ?? ''); }}>
-            <SelectTrigger id="edit-class-level" className="class-edit-select"><SelectValue placeholder={copy.level} /></SelectTrigger>
+            <SelectTrigger id="edit-class-level" className="h-[52px] rounded-[14px] border border-border bg-card">
+              <SelectValue placeholder={copy.level} />
+            </SelectTrigger>
             <SelectContent className="rounded-2xl">{editingLevelOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</SelectItem>)}</SelectContent>
           </Select>
         )}
       </div>
 
-      <div className="class-edit-fcard class-edit-fcard--row">
-        <label htmlFor="edit-class-group" className="class-edit-row-label">{copy.group} :</label>
-        <div className="class-edit-inline-stp">
-          <button type="button" onClick={() => changeGroup(-1)} disabled={!adjacentFreeGroup(-1)} aria-label={copy.decrementGroup}>−</button>
-          <Input id="edit-class-group" value={group} onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} inputMode="numeric" enterKeyHint="done" maxLength={2} aria-invalid={Boolean(groupError)} aria-describedby={groupError ? 'edit-class-group-error' : undefined} className="class-edit-stp-input" />
-          <button type="button" onClick={() => changeGroup(1)} disabled={!adjacentFreeGroup(1)} aria-label={copy.incrementGroup}>+</button>
+      <div className="flex items-center justify-between gap-4 pt-1">
+        <label htmlFor="edit-class-group" className="text-sm font-medium text-foreground">{copy.group} :</label>
+        <div className="claude-stepper">
+          <button type="button" onClick={() => changeGroup(-1)} disabled={!adjacentFreeGroup(-1)} aria-label={copy.decrementGroup} className="claude-stepper-btn">−</button>
+          <input id="edit-class-group" value={group} onChange={event => { setGroupTouched(true); setGroup(sanitizeGroupNumberInput(event.target.value)); }} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} inputMode="numeric" enterKeyHint="done" maxLength={2} aria-invalid={Boolean(groupError)} aria-describedby={groupError ? 'edit-class-group-error' : undefined} className="claude-stepper-value bg-transparent border-0 outline-none p-0 w-12 text-center" />
+          <button type="button" onClick={() => changeGroup(1)} disabled={!adjacentFreeGroup(1)} aria-label={copy.incrementGroup} className="claude-stepper-btn">+</button>
         </div>
       </div>
 
       {showSubjectChoice && (
-        <div className="class-edit-fcard">
-          <div className="class-edit-fl">
-            <label htmlFor="edit-class-subject">{copy.subject} :</label>
-          </div>
+        <div className="space-y-1 pt-1">
+          <label htmlFor="edit-class-subject" className="block text-xs font-medium text-muted-foreground">{copy.subject} :</label>
           {customMode ? (
-            <Input id="edit-class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="class-edit-input" />
+            <Input id="edit-class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-[52px] rounded-[14px] border border-border bg-card" />
           ) : (
-            <Select value={subject} onValueChange={setSubject}><SelectTrigger id="edit-class-subject" className="class-edit-select"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>
+            <Select value={subject} onValueChange={setSubject}>
+              <SelectTrigger id="edit-class-subject" className="h-[52px] rounded-[14px] border border-border bg-card">
+                <SelectValue placeholder={copy.subjectPlaceholder} />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent>
+            </Select>
           )}
         </div>
       )}
@@ -430,107 +475,282 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={requestClose} blockDismiss={submitting} hideClose={submitting} title={
-        <div className="class-create-heading">
-          <HeroRoundedShapes />
-          <span className="class-create-heading-icon" aria-hidden="true">
-            <Users />
-          </span>
-          <span className="class-create-heading-copy min-w-0">
-            <span className="class-create-title-wrap">
-              <span className="class-create-title">{editingClass ? copy.editTitle : copy.createTitle}</span>
-              <HeroWavyUnderline className="class-create-wave" />
-            </span>
-          </span>
-        </div>
-      } maxWidth="md" mobileDetents={CLASS_MODAL_DETENTS}
-        elevation="high"
-        className="class-create-modal sm:max-w-md sm:rounded-2xl"
-        headerClassName={cn('class-create-header', `create-hero-tone-${activeColorTone}`)}
-        bodyClassName="class-create-body"
-        footerClassName="class-create-actions"
-        footer={<fieldset disabled={submitting} className="class-create-footer flex w-full min-w-0 items-center gap-2">
-          {editingClass && onDelete && !rosterSection && <AnimatedTrashButton
-            label={t('dashboard.delete')}
-            variant="ghost"
-            size="md"
-            onClick={() => setConfirmDelete(true)}
-            className="class-edit-delete h-12 shrink-0 rounded-2xl px-3.5 text-[#c2455c] sm:me-auto sm:px-4"
-          />}
-          {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="class-create-back h-12 shrink-0 rounded-2xl px-3.5 text-xs font-semibold sm:me-auto sm:px-4 sm:text-sm">{copy.back}</Button>}
-          <Button type="button" variant="ghost" onClick={requestClose} className="class-create-cancel h-12 shrink-0 rounded-2xl px-3.5 text-sm sm:ms-auto sm:px-4">{copy.cancel}</Button>
-          {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="class-create-primary h-12 min-w-0 flex-1 px-3 text-xs font-semibold shadow-none sm:flex-none sm:px-5 sm:text-sm">{copy.next}</Button>}
-          {(editingClass || step === 'details') && <AnimatedSubmitButton
-            type="submit"
-            form={formId}
-            disabled={submitting || (rosterSection ? !rosterDirty || parsedRoster.invalid : !isFormValid || (rosterDirty && parsedRoster.invalid))}
-            aria-busy={submitting}
-            isSubmitting={submitting}
-            icon={editingClass ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            label={editingClass ? copy.save : copy.create}
-            loadingLabel={copy.saving}
-            className="class-create-primary h-12 min-w-0 flex-1 rounded-2xl px-3 text-xs font-semibold shadow-none sm:flex-none sm:px-5 sm:text-sm"
-          />}
-        </fieldset>}
+      <Modal
+        isOpen={isOpen}
+        onClose={requestClose}
+        blockDismiss={submitting}
+        hideClose={submitting}
+        maxWidth="sm"
+        mobilePresentation="sheet"
+        mobileDetents={CLASS_MODAL_DETENTS}
+        className="claude-sheet-dialog"
+        headerClassName="border-b-0 px-5 pt-3 pb-1 bg-transparent"
+        bodyClassName="px-5 py-3 space-y-4"
+        footerClassName="border-t-0 px-5 py-3.5 bg-transparent"
+        title={
+          <div className="claude-sheet-header p-0">
+            <div>
+              <h2 className="claude-sheet-title">
+                {editingClass ? copy.editTitle : copy.createTitle}
+              </h2>
+              {editingClass && editingClass.name && (
+                <p className="claude-sheet-subtitle">
+                  {formatLocalizedClassDisplayName(editingClass.name, locale)}
+                </p>
+              )}
+            </div>
+          </div>
+        }
+        footer={
+          <fieldset disabled={submitting} className="flex w-full items-center justify-between gap-2.5">
+            {editingClass && onDelete && !rosterSection && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!deletePending) {
+                    setDeletePending(true);
+                    haptics.onSelect();
+                  } else {
+                    onDelete();
+                  }
+                }}
+                className="claude-btn-danger"
+              >
+                <span>{deletePending ? (locale === 'ar' ? 'تأكيد الحذف ؟' : 'Confirmer ?') : (locale === 'ar' ? 'حذف القسم' : t('dashboard.delete'))}</span>
+              </button>
+            )}
+
+            {!editingClass && stepIndex > 0 && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="claude-btn-secondary flex-1"
+              >
+                {copy.back}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={requestClose}
+              className="claude-btn-cancel flex-1"
+            >
+              {copy.cancel}
+            </button>
+
+            {step === 'level' && customMode && (
+              <button
+                type="button"
+                onClick={continueCustomLevel}
+                disabled={!customLevel.trim()}
+                className="claude-btn-primary flex-1"
+              >
+                {copy.next}
+              </button>
+            )}
+
+            {(editingClass || step === 'details') && (
+              <button
+                type="submit"
+                form={formId}
+                disabled={submitting || (rosterSection ? !rosterDirty || parsedRoster.invalid : !isFormValid || (rosterDirty && parsedRoster.invalid))}
+                className="claude-btn-primary flex-1"
+              >
+                {submitting ? copy.saving : editingClass ? copy.save : copy.create}
+              </button>
+            )}
+          </fieldset>
+        }
       >
-        {editingClass && onRosterSave && <div className="class-edit-tabs mb-4" data-tab={section === 'students' ? '1' : '0'} role="group" aria-label={copy.editTitle}>
-          <i aria-hidden="true" />
-          {(['identity', 'students'] as const).map(item => <button key={item} type="button" aria-pressed={section === item}
-            onClick={() => setSection(item)} className="class-edit-tab-btn">
-            <span>{t(item === 'identity' ? 'classRoster.identity' : 'classRoster.title')}</span>
-            {item === 'students' && <em>{parsedRoster.names.length}</em>}
-          </button>)}
-        </div>}
-        <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-4 text-start">
-          {saveError && <p role="alert" className="class-create-error">{saveError}</p>}
-          <fieldset disabled={submitting} className="min-w-0 space-y-4">
-          {!editingClass && <ClassCreationProgress steps={steps} currentIndex={stepIndex}
-            label={copy.guidedLabel} stepLabel={stepLabel}
-            onReturn={previous => { haptics.onSelect(); setStep(previous); }} />}
+        {editingClass && onRosterSave && (
+          <div className="claude-tabs mx-0 mb-3" role="tablist" aria-label={copy.editTitle}>
+            {(['identity', 'students'] as const).map(item => (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={section === item}
+                data-active={section === item ? 'true' : 'false'}
+                onClick={() => setSection(item)}
+                className="claude-tab-btn"
+              >
+                <span>{t(item === 'identity' ? 'classRoster.identity' : 'classRoster.title')}</span>
+                {item === 'students' && (
+                  <span className="claude-tab-badge">
+                    {parsedRoster.names.length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
-          {!editingClass && <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="class-create-stage outline-none">
-          {step === 'cycle' && hasCycleChoice && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.cycle}</h3><div className="class-create-seg grid gap-1.5 sm:grid-cols-3">{cycleOptions.map(item => <button key={item} type="button" aria-pressed={item === cycle} onClick={() => chooseCycle(item)} className={cn('class-create-choice flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-center text-xs font-medium transition-[transform,background-color,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transition-none', item === cycle ? 'bg-white text-foreground font-semibold shadow-xs' : 'bg-transparent text-muted-foreground hover:text-foreground')}><span>{copy.cycleLabels[item]}</span></button>)}</div></section>}
-
-          {step === 'level' && <section className="space-y-3.5">
-            <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-semibold text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => setCustomMode(value => !value)} className="class-create-custom-pill min-h-9 rounded-full px-3.5 text-xs font-semibold transition-colors focus-visible:outline-2">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
-            {/* Le cycle n'est pas un filtre du profil : si le profil n'en liste
-                qu'un, l'étape est masquée mais reste à un clic (collège → prépa). */}
-            {!customMode && !hasCycleChoice && <button type="button" onClick={() => { setShowAllCycles(true); setStep('cycle'); }} className="class-create-cycle-switch min-h-11 w-full rounded-xl px-4 py-2.5 text-xs font-medium transition-all cursor-pointer"><span className="sm:hidden">{copy.otherCycle}</span><span className="hidden sm:inline">{copy.otherCycle} · {cycleOptions.map(item => copy.cycleLabels[item]).join(' / ')}</span></button>}
-            {customMode ? <div className="space-y-2.5"><label htmlFor="class-custom-level" className="block text-xs font-semibold text-foreground">{copy.customLevel}</label><Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="class-edit-input h-12" autoFocus /></div> : cycle === 'college' ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} selected={item.key === (levelGroupKey || activeLevelGroup?.key)} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
-          </section>}
-
-          {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2.5">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
-
-          {step === 'details' && <section className="space-y-3"><div data-color-tone={activeColorTone} className="class-create-summary space-y-3.5 rounded-2xl p-4 text-card-foreground">
-            <div className="min-w-0"><p className="text-xs font-normal text-muted-foreground">{copy.selectedClass}</p><p className="mt-0.5 break-words text-lg font-semibold tracking-tight text-foreground">{selectedClassLabel}</p></div>
-            <div className="space-y-1.5 pt-1"><label htmlFor="class-group" className="block text-xs font-medium text-foreground">{copy.group}</label>{groupControl}<p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs leading-snug', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div>
-            {showSubjectChoice ? <div className="space-y-1.5 pt-1"><label htmlFor="class-subject" className="block text-xs font-medium text-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-2xl border-0 bg-white/80 text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-2xl border-0 bg-white/80 text-sm shadow-none"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div> : <div className="flex min-w-0 items-baseline gap-2 pt-1 text-xs"><span className="font-medium opacity-80">{copy.subject} :</span><span className="min-w-0 break-words font-semibold">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span></div>}
-          </div></section>}
-          </div>}
-          {((!editingClass && step === 'details') || (editingClass && !rosterSection)) && (
-            <fieldset className="class-create-colors">
-              <div className="class-create-colors__dock">
-                <span className="class-create-colors__label">{locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}</span>
-                <div className="class-create-colors__options">
-                  {CLASS_COLOR_OPTIONS.map(option => (
-                    <label key={option.value} title={option.label[locale]}>
-                      <input type="radio" name={`${formId}-color`} value={option.value} className="sr-only"
-                        aria-label={option.label[locale]} checked={classColor === option.value}
-                        onChange={() => { haptics.onSelect(); setClassColor(option.value); }} />
-                      <span style={{ backgroundColor: option.background, color: option.ink }} aria-hidden="true">
-                        {classColor === option.value && <Check />}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </fieldset>
+        <form id={formId} onSubmit={handleSubmit} aria-busy={submitting} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-4 text-start font-sans">
+          {saveError && <p role="alert" className="text-xs font-semibold text-destructive">{saveError}</p>}
+          <fieldset disabled={submitting} className="min-w-0 space-y-4 border-0 p-0 m-0">
+          {!editingClass && (
+            <ClassCreationProgress
+              steps={steps}
+              currentIndex={stepIndex}
+              label={copy.guidedLabel}
+              stepLabel={stepLabel}
+              onReturn={previous => { haptics.onSelect(); setStep(previous); }}
+            />
           )}
+
+          {!editingClass && (
+            <div ref={stepContentRef} tabIndex={-1} aria-label={stepLabel(step)} key={step} className="outline-none">
+              {step === 'cycle' && hasCycleChoice && (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">{copy.cycle}</h3>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {cycleOptions.map(item => (
+                      <ChoiceCard key={item} selected={item === cycle} onClick={() => chooseCycle(item)}>
+                        {copy.cycleLabels[item]}
+                      </ChoiceCard>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {step === 'level' && (
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-foreground">{copy.level}</h3>
+                    {!editingClass && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomMode(value => !value)}
+                        className="text-xs font-medium text-[var(--cm-accent)] hover:underline"
+                      >
+                        {customMode ? copy.switchToOfficial : copy.createCustom}
+                      </button>
+                    )}
+                  </div>
+                  {!customMode && !hasCycleChoice && (
+                    <button
+                      type="button"
+                      onClick={() => { setShowAllCycles(true); setStep('cycle'); }}
+                      className="w-full text-center py-2 px-3 rounded-xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <span>{copy.otherCycle} · {cycleOptions.map(item => copy.cycleLabels[item]).join(' / ')}</span>
+                    </button>
+                  )}
+                  {customMode ? (
+                    <div className="space-y-2">
+                      <label htmlFor="class-custom-level" className="block text-xs font-medium text-muted-foreground">{copy.customLevel}</label>
+                      <Input id="class-custom-level" value={customLevel} dir={fieldDir(customLevel)} onChange={event => setCustomLevel(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); continueCustomLevel(); } }} placeholder={copy.customLevelPlaceholder} className="h-[52px] rounded-[14px]" autoFocus />
+                    </div>
+                  ) : cycle === 'college' ? (
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {CLASS_LEVELS_BY_CYCLE.college.map(item => (
+                        <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>
+                          {formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}
+                        </ChoiceCard>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {levelGroups.map(item => (
+                        <ChoiceCard key={item.key} selected={item.key === (levelGroupKey || activeLevelGroup?.key)} onClick={() => chooseLevelGroup(item.key)}>
+                          {formatClassLevelGroupLabel(item.key, locale)}
+                        </ChoiceCard>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {step === 'branch' && activeLevelGroup && (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">{copy.branch}</h3>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {activeLevelGroup.levels.map(item => (
+                      <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>
+                        {formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}
+                      </ChoiceCard>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {step === 'details' && (
+                <section className="space-y-4">
+                  <div className="rounded-[16px] bg-[var(--cm-surface)] border border-[var(--cm-border)] p-4 space-y-3">
+                    <div>
+                      <p className="text-xs text-[var(--cm-text-muted)]">{copy.selectedClass}</p>
+                      <p className="text-lg font-semibold text-foreground mt-0.5">{selectedClassLabel}</p>
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <label htmlFor="class-group" className="block text-xs font-medium text-foreground">{copy.group}</label>
+                      {groupControl}
+                      <p id="group-help" role={groupError ? 'alert' : undefined} className={cn('text-xs text-center', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>
+                        {groupError ?? copy.groupHint}
+                      </p>
+                    </div>
+
+                    {showSubjectChoice ? (
+                      <div className="space-y-1 pt-1">
+                        <label htmlFor="class-subject" className="block text-xs font-medium text-foreground">{copy.subject}</label>
+                        {customMode ? (
+                          <Input id="class-subject" value={customSubject} dir={fieldDir(customSubject)} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-xl" />
+                        ) : (
+                          <Select value={subject} onValueChange={setSubject}>
+                            <SelectTrigger id="class-subject" className="h-11 rounded-xl">
+                              <SelectValue placeholder={copy.subjectPlaceholder} />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-xs pt-1 text-muted-foreground">
+                        <span>{copy.subject} :</span>
+                        <span className="font-semibold text-foreground">{formatLocalizedSubjectDisplayName(effectiveSubject, locale)}</span>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+
+          {((!editingClass && step === 'details') || (editingClass && !rosterSection)) && (
+            <div className="space-y-1.5 pt-1">
+              <span className="block text-xs font-medium text-muted-foreground">
+                {locale === 'ar' ? 'اللون' : locale === 'en' ? 'Colour' : 'Couleur'}
+              </span>
+              <div className="claude-swatches" role="group" aria-label={locale === 'ar' ? 'اللون' : 'Couleur'}>
+                {CLASS_COLOR_OPTIONS.map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    title={option.label[locale]}
+                    aria-label={option.label[locale]}
+                    data-selected={classColor === option.value ? 'true' : 'false'}
+                    onClick={() => { haptics.onSelect(); setClassColor(option.value); }}
+                    style={{ backgroundColor: option.background }}
+                    className="claude-swatch"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div hidden={rosterSection}>{editConfiguration}</div>
-          {editingClass && onRosterSave && <div hidden={!rosterSection}>
-            <ClassRosterFields value={rosterText} onChange={setRosterText} names={parsedRoster.names} invalid={parsedRoster.invalid}
-              changed={!dequal(roster?.names ?? [], rosterBase)} suggestedNames={suggestedStudentNames} />
-          </div>}
+          {editingClass && onRosterSave && (
+            <div hidden={!rosterSection}>
+              <ClassRosterFields
+                value={rosterText}
+                onChange={setRosterText}
+                names={parsedRoster.names}
+                invalid={parsedRoster.invalid}
+                changed={!dequal(roster?.names ?? [], rosterBase)}
+                suggestedNames={suggestedStudentNames}
+              />
+            </div>
+          )}
           </fieldset>
         </form>
       </Modal>

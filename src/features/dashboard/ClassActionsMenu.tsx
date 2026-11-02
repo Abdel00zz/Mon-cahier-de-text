@@ -25,6 +25,7 @@ export function ClassActionsMenu({
     onConfigure,
     onDelete,
     onOpenEvaluations,
+    tier,
     subject,
     color,
     palette,
@@ -107,29 +108,41 @@ export function ClassActionsMenu({
                     swipeToDismiss
                     swipeFromBody
                     mobilePresentation="sheet"
-                    mobileDetents={CLASS_MENU_DETENTS}
+                    mobileDetents={[0.38, 0.48]}
                     maxWidth="sm"
-                    elevation="high"
-                    className="class-actions-sheet"
-                    bodyClassName="class-actions-sheet__body"
+                    className="claude-sheet-dialog"
+                    bodyClassName="p-0 pb-4"
                 >
-                    <div style={sheetStyle} className="class-actions-menu-surface">
-                        {onOpenEvaluations && (
-                            <div className="class-menu-top-action">
+                    <div className="flex flex-col text-start">
+                        {/* En-tête : titre serif + sous-titre discret */}
+                        <div className="claude-sheet-header pb-2">
+                            <div>
+                                <h3 className="claude-sheet-title">
+                                    {name}
+                                </h3>
+                                {(tier || subject) && (
+                                    <p className="claude-sheet-subtitle">
+                                        {[tier, subject].filter(Boolean).join(' • ')}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Liste groupée de 3 lignes (56px min chacune) */}
+                        <div className="claude-grouped-list my-2">
+                            {onOpenEvaluations && (
                                 <button
                                     type="button"
                                     onClick={() => openEvaluations('all')}
-                                    className="class-menu-eval-pill"
+                                    className="claude-list-item"
                                 >
-                                    <span className="class-menu-eval-pill__icon" aria-hidden="true">
-                                        <CalendarCheck className="h-4 w-4 shrink-0 stroke-[2]" />
+                                    <CalendarCheck className="claude-list-item-icon" />
+                                    <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
+                                        {t('dashboard.openEvaluations')}
                                     </span>
-                                    <span className="truncate">{t('dashboard.openEvaluations')}</span>
                                 </button>
-                            </div>
-                        )}
+                            )}
 
-                        <div className="class-menu-round-tiles">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -137,12 +150,12 @@ export function ClassActionsMenu({
                                     setActiveMenu(null);
                                     onConfigure();
                                 }}
-                                className="class-menu-round-tile class-menu-round-tile--edit"
+                                className="claude-list-item"
                             >
-                                <span className="class-menu-round-tile__icon" aria-hidden="true">
-                                    <Pencil className="h-4 w-4 stroke-[2]" />
+                                <Pencil className="claude-list-item-icon" />
+                                <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
+                                    {editLabel}
                                 </span>
-                                <span className="class-menu-round-tile__label">{editLabel}</span>
                             </button>
 
                             {onDelete && (
@@ -153,23 +166,26 @@ export function ClassActionsMenu({
                                         setActiveMenu(null);
                                         onDelete();
                                     }}
-                                    className="class-menu-round-tile class-menu-round-tile--delete"
+                                    className="claude-list-item claude-list-item--danger"
                                 >
-                                    <span className="class-menu-round-tile__icon" aria-hidden="true">
-                                        <Trash2 size={16} aria-hidden="true" />
+                                    <Trash2 className="claude-list-item-icon" />
+                                    <span className="flex-1 font-semibold text-[15px] sm:text-[16px]">
+                                        {deleteLabel}
                                     </span>
-                                    <span className="class-menu-round-tile__label">{deleteLabel}</span>
                                 </button>
                             )}
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={closeMenu}
-                            className="class-menu-cancel"
-                        >
-                            {cancelLabel}
-                        </button>
+                        {/* Bouton Annuler 52px en bas */}
+                        <div className="px-5 pt-2">
+                            <button
+                                type="button"
+                                onClick={closeMenu}
+                                className="claude-btn-cancel"
+                            >
+                                {cancelLabel}
+                            </button>
+                        </div>
                     </div>
                 </Modal>
             )}

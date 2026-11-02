@@ -63,3 +63,40 @@ export function pickDepartmentPalette(
 
   return { key, palette: DEPARTMENT_PALETTES[key] };
 }
+
+/**
+ * Construit une table d'association unique et déterministe classe → palette
+ * partagée à l'identique entre le tableau de bord et l'emploi du temps.
+ */
+export function buildUnifiedClassPaletteMap(
+  classes: readonly { id: string; color?: string | null; subject?: string | null }[],
+  classOrder?: readonly string[],
+): Map<string, DepartmentPalette> {
+  const classById = new Map<string, (typeof classes)[number]>();
+  classes.forEach(c => classById.set(c.id, c));
+
+  const orderedIds: string[] = [];
+  if (classOrder) {
+    for (const id of classOrder) {
+      if (classById.has(id)) orderedIds.push(id);
+    }
+  }
+  for (const c of classes) {
+    if (!orderedIds.includes(c.id)) orderedIds.push(c.id);
+  }
+
+  let previousKey: PaletteKey | undefined;
+  const usedKeys = new Set<PaletteKey>();
+  const map = new Map<string, DepartmentPalette>();
+
+  orderedIds.forEach((id, index) => {
+    const item = classById.get(id);
+    if (!item) return;
+    const { key, palette } = pickDepartmentPalette(item.color ?? undefined, item.subject ?? undefined, index, previousKey, usedKeys);
+    previousKey = key;
+    usedKeys.add(key);
+    map.set(id, palette);
+  });
+
+  return map;
+}

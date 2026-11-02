@@ -84,9 +84,10 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     const selectedTask = tasks[0]?.guidance.step === 'active-session' ? tasks[0]
       : tasks.find(task => task.id === selectedTaskId) ?? tasks[0];
     const allTasksSkipped = rawTasks.length > 0 && tasks.length === 0;
-    const skippedFallback = diagnosis.targetClass
-      ? { step: 'standby' as const, classId: diagnosis.targetClass.id, className: diagnosis.targetClass.name, skippedCount: rawTasks.length }
-      : { step: 'create' as const };
+    const targetClass = diagnosis.targetClass ?? input.classes[0];
+    const skippedFallback = targetClass
+      ? { step: 'standby' as const, classId: targetClass.id, className: targetClass.name, skippedCount: rawTasks.length }
+      : { step: 'standby' as const, classId: '', className: '', skippedCount: rawTasks.length };
     let guidance: import('./classGuidance').ClassGuidance = selectedTask?.guidance ?? (allTasksSkipped ? skippedFallback : guidanceFromDiagnosis(diagnosis));
     if (guidance.step === 'ready' && !allTasksSkipped && input.scheduleStatusByClassId) {
       const next = input.classes.map(classInfo => ({ classInfo, status: input.scheduleStatusByClassId!.get(classInfo.id) }))

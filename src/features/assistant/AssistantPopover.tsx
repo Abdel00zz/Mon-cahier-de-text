@@ -109,7 +109,7 @@ export function AssistantPopover({
   const activeExpression: BloubExpression = welcoming && !open && baseExpression === 'success' ? 'excited'
     : hovered && baseExpression === 'success' ? 'love' : baseExpression;
 
-  const badgeVariant = problemCount === 0 ? 'serene' : problemCount <= 2 ? 'minor' : 'alert';
+  const badgeVariant = problemCount === 0 || message.id === 'standby' ? 'serene' : problemCount <= 2 ? 'minor' : 'alert';
 
   return (
     <div className="assistant-anchor" ref={root} dir={locale === 'ar' ? 'rtl' : 'ltr'} lang={locale}>
@@ -136,12 +136,12 @@ export function AssistantPopover({
           size={30}
           color="var(--control-ink, #725b47)"
           expression={activeExpression}
-          attention={unread && activeExpression !== 'excited'}
-          antennaFlash={Boolean(antennaFlash && unread && activeExpression !== 'excited')}
+          attention={unread && activeExpression !== 'excited' && message.id !== 'standby'}
+          antennaFlash={Boolean(antennaFlash && unread && activeExpression !== 'excited' && message.id !== 'standby')}
           headRoundness={headRoundness}
           autoSleepMs={autoSleepMs}
         />
-        {problemCount > 0 && !open && (
+        {problemCount > 0 && message.id !== 'standby' && !open && (
           <span
             className={`assistant-trigger__badge assistant-trigger__badge--${badgeVariant}`}
             aria-hidden="true"
