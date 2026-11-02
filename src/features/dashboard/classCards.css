@@ -20,8 +20,9 @@
   --class-radius: 18px;
   --class-title-scale: 1;
   --class-badge-scale: 1;
-  --spring-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-out: cubic-bezier(0.18, 1.01, 0.24, 1);
+  --spring-golden: cubic-bezier(0.19, 1, 0.22, 1);
+  --spring-bounce: cubic-bezier(0.16, 1.08, 0.28, 1);
 
   position: relative;
   isolation: isolate;
@@ -40,7 +41,7 @@
   font-synthesis: weight;
   box-sizing: border-box;
   overflow: hidden;
-  transition: transform 180ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 220ms ease;
+  transition: transform 260ms var(--spring-golden), background-color 220ms ease, border-color 220ms ease, box-shadow 260ms var(--spring-golden);
 }
 
 .class-card:not(.class-card--active):not([data-session-active="true"]) {

@@ -52,10 +52,10 @@
   left: var(--svg-left, -3px);
   pointer-events: none;
   transform: scale(var(--svg-scale, 1)) translateZ(0);
-  transition: stroke 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-              fill 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-              stroke-dashoffset 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) var(--svg-delay, 0s),
-              transform var(--svg-transform-duration, 0.2s) cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: stroke 0.32s cubic-bezier(0.19, 1, 0.22, 1),
+              fill 0.32s cubic-bezier(0.19, 1, 0.22, 1),
+              stroke-dashoffset 0.24s cubic-bezier(0.18, 1.01, 0.24, 1) var(--svg-delay, 0s),
+              transform var(--svg-transform-duration, 0.22s) cubic-bezier(0.18, 1.01, 0.24, 1);
 }
 
 .checkbox,
@@ -130,7 +130,7 @@
 .switch input {
   background: var(--b, var(--switch));
   border-radius: 999px;
-  transition: background 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background 0.32s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .switch input:hover {

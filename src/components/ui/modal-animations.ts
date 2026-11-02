@@ -18,24 +18,25 @@ export const contentContainerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.045,
-      delayChildren: 0.12,
+      staggerChildren: 0.05,
+      delayChildren: 0.14,
     },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.12 },
+    transition: { duration: 0.14 },
   },
 };
 
 /**
  * Éléments individuels en cascade (inputs, boutons, sections)
+ * Ressort harmonique plus long et noble (Golden Harmonic Spring)
  */
 export const contentItemVariants: Variants = {
   hidden: {
     opacity: 0,
-    y: 14,
-    scale: 0.98,
+    y: 16,
+    scale: 0.975,
   },
   visible: {
     opacity: 1,
@@ -43,8 +44,8 @@ export const contentItemVariants: Variants = {
     scale: 1,
     transition: {
       type: 'spring',
-      stiffness: 420,
-      damping: 26,
+      stiffness: 280,
+      damping: 24,
     },
   },
 };

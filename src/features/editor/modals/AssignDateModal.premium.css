@@ -161,11 +161,11 @@
   box-shadow: none;
 }
 
-/* Bouton de fermeture circulaire moderne inspiré du prototype */
+/* Bouton de fermeture circulaire en médaillon antique */
 .remark-close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -173,18 +173,21 @@
   border: 1px solid var(--remark-chip-default-border);
   color: var(--remark-chip-default-text);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px 0 rgb(28 26 22 / 0.06);
+  transition: transform 280ms cubic-bezier(0.18, 1.01, 0.24, 1), background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .remark-close-btn:hover {
   background-color: var(--remark-chip-default-hover);
   color: hsl(var(--foreground));
+  transform: scale(1.06);
+  box-shadow: 0 3px 8px -2px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
 }
 
 .remark-close-btn:active {
   background-color: #fef1ef;
   color: #c4473a;
-  transform: scale(0.94);
+  transform: scale(0.92);
 }
 
 /* Pastille de date en en-tête */

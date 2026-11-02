@@ -1,80 +1,107 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Modal Premium Tokens & Liquid Glass Architecture
-   Tokens de design pour modales ultra-modernes, spring physics et glows GPU
+   Modal Premium Tokens · Liquid Glass & Esthétique Classique Hellénique
+   Tokens de design pour modales architecturales, courbes à ressorts longues
+   et élégantes (Golden Harmonic Springs), méandre classique et zones circulaires.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Spring Physics Curves ──────────────────────────────────────────────── */
-  --modal-spring-bounce: cubic-bezier(0.16, 1.12, 0.3, 1);
-  --modal-spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --modal-spring-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Golden Harmonic Spring Physics Curves (Élégantes & Longues) ───────── */
+  --modal-spring-golden: cubic-bezier(0.19, 1, 0.22, 1);
+  --modal-spring-smooth: cubic-bezier(0.18, 1.01, 0.24, 1);
+  --modal-spring-bounce: cubic-bezier(0.16, 1.08, 0.28, 1);
+  --modal-spring-snappy: cubic-bezier(0.24, 1.02, 0.35, 1);
 
-  /* ── Glass Blur Levels ─────────────────────────────────────────────────── */
-  --modal-blur-subtle: 8px;
-  --modal-blur-medium: 16px;
-  --modal-blur-intense: 24px;
+  /* ── Glass Blur Levels & Réfraction Marbrée ────────────────────────────── */
+  --modal-blur-subtle: 10px;
+  --modal-blur-medium: 18px;
+  --modal-blur-intense: 26px;
 
-  /* ── Contextual Glow Shadows ───────────────────────────────────────────── */
-  --glow-success: 0 0 32px -8px hsla(142, 70%, 45%, 0.35);
-  --glow-warning: 0 0 32px -8px hsla(38, 92%, 50%, 0.35);
-  --glow-danger: 0 0 32px -8px hsla(352, 70%, 50%, 0.40);
-  --glow-primary: 0 0 28px -10px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
+  /* ── Contextual Glow Shadows (Attique & Méditerranée Antique) ──────────── */
+  --glow-success: 0 0 34px -8px hsla(130, 45%, 35%, 0.32);
+  --glow-warning: 0 0 34px -8px hsla(38, 92%, 48%, 0.35);
+  --glow-danger: 0 0 34px -8px hsla(352, 65%, 46%, 0.38);
+  --glow-primary: 0 0 32px -8px color-mix(in srgb, hsl(var(--primary)) 44%, transparent);
 
-  /* ── Elevation Shadows (Z-Depth) ───────────────────────────────────────── */
-  --modal-shadow-low: 0 4px 14px -4px rgb(0 0 0 / 0.08);
-  --modal-shadow-mid: 0 12px 32px -12px rgb(0 0 0 / 0.18);
-  --modal-shadow-high: 0 24px 56px -16px rgb(0 0 0 / 0.28);
+  /* ── Elevation Shadows (Z-Depth Inspiré des Entablements Helléniques) ──── */
+  --modal-shadow-low: 0 6px 18px -4px rgb(28 26 22 / 0.08);
+  --modal-shadow-mid: 0 16px 38px -12px rgb(28 26 22 / 0.16);
+  --modal-shadow-high: 0 28px 64px -14px rgb(28 26 22 / 0.24);
 
-  /* ── Timing Orchestration (150ms–300ms Tactile Spring) ─────────────────── */
-  --modal-timing-backdrop: 200ms;
-  --modal-timing-surface: 250ms;
-  --modal-timing-content: 220ms;
-  --modal-timing-stagger: 50ms;
+  /* ── Timing Orchestration (Transitions Longues, Nobles & Amorties) ─────── */
+  --modal-timing-backdrop: 260ms;
+  --modal-timing-surface: 340ms;
+  --modal-timing-content: 280ms;
+  --modal-timing-stagger: 55ms;
 
-  /* ── Palette Artistique des Surfaces Modales (60-30-10 & Color Tinting) ── */
-  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 93%, hsl(39 48% 96%) 7%);
+  /* ── Palette Classique Hellénique (Marbre Pentélique, Argile & Bronze) ─── */
+  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(39 42% 96%) 6%);
   --modal-surface-tint: radial-gradient(
-    120% 70% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 4.5%, hsla(38, 70%, 92%, 0.45)) 0%,
-    transparent 72%
+    130% 75% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 5.5%, hsla(38, 65%, 93%, 0.45)) 0%,
+    transparent 74%
   );
-  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 90%, hsl(40 50% 98%) 10%);
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(38 38% 95%) 8%);
-  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 82%, hsl(35 28% 80%) 18%);
-  --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.42) 92%, hsl(var(--primary) / 0.08));
+  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(40 48% 97%) 8%);
+  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(38 35% 95%) 6%);
+  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 84%, hsl(35 28% 78%) 16%);
+  --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.46) 92%, hsl(var(--primary) / 0.08));
+
+  /* ── Bouton Fermer Circulaire (Médaillon Antique) ──────────────────────── */
+  --modal-close-size: 42px;
+  --modal-close-radius: 9999px;
+  --modal-close-bg: color-mix(in srgb, hsl(var(--card)) 85%, hsl(var(--muted) / 0.5));
+  --modal-close-border: color-mix(in srgb, hsl(var(--border)) 78%, transparent);
+  --modal-close-hover-bg: color-mix(in srgb, hsl(var(--primary)) 8.5%, hsl(var(--card)));
+  --modal-close-hover-border: color-mix(in srgb, hsl(var(--primary)) 36%, hsl(var(--border)));
+
+  /* ── Motifs & Ornements Helléniques (Frise Méandre & Cannelures) ───────── */
+  --modal-frieze-color: color-mix(in srgb, hsl(var(--primary)) 22%, hsl(var(--foreground) / 0.15));
+  --modal-column-fluting: linear-gradient(90deg, 
+    transparent 0%, 
+    color-mix(in srgb, hsl(var(--foreground) / 0.04) 50%, transparent) 50%, 
+    transparent 100%
+  );
 
   /* ── Magnetic & Ambient Breath Tokens ──────────────────────────────────── */
-  --modal-magnetic-glow: 0 0 34px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
-  --modal-ambient-glow: 0 0 24px -8px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
-  --modal-ambient-glow-peak: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+  --modal-magnetic-glow: 0 0 36px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
+  --modal-ambient-glow: 0 0 26px -8px color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
+  --modal-ambient-glow-peak: 0 0 42px -4px color-mix(in srgb, hsl(var(--primary)) 34%, transparent);
 }
 
 .dark {
-  /* Glows désaturés et adoucis pour limiter l'éblouissement sur fond sombre */
-  --glow-success: 0 0 36px -8px hsla(142, 55%, 52%, 0.26);
-  --glow-warning: 0 0 36px -8px hsla(38, 85%, 55%, 0.26);
-  --glow-danger: 0 0 36px -8px hsla(352, 65%, 58%, 0.30);
-  --glow-primary: 0 0 32px -10px color-mix(in srgb, hsl(var(--primary)) 35%, transparent);
+  /* Glows ambrés et bronze antique doux sur fond sombre */
+  --glow-success: 0 0 38px -8px hsla(130, 38%, 52%, 0.26);
+  --glow-warning: 0 0 38px -8px hsla(38, 85%, 55%, 0.28);
+  --glow-danger: 0 0 38px -8px hsla(352, 60%, 58%, 0.30);
+  --glow-primary: 0 0 34px -10px color-mix(in srgb, hsl(var(--primary)) 36%, transparent);
 
-  /* Profondeur Z renforcée sur fond sombre */
-  --modal-shadow-low: 0 6px 16px -4px rgb(0 0 0 / 0.40);
-  --modal-shadow-mid: 0 16px 40px -10px rgb(0 0 0 / 0.60);
-  --modal-shadow-high: 0 28px 68px -20px rgb(0 0 0 / 0.72);
+  /* Profondeur Z marbre de Chios / basalte antique poli */
+  --modal-shadow-low: 0 6px 18px -4px rgb(0 0 0 / 0.42);
+  --modal-shadow-mid: 0 18px 44px -10px rgb(0 0 0 / 0.62);
+  --modal-shadow-high: 0 30px 72px -18px rgb(0 0 0 / 0.74);
 
-  /* Palette Artistique Sombre (Gris ardoise profond étagé, zéro noir pur) */
-  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(224 28% 15%) 6%);
+  /* Palette Sombre (Basalte noble sculpté, zéro noir pur) */
+  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 28% 15%) 5%);
   --modal-surface-tint: radial-gradient(
-    120% 65% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 7%, hsla(222, 35%, 22%, 0.35)) 0%,
-    transparent 70%
+    130% 70% at 50% 0%,
+    color-mix(in srgb, hsl(var(--primary)) 8%, hsla(222, 35%, 22%, 0.32)) 0%,
+    transparent 72%
   );
-  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(224 25% 18%) 8%);
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(224 28% 14%) 6%);
+  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 93%, hsl(224 25% 18%) 7%);
+  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 28% 14%) 5%);
   --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 88%, hsl(220 25% 32%) 12%);
-  --modal-scrim-bg: hsl(224 32% 6% / 0.74);
+  --modal-scrim-bg: hsl(224 32% 6% / 0.78);
+
+  /* Bouton Fermer Circulaire Sombre */
+  --modal-close-bg: color-mix(in srgb, hsl(var(--card)) 82%, hsl(224 25% 18%) 18%);
+  --modal-close-border: color-mix(in srgb, hsl(var(--border)) 82%, transparent);
+  --modal-close-hover-bg: color-mix(in srgb, hsl(var(--primary)) 16%, hsl(var(--card)));
+  --modal-close-hover-border: color-mix(in srgb, hsl(var(--primary)) 45%, hsl(var(--border)));
+
+  /* Frise Méandre Sombre */
+  --modal-frieze-color: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground) / 0.18));
 
   /* Magnetic & Ambient Sombre */
-  --modal-magnetic-glow: 0 0 38px -4px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
-  --modal-ambient-glow: 0 0 26px -8px color-mix(in srgb, hsl(var(--primary)) 16%, transparent);
-  --modal-ambient-glow-peak: 0 0 42px -4px color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+  --modal-magnetic-glow: 0 0 40px -4px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);
+  --modal-ambient-glow: 0 0 28px -8px color-mix(in srgb, hsl(var(--primary)) 16%, transparent);
+  --modal-ambient-glow-peak: 0 0 44px -4px color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
 }

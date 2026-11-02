@@ -28,6 +28,13 @@ import { CalendarManager } from '../../src/admin/components/CalendarManager';
 import { OfficialBulletinManager } from '../../src/admin/components/OfficialBulletinManager';
 import { CommandPalette } from '../../src/components/ui/CommandPalette';
 import { ConfirmDialog } from '../../src/components/ui/confirm-dialog';
+import { EventDateModal } from '../../src/features/evaluations/components/EventDateModal';
+import { PwaInstallModal } from '../../src/features/assistant/PwaInstallModal';
+import { TeacherConversation } from '../../src/features/messages/TeacherConversation';
+import { ManualAssessmentEditor } from '../../src/features/evaluations/components/ManualAssessmentEditor';
+import { KindChooser } from '../../src/features/evaluations/components/KindChooser';
+import { ClassEvaluationsSheet } from '../../src/features/evaluations/ClassEvaluationsSheet';
+import { Modal } from '../../src/components/ui/modal';
 import { readSessionSelection } from '../../src/domain/notebook/sessionEditing';
 
 const noop = () => {};
@@ -76,6 +83,13 @@ export function UiGallery({ page, config, classes, lessons }: { page: string; co
         case 'admin-bulletin': view = <OfficialBulletinManager onBack={noop}/>; break;
         case 'command-palette': view = <CommandPalette {...common} classes={classes} onSelectClass={noop} onCreateClass={noop} onOpenSettings={noop} onOpenGuide={noop} onOpenTimetable={noop} onToggleDarkMode={noop}/>; break;
         case 'delete-confirmation': view = <ConfirmDialog open onOpenChange={noop} title={isAr ? 'حذف القسم؟' : 'Supprimer la classe ?'} description={classInfo.name} onConfirm={noop}/>; break;
+        case 'event-date': view = <EventDateModal isOpen onClose={noop} initialDate="2026-10-15" title={isAr ? 'اختيار تاريخ الفرض' : 'Date de l’évaluation'} allowRange={false}/>; break;
+        case 'event-date-range': view = <EventDateModal isOpen onClose={noop} initialDate="2026-10-15" initialEndDate="2026-10-18" title={isAr ? 'فترة النشاط / الغياب' : 'Période de l’absence'} allowRange={true}/>; break;
+        case 'pwa-install': view = <PwaInstallModal open locale={config.applicationLocale ?? 'ar'} platform="android" onClose={noop} onConfirmInstalled={noop}/>; break;
+        case 'teacher-conversation': view = <TeacherConversation open onClose={noop} locale={config.applicationLocale ?? 'ar'} target={classInfo} context={isAr ? 'استفسار تربوي بخصوص استعمال الزمن' : 'Précision pédagogique concernant l’emploi du temps'}/>; break;
+        case 'edit-manual-assessment': view = <Modal isOpen onClose={noop} title={isAr ? 'تعديل الفرض' : 'Modifier le devoir'} maxWidth="lg"><ManualAssessmentEditor today="2026-10-15" homeworkDate="2026-10-20" initialType="controle" cycle="lycee" onCancel={noop} onSave={noop}/></Modal>; break;
+        case 'evaluation-kind-picker': view = <Modal isOpen onClose={noop} title={isAr ? 'نوع التقييم' : 'Nature de l’évaluation'} maxWidth="xl"><KindChooser onSelect={noop}/></Modal>; break;
+        case 'class-evaluations-direct': view = <ClassEvaluationsSheet open onOpenChange={noop} classInfo={classInfo} config={draft} onConfigChange={change} entry="all" lessonsData={lessons}/>; break;
         default: view = <p role="alert">Écran de capture inconnu : {page}</p>;
     }
     return <AuthProvider><div data-ui-gallery={page}>{view}</div></AuthProvider>;

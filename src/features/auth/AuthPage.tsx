@@ -9,6 +9,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   CircleCheck,
   Eye,
@@ -18,6 +19,8 @@ import {
   LockKeyhole,
   ArrowLeft,
   ArrowRight,
+  BookOpen,
+  ShieldCheck,
 } from "@/components/ui/icons";
 import type { AppLocale } from "@/types";
 import { AuthShowcase } from "./AuthShowcase";
@@ -103,6 +106,19 @@ const AUTH_COPY = {
       "Connexion impossible. Vérifiez vos identifiants et votre connexion Internet.",
     strengthLabel: "Robustesse indicative",
     strength: ["Faible", "Moyenne", "Bonne", "Forte"],
+    portalLabel: "Choisir votre espace",
+    portalTeacher: "Session Enseignant",
+    portalAdmin: "Tableau de bord Admin",
+    adminPortalBadge: "Direction de l’établissement",
+    adminPortalTitle: "Tableau de bord d’administration",
+    adminPortalDetail: "Espace réservé à la direction pour la supervision des cahiers de textes, l’emploi du temps officiel, les arrêtés et la gestion des comptes enseignants.",
+    adminPortalCodeLabel: "Code d’accès confidentiel",
+    adminPortalCodePlaceholder: "Code secret d’administration",
+    adminPortalSubmit: "Accéder au tableau de bord",
+    adminPortalDirectLink: "Ouvrir directement la console d’administration (/admin.html)",
+    adminSwitchPrompt: "Vous faites partie de la direction ou de l’administration ?",
+    adminSwitchAction: "Accéder au tableau de bord administrateur",
+    teacherSwitchAction: "Revenir à la session enseignant (Mon cahier de textes)",
   },
   ar: {
     brand: "دفتر نصوصي",
@@ -158,6 +174,19 @@ const AUTH_COPY = {
     unknownError: "تعذّر الاتصال. تحقق من بيانات الدخول ومن اتصالك بالإنترنت.",
     strengthLabel: "مؤشر قوة كلمة المرور",
     strength: ["ضعيفة", "متوسطة", "جيدة", "قوية"],
+    portalLabel: "اختيار الفضاء",
+    portalTeacher: "فضاء الأستاذ (المستخدم)",
+    portalAdmin: "لوحة قيادة الإدارة",
+    adminPortalBadge: "إدارة المؤسسة التربوية",
+    adminPortalTitle: "لوحة قيادة الإدارة",
+    adminPortalDetail: "فضاء مخصص لإدارة المؤسسة لمراقبة وتتبع دفاتر النصوص، استعمال الزمن، المذكرات الرسمية، وتدبير أساتذة المؤسسة.",
+    adminPortalCodeLabel: "رمز الدخول السري للإدارة",
+    adminPortalCodePlaceholder: "الرمز السري المخصص لإدارة المؤسسة",
+    adminPortalSubmit: "الدخول إلى لوحة القيادة الإدارية",
+    adminPortalDirectLink: "فتح لوحة الإدارة مباشرة (/admin.html)",
+    adminSwitchPrompt: "هل أنت من إدارة المؤسسة أو الإشراف الإداري؟",
+    adminSwitchAction: "الولوج إلى لوحة قيادة الإدارة",
+    teacherSwitchAction: "العودة إلى فضاء الأستاذ (دفتر نصوصي)",
   },
 } as const;
 const FIELD_CLASS =
@@ -294,6 +323,34 @@ export const AuthPage: React.FC<{
   const phoneValid = isCompleteMoroccanPhone(phone);
   const passwordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
+
+  const [portal, setPortal] = useState<'teacher' | 'admin'>('teacher');
+  const [adminCode, setAdminCode] = useState('');
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const [isAdminSubmitting, setIsAdminSubmitting] = useState(false);
+
+  const handleAdminLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminCode.trim() || isAdminSubmitting) return;
+    setIsAdminSubmitting(true);
+    setAdminError(null);
+    try {
+      const res = await apiFetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', code: adminCode.trim() }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(data?.message || (displayLocale === 'ar' ? 'رمز الدخول غير صحيح.' : 'Code d’accès invalide.'));
+      }
+      window.location.href = '/admin.html';
+    } catch (err: unknown) {
+      setAdminError(err instanceof Error ? err.message : (displayLocale === 'ar' ? 'تعذر الاتصال بالإدارة.' : 'Connexion impossible.'));
+    } finally {
+      setIsAdminSubmitting(false);
+    }
+  };
 
   const navigateTo = useCallback(
     (nextView: AuthView, nextMode: Mode = "login") => {
@@ -527,10 +584,118 @@ export const AuthPage: React.FC<{
               <button type="button" disabled={isSubmitting} onClick={() => navigateTo('landing')} className="auth-back auth-action focus-visible:outline-2 focus-visible:outline-offset-2">
                 {displayLocale === 'ar' ? <ArrowRight aria-hidden="true" /> : <ArrowLeft aria-hidden="true" />}{copy.backToHome}
               </button>
-              <h1
-                tabIndex={-1}
-                id={id + "-title"}
-              >
+
+              <div role="tablist" aria-label={copy.portalLabel} className="auth-portal-selector mb-6 grid grid-cols-2 gap-1 rounded-xl border border-border/80 bg-muted/60 p-1">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={portal === 'teacher'}
+                  onClick={() => { setPortal('teacher'); setError(null); }}
+                  className={cn(
+                    "flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all",
+                    portal === 'teacher'
+                      ? "bg-card text-foreground shadow-sm border border-border/50"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span>{copy.portalTeacher}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={portal === 'admin'}
+                  onClick={() => { setPortal('admin'); setError(null); }}
+                  className={cn(
+                    "flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all",
+                    portal === 'admin'
+                      ? "bg-card text-foreground shadow-sm border border-border/50"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span>{copy.portalAdmin}</span>
+                </button>
+              </div>
+
+              {portal === 'admin' ? (
+                <div className="auth-admin-box space-y-5">
+                  <div className="rounded-2xl border-2 border-primary/25 bg-primary/[0.04] p-5">
+                    <div className="flex items-center gap-2 text-primary">
+                      <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">{copy.adminPortalBadge}</span>
+                    </div>
+                    <h1 className="mt-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                      {copy.adminPortalTitle}
+                    </h1>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {copy.adminPortalDetail}
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
+                    <div>
+                      <label htmlFor={id + '-admin-code'} className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        {copy.adminPortalCodeLabel}
+                      </label>
+                      <Input
+                        id={id + '-admin-code'}
+                        type="password"
+                        value={adminCode}
+                        onChange={e => setAdminCode(e.target.value)}
+                        autoComplete="current-password"
+                        placeholder={copy.adminPortalCodePlaceholder}
+                        className={FIELD_CLASS}
+                        required
+                        autoFocus
+                      />
+                    </div>
+
+                    {adminError && (
+                      <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs font-medium text-destructive">
+                        {adminError}
+                      </p>
+                    )}
+
+                    <Button
+                      type="submit"
+                      disabled={isAdminSubmitting || !adminCode.trim()}
+                      className="auth-submit auth-action min-h-12 w-full"
+                    >
+                      {isAdminSubmitting && (
+                        <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                      )}
+                      {isAdminSubmitting ? copy.wait : copy.adminPortalSubmit}
+                    </Button>
+
+                    <div className="pt-2 text-center">
+                      <a
+                        href="/admin.html"
+                        className="auth-link text-xs"
+                        title={copy.adminPortalDirectLink}
+                      >
+                        {copy.adminPortalDirectLink} →
+                      </a>
+                    </div>
+                  </form>
+
+                  <div className="border-t border-border/80 pt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => { setPortal('teacher'); setAdminError(null); }}
+                      className="inline-flex min-h-11 items-center justify-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                    >
+                      <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+                      <span>{copy.teacherSwitchAction}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h1
+                    tabIndex={-1}
+                    id={id + "-title"}
+                  >
                 {resetMode ? copy.resetTitle : isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
               <p className="auth-form-detail">
@@ -818,6 +983,28 @@ export const AuthPage: React.FC<{
                 />
                 {copy.secure}
               </p>
+
+              <div className="auth-admin-callout mt-8 rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
+                <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <ShieldCheck className="h-4.5 w-4.5" aria-hidden="true" />
+                </div>
+                <p className="text-xs font-bold text-foreground">
+                  {copy.adminSwitchPrompt}
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  {displayLocale === 'ar' ? 'فضاء خاص بإدارة المؤسسة لمراقبة دفاتر النصوص والمذكرات الرسمية.' : 'Espace réservé à la direction pour la supervision des cahiers de textes et le pilotage.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setPortal('admin'); setError(null); }}
+                  className="mt-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/10 focus-visible:outline-2"
+                >
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  <span>{copy.adminSwitchAction} →</span>
+                </button>
+              </div>
+            </>
+          )}
             </div>
           </main>
         </div>

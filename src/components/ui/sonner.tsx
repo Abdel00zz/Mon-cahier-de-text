@@ -31,7 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           description: "!text-[12px] !text-muted-foreground !leading-relaxed",
           actionButton: "!text-xs !font-semibold !min-h-11 !px-3 !rounded-xl !bg-primary !text-primary-foreground",
           cancelButton: "!text-xs !font-semibold !min-h-11 !px-3 !rounded-xl !bg-muted !text-foreground",
-          closeButton: "!h-4 !w-4 !text-xs",
+          closeButton: "!h-6 !w-6 !rounded-full !border !border-border/70 !bg-card/90 hover:!bg-muted !text-muted-foreground hover:!text-foreground !flex !items-center !justify-center !text-xs transition-transform duration-200 hover:scale-105 active:scale-95",
         },
       }}
       {...props}

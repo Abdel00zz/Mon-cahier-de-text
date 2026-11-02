@@ -12,6 +12,7 @@ import { meanBy, range, uniq } from 'es-toolkit';
 import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ClassroomWelcomeIllustration } from '../../components/ui/DynamicIllustration';
+import { BookOpen } from '../../components/ui/icons';
 import { DEFAULT_OVERVIEW_FILTERS, freshnessLabel, hasActiveFilters, readOverviewFilters, teachersToCsv, writeOverviewFilters, type CsvTeacherRow } from '../overviewTools';
 import type { AdminTeacherSummary } from '../api';
 import { getBundledCalendar } from '../../domain/calendar/calendar';
@@ -425,7 +426,15 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                         {refreshFailed ? 'Actualisation interrompue : les données affichées peuvent être anciennes' : isLoading ? 'Actualisation…' : freshnessLabel(lastUpdatedAt, now)}
                     </p>
                 </div>
-                <div className="admin-overview__header-actions flex gap-2">
+                <div className="admin-overview__header-actions flex flex-wrap gap-2">
+                    <a
+                        href="/"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                        title="Basculer vers la session utilisateur (Mon cahier de textes)"
+                    >
+                        <BookOpen className="h-4 w-4" aria-hidden="true" />
+                        <span>Session enseignant</span>
+                    </a>
                     <button
                         type="button"
                         onClick={exportCsv}

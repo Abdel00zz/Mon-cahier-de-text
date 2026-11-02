@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AppConfig } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { HardDriveDownload, HardDriveUpload } from '@/components/ui/icons';
+import { HardDriveDownload, HardDriveUpload, ShieldCheck } from '@/components/ui/icons';
 import { AccountTab } from './AccountTab';
 import { SettingsPanel, SettingsRow, SettingsSection, settingsButtonClass } from './SettingsPrimitives';
 
@@ -32,6 +32,15 @@ export const AccountDataTab: React.FC<AccountDataTabProps> = ({ config, onExport
             <HardDriveUpload className="h-[18px] w-[18px] stroke-[1.5]" />
             <span>{t('settings.importButton')}</span>
           </button>
+        </SettingsRow>
+      </SettingsSection>
+
+      <SettingsSection title={t('account.adminPortalTitle')} icon={ShieldCheck}>
+        <SettingsRow label={t('account.adminPortalTitle')} hint={t('account.adminPortalHint')}>
+          <a href="/admin.html" className={settingsButtonClass}>
+            <ShieldCheck className="h-[18px] w-[18px] stroke-[1.5]" />
+            <span>{t('account.adminPortalAction')}</span>
+          </a>
         </SettingsRow>
       </SettingsSection>
 

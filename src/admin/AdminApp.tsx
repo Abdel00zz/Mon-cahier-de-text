@@ -7,7 +7,7 @@ import { AdminApiError, adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
 import { TeacherList } from './components/TeacherList';
 import { hashToView, sameView, viewToHash, type AdminView } from './route';
-import { CalendarDays, Clock, FileText } from '../components/ui/icons';
+import { BookOpen, CalendarDays, Clock, FileText, ShieldCheck } from '../components/ui/icons';
 
 /*
  * Seuls la connexion et la liste partent avec la première page : la fiche d'un
@@ -179,25 +179,41 @@ export const AdminApp: React.FC = () => {
 
     return (
         <div className="admin-shell min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
-            <nav aria-label="Outils administratifs" className="admin-commandbar mx-auto flex max-w-6xl flex-wrap justify-end gap-2 px-4 pt-4 sm:px-8">
-                <button onClick={() => go({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
-                    <Clock className="admin-commandbar__icon" aria-hidden />
-                    Horaires des séances
-                </button>
-                <button onClick={() => go({ name: 'journal' })} className="admin-commandbar__action admin-commandbar__action--journal min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
-                    Journal
-                </button>
-                <button onClick={() => go({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
-                    Contrôle continu
-                </button>
-                <button onClick={() => go({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
-                    <FileText className="admin-commandbar__icon" aria-hidden />
-                    Bulletin officiel JSON
-                </button>
-                <button onClick={() => go({ name: 'calendar' })} className="admin-commandbar__action admin-commandbar__action--ink admin-commandbar__action--calendar min-h-11 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
-                    <CalendarDays className="admin-commandbar__icon" aria-hidden />
-                    Gérer les vacances
-                </button>
+            <nav aria-label="Outils administratifs" className="admin-commandbar mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 pt-4 sm:px-8">
+                <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
+                        <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                        Dashboard Direction
+                    </span>
+                    <a
+                        href="/"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground shadow-sm hover:bg-muted"
+                        title="Basculer vers la session utilisateur (Mon cahier de textes)"
+                    >
+                        <BookOpen className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                        <span>Session enseignant</span>
+                    </a>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={() => go({ name: 'timetableClock' })} className="admin-commandbar__action admin-commandbar__action--schedule min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                        <Clock className="admin-commandbar__icon" aria-hidden />
+                        Horaires des séances
+                    </button>
+                    <button onClick={() => go({ name: 'journal' })} className="admin-commandbar__action admin-commandbar__action--journal min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                        Journal
+                    </button>
+                    <button onClick={() => go({ name: 'evaluationPolicy' })} className="admin-commandbar__action admin-commandbar__action--policy min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
+                        Contrôle continu
+                    </button>
+                    <button onClick={() => go({ name: 'bulletin' })} className="admin-commandbar__action admin-commandbar__action--primary admin-commandbar__action--bulletin min-h-11 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                        <FileText className="admin-commandbar__icon" aria-hidden />
+                        Bulletin officiel JSON
+                    </button>
+                    <button onClick={() => go({ name: 'calendar' })} className="admin-commandbar__action admin-commandbar__action--ink admin-commandbar__action--calendar min-h-11 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                        <CalendarDays className="admin-commandbar__icon" aria-hidden />
+                        Gérer les vacances
+                    </button>
+                </div>
             </nav>
             {overviewError && <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-8"><StatusNotice tone="warning" title={overviewError} announce /></div>}
             <TeacherList

@@ -78,4 +78,6 @@
   .auth-brand__name { max-width: 112px; }
   .auth-form-main { padding-inline: 20px; }
 }
+.auth-admin-box { width: 100%; }
+.auth-admin-callout { border-radius: 16px; border: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .35); padding: 16px; }
 @media (max-height: 650px) { .auth-form-main { justify-content: flex-start; } }

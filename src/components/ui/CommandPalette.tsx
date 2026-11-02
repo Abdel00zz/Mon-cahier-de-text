@@ -12,6 +12,7 @@ import {
   Calendar,
   ArrowRight,
   Command as CommandIcon,
+  ShieldCheck,
 } from '@/components/ui/icons';
 import { ClassInfo } from '@/types';
 
@@ -125,6 +126,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       });
     }
 
+    list.push({
+      id: 'nav-admin',
+      title: 'Tableau de bord Administration',
+      subtitle: 'Ouvrir la console de direction de l’établissement (/admin)',
+      category: 'navigation',
+      icon: ShieldCheck,
+      badge: 'Direction',
+      onSelect: () => {
+        window.location.href = '/admin.html';
+        onClose();
+      },
+    });
+
     if (onToggleDarkMode) {
       list.push({
         id: 'action-toggle-theme',
@@ -155,7 +169,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm animate-in fade-in-0 duration-150" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 dark:bg-black/75 backdrop-blur-md animate-in fade-in-0 duration-250" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className="fixed inset-x-0 top-16 sm:top-24 z-50 mx-auto w-full max-w-xl px-3 sm:px-6 outline-none"
@@ -163,16 +177,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           <DialogPrimitive.Title className="sr-only">Palette de commandes</DialogPrimitive.Title>
           <Command
             label="Palette de commandes"
-            className="w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 dark:bg-card/95 text-foreground shadow-2xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+            className="w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 dark:bg-card/95 text-foreground shadow-2xl ring-1 ring-primary/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-260 [transition-timing-function:cubic-bezier(0.18,1.01,0.24,1)]"
           >
-            <div className="flex items-center gap-3 border-b border-border/60 bg-muted/30 px-4 py-3.5">
-              <Search className="h-5 w-5 text-primary shrink-0" />
+            <div className="relative flex items-center gap-3 border-b border-border/60 bg-muted/30 px-4 py-3.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
+                <Search className="h-4.5 w-4.5" />
+              </div>
               <Command.Input
                 autoFocus
                 placeholder="Rechercher une classe, action ou commande... (Ex: 2BAC, Thème, Guide)"
                 className="w-full bg-transparent text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
-              <kbd className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border/80 bg-muted/70 px-2 py-0.5 text-[10px] font-mono font-medium text-muted-foreground">
+              <kbd className="hidden sm:inline-flex items-center gap-1 rounded-full border border-border/80 bg-muted/80 px-2.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground shadow-2xs">
                 ESC
               </kbd>
             </div>
@@ -191,10 +207,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     key={item.id}
                     value={`${item.title} ${item.subtitle ?? ''}`}
                     onSelect={item.onSelect}
-                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-3.5 py-2.5 text-start text-foreground/85 transition-all cursor-pointer data-[selected=true]:border-primary/25 data-[selected=true]:bg-primary/10 data-[selected=true]:font-semibold data-[selected=true]:text-primary data-[selected=true]:shadow-2xs"
+                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-3.5 py-2.5 text-start text-foreground/85 transition-all duration-200 cursor-pointer data-[selected=true]:border-primary/25 data-[selected=true]:bg-primary/10 data-[selected=true]:font-semibold data-[selected=true]:text-primary data-[selected=true]:shadow-2xs [transition-timing-function:cubic-bezier(0.18,1.01,0.24,1)]"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-data-[selected=true]:bg-primary group-data-[selected=true]:text-primary-foreground">
+                      <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all duration-200 group-data-[selected=true]:bg-primary group-data-[selected=true]:text-primary-foreground group-data-[selected=true]:scale-105 group-data-[selected=true]:shadow-xs">
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
@@ -211,7 +227,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
                     <div className="flex items-center gap-2 shrink-0">
                       {item.badge && (
-                        <span className="rounded-md border border-primary/25 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary">
+                        <span className="rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-primary">
                           {item.badge}
                         </span>
                       )}

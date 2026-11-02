@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Cycle } from "@/types";
-import { BookOpen, Check, GraduationCap, School } from '@/components/ui/icons';
+import { BookOpen, Check, GraduationCap, School, ShieldCheck } from '@/components/ui/icons';
 import './authMotion.css';
 
 const CYCLES: Cycle[] = ["college", "lycee", "prepa"];
@@ -341,6 +341,13 @@ export function RegistrationOnboarding({
           {onLogin && <button type="button" className="registration-login" onClick={onLogin}>
             {ar ? 'لديك حساب؟ تسجيل الدخول' : 'Vous avez déjà un compte ? Se connecter'}
           </button>}
+          <a
+            href="/admin.html"
+            className="registration-admin-link inline-flex min-h-11 items-center justify-center gap-1.5 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:text-primary hover:underline"
+          >
+            <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+            <span>{ar ? 'فضاء الإدارة التربوية (لوحة القيادة)' : 'Espace Direction & Administration'}</span>
+          </a>
         </div>
     </main>
   );

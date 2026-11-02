@@ -64,7 +64,7 @@ export function ModalEmptyState({
         className
       )}
     >
-      {/* Zone visuelle : Illustration ou Icône avec respiration douce */}
+      {/* Zone visuelle : Illustration ou Médaillon Classique Antique avec respiration douce */}
       <motion.div
         variants={contentItemVariants}
         className="relative mb-5 flex items-center justify-center"
@@ -74,7 +74,7 @@ export function ModalEmptyState({
             {illustration}
           </div>
         ) : icon ? (
-          <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 text-primary shadow-[0_8px_24px_-6px_hsla(var(--primary),0.15)] ring-4 ring-primary/10">
+          <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-primary/25 bg-gradient-to-b from-primary/10 to-primary/5 text-primary shadow-[0_10px_28px_-6px_hsla(var(--primary),0.2)] ring-2 ring-primary/15 ring-offset-4 ring-offset-card transition-transform duration-300 hover:scale-105">
             {icon}
           </div>
         ) : null}

@@ -351,15 +351,13 @@ export function ModalBottomSheet({
               disabled={closeDisabled}
               className={cn(
                 'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
-                'bg-transparent hover:bg-muted',
                 'text-muted-foreground hover:text-foreground',
-                'border border-transparent',
-                'transition-[transform,background-color,border-color] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)]',
-                'active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50',
+                'transition-[transform,background-color,border-color,box-shadow] duration-300',
+                'active:scale-[0.92] motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 'cursor-pointer touch-manipulation',
-                // Dimensions équilibrées avec zone tactile étendue
-                'h-11 w-11',
+                // Dimensions équilibrées avec zone tactile étendue (médaillon circulaire)
+                'h-10 w-10 sm:h-10.5 sm:w-10.5',
                 // Positionnement respectant les arrondis et assurant un dégagement de la ligne séparatrice
                 'end-[max(0.875rem,env(safe-area-inset-right))] sm:end-5',
                 'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-3.5'

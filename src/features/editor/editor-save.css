@@ -48,8 +48,8 @@
 .editor-toolbar__history, .editor-toolbar__tools { display: flex; align-items: center; gap: 2px; }
 .editor-toolbar__history { justify-content: center; }
 .editor-toolbar__tools { justify-content: flex-end; }
-.editor-toolbar__action { display: inline-flex; flex: 0 0 44px; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 8px; color: hsl(var(--foreground) / .82); background: transparent; cursor: pointer; touch-action: manipulation; transition: background-color 160ms, color 160ms, transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.editor-toolbar__action:hover { color: hsl(var(--foreground)); background: hsl(var(--muted) / .75); transform: scale(1.04); }
+.editor-toolbar__action { display: inline-flex; flex: 0 0 44px; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 9999px; color: hsl(var(--foreground) / .82); background: transparent; cursor: pointer; touch-action: manipulation; transition: background-color 200ms ease, color 200ms ease, transform 240ms cubic-bezier(0.18, 1.01, 0.24, 1), box-shadow 240ms ease; }
+.editor-toolbar__action:hover { color: hsl(var(--foreground)); background: hsl(var(--muted) / .75); transform: scale(1.06); }
 .editor-toolbar__action:active { transform: scale(.92); background: hsl(var(--muted)); }
 .editor-toolbar__action:disabled { opacity: .35; cursor: default; }
 .editor-toolbar__action:focus-visible { outline: 2px solid hsl(var(--primary) / .7); outline-offset: -2px; }
