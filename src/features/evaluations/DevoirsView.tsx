@@ -37,6 +37,12 @@ import { ActivitiesEmptyState } from './components/ActivitiesEmptyState';
 import { PedagogicalEventsSection } from './components/PedagogicalEventsSection';
 import { DevoirsModals } from './components/DevoirsModals';
 import { KindGroupHeader } from './components/KindGroupHeader';
+import {
+  CalendarSheetVisual,
+  CorrectionCurveConnector,
+  resolveSectionPanelVariant,
+  SectionPanelGlyph,
+} from './components/SectionPanelBadge';
 import { DEVOIR_KIND_CONFIG, groupKinds, kindLabelKey, type EvaluationKind } from './kindCatalog';
 import { numberFormat } from '@/lib/formatters';
 
@@ -287,10 +293,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       config.assessmentDates?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
     );
-    const absents = (
+    const absenceRecord = (
       config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
       ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
-    )?.names ?? [];
+    );
+    const absents = absenceRecord?.names ?? [];
+    const hasVerifiedZeroAbsences = Boolean(absenceRecord) && absents.length === 0;
     // Remise du devoir maison : ce que l'enseignant a constaté, élève par élève.
     const submissions = a.type === 'maison'
       ? config.assessmentParticipants?.[selectedClass!.id]?.[a.id]
@@ -406,7 +414,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   data-tippy-content={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : undefined}
                   aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
                 >
-                  <span className="whitespace-nowrap tabular-nums text-[11px] font-bold"><bdi dir="ltr">{formatSingleDate(rawDate)}</bdi></span>
+                  <CalendarSheetVisual iso={rawDate} />
+                  <span className="ev-date-sr whitespace-nowrap tabular-nums text-[11px] font-bold"><bdi dir="ltr">{formatSingleDate(rawDate)}</bdi></span>
                 </button>
               ) : (
                 /* La date vient du tableau de l'éditeur : sans date, un simple constat, rien à cliquer. */
@@ -435,7 +444,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   type="button"
                   onClick={() => setAbsencesFor(link)}
                   className="ev-action shrink-0"
-                  data-filled={absents.length > 0 ? 'danger' : undefined}
+                  data-filled={absents.length > 0 ? 'danger' : hasVerifiedZeroAbsences ? 'ok' : undefined}
                   data-tippy-content={absentsTooltip}
                   aria-label={absents.length > 0
                     ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
@@ -506,6 +515,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         data-assessment-type="maison_correction"
         data-tone={kindStyle.tone}
       >
+        <CorrectionCurveConnector />
         <div className="ev-row__id min-w-0">
           <span dir="auto" className="-ms-1 inline-flex max-w-full items-center truncate px-1 py-0.5 text-start text-[11.5px] font-semibold text-foreground/90">{correctionName}</span>
         </div>
@@ -521,7 +531,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             )}
             aria-label={t('evaluations.assessmentDateAria', { assessment: correctionName })}
           >
-            <span className="whitespace-nowrap tabular-nums text-[11px] font-bold">
+            {correctionDateISO && <CalendarSheetVisual iso={correctionDateISO} />}
+            <span className={cn("whitespace-nowrap tabular-nums text-[11px] font-bold", correctionDateISO && "ev-date-sr")}>
               {correctionDateISO ? <bdi dir="ltr">{formatSingleDate(correctionDateISO)}</bdi> : t('evaluations.noDateYet')}
             </span>
           </button>
@@ -601,10 +612,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 headingLevel={4}
               />
               <div className="ev-board">
-                {entries.map(({ kind, count }) => {
+                {entries.map(({ kind, count }, entryIdx) => {
                   const itemKey = activityKey(kind);
                   const isOpen = openKeys.includes(itemKey);
                   const label = t(kindLabelKey(kind));
+                  const panelVariant = resolveSectionPanelVariant(kind.type, entryIdx);
                   const countLabel = `${number.format(count)} ${kind.family === 'devoir'
                     ? (count === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural'))
                     : (count === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural'))}`;
@@ -614,6 +626,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                       value={itemKey}
                       className="ev-accordion"
                       data-activity-kind={kind.type}
+                      data-panel-tone={panelVariant.tone}
+                      data-panel-glyph={panelVariant.glyph}
                       data-open={isOpen ? 'true' : undefined}
                     >
                       <AccordionPrimitive.Header asChild>
@@ -623,8 +637,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             aria-label={`${label} — ${countLabel}`}
                             className="ev-accordion__toggle"
                           >
+                            <SectionPanelGlyph glyph={panelVariant.glyph} />
                             <span className="ev-accordion__label">
                               <span className="ev-accordion__label-text">{label}</span>
+                            </span>
+                            <span className="ev-accordion__count" aria-hidden="true">
+                              {number.format(count)}
                             </span>
                             <span className="ev-accordion__toggle-icon inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200" aria-hidden="true">
                               <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />

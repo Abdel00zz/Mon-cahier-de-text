@@ -344,7 +344,9 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
             className="btn-save truncate"
           >
             {names.length === 0
-              ? t('common.save')
+              ? variant === 'absent'
+                ? (locale === 'ar' ? 'حفظ (لا يوجد غياب)' : locale === 'fr' ? 'Enregistrer (aucun absent)' : 'Save (0 absentees)')
+                : t('common.save')
               : locale === 'ar'
                 ? (names.length === 1 ? 'حفظ اسم واحد' : names.length === 2 ? 'حفظ اسمين' : names.length <= 10 ? `حفظ ${numberFormat(locale).format(names.length)} أسماء` : `حفظ ${numberFormat(locale).format(names.length)} اسماً`)
                 : locale === 'fr'

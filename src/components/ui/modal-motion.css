@@ -419,12 +419,12 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Responsive Mobile (Portrait)
+   Responsive Mobile & Tablette (Apple iOS / iPadOS SheetModal Architecture)
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 639px) {
-  .modal-motion-surface {
+@media (max-width: 1023px), ((pointer: coarse) and (max-width: 1180px)) {
+  .modal-motion-surface[data-mobile-presentation="sheet"] {
     width: auto;
-    margin: 0;
+    margin-inline: auto;
     inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
     top: auto;
     bottom: var(--modal-keyboard-inset);
@@ -432,9 +432,17 @@
       calc(var(--modal-visible-height) * var(--sheet-detent, .94)), 
       calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)))
     );
-    /* Arrondis supérieurs prononcés (28px) */
-    border-radius: 20px 20px 0 0;
+    /* Arrondis supérieurs iOS prononcés (28px) */
+    border-radius: 28px 28px 0 0;
     padding: 0;
+  }
+
+  /* Sur tablette (640px - 1023px), la feuille iOS remonte du bas avec une largeur élégante centrée */
+  @media (min-width: 640px) {
+    .modal-motion-surface[data-mobile-presentation="sheet"] {
+      width: min(44rem, calc(100vw - 2rem));
+      max-width: min(44rem, calc(100vw - 2rem));
+    }
   }
   
   /* Animations sheet mobile avec spring longues et fluides */
@@ -460,16 +468,16 @@
     bottom: calc(var(--modal-keyboard-inset) + max(16px, env(safe-area-inset-bottom, 0px)));
     margin-block: auto;
     max-height: calc(var(--modal-visible-height) - max(32px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
-    border-radius: 20px;
+    border-radius: 22px;
   }
   
   /* Modal des paramètres (arrondis complets) */
   .modal-motion-surface.settings-modal-sheet { 
     bottom: calc(var(--modal-keyboard-inset) + 10px); 
-    border-radius: 20px;
+    border-radius: 24px;
   }
   
-  /* Header mobile optimisé avec hauteur assurant un dégagement franc */
+  /* Header mobile/tablette optimisé avec hauteur assurant un dégagement franc */
   .modal-motion-surface .modal-pro-header { 
     min-height: 3.75rem;
     padding: 16px 18px 14px; 
@@ -477,7 +485,7 @@
     gap: 4px; 
   }
   .modal-motion-surface[data-has-handle="true"] .modal-pro-header { 
-    padding-top: 48px;
+    padding-top: 44px;
   }
   
   /* Bouton X mobile circulaire avec zone tactile garantie */
@@ -493,15 +501,15 @@
     top: 12px; 
   }
   
-  /* Body mobile avec padding généreux */
+  /* Body avec padding généreux */
   .modal-motion-surface .modal-body { 
     padding: 20px 18px;
   }
   .modal-motion-surface[data-has-handle="true"] > .modal-body:first-of-type { 
-    padding-top: 56px; 
+    padding-top: 52px; 
   }
   
-  /* Footer mobile avec boutons tactiles */
+  /* Footer avec boutons tactiles */
   .modal-motion-surface .modal-pro-footer { 
     padding: 14px 18px max(14px, env(safe-area-inset-bottom, 0px));
     gap: 10px;
@@ -642,3 +650,7 @@
     }
   }
 }
+
+/* Typographic hierarchy for the warm paper interface. */
+.modal-motion-surface .modal-header [data-ui-title] { font-family: var(--font-sans); font-size: 17px; font-weight: 500; letter-spacing: normal; }
+.modal-motion-surface .modal-header [data-description] { font-family: var(--font-sans); font-weight: 400; }

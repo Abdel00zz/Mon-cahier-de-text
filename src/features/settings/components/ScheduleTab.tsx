@@ -21,6 +21,7 @@ import { KEEP_TONES } from '@/platform/keepTheme';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Plus } from '@/components/ui/icons';
+import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from '@/features/dashboard/departmentPalette';
 import './schedule.css';
 
 export interface ModernClassColor {
@@ -121,11 +122,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return map;
     }, [classes]);
 
-    const colorFor = (classId: string): ModernClassColor => {
-        const item = classById.get(classId);
-        const tone = item ? classColorAttributes(item)['data-keep-tone'] : 'sand';
-        return KEEP_SCHEDULE_PALETTE[tone as typeof KEEP_TONES[number]];
-    };
+    const paletteByClassId = React.useMemo(() => {
+        return buildUnifiedClassPaletteMap(classes, config.dashboardClassOrder);
+    }, [classes, config.dashboardClassOrder]);
     /**
      * Libellé de matière : affiché **seulement** si l'enseignant couvre
      * plusieurs matières (règle partagée, calculée dans `App`). Avec une seule,
@@ -217,7 +216,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <Tabs value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
+        <Tabs dir={locale === 'ar' ? 'rtl' : 'ltr'} value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
             <div className="schedule-controls">
               <div className="schedule-controls__row">
                 <div className="schedule-periods">
@@ -268,7 +267,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
             <TabsContent value={visiblePeriod} className="mt-0">
                 <div className="overflow-x-auto overscroll-x-contain">
-                    <table aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
+                    <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-[20rem] sm:min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
                             <th scope="col" className={`schedule-grid__day-heading sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center text-muted-foreground`}>
@@ -302,17 +301,19 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         const span = run ? run.hours : 1;
                                         const entry = getTimetableEntry(timetable, day.value, hour.index);
                                         const classInfo = entry ? classById.get(entry.classId) : undefined;
-                                        const color = entry ? colorFor(entry.classId) : null;
-                                        const appearance = classInfo ? classColorAttributes(classInfo) : {};
+                                        const palette = classInfo ? paletteByClassId.get(classInfo.id) : undefined;
 
                                         return (
                                             <td
                                                 key={hour.index}
                                                 colSpan={span}
-                                                {...appearance}
+                                                style={palette ? {
+                                                    backgroundColor: palette.bg,
+                                                    borderColor: palette.border,
+                                                } : undefined}
                                                 className={`schedule-cell ${classInfo ? 'schedule-cell--assigned' : 'schedule-cell--empty'} relative overflow-hidden rounded-xl border p-0 align-middle transition-shadow ${
                                                     classInfo
-                                                        ? 'border-black/5 shadow-xs dark:border-white/5'
+                                                        ? 'shadow-xs'
                                                         : 'border-dashed border-border/80'
                                                 } ${
                                                     hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
@@ -331,9 +332,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             else assign(day.value, hour.index, e.target.value || null);
                                                         }}
                                                         title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
+                                                        style={palette ? {
+                                                            backgroundColor: palette.bg,
+                                                        } : undefined}
                                                         className={`h-full w-full cursor-pointer appearance-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 ${
-                                                            classInfo && color
-                                                                ? `${color.bg} text-transparent hover:brightness-95 active:brightness-90`
+                                                            classInfo
+                                                                ? 'text-transparent hover:brightness-95 active:brightness-90'
                                                                 : 'bg-transparent text-transparent'
                                                         }`}
                                                         aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
@@ -354,20 +358,26 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     {/* État vide : une pastille discrète, sans bruit textuel */}
                                                     {!classInfo && (
                                                         <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none">
-                                                            <Plus size={15} className="schedule-cell__add" aria-hidden="true" />
+                                                             <Plus size={15} className="schedule-cell__add" aria-hidden="true" />
                                                         </div>
                                                     )}
 
                                                     {/* État assigné : carte pleine sans bords arrondis excessifs, sans badge, typographie nette */}
-                                                    {classInfo && color && (
+                                                    {classInfo && (
                                                         <div
-                                                            className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
+                                                            className="pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center"
                                                         >
-                                                            <span className="schedule-cell__label max-w-full break-words whitespace-normal text-balance font-semibold leading-tight">
+                                                            <span
+                                                                style={palette ? { color: palette.title } : undefined}
+                                                                className="schedule-cell__label max-w-full break-words whitespace-normal text-balance font-semibold leading-tight"
+                                                            >
                                                                 {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
                                                             {showSubjectLabels && (
-                                                                <span className={`mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
+                                                                <span
+                                                                    style={palette ? { color: palette.secondary } : undefined}
+                                                                    className="mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider"
+                                                                >
                                                                     {subjectLabel(classInfo.subject)}
                                                                 </span>
                                                             )}

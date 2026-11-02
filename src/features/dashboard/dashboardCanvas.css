@@ -1,16 +1,57 @@
-/* Canevas éditorial : couleur unie #F6F3EE, zéro pointillé */
+/* Canevas serein : #faf8f4, halo pastel flouté, typographie Readex Pro */
 :root {
-    --dash-bg: #F6F3EE;
-    --dash-header-ink: #1F1A16;
-    --dash-group-ink: #6B645C;
-    --dash-btn-bg: #6B4F3F;
-    --dash-btn-shadow: 0 6px 16px rgba(60, 40, 25, 0.25);
+    --dash-bg: #faf8f4;
+    --dash-header-ink: #2f2822;
+    --dash-group-ink: #7a7169;
+    --dash-btn-bg: #7a5a49;
+    --dash-btn-shadow: 0 8px 22px #7a5a4950;
     --dash-robot-badge-bg: #B3402A;
     --dash-tabbar-bg: #FFFDF9;
-    --dash-tabbar-border: #E5DFD5;
-    --dash-tabbar-sheet-bg: #FBF9F4;
-    --dash-tabbar-inactive: #4A433C;
-    --dash-tabbar-active-bg: #6B4F3F;
+    --dash-tabbar-border: #ebe5dc;
+    --dash-tabbar-sheet-bg: #faf8f4;
+    --dash-tabbar-inactive: #7a7169;
+    --dash-tabbar-active-bg: #7a5a49;
+}
+.dark {
+    --dash-bg: #1a1815;
+    --dash-header-ink: #f2eae0;
+    --dash-group-ink: #c9bbb0;
+    --dash-btn-bg: #a67d60;
+    --dash-tabbar-bg: #29241f;
+    --dash-tabbar-sheet-bg: #211d19;
+    --dash-tabbar-border: #51463c;
+}
+
+/* Halo pastel doux en arrière-plan (.halo) */
+.halo {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+.halo i {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.38;
+}
+.halo i:first-child {
+    width: 22rem;
+    height: 22rem;
+    background: #fbd9c4;
+    top: -7rem;
+    inset-inline-end: -7rem;
+}
+.halo i:last-child {
+    width: 24rem;
+    height: 24rem;
+    background: #dcd6f3;
+    bottom: -9rem;
+    inset-inline-start: -7rem;
+}
+.dark .halo i {
+    opacity: 0.14;
 }
 
 [data-dashboard-surface],
@@ -23,9 +64,9 @@
 
     position: relative;
     min-height: 100dvh;
-    font-family: var(--font-sans);
+    font-family: "Readex Pro", var(--font-sans);
 
-    background-color: var(--dash-bg, #F6F3EE) !important;
+    background-color: var(--dash-bg, #faf8f4) !important;
     background-image: none !important;
     transition: background-color 240ms var(--pixel-spring);
 }
@@ -43,89 +84,128 @@
 }
 
 [data-dashboard-root] .dashboard-empty {
-    border: 1px solid hsl(var(--border) / 0.75);
-    border-radius: 26px;
-    background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
+    border: 1px solid #ebe5dc;
+    border-radius: 1.8rem;
+    border-end-start-radius: 0.6rem;
+    background: color-mix(in srgb, #ffffff 92%, #faf8f4);
     backdrop-filter: blur(14px);
-    box-shadow:
-        inset 0 1px 0 hsl(var(--background) / 0.8),
-        0 18px 38px -24px hsl(var(--foreground) / 0.14);
+    box-shadow: 0 1px 2px #2f28220d, 0 10px 28px #2f282214;
+}
+.dark [data-dashboard-root] .dashboard-empty {
+    border-color: hsl(var(--border) / 0.75);
+    background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
 }
 
-/* Scrolling phones use a local paper texture and opaque panels. */
 @media (hover: none), (pointer: coarse), (max-width: 639px) {
     [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
         background-attachment: scroll;
     }
     [data-dashboard-root] .dashboard-empty {
-        background: hsl(var(--card));
+        background: #ffffff;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
+    .dark [data-dashboard-root] .dashboard-empty {
+        background: hsl(var(--card));
+    }
 }
 
-/* Header de l'écran « أقسامي الدراسية : » */
+/* Header de l'écran « أقسامي الدراسية : » (.hd) */
 .dashboard-top-header {
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
     justify-content: space-between;
+    gap: 0.75rem;
     width: 100%;
-}
-
-[dir="rtl"] .dashboard-top-header {
-    flex-direction: row-reverse;
 }
 
 .dashboard-header-title {
     display: inline-flex;
     align-items: baseline;
-    font-size: 26px !important;
-    font-weight: 800 !important;
-    color: var(--dash-header-ink, #1F1A16) !important;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    margin: 0;
+    font: 600 clamp(1.5rem, 6.4vw, 2rem)/1.5 "Readex Pro", var(--font-sans) !important;
+    color: var(--dash-header-ink, #2f2822) !important;
+    letter-spacing: -0.01em !important;
 }
 
 [dir="rtl"] .dashboard-header-title > span[aria-hidden="true"] {
     margin-inline-start: 0.22em;
 }
 
-/* Titres de groupe par jour (« غدا : », « الإثنين : ») */
+/* Bouton « + » rond d'en-tête sur grand écran (.hplus) */
+.dashboard-header-plus-btn {
+    width: max(44px, 2.75rem);
+    height: max(44px, 2.75rem);
+    border-radius: 50%;
+    background: var(--dash-btn-bg, #7a5a49);
+    color: #ffffff;
+    border: 0;
+    display: none;
+    place-items: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.2s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.2s ease;
+}
+.dashboard-header-plus-btn:hover {
+    transform: scale(1.06);
+}
+.dashboard-header-plus-btn:active {
+    transform: scale(0.93);
+}
+
+/* Titres de groupe par jour (« غدا : », « الإثنين : ») (.dn) */
 .dashboard-day-group__title {
     display: flex;
     align-items: baseline;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    color: var(--dash-group-ink, #6B645C) !important;
-    margin-bottom: 10px !important;
+    font-family: "Readex Pro", var(--font-sans);
+    font-size: 0.84rem !important;
+    font-weight: 500 !important;
+    color: var(--dash-group-ink, #7a7169) !important;
+    margin: 0 0.3rem 0.7rem !important;
 }
 
 [dir="rtl"] .dashboard-day-group__title > span[aria-hidden="true"] {
     margin-inline-start: 0.2em;
 }
 
-/* Bouton flottant « + » (ajout d'un département) */
+/* Bouton flottant « + » (.fab) */
 .dashboard-floating-add-btn {
     position: fixed;
-    bottom: 100px;
-    left: 20px;
+    inset-inline-end: 1.25rem;
+    bottom: 6.1rem;
     z-index: 45;
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-    background-color: var(--dash-btn-bg, #6B4F3F);
-    box-shadow: var(--dash-btn-shadow, 0 6px 16px rgba(60, 40, 25, 0.25));
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1.2rem;
+    border-end-start-radius: 0.45rem;
+    background-color: var(--dash-btn-bg, #7a5a49);
+    color: #ffffff;
+    box-shadow: var(--dash-btn-shadow, 0 8px 22px #7a5a4950);
     border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: transform 150ms ease, box-shadow 150ms ease;
+    transition: transform 0.22s cubic-bezier(0.3, 1.35, 0.5, 1), box-shadow 180ms ease;
 }
 
 .dashboard-floating-add-btn:active {
     transform: scale(0.92);
+}
+
+@media (min-width: 720px) {
+    .dashboard-floating-add-btn {
+        display: none;
+    }
+    .dashboard-header-plus-btn {
+        display: grid;
+    }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .dashboard-floating-add-btn:hover svg { transform: rotate(90deg); }
+    .dashboard-floating-add-btn svg { transition: transform 200ms cubic-bezier(.22,.9,.3,1); }
 }
 

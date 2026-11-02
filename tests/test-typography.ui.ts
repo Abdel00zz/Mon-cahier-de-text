@@ -54,12 +54,12 @@ test('les fontes arabes et latines ont des plages unicode disjointes sans mélan
   assert.deepEqual(seenLatin, latinFamilies);
 });
 
-test('les remarques du cahier partagent la famille de lecture sans modifier les retours système', () => {
+test('les remarques et les retours système utilisent la police de l’interface', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
-  assert.ok(typography.includes("--font-feedback: 'SamsungOne Arabic'"));
+  assert.ok(typography.includes("--font-feedback: 'Readex Pro'"));
   assert.ok(!typography.includes(".editor-type-remark[dir='rtl']"));
-  assert.ok(editor.includes("--notebook-reading: 'Inter', 'Readex Pro', sans-serif"));
+  assert.ok(editor.includes("--notebook-reading: 'Readex Pro', system-ui, sans-serif"));
   assert.ok(editor.includes('.editor-type-remark, .editor-session-note'));
   assert.ok(editor.includes(':not(.katex, .katex *)'), 'les fontes mathématiques restent autonomes');
 });
@@ -68,7 +68,7 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const indexCss = readFileSync('src/styles/index.css', 'utf8');
 
-  assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-editor-title:\s*'Roboto Slab'/, 'les titres de contenu LTR utilisent Roboto Slab');
+  assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-editor-title:\s*var\(--font-latin-display\)/, 'les titres de contenu LTR utilisent la famille de l’interface');
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-content:\s*var\(--font-latin-reading\)/, 'les blocs LTR reçoivent les polices françaises');
   assert.match(typography, /:where\(\[data-content-direction='rtl'\]\)[\s\S]*?--font-content:\s*var\(--font-arabic-body\)/, 'les blocs RTL reçoivent les polices arabes');
   assert.match(indexCss, /\.editor-type-item-title[\s\S]*?\{\s*font-family:\s*var\(--font-editor-title\);/, 'les titres de définitions/propriétés/exercices lient --font-editor-title (Roboto Slab en français)');

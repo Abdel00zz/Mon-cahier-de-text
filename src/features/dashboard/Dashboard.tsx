@@ -12,7 +12,7 @@ import { ClassCard } from './ClassCard';
 import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
-import { pickDepartmentPalette, type PaletteKey } from './departmentPalette';
+import { buildUnifiedClassPaletteMap, type DepartmentPalette, type PaletteKey } from './departmentPalette';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
@@ -215,7 +215,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onSelectClass(classInfo);
     }, [onSelectClass]);
 
-    const createClass = useCallback((details: ClassIdentityDraft): ClassInfo => {
+    const createClass = useCallback((details: ClassIdentityDraft & { color?: string }): ClassInfo => {
         const created = addClass({
             ...details,
             cycle: details.cycle ?? selectedCycle,
@@ -237,7 +237,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         })
     ), [addClass, config.selectedCycles, t, teacherName]);
 
-    const handleCreateClass = (details: ClassIdentityDraft) => {
+    const handleCreateClass = (details: ClassIdentityDraft & { color?: string }) => {
         createClass(details);
         setCreateModalOpen(false);
     };
@@ -341,17 +341,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     // Assign palette before temporal sorting so a session never changes a class's color.
     const paletteByClassId = useMemo(() => {
-        let previousKey: PaletteKey | undefined;
-        const map = new Map<string, ReturnType<typeof pickDepartmentPalette>['palette']>();
-        persistedClassOrder.forEach((id, index) => {
-            const item = classById.get(id);
-            if (!item) return;
-            const { key, palette } = pickDepartmentPalette(item.color, item.subject, index, previousKey);
-            previousKey = key;
-            map.set(id, palette);
-        });
-        return map;
-    }, [persistedClassOrder, classById]);
+        return buildUnifiedClassPaletteMap(classes, persistedClassOrder);
+    }, [classes, persistedClassOrder]);
 
     const groupedClasses = useMemo(() => {
         const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number; active: boolean }> }>();
@@ -468,36 +459,48 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            style={{ backgroundColor: '#F6F3EE', paddingBottom: '110px' }}
+            style={{ backgroundColor: '#faf8f4', paddingBottom: '110px' }}
             className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-3 sm:pt-6"
             data-dashboard-root
         >
+            <div className="halo" aria-hidden="true"><i /><i /></div>
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    {/* En-tête : Titre à droite (26px, gras, #1F1A16), Robot à gauche (44x44px) en RTL */}
+                <div className="relative z-10 mx-auto max-w-[40rem] px-5 pt-7 sm:pt-11 pl-safe pr-safe">
+                    {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}
                     <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions
                             mode={currentDisplay}
                             onModeChange={setClassDisplayMode}
                             showDisplayModes={false}
                         >
-                            <ClassAssistant
-                                locale={locale}
-                                classes={classes}
-                                config={config}
-                                preferredClassId={preferredClassId}
-                                visibleClassIds={assistantVisibleClassIds}
-                                activeSessionClassIds={activeSessionClassIds}
-                                scheduleStatusByClassId={scheduleStatusByClassId}
-                                readLessons={readAssistantLessons}
-                                onCreateClass={() => setCreateModalOpen(true)}
-                                onOpenSchedule={onOpenSchedule}
-                                onOpenNotifications={onOpenNotifications}
-                                onUpdateConfig={updateConfig}
-                                onOpenClass={openNotebook}
-                                onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
-                                onConfigureClass={classInfo => setEditingClass(classInfo)}
-                            />
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setCreateModalOpen(true)}
+                                    className="dashboard-header-plus-btn"
+                                    aria-label={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
+                                    title={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
+                                >
+                                    <Plus size={20} strokeWidth={2.2} aria-hidden="true" />
+                                </button>
+                                <ClassAssistant
+                                    locale={locale}
+                                    classes={classes}
+                                    config={config}
+                                    preferredClassId={preferredClassId}
+                                    visibleClassIds={assistantVisibleClassIds}
+                                    activeSessionClassIds={activeSessionClassIds}
+                                    scheduleStatusByClassId={scheduleStatusByClassId}
+                                    readLessons={readAssistantLessons}
+                                    onCreateClass={() => setCreateModalOpen(true)}
+                                    onOpenSchedule={onOpenSchedule}
+                                    onOpenNotifications={onOpenNotifications}
+                                    onUpdateConfig={updateConfig}
+                                    onOpenClass={openNotebook}
+                                    onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
+                                    onConfigureClass={classInfo => setEditingClass(classInfo)}
+                                />
+                            </div>
                         </DashboardActions>
                         <h1
                             id="classes-heading"
@@ -560,11 +563,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             ) : (
                                 <div className="dashboard-classes-container flex flex-col w-full" role="list" aria-label={t('dashboard.classList')}>
                                     {groupedClasses.map((group, groupIndex) => (
-                                        <section
+                                        <motion.section
                                             key={group.key}
                                             className="dashboard-day-group w-full"
+                                            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1], delay: reduceMotion ? 0 : Math.min(groupIndex, 5) * 0.08 }}
                                             style={{
-                                                marginTop: groupIndex === 0 ? '16px' : '24px',
+                                                marginTop: '1.8rem',
                                             }}
                                         >
                                             {/* Titre de groupe par jour (« غدا : », « الإثنين : ») */}
@@ -574,7 +580,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     <span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span>
                                                 </h2>
                                             )}
-                                            <div className="dashboard-day-group__cards flex flex-col gap-[12px] w-full">
+                                            <div className="dashboard-day-group__cards flex flex-col gap-3 w-full">
                                                 {group.items.map((item, itemIdx) => {
                                                     const isActiveSession = activeSessionIds.has(item.classInfo.id);
                                                     return (
@@ -596,13 +602,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 onDelete={() => setClassPendingDelete(item.classInfo)}
                                                                 index={itemIdx}
                                                                 isActiveSession={isActiveSession}
+                                                                scheduleStatus={scheduleStatusByClassId.get(item.classInfo.id)}
                                                                 palette={item.palette}
                                                             />
                                                         </motion.div>
                                                     );
                                                 })}
                                             </div>
-                                        </section>
+                                        </motion.section>
                                     ))}
                                 </div>
                             )}
@@ -611,7 +618,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             </div>
 
-            {/* Bouton flottant « + » (ajout d'un département) : 56x56px, border-radius 18px, fond #6B4F3F */}
+            {/* Bouton flottant « + » (.fab) */}
             <motion.button
                 type="button"
                 whileHover={reduceMotion ? undefined : { scale: 1.05 }}
@@ -622,7 +629,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 aria-label={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
                 title={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
             >
-                <Plus size={26} strokeWidth={2} color="#FFFFFF" aria-hidden="true" />
+                <Plus size={22} strokeWidth={2.2} color="#FFFFFF" aria-hidden="true" />
             </motion.button>
 
             <ConfirmDialog

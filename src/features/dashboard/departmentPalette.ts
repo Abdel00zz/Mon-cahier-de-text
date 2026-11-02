@@ -6,46 +6,97 @@ export interface DepartmentPalette {
 }
 
 const DEPARTMENT_PALETTES = {
-  green: { bg: '#EEF5DF', border: '#D5E5B5', title: '#2D4A14', secondary: '#4F6B2E' },
-  rose: { bg: '#F9E8F3', border: '#EBC9DE', title: '#5E2150', secondary: '#86436F' },
-  indigo: { bg: '#E9EBFA', border: '#CDD2F0', title: '#27307A', secondary: '#4A55A8' },
-  orange: { bg: '#FDEADF', border: '#F3CDB8', title: '#7A2E10', secondary: '#96401A' },
+  peach: { bg: '#fdeede', border: '#f6d9bd', title: '#6b3a12', secondary: '#a8642a' },
+  lavender: { bg: '#ece9f7', border: '#d9d4ee', title: '#2e2766', secondary: '#5d55a3' },
+  green: { bg: '#e6f3e9', border: '#cfe6d5', title: '#14503a', secondary: '#3f7f63' },
+  sky: { bg: '#e0eefa', border: '#c6dff2', title: '#0f3f6b', secondary: '#3a78a8' },
+  sand: { bg: '#f7f0d4', border: '#ebe0ad', title: '#5c4a05', secondary: '#8f7a1c' },
+  rose: { bg: '#fbe6ee', border: '#f2cddb', title: '#6e1c3e', secondary: '#a8486f' },
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
-const PALETTE_CYCLE: readonly PaletteKey[] = ['green', 'orange', 'indigo', 'rose'];
+const PALETTE_CYCLE: readonly PaletteKey[] = ['peach', 'lavender', 'green', 'sky', 'sand', 'rose'];
 
 /**
- * Déduit les 4 tons d'une matière (fond, bordure, titre, secondaire)
- * et garantit que deux matières voisines n'ont pas la même famille de couleur.
+ * Déduit les tons d'une matière (fond, bordure, titre, secondaire)
+ * en garantissant qu'aucune classe ne partage la même couleur de carte.
  */
 export function pickDepartmentPalette(
   tone: string | undefined,
   subject: string | undefined,
   index: number,
   previousKey?: PaletteKey,
+  usedKeys?: Set<PaletteKey> | readonly PaletteKey[],
 ): { key: PaletteKey; palette: DepartmentPalette } {
   const s = (subject || '').toLowerCase();
   const t = (tone || '').toLowerCase();
-  let key: PaletteKey = 'green';
+  const tones: Record<string, PaletteKey> = {
+    coral: 'peach', peach: 'peach', lavender: 'lavender', indigo: 'lavender',
+    mint: 'green', lime: 'green', green: 'green', sky: 'sky', sand: 'sand', rose: 'rose',
+  };
+  const saved = tones[t];
+  const used = usedKeys instanceof Set ? usedKeys : new Set(usedKeys ?? []);
 
-  if (s.includes('svt') || s.includes('vie') || s.includes('terre') || t === 'lime' || t === 'mint') {
-    key = 'green';
-  } else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl') || t === 'lavender' || t === 'rose') {
-    key = 'rose';
-  } else if (s.includes('4') || t === 'indigo' || t === 'sky') {
-    key = 'indigo';
-  } else if (s.includes('phys') || s.includes('chim') || t === 'coral' || t === 'sand') {
-    key = 'orange';
+  let key: PaletteKey;
+  if (saved && !used.has(saved)) {
+    key = saved;
   } else {
-    key = PALETTE_CYCLE[index % PALETTE_CYCLE.length];
-  }
+    let preferred: PaletteKey | undefined = saved;
+    if (!preferred) {
+      if (s.includes('svt') || s.includes('vie') || s.includes('terre')) preferred = 'green';
+      else if (s.includes('lettre') || s.includes('arab') || s.includes('franç') || s.includes('angl')) preferred = 'rose';
+      else if (s.includes('phys') || s.includes('chim')) preferred = 'peach';
+    }
 
-  // Évite deux couleurs proches ou identiques consécutives
-  if (previousKey && key === previousKey) {
-    const prevIdx = PALETTE_CYCLE.indexOf(previousKey);
-    key = PALETTE_CYCLE[(prevIdx + 1) % PALETTE_CYCLE.length];
+    const freeKeys = PALETTE_CYCLE.filter(k => !used.has(k));
+    if (freeKeys.length > 0) {
+      if (preferred && freeKeys.includes(preferred)) {
+        key = preferred;
+      } else {
+        key = freeKeys[index % freeKeys.length];
+      }
+    } else {
+      const pool = PALETTE_CYCLE.filter(k => k !== previousKey);
+      key = pool.length > 0 ? pool[index % pool.length] : PALETTE_CYCLE[index % PALETTE_CYCLE.length];
+    }
   }
 
   return { key, palette: DEPARTMENT_PALETTES[key] };
+}
+
+/**
+ * Construit une table d'association unique et déterministe classe → palette
+ * partagée à l'identique entre le tableau de bord et l'emploi du temps.
+ */
+export function buildUnifiedClassPaletteMap(
+  classes: readonly { id: string; color?: string | null; subject?: string | null }[],
+  classOrder?: readonly string[],
+): Map<string, DepartmentPalette> {
+  const classById = new Map<string, (typeof classes)[number]>();
+  classes.forEach(c => classById.set(c.id, c));
+
+  const orderedIds: string[] = [];
+  if (classOrder) {
+    for (const id of classOrder) {
+      if (classById.has(id)) orderedIds.push(id);
+    }
+  }
+  for (const c of classes) {
+    if (!orderedIds.includes(c.id)) orderedIds.push(c.id);
+  }
+
+  let previousKey: PaletteKey | undefined;
+  const usedKeys = new Set<PaletteKey>();
+  const map = new Map<string, DepartmentPalette>();
+
+  orderedIds.forEach((id, index) => {
+    const item = classById.get(id);
+    if (!item) return;
+    const { key, palette } = pickDepartmentPalette(item.color ?? undefined, item.subject ?? undefined, index, previousKey, usedKeys);
+    previousKey = key;
+    usedKeys.add(key);
+    map.set(id, palette);
+  });
+
+  return map;
 }

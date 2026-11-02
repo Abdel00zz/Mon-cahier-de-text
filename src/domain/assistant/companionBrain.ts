@@ -45,7 +45,7 @@ export type CompanionAction =
   | { type: 'install-app' | 'retry-sync' | 'retry-inbox' | 'read-reply' | 'request-content' | 'none' }
   | { type: 'enable-notifications'; mode: CompanionNotificationPrompt };
 
-function selectAction(decision: CompanionDecision, fallback: GuidanceAction, checking: boolean): CompanionAction {
+function selectAction(decision: CompanionDecision, fallback: GuidanceAction, checking: boolean, isStandby = false): CompanionAction {
   switch (decision.kind) {
     case 'install-app': return { type: 'install-app' };
     case 'enable-notifications': return { type: 'enable-notifications', mode: decision.mode };
@@ -53,7 +53,7 @@ function selectAction(decision: CompanionDecision, fallback: GuidanceAction, che
     case 'inbox-error': return { type: 'retry-inbox' };
     case 'reply': return { type: 'read-reply' };
     case 'offer': return { type: 'request-content' };
-    case 'guidance': return checking ? { type: 'none' } : fallback;
+    case 'guidance': return checking || isStandby ? { type: 'none' } : fallback;
     default: return { type: 'none' };
   }
 }
@@ -84,13 +84,14 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
     const selectedTask = tasks[0]?.guidance.step === 'active-session' ? tasks[0]
       : tasks.find(task => task.id === selectedTaskId) ?? tasks[0];
     const allTasksSkipped = rawTasks.length > 0 && tasks.length === 0;
-    const skippedFallback = diagnosis.targetClass
-      ? { step: 'ready' as const, classId: diagnosis.targetClass.id, className: diagnosis.targetClass.name }
-      : { step: 'create' as const };
+    const targetClass = diagnosis.targetClass ?? input.classes[0];
+    const skippedFallback = targetClass
+      ? { step: 'standby' as const, classId: targetClass.id, className: targetClass.name, skippedCount: rawTasks.length }
+      : { step: 'standby' as const, classId: '', className: '', skippedCount: rawTasks.length };
     let guidance: import('./classGuidance').ClassGuidance = selectedTask?.guidance ?? (allTasksSkipped ? skippedFallback : guidanceFromDiagnosis(diagnosis));
     if (guidance.step === 'ready' && !allTasksSkipped && input.scheduleStatusByClassId) {
       const next = input.classes.map(classInfo => ({ classInfo, status: input.scheduleStatusByClassId!.get(classInfo.id) }))
-        .filter(item => item.status && ['paused', 'starting_soon', 'today_later', 'upcoming'].includes(item.status.state))
+        .filter(item => item.status && ['paused', 'starting_soon'].includes(item.status.state))
         .sort((a, b) => (a.status!.dayOffset ?? 999) - (b.status!.dayOffset ?? 999)
           || (a.status!.startMin ?? 9999) - (b.status!.startMin ?? 9999))[0];
       if (next?.status) guidance = { step: 'next-session', classId: next.classInfo.id, className: next.classInfo.name, scheduleLabel: next.status.label };
@@ -189,7 +190,7 @@ export function createCompanionEvaluation(input: Omit<CompanionBrainInput, 'sele
       canSkip,
       skipKey,
       taskPosition: index + 1,
-      action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking'),
+      action: selectAction(decision, guidanceAction(guidance), guidance.step === 'checking', guidance.step === 'standby'),
       behavior: { ...behavior, problemCount: attentionCount }, nextTaskId,
       attentionKey: isInstallApp ? 'install-app'
         : isEnableNotifications ? `enable-notifications:${decision.mode}`

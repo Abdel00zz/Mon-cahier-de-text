@@ -39,7 +39,7 @@ const EditableHeader: React.FC<{
     }
   };
   const handleFocus = (event: React.FocusEvent<HTMLSpanElement>) => {
-    event.currentTarget.textContent = value;
+    event.currentTarget.textContent = displayValue || value;
   };
   const isArabic = containsArabic(displayValue);
 

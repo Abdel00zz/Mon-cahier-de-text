@@ -25,6 +25,8 @@ export interface SessionScheduleStatus {
     endTimeLabel?: string;
     dayLabel?: string;
     dayOffset?: number;
+    /** Durée totale du bloc de séance fusionné (ex: 2 pour une séance de 2h consécutives). */
+    sessionHours?: number;
     /** Keep a class taught today in today's dashboard group until midnight. */
     hadSessionToday?: boolean;
 }
@@ -104,10 +106,16 @@ export function computeClassSessionSchedule(
         const todayBlocks = getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
             .filter(b => b.classId === classId)
             .sort((a, b) => a.startMin - b.startMin);
+        const todaySessionBlocks = getDaySessionBlocks(effectiveTimetable, currentDayOfWeek, clock)
+            .filter(b => b.classId === classId)
+            .sort((a, b) => a.startMin - b.startMin);
 
         // A. Séance en cours ?
         const activeBlock = todayBlocks.find(b => currentMinute >= b.startMin && currentMinute < b.endMin);
         if (activeBlock) {
+            const parentSession = todaySessionBlocks.find(
+                b => activeBlock.startMin >= b.startMin && activeBlock.endMin <= b.endMin,
+            );
             const remaining = Math.max(1, Math.ceil(activeBlock.endMin - currentMinute));
             const startLabel = formatHourMinute(activeBlock.startMin, lang);
             const endLabel = formatHourMinute(activeBlock.endMin, lang);
@@ -135,6 +143,7 @@ export function computeClassSessionSchedule(
                 endTimeLabel: endLabel,
                 dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
+                sessionHours: parentSession?.hours ?? activeBlock.hours,
             };
         }
 
@@ -142,18 +151,23 @@ export function computeClassSessionSchedule(
         const upcomingToday = todayBlocks.filter(b => b.startMin > currentMinute);
         if (upcomingToday.length > 0) {
             const nextBlock = upcomingToday[0];
+            const parentSession = todaySessionBlocks.find(
+                b => nextBlock.startMin >= b.startMin && nextBlock.endMin <= b.endMin,
+            );
+            const sessionHours = parentSession?.hours ?? nextBlock.hours;
             const diffMin = Math.ceil(nextBlock.startMin - currentMinute);
             const startLabel = formatHourMinute(nextBlock.startMin, lang);
             const endLabel = formatHourMinute(nextBlock.endMin, lang);
 
-            const paused = getDaySessionBlocks(effectiveTimetable, currentDayOfWeek, clock)
-                .some(b => b.classId === classId && currentMinute >= b.startMin && currentMinute < b.endMin);
-            if (paused) {
+            const pausedSession = todaySessionBlocks
+                .find(b => currentMinute >= b.startMin && currentMinute < b.endMin);
+            if (pausedSession) {
                 const label = lang === 'ar' ? `استراحة · استئناف الحصة على الساعة ${startLabel}`
                     : lang === 'en' ? `Break · resumes at ${startLabel}` : `Pause · reprise à ${startLabel}`;
                 return { state: 'paused', label, shortLabel: label, remainingMinutes: diffMin,
                     startMin: nextBlock.startMin, endMin: nextBlock.endMin,
-                    startTimeLabel: startLabel, endTimeLabel: endLabel, dayOffset: 0 };
+                    startTimeLabel: startLabel, endTimeLabel: endLabel, dayOffset: 0,
+                    sessionHours: pausedSession.hours };
             }
 
             if (diffMin <= 60) {
@@ -180,6 +194,7 @@ export function computeClassSessionSchedule(
                     endTimeLabel: endLabel,
                     dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                     dayOffset: 0,
+                    sessionHours,
                 };
             }
 
@@ -205,11 +220,12 @@ export function computeClassSessionSchedule(
                 endTimeLabel: endLabel,
                 dayLabel: lang === 'ar' ? 'اليوم' : lang === 'en' ? 'Today' : 'Aujourd’hui',
                 dayOffset: 0,
+                sessionHours,
             };
         }
     }
 
-    const buildUpcomingStatus = (offset: number, targetDayOfWeek: number, startMin: number, endMin: number): SessionScheduleStatus => {
+    const buildUpcomingStatus = (offset: number, targetDayOfWeek: number, startMin: number, endMin: number, sessionHours?: number): SessionScheduleStatus => {
         const startLabel = formatHourMinute(startMin, lang);
         const endLabel = formatHourMinute(endMin, lang);
         const isTomorrow = offset === 1;
@@ -249,6 +265,7 @@ export function computeClassSessionSchedule(
             endTimeLabel: endLabel,
             dayLabel: isTomorrow ? (lang === 'ar' ? 'غدا' : lang === 'en' ? 'Tomorrow' : 'Demain') : dayName,
             dayOffset: offset,
+            sessionHours,
         };
     };
 
@@ -268,7 +285,7 @@ export function computeClassSessionSchedule(
 
         if (targetBlocks.length > 0) {
             const nextBlock = targetBlocks[0];
-            return { ...buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin),
+            return { ...buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin, nextBlock.hours),
                 hadSessionToday: !todayBlocked && getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
                     .some(b => b.classId === classId && currentMinute >= b.endMin) };
         }

@@ -1,14 +1,14 @@
 /* Politique commune à toute l'application. Les composants choisissent un rôle,
    jamais une famille locale : titres, interface, sous-titres ou contenu. */
 :root {
-  --font-latin-body: 'Latin Modern Sans', 'Inter';
-  --font-latin-display: 'Roboto Slab', 'Latin Modern Sans';
-  --font-latin-reading: 'Inter';
-  --font-arabic-body: 'Elgharib Hayyakum Allah';
-  --font-arabic-display: 'KOMission Black';
-  --font-arabic-secondary: 'Elgharib Hayyakum Allah Light';
+  --font-latin-body: 'Readex Pro', system-ui;
+  --font-latin-display: 'Readex Pro', system-ui;
+  --font-latin-reading: 'Readex Pro', system-ui;
+  --font-arabic-body: 'Readex Pro', system-ui;
+  --font-arabic-display: 'Readex Pro', system-ui;
+  --font-arabic-secondary: 'Readex Pro', system-ui;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-feedback: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', system-ui, sans-serif;
+  --font-feedback: 'Readex Pro', system-ui, sans-serif;
   --content-font-latin: var(--font-latin-reading);
   --content-font-arabic: var(--font-arabic-body);
   --ui-font-ar: var(--font-arabic-body);
@@ -48,7 +48,7 @@
 :where([data-editor-table], .editor-lesson-row, .editor-type-chapter, .editor-type-top, .editor-type-section, .editor-type-subsection, .editor-type-subsubsection, .editor-free-content, .content-fields, .devoir-document, .print-lesson-item) :where([dir='ltr']):not(.katex, .katex *) {
   --font-sans: var(--font-latin-body), var(--font-arabic-body), system-ui, sans-serif;
   --font-display: var(--font-latin-display), var(--font-arabic-display), serif;
-  --font-editor-title: 'Roboto Slab', var(--font-latin-display), var(--font-arabic-body), serif;
+  --font-editor-title: var(--font-latin-display), var(--font-arabic-body), sans-serif;
   --font-secondary: var(--font-sans);
   --font-secondary-weight: 400;
   --font-content: var(--font-latin-reading), var(--font-arabic-body), sans-serif;
@@ -63,7 +63,7 @@
   --font-display: var(--font-arabic-display), var(--font-latin-display), serif;
   --font-editor-title: var(--font-arabic-body), var(--font-latin-display), serif;
   --font-secondary: var(--font-arabic-secondary), var(--font-latin-body), sans-serif;
-  --font-secondary-weight: 300;
+  --font-secondary-weight: 400;
   --font-content: var(--font-arabic-body), var(--font-latin-reading), sans-serif;
 }
 

@@ -3,7 +3,7 @@ import { withCurriculumSettings } from './classCurriculumSettings.js';
 import { dequal } from 'dequal';
 
 const timestamp = (value?: string): number => value && Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
-const FIELDS: readonly (keyof ClassInfo)[] = ['name', 'teacherName', 'subject', 'cycle', 'level', 'branch', 'group', 'courseStartDate', 'curriculumSourceId', 'curriculumChapterMatches', 'notebookContentOrigin'];
+const FIELDS: readonly (keyof ClassInfo)[] = ['color', 'name', 'teacherName', 'subject', 'cycle', 'level', 'branch', 'group', 'courseStartDate', 'curriculumSourceId', 'curriculumChapterMatches', 'notebookContentOrigin'];
 
 /** Opening a card must never make its stale identity newer than another device's edit. */
 export function updateClassMetadata(current: ClassInfo, patch: Partial<ClassInfo>, now = Date.now()): ClassInfo {

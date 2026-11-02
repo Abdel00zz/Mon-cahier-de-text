@@ -27,7 +27,6 @@ import {
 } from '@/platform/notificationActivation';
 import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
-import { hasSupportWhatsApp } from '@/constants/support';
 import { readNotebookActivity } from '@/infrastructure/storage/companionActivity';
 import { useCompanionGuide } from './useCompanionGuide';
 import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
@@ -129,19 +128,20 @@ export function ClassAssistant({
     return () => { current = false; };
   }, [today, revision]);
   const online = isNetworkOnline();
+  const hasLiveSession = Boolean(activeSessionClassIds && activeSessionClassIds.length > 0);
   const evaluate = useMemo(() => createCompanionEvaluation({
     classes, config, calendar, today, now: Date.now(), preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
-    readLessons, readActivity: readNotebookActivity, offersEnabled: hasSupportWhatsApp(),
+    readLessons, readActivity: readNotebookActivity, offersEnabled: false,
     messageHistory: messaging?.history, contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses,
-    pwaInstallRequired: pwaState.shouldAskInstall,
-    notificationPrompt,
+    pwaInstallRequired: hasLiveSession ? false : pwaState.shouldAskInstall,
+    notificationPrompt: hasLiveSession ? undefined : notificationPrompt,
     skippedTaskIds: skippedTasks,
     skippedMessageKeys,
     services: { authenticated: Boolean(messaging?.enabled), online, syncStatus, transfer: progress.state,
       inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false, messages: messaging?.messages ?? [] },
   }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
-    messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
+    messaging?.messages, contactedClasses, ignoredClasses, hasLiveSession, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
     online, syncStatus, progress.state, revision]);
   const brain = useMemo(() => evaluate(selectedTaskId), [evaluate, selectedTaskId]);
   const { decision, behavior, contentSuggestion } = brain;
@@ -244,15 +244,24 @@ export function ClassAssistant({
       secondaryActionLabel={
         decision.kind === 'enable-notifications' && decision.mode === 'activate' && onOpenNotifications
           ? labels['enable-notifications'].settingsLink
+          : brain.guidance.step === 'standby'
+          ? (locale === 'ar' ? 'استعادة التنبيهات' : locale === 'en' ? 'Restore reminders' : 'Réactiver les rappels')
           : undefined
       }
       onSecondaryAction={
         decision.kind === 'enable-notifications' && decision.mode === 'activate'
           ? onOpenNotifications
+          : brain.guidance.step === 'standby'
+          ? () => {
+              setSkippedTasks(new Set());
+              setSkippedMessageKeys(new Set());
+              setIgnoredClasses(new Set());
+              setSelectedTaskId(undefined);
+            }
           : undefined
       }
-      dismissLabel={brain.canSkip ? labels.skip : undefined}
-      onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
+      dismissLabel={brain.canSkip && brain.guidance.step !== 'standby' ? labels.skip : undefined}
+      onDismiss={brain.canSkip && brain.guidance.step !== 'standby' ? handleSkipCurrentMessage : undefined}
       keepOpenOnDismiss={hasMoreTasksAfterSkip}
       nextTaskLabel={brain.nextTaskId ? `${locale === 'ar' ? 'النقطة التالية' : locale === 'en' ? 'Next point' : 'Point suivant'} · ${new Intl.NumberFormat(locale).format(brain.taskPosition)}/${new Intl.NumberFormat(locale).format(brain.tasks.length)}` : undefined}
       onNextTask={brain.nextTaskId ? () => setSelectedTaskId(brain.nextTaskId) : undefined}

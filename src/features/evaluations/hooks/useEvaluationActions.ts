@@ -107,9 +107,8 @@ export function useEvaluationActions(classId: string, config: AppConfig, onChang
         },
         saveAbsences(id: string, names: string[], legacyId?: string) {
             const records = { ...config.assessmentAbsences?.[classId] };
-            if (names.length) records[id] = { names, updatedAt: new Date().toISOString() };
-            else delete records[id];
-            if (legacyId) delete records[legacyId];
+            records[id] = { names, updatedAt: new Date().toISOString() };
+            if (legacyId && legacyId !== id) delete records[legacyId];
             onChange({ assessmentAbsences: { ...config.assessmentAbsences, [classId]: records } });
         },
         saveAssessment(manual: ManualAssessment, editingId?: string) {

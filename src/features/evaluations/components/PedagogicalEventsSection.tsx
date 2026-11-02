@@ -12,6 +12,7 @@ import { KIND_GROUPS, PEDAGOGICAL_EVENT_CONFIG } from '../kindCatalog';
 import { KindGroupHeader } from './KindGroupHeader';
 import { EventDateModal } from './EventDateModal';
 import { ActionIcon } from './ActionIcon';
+import { CalendarSheetVisual } from './SectionPanelBadge';
 
 /*
  * LA LISTE DES ACTIVITÉS PÉDAGOGIQUES D'UNE NATURE.
@@ -132,7 +133,8 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
                       className="ev-date-trigger inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold text-foreground select-none cursor-pointer transition-all hover:text-primary hover:bg-muted/50 rounded-full active:scale-95 border border-border/40 shadow-xs"
                       aria-label={t('evaluations.assessmentDateAria', { assessment: title })}
                     >
-                      <span className="whitespace-nowrap tabular-nums text-[11px] font-bold">
+                      <CalendarSheetVisual iso={event.date} endDate={event.endDate} />
+                      <span className="ev-date-sr whitespace-nowrap tabular-nums text-[11px] font-bold">
                         {formatDateBadge(event.date, event.endDate)}
                       </span>
                     </button>
@@ -192,6 +194,7 @@ export const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> =
         isOpen={Boolean(editingDateEvent)}
         onClose={() => setEditingDateEvent(null)}
         event={editingDateEvent}
+        title={editingDateEvent ? localizedActivityTitle(editingDateEvent.title, editingDateEvent.type, locale) : undefined}
         onSave={onDateChange}
       />
     </section>

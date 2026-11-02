@@ -92,10 +92,11 @@ test('séance : la chronologie encadre une sélection non datée sans comparer s
 const buildContentRowsCount = (data: LessonsData, type: string): number =>
   buildLessonRows(data).filter(row => (row.data as { type?: string }).type === type).length;
 
-test('couleurs : 120 classes libres distinctes, stables après tri, renommage et aller-retour serveur', () => {
+test('couleurs : choix conservés et attribution stable après tri, renommage et aller-retour serveur', () => {
   const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, name: 'Ma classe libre', id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
   const assigned = assignClassColors(source);
-  assert.equal(new Set(assigned.map(c => c.color)).size, 120);
+  assert.equal(new Set(assigned.map(c => c.color)).size, 118);
+  assert.ok(assigned.slice(0, 3).every(c => c.color === 'sky'));
   assert.ok(assigned.every(c => isClassColor(c.color)));
   assert.deepEqual(assignClassColors([...source].reverse()).reverse(), assigned);
   const roundtrip = assignClassColors(assertValidClasses(JSON.parse(JSON.stringify(assigned))));
@@ -104,7 +105,7 @@ test('couleurs : 120 classes libres distinctes, stables après tri, renommage et
   assert.deepEqual(assignClassColors(renamed).map(c => c.color), renamed.map(c => c.color));
   const added = assignClassColors([...renamed, { ...dateClass, name: 'Ma classe libre', id: 'new', color: '' }]);
   assert.deepEqual(added.slice(0, -1), renamed);
-  assert.equal(new Set(added.map(c => c.color)).size, added.length);
+  assert.ok(!renamed.some(c => c.color === added[added.length - 1].color));
   assert.ok(classColorAttributes(assigned.find(c => c.color.startsWith('class-hue:'))!).style);
   assert.equal(isClassColor('url(javascript:alert(1))'), false);
   assert.ok(source.some(c => c.color === ''));
@@ -1651,9 +1652,9 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   assert.ok(!css.slice(css.indexOf('.content-badge {')).includes('@layer'), 'la règle partagée reste hors @layer');
   // Théorème : famille terracotta / brique crimson ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
-  assert.equal(contentBadgeClass('théorème').includes('#fcf0ed'), true);
-  assert.equal(contentBadgeClass('exemple').includes('#eef7f2'), true);
-  assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
+  assert.equal(contentBadgeClass('théorème').includes('#fbe9e7'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#e5f4ec'), true);
+  assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|border-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|border-\[[^\]]+\]|dark:[^ ]+/g, ''));
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
   assert.equal(contentBadgeClass(undefined).includes('bg-muted'), true);

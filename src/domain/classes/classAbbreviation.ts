@@ -1,6 +1,6 @@
 import type { AppLocale } from '../../types.js';
 import type { ClassIdentity } from './classIdentity';
-import { formatCompactTierLabel, formatStreamSigla } from '../../constants/class-levels.js';
+import { formatCompactTierLabel, formatStreamSigla, formatLocalizedClassDisplayName } from '../../constants/class-levels.js';
 import { toDisplayText } from '../../lib/text/textValue.js';
 
 /**
@@ -135,21 +135,41 @@ const splitStreamAndGroup = (rest: string): { stream: string; group: string } =>
 
 const isArabic = (name: string): boolean => /[\u0600-\u06FF]/.test(name);
 
-/** Même compaction que l'existant pour l'arabe : le niveau reste explicite. */
+const ARABIC_STREAM_ABBREV: ReadonlyArray<readonly [RegExp, string]> = [
+    [/علوم\s*فيزيائية/, 'ع.ف'],
+    [/علوم\s*الحياة\s*و\s*الأرض/, 'ع.ح.أ'],
+    [/علوم\s*رياضية\s*أ/, 'ع.ر.أ'],
+    [/علوم\s*رياضية\s*ب/, 'ع.ر.ب'],
+    [/علوم\s*رياضية/, 'ع.ر'],
+    [/علوم\s*تجريبية/, 'ع.ت'],
+    [/علوم\s*اقتصادية/, 'ع.ق'],
+    [/علوم\s*التدبير\s*المحاسباتي/, 'ع.ت.م'],
+    [/آداب\s*و\s*علوم\s*إنسانية/, 'آ.ع.إ'],
+    [/علوم\s*إنسانية/, 'ع.إ'],
+    [/آداب/, 'آ'],
+];
+
+/** Même compaction que l'existant pour l'arabe : le niveau et la filière restent explicites. */
 const abbreviateArabic = (name: string): string => {
     const cleaned = toDisplayText(name).replace(/^قسم\s+/, '').trim();
     const group = cleaned.match(/\d+\s*$/)?.[0].trim();
     const levels: ReadonlyArray<readonly [RegExp, string]> = [
-        [/الجذع المشترك العلمي/, 'ج.م.ع'],
-        [/الجذع المشترك الأدبي/, 'ج.م.أ'],
-        [/الأولى إعدادي/, '1إ'],
-        [/الثانية إعدادي/, '2إ'],
-        [/الثالثة إعدادي/, '3إ'],
-        [/(الأولى باك|الأولى بكالوريا)/, '1ب'],
-        [/(الثانية باك|الثانية بكالوريا)/, '2ب'],
+        [/الجذع\s*المشترك\s*العلمي/, 'ج.م.ع'],
+        [/الجذع\s*المشترك\s*الأدبي/, 'ج.م.أ'],
+        [/الجذع\s*المشترك\s*التكنولوجي/, 'ج.م.ت'],
+        [/الجذع\s*المشترك/, 'ج.م'],
+        [/الأولى\s*إعدادي/, '1إ'],
+        [/الثانية\s*إعدادي/, '2إ'],
+        [/الثالثة\s*إعدادي/, '3إ'],
+        [/(الأولى\s*باك|الأولى\s*بكالوريا)/, '1ب'],
+        [/(الثانية\s*باك|الثانية\s*بكالوريا)/, '2ب'],
     ];
     const match = levels.find(([pattern]) => pattern.test(cleaned));
-    return match ? `${match[1]}${group ?? ''}` : cleaned;
+    if (!match) return cleaned;
+
+    const streamMatch = ARABIC_STREAM_ABBREV.find(([pattern]) => pattern.test(cleaned));
+    const parts = [match[1], streamMatch ? streamMatch[1] : '', group ?? ''].filter(Boolean);
+    return parts.join(' ');
 };
 
 /**
@@ -187,7 +207,11 @@ export const parseClassName = (name: string): ParsedClassName => {
 export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): string => {
     const source = toDisplayText(name).trim();
     if (!source) return '';
-    if (locale === 'ar' || isArabic(source)) return abbreviateArabic(source);
+    if (locale === 'ar') {
+        const arabicSource = isArabic(source) ? source : formatLocalizedClassDisplayName(source, 'ar', { includeClassPrefix: false });
+        return abbreviateArabic(arabicSource);
+    }
+    if (isArabic(source)) return abbreviateArabic(source);
     const { level, stream, group } = parseClassName(source);
     const segments = [level, stream, group].filter(Boolean);
     if (segments.length === 0) {

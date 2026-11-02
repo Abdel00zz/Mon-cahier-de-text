@@ -8,10 +8,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground font-semibold hover:brightness-110 active:brightness-90",
-        success: "border border-success-strong/30 bg-success/10 text-success-strong font-semibold shadow-xs",
+        default: "bg-primary text-primary-foreground font-medium hover:brightness-110 active:brightness-90",
+        success: "border border-success-strong/30 bg-success/10 text-success-strong font-medium shadow-xs",
         charcoal: "bg-foreground text-background hover:brightness-110 active:brightness-95 active:scale-[0.97]",
-        accent: "bg-primary text-primary-foreground font-semibold hover:brightness-105 active:brightness-95",
+        accent: "bg-primary text-primary-foreground font-medium hover:brightness-105 active:brightness-95",
         destructive: "bg-destructive text-destructive-foreground shadow-xs hover:brightness-105 active:brightness-95",
         outline: "border border-border/80 bg-card text-foreground hover:bg-muted/60 active:brightness-95 shadow-xs",
         secondary: "bg-secondary text-secondary-foreground hover:bg-muted active:brightness-95 shadow-xs",
@@ -20,8 +20,8 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-11 min-h-[44px] min-w-[44px] px-4 sm:px-5 py-2.5",
-        sm: "h-11 min-h-[44px] min-w-[44px] px-3 sm:px-3.5 text-xs font-semibold",
-        lg: "h-11 min-h-[48px] sm:min-h-[44px] px-5 sm:px-6 text-base font-semibold",
+        sm: "h-11 min-h-[44px] min-w-[44px] px-3 sm:px-3.5 text-xs font-medium",
+        lg: "h-11 min-h-[48px] sm:min-h-[44px] px-5 sm:px-6 text-base font-medium",
         icon: "h-11 w-11 min-h-[44px] min-w-[44px] p-0",
       },
     },

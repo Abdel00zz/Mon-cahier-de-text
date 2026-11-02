@@ -24,6 +24,7 @@ export type ClassGuidance =
   | { step: 'notebook-unavailable'; classId: string; className: string; remaining: number }
   | ({ step: 'notebook-followup'; classId: string; className: string; remaining: number } & NotebookFollowup)
   | { step: 'checking'; classId: string; className: string }
+  | { step: 'standby'; classId: string; className: string; skippedCount: number }
   | { step: 'ready'; classId: string; className: string };
 
 export interface GuidanceBrainContext {
@@ -163,6 +164,7 @@ export function guidanceAction(guidance: ClassGuidance): GuidanceAction {
 /** Une nouvelle classe ou un problème renouvelé rafraîchit le signal d'attention. */
 export function guidanceKey(guidance: ClassGuidance): string {
   if (guidance.step === 'create') return 'create';
+  if (guidance.step === 'standby') return `standby:${guidance.classId}:${guidance.skippedCount}`;
   if (guidance.step === 'ready') return `ready:${guidance.classId}`;
   if (guidance.step === 'active-session') return `session:${guidance.classId}`;
   if (guidance.step === 'next-session') return `next-session:${guidance.classId}:${guidance.scheduleLabel}`;

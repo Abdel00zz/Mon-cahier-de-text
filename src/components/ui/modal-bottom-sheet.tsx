@@ -123,16 +123,16 @@ export function ModalBottomSheet({
   // Depend on values rather than a fresh array supplied by the parent on each render.
   const detents = useMemo(() => normalizeSheetDetents(detentSignature ? detentSignature.split(',').map(Number) : []), [detentSignature]);
   const [activeDetentIndex, setActiveDetentIndex] = useState(0);
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches);
-  const [isPortrait, setIsPortrait] = useState(() => typeof window !== 'undefined' && window.matchMedia('(orientation: portrait)').matches);
+  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), ((pointer: coarse) and (max-width: 1180px))').matches);
+  const [isPortrait, setIsPortrait] = useState(() => typeof window !== 'undefined' && window.matchMedia('(orientation: portrait), (min-width: 640px)').matches);
   const isCompactSheet = isCompact && isPortrait && mobilePresentation === 'sheet';
   const contentRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!effectiveOpen) return;
-    const media = window.matchMedia('(max-width: 639px)');
-    const orientation = window.matchMedia('(orientation: portrait)');
+    const media = window.matchMedia('(max-width: 1023px), ((pointer: coarse) and (max-width: 1180px))');
+    const orientation = window.matchMedia('(orientation: portrait), (min-width: 640px)');
     const sync = () => { setIsCompact(media.matches); setIsPortrait(orientation.matches); };
     sync();
     media.addEventListener('change', sync);
@@ -203,9 +203,10 @@ export function ModalBottomSheet({
     canExpand,
     canCollapse,
     onExpand: expandSheet,
+    canCollapseSheet: canCollapse,
     onCollapse: collapseSheet,
     onSnapFeedback: magneticSnap ? haptics.onSelect : undefined,
-  });
+  } as Parameters<typeof useSwipeToDismiss>[0]);
 
   const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md;
 
@@ -220,7 +221,7 @@ export function ModalBottomSheet({
           )}
         />
 
-        {/* Modal Window Container - Optimisé arrondis et animations mobile/tablette */}
+        {/* Modal Window Container - Optimisé arrondis et animations mobile/tablette iOS Sheet */}
         <DialogPrimitive.Content
           ref={contentRef}
           dir={effectiveDir}
@@ -229,14 +230,12 @@ export function ModalBottomSheet({
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
             'modal-pro-surface modal-motion-surface fixed z-[110] flex h-fit min-h-0 flex-col gap-0 overflow-hidden overscroll-contain',
-            // Mobile portrait : bottom sheet avec arrondis supérieurs prononcés
+            // Mobile & Tablette : bottom sheet iOS avec arrondis supérieurs prononcés
             'inset-x-0 bottom-0 top-auto rounded-t-[28px] border-t border-x border-border bg-card text-foreground shadow-2xl',
-            // Desktop : modal centrée avec arrondis complets
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[24px] sm:border sm:border-border sm:shadow-2xl',
-            // Landscape mobile : modal centrée petite
-            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-[24px]',
+            // Desktop (lg+) : modal centrée avec arrondis complets
+            'lg:inset-0 lg:m-auto lg:max-h-[min(90dvh,calc(100dvh-2.5rem))] lg:w-[calc(100vw-2.5rem)] lg:rounded-[24px] lg:border lg:border-border lg:shadow-2xl',
             // Safe area insets
-            !footer && 'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
+            !footer && 'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] lg:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
             // Max width
             mwClass,
@@ -260,8 +259,8 @@ export function ModalBottomSheet({
           onOpenAutoFocus={(event) => {
             const previous = document.activeElement;
             if (previous instanceof HTMLElement && !contentRef.current?.contains(previous)) returnFocusRef.current = previous;
-            // Do not summon the keyboard just by opening a phone form.
-            if (window.matchMedia('(max-width: 639px)').matches) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
+            // Do not summon the keyboard just by opening a phone/tablet form.
+            if (window.matchMedia('(max-width: 1023px)').matches) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
           }}
           onCloseAutoFocus={(event) => {
             if (returnFocusRef.current?.isConnected) {
@@ -293,7 +292,7 @@ export function ModalBottomSheet({
           onClickCapture={swipe.onClickCapture}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Sketch Drag Handle - Optimisé pour le toucher */}
+          {/* Sketch Drag Handle - Optimisé pour le toucher (Mobile + Tablette iOS Sheet) */}
           {dragHandle && isCompactSheet && (
             <button
               type="button"
@@ -310,11 +309,11 @@ export function ModalBottomSheet({
                 'h-12 w-28 -translate-x-1/2',
                 'cursor-grab active:cursor-grabbing touch-manipulation',
                 'transition-opacity duration-200',
-                'sm:hidden'
+                'lg:hidden'
               )}
             >
               {typeof dragHandle === 'boolean'
-                ? <span className="modal-drag-indicator h-1 w-12 rounded-full bg-muted-foreground/30 transition-all duration-200 active:w-14 active:bg-muted-foreground/50" />
+                ? <span className="modal-drag-indicator h-1.5 w-11 rounded-full bg-muted-foreground/30 transition-all duration-200 active:w-14 active:bg-muted-foreground/50" />
                 : dragHandle}
             </button>
           )}

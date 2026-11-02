@@ -480,3 +480,5 @@
   background-color: transparent !important;
   border-color: var(--print-rule) !important;
 }
+
+.print-document[data-print-color='color'] [data-content-tone='purple'] { --print-tone-ink: #573d80; --print-tone-fill: #f3ebfa; }

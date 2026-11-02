@@ -25,11 +25,11 @@
 .schedule-tab .schedule-periods [role='tab'] { min-height: 44px; padding-inline: 12px; border-radius: 12px; font-size: 13px; }
 .schedule-grid { margin-top: 4px; }
 .schedule-tab .schedule-grid__day-heading, .schedule-tab .schedule-grid__hour { height: 46px; background: hsl(var(--muted) / .38); font-size: 12px; font-weight: 650; }
+.schedule-tab .schedule-grid__day-heading { background: hsl(var(--muted)); }
 .schedule-tab .schedule-grid__day { font-size: 13px; font-weight: 650; background: hsl(var(--card)); }
-.schedule-hour-label { display: inline-flex; align-items: center; justify-content: center; gap: 1px; direction: ltr; white-space: nowrap; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .schedule-cell--empty { background: hsl(var(--background) / .42); }
-.schedule-cell--assigned select { background: color-mix(in srgb, var(--keep-cell) 62%, hsl(var(--card))); }
-.dark .schedule-cell--assigned select { background: var(--keep-cell); }
+.schedule-cell--assigned select { background: transparent; }
+.dark .schedule-cell--assigned select { background: transparent; }
 .schedule-cell__add { color: hsl(var(--muted-foreground) / .55); }
 .schedule-cell__label { font-size: 13px; }
 @media (hover: hover) {
@@ -46,6 +46,19 @@
   .schedule-hour-separator { display: none; }
   .schedule-hour-label > span:last-child::before { content: '– '; }
   .schedule-cell__label { font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .schedule-controls__row { flex-wrap: wrap; }
+  .schedule-periods { flex-basis: 100%; }
+  .schedule-periods [role='tablist'] { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .schedule-periods [role='tablist']::-webkit-scrollbar { display: none; }
+  .schedule-tab .schedule-periods [role='tab'] { flex: 0 0 auto; padding-inline: 7px; }
+  .schedule-date-toggle { max-width: 100%; margin-inline-start: auto; }
+}
+@media (max-width: 380px) {
+  .schedule-periods__label { display: none; }
+  .schedule-periods { gap: 0; }
+  .schedule-tab .schedule-periods [role='tab'] { flex: 1 0 auto; padding-inline: 6px; font-size: 11px; }
 }
 @media (max-width: 360px) {
   .schedule-tab { padding-inline: 6px; }

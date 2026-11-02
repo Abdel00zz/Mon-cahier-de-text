@@ -4,7 +4,7 @@ import { logger } from '../lib/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { CLASS_STORAGE_KEY, readStoredClasses } from '../infrastructure/storage/localClassStorage';
-import { assignClassColors } from '../domain/classes/classColors';
+import { assignClassColors, isClassColor } from '../domain/classes/classColors';
 import { removeQuarantine } from '../infrastructure/storage/safeStorage';
 import { updateClassMetadata } from '../domain/classes/classMetadata';
 
@@ -72,7 +72,7 @@ export const useClassManager = () => {
         if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
         const newClass: ClassInfo = {
             ...details, cycle: details.cycle ?? 'college', id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(), metadataUpdatedAt: new Date().toISOString(), color: '',
+            createdAt: new Date().toISOString(), metadataUpdatedAt: new Date().toISOString(), color: isClassColor(details.color) ? details.color : '',
         };
         const next = assignClassColors([...readStoredClasses(), newClass]);
         // Initialiser le cahier avant d'exposer sa carte et de réveiller le cloud.

@@ -1,4 +1,4 @@
-/* Course sheets: punched margin, quiet ruling and adaptive pointer feedback. */
+/* Course sheets: serene workspace pastel cards (.cl) with asymmetric bottom-start radius */
 :is(.class-card, .class-list-item) {
   --class-live-ink: hsl(342 59% 31%);
   --class-live-fill: hsl(342 35% 94%);
@@ -17,7 +17,7 @@
   --class-rule-step: 28px;
   --class-rule-ink: hsl(var(--foreground) / .025);
   --class-hole-offset: 12px;
-  --class-radius: 18px;
+  --class-radius: 1.3rem;
   --class-title-scale: 1;
   --class-badge-scale: 1;
   --spring-out: cubic-bezier(0.18, 1.01, 0.24, 1);
@@ -31,31 +31,30 @@
   justify-content: space-between;
   width: 100%;
   min-width: 0;
-  min-height: 88px;
+  min-height: 4.8rem;
   height: auto;
-  border-radius: 16px;
-  border: 1px solid var(--card-border, #D5E5B5);
-  background-color: var(--card-bg, #EEF5DF);
-  color: var(--card-title, #2D4A14);
-  font-family: var(--font-sans);
+  border-radius: 1.3rem;
+  border-end-start-radius: 0.5rem;
+  border: 0 solid var(--card-border, #cfe6d5);
+  background-color: var(--card-bg, #e6f3e9);
+  color: var(--card-title, #14503a);
+  font-family: "Readex Pro", var(--font-sans);
   font-synthesis: weight;
   box-sizing: border-box;
   overflow: hidden;
   transition: transform 260ms var(--spring-golden), background-color 220ms ease, border-color 220ms ease, box-shadow 260ms var(--spring-golden);
 }
 
-.class-card:not(.class-card--active):not([data-session-active="true"]) {
+.class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
   box-shadow: none !important;
 }
 
 [dir="rtl"] .class-card {
-  padding-right: 20px;
-  padding-left: 6px;
+  padding: 0.85rem 1.15rem 0.85rem 0.45rem;
 }
 
 [dir="ltr"] .class-card {
-  padding-left: 20px;
-  padding-right: 6px;
+  padding: 0.85rem 0.45rem 0.85rem 1.15rem;
 }
 
 .class-card__sheet {
@@ -182,6 +181,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   width: 100%;
   min-width: 0;
   pointer-events: none;
@@ -197,10 +197,11 @@
 }
 
 .class-card__title {
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: var(--card-title, #2D4A14) !important;
-  line-height: 1.35;
+  font-family: "Readex Pro", var(--font-sans) !important;
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  color: var(--card-title, #14503a) !important;
+  line-height: 1.5 !important;
   margin: 0;
   padding: 0;
   text-shadow: none !important;
@@ -208,11 +209,12 @@
 }
 
 .class-card__tier-plain {
-  font-size: 13px !important;
+  font-family: "Readex Pro", var(--font-sans) !important;
+  font-size: 0.8rem !important;
   font-weight: 400 !important;
-  color: var(--card-secondary, #4F6B2E) !important;
-  line-height: 1.3;
-  margin-top: 2px;
+  color: var(--card-secondary, #3f7f63) !important;
+  line-height: 1.35;
+  margin-top: 0.1rem;
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
@@ -229,26 +231,32 @@
   z-index: 3;
 }
 
-/* Bouton menu ⋮ dans une zone tactile 44x44px, sans fond */
+/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (.mn) */
 .class-card__menu {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: max(44px, 2.75rem);
+  height: max(44px, 2.75rem);
   min-width: 44px;
   min-height: 44px;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   background: transparent !important;
-  color: var(--card-secondary, #4F6B2E) !important;
+  color: var(--card-secondary, #3f7f63) !important;
   pointer-events: auto;
   touch-action: manipulation;
   cursor: pointer;
-  transition: opacity 150ms ease, background-color 150ms ease;
+  transition: opacity 150ms ease, background-color 150ms ease, transform 150ms ease;
 }
 
-.class-card__menu:hover {
-  background: color-mix(in srgb, var(--card-secondary, currentColor) 10%, transparent) !important;
+.class-card__menu:hover,
+.class-card__menu:active {
+  background: #ffffffa6 !important;
+}
+
+.dark .class-card__menu:hover,
+.dark .class-card__menu:active {
+  background: color-mix(in srgb, var(--card-secondary, currentColor) 16%, transparent) !important;
 }
 
 .class-card__menu:active {
@@ -256,13 +264,13 @@
 }
 
 .class-card__menu:focus-visible {
-  outline: 2px solid var(--card-secondary, #4F6B2E);
+  outline: 2px solid var(--card-secondary, #3f7f63);
   outline-offset: -2px;
 }
 
 .class-card__name { display: block; }
-.class-card__stream { display: block; font-size: 1em; line-height: 1.35; }
-.class-card[dir="rtl"] .class-card__stream { line-height: 1.65; }
+.class-card__stream { display: block; font-size: 1em; line-height: 1.45; }
+.class-card[dir="rtl"] .class-card__stream { line-height: 1.5; }
 .class-card[dir="rtl"] .class-card__title { font-synthesis: none; }
 
 .class-card .class-card__group {
@@ -293,7 +301,7 @@
   min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  color: var(--card-title, #2D4A14) !important;
+  color: var(--card-title, #14503a) !important;
   opacity: 1 !important;
   font-family: inherit !important;
   font-size: inherit !important;
@@ -473,47 +481,32 @@
 /* Desktop feedback is enabled only for a precise pointer. */
 @media (hover: hover) and (pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .class-card:has(.class-card__open:hover) {
-    transform: translateY(-3px);
-    will-change: transform;
-  }
-  .class-card:has(.class-card__open:hover) .class-card__sheet {
-    border-inline-end-width: 7px;
-  }
-  .class-card:has(.class-card__open:hover) .class-card__tier {
-    transform: translateX(2px) scale(1.03);
-  }
-  .class-card:has(.class-card__open:hover) .class-card__title {
-    transform: translateX(3px);
-  }
-  .class-card[dir="rtl"]:has(.class-card__open:hover) .class-card__tier {
-    transform: translateX(-2px) scale(1.03);
-  }
-  .class-card[dir="rtl"]:has(.class-card__open:hover) .class-card__title {
-    transform: translateX(-3px);
+    transform: translateY(-2px);
+    box-shadow: 0 1px 2px #2f28220d, 0 10px 28px #2f282214 !important;
   }
 }
 
 .class-card:has(.class-card__open:active) {
-  transform: scale(0.978);
+  transform: scale(0.985);
   transition-duration: 150ms;
 }
 
-/* Couleur par matière : fond, bordure 1px un peu plus foncée, titre très foncé, secondaire moyen */
+/* Couleur par matière (PAL) */
 .class-card {
-  --card-bg: #EEF5DF;
-  --card-border: #D5E5B5;
-  --card-title: #2D4A14;
-  --card-secondary: #4F6B2E;
+  --card-bg: #e6f3e9;
+  --card-border: #cfe6d5;
+  --card-title: #14503a;
+  --card-secondary: #3f7f63;
 }
 
-.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf4e4; --class-accent: #724405; --class-vivid: #d97706; --card-bg: #FDEADF; --card-border: #F3CDB8; --card-title: #7A2E10; --card-secondary: #96401A; }
-.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #fceee9; --class-accent: #7f2912; --class-vivid: #ea580c; --card-bg: #FDEADF; --card-border: #F3CDB8; --card-title: #7A2E10; --card-secondary: #96401A; }
-.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fcebf2; --class-accent: #7c1f4e; --class-vivid: #db2777; --card-bg: #F9E8F3; --card-border: #EBC9DE; --card-title: #5E2150; --card-secondary: #86436F; }
-.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f2ecfb; --class-accent: #52287a; --class-vivid: #9333ea; --card-bg: #F9E8F3; --card-border: #EBC9DE; --card-title: #5E2150; --card-secondary: #86436F; }
-.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #ebeffc; --class-accent: #283c82; --class-vivid: #4f46e5; --card-bg: #E9EBFA; --card-border: #CDD2F0; --card-title: #27307A; --card-secondary: #4A55A8; }
-.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e6f4f9; --class-accent: #0f4c64; --class-vivid: #0284c7; --card-bg: #E9EBFA; --card-border: #CDD2F0; --card-title: #27307A; --card-secondary: #4A55A8; }
-.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e6f6ef; --class-accent: #13533b; --class-vivid: #059669; --card-bg: #EEF5DF; --card-border: #D5E5B5; --card-title: #2D4A14; --card-secondary: #4F6B2E; }
-.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eff7e2; --class-accent: #365314; --class-vivid: #65a30d; --card-bg: #EEF5DF; --card-border: #D5E5B5; --card-title: #2D4A14; --card-secondary: #4F6B2E; }
+.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf4e4; --class-accent: #724405; --class-vivid: #d97706; --card-bg: #f7f0d4; --card-border: #ebe0ad; --card-title: #5c4a05; --card-secondary: #8f7a1c; }
+.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #fceee9; --class-accent: #7f2912; --class-vivid: #ea580c; --card-bg: #fdeede; --card-border: #f6d9bd; --card-title: #6b3a12; --card-secondary: #a8642a; }
+.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fcebf2; --class-accent: #7c1f4e; --class-vivid: #db2777; --card-bg: #fbe6ee; --card-border: #f2cddb; --card-title: #6e1c3e; --card-secondary: #a8486f; }
+.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f2ecfb; --class-accent: #52287a; --class-vivid: #9333ea; --card-bg: #ece9f7; --card-border: #d9d4ee; --card-title: #2e2766; --card-secondary: #5d55a3; }
+.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #ebeffc; --class-accent: #283c82; --class-vivid: #4f46e5; --card-bg: #ece9f7; --card-border: #d9d4ee; --card-title: #2e2766; --card-secondary: #5d55a3; }
+.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e6f4f9; --class-accent: #0f4c64; --class-vivid: #0284c7; --card-bg: #e0eefa; --card-border: #c6dff2; --card-title: #0f3f6b; --card-secondary: #3a78a8; }
+.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e6f6ef; --class-accent: #13533b; --class-vivid: #059669; --card-bg: #e6f3e9; --card-border: #cfe6d5; --card-title: #14503a; --card-secondary: #3f7f63; }
+.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eff7e2; --class-accent: #365314; --class-vivid: #65a30d; --card-bg: #e6f3e9; --card-border: #cfe6d5; --card-title: #14503a; --card-secondary: #3f7f63; }
 
 .class-card[data-class-color] {
   --card-bg: hsl(var(--class-hue) 55% 94%);
@@ -549,17 +542,17 @@
   background: var(--class-paper);
 }
 
-/* Forme fixe : hauteur minimale 88px, border-radius 16px quelle que soit la largeur */
+/* Forme sereine (.cl) : hauteur minimale 4.8rem, rayon asymétrique 1.3rem / 0.5rem */
 .class-card {
-  min-height: 88px !important;
-  border-radius: 16px !important;
+  min-height: 4.8rem !important;
+  border-radius: 1.3rem !important;
+  border-end-start-radius: 0.5rem !important;
 }
 
-.class-card:not(.class-card--active):not([data-session-active="true"]) {
+.class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
   box-shadow: none !important;
 }
 
-/* Version APK (Android / native) et téléphone : +5% de taille sur le nom de classe */
 @media (max-width: 767px), ((max-height: 500px) and (pointer: coarse)) {
   .class-card {
     --class-title-scale: 1.05;
@@ -573,8 +566,6 @@ html[data-platform="ios"] .class-card,
   --class-title-scale: 1.05;
 }
 
-/* Enlarge desktop typography proportionally at every card width. Touch devices
-   and native applications retain the existing container-based sizes. */
 @media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
   html:not([data-platform="android"]):not([data-platform="ios"]) .class-card:not([data-device-phone="true"]):not([data-platform-native="true"]) {
     --class-title-scale: 1.15;
@@ -601,20 +592,240 @@ html[data-platform="ios"] .class-card,
   .class-card__live-dot::after { display: none; }
 }
 
-/* Menu contextuel flottant façon One UI 7 Popup */
-.class-actions-menu {
-  background: color-mix(in srgb, hsl(var(--popover)) 92%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid hsl(var(--border) / 0.8);
-  border-radius: 18px;
-  box-shadow: 0 16px 36px -8px hsl(var(--foreground) / 0.16);
+/* ══ Menu rapide ⋮ en SheetModal bas d'écran (.class-actions-sheet) : fluide, sans répétition du nom de classe et cohérent en couleur ══ */
+.class-actions-sheet.modal-motion-surface {
+  top: auto !important;
+  bottom: var(--modal-keyboard-inset, 0px) !important;
+  inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px)) !important;
+  margin-inline: auto !important;
+  margin-block: 0 !important;
+  width: min(26rem, calc(100vw - 1.25rem)) !important;
+  max-width: min(26rem, calc(100vw - 1.25rem)) !important;
+  border-radius: 1.75rem 1.75rem 0 0 !important;
+  border: 1px solid #ebe5dc !important;
+  border-bottom: 0 !important;
+  background: #fffdfa !important;
+  padding: 0 !important;
+  box-shadow: 0 -12px 44px rgba(47, 40, 34, 0.18) !important;
+  animation: modal-sheet-in 280ms cubic-bezier(0.32, 0.72, 0, 1) both !important;
 }
 
-.class-actions-menu [role="menuitem"] {
-  min-height: 44px;
-  border-radius: 12px;
-  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+.dark .class-actions-sheet.modal-motion-surface {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.class-actions-sheet .class-actions-sheet__body {
+  padding: 0 !important;
+}
+
+.class-actions-menu-surface,
+.class-actions-menu {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--hero-bg, #fdeede) 52%, #fffdfa) 0%,
+    color-mix(in srgb, var(--hero-border, #f6d9bd) 16%, #fffdfa) 100%
+  ) !important;
+  padding: 2.1rem 0.95rem calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+  font-family: "Readex Pro", var(--font-sans);
+}
+
+.dark .class-actions-menu-surface,
+.dark .class-actions-menu {
+  background: color-mix(in srgb, var(--hero-bg, #fdeede) 14%, hsl(var(--card))) !important;
+}
+
+.class-menu-top-action {
+  padding: 0.1rem 0 0.45rem;
+}
+
+.class-menu-eval-pill {
+  position: relative;
+  z-index: 1;
+  min-height: 48px !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 1.05rem !important;
+  background: #ffffffeb !important;
+  color: var(--hero-ink, #2f2822) !important;
+  border: 1px solid color-mix(in srgb, var(--hero-border, #f6d9bd) 60%, transparent);
+  font-family: "Readex Pro", var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.class-menu-eval-pill__icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: var(--hero-bg, #fdeede);
+  color: var(--hero-secondary, #a8642a);
+  flex-shrink: 0;
+}
+
+.dark .class-menu-eval-pill {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border));
+}
+
+.class-menu-eval-pill:hover,
+.class-menu-eval-pill:focus {
+  background: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(47, 40, 34, 0.06);
+}
+
+.class-menu-eval-pill:active {
+  transform: scale(0.97);
+}
+
+.dark .class-menu-eval-pill:hover,
+.dark .class-menu-eval-pill:focus {
+  background: hsl(var(--accent)) !important;
+}
+
+.class-menu-round-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  padding: 0;
+}
+
+.class-menu-round-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px !important;
+  padding: 0.55rem 0.75rem;
+  border-radius: 1.05rem !important;
+  border-end-start-radius: 0.42rem !important;
+  background: #ffffffeb !important;
+  border: 1px solid color-mix(in srgb, var(--hero-border, #f6d9bd) 55%, transparent) !important;
+  color: #2f2822 !important;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: none !important;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.dark .class-menu-round-tile {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.class-menu-round-tile:hover,
+.class-menu-round-tile:focus {
+  transform: translateY(-1.5px);
+  background: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(47, 40, 34, 0.06) !important;
+}
+
+.dark .class-menu-round-tile:hover,
+.dark .class-menu-round-tile:focus {
+  background: hsl(var(--accent)) !important;
+}
+
+.class-menu-round-tile:active {
+  transform: scale(0.95) !important;
+}
+
+.class-menu-round-tile__icon {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 0.58rem;
+  flex-shrink: 0;
+}
+
+.class-menu-round-tile--edit .class-menu-round-tile__icon {
+  background: color-mix(in srgb, var(--hero-bg, #ece9f7) 85%, #ffffff);
+  color: var(--hero-secondary, #5d55a3);
+}
+
+.class-menu-round-tile--edit .class-menu-round-tile__label {
+  color: var(--hero-ink, #2f2822);
+}
+
+.class-menu-round-tile--delete {
+  border-color: color-mix(in srgb, #f2cddb 55%, transparent) !important;
+}
+
+.class-menu-round-tile--delete .class-menu-round-tile__icon {
+  background: #fbe9ec;
+  color: #c2455c;
+}
+
+.class-menu-round-tile--delete .class-menu-round-tile__label {
+  color: #a83249;
+}
+
+.dark .class-menu-round-tile--edit .class-menu-round-tile__icon {
+  background: rgba(139, 92, 246, 0.22);
+  color: #c4b5fd;
+}
+
+.dark .class-menu-round-tile--delete .class-menu-round-tile__icon {
+  background: rgba(244, 63, 94, 0.22);
+  color: #fda4af;
+}
+
+.dark .class-menu-round-tile--delete .class-menu-round-tile__label {
+  color: #fda4af;
+}
+
+.class-menu-round-tile__label {
+  font-family: "Readex Pro", var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.class-menu-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0.25rem 0 0;
+  min-height: 2.35rem;
+  border-radius: 0.8rem;
+  background: transparent;
+  color: #7a7169;
+  border: 0;
+  font: 600 0.78rem/1 "Readex Pro", var(--font-sans);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.dark .class-menu-cancel {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.class-menu-cancel:hover {
+  background: color-mix(in srgb, var(--hero-bg, #f0ebe3) 55%, transparent);
+  color: #2f2822;
+}
+
+.dark .class-menu-cancel:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.class-menu-cancel:active {
+  transform: scale(0.97);
 }
 
 /* Neutral, short feedback at the point of contact. */
@@ -622,7 +833,7 @@ html[data-platform="ios"] .class-card,
 .class-card__ripple { position: absolute; border-radius: 50%; background: hsl(var(--foreground)); opacity: 0; pointer-events: none; }
 
 @media (hover: none), (pointer: coarse), (max-width: 639px) {
-  .class-actions-menu { background: hsl(var(--popover)); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .class-actions-menu { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 
 /* Separate, quiet rows inspired by the reference's level / title / menu layout. */
@@ -727,3 +938,20 @@ html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
 @media (prefers-reduced-motion: reduce) {
   .class-list-item, .class-list-item__menu { transition: none; }
 }
+
+/* Le menu reflète son état sans modifier la surface tactile. */
+.class-card__menu svg { transition: transform 200ms cubic-bezier(.22,1,.36,1); }
+.class-card__menu[data-state='open'] svg { transform: rotate(90deg); }
+.dashboard-class-slot:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
+.dashboard-day-group:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
+@media (prefers-reduced-motion: reduce) { .class-card__menu svg { transition: none; } }
+
+/* Des surfaces assombries conservent la teinte sans réduire la lisibilité. */
+.dark .class-card {
+  background-color: color-mix(in srgb, var(--card-bg, #e7f4ec) 12%, hsl(var(--card))) !important;
+  border-color: color-mix(in srgb, var(--card-border, #c1e2ce) 28%, hsl(var(--border))) !important;
+}
+.dark .class-card__title { color: hsl(var(--foreground)) !important; }
+.dark .class-card__tier-plain { color: hsl(var(--muted-foreground)) !important; }
+.dark .class-card__menu { color: hsl(var(--foreground) / .85) !important; }
+.dark .class-card .class-card__group.keep-group-watermark { color: inherit !important; }
