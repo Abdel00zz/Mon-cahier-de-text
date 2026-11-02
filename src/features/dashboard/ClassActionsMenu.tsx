@@ -113,23 +113,9 @@ export function ClassActionsMenu({
                     className="claude-sheet-dialog"
                     bodyClassName="p-0 pb-4"
                 >
-                    <div className="flex flex-col text-start">
-                        {/* En-tête : titre serif + sous-titre discret */}
-                        <div className="claude-sheet-header pb-2">
-                            <div>
-                                <h3 className="claude-sheet-title">
-                                    {name}
-                                </h3>
-                                {(tier || subject) && (
-                                    <p className="claude-sheet-subtitle">
-                                        {[tier, subject].filter(Boolean).join(' • ')}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Liste groupée de 3 lignes (56px min chacune) */}
-                        <div className="claude-grouped-list my-2">
+                    <div className="flex flex-col text-start pt-3">
+                        {/* Liste groupée iOS 3 lignes (56px min chacune) */}
+                        <div className="claude-grouped-list my-1">
                             {onOpenEvaluations && (
                                 <button
                                     type="button"

@@ -43,15 +43,22 @@ html[data-keyboard='open'] .mobile-tab-sheet {
   transform: translateX(-50%);
   width: 296px;
   max-width: calc(100vw - 28px);
-  bottom: 14px;
-  background: var(--dash-tabbar-bg, #FFFDF9) !important;
-  border: 1px solid var(--dash-tabbar-border, #E5DFD5) !important;
-  border-radius: 24px !important;
-  padding: 6px !important;
-  box-shadow: 0 6px 20px rgba(60, 40, 25, 0.12) !important;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 253, 249, 0.88) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(229, 223, 213, 0.85) !important;
+  border-radius: 26px !important;
+  padding: 5px !important;
+  box-shadow: 0 10px 30px rgba(60, 40, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   touch-action: pan-y pinch-zoom;
   z-index: 40;
   box-sizing: border-box;
+}
+.dark .mobile-tab-bar {
+  background: rgba(38, 38, 36, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
 }
 .mobile-tab-bar__items {
   display: flex;
@@ -144,39 +151,52 @@ html[data-keyboard='open'] .mobile-tab-sheet {
 }
 .workspace-nav-active { position: absolute; inset: 0; border: 1px solid hsl(var(--border) / 0.7); border-radius: inherit; background: hsl(var(--muted) / 0.75); }
 
-/* Calm active state; one moving surface and aligned icon/label frames. */
+/* iOS Fluid active pill with specular highlight */
 .workspace-nav-button--mobile .workspace-nav-active {
   inset: 0;
-  border-radius: 16px;
+  border-radius: 20px;
   border: none;
-  background: #6b4c35;
-  box-shadow: none;
+  background: #C6613F;
+  box-shadow: 0 4px 12px rgba(198, 97, 63, 0.35);
   pointer-events: none;
+}
+.dark .workspace-nav-button--mobile .workspace-nav-active {
+  background: #D97757;
+  box-shadow: 0 4px 14px rgba(217, 119, 87, 0.4);
 }
 .workspace-nav-button--mobile[aria-current='page'],
 .workspace-nav-button--mobile[aria-current='page'] svg {
-  color: #faf7f2 !important;
-  font-weight: 500 !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
 }
 .workspace-nav-button--mobile:not([aria-current='page']) {
-  color: #4A433C;
+  color: #6B655B;
   background: transparent;
 }
+.dark .workspace-nav-button--mobile:not([aria-current='page']) {
+  color: #A8A29E;
+}
 .workspace-nav-button--mobile:not([aria-current='page']) svg {
-  color: #4A433C;
+  color: #6B655B;
   fill: none;
 }
+.dark .workspace-nav-button--mobile:not([aria-current='page']) svg {
+  color: #A8A29E;
+}
 .mobile-tab-bar .mobile-tab-label {
-  font-size: 12px !important;
+  font-size: 11.5px !important;
   line-height: 1.2;
 }
 .workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label {
-  font-weight: 500 !important;
-  color: #faf7f2 !important;
+  font-weight: 600 !important;
+  color: #FFFFFF !important;
 }
 .workspace-nav-button--mobile:not([aria-current='page']) .mobile-tab-label {
-  font-weight: 400 !important;
-  color: #4A433C !important;
+  font-weight: 500 !important;
+  color: #6B655B !important;
+}
+.dark .workspace-nav-button--mobile:not([aria-current='page']) .mobile-tab-label {
+  color: #A8A29E !important;
 }
 
 /* Tactile floating pill on desktop sidebar */
