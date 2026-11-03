@@ -33,16 +33,16 @@
   --modal-timing-content: 280ms;
   --modal-timing-stagger: 55ms;
 
-  /* ── Palette Classique Hellénique (Marbre Pentélique, Argile & Bronze) ─── */
-  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(39 42% 96%) 6%);
+  /* ── Palette Classique Hellénique (Marbre Pentélique, Blanc Pur & Voile Irisé) ─── */
+  --modal-surface-bg: hsl(var(--card));
   --modal-surface-tint: radial-gradient(
     130% 75% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 5.5%, hsla(38, 65%, 93%, 0.45)) 0%,
+    color-mix(in srgb, hsl(var(--primary)) 4%, hsla(250, 45%, 98%, 0.45)) 0%,
     transparent 74%
   );
-  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 92%, hsl(40 48% 97%) 8%);
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 94%, hsl(38 35% 95%) 6%);
-  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 84%, hsl(35 28% 78%) 16%);
+  --modal-header-bg: hsl(var(--card));
+  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 96%, hsl(240 10% 96%) 4%);
+  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 88%, transparent);
   --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.46) 92%, hsl(var(--primary) / 0.08));
 
   /* ── Bouton Fermer Circulaire (Médaillon Antique) ──────────────────────── */

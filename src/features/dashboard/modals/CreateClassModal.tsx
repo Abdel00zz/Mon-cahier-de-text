@@ -99,7 +99,7 @@ const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
 const CLASS_COLOR_OPTIONS: ReadonlyArray<{ value: string; background: string; ink: string; label: Record<AppLocale, string> }> = [
   { value: 'rose', background: 'oklch(0.70 0.14 355)', ink: '#ffffff', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
-  { value: 'lavender', background: 'oklch(0.68 0.14 295)', ink: '#ffffff', label: { fr: 'Violet', ar: 'بنفسجي', en: 'Purple' } },
+  { value: 'lavender', background: 'oklch(0.66 0.19 285)', ink: '#ffffff', label: { fr: 'Violet', ar: 'بنفسجي', en: 'Purple' } },
   { value: 'sky', background: 'oklch(0.68 0.14 245)', ink: '#ffffff', label: { fr: 'Bleu', ar: 'أزرق', en: 'Blue' } },
   { value: 'mint', background: 'oklch(0.70 0.14 150)', ink: '#ffffff', label: { fr: 'Vert', ar: 'أخضر', en: 'Green' } },
   { value: 'sand', background: 'oklch(0.75 0.10 95)', ink: '#ffffff', label: { fr: 'Sable', ar: 'رملي', en: 'Sand' } },
@@ -739,7 +739,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                     aria-label={option.label[locale]}
                     data-selected={classColor === option.value ? 'true' : 'false'}
                     onClick={() => { haptics.onSelect(); setClassColor(option.value); }}
-                    style={{ backgroundColor: option.background }}
+                    style={{ backgroundColor: option.background, color: option.background }}
                     className="claude-swatch"
                   />
                 ))}

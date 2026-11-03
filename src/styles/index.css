@@ -278,9 +278,9 @@ html[lang="ar"] .keep-class-title {
        le rouge qu’aux ruptures. Les gris gardent une teinte chaude de 2 à 5 %. */
     --background: 37.5 44.44% 96.47%; /* #faf7f2 */
     --foreground: 25 35.29% 13.33%; /* #2e2016 */
-    --card: 40 100% 98.82%; /* #fffdf9 */
+    --card: 0 0% 100%; /* #ffffff */
     --card-foreground: 25 35.29% 13.33%;
-    --popover: 40 100% 98.82%;
+    --popover: 0 0% 100%; /* #ffffff */
     --popover-foreground: 25 35.29% 13.33%;
     --primary: 25.56 33.75% 31.37%; /* #6b4c35 */
     --primary-foreground: 37.5 44.44% 96.47%;
@@ -418,15 +418,15 @@ html[lang="ar"] .keep-class-title {
     pointer-events: none;
     animation: ambient-drift 32s ease-in-out infinite alternate;
     will-change: transform;
-    opacity: 0.55;
+    opacity: 0.14;
     background:
-      radial-gradient(42% 38% at 20% 15%, #ede8fa, transparent 72%),
-      radial-gradient(38% 34% at 85% 30%, #e0ecfc, transparent 70%),
-      radial-gradient(42% 38% at 60% 90%, #fae6ee, transparent 72%);
+      radial-gradient(42% 38% at 20% 15%, #f7f4fe, transparent 72%),
+      radial-gradient(38% 34% at 85% 30%, #f0f6ff, transparent 70%),
+      radial-gradient(42% 38% at 60% 90%, #fcf4f8, transparent 72%);
   }
 
   .dark body::before {
-    opacity: 0.35;
+    opacity: 0.20;
     background:
       radial-gradient(42% 38% at 20% 15%, #251e44, transparent 72%),
       radial-gradient(38% 34% at 85% 30%, #182848, transparent 70%),

@@ -1,25 +1,25 @@
-/* Canevas serein : #faf8f4, halo pastel flouté, typographie Readex Pro */
+/* Canevas serein : fond tendant vers le blanc pur (#ffffff), halo pastel flouté, typographie Readex Pro */
 :root {
-    --dash-bg: #faf8f4;
-    --dash-header-ink: #2f2822;
-    --dash-group-ink: #7a7169;
-    --dash-btn-bg: #7a5a49;
-    --dash-btn-shadow: 0 8px 22px #7a5a4950;
+    --dash-bg: #ffffff;
+    --dash-header-ink: #221d38;
+    --dash-group-ink: #706887;
+    --dash-btn-bg: linear-gradient(135deg, #7c6ff6 0%, #5b8def 100%);
+    --dash-btn-shadow: 0 12px 26px -8px rgba(124, 111, 246, 0.45);
     --dash-robot-badge-bg: #B3402A;
-    --dash-tabbar-bg: #FFFDF9;
-    --dash-tabbar-border: #ebe5dc;
-    --dash-tabbar-sheet-bg: #faf8f4;
-    --dash-tabbar-inactive: #7a7169;
-    --dash-tabbar-active-bg: #7a5a49;
+    --dash-tabbar-bg: #FFFFFF;
+    --dash-tabbar-border: rgba(40, 30, 80, 0.08);
+    --dash-tabbar-sheet-bg: #FAFAFD;
+    --dash-tabbar-inactive: #706887;
+    --dash-tabbar-active-bg: linear-gradient(135deg, #7c6ff6 0%, #5b8def 100%);
 }
 .dark {
-    --dash-bg: #1a1815;
-    --dash-header-ink: #f2eae0;
-    --dash-group-ink: #c9bbb0;
-    --dash-btn-bg: #a67d60;
-    --dash-tabbar-bg: #29241f;
-    --dash-tabbar-sheet-bg: #211d19;
-    --dash-tabbar-border: #51463c;
+    --dash-bg: #14121f;
+    --dash-header-ink: #ece9fa;
+    --dash-group-ink: #9a95b5;
+    --dash-btn-bg: linear-gradient(135deg, #8b7cf6 0%, #689af6 100%);
+    --dash-tabbar-bg: #201d33;
+    --dash-tabbar-sheet-bg: #1a172a;
+    --dash-tabbar-border: rgba(200, 190, 255, 0.12);
 }
 
 /* Halo pastel doux en arrière-plan (.halo) */
@@ -34,7 +34,7 @@
     position: absolute;
     border-radius: 50%;
     filter: blur(90px);
-    opacity: 0.38;
+    opacity: 0.10;
 }
 .halo i:first-child {
     width: 22rem;
@@ -179,9 +179,9 @@
     height: 3.5rem;
     border-radius: 1.2rem;
     border-end-start-radius: 0.45rem;
-    background-color: var(--dash-btn-bg, #7a5a49);
+    background: var(--dash-btn-bg);
     color: #ffffff;
-    box-shadow: var(--dash-btn-shadow, 0 8px 22px #7a5a4950);
+    box-shadow: var(--dash-btn-shadow);
     border: none;
     display: grid;
     place-items: center;

@@ -8,27 +8,27 @@
    ══════════════════════════════════════════════════════════════ */
 
 .class-create-modal {
-  --create-surface: color-mix(in srgb, hsl(38 34% 96.5%) 94%, hsl(var(--card)) 6%);
-  --create-field: #fffdf9eb;
-  --create-edge: #e5ddd2;
+  --create-surface: color-mix(in srgb, hsl(38 34% 96.5%) 2%, hsl(var(--card)) 98%);
+  --create-field: #FAFAFD;
+  --create-edge: rgba(45, 35, 75, 0.08);
   --pad: clamp(1.2rem, 5cqi, 1.95rem);
 
-  /* Couleur dynamique du héros et de la carte du bas (Argile chaude par défaut, cohérente avec #faf7f2) */
-  --hero-bg: #f6ede2;
-  --hero-border: #e4d4c3;
-  --hero-ink: #2e2016;
-  --hero-secondary: #6b4c35;
+  /* Couleur dynamique du héros et de la carte du bas (Voile irisé moderne, tendant vers le blanc pur) */
+  --hero-bg: #F8F6FD;
+  --hero-border: #E8E2FA;
+  --hero-ink: #221D38;
+  --hero-secondary: #5A4DB8;
 
   background-color: var(--modal-surface-bg, var(--create-surface));
   background-image: var(--modal-surface-tint);
   font-family: "Readex Pro", var(--font-sans);
-  color: #2e2016;
+  color: #221D38;
 }
 
 .dark .class-create-modal {
-  --create-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(30 14% 14%) 6%);
+  --create-surface: color-mix(in srgb, hsl(var(--card)) 94%, hsl(250 14% 14%) 6%);
   --create-field: hsl(var(--card));
-  --create-edge: color-mix(in srgb, hsl(var(--border)) 88%, hsl(30 14% 28%) 12%);
+  --create-edge: color-mix(in srgb, hsl(var(--border)) 88%, hsl(250 14% 28%) 12%);
   background-color: var(--modal-surface-bg, var(--create-surface));
   color: hsl(var(--foreground));
 }
@@ -83,10 +83,10 @@
 }
 .create-hero-tone-lavender,
 .class-create-summary[data-color-tone='lavender'] {
-  --hero-bg: #efecf7;
-  --hero-border: #d7d1ea;
-  --hero-ink: #2f2854;
-  --hero-secondary: #584c96;
+  --hero-bg: #f4effd;
+  --hero-border: #ded3fc;
+  --hero-ink: #221a4f;
+  --hero-secondary: #5a3fbf;
 }
 .create-hero-tone-rose,
 .class-create-summary[data-color-tone='rose'] {
@@ -105,10 +105,10 @@
 }
 .dark .create-hero-tone-lavender,
 .dark .class-create-summary[data-color-tone='lavender'] {
-  --hero-bg: #26223e;
-  --hero-border: #433b6b;
-  --hero-ink: #eae6fc;
-  --hero-secondary: #c5bdf0;
+  --hero-bg: #221c3b;
+  --hero-border: #3d3266;
+  --hero-ink: #f0ecfd;
+  --hero-secondary: #c4b5ff;
 }
 .dark .create-hero-tone-mint,
 .dark .class-create-summary[data-color-tone='mint'] {
@@ -363,7 +363,7 @@
   height: 1.7rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: var(--create-surface, #faf7f2);
+  background: var(--create-surface, #ffffff);
   color: #8a7766;
   border: 0;
   font: 700 0.92rem/1 "Readex Pro", var(--font-sans);
@@ -386,7 +386,7 @@
 
 /* Étape validée : coche nette sans cadre */
 [data-state='complete'] .class-create-progress-number {
-  background: var(--create-surface, #faf7f2);
+  background: var(--create-surface, #ffffff);
   color: var(--hero-secondary, #6b4c35);
   border: 0;
   box-shadow: none;
@@ -399,7 +399,7 @@
 
 /* Étape active : numéro mis en valeur sans boîte encadrée */
 [data-state='current'] > .class-create-progress-item .class-create-progress-number {
-  background: var(--create-surface, #faf7f2);
+  background: var(--create-surface, #ffffff);
   color: var(--hero-secondary, #6b4c35);
   border: 0;
   font-size: 1.08rem;
