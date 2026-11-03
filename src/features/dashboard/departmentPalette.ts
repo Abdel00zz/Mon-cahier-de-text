@@ -1,3 +1,5 @@
+import { hueOf, isClassColor } from '@/domain/classes/classColors';
+
 export interface DepartmentPalette {
   bg: string;
   border: string;
@@ -19,7 +21,7 @@ const PALETTE_CYCLE: readonly PaletteKey[] = ['peach', 'lavender', 'green', 'sky
 
 /**
  * Déduit les tons d'une matière (fond, bordure, titre, secondaire)
- * en garantissant qu'aucune classe ne partage la même couleur de carte.
+ * en préservant les choix enregistrés et en variant les couleurs non choisies.
  */
 export function pickDepartmentPalette(
   tone: string | undefined,
@@ -38,7 +40,7 @@ export function pickDepartmentPalette(
   const used = usedKeys instanceof Set ? usedKeys : new Set(usedKeys ?? []);
 
   let key: PaletteKey;
-  if (saved && !used.has(saved)) {
+  if (saved) {
     key = saved;
   } else {
     let preferred: PaletteKey | undefined = saved;
@@ -76,13 +78,14 @@ export function buildUnifiedClassPaletteMap(
   classes.forEach(c => classById.set(c.id, c));
 
   const orderedIds: string[] = [];
+  const seen = new Set<string>();
   if (classOrder) {
     for (const id of classOrder) {
-      if (classById.has(id)) orderedIds.push(id);
+      if (classById.has(id) && !seen.has(id)) { orderedIds.push(id); seen.add(id); }
     }
   }
   for (const c of classes) {
-    if (!orderedIds.includes(c.id)) orderedIds.push(c.id);
+    if (!seen.has(c.id)) { orderedIds.push(c.id); seen.add(c.id); }
   }
 
   let previousKey: PaletteKey | undefined;
@@ -92,6 +95,14 @@ export function buildUnifiedClassPaletteMap(
   orderedIds.forEach((id, index) => {
     const item = classById.get(id);
     if (!item) return;
+    if (isClassColor(item.color) && item.color.startsWith('class-hue:')) {
+      const hue = hueOf(item.color).toFixed(3);
+      map.set(id, {
+        bg: `hsl(${hue} 55% 94%)`, border: `hsl(${hue} 45% 82%)`,
+        title: `hsl(${hue} 65% 18%)`, secondary: `hsl(${hue} 45% 32%)`,
+      });
+      return;
+    }
     const { key, palette } = pickDepartmentPalette(item.color ?? undefined, item.subject ?? undefined, index, previousKey, usedKeys);
     previousKey = key;
     usedKeys.add(key);

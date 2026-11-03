@@ -179,7 +179,7 @@ const fixtureConfig: Partial<AppConfig> = {
 test('séance : réveil au début, rappel et fin, sans balayage toutes les 15 secondes', () => {
   const calendar = { ...getBundledCalendar(), anneeScolaire: { libelle: '2026-2027', debut: '2026-09-01', fin: '2027-06-30' }, vacances: [], joursFeries: [] };
   const at = (clock: string, config = fixtureConfig) => detectSessionAlerts(config, [fixtureClass], calendar, new Date(`2026-09-14T${clock}+01:00`), () => false);
-  assert.equal(at('07:00:00').nextCheckDelay, 3600100);
+  assert.equal(at('07:00:00').nextCheckDelay, 3300100);
   assert.equal(at('08:00:00').nextCheckDelay, 3000100);
   assert.equal(at('08:50:00').events[0]?.kind, 'end');
   assert.equal(at('08:50:00').nextCheckDelay, 60100);

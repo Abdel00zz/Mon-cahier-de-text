@@ -98,10 +98,16 @@ export function ModalBottomSheet({
       if (compact) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
     },
     onCloseAutoFocus(event) {
-      const anotherOpen = [...document.querySelectorAll('[role="dialog"][data-state="open"]')]
-        .some(node => node !== contentRef.current && !node.contains(contentRef.current));
-      if (anotherOpen) { event.preventDefault(); return; }
-      if (returnFocus.current?.isConnected) { event.preventDefault(); returnFocus.current.focus({ preventScroll: true }); }
+      const topOpen = [...document.querySelectorAll<HTMLElement>('[role="dialog"][data-state="open"]')]
+        .filter(node => node !== contentRef.current && !node.contains(contentRef.current)).at(-1);
+      const previous = returnFocus.current;
+      // A child returns to its trigger in the parent; a newer, unrelated dialog keeps focus.
+      if (previous?.isConnected && (!topOpen || topOpen.contains(previous))) {
+        event.preventDefault(); previous.focus({ preventScroll: true });
+      } else if (topOpen) {
+        event.preventDefault();
+        if (!topOpen.contains(document.activeElement)) topOpen.focus({ preventScroll: true });
+      }
     },
     onPointerDownOutside(event) { if (blockDismiss) event.preventDefault(); },
     onEscapeKeyDown(event) { if (blockDismiss) event.preventDefault(); },

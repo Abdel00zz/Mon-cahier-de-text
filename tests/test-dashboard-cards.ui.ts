@@ -46,10 +46,11 @@ const renderCards = (active: ReadonlySet<string>) => {
 test('séance en cours : la carte de la classe active, et elle seule, porte le repère « en cours »', () => {
   const nowLabel = translateLocaleMessage('fr', 'dashboard.welcome.nowTitle');
   const cases: Array<[string, string[]]> = [
-    ['07:59:00', []],
+    ['07:54:59', []],
+    ['07:55:00', ['a']],
     ['08:00:00', ['a']],
-    ['08:55:00', []],
-    ['08:59:59', []],
+    ['08:55:00', ['a']],
+    ['08:59:59', ['a']],
     ['09:00:00', ['a']],
     ['09:54:59', ['a']],
     ['09:55:00', []],

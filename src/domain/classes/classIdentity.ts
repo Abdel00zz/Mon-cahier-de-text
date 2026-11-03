@@ -137,9 +137,24 @@ const ARABIC_STREAM_CODES = [
     'SVT', 'SM', 'PC', 'SEXP', 'SECO', 'SEG', 'SGC', 'LSH', 'SH', 'SI', 'L',
 ];
 
-const arabicStreamCodes = [...ARABIC_STREAM_CODES].sort((left, right) =>
-    (formatClassStreamFullName(right, 'ar')?.length ?? 0) - (formatClassStreamFullName(left, 'ar')?.length ?? 0)
-);
+const normalizeStreamText = (value: string) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+const streamNames = [...ARABIC_STREAM_CODES, 'MPSI', 'PCSI', 'TSI', 'ECS', 'ECT', 'MP', 'PSI']
+    .flatMap(code => [code, ...(['fr', 'ar', 'en'] as const).flatMap(language =>
+        [formatClassStreamFullName(code, language), formatClassStreamLabel(code, language)])]
+        .filter((label): label is string => Boolean(label))
+        .map(label => ({ code, label: normalizeStreamText(label) })))
+    .sort((a, b) => b.label.length - a.label.length);
+
+/** Old class names may contain a translated level and an untranslated stream.
+ * Recognise only known curriculum names; free-form teacher labels remain intact. */
+const knownStreamCode = (source: string): string => {
+    const text = normalizeStreamText(source);
+    return streamNames.find(({ label }) => {
+        const index = text.indexOf(label);
+        return index >= 0 && (index === 0 || !/[\p{L}\p{N}]/u.test(text[index - 1]))
+            && (index + label.length === text.length || !/\p{L}/u.test(text[index + label.length]));
+    })?.code ?? '';
+};
 
 const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 'full'> | null => {
     if (!ARABIC_SCRIPT.test(source)) return null;
@@ -147,11 +162,7 @@ const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 
     if (!matchedTier) return null;
     const [, tierKey] = matchedTier;
 
-    const streamCode = arabicStreamCodes.find(code => {
-        const full = formatClassStreamFullName(code, 'ar');
-        const label = formatClassStreamLabel(code, 'ar');
-        return (full !== null && source.includes(full)) || (label !== null && source.includes(label));
-    }) ?? '';
+    const streamCode = knownStreamCode(source);
 
     // Ce qui reste après le palier et le groupe : filière non répertoriée, que
     // l'on affiche telle quelle plutôt que de la perdre.
@@ -205,7 +216,7 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
     const parsed = parseClassName(full);
     const parsedTier = tierForLevelCode(parsed.level);
     if (parsedTier) {
-        const streamCode = disambiguateStream(parsed.stream || (parsed.level.startsWith('TC·') ? parsed.level.replace('·', '-') : ''), full);
+        const streamCode = disambiguateStream(parsed.stream || knownStreamCode(full) || (parsed.level.startsWith('TC·') ? parsed.level.replace('·', '-') : ''), full);
         return {
             streamCode: streamCode || null,
             tierKey: parsedTier,

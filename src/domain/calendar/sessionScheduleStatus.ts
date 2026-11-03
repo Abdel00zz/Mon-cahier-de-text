@@ -1,5 +1,5 @@
 import type { AbsencePeriod, ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../../types';
-import { getDaySessionBlocks, getDayTeachingBlocks } from './timetable';
+import { getDaySessionBlocks, getDayTeachingBlocks, getTimetableDisplayRange } from './timetable';
 import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar';
 import { moroccoClockMinutes } from '../notifications/sessionAlertEngine';
 
@@ -116,8 +116,9 @@ export function computeClassSessionSchedule(
                 b => activeBlock.startMin >= b.startMin && activeBlock.endMin <= b.endMin,
             );
             const remaining = Math.max(1, Math.ceil(activeBlock.endMin - currentMinute));
-            const startLabel = formatHourMinute(activeBlock.startMin, lang);
-            const endLabel = formatHourMinute(activeBlock.endMin, lang);
+            const display = getTimetableDisplayRange(activeBlock.startMin, activeBlock.endMin, clock);
+            const startLabel = formatHourMinute(display.startMin, lang);
+            const endLabel = formatHourMinute(display.endMin, lang);
 
             const label = lang === 'ar'
                 ? `حصة جارية · متبقي ${remaining} دقيقة قبل النهاية`
@@ -155,14 +156,16 @@ export function computeClassSessionSchedule(
             );
             const sessionHours = parentSession?.hours ?? nextBlock.hours;
             const diffMin = Math.ceil(nextBlock.startMin - currentMinute);
-            const startLabel = formatHourMinute(nextBlock.startMin, lang);
-            const endLabel = formatHourMinute(nextBlock.endMin, lang);
+            const display = getTimetableDisplayRange(nextBlock.startMin, nextBlock.endMin, clock);
+            const startLabel = formatHourMinute(display.startMin, lang);
+            const endLabel = formatHourMinute(display.endMin, lang);
 
             const pausedSession = todaySessionBlocks
                 .find(b => currentMinute >= b.startMin && currentMinute < b.endMin);
             if (pausedSession) {
-                const label = lang === 'ar' ? `استراحة · استئناف الحصة على الساعة ${startLabel}`
-                    : lang === 'en' ? `Break · resumes at ${startLabel}` : `Pause · reprise à ${startLabel}`;
+                const resumeLabel = formatHourMinute(nextBlock.startMin, lang);
+                const label = lang === 'ar' ? `استراحة · استئناف الحصة على الساعة ${resumeLabel}`
+                    : lang === 'en' ? `Break · resumes at ${resumeLabel}` : `Pause · reprise à ${resumeLabel}`;
                 return { state: 'paused', label, shortLabel: label, remainingMinutes: diffMin,
                     startMin: nextBlock.startMin, endMin: nextBlock.endMin,
                     startTimeLabel: startLabel, endTimeLabel: endLabel, dayOffset: 0,
@@ -171,10 +174,10 @@ export function computeClassSessionSchedule(
 
             if (diffMin <= 60) {
                 const label = lang === 'ar'
-                    ? `الحصة تبدأ خلال ${diffMin} دقيقة (${startLabel})`
+                    ? `الحصة تبدأ خلال ${diffMin} دقيقة`
                     : lang === 'en'
-                      ? `Starts in ${diffMin} min (${startLabel})`
-                      : `Séance dans ${diffMin} min (${startLabel})`;
+                      ? `Starts in ${diffMin} min`
+                      : `Séance dans ${diffMin} min`;
 
                 const shortLabel = lang === 'ar'
                     ? `خلال ${diffMin} د`
@@ -225,8 +228,9 @@ export function computeClassSessionSchedule(
     }
 
     const buildUpcomingStatus = (offset: number, targetDayOfWeek: number, startMin: number, endMin: number, sessionHours?: number): SessionScheduleStatus => {
-        const startLabel = formatHourMinute(startMin, lang);
-        const endLabel = formatHourMinute(endMin, lang);
+        const display = getTimetableDisplayRange(startMin, endMin, clock);
+        const startLabel = formatHourMinute(display.startMin, lang);
+        const endLabel = formatHourMinute(display.endMin, lang);
         const isTomorrow = offset === 1;
         const dayName = DAY_NAMES[lang][targetDayOfWeek] ?? 'Lundi';
 

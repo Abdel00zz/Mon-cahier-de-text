@@ -31,7 +31,7 @@ test('session schedule status : détecte une séance en cours avec calcul du tem
 test('session schedule status : détecte une séance imminente (< 60 min)', () => {
     // Lundi slot 2 (10h-11h)
     const timetable: TimetableEntry[] = [{ day: 1, slot: 2, classId: 'cls-1' }];
-    // 09h45 à Casablanca -> 15 min avant 10h00
+    // 09h45 à Casablanca -> 20 min avant la sonnerie réelle de 10h05.
     const monday0945Casablanca = makeCasablancaDate(2026, 10, 12, 9, 45);
 
     const status = computeClassSessionSchedule(timetable, 0, 'cls-1', {
@@ -41,7 +41,8 @@ test('session schedule status : détecte une séance imminente (< 60 min)', () =
 
     assert.equal(status.state, 'starting_soon');
     assert.equal(status.remainingMinutes, 20);
-    assert.match(status.label, /Séance dans 20 min \(10h05\)/);
+    assert.equal(status.label, 'Séance dans 20 min');
+    assert.equal(status.startTimeLabel, '10h00', 'nominal time matches the timetable');
 });
 
 test('session schedule status : détecte une séance plus tard aujourd’hui', () => {
@@ -70,8 +71,8 @@ test('session schedule status : détecte la prochaine séance demain ou un autre
 
     assert.equal(status.state, 'upcoming');
     assert.equal(status.dayOffset, 2);
-    assert.match(status.label, /Prochaine séance : Mercredi à 10h05/);
-    assert.equal(status.shortLabel, 'Mercredi à 10h05');
+    assert.match(status.label, /Prochaine séance : Mercredi à 10h00/);
+    assert.equal(status.shortLabel, 'Mercredi à 10h00');
 });
 
 test('session schedule status : supporte la locale arabe', () => {

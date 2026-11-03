@@ -6,6 +6,8 @@ import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { ScheduleTab } from '../src/features/settings/components/ScheduleTab';
 import { SettingsPanel } from '../src/features/settings/components/SettingsPrimitives';
 import type { AppConfig, ClassInfo } from '../src/types';
+import { buildUnifiedClassPaletteMap } from '../src/features/dashboard/departmentPalette';
+import { resolveDashboardClassOrder } from '../src/domain/classes/classOrder';
 
 const classInfo: ClassInfo = { id: 'a', name: '1AC 1', level: '1AC', cycle: 'college', subject: 'Mathématiques', teacherName: '', color: '', createdAt: '2026-09-01' };
 const config: AppConfig = { establishmentName: '', defaultTeacherName: '', printShowDescriptions: true,
@@ -20,7 +22,9 @@ test('grille mobile bilingue : horaires, cellules tactiles et séance fusionnée
     assert.equal((html.match(/<select/g) ?? []).length, 23);
     assert.match(html, /colSpan="2"/i);
     assert.match(html, /schedule-cell__add/);
-    assert.match(html, locale === 'ar' ? /08:00–08:55/ : /08h–08h55/);
+    assert.match(html, /08:00–09:00/, 'pedagogical hours, not internal bell times');
+    assert.match(html, /08:00–10:00/, 'the accessible merged cell announces both hours');
+    assert.match(html, locale === 'ar' ? /2 س/ : /2 h/, 'the double session is visible');
     assert.match(html, /schedule-cell--assigned/);
     assert.doesNotMatch(html, /<h2/);
     assert.match(html, locale === 'ar' ? /الفترة/ : /Période/);
@@ -52,4 +56,14 @@ test('date déjà configurée sans créneaux : action de modification repliée',
     children: createElement(ScheduleTab, { classes: [classInfo], config: { ...config, timetable: [], schoolYearStart: '2026-09-07' }, onChange: () => {} }) }));
   assert.match(html, /Modifier la date/);
   assert.match(html, /class="schedule-date-toggle" aria-expanded="false"/);
+});
+
+test('la grille reprend la couleur du dashboard avant et après un ordre personnalisé', () => {
+  const classes = [classInfo, { ...classInfo, id: 'b', createdAt: '2026-10-01' }];
+  for (const dashboardClassOrder of [undefined, ['a', 'b']]) {
+    const palette = buildUnifiedClassPaletteMap(classes, resolveDashboardClassOrder(classes, dashboardClassOrder)).get('a')!;
+    const html = renderToStaticMarkup(createElement(LocaleProvider, { locale: 'fr', manageDocument: false,
+      children: createElement(ScheduleTab, { classes, config: { ...config, dashboardClassOrder }, onChange: () => {} }) }));
+    assert.ok(html.includes(`--card-bg:${palette.bg};--card-border:${palette.border};--card-title:${palette.title}`));
+  }
 });

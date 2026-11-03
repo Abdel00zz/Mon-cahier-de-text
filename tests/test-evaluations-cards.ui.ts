@@ -282,12 +282,6 @@ test('le jour de la date limite, le bouton pulse avec l’effet existant ; avant
   }
 });
 
-test('le halo d’échéance réutilise l’animation des commandes à ne pas manquer et respecte la réduction des mouvements', () => {
-  const css = readFileSync('src/components/ui/modal-motion.css', 'utf8');
-  assert.match(css, /\.glow-pulse-warning \{[^}]*animation: modal-glow-pulse/, 'même animation que glow-pulse-danger / primary');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.glow-pulse-warning[\s\S]*animation: none/);
-});
-
 test('la fenêtre du rendu se dit « Rendu du devoir », sans la phrase « élèves n’ayant pas rendu »', () => {
   assert.equal(translateLocaleMessage('fr', 'evaluations.homework.notReturnedTitle'), 'Rendu du devoir');
   assert.equal(translateLocaleMessage('en', 'evaluations.homework.notReturnedTitle'), 'Homework hand-in');

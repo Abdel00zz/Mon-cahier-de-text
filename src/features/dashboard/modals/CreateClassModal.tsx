@@ -494,7 +494,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             </div>
           </div>
         }
-        footer={
+        footer={(editingClass || stepIndex > 0 || (step === 'level' && customMode)) && (
           <fieldset disabled={submitting} className="flex w-full items-center justify-between gap-2.5">
             {editingClass && onDelete && !rosterSection && (
               <button
@@ -545,7 +545,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
               </button>
             )}
           </fieldset>
-        }
+        )}
       >
         {editingClass && onRosterSave && (
           <div className="claude-tabs mx-0 mb-3" role="tablist" aria-label={copy.editTitle}>

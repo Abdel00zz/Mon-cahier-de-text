@@ -3,7 +3,7 @@ import test, { mock } from 'node:test';
 import { getBundledCalendar, loadHolidayCalendar, resetHolidayCalendarCacheForTests, type HolidayCalendar } from '../src/domain/calendar/calendar';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
 import { buildNativeReminderPlan } from '../src/domain/notifications/nativeReminderPlan';
-import { getDaySessionBlocks, getDaySlotRuns, getHourSlots } from '../src/domain/calendar/timetable';
+import { getDaySessionBlocks, getDaySlotRuns, getHourSlots, getTimetableDisplayRange } from '../src/domain/calendar/timetable';
 import type { AppConfig, ClassInfo, TimetableEntry } from '../src/types';
 import { extractSyncableSettings, mergeSyncableSettings } from '../src/infrastructure/sync/syncSettings';
 
@@ -116,12 +116,14 @@ test('décalage horaire du compte : séance, rappel et alarme native bougent ens
 });
 
 test('étiquettes des créneaux : elles suivent le décalage et le calcul est mis en mémoire', () => {
-  assert.equal(getHourSlots(0)[0].label, '08h00–08h55');
-  assert.equal(getHourSlots(30)[0].label, '08h30–09h25');
-  assert.equal(getHourSlots(-15)[0].label, '07h45–08h40');
-  assert.equal(getHourSlots(30)[4].label, '14h30–15h25');
+  assert.equal(getHourSlots(0)[0].label, '07h55–08h55');
+  assert.equal(getHourSlots(30)[0].label, '08h25–09h25');
+  assert.equal(getHourSlots(-15)[0].label, '07h40–08h40');
+  assert.equal(getHourSlots(30)[4].label, '14h25–15h25');
   assert.equal(getHourSlots(30), getHourSlots(30), 'même tableau, pas de recalcul');
-  assert.equal(getHourSlots(7)[0].label, '08h00–08h55', 'décalage invalide : horaire historique');
+  assert.equal(getHourSlots(7)[0].label, '07h55–08h55', 'décalage invalide : horaire historique');
+  assert.deepEqual(getTimetableDisplayRange(475, 595), { startMin: 480, endMin: 600 });
+  assert.deepEqual(getTimetableDisplayRange(505, 625, 30), { startMin: 510, endMin: 630 });
 });
 
 test('grille et moteur comptent les mêmes séances continues (parité sur 300 emplois du temps)', () => {
@@ -210,9 +212,9 @@ test('calendrier : une requête qui ne répond pas ne bloque pas l’affichage d
 test('horloge réelle : frontières, pauses et cohérence entre carte et moteur', async () => {
   const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
   const slots = [
-    ['08:00:00','08:54:59','08:55:00'], ['09:00:00','09:54:59','09:55:00'],
+    ['07:55:00','08:54:59','08:55:00'], ['08:55:00','09:54:59','09:55:00'],
     ['10:05:00','10:59:59','11:00:00'], ['11:00:00','11:59:59','12:00:00'],
-    ['14:00:00','14:54:59','14:55:00'], ['15:00:00','15:54:59','15:55:00'],
+    ['13:55:00','14:54:59','14:55:00'], ['14:55:00','15:54:59','15:55:00'],
     ['16:05:00','16:59:59','17:00:00'], ['17:00:00','17:59:59','18:00:00'],
   ];
   for (const [index, [start, last, end]] of slots.entries()) {
@@ -225,16 +227,14 @@ test('horloge réelle : frontières, pauses et cohérence entre carte et moteur'
     assert.deepEqual(activeIds(end, config), [], end);
     assert.notEqual(status(end).state, 'in_progress', end);
   }
-  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'b'}])), []);
-  assert.deepEqual(activeIds('08:57:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}])), []);
+  assert.deepEqual(activeIds('08:55:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'b'}])), ['b']);
+  assert.deepEqual(activeIds('08:55:00', baseConfig([{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}])), ['a']);
 });
 
 test('les pauses arrêtent le statut actif, la reprise le rétablit et le rappel reste unique', async () => {
   const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
   for (const [firstSlot, pause, resume, reminder] of [
-    [0, '08:55:00', '09:00:00', '09:50:00'],
     [1, '09:55:00', '10:05:00', '10:55:00'],
-    [4, '14:55:00', '15:00:00', '15:50:00'],
     [5, '15:55:00', '16:05:00', '16:55:00'],
   ] as const) {
     const config = baseConfig([{ day: 1, slot: firstSlot, classId: 'a' }, { day: 1, slot: firstSlot + 1, classId: 'a' }]);
@@ -254,9 +254,9 @@ test('les pauses arrêtent le statut actif, la reprise le rétablit et le rappel
   const continuous = baseConfig([{ day: 1, slot: 2, classId: 'a' }, { day: 1, slot: 3, classId: 'a' }]);
   assert.deepEqual(activeIds('11:00:00', continuous), ['a'], 'aucune interruption quand les horaires se touchent');
   assert.equal(at('11:00:00', continuous).current[0].endMin, 720);
-  const shifted = baseConfig(timetable, { timetableClock: { version: 1, offsetMinutes: 30, updatedAt: '2026-09-01' } });
-  assert.deepEqual(activeIds('09:27:00', shifted), [], 'la pause suit le décalage du compte');
-  assert.deepEqual(activeIds('09:30:00', shifted), ['a']);
+  const shifted = baseConfig([{ day: 1, slot: 1, classId: 'a' }, { day: 1, slot: 2, classId: 'a' }], { timetableClock: { version: 1, offsetMinutes: 30, updatedAt: '2026-09-01' } });
+  assert.deepEqual(activeIds('10:27:00', shifted), [], 'la pause suit le décalage du compte');
+  assert.deepEqual(activeIds('10:35:00', shifted), ['a']);
 });
 
 test('dès la fin de sa dernière séance, la classe expose uniquement sa prochaine séance', async () => {

@@ -135,11 +135,12 @@ test('current session has a strict end boundary and lunch is not a continuous se
 });
 test('global timetable clock translates every slot without changing duration or lunch', () => {
   const slots = getHourSlots(30);
-  assert.equal(slots[0].startMin, 8 * 60 + 30);
+  assert.equal(slots[0].startMin, 7 * 60 + 55 + 30);
   assert.equal(slots.at(-1)?.endMin, 18 * 60 + 30);
-  assert.ok(slots.every((slot, index) => slot.endMin - slot.startMin === (index % 4 === 3 ? 60 : 55)));
+  assert.ok(slots.every((slot, index) => slot.endMin - slot.startMin === (index % 4 === 2 ? 55 : 60)));
+  assert.ok(slots.every(slot => slot.displayEndMin - slot.displayStartMin === 60));
   assert.equal(slots[4].lunchBefore, true);
-  assert.equal(slots[4].startMin - slots[3].endMin, 120);
+  assert.equal(slots[4].startMin - slots[3].endMin, 115);
   assert.equal(normalizeTimetableClock({ offsetMinutes: 7, version: 9, updatedAt: '2026-09-08T00:00:00Z' }).offsetMinutes, 0);
 });
 test('global timetable clock shifts live sessions and reminders together', () => {

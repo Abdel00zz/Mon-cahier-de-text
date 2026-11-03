@@ -8,18 +8,21 @@ export interface HourSlot {
     /** début/fin en minutes depuis minuit (heure locale de l'appareil) */
     startMin: number;
     endMin: number;
+    /** Pedagogical grid labels; never used to schedule an alarm or detect a live lesson. */
+    displayStartMin: number;
+    displayEndMin: number;
     lunchBefore?: boolean; // affiche une pause déjeuner avant ce créneau
 }
 
 const HOUR_SLOTS: HourSlot[] = [
-    { index: 0, label: '08h00–08h55', startMin: 8 * 60, endMin: 8 * 60 + 55 },
-    { index: 1, label: '09h00–09h55', startMin: 9 * 60, endMin: 9 * 60 + 55 },
-    { index: 2, label: '10h05–11h00', startMin: 10 * 60 + 5, endMin: 11 * 60 },
-    { index: 3, label: '11h00–12h00', startMin: 11 * 60, endMin: 12 * 60 },
-    { index: 4, label: '14h00–14h55', startMin: 14 * 60, endMin: 14 * 60 + 55, lunchBefore: true },
-    { index: 5, label: '15h00–15h55', startMin: 15 * 60, endMin: 15 * 60 + 55 },
-    { index: 6, label: '16h05–17h00', startMin: 16 * 60 + 5, endMin: 17 * 60 },
-    { index: 7, label: '17h00–18h00', startMin: 17 * 60, endMin: 18 * 60 },
+    { index: 0, label: '07h55–08h55', startMin: 475, endMin: 535, displayStartMin: 480, displayEndMin: 540 },
+    { index: 1, label: '08h55–09h55', startMin: 535, endMin: 595, displayStartMin: 540, displayEndMin: 600 },
+    { index: 2, label: '10h05–11h00', startMin: 605, endMin: 660, displayStartMin: 600, displayEndMin: 660 },
+    { index: 3, label: '11h00–12h00', startMin: 660, endMin: 720, displayStartMin: 660, displayEndMin: 720 },
+    { index: 4, label: '13h55–14h55', startMin: 835, endMin: 895, displayStartMin: 840, displayEndMin: 900, lunchBefore: true },
+    { index: 5, label: '14h55–15h55', startMin: 895, endMin: 955, displayStartMin: 900, displayEndMin: 960 },
+    { index: 6, label: '16h05–17h00', startMin: 965, endMin: 1020, displayStartMin: 960, displayEndMin: 1020 },
+    { index: 7, label: '17h00–18h00', startMin: 1020, endMin: 1080, displayStartMin: 1020, displayEndMin: 1080 },
 ];
 
 const TIMETABLE_CLOCK_MIN_OFFSET = -120;
@@ -112,10 +115,20 @@ export const getHourSlots = (
         const startMin = slot.startMin + offsetMinutes;
         const endMin = slot.endMin + offsetMinutes;
         // L'étiquette suit l'horaire décalé : jamais « 08h–09h » pour un créneau de 08h30.
-        return { ...slot, label: `${hourLabel(startMin)}–${hourLabel(endMin)}`, startMin, endMin };
+        return { ...slot, label: `${hourLabel(startMin)}–${hourLabel(endMin)}`, startMin, endMin,
+            displayStartMin: slot.displayStartMin + offsetMinutes, displayEndMin: slot.displayEndMin + offsetMinutes };
     });
     shiftedHourSlots.set(offsetMinutes, shifted);
     return shifted;
+};
+
+/** Same slot identity for cards and timetable, with nominal labels kept out of clock calculations. */
+export const getTimetableDisplayRange = (
+    startMin: number, endMin: number, clock?: Pick<TimetableClockPolicy, 'offsetMinutes'> | number | null,
+): { startMin: number; endMin: number } => {
+    const slots = getHourSlots(clock);
+    return { startMin: slots.find(slot => slot.startMin === startMin)?.displayStartMin ?? startMin,
+        endMin: slots.find(slot => slot.endMin === endMin)?.displayEndMin ?? endMin };
 };
 
 /** Jours ouvrés affichés (lundi → samedi), valeurs en convention getDay() 0=dimanche. */

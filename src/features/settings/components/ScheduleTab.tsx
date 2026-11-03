@@ -3,9 +3,10 @@ import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/domain/calendar/calendar';
-import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { SUBJECT_ABBREV_MAP, formatLocalizedSubjectDisplayName } from '@/constants';
 import { scheduleClassLabel } from '@/domain/classes/classAbbreviation';
 import { classIdentityFor } from '@/domain/classes/classIdentity';
+import { resolveDashboardClassOrder } from '@/domain/classes/classOrder';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import {
     TIMETABLE_DAYS,
@@ -16,40 +17,11 @@ import {
     setTimetableEntry,
 } from '@/domain/calendar/timetable';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { KEEP_TONES } from '@/platform/keepTheme';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { buildUnifiedClassPaletteMap } from '@/features/dashboard/departmentPalette';
 import './schedule.css';
-
-export interface ModernClassColor {
-    key: string;
-    bg: string;
-    border: string;
-    text: string;
-    subtext: string;
-    dot: string;
-}
-
-/**
- * Cellules d'emploi du temps : la **même teinte que la carte de classe**, un
- * cran plus soutenue. Les couleurs viennent des jetons du ton (`index.css` :
- * `--keep-cell`, `--keep-cell-ink`, `--keep-accent`), donc une carte et sa case
- * d'emploi du temps ne peuvent plus diverger — et le mode sombre suit seul.
- * Le contraste des libellés est celui de l'accent AA du ton.
- */
-const SCHEDULE_CELL_CLASSES: Omit<ModernClassColor, 'key'> = {
-    bg: 'bg-[var(--keep-cell)]',
-    border: 'border-[var(--keep-accent)]',
-    text: 'text-[var(--keep-cell-ink)]',
-    subtext: 'text-[var(--keep-cell-ink)]',
-    dot: 'bg-[var(--keep-accent)]',
-};
-
-export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = Object.fromEntries(
-    KEEP_TONES.map(tone => [tone, { ...SCHEDULE_CELL_CLASSES, key: tone }]),
-) as Record<typeof KEEP_TONES[number], ModernClassColor>;
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -87,10 +59,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const clockPart = (minutes: number) => {
         const hour = hourNumber.format(Math.floor(minutes / 60));
         const minute = String(minutes % 60).padStart(2, '0');
-        return locale === 'fr' ? `${hour}h${minute === '00' ? '' : minute}` : `${hour}:${minute}`;
+        return `${hour}:${minute}`;
     };
     const hourLabel = (startMin: number, endMin: number) => `${clockPart(startMin)}–${clockPart(endMin)}`;
-    const classLabel = (name: string) => formatLocalizedClassDisplayName(name, locale);
+    const classLabel = (name: string) => scheduleClassLabel(classIdentityFor(name, locale), locale);
     const subjectLabel = (subject: string) => locale === 'ar'
         ? formatLocalizedSubjectDisplayName(subject, locale)
         : (SUBJECT_ABBREV_MAP[subject] || subject);
@@ -126,7 +98,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [classes]);
 
     const paletteByClassId = React.useMemo(() => {
-        return buildUnifiedClassPaletteMap(classes, config.dashboardClassOrder);
+        return buildUnifiedClassPaletteMap(classes, resolveDashboardClassOrder(classes, config.dashboardClassOrder));
     }, [classes, config.dashboardClassOrder]);
     /**
      * Libellé de matière : affiché **seulement** si l'enseignant couvre
@@ -284,12 +256,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 <th
                                     key={hour.index}
                                     scope="col"
-                                    aria-label={hourLabel(hour.startMin, hour.endMin)}
+                                    aria-label={hourLabel(hour.displayStartMin, hour.displayEndMin)}
                                     className={`schedule-grid__hour rounded-xl px-1 sm:px-2 py-2 sm:py-3 text-center text-muted-foreground ${
                                         hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
                                     }`}
                                 >
-                                        <span dir="ltr" aria-hidden="true" className="schedule-hour-label"><span>{clockPart(hour.startMin)}</span><span className="schedule-hour-separator">–</span><span>{clockPart(hour.endMin)}</span></span>
+                                        <span dir="ltr" aria-hidden="true" className="schedule-hour-label"><span>{clockPart(hour.displayStartMin)}</span><span className="schedule-hour-separator">–</span><span>{clockPart(hour.displayEndMin)}</span></span>
                                 </th>
                             ))}
                         </tr>
@@ -306,6 +278,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         if (run && !run.isStart) return null;
                                         const merged = !!run && run.hours > 1;
                                         const span = run ? run.hours : 1;
+                                        const endHour = hourSlots.find(slot => slot.index === hour.index + span - 1) ?? hour;
                                         const entry = getTimetableEntry(timetable, day.value, hour.index);
                                         const classInfo = entry ? classById.get(entry.classId) : undefined;
                                         const palette = classInfo ? paletteByClassId.get(classInfo.id) : undefined;
@@ -315,9 +288,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 key={hour.index}
                                                 colSpan={span}
                                                 style={palette ? {
-                                                    backgroundColor: palette.bg,
-                                                    borderColor: palette.border,
-                                                } : undefined}
+                                                    '--card-bg': palette.bg,
+                                                    '--card-border': palette.border,
+                                                    '--card-title': palette.title,
+                                                } as React.CSSProperties : undefined}
                                                 className={`schedule-cell ${classInfo ? 'schedule-cell--assigned' : 'schedule-cell--empty'} relative overflow-hidden rounded-xl border p-0 align-middle transition-shadow ${
                                                     classInfo
                                                         ? 'shadow-xs'
@@ -326,7 +300,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
                                                 }`}
                                             >
-                                                <div className="schedule-cell__content relative h-14 lg:h-16 xl:h-[4.25rem] w-full">
+                                                <div className="schedule-cell__content min-h-14 lg:min-h-16 w-full">
                                                     <select
                                                         value={entry?.classId ?? ''}
                                                         onChange={e => {
@@ -339,15 +313,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             else assign(day.value, hour.index, e.target.value || null);
                                                         }}
                                                         title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                        style={palette ? {
-                                                            backgroundColor: palette.bg,
-                                                        } : undefined}
-                                                        className={`h-full w-full cursor-pointer appearance-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 ${
+                                                        className={`absolute inset-0 h-full w-full cursor-pointer appearance-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 ${
                                                             classInfo
                                                                 ? 'text-transparent hover:brightness-95 active:brightness-90'
                                                                 : 'bg-transparent text-transparent'
                                                         }`}
-                                                        aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
+                                                        aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.displayStartMin, endHour.displayEndMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                                     >
                                                         <option value="" className="text-muted-foreground bg-card">{t('schedule.noClass')}</option>
                                                         {pickerClasses.map(c => (
@@ -372,18 +343,17 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     {/* État assigné : carte pleine sans bords arrondis excessifs, sans badge, typographie nette */}
                                                     {classInfo && (
                                                         <div
-                                                            className="pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center"
+                                                            className="pointer-events-none relative flex min-h-14 lg:min-h-16 min-w-0 flex-col items-center justify-center px-1 py-1.5 text-center"
                                                         >
                                                             <span
-                                                                style={palette ? { color: palette.title } : undefined}
                                                                 className="schedule-cell__label max-w-full break-words whitespace-normal text-balance font-semibold leading-tight"
                                                             >
                                                                 {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
+                                                            <span className="schedule-cell__duration" dir="auto">{span} {locale === 'ar' ? 'س' : 'h'}</span>
                                                             {showSubjectLabels && (
                                                                 <span
-                                                                    style={palette ? { color: palette.secondary } : undefined}
-                                                                    className="mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider"
+                                                                    className="schedule-cell__subject mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-medium uppercase tracking-wider"
                                                                 >
                                                                     {subjectLabel(classInfo.subject)}
                                                                 </span>
