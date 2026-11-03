@@ -114,7 +114,7 @@ test('WhatsApp request intent and class context match the visible offer, without
   }
 });
 
-test('ignoring a content suggestion falls back to timetable or notebook problems, and if none, celebratory bravo message', () => {
+test('ignoring a content suggestion falls back to real classroom needs or a factual ready message', () => {
   const classes = [makeClass('a'), makeClass('b')];
   const options = { classes, now, readLessons: () => lessons };
 
@@ -135,7 +135,7 @@ test('ignoring a content suggestion falls back to timetable or notebook problems
   assert.equal(timetableGuidance.step, 'schedule');
   assert.equal('classId' in timetableGuidance && timetableGuidance.classId, 'b');
 
-  // When all timetable slots are set and notebooks are ready, companion celebrates with bravo
+  // With no detected issue, describe the observation without claiming pedagogical perfection.
   const allScheduled = { timetable: [{ classId: 'a', day: 1, slot: 0 }, { classId: 'b', day: 2, slot: 1 }] };
   const readyGuidance = resolveClassGuidance(classes, allScheduled, undefined, { readLessons: () => lessons });
   assert.equal(readyGuidance.step, 'ready');
@@ -143,8 +143,9 @@ test('ignoring a content suggestion falls back to timetable or notebook problems
   // Both Arabic and French messages celebrate organized notebooks
   const msgAr = classGuidanceMessage(readyGuidance, 'ar');
   const msgFr = classGuidanceMessage(readyGuidance, 'fr');
-  assert.match(msgAr.detail, /منظم|ممتاز/);
-  assert.match(msgFr.detail, /organis/i);
+  assert.match(msgAr.detail, /لا توجد حالياً ملاحظات/);
+  assert.match(msgFr.detail, /Aucun point à vérifier/);
+  assert.doesNotMatch(msgFr.detail, /parfaitement|tout est/i);
 });
 
 test('newly created classes wait a few hours before proposing content, and rich notebooks are not spammed', () => {

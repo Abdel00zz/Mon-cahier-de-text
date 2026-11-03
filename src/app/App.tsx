@@ -46,7 +46,7 @@ const AdminMessageModal = lazy(() => import('../features/messages/AdminMessageMo
 const App: React.FC = () => {
   const { isPhone } = useDevice();
   const [, setClassActivitiesOpen] = useState(false);
-  const [assistantSettingsSection, setAssistantSettingsSection] = useState<'emploi' | 'notifications' | undefined>();
+  const [assistantSettingsSection, setAssistantSettingsSection] = useState<{ section: 'emploi'; classId: string } | { section: 'notifications' }>();
   const { isOpen: isCommandPaletteOpen, close: closeCommandPalette, toggle: toggleCommandPalette } = useCommandPaletteStore();
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
     try {
@@ -105,12 +105,12 @@ const App: React.FC = () => {
   useEffect(() => {
     if (view !== 'settings') setAssistantSettingsSection(undefined);
   }, [view]);
-  const handleOpenSchedule = useCallback(() => {
-    setAssistantSettingsSection('emploi');
+  const handleOpenSchedule = useCallback((classId: string) => {
+    setAssistantSettingsSection({ section: 'emploi', classId });
     handleOpenSettings();
   }, [handleOpenSettings]);
   const handleOpenNotifications = useCallback(() => {
-    setAssistantSettingsSection('notifications');
+    setAssistantSettingsSection({ section: 'notifications' });
     handleOpenSettings();
   }, [handleOpenSettings]);
   /*
@@ -220,7 +220,8 @@ const App: React.FC = () => {
       return (
         <SettingsPage
           asPage
-          initialSection={assistantSettingsSection}
+          initialSection={assistantSettingsSection?.section}
+          scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
           onBack={handleBackFromSettings}
           onOpenGuide={handleOpenHelp}
           config={config}

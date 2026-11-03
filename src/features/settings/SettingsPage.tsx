@@ -19,6 +19,7 @@ interface SettingsPageProps {
     addClass: (details: ClassDraft) => ClassInfo;
     asPage?: boolean;
     initialSection?: 'emploi' | 'notifications';
+    scheduleClassId?: string;
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
@@ -31,6 +32,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     addClass,
     asPage = true,
     initialSection,
+    scheduleClassId,
 }) => {
     const { t } = useLocale();
     const [isImportOpen, setImportOpen] = useState(false);
@@ -90,6 +92,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 isOpen={isSheetOpen}
                 asPage={asPage}
                 initialSection={initialSection}
+                scheduleClassId={scheduleClassId}
                 onClose={requestClose}
                 onOpenGuide={() => requestClose(onOpenGuide)}
                 config={config}

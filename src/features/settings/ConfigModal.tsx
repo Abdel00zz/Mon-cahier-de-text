@@ -46,12 +46,12 @@ const TabLoadingSkeleton: FC = () => (
   </div>
 );
 
-const SETTINGS_MOBILE_DETENTS = [0.72, 0.94];
 
 interface ConfigModalProps {
   isOpen?: boolean;
   asPage?: boolean;
   initialSection?: 'emploi' | 'notifications';
+  scheduleClassId?: string;
   onClose: () => void;
   onOpenGuide: () => void;
   config: AppConfig;
@@ -112,6 +112,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   onCreateClass,
   asPage = false,
   initialSection,
+  scheduleClassId,
 }) => {
   const { isRtl, t } = useLocale();
   // Seuls les champs de profil réellement modifiés attendent « Enregistrer ».
@@ -245,7 +246,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         return (
           <SettingsPanel title={t('settings.item.schedule')}>
             <React.Suspense fallback={<TabLoadingSkeleton />}>
-              <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} />
+              <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} suggestedClassId={scheduleClassId} />
             </React.Suspense>
           </SettingsPanel>
         );
@@ -428,8 +429,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         </span>
       ) : <span className="hub-titlebar">{t('settings.title')}</span>}
       maxWidth="xs"
-      mobileDetents={SETTINGS_MOBILE_DETENTS}
-      initialMobileDetent={0.94}
       className="hub-modal settings-modal-frame settings-modal-sheet overflow-hidden"
       headerClassName="hub-modal-header"
       bodyClassName="hub-modal-body settings-modal-body"

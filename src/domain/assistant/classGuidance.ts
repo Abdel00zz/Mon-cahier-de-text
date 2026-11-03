@@ -7,7 +7,7 @@ import type { FollowupClass, NotebookFollowup } from './notebookFollowup';
 
 export type GuidanceAction =
   | { type: 'create-class' }
-  | { type: 'schedule' }
+  | { type: 'schedule'; classId: string }
   | { type: 'open-class'; classId: string }
   | { type: 'open-evaluations'; classId: string; entry?: ClassEvaluationEntry }
   | { type: 'configure-roster'; classId: string };
@@ -15,7 +15,7 @@ export type GuidanceAction =
 export type ClassGuidance =
   | { step: 'create' }
   | { step: 'schedule'; classId: string; className: string; remaining: number }
-  | { step: 'active-session'; classId: string; className: string }
+  | { step: 'active-session'; classId: string; className: string; notebook?: 'empty' | 'dated-today' | 'has-content' }
   | { step: 'next-session'; classId: string; className: string; scheduleLabel: string }
   | { step: 'notebook-issue'; classId: string; className: string; issueCode: NotebookAdvice['code']; count: number; remaining: number }
   | { step: 'evaluation-conflict'; classId: string; className: string; conflictKind: EvaluationConflict['kind']; count: number; remaining: number }
@@ -155,7 +155,7 @@ export function guidanceFromDiagnosis(diagnosis: PedagogicalDiagnosis): ClassGui
 
 export function guidanceAction(guidance: ClassGuidance): GuidanceAction {
   if (guidance.step === 'create') return { type: 'create-class' };
-  if (guidance.step === 'schedule') return { type: 'schedule' };
+  if (guidance.step === 'schedule') return { type: 'schedule', classId: guidance.classId };
   if (guidance.step === 'evaluation-conflict') return { type: 'open-evaluations', classId: guidance.classId, entry: 'all' };
   if (guidance.step === 'roster-incomplete') return { type: 'configure-roster', classId: guidance.classId };
   return { type: 'open-class', classId: guidance.classId };

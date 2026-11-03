@@ -6,7 +6,7 @@
 
 :root {
   --cm-sheet: #FAF9F5;
-  --cm-surface: #FFFFFF;
+  --cm-surface: #fcfaf6;
   --cm-sunken: #F0EEE6;
   --cm-text: #141413;
   --cm-text-sec: #3D3D3A;
@@ -19,8 +19,8 @@
   --cm-danger-bg: #FBEBE8;
   --cm-danger-border: rgba(179, 38, 30, 0.2);
 
-  --cm-font-serif: 'Noto Naskh Arabic', Georgia, 'Times New Roman', serif;
-  --cm-font-sans: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --cm-font-serif: var(--font-display);
+  --cm-font-sans: var(--font-sans);
 }
 
 .dark {
@@ -41,20 +41,9 @@
 
 /* ── 1. SOCLE DE FEUILLE CLAUDE MOBILE ── */
 .claude-sheet-dialog {
-  max-width: 430px !important;
-  width: 100% !important;
-  background-color: var(--cm-sheet) !important;
-  color: var(--cm-text) !important;
-  border-top-left-radius: 28px !important;
-  border-top-right-radius: 28px !important;
-  border: 1px solid var(--cm-border-subtle) !important;
-  border-bottom: 0 !important;
-  font-family: var(--cm-font-sans) !important;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--cm-border-subtle) !important;
-  padding: 0 !important;
-  margin-inline: auto !important;
-  overflow: hidden !important;
-  position: fixed !important;
+  background-color: var(--cm-sheet);
+  color: var(--cm-text);
+  font-family: var(--cm-font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -85,23 +74,12 @@
   );
 }
 
-@media (min-width: 640px) {
-  .claude-sheet-dialog {
-    border-radius: 28px !important;
-    border-bottom: 1px solid var(--cm-border-subtle) !important;
-    margin-bottom: auto !important;
-    margin-top: auto !important;
-  }
-}
-
 .claude-sheet-dialog--wide {
-  max-width: min(94vw, 520px) !important;
+  max-width: min(94vw, 520px);
 }
 
 .claude-sheet-dialog--eval {
-  max-width: min(96vw, 680px) !important;
-  height: 94dvh !important;
-  max-height: 94dvh !important;
+  max-width: min(96vw, 68rem);
 }
 
 /* ── 2. POIGNÉE DE GLISSEMENT ET EN-TÊTE ── */
@@ -130,8 +108,8 @@
 }
 
 .claude-sheet-title {
-  font-family: var(--cm-font-serif) !important;
-  font-size: 22px !important;
+  font-family: var(--cm-font-serif);
+  font-size: 18px;
   font-weight: 500 !important;
   line-height: 1.35 !important;
   color: var(--cm-text) !important;

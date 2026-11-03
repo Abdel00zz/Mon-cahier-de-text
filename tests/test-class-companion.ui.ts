@@ -23,7 +23,7 @@ test('le compagnon progresse création → horaires manquants → cahier, sans m
   const before = JSON.stringify({ classes, config });
   const partial = resolveClassGuidance(classes, config);
   assert.deepEqual(partial, { step: 'schedule', classId: 'b', className: classes[1].name, remaining: 1 });
-  assert.deepEqual(guidanceAction(partial), { type: 'schedule' });
+  assert.deepEqual(guidanceAction(partial), { type: 'schedule', classId: 'b' });
   const ready = resolveClassGuidance(classes, { timetable: [slot('a'), slot('b')] }, 'b');
   assert.equal(ready.step, 'ready');
   assert.deepEqual(guidanceAction(ready), { type: 'open-class', classId: 'b' });
@@ -431,8 +431,8 @@ test('la bulle du robot est conçue sans kicker de titre artificiel pour un text
   const guidance = resolveClassGuidance(classes, { timetable: [slot('a'), slot('b')] });
   const msgAr = classGuidanceMessage(guidance, 'ar');
   const msgFr = classGuidanceMessage(guidance, 'fr');
-  assert.match(msgAr.detail, /منظم|ممتاز/);
-  assert.match(msgFr.detail, /organis/i);
+  assert.match(msgAr.detail, /لا توجد حالياً ملاحظات/);
+  assert.match(msgFr.detail, /Aucun point à vérifier/i);
 
   const html = renderToStaticMarkup(createElement(AssistantPopover, {
     locale: 'ar',

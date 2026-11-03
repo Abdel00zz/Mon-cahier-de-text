@@ -412,7 +412,8 @@ function Preview() {
           <div className="dashboard-top-header mb-4" data-layout={display} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
             <DashboardActions mode={display} onModeChange={setDisplay} showDisplayModes={false}>
               <ClassAssistant locale={locale} classes={classes} config={config}
-                onCreateClass={() => assist({ type: 'create-class' })} onOpenSchedule={() => assist({ type: 'schedule' })}
+                readLessons={id => id === classes[0].id ? previewLessons : lessons}
+                onCreateClass={() => assist({ type: 'create-class' })} onOpenSchedule={classId => assist({ type: 'schedule', classId })}
                 onOpenClass={item => assist({ type: 'open-class', classId: item.id })} />
             </DashboardActions>
             <h1 className="dashboard-header-title" style={dashboardTitleStyle(locale)}><span>{t('dashboard.classes')}</span><span aria-hidden="true">{locale === 'fr' ? '\u00A0:' : ':'}</span></h1>

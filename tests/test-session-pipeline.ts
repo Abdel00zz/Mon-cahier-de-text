@@ -259,15 +259,14 @@ test('les pauses arrêtent le statut actif, la reprise le rétablit et le rappel
   assert.deepEqual(activeIds('09:30:00', shifted), ['a']);
 });
 
-test('la classe terminée conserve son repère aujourd’hui tout en exposant sa prochaine séance au robot', async () => {
+test('dès la fin de sa dernière séance, la classe expose uniquement sa prochaine séance', async () => {
   const { computeClassSessionSchedule } = await import('../src/domain/calendar/sessionScheduleStatus');
   const entries = [{ day: 1, slot: 0, classId: 'a' }, { day: 2, slot: 0, classId: 'a' }];
   const status = computeClassSessionSchedule(entries, 0, 'a', { calendar, now: new Date('2026-09-14T08:55:00+01:00') });
   assert.equal(status.state, 'upcoming');
   assert.equal(status.dayOffset, 1);
-  assert.equal(status.hadSessionToday, true);
+  assert.equal(status.date, '2026-09-15');
   const tomorrow = computeClassSessionSchedule(entries, 0, 'a', { calendar, now: new Date('2026-09-15T00:00:00+01:00') });
-  assert.equal(tomorrow.hadSessionToday, undefined);
   assert.equal(tomorrow.dayOffset, 0);
 });
 

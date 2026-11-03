@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { Sheet } from 'react-modal-sheet';
+import { useReducedMotion } from 'framer-motion';
 import { X } from './icons';
 import { cn } from '@/lib/utils';
-import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { normalizeSheetDetents } from '@/platform/sheetGesture';
 import { acquireModalLayer } from '@/platform/modalStack';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
 
@@ -29,376 +29,142 @@ export interface ModalBottomSheetProps {
   swipeFromBody?: boolean;
   blockDismiss?: boolean;
   dir?: 'ltr' | 'rtl';
-  /** Paliers de hauteur autorisés sur téléphone portrait, entre 0 et 1. */
-  mobileDetents?: number[];
-  /** Palier affiché à l'ouverture. Par défaut, le plus petit. */
-  initialMobileDetent?: number;
-  /** Short confirmations stay content-sized and centered, including on phones. */
+  /** Content-sized below this fraction of the visible viewport. No hidden footer at a lower snap. */
+  mobileMaxHeight?: number;
   mobilePresentation?: 'sheet' | 'dialog';
-  /** Élévation et ombrage Z (low, mid, high). Par défaut 'mid'. */
   elevation?: 'low' | 'mid' | 'high';
-  /** Glow contextuel subtil (primaire, succès, avertissement, danger). */
   glow?: 'primary' | 'success' | 'warning' | 'danger';
-  /** Aura respirante ambiante subtile (Concept 4 : Breath & Pulse Ambient). Par défaut true. */
-  ambient?: boolean;
-  /** Snap magnétique tactile lors du glissement (Concept 1 : Magnetic Snap Cards). Par défaut true. */
-  magneticSnap?: boolean;
 }
 
-const DEFAULT_MOBILE_DETENTS = [0.9, 0.96];
-
-const maxWidthClassMap: Record<string, string> = {
-  xs: 'sm:max-w-sm',
-  sm: 'sm:max-w-md',
-  md: 'sm:max-w-lg md:max-w-xl',
-  lg: 'sm:max-w-xl md:max-w-2xl',
-  xl: 'sm:max-w-2xl md:max-w-3xl',
-  '2xl': 'sm:max-w-3xl md:max-w-4xl',
-  '3xl': 'sm:max-w-4xl md:max-w-5xl',
-  '4xl': 'sm:max-w-5xl md:max-w-6xl',
-  '5xl': 'sm:max-w-6xl md:max-w-7xl lg:max-w-7xl xl:max-w-7xl',
-  full: 'sm:max-w-[94vw] lg:max-w-[96vw]',
+const widthClasses: Record<string, string> = {
+  xs: 'sm:max-w-sm', sm: 'sm:max-w-md', md: 'sm:max-w-xl', lg: 'sm:max-w-2xl',
+  xl: 'sm:max-w-3xl', '2xl': 'sm:max-w-4xl', '3xl': 'sm:max-w-5xl',
+  '4xl': 'sm:max-w-6xl', '5xl': 'sm:max-w-7xl', full: 'sm:max-w-[96vw]',
 };
+const compactQuery = '(max-width: 1023px), ((pointer: coarse) and (max-width: 1180px))';
 
-/**
- * Shared responsive surface. Radix owns focus, nesting and scroll locking;
- * CSS owns entry/exit, and pointer movement never re-renders the form.
- */
+/** Keep the presentation stable while editing: rotating a tablet must not remount a form. */
+function useCompactPresentation(open: boolean) {
+  const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia(compactQuery).matches);
+  useLayoutEffect(() => {
+    if (open) return;
+    const media = window.matchMedia(compactQuery);
+    const sync = () => setCompact(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, [open]);
+  return compact;
+}
+
+/** Radix handles focus, nested dialogs and scroll lock. React Modal Sheet owns
+ * gestures, velocity, drag cancellation and transforms; our viewport service
+ * supplies the visible area above the Android/iOS keyboard. */
 export function ModalBottomSheet({
-  isOpen,
-  onDismissRequest,
-  onClose,
-  title,
-  description,
-  children,
-  footer,
-  maxWidth = 'md',
-  className,
-  headerClassName,
-  bodyClassName,
-  footerClassName,
-  dragHandle = true,
-  hideClose = false,
-  closeDisabled = false,
-  swipeToDismiss = true,
-  swipeFromBody = false,
-  blockDismiss = false,
-  dir,
-  mobileDetents = DEFAULT_MOBILE_DETENTS,
-  initialMobileDetent,
-  mobilePresentation = 'sheet',
-  elevation = 'mid',
-  glow,
-  ambient = true,
-  magneticSnap = true,
+  isOpen, onDismissRequest, onClose, title, description, children, footer,
+  maxWidth = 'md', className, headerClassName, bodyClassName, footerClassName,
+  dragHandle = true, hideClose = false, closeDisabled = false,
+  swipeToDismiss = true, swipeFromBody = false, blockDismiss = false, dir,
+  mobileMaxHeight = .94, mobilePresentation = 'sheet', elevation = 'mid', glow,
 }: ModalBottomSheetProps) {
   const { isRtl, t, locale } = useLocale();
-  const haptics = useModalHaptics();
-  const effectiveDir = dir ?? (isRtl ? 'rtl' : 'ltr');
-  const effectiveIsRtl = effectiveDir === 'rtl';
-  const dismissCallback = useCallback(() => {
-    haptics.onClose();
-    if (onDismissRequest) {
-      onDismissRequest();
-    } else if (onClose) {
-      onClose();
-    }
-  }, [onDismissRequest, onClose, haptics]);
-
-  const effectiveOpen = Boolean(isOpen);
-
-  useEffect(() => {
-    if (effectiveOpen) {
-      haptics.onOpen();
-    }
-  }, [effectiveOpen, haptics]);
+  const { onOpen: openHaptic, onClose: closeHaptic } = useModalHaptics();
+  const open = Boolean(isOpen);
+  const compact = useCompactPresentation(open);
+  const useSheet = compact && mobilePresentation === 'sheet';
+  const reducedMotion = useReducedMotion();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const [layer, setLayer] = useState(0);
+  const direction = dir ?? (isRtl ? 'rtl' : 'ltr');
+  const closeLabel = t('common.close');
+  const dismiss = useCallback(() => {
+    closeHaptic();
+    (onDismissRequest ?? onClose)?.();
+  }, [closeHaptic, onDismissRequest, onClose]);
+  useEffect(() => { if (open) openHaptic(); }, [open, openHaptic]);
   useLayoutEffect(() => {
-    if (!effectiveOpen) return;
+    if (!open) return;
     const lease = acquireModalLayer();
     setLayer(lease.layer);
     return lease.release;
-  }, [effectiveOpen]);
-  const detentSignature = mobileDetents.join(',');
-  // Depend on values rather than a fresh array supplied by the parent on each render.
-  const detents = useMemo(() => normalizeSheetDetents(detentSignature ? detentSignature.split(',').map(Number) : []), [detentSignature]);
-  const [activeDetentIndex, setActiveDetentIndex] = useState(0);
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), ((pointer: coarse) and (max-width: 1180px))').matches);
-  const [isPortrait, setIsPortrait] = useState(() => typeof window !== 'undefined' && window.matchMedia('(orientation: portrait), (min-width: 640px)').matches);
-  const isCompactSheet = isCompact && isPortrait && mobilePresentation === 'sheet';
-  const contentRef = useRef<HTMLDivElement>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
+  }, [open]);
 
-  useEffect(() => {
-    if (!effectiveOpen) return;
-    const media = window.matchMedia('(max-width: 1023px), ((pointer: coarse) and (max-width: 1180px))');
-    const orientation = window.matchMedia('(orientation: portrait), (min-width: 640px)');
-    const sync = () => { setIsCompact(media.matches); setIsPortrait(orientation.matches); };
-    sync();
-    media.addEventListener('change', sync);
-    orientation.addEventListener('change', sync);
-    return () => { media.removeEventListener('change', sync); orientation.removeEventListener('change', sync); };
-  }, [effectiveOpen]);
-
-  useEffect(() => {
-    if (!effectiveOpen) return;
-    const requested = initialMobileDetent ?? detents[0];
-    const closestIndex = detents.reduce((best, value, index) => (
-      Math.abs(value - requested) < Math.abs(detents[best] - requested) ? index : best
-    ), 0);
-    setActiveDetentIndex(closestIndex);
-  }, [detents, effectiveOpen, initialMobileDetent]);
-
-  /*
-   * Hauteur adaptative : un contenu plus haut que le palier d'ouverture ouvre
-   * la feuille au palier suivant. Sans cela, une modale longue s'ouvrait
-   * tronquée et l'enseignant devait tirer la poignée pour voir la suite.
-   * Vérification sur deux frames : au premier passage, le corps n'est pas
-   * encore contraint par le plafond de hauteur, donc « rien ne déborde ».
-   */
-  useLayoutEffect(() => {
-    if (!effectiveOpen || !isCompactSheet || detents.length < 2) return;
-    let frame = 0;
-    let cancelled = false;
-    const settle = () => {
-      if (cancelled) return;
-      const body = contentRef.current?.querySelector<HTMLElement>('.modal-body');
-      if (body && body.scrollHeight > body.clientHeight + 4) {
-        setActiveDetentIndex(index => Math.min(index + 1, detents.length - 1));
-        return;
-      }
-      if (frame++ < 2) frameId = window.requestAnimationFrame(settle);
-    };
-    let frameId = window.requestAnimationFrame(settle);
-    return () => { cancelled = true; window.cancelAnimationFrame(frameId); };
-  }, [effectiveOpen, isCompactSheet, detents.length]);
-
-  const activeDetent = detents[Math.min(activeDetentIndex, detents.length - 1)] ?? detents[0];
-  const canExpand = isCompactSheet && activeDetentIndex < detents.length - 1;
-  const canCollapse = isCompactSheet && activeDetentIndex > 0;
-  const expandSheet = useCallback(() => {
-    haptics.onExpand();
-    setActiveDetentIndex(index => Math.min(index + 1, detents.length - 1));
-  }, [detents.length, haptics]);
-  const collapseSheet = useCallback(() => {
-    haptics.onCollapse();
-    setActiveDetentIndex(index => Math.max(index - 1, 0));
-  }, [haptics]);
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      dismissCallback();
-    }
+  const dialogProps: React.ComponentPropsWithoutRef<typeof Dialog.Content> = {
+    dir: direction, lang: locale, ...(!description ? { 'aria-describedby': undefined } : {}),
+    onOpenAutoFocus(event) {
+      const previous = document.activeElement;
+      if (previous instanceof HTMLElement && !contentRef.current?.contains(previous)) returnFocus.current = previous;
+      if (compact) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
+    },
+    onCloseAutoFocus(event) {
+      const anotherOpen = [...document.querySelectorAll('[role="dialog"][data-state="open"]')]
+        .some(node => node !== contentRef.current && !node.contains(contentRef.current));
+      if (anotherOpen) { event.preventDefault(); return; }
+      if (returnFocus.current?.isConnected) { event.preventDefault(); returnFocus.current.focus({ preventScroll: true }); }
+    },
+    onPointerDownOutside(event) { if (blockDismiss) event.preventDefault(); },
+    onEscapeKeyDown(event) { if (blockDismiss) event.preventDefault(); },
+    onClick(event) { event.stopPropagation(); },
   };
+  const surfaceProps = {
+    'data-codex-surface': 'sheet', 'data-elevation': elevation, 'data-glow': glow,
+    'data-mobile-presentation': useSheet ? 'sheet' : 'dialog',
+    'data-has-handle': Boolean(useSheet && dragHandle),
+    className: cn('modal-pro-surface modal-motion-surface flex min-h-0 flex-col overflow-hidden text-foreground outline-none',
+      direction === 'rtl' ? 'rtl-flow' : 'ltr-flow', widthClasses[maxWidth] ?? widthClasses.md, className),
+  };
+  const heading = <>
+    {useSheet && dragHandle && <div className="modal-handle-region" aria-hidden="true">
+      {typeof dragHandle === 'boolean' ? <Sheet.DragIndicator className="modal-drag-indicator" /> : dragHandle}
+    </div>}
+    {(title || description) && <div className={cn('modal-header modal-pro-header', !hideClose && 'modal-header--closable', headerClassName)}>
+      <Dialog.Title data-ui-title className={!title ? 'sr-only' : undefined}>{title || closeLabel}</Dialog.Title>
+      {description && <Dialog.Description data-description>{description}</Dialog.Description>}
+    </div>}
+    {!title && !description && <Dialog.Title className="sr-only">{closeLabel}</Dialog.Title>}
+  </>;
+  const close = !hideClose && <Dialog.Close aria-label={closeLabel} disabled={closeDisabled}
+    className="dialog-close absolute z-30 inline-flex items-center justify-center touch-manipulation">
+    <X className="size-4" strokeWidth={1.5} aria-hidden="true" />
+  </Dialog.Close>;
+  const bodyClass = cn('modal-body modern-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain',
+    !(title || description) && 'modal-body--untitled', bodyClassName);
+  const actions = footer && <div className={cn('modal-footer modal-pro-footer', footerClassName)}>{footer}</div>;
 
-  const closeLabel = t('common.close');
-  const resizeLabel = canExpand
-    ? t('modal.expand')
-    : t('modal.collapse');
-
-  const swipe = useSwipeToDismiss({
-    onDismiss: dismissCallback,
-    enabled: Boolean(isCompactSheet && swipeToDismiss && !blockDismiss),
-    allowFromBody: swipeFromBody,
-    canExpand,
-    canCollapse,
-    onExpand: expandSheet,
-    canCollapseSheet: canCollapse,
-    onCollapse: collapseSheet,
-    onSnapFeedback: magneticSnap ? haptics.onSelect : undefined,
-  } as Parameters<typeof useSwipeToDismiss>[0]);
-
-  const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md;
-
-  return (
-    <DialogPrimitive.Root open={effectiveOpen} onOpenChange={handleOpenChange}>
-      <DialogPrimitive.Portal>
-        {/* Backdrop Scrim Overlay with Glass Blur */}
-        <DialogPrimitive.Overlay
-          style={{ zIndex: 100 + layer * 20 }}
-          className={cn(
-            'modal-motion-overlay fixed inset-0 z-[100]'
-          )}
-        />
-
-        {/* Modal Window Container - Optimisé arrondis et animations mobile/tablette iOS Sheet */}
-        <DialogPrimitive.Content
-          ref={contentRef}
-          dir={effectiveDir}
-          lang={locale}
-          {...(!description ? { 'aria-describedby': undefined } : {})}
-          className={cn(
-            effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
-            'modal-pro-surface modal-motion-surface fixed z-[110] flex h-fit min-h-0 flex-col gap-0 overflow-hidden overscroll-contain',
-            // Mobile & Tablette : bottom sheet iOS avec arrondis supérieurs prononcés
-            'inset-x-0 bottom-0 top-auto rounded-t-[28px] border-t border-x border-border bg-card text-foreground shadow-2xl',
-            // Desktop (lg+) : modal centrée avec arrondis complets
-            'lg:inset-0 lg:m-auto lg:max-h-[min(90dvh,calc(100dvh-2.5rem))] lg:w-[calc(100vw-2.5rem)] lg:rounded-[24px] lg:border lg:border-border lg:shadow-2xl',
-            // Safe area insets
-            !footer && 'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] lg:pb-0',
-            'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
-            // Max width
-            mwClass,
-            // Dialog presentation (alertes/confirmations courtes)
-            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-2rem)] max-w-md rounded-[24px] pb-0 border',
-            // Focus outline
-            'outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-0',
-            className
-          )}
-          style={{
-            '--sheet-detent': activeDetent,
-            zIndex: 110 + layer * 20,
-          } as React.CSSProperties}
-          data-elevation={elevation}
-          data-glow={glow}
-          data-ambient={ambient ? 'true' : undefined}
-          data-magnetic={magneticSnap ? 'true' : undefined}
-          data-mobile-presentation={mobilePresentation}
-          data-has-handle={Boolean(dragHandle && isCompactSheet)}
-          data-swipe-enabled={isCompactSheet && swipeToDismiss && !blockDismiss ? 'true' : undefined}
-          onOpenAutoFocus={(event) => {
-            const previous = document.activeElement;
-            if (previous instanceof HTMLElement && !contentRef.current?.contains(previous)) returnFocusRef.current = previous;
-            // Do not summon the keyboard just by opening a phone/tablet form.
-            if (window.matchMedia('(max-width: 1023px)').matches) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
-          }}
-          onCloseAutoFocus={(event) => {
-            if (returnFocusRef.current?.isConnected) {
-              event.preventDefault();
-              returnFocusRef.current.focus({ preventScroll: true });
-            }
-          }}
-          data-sheet-detent={isCompactSheet ? activeDetent : undefined}
-          data-sheet-resizable={isCompactSheet && detents.length > 1 ? 'true' : 'false'}
-          onPointerDownOutside={(e) => {
-            if (blockDismiss) e.preventDefault();
-          }}
-          onEscapeKeyDown={(e) => {
-            if (blockDismiss) e.preventDefault();
-          }}
-          onPointerDown={(e) => {
-            if (!e.defaultPrevented && swipeToDismiss && !blockDismiss) swipe.onPointerDown(e);
-          }}
-          onPointerMove={(e) => {
-            if (!e.defaultPrevented && swipeToDismiss && !blockDismiss) swipe.onPointerMove(e);
-          }}
-          onPointerUp={(e) => {
-            if (!e.defaultPrevented && swipeToDismiss && !blockDismiss) swipe.onPointerUp(e);
-          }}
-          onPointerCancel={(e) => {
-            if (!e.defaultPrevented && swipeToDismiss && !blockDismiss) swipe.onPointerCancel(e);
-          }}
-          onLostPointerCapture={swipe.onPointerCancel}
-          onClickCapture={swipe.onClickCapture}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Sketch Drag Handle - Optimisé pour le toucher (Mobile + Tablette iOS Sheet) */}
-          {dragHandle && isCompactSheet && (
-            <button
-              type="button"
-              data-swipe-dismiss-handle
-              aria-label={resizeLabel}
-              aria-expanded={canCollapse}
-              disabled={!canExpand && !canCollapse}
-              onClick={() => {
-                if (canExpand) expandSheet();
-                else if (canCollapse) collapseSheet();
-              }}
-              className={cn(
-                'modal-drag-handle absolute left-1/2 top-0 z-20 flex items-center justify-center',
-                'h-12 w-28 -translate-x-1/2',
-                'cursor-grab active:cursor-grabbing touch-manipulation',
-                'transition-opacity duration-200',
-                'lg:hidden'
-              )}
-            >
-              {typeof dragHandle === 'boolean'
-                ? <span className="modal-drag-indicator h-1.5 w-11 rounded-full bg-muted-foreground/30 transition-all duration-200 active:w-14 active:bg-muted-foreground/50" />
-                : dragHandle}
-            </button>
-          )}
-
-          {/* Header - Optimisé hiérarchie visuelle mobile */}
-          {(title || description) && (
-            <div
-              className={cn(
-                'modal-header modal-pro-header relative z-10 shrink-0 bg-transparent text-foreground flex flex-col justify-center text-start',
-                'min-h-[3.75rem] sm:min-h-[4.25rem]',
-                'px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6',
-                !hideClose && 'pe-[3.75rem] sm:pe-[4.25rem]',
-                isCompactSheet && dragHandle && 'pt-[3.25rem]',
-                headerClassName
-              )}
-            >
-              {title && (
-                <DialogPrimitive.Title data-ui-title className="text-[17px] sm:text-[19px] font-bold leading-[1.35] tracking-[-0.02em] text-foreground">
-                  {title}
-                </DialogPrimitive.Title>
-              )}
-              {description && (
-                <DialogPrimitive.Description data-description className="mt-1 text-[13px] sm:text-[13.5px] leading-[1.45] text-muted-foreground tracking-[-0.005em]">
-                  {description}
-                </DialogPrimitive.Description>
-              )}
-            </div>
-          )}
-
-          {/* Close button - Positionné en haut avec dégagement garanti de la ligne séparatrice */}
-          {!hideClose && (
-            <DialogPrimitive.Close
-              aria-label={closeLabel}
-              disabled={closeDisabled}
-              className={cn(
-                'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
-                'text-muted-foreground hover:text-foreground',
-                'transition-[transform,background-color,border-color,box-shadow] duration-300',
-                'active:scale-[0.92] motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-                'cursor-pointer touch-manipulation',
-                // Dimensions équilibrées avec zone tactile étendue (médaillon circulaire)
-                'h-10 w-10 sm:h-10.5 sm:w-10.5',
-                // Positionnement respectant les arrondis et assurant un dégagement de la ligne séparatrice
-                'end-[max(0.875rem,env(safe-area-inset-right))] sm:end-5',
-                'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-3.5'
-              )}
-            >
-              <X className="h-4 w-4 stroke-[2.2]" />
-              <span className="sr-only">{closeLabel}</span>
-            </DialogPrimitive.Close>
-          )}
-
-          {/* Scrollable Body - Structure commune : en-tête et pied fixes, zone de contenu défilante */}
-          <div
-            data-swipe-scroll-region
-            className={cn(
-              'modal-body modern-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain',
-              'px-5 py-4 sm:px-7 sm:py-6 landscape:py-4 landscape:px-6',
-              '[overflow-anchor:none] [-webkit-overflow-scrolling:touch]',
-              !(title || description) && 'pt-[3.5rem] sm:pt-7 landscape:pt-5',
-              !footer && 'pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6',
-              bodyClassName
-            )}
-          >
+  return <Dialog.Root open={open} onOpenChange={next => { if (!next) dismiss(); }}>
+    {useSheet ? <Sheet isOpen={open} onClose={() => { if (!blockDismiss) dismiss(); }}
+      onOpenEnd={() => {
+        if (open && !contentRef.current?.contains(document.activeElement)) contentRef.current?.focus({ preventScroll: true });
+      }}
+      detent="content" unstyled disableScrollLocking avoidKeyboard={false}
+      disableDrag={!swipeToDismiss || blockDismiss} disableDismiss={blockDismiss}
+      prefersReducedMotion={Boolean(reducedMotion)}
+      tweenConfig={{ duration: .26, ease: [.22, 1, .36, 1] }}
+      dragCloseThreshold={.38} dragVelocityThreshold={650}
+      className="modal-sheet-viewport" style={{ zIndex: 100 + layer * 20, height: 'var(--app-viewport-height, 100dvh)', top: 'var(--app-viewport-offset-top, 0px)' }}>
+      <Dialog.Overlay forceMount asChild>
+        <Sheet.Backdrop className="modal-motion-overlay modal-sheet-overlay" onTap={() => { if (!blockDismiss) dismiss(); }} />
+      </Dialog.Overlay>
+      <Dialog.Content {...dialogProps} ref={contentRef} forceMount asChild>
+        <Sheet.Container {...surfaceProps} data-sheet-library="react-modal-sheet"
+          style={{ '--sheet-max-height': Number.isFinite(mobileMaxHeight) ? Math.min(.96, Math.max(.5, mobileMaxHeight)) : .94,
+            left: 0, width: 'calc(100% - 2 * var(--modal-sheet-gutter))', right: 0, marginInline: 'auto',
+          } as React.CSSProperties}>
+          <Sheet.Header className="modal-sheet-heading">{heading}</Sheet.Header>
+          {close}
+          <Sheet.Content disableDrag={!swipeFromBody} scrollClassName={bodyClass}
+            scrollStyle={{ height: 'auto', minHeight: 0, overflowY: undefined, overscrollBehaviorY: undefined }}>
             {children}
-          </div>
-
-          {/* Footer - Optimisé zone d'action mobile */}
-          {footer && (
-            <div
-              className={cn(
-                'modal-footer modal-pro-footer relative z-10 flex shrink-0 flex-col-reverse gap-2.5 bg-muted/20 dark:bg-muted/10',
-                'px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]',
-                'sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-7 sm:py-4.5',
-                'landscape:py-3.5 landscape:px-6',
-                'text-foreground',
-                footerClassName
-              )}
-            >
-              {footer}
-            </div>
-          )}
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
-  );
+          </Sheet.Content>
+          {actions}
+        </Sheet.Container>
+      </Dialog.Content>
+    </Sheet> : <Dialog.Portal>
+      <Dialog.Overlay className="modal-motion-overlay fixed inset-0" style={{ zIndex: 100 + layer * 20 }} />
+      <Dialog.Content {...dialogProps} {...surfaceProps} ref={contentRef} style={{ zIndex: 110 + layer * 20 }}>
+        {heading}{close}<div className={bodyClass}>{children}</div>{actions}
+      </Dialog.Content>
+    </Dialog.Portal>}
+  </Dialog.Root>;
 }

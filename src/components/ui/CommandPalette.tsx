@@ -176,10 +176,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         >
           <DialogPrimitive.Title className="sr-only">Palette de commandes</DialogPrimitive.Title>
           <Command
+            data-codex-surface="inset"
             label="Palette de commandes"
-            className="w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 dark:bg-card/95 text-foreground shadow-2xl ring-1 ring-primary/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-260 [transition-timing-function:cubic-bezier(0.18,1.01,0.24,1)]"
+            className="relative w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 dark:bg-card/95 text-foreground shadow-2xl ring-1 ring-primary/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-260 [transition-timing-function:cubic-bezier(0.18,1.01,0.24,1)]"
           >
-            <div className="relative flex items-center gap-3 border-b border-border/60 bg-muted/30 px-4 py-3.5">
+            <div data-codex-heading className="relative flex items-center gap-3 border-b border-border/60 bg-muted/30 px-4 py-3.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
                 <Search className="h-4.5 w-4.5" />
               </div>

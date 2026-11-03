@@ -92,7 +92,6 @@ const uniqueValues = (values: string[]) => uniq(values.map(value => value.trim()
 const EMPTY_SUBJECTS: string[] = [];
 const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
-const CLASS_MODAL_DETENTS = [0.85, 0.94];
 const CLASS_COLOR_OPTIONS: ReadonlyArray<{ value: string; background: string; ink: string; label: Record<AppLocale, string> }> = [
   { value: 'rose', background: 'oklch(0.70 0.14 355)', ink: '#ffffff', label: { fr: 'Rose', ar: 'وردي', en: 'Rose' } },
   { value: 'lavender', background: 'oklch(0.68 0.14 295)', ink: '#ffffff', label: { fr: 'Violet', ar: 'بنفسجي', en: 'Purple' } },
@@ -477,7 +476,6 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         hideClose={submitting}
         maxWidth="sm"
         mobilePresentation="sheet"
-        mobileDetents={CLASS_MODAL_DETENTS}
         className="class-create-modal sm:max-w-md sm:rounded-2xl"
         headerClassName="border-b-0 px-5 pt-3 pb-1 bg-transparent"
         bodyClassName="px-5 py-3 space-y-4"
@@ -485,9 +483,9 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         title={
           <div className="claude-sheet-header p-0">
             <div>
-              <h2 className="claude-sheet-title">
+              <span className="claude-sheet-title">
                 {editingClass ? copy.editTitle : copy.createTitle}
-              </h2>
+              </span>
               {editingClass && editingClass.name && (
                 <p className="claude-sheet-subtitle">
                   {formatLocalizedClassDisplayName(editingClass.name, locale)}

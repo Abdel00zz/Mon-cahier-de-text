@@ -17,7 +17,7 @@ export interface NotebookFollowup {
 }
 
 const dateCache = new WeakMap<LessonsData, readonly string[]>();
-function recordedSessionDates(lessons: LessonsData): readonly string[] {
+export function recordedSessionDates(lessons: LessonsData): readonly string[] {
   const cached = dateCache.get(lessons);
   if (cached) return cached;
   const rawDates = new Set<string>();

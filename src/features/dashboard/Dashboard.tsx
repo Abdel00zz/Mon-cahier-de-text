@@ -13,6 +13,7 @@ import { AddClassCard } from './AddClassCard';
 import { DashboardActions } from './DashboardActions';
 import { isClassDisplayMode, type ClassDisplayMode } from './classDisplayMode';
 import { buildUnifiedClassPaletteMap } from './departmentPalette';
+import { groupDashboardClasses } from './dashboardClassGroups';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
@@ -41,7 +42,7 @@ interface DashboardProps {
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
-    onOpenSchedule?: () => void;
+    onOpenSchedule?: (classId: string) => void;
     onOpenNotifications?: () => void;
 }
 
@@ -142,8 +143,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     useEffect(() => { setScheduleClockNow(new Date()); }, [sessionBoundaryIds]);
 
     // Card, grouping and companion consume the same timestamp and calendar.
-    const activeSessionClassIds = useMemo(() => [...scheduleStatusByClassId]
-        .filter(([, status]) => status.state === 'in_progress').map(([id]) => id), [scheduleStatusByClassId]);
+    const activeSessionKey = JSON.stringify([...scheduleStatusByClassId]
+        .filter(([, status]) => status.state === 'in_progress').map(([id]) => id));
+    // A countdown tick with the same classes must not restart the notebook analysis.
+    const activeSessionClassIds = useMemo<string[]>(() => JSON.parse(activeSessionKey), [activeSessionKey]);
     const preferredClassId = activeSessionClassIds.length === 1 ? activeSessionClassIds[0] : undefined;
 
     // Si le cloud sait que l'accueil est terminé (config.hasCompletedWelcome) mais que
@@ -344,71 +347,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return buildUnifiedClassPaletteMap(classes, persistedClassOrder);
     }, [classes, persistedClassOrder]);
 
-    const groupedClasses = useMemo(() => {
-        const groupsMap = new Map<string, { label: string; order: number; rawItems: Array<{ classInfo: ClassInfo; startMin: number; active: boolean }> }>();
-
-        for (const classInfo of filteredClasses) {
-            const schedule = scheduleStatusByClassId.get(classInfo.id);
-            let groupKey = 'other';
-            let groupLabel = locale === 'ar' ? 'أقسام أخرى' : (locale === 'en' ? 'Other classes' : 'Autres classes');
-            let groupOrder = 999;
-            let startMin = 9999;
-
-            if (schedule && (schedule.state !== 'none' || schedule.hadSessionToday)) {
-                const offset = schedule.hadSessionToday ? 0 : schedule.dayOffset ?? 0;
-                startMin = schedule.hadSessionToday ? 9999 : schedule.startMin ?? 9999;
-                if (offset === 0) {
-                    groupKey = 'day-0';
-                    groupLabel = locale === 'ar' ? 'اليوم' : (locale === 'en' ? 'Today' : 'Aujourd’hui');
-                    groupOrder = 0;
-                } else if (offset === 1) {
-                    groupKey = 'day-1';
-                    groupLabel = locale === 'ar' ? 'غدا' : (locale === 'en' ? 'Tomorrow' : 'Demain');
-                    groupOrder = 1;
-                } else {
-                    const label = schedule.dayLabel ?? (locale === 'ar' ? 'أيام قادمة' : 'Jours à venir');
-                    groupKey = `day-${label}`;
-                    groupLabel = label;
-                    groupOrder = offset;
-                }
-            }
-
-            if (!groupsMap.has(groupKey)) {
-                groupsMap.set(groupKey, { label: groupLabel, order: groupOrder, rawItems: [] });
-            } else {
-                const existing = groupsMap.get(groupKey)!;
-                existing.order = Math.min(existing.order, groupOrder);
-            }
-            groupsMap.get(groupKey)!.rawItems.push({ classInfo, startMin, active: activeSessionIds.has(classInfo.id) });
-        }
-
-        const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => a.order - b.order);
-
-        for (const group of sortedGroups) {
-            group.rawItems.sort((a, b) => Number(b.active) - Number(a.active) || a.startMin - b.startMin);
-        }
-
-        return sortedGroups.map(group => {
-            const items = group.rawItems.map(item => {
-                const palette = paletteByClassId.get(item.classInfo.id);
-                return {
-                    classInfo: item.classInfo,
-                    startMin: item.startMin,
-                    palette,
-                };
-            });
-
-            const showTitle = !(sortedGroups.length === 1 && group.order === 999);
-
-            return {
-                key: group.label,
-                label: group.label,
-                order: group.order,
-                showTitle,
-                items,
-            };
-        });
-    }, [filteredClasses, scheduleStatusByClassId, locale, activeSessionIds, paletteByClassId]);
+    const groupedClasses = useMemo(() => groupDashboardClasses(filteredClasses, scheduleStatusByClassId, locale)
+        .map(group => ({ ...group, items: group.items.map(item => ({
+            ...item, palette: paletteByClassId.get(item.classInfo.id),
+        })) })), [filteredClasses, scheduleStatusByClassId, locale, paletteByClassId]);
 
     if (isLoading) {
         return <DashboardSkeleton />;

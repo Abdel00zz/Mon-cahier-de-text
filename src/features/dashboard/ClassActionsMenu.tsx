@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, type CSSProperties } from 'react';
+import { useCallback, useEffect, useId } from 'react';
 import { create } from 'zustand';
 import { MoreVertical, Pencil, CalendarCheck } from 'lucide-react';
 import { Trash2 } from '@/components/ui/icons';
@@ -6,9 +6,8 @@ import { Modal } from '@/components/ui/modal';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { ClassEvaluationEntry } from '@/types';
-import { pickDepartmentPalette, type DepartmentPalette } from './departmentPalette';
-
-const CLASS_MENU_DETENTS: [number, number] = [0.38, 0.48];
+import type { DepartmentPalette } from './departmentPalette';
+import './classActionsSheet.css';
 
 /** Registre global Zustand assurant qu'un seul menu de classe ne peut être ouvert à la fois */
 const useActiveClassMenuStore = create<{
@@ -25,10 +24,6 @@ export function ClassActionsMenu({
     onConfigure,
     onDelete,
     onOpenEvaluations,
-    tier: _tier,
-    subject,
-    color,
-    palette,
 }: {
     name: string;
     triggerClassName: string;
@@ -46,7 +41,6 @@ export function ClassActionsMenu({
     const menuId = `${name}-${generatedId}`;
     const isOpen = useActiveClassMenuStore(state => state.activeMenuId === menuId);
     const setActiveMenu = useActiveClassMenuStore(state => state.setActiveMenu);
-    const resolvedPalette = palette ?? pickDepartmentPalette(color ?? undefined, subject ?? undefined, 0).palette;
 
     useEffect(() => {
         return () => {
@@ -68,16 +62,9 @@ export function ClassActionsMenu({
         onOpenEvaluations?.(entry);
     };
 
-    const sheetStyle: CSSProperties = {
-        ['--hero-bg' as string]: resolvedPalette.bg,
-        ['--hero-border' as string]: resolvedPalette.border,
-        ['--hero-ink' as string]: resolvedPalette.title,
-        ['--hero-secondary' as string]: resolvedPalette.secondary,
-    };
-
     const editLabel = locale === 'ar' ? 'تعديل' : t('dashboard.classSettings');
     const deleteLabel = locale === 'ar' ? 'حذف' : t('dashboard.delete');
-    const cancelLabel = locale === 'ar' ? 'إلغاء' : locale === 'en' ? 'Cancel' : 'Annuler';
+    const title = locale === 'ar' ? 'إجراءات القسم' : locale === 'en' ? 'Class actions' : 'Actions de la classe';
 
     return (
         <>
@@ -103,26 +90,25 @@ export function ClassActionsMenu({
                     isOpen={isOpen}
                     onClose={closeMenu}
                     dir={isRtl ? 'rtl' : 'ltr'}
-                    hideClose
+                    title={title}
                     dragHandle
                     swipeToDismiss
                     swipeFromBody
                     mobilePresentation="sheet"
-                    mobileDetents={CLASS_MENU_DETENTS}
+                    mobileMaxHeight={0.72}
                     maxWidth="sm"
-                    className="claude-sheet-dialog"
-                    bodyClassName="p-0 pb-4"
+                    className="class-quick-sheet"
+                    headerClassName="class-quick-sheet__header"
+                    bodyClassName="class-quick-sheet__body"
                 >
-                    <div className="flex flex-col text-start pt-3" style={sheetStyle}>
-                        {/* Liste groupée iOS 3 lignes (56px min chacune) */}
-                        <div className="claude-grouped-list my-1">
+                    <div className="class-quick-sheet__actions">
                             {onOpenEvaluations && (
                                 <button
                                     type="button"
                                     onClick={() => openEvaluations('all')}
-                                    className="claude-list-item"
+                                    className="class-quick-sheet__action"
                                 >
-                                    <CalendarCheck className="claude-list-item-icon" />
+                                    <CalendarCheck className="class-quick-sheet__icon" />
                                     <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
                                         {t('dashboard.openEvaluations')}
                                     </span>
@@ -136,9 +122,9 @@ export function ClassActionsMenu({
                                     setActiveMenu(null);
                                     onConfigure();
                                 }}
-                                className="claude-list-item"
+                                className="class-quick-sheet__action"
                             >
-                                <Pencil className="claude-list-item-icon" />
+                                <Pencil className="class-quick-sheet__icon" />
                                 <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
                                     {editLabel}
                                 </span>
@@ -152,26 +138,14 @@ export function ClassActionsMenu({
                                         setActiveMenu(null);
                                         onDelete();
                                     }}
-                                    className="claude-list-item claude-list-item--danger"
+                                    className="class-quick-sheet__action class-quick-sheet__action--danger"
                                 >
-                                    <Trash2 className="claude-list-item-icon" />
+                                    <Trash2 className="class-quick-sheet__icon" />
                                     <span className="flex-1 font-semibold text-[15px] sm:text-[16px]">
                                         {deleteLabel}
                                     </span>
                                 </button>
                             )}
-                        </div>
-
-                        {/* Bouton Annuler 52px en bas */}
-                        <div className="px-5 pt-2">
-                            <button
-                                type="button"
-                                onClick={closeMenu}
-                                className="claude-btn-cancel"
-                            >
-                                {cancelLabel}
-                            </button>
-                        </div>
                     </div>
                 </Modal>
             )}

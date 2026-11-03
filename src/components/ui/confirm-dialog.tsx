@@ -118,6 +118,7 @@ export function ConfirmDialog({
                     className="modal-motion-overlay fixed inset-0 z-[100]"
                 />
                 <AlertDialogPrimitive.Content
+                    data-codex-surface="sheet"
                     dir={isRtl ? 'rtl' : 'ltr'}
                     lang={locale}
                     style={{ zIndex: 110 + layer * 20 }}

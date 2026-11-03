@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { ClassInfo, LessonsData } from '../src/types';
 import type { HolidayCalendar } from '../src/domain/calendar/calendar';
-import { createCompanionEvaluation, evaluateCompanion, type CompanionBrainInput } from '../src/domain/assistant/companionBrain';
+import { createCompanionEvaluation, evaluateCompanion, observeCompanionNotebooks, type CompanionBrainInput } from '../src/domain/assistant/companionBrain';
 import { createNotebookSnapshot } from '../src/domain/assistant/notebookSnapshot';
 import { companionMessage } from '../src/features/assistant/companionPresentation';
 
@@ -229,6 +229,26 @@ test('browsing the entire task queue reuses one observation rather than scanning
   assert.equal(reads, 3, 'only actual data changes should require a new observation');
 });
 
+test('inbox changes reuse notebook observations and a global reply never borrows an unrelated class', () => {
+  let reads = 0;
+  const options = input({ config: {}, readLessons: () => { reads++; return valid; } });
+  const observation = observeCompanionNotebooks({ ...options, loading: false });
+  const first = createCompanionEvaluation(options, observation)();
+  const reply = { id: 'admin-reply', sender: 'admin' as const, title: 'Réponse', body: 'Bonjour', createdAt: '2026-10-23T08:00:00Z' };
+  const services = { ...options.services, messages: [reply] };
+  const message = createCompanionEvaluation({ ...options, services }, observation)();
+  assert.equal(message.decision.kind, 'reply');
+  assert.equal(message.target, undefined);
+  assert.equal(message.selectedTask, undefined);
+  assert.equal(message.skipKey, 'reply:admin-reply');
+  assert.equal(message.nextTaskId, undefined);
+  const postponed = createCompanionEvaluation({ ...options, services, skippedMessageKeys: new Set([message.skipKey!]) }, observation)();
+  assert.equal(postponed.selectedTask?.id, first.selectedTask?.id, 'postponing a reply must not postpone a class task');
+  const scoped = createCompanionEvaluation({ ...options, services: { ...services, messages: [{ ...reply, classId: '2' }] } }, observation)();
+  assert.equal(scoped.target?.id, '2');
+  assert.equal(reads, 3, 'inbox updates do not reparse notebooks');
+});
+
 test('evaluation date conflicts and incomplete student rosters produce prioritized tasks with direct dashboard actions', () => {
   const testConfig = {
     timetable: [1, 2, 3].map(id => ({ classId: String(id), day: 1, slot: id })),
@@ -271,7 +291,7 @@ test('evaluation date conflicts and incomplete student rosters produce prioritiz
   assert.equal(nextState.canContactTeam, true);
 });
 
-test('team contact button only appears for problems or after a few hours of missing/brief content', () => {
+test('help stays distinct from an optional WhatsApp content request', () => {
   // No classes (create) or missing schedule -> no team contact button
   assert.equal(evaluateCompanion(input({ classes: [], config: {} })).canContactTeam, false);
   assert.equal(evaluateCompanion(input({ config: {} })).canContactTeam, false);
@@ -287,7 +307,7 @@ test('team contact button only appears for problems or after a few hours of miss
   assert.equal(freshState.guidance.step, 'notebook-empty');
   assert.equal(freshState.canContactTeam, false);
 
-  // Mature empty class (>= 3 hours) -> asks about ready-to-use content from taught course & shows team contact
+  // A mature empty class can request content on WhatsApp without impersonating a support problem.
   const matureEmpty = makeClass('mature');
   matureEmpty.createdAt = '2026-10-23T04:00:00Z'; // 5h before 09:00Z
   const matureEmptyState = evaluateCompanion(input({
@@ -296,9 +316,10 @@ test('team contact button only appears for problems or after a few hours of miss
     readLessons: () => [],
   }));
   assert.equal(matureEmptyState.guidance.step, 'notebook-empty');
-  assert.equal(matureEmptyState.canContactTeam, true);
-  assert.match(companionMessage(matureEmptyState, 'ar', '2026-10-23', false).detail, /محتوى جاهز للاستعمال/);
-  assert.match(companionMessage(matureEmptyState, 'fr', '2026-10-23', false).detail, /contenu prêt à utiliser/);
+  assert.equal(matureEmptyState.canContactTeam, false);
+  assert.equal(matureEmptyState.emptyContentSuggestion?.target.id, 'mature');
+  assert.deepEqual(matureEmptyState.action, { type: 'open-class', classId: 'mature' });
+  assert.match(companionMessage(matureEmptyState, 'fr', '2026-10-23', false).detail, /Ajoutez votre premier contenu/);
 
   // Rich notebook with no problems -> calm ready state and no team contact button
   const rich: LessonsData = [{
@@ -312,16 +333,20 @@ test('team contact button only appears for problems or after a few hours of miss
   assert.equal(richState.canContactTeam, false);
 });
 
-test('PWA installation is the first priority request of the robot with no skip ("Passer") option, while other messages can be skipped', () => {
-  // When PWA is not installed yet, install-app is the first priority request even if classes are unscheduled or empty
+test('optional installation never hides classroom needs and can be postponed', () => {
+  const unscheduled = evaluateCompanion(input({ config: {}, readLessons: () => [], pwaInstallRequired: true }));
+  assert.equal(unscheduled.guidance.step, 'schedule');
+  assert.equal(unscheduled.decision.kind, 'guidance');
   const installState = evaluateCompanion(input({
-    config: {},
-    readLessons: () => [],
+    offersEnabled: false,
     pwaInstallRequired: true,
   }));
   assert.equal(installState.decision.kind, 'install-app');
   assert.deepEqual(installState.action, { type: 'install-app' });
-  assert.equal(installState.canSkip, false, 'install-app request must never expose the Passer/skip button');
+  assert.equal(installState.canSkip, true);
+  assert.equal(installState.skipKey, 'install-app');
+  const postponed = evaluateCompanion(input({ offersEnabled: false, pwaInstallRequired: true, skippedMessageKeys: new Set(['install-app']) }));
+  assert.equal(postponed.decision.kind, 'guidance');
   assert.equal(installState.nextTaskId, undefined, 'install-app stays the primary request');
   assert.equal(companionMessage(installState, 'fr', '2026-10-23', false).action, 'Installer l’application');
   assert.equal(companionMessage(installState, 'ar', '2026-10-23', false).action, 'تثبيت التطبيق');
@@ -350,13 +375,13 @@ test('PWA installation is the first priority request of the robot with no skip (
   assert.equal(sereneAfterSkip.tasks.length, 0);
   assert.equal(sereneAfterSkip.guidance.step, 'standby');
   assert.equal(sereneAfterSkip.behavior.problemCount, 0);
-  assert.equal(sereneAfterSkip.canSkip, true);
+  assert.equal(sereneAfterSkip.canSkip, false, 'no inert Later button after every task is postponed');
 });
 
-test('notification activation prompt appears immediately after PWA install and supports direct activation, settings fallback, and skip', () => {
+test('after class needs are resolved, notification setup follows installation and respects postponement', () => {
   // 1. When PWA is not installed yet, install-app takes strict priority over enable-notifications
   const beforeInstall = evaluateCompanion(input({
-    config: {},
+    offersEnabled: false,
     pwaInstallRequired: true,
     notificationPrompt: 'activate',
   }));
@@ -365,7 +390,7 @@ test('notification activation prompt appears immediately after PWA install and s
 
   // 2. Once PWA is installed (pwaInstallRequired: false), enable-notifications appears immediately
   const activatePrompt = evaluateCompanion(input({
-    config: {},
+    offersEnabled: false,
     pwaInstallRequired: false,
     notificationPrompt: 'activate',
   }));
@@ -379,7 +404,7 @@ test('notification activation prompt appears immediately after PWA install and s
 
   // 3. When OS/browser permission is denied, the robot switches to settings mode
   const settingsPrompt = evaluateCompanion(input({
-    config: {},
+    offersEnabled: false,
     pwaInstallRequired: false,
     notificationPrompt: 'settings',
   }));
@@ -391,13 +416,13 @@ test('notification activation prompt appears immediately after PWA install and s
 
   // 4. Skipping enable-notifications advances to the pedagogical guidance queue
   const afterSkip = evaluateCompanion(input({
-    config: {},
+    offersEnabled: false,
     pwaInstallRequired: false,
     notificationPrompt: 'activate',
     skippedMessageKeys: new Set(['enable-notifications']),
   }));
   assert.equal(afterSkip.decision.kind, 'guidance');
-  assert.equal(afterSkip.guidance.step, 'schedule');
+  assert.equal(afterSkip.guidance.step, 'ready');
 });
 
 

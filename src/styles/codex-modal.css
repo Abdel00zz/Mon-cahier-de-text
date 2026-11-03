@@ -1,0 +1,61 @@
+/* Painted pottery, reduced to a slip of colour and a small Greek key. The
+   ornament is part of the frame: no image request, layout box or hit target. */
+:root {
+  --codex-stone: #faf7f0;
+  --codex-slip: #eddfc9;
+  --codex-bronze: #926b43;
+  --codex-clay: #a35237;
+  --codex-rule: #d7c9b5;
+  --codex-frieze: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M0 6.75h4v-5.5h14v5.5H8V3.9h6.5M18 6.75h6' fill='none' stroke='black' stroke-width='1.25' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.dark {
+  --codex-stone: #282622;
+  --codex-slip: #393127;
+  --codex-bronze: #c4a073;
+  --codex-clay: #d28e70;
+  --codex-rule: #514638;
+}
+@media screen {
+  [data-codex-surface] {
+    --modal-surface-bg: var(--codex-stone);
+    --modal-header-bg: var(--codex-stone);
+    --modal-footer-bg: color-mix(in srgb, var(--codex-stone) 84%, var(--codex-slip));
+    --modal-border-artistic: var(--codex-rule);
+    --cm-sheet: var(--codex-stone);
+    --cm-sunken: var(--modal-footer-bg);
+    --cm-border-subtle: color-mix(in srgb, var(--codex-bronze) 22%, transparent);
+    --codex-wash: linear-gradient(108deg, color-mix(in srgb, var(--codex-slip) 60%, transparent), transparent 66%);
+    --modal-surface-tint: linear-gradient(to bottom, color-mix(in srgb, var(--codex-slip) 31%, transparent), transparent 7rem);
+  }
+  [data-codex-surface]:dir(rtl) {
+    --codex-wash: linear-gradient(252deg, color-mix(in srgb, var(--codex-slip) 60%, transparent), transparent 66%);
+  }
+  [data-codex-surface]::after {
+    content: "";
+    position: absolute;
+    z-index: 31;
+    pointer-events: none;
+    inset-block-start: 2px;
+    inset-inline-start: clamp(1.5rem, 7%, 3.5rem);
+    inline-size: clamp(48px, 16%, 96px);
+    block-size: 8px;
+    background: linear-gradient(to right, var(--codex-clay), var(--codex-bronze) 62%, transparent);
+    -webkit-mask: var(--codex-frieze) left center / 24px 8px repeat-x;
+    mask: var(--codex-frieze) left center / 24px 8px repeat-x;
+  }
+  [data-codex-surface]:dir(rtl)::after { transform: scaleX(-1); }
+  [data-codex-surface] > .modal-pro-header, [data-codex-heading] {
+    background-color: var(--codex-stone);
+    background-image: var(--codex-wash);
+    border-block-end-color: var(--codex-rule);
+  }
+  [data-codex-surface="inset"] {
+    background-color: var(--codex-stone);
+    background-image: var(--modal-surface-tint);
+    border-color: var(--codex-rule);
+  }
+}
+@media (forced-colors: active) {
+  [data-codex-surface]::after { display: none; }
+  [data-codex-heading], [data-codex-surface] > .modal-pro-header { background-image: none; }
+}

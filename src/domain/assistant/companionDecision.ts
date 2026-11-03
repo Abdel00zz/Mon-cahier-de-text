@@ -71,8 +71,6 @@ export type CompanionDecision =
 
 /** One deterministic arbitration point. Unknown or failed checks never become a success offer. */
 export function decideCompanion(signals: CompanionSignals): CompanionDecision {
-  if (signals.pwaInstallRequired) return { kind: 'install-app' };
-  if (signals.notificationPrompt) return { kind: 'enable-notifications', mode: signals.notificationPrompt };
   const { guidance, authenticated, syncStatus, transfer } = signals;
   if (authenticated && signals.online && (syncStatus === 'error' || transfer === 'failed')) return { kind: 'sync-error' };
   if (authenticated && signals.online && signals.inboxFailed) return { kind: 'inbox-error' };
@@ -84,9 +82,8 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
   const reply = pendingAdminMessages(signals.messages)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
   if (authenticated && reply) return { kind: 'reply', reply };
-  const canSuggestContent = signals.hasNotebookReader && signals.hasContentSuggestion
-    && guidance.step === 'ready';
-  if (!canSuggestContent && guidance.step !== 'ready') return { kind: 'guidance' };
+  const canSuggestContent = signals.hasNotebookReader && signals.hasContentSuggestion;
+  if (guidance.step !== 'ready') return { kind: 'guidance' };
   if (authenticated) {
     if (!signals.online || syncStatus === 'offline') return { kind: 'offline' };
     if (syncStatus === 'pending' || syncStatus === 'syncing') return { kind: 'syncing' };
@@ -94,5 +91,8 @@ export function decideCompanion(signals: CompanionSignals): CompanionDecision {
   }
   // One subject per message: a calendar notice replaces an optional offer, never prefixes it.
   if (guidance.step === 'ready' && signals.calendarNotice) return { kind: 'calendar', notice: signals.calendarNotice };
+  // Device setup is optional. It must never obscure a real class, reply or recovery action.
+  if (signals.online && signals.pwaInstallRequired) return { kind: 'install-app' };
+  if (signals.online && signals.notificationPrompt) return { kind: 'enable-notifications', mode: signals.notificationPrompt };
   return { kind: canSuggestContent && signals.online ? 'offer' : 'guidance' };
 }

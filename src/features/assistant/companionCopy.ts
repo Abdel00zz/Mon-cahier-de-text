@@ -22,17 +22,17 @@ const COPY = {
     'notebook-unavailable': { title: 'Vérifions ce cahier', detail: 'Je n’arrive pas à lire ce cahier. On essaie de l’ouvrir ?', context: 'Lecture indisponible', action: 'Ouvrir le cahier' },
     open: 'Ouvrir le compagnon',
     close: 'Fermer le message',
-    skip: 'Ignorer',
+    skip: 'Plus tard',
     attention: 'Action requise',
     'install-app': {
       title: 'Installer l’application',
-      detail: 'Installez l’application sur votre appareil pour accéder instantanément à vos cahiers de textes, même hors connexion.',
+      detail: 'Gardez votre cahier à portée de main depuis l’écran d’accueil.',
       action: 'Installer l’application',
       context: 'Installation',
     },
     'enable-notifications': {
       title: 'Activer les notifications',
-      detail: 'Activez les notifications sur votre téléphone pour recevoir les rappels de vos séances, des dates à attribuer et le suivi de vos évaluations.',
+      detail: 'Recevez un rappel avant vos séances sur cet appareil.',
       action: 'Activer les notifications',
       settingsDetail: 'Les notifications sont désactivées dans les réglages de votre téléphone. Autorisez-les pour recevoir les rappels de vos séances et de vos cahiers.',
       settingsAction: 'Ouvrir les paramètres de notification',
@@ -41,7 +41,7 @@ const COPY = {
     },
     create: {
       title: 'On commence ?',
-      detail: 'Ajoutez votre première classe. Je vous guide pour la suite.',
+      detail: 'Créez votre première classe pour ouvrir son cahier de textes.',
       action: 'Créer ma classe',
       context: 'Démarrage',
     },
@@ -83,7 +83,7 @@ const COPY = {
     },
     standby: {
       title: 'Rappels mis de côté',
-      detail: 'Vous avez choisi d’ignorer ce rappel. Je reste discret et à votre disposition.',
+      detail: 'Vos rappels sont de côté. Vous pouvez les reprendre quand vous le souhaitez.',
       action: undefined,
       context: 'En veille',
     },
@@ -99,17 +99,17 @@ const COPY = {
     'notebook-unavailable': { title: 'معاينة الدفتر', detail: 'تعذرت قراءة هذا الدفتر تلقائياً. هل نحاول فتحه معاً؟', context: 'القراءة غير متاحة', action: 'فتح الدفتر' },
     open: 'فتح الرفيق',
     close: 'إغلاق الرسالة',
-    skip: 'تجاهل',
+    skip: 'لاحقاً',
     attention: 'تنبيه تربوي',
     'install-app': {
       title: 'تثبيت التطبيق',
-      detail: 'ثبّت التطبيق على جهازك للوصول الفوري إلى دفاتر نصوصك وحصصك في أي وقت وحتى بدون اتصال بالإنترنت.',
+      detail: 'أضف التطبيق إلى الشاشة الرئيسية لتفتح دفترك مباشرة.',
       action: 'تثبيت التطبيق',
       context: 'تثبيت التطبيق',
     },
     'enable-notifications': {
       title: 'تفعيل الإشعارات',
-      detail: 'فعّل إشعارات التطبيق على هاتفك للتوصل بتذكيرات الحصص وتسجيل التواريخ ومتابعة الفروض والتقويمات في وقتها.',
+      detail: 'فعّل الإشعارات ليصلك تذكير قبل حصصك على هذا الجهاز.',
       action: 'تفعيل الإشعارات',
       settingsDetail: 'الإشعارات معطّلة حالياً في إعدادات هاتفك. اسمح بها للتوصل بتذكيرات الحصص ومتابعة دفاتر نصوصك.',
       settingsAction: 'فتح إعدادات الإشعارات',
@@ -118,7 +118,7 @@ const COPY = {
     },
     create: {
       title: 'مرحباً بك مع رفيقك',
-      detail: 'لنبدأ معاً بإضافة قسمك الأول، وسأرافقك خطوة بخطوة في تنظيم دروسك وحصصك.',
+      detail: 'أضف قسمك الأول لفتح دفتر نصوصه.',
       action: 'إضافة قسم جديد',
       context: 'البداية',
     },
@@ -160,7 +160,7 @@ const COPY = {
     },
     standby: {
       title: 'التنبيهات مؤجلة',
-      detail: 'تم تجاهل التنبيه بناءً على اختيارك. سأبقى في وضع الانتظار الهادئ دون إزعاج.',
+      detail: 'أجّلت التنبيهات. يمكنك العودة إليها متى شئت.',
       action: undefined,
       context: 'في الانتظار',
     },
@@ -176,17 +176,17 @@ const COPY = {
     'notebook-unavailable': { title: 'Let’s check this notebook', detail: 'I couldn’t read this notebook. Shall we try opening it?', context: 'Reading unavailable', action: 'Open notebook' },
     open: 'Open companion',
     close: 'Close message',
-    skip: 'Ignore',
+    skip: 'Later',
     attention: 'Action needed',
     'install-app': {
       title: 'Install application',
-      detail: 'Install the application on your device for instant access to your lesson notebooks, even offline.',
+      detail: 'Open your notebook directly from your home screen.',
       action: 'Install application',
       context: 'Installation',
     },
     'enable-notifications': {
       title: 'Enable notifications',
-      detail: 'Enable notifications on your phone to receive session reminders, lesson date alerts, and assessment follow-ups on time.',
+      detail: 'Get a reminder before lessons on this device.',
       action: 'Enable notifications',
       settingsDetail: 'Notifications are currently disabled in your phone settings. Allow them to receive session and notebook reminders.',
       settingsAction: 'Open notification settings',
@@ -195,7 +195,7 @@ const COPY = {
     },
     create: {
       title: 'Shall we start?',
-      detail: 'Add your first class. I’ll guide you through the next step.',
+      detail: 'Create your first class to open its lesson notebook.',
       action: 'Create class',
       context: 'Getting started',
     },
@@ -237,7 +237,7 @@ const COPY = {
     },
     standby: {
       title: 'Standing by',
-      detail: 'You have skipped this reminder. Standing by quietly whenever you need.',
+      detail: 'Your reminders are set aside. Bring them back whenever you need.',
       action: undefined,
       context: 'Standby',
     },
@@ -277,73 +277,77 @@ export function companionEnableNotificationsMessage(
   };
 }
 
-export function classGuidanceMessage(
-  guidance: ClassGuidance,
-  locale: AppLocale,
-  options?: { askReadyContent?: boolean },
-): CompanionMessage {
+export function classGuidanceMessage(guidance: ClassGuidance, locale: AppLocale): CompanionMessage {
   if (guidance.step === 'notebook-followup') return notebookFollowupMessage(guidance, locale);
-  if (guidance.step === 'standby') {
-    const base = COPY[locale].standby;
-    return {
-      id: 'standby',
-      title: base.title,
-      detail: base.detail,
-      context: base.context,
-    };
-  }
   const base = COPY[locale][guidance.step];
-  let context: string | undefined = 'context' in base ? base.context : undefined;
-  let detail: string = base.detail;
-  let detailEmphasis: string | undefined;
-
-  if (guidance.step === 'schedule') {
-    context = pendingClassesLabel(guidance.remaining, locale);
-  } else if (guidance.step === 'notebook-issue') {
-    context = notebookIssuesLabel(guidance.remaining, locale);
-    detail = ADVICE_COPY[locale][guidance.issueCode];
-    if (guidance.count > 1) {
-      const number = new Intl.NumberFormat(locale).format(guidance.count);
-      detail += locale === 'fr' ? ` ${number} passages concernés.` : locale === 'en' ? ` ${number} places to check.` : ` المواضع المعنية: ${number}.`;
+  if (guidance.step === 'create' || guidance.step === 'standby') return { id: guidance.step, ...base };
+  const name = companionClassName(guidance.className, locale);
+  const tr = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
+  const number = (value: number) => new Intl.NumberFormat(locale).format(value);
+  let context = 'context' in base ? String(base.context) : '';
+  let detail: string;
+  switch (guidance.step) {
+    case 'schedule':
+      context = pendingClassesLabel(guidance.remaining, locale);
+      detail = tr(`Aucun créneau n’est prévu pour ${name}. Choisissez sa première plage dans l’emploi du temps.`,
+        `لم تُحدَّد حصص قسم ${name} بعد. اختر له خانة في استعمال الزمن.`,
+        `${name} has no weekly slot. Choose its first slot in the timetable.`);
+      break;
+    case 'active-session': {
+      const live = tr(`La séance avec ${name} est en cours.`, `حصتك مع قسم ${name} جارية الآن.`, `Your lesson with ${name} is in progress.`);
+      const next = guidance.notebook === 'dated-today'
+        ? tr('Du contenu porte déjà la date d’aujourd’hui.', 'يوجد محتوى مؤرّخ بتاريخ اليوم.', 'Some content already has today’s date.')
+        : guidance.notebook === 'empty'
+        ? tr('Ajoutez le premier contenu au cahier.', 'أضف أول محتوى إلى الدفتر.', 'Add the first item to the notebook.')
+        : guidance.notebook === 'has-content'
+        ? tr('Sélectionnez le contenu abordé pour lui attribuer la date du jour.', 'حدّد المحتوى المنجز لإسناد تاريخ اليوم إليه.', 'Select the material you covered to give it today’s date.') : '';
+      detail = [live, next].filter(Boolean).join(' ');
+      break;
     }
-  } else if (guidance.step === 'notebook-empty') {
-    context = emptyNotebooksLabel(guidance.remaining, locale);
+    case 'next-session':
+      detail = tr(`${name} · ${guidance.scheduleLabel}`, `قسم ${name} · ${guidance.scheduleLabel}`, `${name} · ${guidance.scheduleLabel}`);
+      break;
+    case 'notebook-empty':
+      context = emptyNotebooksLabel(guidance.remaining, locale);
+      detail = tr(`Le cahier de ${name} n’a pas encore de cours. Ajoutez votre premier contenu.`,
+        `لا يوجد درس بعد في دفتر قسم ${name}. أضف أول محتوى.`, `There are no lessons in the notebook for ${name} yet. Add the first item.`);
+      break;
+    case 'notebook-issue':
+      context = notebookIssuesLabel(guidance.remaining, locale);
+      detail = `${name} : ${ADVICE_COPY[locale][guidance.issueCode]}`;
+      if (guidance.count > 1) detail += tr(` Passages concernés : ${number(guidance.count)}.`, ` عدد المواضع: ${number(guidance.count)}.`, ` Affected passages: ${number(guidance.count)}.`);
+      break;
+    case 'evaluation-conflict': {
+      const findings = {
+        binding: tr('Deux entrées renvoient à la même évaluation.', 'هناك مدخلان مرتبطان بالتقويم نفسه.', 'Two entries refer to the same assessment.'),
+        identity: tr('Deux évaluations portent le même numéro pour ce semestre.', 'تقويمان يحملان الرقم نفسه في هذه الدورة.', 'Two assessments have the same number this term.'),
+        duplicate: tr('Deux entrées ont le même intitulé et les mêmes dates.', 'هناك مدخلان بالعنوان نفسه والتواريخ نفسها.', 'Two entries share the same title and dates.'),
+        overlap: tr('Les dates de deux activités du même type se chevauchent.', 'تتداخل تواريخ نشاطين من النوع نفسه.', 'The dates of two activities of the same type overlap.'),
+      };
+      detail = `${name} : ${findings[guidance.conflictKind]}`;
+      break;
+    }
+    case 'roster-incomplete':
+      detail = guidance.reason === 'missing-roster'
+        ? tr(`Une activité de ${name} utilise les noms des élèves. La liste de la classe est encore vide.`,
+            `يتطلّب أحد أنشطة قسم ${name} أسماء التلاميذ، ولائحة القسم فارغة.`, `An activity in ${name} uses student names, but its roster is empty.`)
+        : tr(`${name} : des noms figurent dans les activités mais pas dans la liste de classe (${number(guidance.count)}).`,
+            `توجد أسماء في أنشطة قسم ${name} غير مدرجة في لائحته. عددها: ${number(guidance.count)}.`,
+            `${name}: names recorded in activities are missing from the roster (${number(guidance.count)}).`);
+      break;
+    case 'notebook-unavailable':
+      detail = tr(`Je n’ai pas pu lire le cahier de ${name}. Ouvrez-le pour le vérifier.`,
+        `تعذّرت قراءة دفتر قسم ${name}. افتحه للتحقق منه.`, `I couldn’t read the notebook for ${name}. Open it to check.`);
+      break;
+    case 'checking':
+      detail = tr(`Le cahier de ${name} est en cours de chargement.`, `جارٍ تحميل دفتر قسم ${name}.`, `The notebook for ${name} is loading.`);
+      break;
+    case 'ready':
+      detail = tr(`Aucun point à vérifier dans le cahier de ${name} pour le moment.`,
+        `لا توجد حالياً ملاحظات تستدعي المراجعة في دفتر قسم ${name}.`, `Nothing needs review in the notebook for ${name} right now.`);
+      break;
   }
-
-  const name = guidance.step === 'create' ? undefined
-    : companionClassName(guidance.className, locale);
-  if (name) {
-    if (guidance.step === 'schedule') detail = locale === 'fr' ? `Fixons les créneaux de ${name} pour retrouver ses séances dans votre emploi du temps.`
-      : locale === 'ar' ? `لنضبط حصص قسم ${name} في استعمال الزمن لتتابع مواعيد حصصك بكل سهولة ووضوح.`
-        : `Shall we set the weekly slots for ${name} so you can find its sessions in your timetable?`;
-    else if (guidance.step === 'active-session') detail = locale === 'fr' ? `Votre séance avec ${name} est en cours ; sélectionnez le contenu réalisé pour lui attribuer la date de cette séance.`
-      : locale === 'ar' ? `حصتك مع قسم ${name} جارية الآن؛ اختر المحتوى المنجز لإسناد تاريخ اليوم إليه وتثبيته مباشرة.`
-        : `Your session with ${name} is in progress; select the content covered to assign this session’s date.`;
-    else if (guidance.step === 'next-session') detail = locale === 'fr' ? `Votre prochaine séance avec ${name} : ${guidance.scheduleLabel}.`
-      : locale === 'ar' ? `حصتك القادمة مع قسم ${name}: ${guidance.scheduleLabel}.`
-        : `Your next session with ${name}: ${guidance.scheduleLabel}.`;
-    else if (guidance.step === 'notebook-empty') detail = options?.askReadyContent
-      ? (locale === 'fr' ? `Le cahier de ${name} attend son contenu ; avez-vous besoin d’un contenu prêt à utiliser à l’aide de votre cours enseigné ?`
-        : locale === 'ar' ? `دفتر قسم ${name} في انتظار محتواه؛ هل تحتاج إلى محتوى جاهز للاستعمال انطلاقاً من درسك المعتمد؟`
-          : `The notebook for ${name} is waiting for content; do you need ready-to-use content based on the course you teach?`)
-      : (locale === 'fr' ? `Le cahier de ${name} attend son premier contenu ; commençons par ce que vous souhaitez enseigner.`
-        : locale === 'ar' ? `دفتر قسم ${name} في انتظار درسه الأول؛ ما رأيك أن نفتحه ونبدأ بما ترغب في تدريسه؟`
-          : `The notebook for ${name} is waiting for its first content; shall we start with what you want to teach?`);
-    else if (guidance.step === 'ready') detail = locale === 'fr' ? `Vos séances et le cahier de ${name} sont parfaitement organisés.`
-      : locale === 'ar' ? `دفتر قسم ${name} واستعمال زمنه منظم ومضبوط بشكل ممتاز.`
-        : `Lessons and notebook for ${name} are fully organized.`;
-    else detail = `${locale === 'ar' ? `في دفتر قسم ${name}، ` : locale === 'en' ? `For ${name}: ` : `Dans le cahier de ${name} : `}${detail}`;
-    detailEmphasis = name;
-  }
-
-  return {
-    id: guidance.step,
-    title: base.title,
-    detail,
-    ...(detailEmphasis ? { detailEmphasis } : {}),
-    action: base.action,
-    ...(context ? { context } : {}),
-  };
+  return { id: guidance.step, title: base.title, detail, detailEmphasis: name, action: base.action, context };
 }
 
 function pendingClassesLabel(count: number, locale: AppLocale): string {

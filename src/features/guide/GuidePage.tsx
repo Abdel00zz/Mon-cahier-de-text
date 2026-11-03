@@ -119,7 +119,7 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose }) => {
       {/* Tiroir / Sheet Mobile pour le Sommaire */}
       <Dialog.Portal>
           <Dialog.Overlay className="guide-drawer-overlay lg:hidden" />
-          <Dialog.Content dir={isAr ? 'rtl' : 'ltr'} lang={lang} className="guide-drawer lg:hidden" aria-describedby={undefined}>
+          <Dialog.Content data-codex-surface="inset" dir={isAr ? 'rtl' : 'ltr'} lang={lang} className="guide-drawer lg:hidden" aria-describedby={undefined}>
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
               <div className="flex items-center gap-2">
                 <BookOpen size={18} className="text-primary" />

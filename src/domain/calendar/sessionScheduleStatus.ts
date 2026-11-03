@@ -8,7 +8,6 @@ type SessionScheduleState =
     | 'paused'
     | 'starting_soon'
     | 'today_later'
-    | 'today_ended'
     | 'upcoming'
     | 'none';
 
@@ -27,8 +26,8 @@ export interface SessionScheduleStatus {
     dayOffset?: number;
     /** Durée totale du bloc de séance fusionné (ex: 2 pour une séance de 2h consécutives). */
     sessionHours?: number;
-    /** Keep a class taught today in today's dashboard group until midnight. */
-    hadSessionToday?: boolean;
+    /** Date effective de la prochaine séance, après exclusion des jours non travaillés. */
+    date?: string;
 }
 
 const formatHourMinute = (minutes: number, locale = 'fr'): string => {
@@ -285,14 +284,10 @@ export function computeClassSessionSchedule(
 
         if (targetBlocks.length > 0) {
             const nextBlock = targetBlocks[0];
-            return { ...buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin, nextBlock.hours),
-                hadSessionToday: !todayBlocked && getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
-                    .some(b => b.classId === classId && currentMinute >= b.endMin) };
+            return { ...buildUpcomingStatus(offset, targetDayOfWeek, nextBlock.startMin, nextBlock.endMin, nextBlock.hours), date: targetIso };
         }
     }
 
-    return { state: 'none', label: '', shortLabel: '',
-        hadSessionToday: !todayBlocked && getDayTeachingBlocks(effectiveTimetable, currentDayOfWeek, clock)
-            .some(b => b.classId === classId && currentMinute >= b.endMin) };
+    return { state: 'none', label: '', shortLabel: '' };
 }
 

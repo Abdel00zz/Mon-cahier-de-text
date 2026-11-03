@@ -53,6 +53,7 @@ export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClas
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
+    suggestedClassId?: string;
     config: AppConfig;
     onChange: (patch: Partial<AppConfig>) => void;
     /**
@@ -72,7 +73,7 @@ interface ScheduleTabProps {
 
 type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 
-export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
+export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass, suggestedClassId }) => {
     const { locale, t } = useLocale();
     const yearStartId = React.useId();
     const hourNumber = React.useMemo(
@@ -105,6 +106,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return `${day}/${month}/${year}`;
     }, [schoolYearStart]);
     const timetable = config.timetable ?? [];
+    const suggestedClass = classes.find(item => item.id === suggestedClassId);
+    const pickerClasses = React.useMemo(() => suggestedClass
+        ? [suggestedClass, ...classes.filter(item => item.id !== suggestedClass.id)] : classes, [classes, suggestedClass]);
     const hasSchedule = timetable.length > 0 || Boolean(config.schoolYearStart);
     // Keep the date visible while the first timetable is being prepared.
     const [startDateOpen, setStartDateOpen] = React.useState(() => !hasSchedule);
@@ -259,6 +263,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>}
             </div>
 
+            {suggestedClass && !timetable.some(slot => slot.classId === suggestedClass.id) && (
+                <p className="text-sm text-foreground" role="status"><strong><bdi>{classLabel(suggestedClass.name)}</bdi></strong>
+                    {locale === 'ar' ? ' — اختر خانة فارغة ثم اختر القسم.' : locale === 'en' ? ' — Choose an empty slot, then select this class.' : ' — Choisissez une case libre, puis cette classe.'}</p>
+            )}
             {noClassesYet && (
                 <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
             )}
@@ -342,7 +350,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                                     >
                                                         <option value="" className="text-muted-foreground bg-card">{t('schedule.noClass')}</option>
-                                                        {classes.map(c => (
+                                                        {pickerClasses.map(c => (
                                                             <option key={c.id} value={c.id} className="text-foreground bg-card">
                                                                 {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                             </option>

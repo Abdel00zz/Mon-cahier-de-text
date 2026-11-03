@@ -1,4 +1,6 @@
 import type { GuideChapter } from './guide/model';
+import { normalizeGuideSearch } from './guide/searchText';
+export { normalizeGuideSearch } from './guide/searchText';
 export type { GuideChapter } from './guide/model';
 import { start } from './guide/start';
 import { profile } from './guide/profile';
@@ -24,10 +26,6 @@ const chapters = [start, profile, schedule, classes, students, content, editor, 
 
 export const GUIDE_FR: GuideChapter[] = chapters.map(entry => entry.fr);
 export const GUIDE_AR: GuideChapter[] = chapters.map(entry => entry.ar);
-
-export const normalizeGuideSearch = (text: string): string => text.normalize('NFD')
-  .replace(/[\u0300-\u036f\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/g, '')
-  .replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ـ/g, '').toLowerCase();
 
 /** Every query word must occur; accents and Arabic harakat do not block matches. */
 export function searchGuide(entries: GuideChapter[], query: string): GuideChapter[] {

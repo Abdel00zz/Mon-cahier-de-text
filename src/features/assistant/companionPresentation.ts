@@ -19,16 +19,17 @@ export function companionMessage(snapshot: CompanionBrainSnapshot, locale: AppLo
   if (decision.kind === 'enable-notifications') return companionEnableNotificationsMessage(locale, decision.mode);
   if (decision.kind === 'calendar') return companionCalendarMessage(decision.notice, locale, snapshot.target?.name);
   let message: CompanionMessage;
-  if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale, { askReadyContent: snapshot.canContactTeam });
+  if (decision.kind === 'guidance') message = classGuidanceMessage(snapshot.guidance, locale);
   else if (decision.kind === 'offer' && snapshot.contentSuggestion) message = contentSuggestionMessage(snapshot.contentSuggestion, locale, today);
   else if (decision.kind === 'reply') {
     const reply = decision.reply;
-    const name = reply.className && companionClassName(reply.className, locale);
+    const className = snapshot.target?.name || reply.className;
+    const name = className && companionClassName(className, locale);
     const copy = conversationCopy(locale);
     message = { id: reply.id, title: reply.replyTo ? copy.reply : locale === 'ar' ? 'رسالة من الفريق' : locale === 'en' ? 'A message from the team' : 'Un message de l’équipe',
       detail: `${name ? `${name} : ` : ''}${reply.body.length > 150 ? `${reply.body.slice(0, 147)}…` : reply.body}`,
       detailEmphasis: name, action: copy.read };
   } else if (decision.kind !== 'offer') message = companionServiceMessage(decision.kind, locale, recovering);
-  else message = classGuidanceMessage(snapshot.guidance, locale, { askReadyContent: snapshot.canContactTeam });
+  else message = classGuidanceMessage(snapshot.guidance, locale);
   return message;
 }

@@ -3,19 +3,19 @@ import type { CompanionMessage } from './companionCopy';
 
 const copy = {
   fr: {
-    'sync-error': { title: 'Synchronisation à reprendre', detail: 'Je n’ai pas pu vérifier les dernières données du cloud. On réessaie ?', action: 'Réessayer la synchronisation' },
-    offline: { title: 'Mode hors ligne', detail: 'La connexion manque pour joindre le cloud. Je reprendrai la vérification à son retour.' },
+    'sync-error': { title: 'Synchronisation interrompue', detail: 'La dernière synchronisation a échoué. Relancez-la pour vérifier vos modifications.', action: 'Réessayer la synchronisation' },
+    offline: { title: 'Hors connexion', detail: 'Vous êtes hors connexion. La synchronisation reprendra au retour du réseau.' },
     syncing: { title: 'Synchronisation en cours', detail: 'Je vérifie vos dernières modifications…' },
     checking: { title: 'Vérification en cours', detail: 'Je regarde le cahier et les réponses de l’équipe…' },
-    'inbox-error': { title: 'Échanges indisponibles', detail: 'Je n’arrive pas à récupérer les réponses de l’équipe. On réessaie ?', action: 'Recharger les échanges' },
+    'inbox-error': { title: 'Messagerie indisponible', detail: 'Les réponses de l’équipe n’ont pas pu être chargées.', action: 'Recharger les échanges' },
     busy: 'Vérification…',
   },
   ar: {
-    'sync-error': { title: 'إعادة محاولة المزامنة', detail: 'تعذر التحقق من آخر البيانات في السحابة. هل نعيد المحاولة معاً؟', action: 'إعادة المزامنة الآن' },
-    offline: { title: 'وضع بدون اتصال', detail: 'أنت تعمل حالياً دون اتصال. بياناتك محفوظة محلياً وسأستأنف التحقق فور عودة الإنترنت.' },
+    'sync-error': { title: 'تعذرت المزامنة', detail: 'لم تكتمل المزامنة الأخيرة. أعد المحاولة للتحقق من تعديلاتك.', action: 'إعادة المزامنة' },
+    offline: { title: 'دون اتصال', detail: 'أنت دون اتصال. تُستأنف المزامنة عند عودة الإنترنت.' },
     syncing: { title: 'مزامنة جارية', detail: 'أتحقق من آخر تعديلاتك وأقوم بمزامنتها الآن…' },
     checking: { title: 'جارٍ التحقق', detail: 'أراجع الدفتر وردود الفريق لمتابعة كل جديد…' },
-    'inbox-error': { title: 'المحادثات غير متاحة حالياً', detail: 'تعذر استرجاع ردود الفريق في الوقت الحالي. هل نجرب التحديث مجدداً؟', action: 'تحديث المحادثات' },
+    'inbox-error': { title: 'تعذّر فتح المراسلات', detail: 'تعذّر تحميل ردود الفريق.', action: 'تحديث المراسلات' },
     busy: 'جارٍ التحقق…',
   },
   en: {

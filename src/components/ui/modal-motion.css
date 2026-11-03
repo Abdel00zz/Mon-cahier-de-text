@@ -1,656 +1,147 @@
 @import "../../styles/modal-premium-tokens.css";
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Animations Modales Optimisées Mobile/Tablette
-   - Arrondis supérieurs prononcés (28px) sur mobile sheet
-   - Backdrop blur intensifié pour la profondeur
-   - Spring physics pour les transitions
-   - Optimisation tactile du drag handle
-   ══════════════════════════════════════════════════════════════════════════ */
+/* Radix locks body; the document is the scroller on long dashboard pages. */
+html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 
-/* Le voile suit la palette du thème et s'anime avec la surface. */
+/* Shared surfaces. Only transform/opacity animate; no persistent blur, shadow
+   or height animation while an instructor reads or types. */
 .modal-motion-overlay {
-  --modal-scrim-blur: 8px;
   background: var(--modal-scrim-bg, hsl(var(--foreground) / .44));
-  -webkit-backdrop-filter: blur(var(--modal-scrim-blur)) saturate(140%);
-  backdrop-filter: blur(var(--modal-scrim-blur)) saturate(140%);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
-.dark .modal-motion-overlay { 
-  background: var(--modal-scrim-bg, hsl(var(--background) / .78));
-}
-.modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 260ms var(--modal-spring-smooth) both; }
-.modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 200ms ease-in both; }
-
-/* Surface modale avec architecture Liquid Glass et ombres GPU */
+.modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 200ms ease-out both; }
+.modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 160ms ease-in both; }
 .modal-motion-surface {
   --modal-visible-height: var(--app-viewport-height, 100dvh);
   --modal-visible-top: var(--app-viewport-offset-top, 0px);
   --modal-keyboard-inset: max(0px, calc(100dvh - var(--modal-visible-height) - var(--modal-visible-top)));
-  border-color: var(--modal-border-artistic, hsl(var(--border) / .85));
-  background-color: var(--modal-surface-bg, hsl(var(--card) / .96));
+  border: 1px solid var(--modal-border-artistic, hsl(var(--border)));
+  background-color: var(--modal-surface-bg, hsl(var(--card)));
   background-image: var(--modal-surface-tint);
-  -webkit-backdrop-filter: blur(var(--modal-blur-medium)) saturate(160%);
-  backdrop-filter: blur(var(--modal-blur-medium)) saturate(160%);
   font-family: var(--font-sans);
+  font-size: .9375rem;
   isolation: isolate;
-  box-shadow: 
-    inset 0 1px 0.5px 0 rgb(255 255 255 / .78),
-    var(--modal-elevation-shadow, var(--modal-shadow-mid)),
-    var(--modal-glow, 0 0 0 0 transparent);
-  transform: translate3d(0, var(--sheet-drag-y, 0px), 0);
-  transition: backdrop-filter 320ms var(--modal-spring-smooth), box-shadow 300ms ease, background-color 260ms ease;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .55), var(--modal-elevation-shadow, var(--modal-shadow-mid));
 }
+.dark .modal-motion-surface { box-shadow: inset 0 1px 0 rgb(255 255 255 / .08), var(--modal-elevation-shadow, var(--modal-shadow-high)); }
+.modal-motion-surface[data-elevation="low"] { --modal-elevation-shadow: var(--modal-shadow-low); }
+.modal-motion-surface[data-elevation="high"] { --modal-elevation-shadow: var(--modal-shadow-high); }
+.modal-motion-surface:not([data-sheet-library]) {
+  position: fixed;
+  inset: calc(var(--modal-visible-top) + max(16px, env(safe-area-inset-top, 0px))) 0 calc(var(--modal-keyboard-inset) + max(16px, env(safe-area-inset-bottom, 0px)));
+  margin: auto;
+  width: calc(100vw - 2rem);
+  height: fit-content;
+  max-height: calc(var(--modal-visible-height) - 2rem);
+  border-radius: 22px;
+}
+.modal-motion-surface:not([data-sheet-library])[data-state="open"] { animation: modal-dialog-in 260ms cubic-bezier(.22, 1, .36, 1) backwards; }
+.modal-motion-surface:not([data-sheet-library])[data-state="closed"] { animation: modal-dialog-out 160ms ease-in both; pointer-events: none; }
 
-/* Élévation Z dynamique */
-.modal-motion-surface[data-elevation="low"] {
-  --modal-elevation-shadow: var(--modal-shadow-low);
+/* The library's inline translate owns the gesture; CSS never competes with it.
+   Override its fixed max-height to use the app's visual viewport, including keyboard. */
+.modal-sheet-viewport { --modal-sheet-gutter: max(8px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+.modal-sheet-viewport .modal-motion-surface[data-sheet-library] {
+  max-height: min(calc(var(--modal-visible-height) * var(--sheet-max-height, .94)), calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)))) !important;
+  border-radius: 24px 24px 0 0;
+  padding: 0;
 }
-.modal-motion-surface[data-elevation="high"] {
-  --modal-elevation-shadow: var(--modal-shadow-high);
-  -webkit-backdrop-filter: blur(var(--modal-blur-intense)) saturate(175%);
-  backdrop-filter: blur(var(--modal-blur-intense)) saturate(175%);
-}
+.modal-sheet-overlay[data-state] { animation: none; }
+.modal-sheet-heading { flex-shrink: 0; }
+.modal-handle-region { display: flex; justify-content: center; align-items: center; height: 24px; touch-action: none; }
+.modal-drag-indicator { display: flex; }
+.modal-drag-indicator > span { width: 20px; height: 4px; border-radius: 8px; background: hsl(var(--muted-foreground) / .35); }
 
-/* Glows contextuels */
-.modal-motion-surface[data-glow="primary"] { --modal-glow: var(--glow-primary); }
-.modal-motion-surface[data-glow="success"] { --modal-glow: var(--glow-success); }
-.modal-motion-surface[data-glow="warning"] { --modal-glow: var(--glow-warning); }
-.modal-motion-surface[data-glow="danger"] { --modal-glow: var(--glow-danger); }
-
-.dark .modal-motion-surface { 
-  border-color: var(--modal-border-artistic, hsl(var(--border) / .85));
-  background-color: var(--modal-surface-bg, hsl(var(--card) / .94));
-  background-image: var(--modal-surface-tint);
-  box-shadow: 
-    inset 0 1px 0.5px 0 rgb(240 245 255 / .14),
-    var(--modal-elevation-shadow, var(--modal-shadow-high)),
-    var(--modal-glow, 0 0 0 0 transparent); 
-}
-
-/* GPU Compositing optimization */
-.modal-motion-surface[data-state="open"] {
-  will-change: transform, opacity;
-}
-.modal-motion-surface[data-state="closed"] {
-  will-change: auto;
-}
-
-/* Liseré spéculaire supérieur (réfraction optique verre liquide) */
-.modal-motion-surface::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  inset-inline: 0;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.75) 25%, 
-    rgba(255, 255, 255, 0.95) 50%, 
-    rgba(255, 255, 255, 0.75) 75%, 
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 30;
-}
-.dark .modal-motion-surface::before {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.12) 25%, 
-    rgba(255, 255, 255, 0.25) 50%, 
-    rgba(255, 255, 255, 0.12) 75%, 
-    transparent 100%
-  );
-}
-
-/* Morphing tactile 3D au drag (mobile) */
-.modal-motion-surface[data-drag-state="dragging"] {
-  transform: 
-    translate3d(0, var(--sheet-drag-y, 0px), 0)
-    scale(calc(1 - var(--drag-progress, 0) * 0.04))
-    rotateX(calc(var(--drag-progress, 0) * 2.8deg));
-  transform-origin: center bottom;
-  transform-style: preserve-3d;
-  perspective: 1200px;
-  will-change: transform;
-  transition: none !important;
-}
-
-/* Feedback magnétique lors du drag : le halo pulse et prévient du snap */
-.modal-motion-surface[data-magnetic-snap="true"] {
-  border-color: color-mix(in srgb, hsl(var(--primary)) 65%, hsl(var(--border))) !important;
-  box-shadow: 
-    inset 0 1px 0.5px 0 rgb(255 255 255 / .95),
-    var(--modal-elevation-shadow, var(--modal-shadow-high)),
-    var(--modal-magnetic-glow) !important;
-  transform: 
-    translate3d(0, var(--sheet-drag-y, 0px), 0)
-    scale(0.97)
-    rotateX(calc(var(--drag-progress, 0) * 3deg)) !important;
-  transition: border-color 150ms ease, box-shadow 180ms ease !important;
-}
-.dark .modal-motion-surface[data-magnetic-snap="true"] {
-  border-color: color-mix(in srgb, hsl(var(--primary)) 70%, hsl(var(--border))) !important;
-  box-shadow: 
-    inset 0 1px 0.5px 0 rgb(240 245 255 / .25),
-    var(--modal-elevation-shadow, var(--modal-shadow-high)),
-    var(--modal-magnetic-glow) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modal-motion-surface[data-drag-state="dragging"],
-  .modal-motion-surface[data-magnetic-snap="true"] {
-    transform: translate3d(0, var(--sheet-drag-y, 0px), 0) !important;
-    transform-style: flat;
-  }
-}
-
-/* Micro-interaction : Glow Pulse pour boutons d'action */
-@keyframes modal-glow-pulse {
-  0%, 100% {
-    box-shadow: 
-      0 0 0 0 var(--pulse-color, hsla(var(--primary), 0.55)),
-      var(--button-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
-  }
-  50% {
-    box-shadow: 
-      0 0 0 10px var(--pulse-color, hsla(var(--primary), 0)),
-      var(--button-shadow, 0 4px 16px rgba(0, 0, 0, 0.15));
-  }
-}
-
-.glow-pulse-primary {
-  --pulse-color: color-mix(in srgb, hsl(var(--primary)) 50%, transparent);
-  animation: modal-glow-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.glow-pulse-danger {
-  --pulse-color: hsla(352, 70%, 50%, 0.45);
-  animation: modal-glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.glow-pulse-success {
-  --pulse-color: hsla(142, 65%, 45%, 0.45);
-  animation: modal-glow-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-/* Échéance du jour (date limite d'un devoir) : même halo, en ambre — l'attention, pas l'alerte. */
-.glow-pulse-warning {
-  --pulse-color: hsla(38, 92%, 50%, 0.5);
-  animation: modal-glow-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success, .glow-pulse-warning {
-    animation: none !important;
-  }
-}
-
-/* Animations entrée/sortie avec spring physics longues et élégantes */
-.modal-motion-surface[data-state="open"] { 
-  animation: modal-dialog-in 340ms var(--modal-spring-smooth) backwards;
-}
-
-/* ── Concept 4 : Breath & Pulse Ambient (Halo Ambiant Vivant) ─────────── */
-@keyframes modal-ambient-breathe-light {
-  0%, 100% {
-    box-shadow: 
-      inset 0 1px 0.5px 0 rgb(255 255 255 / .75),
-      var(--modal-elevation-shadow, var(--modal-shadow-mid)),
-      var(--modal-glow, var(--modal-ambient-glow));
-  }
-  50% {
-    box-shadow: 
-      inset 0 1px 0.5px 0 rgb(255 255 255 / .95),
-      var(--modal-elevation-shadow, var(--modal-shadow-high)),
-      var(--modal-glow, var(--modal-ambient-glow-peak));
-  }
-}
-
-@keyframes modal-ambient-breathe-dark {
-  0%, 100% {
-    box-shadow: 
-      inset 0 1px 0.5px 0 rgb(240 245 255 / .12),
-      var(--modal-elevation-shadow, var(--modal-shadow-high)),
-      var(--modal-glow, var(--modal-ambient-glow));
-  }
-  50% {
-    box-shadow: 
-      inset 0 1px 0.5px 0 rgb(240 245 255 / .24),
-      var(--modal-elevation-shadow, var(--modal-shadow-high)),
-      var(--modal-glow, var(--modal-ambient-glow-peak));
-  }
-}
-
-.modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
-  animation: modal-dialog-in 340ms var(--modal-spring-smooth) backwards,
-             modal-ambient-breathe-light 4.8s 340ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.dark .modal-motion-surface[data-state="open"][data-ambient="true"]:not([data-drag-state="dragging"]):not([data-drag-state="settling"]) { 
-  animation: modal-dialog-in 340ms var(--modal-spring-smooth) backwards,
-             modal-ambient-breathe-dark 4.8s 340ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modal-motion-surface[data-state="open"][data-ambient="true"] {
-    animation: modal-dialog-in 340ms var(--modal-spring-smooth) backwards !important;
-  }
-}
-
-.modal-motion-surface[data-state="closed"] { 
-  animation: modal-dialog-out 210ms cubic-bezier(0.4, 0, 1, 1) both; 
-  pointer-events: none; 
-}
-
-/* Header avec bordure discrète, entablement architectural et liseré hellénique */
-.modal-motion-surface .modal-pro-header {
+.modal-pro-header {
   position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 16px 22px;
   border-bottom: 1px solid var(--modal-border-artistic, hsl(var(--border)));
   background: var(--modal-header-bg, hsl(var(--card)));
-  gap: 4px;
+  text-align: start;
 }
-/* Liseré architectural classique (rappel de l'architrave et des frises grecques) */
-.modal-motion-surface .modal-pro-header::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  inset-inline: 0;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    var(--modal-frieze-color) 20%, 
-    color-mix(in srgb, hsl(var(--primary)) 35%, var(--modal-frieze-color)) 50%, 
-    var(--modal-frieze-color) 80%, 
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 5;
+.modal-header--closable { padding-inline-end: 64px; }
+.modal-motion-surface .modal-header [data-ui-title] {
+  font-family: var(--font-sans); font-size: 1rem; font-weight: 500;
+  line-height: 1.45; letter-spacing: normal; min-width: 0; overflow-wrap: anywhere;
 }
-.modal-motion-surface .modal-pro-header [data-ui-title] {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.4;
-  text-wrap: balance;
-}
-.modal-motion-surface .modal-pro-header [data-ui-title] :is(div, span) { min-width: 0; }
-.modal-motion-surface [data-description] { max-width: 48rem; line-height: 1.55; text-wrap: pretty; }
-.modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select) { min-height: 44px; }
-.modal-motion-surface :is(label:has(input[type="radio"]), label:has([role="radio"]), label:has([role="checkbox"])) { min-height: 44px; }
-.modal-motion-surface :is([role="radio"], input[type="radio"]) { accent-color: hsl(var(--primary)); }
-.modal-motion-surface .modal-pro-footer button { white-space: normal; height: auto; min-height: 44px; font-size: 14px; line-height: 1.4; }
-.modal-motion-surface .modal-pro-footer > * { min-width: 0; }
-.modal-motion-surface button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
-.modal-motion-surface summary { min-height: 44px; align-content: center; cursor: pointer; }
-
-/* Continuous separators and flexible actions, including long translated labels. */
-.modal-motion-surface :is(.modal-pro-header, .modal-pro-footer) {
-  align-self: stretch;
-  min-width: 0;
-  margin-inline: 0;
-}
-.modal-motion-surface .modal-pro-footer { flex-wrap: wrap; }
-.modal-motion-surface .modal-body { overflow-wrap: anywhere; }
-
-/* Body avec scroll optimisé */
-.modal-motion-surface .modal-body { 
-  scroll-padding-block: 24px; 
-  touch-action: pan-y pinch-zoom; 
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Footer avec ombre remontante subtile et teinte harmonisée */
-.modal-motion-surface .modal-pro-footer {
-  background: var(--modal-footer-bg, hsl(var(--card)));
+.modal-header [data-ui-title] :is(h1, h2, h3) { font-size: inherit; }
+.modal-header [data-ui-title] :is(div, span) { min-width: 0; }
+.modal-motion-surface .modal-header [data-description] { font-size: .8125rem; line-height: 1.5; color: hsl(var(--muted-foreground)); text-wrap: pretty; }
+.modal-header [data-ui-title] svg { flex-shrink: 0; width: 18px; height: 18px; }
+.modal-motion-surface .modal-body { padding: 16px 22px; overflow-wrap: anywhere; scroll-padding-block: 20px; touch-action: pan-y pinch-zoom; }
+.modal-motion-surface .modal-body--untitled { padding-top: 52px; }
+.modal-motion-surface .modal-body:last-child { padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)); }
+.modal-pro-footer {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  flex-shrink: 0; gap: 10px; padding: 12px 22px max(12px, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--modal-border-artistic, hsl(var(--border)));
-  box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .15); 
+  background: var(--modal-footer-bg, hsl(var(--card)));
 }
-
-/* Bouton X en zone circulaire élégante - Style Antique/Classique & Liquid Glass */
+.modal-pro-footer > * { min-width: 0; }
+.modal-motion-surface .modal-pro-footer button { font-size: .875rem; line-height: 1.4; min-height: 44px; height: auto; white-space: normal; }
+.modal-pro-footer button svg { width: 16px; height: 16px; flex-shrink: 0; }
+.modal-motion-surface :is(button:not([role="checkbox"]), summary) { min-width: 44px; min-height: 44px; }
+.modal-motion-surface summary { align-content: center; cursor: pointer; }
+.modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select, label:has([role="radio"]), label:has([role="checkbox"]), label:has(input[type="radio"])) { min-height: 44px; }
+.modal-motion-surface :is([role="radio"], input[type="radio"]) { accent-color: hsl(var(--primary)); }
 .modal-motion-surface .dialog-close {
-  width: var(--modal-close-size, 42px);
-  height: var(--modal-close-size, 42px);
-  border-radius: 9999px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--modal-close-border);
-  background: var(--modal-close-bg);
-  color: hsl(var(--muted-foreground));
-  box-shadow: 
-    0 1px 3px 0 rgb(28 26 22 / 0.06), 
-    inset 0 1px 0.5px 0 rgb(255 255 255 / 0.85);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
-  transition: 
-    transform 280ms var(--modal-spring-smooth),
-    background-color 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease,
-    box-shadow 260ms var(--modal-spring-smooth);
+  top: 10px; inset-inline-end: 12px; width: 44px; height: 44px; border-radius: 14px;
+  color: hsl(var(--muted-foreground)); border: 1px solid transparent; background: transparent;
+  transition: transform 180ms cubic-bezier(.22, 1, .36, 1), background-color 180ms ease, color 180ms ease;
 }
-.modal-motion-surface .dialog-close::before {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 9999px;
+.modal-motion-surface .dialog-close:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.modal-motion-surface .dialog-close:disabled { opacity: .5; pointer-events: none; }
+@media (hover: hover) {
+  .modal-motion-surface .dialog-close:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
 }
-.modal-motion-surface .dialog-close:hover {
-  background: var(--modal-close-hover-bg);
-  border-color: var(--modal-close-hover-border);
-  color: hsl(var(--foreground));
-  transform: scale(1.06);
-  box-shadow: 
-    0 3px 10px -2px color-mix(in srgb, hsl(var(--primary)) 22%, transparent),
-    inset 0 1px 0.5px 0 rgb(255 255 255 / 0.95);
-}
-.modal-motion-surface .dialog-close:active {
-  transform: scale(0.92);
-  background: color-mix(in srgb, hsl(var(--primary)) 14%, hsl(var(--card)));
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
-  transition-duration: 120ms;
-}
-.dark .modal-motion-surface .dialog-close {
-  border-color: var(--modal-close-border);
-  background: var(--modal-close-bg);
-  color: hsl(var(--muted-foreground));
-  box-shadow: 
-    0 2px 6px 0 rgb(0 0 0 / 0.35), 
-    inset 0 1px 0.5px 0 rgb(240 245 255 / 0.12);
-}
-.dark .modal-motion-surface .dialog-close:hover {
-  background: var(--modal-close-hover-bg);
-  border-color: var(--modal-close-hover-border);
-  color: hsl(var(--foreground));
-  transform: scale(1.06);
-  box-shadow: 
-    0 4px 14px -2px color-mix(in srgb, hsl(var(--primary)) 28%, transparent),
-    inset 0 1px 0.5px 0 rgb(240 245 255 / 0.2);
+.modal-motion-surface .dialog-close:active { transform: scale(.94); }
+.modal-motion-surface[data-has-handle="true"] .dialog-close { top: 27px; }
+
+/* Semantic attention remains visible with subtle halo pulse. */
+.glow-pulse-primary { outline: 2px solid hsl(var(--primary) / .3); outline-offset: 1px; animation: modal-glow-pulse 2.4s ease-in-out infinite; }
+.glow-pulse-danger { outline: 2px solid hsl(var(--destructive) / .35); outline-offset: 1px; animation: modal-glow-pulse 2.4s ease-in-out infinite; }
+.glow-pulse-success { outline: 2px solid hsl(142 45% 42% / .35); outline-offset: 1px; animation: modal-glow-pulse 2.4s ease-in-out infinite; }
+.glow-pulse-warning { outline: 2px solid hsl(38 75% 50% / .4); outline-offset: 1px; animation: modal-glow-pulse 2.4s ease-in-out infinite; }
+
+@keyframes modal-glow-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.015); }
 }
 
-/* Drag handle avec touch feedback amélioré */
-.modal-motion-surface .modal-drag-handle { 
-  touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.modal-drag-handle:focus-visible { 
-  outline: 2px solid hsl(var(--primary)); 
-  outline-offset: -6px; 
-  border-radius: 9999px; 
-}
-
-/* Drag indicator avec profil cannelé dorique & physique harmonique */
-.modal-drag-indicator { 
-  display: block; 
-  width: 44px; 
-  height: 4.5px; 
-  border-radius: 9999px; 
-  background: color-mix(in srgb, hsl(var(--muted-foreground) / .32) 85%, hsl(var(--primary) / .15)); 
-  box-shadow: 
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.45),
-    0 1px 2px rgba(28, 26, 22, 0.08);
-  transition: 
-    transform 320ms var(--modal-spring-golden), 
-    background-color 280ms ease,
-    width 320ms var(--modal-spring-golden),
-    box-shadow 280ms ease; 
-}
-.modal-drag-handle:active .modal-drag-indicator,
-.modal-motion-surface[data-drag-state="dragging"] .modal-drag-indicator { 
-  width: 52px;
-  transform: scaleY(1.1); 
-  background: color-mix(in srgb, hsl(var(--primary)) 45%, hsl(var(--muted-foreground) / .65)); 
-  box-shadow: 0 0 12px -2px color-mix(in srgb, hsl(var(--primary)) 50%, transparent);
-}
-
-/* Swipe to dismiss */
-.modal-motion-surface[data-swipe-enabled="true"] .modal-header { 
-  touch-action: none; 
-}
-.modal-motion-surface[data-drag-state="dragging"][data-state="open"] { 
-  animation: none; 
-  transition: none; 
-  user-select: none; 
-  will-change: transform; 
-}
-.modal-motion-surface[data-drag-state="settling"][data-state="open"] { 
-  animation: none; 
-  transition: transform 330ms var(--modal-spring-smooth), 
-              max-height 350ms var(--modal-spring-smooth); 
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Responsive Mobile & Tablette (Apple iOS / iPadOS SheetModal Architecture)
-   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1023px), ((pointer: coarse) and (max-width: 1180px)) {
-  .modal-motion-surface[data-mobile-presentation="sheet"] {
-    width: auto;
-    margin-inline: auto;
-    inset-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
-    top: auto;
-    bottom: var(--modal-keyboard-inset);
-    max-height: min(
-      calc(var(--modal-visible-height) * var(--sheet-detent, .94)), 
-      calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)))
-    );
-    /* Arrondis supérieurs iOS prononcés (28px) */
-    border-radius: 28px 28px 0 0;
-    padding: 0;
-  }
-
-  /* Sur tablette (640px - 1023px), la feuille iOS remonte du bas avec une largeur élégante centrée */
-  @media (min-width: 640px) {
-    .modal-motion-surface[data-mobile-presentation="sheet"] {
-      width: min(44rem, calc(100vw - 2rem));
-      max-width: min(44rem, calc(100vw - 2rem));
-    }
-  }
-  
-  /* Animations sheet mobile avec spring longues et fluides */
-  .modal-motion-surface[data-mobile-presentation="sheet"][data-state="open"] { 
-    animation-name: modal-sheet-in; 
-    animation-duration: 350ms;
-    animation-timing-function: var(--modal-spring-smooth);
-  }
-  .modal-motion-surface[data-mobile-presentation="sheet"][data-state="closed"] { 
-    animation-name: modal-sheet-out;
-    animation-duration: 250ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
-  }
-  
-  /* Transition fluide entre paliers de hauteur */
-  .modal-motion-surface[data-sheet-resizable="true"] { 
-    transition: max-height 350ms var(--modal-spring-smooth); 
-  }
-  
-  /* Dialog presentation (confirmations courtes) */
-  .modal-motion-surface[data-mobile-presentation="dialog"] {
-    top: calc(var(--modal-visible-top) + max(16px, env(safe-area-inset-top, 0px)));
-    bottom: calc(var(--modal-keyboard-inset) + max(16px, env(safe-area-inset-bottom, 0px)));
-    margin-block: auto;
-    max-height: calc(var(--modal-visible-height) - max(32px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
-    border-radius: 22px;
-  }
-  
-  /* Modal des paramètres (arrondis complets) */
-  .modal-motion-surface.settings-modal-sheet { 
-    bottom: calc(var(--modal-keyboard-inset) + 10px); 
-    border-radius: 24px;
-  }
-  
-  /* Header mobile/tablette optimisé avec hauteur assurant un dégagement franc */
-  .modal-motion-surface .modal-pro-header { 
-    min-height: 3.75rem;
-    padding: 16px 18px 14px; 
-    padding-inline-end: 60px; 
-    gap: 4px; 
-  }
-  .modal-motion-surface[data-has-handle="true"] .modal-pro-header { 
-    padding-top: 44px;
-  }
-  
-  /* Bouton X mobile circulaire avec zone tactile garantie */
-  .modal-motion-surface .dialog-close { 
-    top: 12px; 
-    inset-inline-end: 14px; 
-    width: var(--modal-close-size, 40px);
-    height: var(--modal-close-size, 40px);
-    border-radius: 9999px !important;
-    background: var(--modal-close-bg);
-  }
-  .modal-motion-surface[data-has-handle="true"] .dialog-close { 
-    top: 12px; 
-  }
-  
-  /* Body avec padding généreux */
-  .modal-motion-surface .modal-body { 
-    padding: 20px 18px;
-  }
-  .modal-motion-surface[data-has-handle="true"] > .modal-body:first-of-type { 
-    padding-top: 52px; 
-  }
-  
-  /* Footer avec boutons tactiles */
-  .modal-motion-surface .modal-pro-footer { 
-    padding: 14px 18px max(14px, env(safe-area-inset-bottom, 0px));
-    gap: 10px;
-  }
-  .modal-motion-surface .modal-pro-footer :is(button, [role="button"]) { 
-    min-height: 48px;
-    border-radius: 12px;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-  
-  /* Anti-zoom Safari sur focus input */
-  .modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { 
-    font-size: 16px; 
-  }
-  
-  /* Adaptation clavier virtuel */
-  html[data-keyboard="open"] .modal-motion-surface { 
-    max-height: calc(var(--modal-visible-height) - 16px); 
-    transition: none; 
-  }
-  html[data-keyboard="open"] .modal-motion-surface .modal-pro-footer { 
-    padding-block: 12px; 
-  }
+  .modal-pro-header { min-height: 58px; padding: 12px 16px; }
+  .modal-header--closable { padding-inline-end: 62px; }
+  .modal-motion-surface .modal-body { padding: 14px 16px; }
+  .modal-motion-surface .modal-body--untitled { padding-top: 52px; }
+  .modal-pro-footer { padding-inline: 16px; gap: 8px; }
+  .modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { font-size: 16px; }
 }
-
-/* Short landscape screens keep both the content and the action row reachable. */
-@media (max-height: 500px) and (orientation: landscape) {
-  .modal-motion-surface { max-height: calc(var(--modal-visible-height) - 16px); }
-  .modal-motion-surface .modal-pro-header { padding-block: 12px; }
-  .modal-motion-surface[data-has-handle="true"] .modal-pro-header { padding-top: 40px; }
-  .modal-motion-surface .modal-pro-footer { padding-block: 10px; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Keyframes avec Spring Physics
-   ═══════════════════════════════════════════════════════════════════════════ */
-@keyframes modal-scrim-in { 
-  from { opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
-  to { opacity: 1; -webkit-backdrop-filter: blur(var(--modal-scrim-blur)); backdrop-filter: blur(var(--modal-scrim-blur)); }
-}
-@keyframes modal-scrim-out { 
-  from { opacity: 1; -webkit-backdrop-filter: blur(var(--modal-scrim-blur)); backdrop-filter: blur(var(--modal-scrim-blur)); }
-  to { opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
-}
-
-/* Desktop dialog : rebond harmonique soigné et ampleur progressive */
-@keyframes modal-dialog-in { 
-  0% { 
-    opacity: 0; 
-    transform: translate3d(0, 20px, 0) scale(0.965); 
-  }
-  100% { 
-    opacity: 1; 
-    transform: translate3d(0, 0, 0) scale(1); 
-  } 
-}
-@keyframes modal-dialog-out { 
-  0% { 
-    opacity: 1; 
-    transform: translate3d(0, 0, 0) scale(1); 
-  } 
-  100% { 
-    opacity: 0; 
-    transform: translate3d(0, 12px, 0) scale(0.985); 
-  } 
-}
-
-/* Mobile sheet : glissement depuis le bas avec course longue et décélération douce */
-@keyframes modal-sheet-in { 
-  0% { 
-    transform: translate3d(0, calc(100% + 24px), 0); 
-  } 
-  100% { 
-    transform: translate3d(0, 0, 0); 
-  } 
-}
-@keyframes modal-sheet-out { 
-  0% { 
-    transform: translate3d(0, var(--sheet-release-y, 0px), 0); 
-  } 
-  100% { 
-    transform: translate3d(0, calc(100% + 24px), 0); 
-  } 
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Accessibilité : Reduced Motion
-   ═══════════════════════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  .modal-motion-surface[data-state], 
-  .modal-motion-overlay[data-state], 
-  .modal-motion-surface[data-drag-state][data-state="open"] { 
-    animation: none; 
-    transition: none; 
-  }
-  .modal-motion-surface .modal-drag-indicator { 
-    transition: none; 
-  }
-  .modal-motion-surface { 
-    scroll-behavior: auto; 
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Réglages : cadre fixe (même taille sur tous les onglets), dès 640 px.
-   Le corps ne défile plus : c'est `.settings-scroll` (index.css) qui défile.
-   ═══════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 640px) {
-  /* Tablette : la fenêtre suit son contenu (hauteur auto) et ne le dépasse jamais :
-     plus de vide sous les cartes, et plus de boîte figée à compenser à la poignée. */
-  .modal-motion-surface.settings-modal-frame {
-    width: min(50rem, calc(100vw - 3rem));
-    max-width: none;
-    height: fit-content;
-    min-height: 19rem;
-    max-height: min(38rem, calc(var(--modal-visible-height) - 3rem));
-    border-radius: 20px;
-  }
-  .settings-modal-frame .modal-body.settings-modal-body {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    overflow: hidden;
-  }
-  .settings-modal-frame .modal-pro-header {
-    min-height: 3.5rem;
-    padding-block: 0.5rem;
-    border-bottom-color: transparent;
-  }
-  @media (min-width: 1024px) {
-    /* Grand écran : même souplesse, avec un plancher pour que le menu latéral respire. */
-    .modal-motion-surface.settings-modal-frame {
-      width: min(58rem, calc(100vw - 3rem));
-      height: fit-content;
-      min-height: 26rem;
-      max-height: min(44rem, calc(var(--modal-visible-height) - 3rem));
-    }
-  }
+  .modal-sheet-viewport .modal-motion-surface[data-sheet-library] { max-width: min(44rem, calc(100vw - 2rem)); }
+  .modal-motion-surface.settings-modal-frame { width: min(58rem, calc(100vw - 3rem)); max-width: none; }
+  .settings-modal-frame .modal-body.settings-modal-body { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
 }
-
-/* Typographic hierarchy for the warm paper interface. */
-.modal-motion-surface .modal-header [data-ui-title] { font-family: var(--font-sans); font-size: 17px; font-weight: 500; letter-spacing: normal; }
-.modal-motion-surface .modal-header [data-description] { font-family: var(--font-sans); font-weight: 400; }
+@media (max-height: 500px) {
+  .modal-handle-region { height: 16px; }
+  .modal-pro-header { min-height: 52px; padding-block: 8px; }
+  .modal-pro-footer { padding-block: 8px; }
+  .modal-motion-surface[data-has-handle="true"] .dialog-close { top: 20px; }
+}
+@keyframes modal-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-scrim-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modal-dialog-in { from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.98); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes modal-dialog-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, 8px, 0) scale(.99); } }
+@media (prefers-reduced-motion: reduce) {
+  .modal-motion-surface[data-state], .modal-motion-overlay[data-state], .modal-motion-surface .dialog-close, .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success, .glow-pulse-warning { animation: none; transition: none; }
+}
+@media (forced-colors: active) {
+  .modal-motion-overlay { backdrop-filter: none; }
+  .modal-motion-surface, .modal-pro-header, .modal-pro-footer { background-image: none; box-shadow: none; }
+}

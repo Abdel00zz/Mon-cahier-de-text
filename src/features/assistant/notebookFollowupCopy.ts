@@ -6,20 +6,21 @@ import { companionClassName } from './companionClassName';
 /** A dated trace is evidence of recording, never proof of a teacher's absence or lack of work. */
 export function notebookFollowupMessage(guidance: Extract<ClassGuidance, { step: 'notebook-followup' }>, locale: AppLocale): CompanionMessage {
   const name = companionClassName(guidance.className, locale);
+  const days = new Intl.NumberFormat(locale).format(guidance.elapsedDays);
   const date = guidance.lastSessionDate && new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
     .format(new Date(`${guidance.lastSessionDate}T12:00:00Z`));
   const copy = locale === 'ar' ? {
     title: 'مراجعة تسجيل الحصص', action: 'مراجعة الحصص', context: 'متابعة الدفتر',
-    detail: date ? `فيما يخصّ حصص قسم ${name}، آخر حصة مؤرخة هي ${date} رغم مرور أيام تدريس مبرمجة؛ هل نراجع ما أُنجز لإسناد تواريخه؟`
-      : `فيما يخصّ دفتر قسم ${name}، لم تُسجّل حصة مؤرخة بعد رغم مرور أيام تدريس مبرمجة؛ هل نحدّد المحتوى المنجز لإسناد تواريخه؟`,
+    detail: date ? `آخر تاريخ مسجّل في دفتر قسم ${name} هو ${date}. حدّد ما أُنجز بعده لإسناد تاريخه.`
+      : `لا توجد حصة مؤرخة بعد في دفتر قسم ${name}. حدّد المحتوى المنجز لإسناد تاريخه.`,
   } : locale === 'en' ? {
     title: 'Review recorded sessions', action: 'Review sessions', context: 'Notebook follow-up',
-    detail: date ? `The latest dated session for ${name} is ${date}, with scheduled teaching days since then. Shall we review what was covered and assign its dates?`
-      : `No session has been dated for ${name} yet, although scheduled teaching days have passed. Shall we select the work covered and assign its dates?`,
+    detail: date ? `The last date in the notebook for ${name} is ${date}. Select any work covered since then to date it.`
+      : `No session is dated for ${name} after ${days} scheduled teaching days. Select the work covered to date it.`,
   } : {
     title: 'Reprendre le fil des séances', action: 'Vérifier les séances', context: 'Suivi du cahier',
-    detail: date ? `Pour ${name}, la dernière séance datée remonte au ${date}, malgré des jours de cours prévus depuis. On vérifie le travail réalisé pour lui attribuer ses dates ?`
-      : `Aucune séance n’est encore datée pour ${name}, malgré des jours de cours prévus. On sélectionne le travail réalisé pour lui attribuer ses dates ?`,
+    detail: date ? `Dernière date dans le cahier de ${name} : le ${date}. Sélectionnez le contenu abordé depuis pour le dater.`
+      : `Aucune séance datée pour ${name} après ${days} jours de cours prévus. Sélectionnez le contenu abordé pour le dater.`,
   };
   return { id: `followup:${guidance.classId}:${guidance.reason}`, ...copy, detailEmphasis: name };
 }

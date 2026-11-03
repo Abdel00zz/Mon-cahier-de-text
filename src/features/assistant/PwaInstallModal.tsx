@@ -97,7 +97,8 @@ export function PwaInstallModal({
           onClick={onClose}
         >
           <div
-            className="max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl transition-all"
+            data-codex-surface="inset"
+            className="relative max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl"
             onClick={event => event.stopPropagation()}
           >
             <div className="flex items-center gap-3.5">

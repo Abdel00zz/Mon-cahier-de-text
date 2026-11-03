@@ -54,7 +54,6 @@ export const GuideModal = ({ isOpen, onClose, initialReference }: GuideModalProp
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="4xl"
       dir={isAr ? 'rtl' : 'ltr'}
       elevation="high"
-      mobileDetents={[0.94]} initialMobileDetent={0.94}
       className="learning-guide h-[90dvh] sm:rounded-[24px]"
       headerClassName="learning-guide-header" bodyClassName="learning-guide-body"
       title={

@@ -26,11 +26,12 @@ import {
   triggerCompanionNotificationActivation,
 } from '@/platform/notificationActivation';
 import { WhatsAppContact } from '@/features/messages/WhatsAppContact';
+import { hasSupportWhatsApp } from '@/constants/support';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { readNotebookActivity } from '@/infrastructure/storage/companionActivity';
 import { useCompanionGuide } from './useCompanionGuide';
 import { getBundledCalendar, loadHolidayCalendar } from '@/domain/calendar/calendar';
-import { createCompanionEvaluation } from '@/domain/assistant/companionBrain';
+import { createCompanionEvaluation, observeCompanionNotebooks, type CompanionAction } from '@/domain/assistant/companionBrain';
 import { companionLabels } from './companionCopy';
 import { companionMessage } from './companionPresentation';
 
@@ -46,7 +47,7 @@ interface ClassAssistantProps {
   scheduleStatusByClassId?: ReadonlyMap<string, SessionScheduleStatus>;
   readLessons?: (classId: string) => LessonsData;
   onCreateClass: () => void;
-  onOpenSchedule?: () => void;
+  onOpenSchedule?: (classId: string) => void;
   onOpenNotifications?: () => void;
   onUpdateConfig?: (patch: Partial<AppConfig>) => void;
   onOpenClass: (classInfo: ClassInfo) => void;
@@ -106,7 +107,6 @@ export function ClassAssistant({
   const [calendar, setCalendar] = useState(getBundledCalendar);
   const [contact, setContact] = useState<{ owner?: string; target?: Pick<ClassInfo, 'id' | 'name'>; context?: string; initialReplyTo?: string }>({});
   const revision = useCompanionRevision();
-  useEffect(() => { setSelectedTaskId(undefined); }, [revision, classes, config, today, calendar]);
   const progress = useSyncProgress();
   const { syncStatus, syncNow } = useSync();
   const [recovering, setRecovering] = useState(false);
@@ -128,21 +128,23 @@ export function ClassAssistant({
     return () => { current = false; };
   }, [today, revision]);
   const online = isNetworkOnline();
-  const hasLiveSession = Boolean(activeSessionClassIds && activeSessionClassIds.length > 0);
+  const loading = Boolean(messaging?.enabled) && (progress.state === 'pulling' || progress.state === 'notebooks');
+  const observation = useMemo(() => observeCompanionNotebooks({
+    classes, config, calendar, today, now: Date.now(), preferredClassId, activeSessionClassIds, readLessons, loading,
+  }), [classes, config, calendar, today, preferredClassId, activeSessionClassIds, readLessons, loading, revision, messaging?.owner]);
   const evaluate = useMemo(() => createCompanionEvaluation({
     classes, config, calendar, today, now: Date.now(), preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
-    readLessons, readActivity: readNotebookActivity, offersEnabled: false,
+    readLessons, readActivity: readNotebookActivity, offersEnabled: hasSupportWhatsApp(),
     messageHistory: messaging?.history, contactedClassIds: contactedClasses, ignoredClassIds: ignoredClasses,
-    pwaInstallRequired: hasLiveSession ? false : pwaState.shouldAskInstall,
-    notificationPrompt: hasLiveSession ? undefined : notificationPrompt,
+    pwaInstallRequired: pwaState.shouldAskInstall, notificationPrompt,
     skippedTaskIds: skippedTasks,
     skippedMessageKeys,
     services: { authenticated: Boolean(messaging?.enabled), online, syncStatus, transfer: progress.state,
       inboxLoaded: messaging?.loaded ?? false, inboxFailed: messaging?.failed ?? false, messages: messaging?.messages ?? [] },
-  }), [classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
+  }, observation), [observation, classes, config, calendar, today, preferredClassId, visibleClassIds, activeSessionClassIds, scheduleStatusByClassId,
     readLessons, messaging?.owner, messaging?.enabled, messaging?.history, messaging?.loaded, messaging?.failed,
-    messaging?.messages, contactedClasses, ignoredClasses, hasLiveSession, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
-    online, syncStatus, progress.state, revision]);
+    messaging?.messages, contactedClasses, ignoredClasses, pwaState.shouldAskInstall, notificationPrompt, skippedTasks, skippedMessageKeys,
+    online, syncStatus, progress.state]);
   const brain = useMemo(() => evaluate(selectedTaskId), [evaluate, selectedTaskId]);
   const { decision, behavior, contentSuggestion } = brain;
   const reply = decision.kind === 'reply' ? decision.reply : undefined;
@@ -163,9 +165,6 @@ export function ClassAssistant({
     }
   };
   const openContact = () => {
-    if (contentSuggestion) {
-      setContactedClasses(current => new Set([...current, contentSuggestion.target.id]));
-    }
     setContact({ owner: messaging?.owner, target: service ? undefined : brain.target, initialReplyTo: reply?.id,
       context: !reply ? message.detail : undefined });
     setContactStarted(true);
@@ -184,9 +183,13 @@ export function ClassAssistant({
     }
   };
   const isContentOffer = decision.kind === 'offer' && Boolean(contentSuggestion);
+  const proposal = contentSuggestion ?? brain.emptyContentSuggestion;
+  const whatsapp = proposal ? <WhatsAppContact key={proposal.target.id} locale={locale} target={proposal.target}
+    intent={proposal.evidence.empty ? 'create' : proposal.origin === 'predefined' ? 'adapt' : 'enrich'}
+    label={locale === 'ar' ? 'طلب محتوى عبر واتساب' : locale === 'en' ? 'Request material on WhatsApp' : 'Demander un cours sur WhatsApp'}
+    onOpened={() => setContactedClasses(current => new Set([...current, proposal.target.id]))} /> : undefined;
   const hasMoreTasksAfterSkip = decision.kind === 'guidance' && Boolean(brain.selectedTask) && brain.tasks.length > 1;
-  const runAction = () => {
-    const action = brain.action;
+  const runAction = (action: CompanionAction) => {
     if (action.type === 'install-app') { void triggerPwaInstall(); }
     else if (action.type === 'enable-notifications') {
       if (action.mode === 'settings') {
@@ -210,7 +213,7 @@ export function ClassAssistant({
     else if (action.type === 'retry-sync' || action.type === 'retry-inbox') { void retry(); }
     else if (action.type === 'read-reply') openContact();
     else if (action.type === 'create-class') onCreateClass();
-    else if (action.type === 'schedule') onOpenSchedule?.();
+    else if (action.type === 'schedule') onOpenSchedule?.(action.classId);
     else if (action.type === 'open-class') {
       const target = classes.find(item => item.id === action.classId);
       if (target) onOpenClass(target);
@@ -231,27 +234,29 @@ export function ClassAssistant({
   return (
     <>
     <AssistantPopover
+      key={messaging?.owner ?? 'local'}
       locale={locale}
+      workspace={{ classes, tasks: brain.tasks, navigate: runAction }}
       message={message}
-      tips={brain.showTips ? { day: today, initiallyOpen: true } : undefined}
+      tips={brain.showTips ? { day: today, initiallyOpen: false } : undefined}
       helpReference={brain.helpReference}
       onOpenGuide={openGuide}
       contactLabel={brain.canContactTeam ? copy.contact : undefined}
-      primaryAction={isContentOffer && contentSuggestion ? <WhatsAppContact locale={locale} target={contentSuggestion.target}
-        intent={contentSuggestion.evidence.empty ? 'create' : contentSuggestion.origin === 'predefined' ? 'adapt' : 'enrich'}
-        label={locale === 'ar' ? 'طلب دروس مكيفة أو محتوى مخصص' : locale === 'en' ? 'Request adapted or custom lessons' : 'Demander un cours adapté ou sur mesure'}
-        onOpened={() => setContactedClasses(current => new Set([...current, contentSuggestion.target.id]))} /> : undefined}
+      primaryAction={isContentOffer ? whatsapp : undefined}
+      alternateAction={brain.emptyContentSuggestion ? whatsapp : undefined}
       secondaryActionLabel={
         decision.kind === 'enable-notifications' && decision.mode === 'activate' && onOpenNotifications
           ? labels['enable-notifications'].settingsLink
-          : brain.guidance.step === 'standby'
+          : isContentOffer ? labels.ready.action
+          : decision.kind === 'guidance' && brain.guidance.step === 'standby'
           ? (locale === 'ar' ? 'استعادة التنبيهات' : locale === 'en' ? 'Restore reminders' : 'Réactiver les rappels')
           : undefined
       }
       onSecondaryAction={
         decision.kind === 'enable-notifications' && decision.mode === 'activate'
           ? onOpenNotifications
-          : brain.guidance.step === 'standby'
+          : isContentOffer && brain.target ? () => onOpenClass(brain.target!)
+          : decision.kind === 'guidance' && brain.guidance.step === 'standby'
           ? () => {
               setSkippedTasks(new Set());
               setSkippedMessageKeys(new Set());
@@ -260,8 +265,8 @@ export function ClassAssistant({
             }
           : undefined
       }
-      dismissLabel={brain.canSkip && brain.guidance.step !== 'standby' ? labels.skip : undefined}
-      onDismiss={brain.canSkip && brain.guidance.step !== 'standby' ? handleSkipCurrentMessage : undefined}
+      dismissLabel={brain.canSkip ? labels.skip : undefined}
+      onDismiss={brain.canSkip ? handleSkipCurrentMessage : undefined}
       keepOpenOnDismiss={hasMoreTasksAfterSkip}
       nextTaskLabel={brain.nextTaskId ? `${locale === 'ar' ? 'النقطة التالية' : locale === 'en' ? 'Next point' : 'Point suivant'} · ${new Intl.NumberFormat(locale).format(brain.taskPosition)}/${new Intl.NumberFormat(locale).format(brain.tasks.length)}` : undefined}
       onNextTask={brain.nextTaskId ? () => setSelectedTaskId(brain.nextTaskId) : undefined}
@@ -280,7 +285,7 @@ export function ClassAssistant({
       }
       keepOpenOnAction={serviceError}
       onAction={brain.action.type === 'none' || brain.action.type === 'request-content'
-        || (brain.action.type === 'schedule' && !onOpenSchedule) ? undefined : runAction}
+        || (brain.action.type === 'schedule' && !onOpenSchedule) ? undefined : () => runAction(brain.action)}
     />
     <PwaInstallModal
       open={pwaState.guideOpen}

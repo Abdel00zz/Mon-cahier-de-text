@@ -10,10 +10,13 @@ import type { GuideReference } from '../../constants/guide/model';
 import { companionHelpCopy } from './companionHelpCopy';
 import { CompanionText } from './CompanionText';
 import { AssistantTips } from './AssistantTips';
+import { BookOpen, ChevronRight, Search } from '@/components/ui/icons';
+import { AssistantExplorer, explorerLabels, type AssistantWorkspace } from './AssistantExplorer';
 import './companion.css';
 
 interface AssistantPopoverProps {
   locale: AppLocale;
+  workspace?: AssistantWorkspace;
   message: CompanionMessage;
   attentionKey?: string;
   mood?: BloubExpression;
@@ -28,6 +31,7 @@ interface AssistantPopoverProps {
   contactLabel?: string;
   onContact?: () => void;
   primaryAction?: ReactNode;
+  alternateAction?: ReactNode;
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
   dismissLabel?: string;
@@ -65,7 +69,7 @@ function useAssistantPopover() {
 }
 
 export function AssistantPopover({
-  locale,
+  locale, workspace,
   message,
   attentionKey,
   mood = 'attentive',
@@ -74,7 +78,7 @@ export function AssistantPopover({
   antennaFlash,
   headRoundness,
   autoSleepMs,
-  onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction,
+  onAction, actionBusy = false, keepOpenOnAction = false, contactLabel, onContact, primaryAction, alternateAction,
   secondaryActionLabel, onSecondaryAction,
   dismissLabel, onDismiss, keepOpenOnDismiss = false, helpReference, onOpenGuide, tips, nextTaskLabel, onNextTask,
 }: AssistantPopoverProps) {
@@ -87,7 +91,10 @@ export function AssistantPopover({
   const helpRequest = useRef<AbortController | null>(null);
   const id = useId();
   const labels = companionLabels(locale);
-  const isInstallAppMessage = message.id === 'install-app';
+  const [exploring, setExploring] = useState(false);
+  const explorerTrigger = useRef<HTMLButtonElement>(null);
+  const explore = explorerLabels(locale);
+  useEffect(() => { if (!open) setExploring(false); }, [open]);
   const highlights = [...(message.detailHighlights ?? []), ...(message.detailEmphasis ? [message.detailEmphasis] : [])];
 
   useEffect(() => {
@@ -109,6 +116,16 @@ export function AssistantPopover({
   const activeExpression: BloubExpression = welcoming && !open && baseExpression === 'success' ? 'excited'
     : hovered && baseExpression === 'success' ? 'love' : baseExpression;
 
+  const openReference = (reference: GuideReference) => {
+    if (!onOpenGuide || helpRequest.current) return;
+    const request = new AbortController();
+    helpRequest.current = request;
+    setHelpBusy(true); setHelpError(false);
+    void onOpenGuide(reference, request.signal).then(opened => {
+      if (opened && !request.signal.aborted) close();
+    }).catch(() => { if (!request.signal.aborted) setHelpError(true); })
+      .finally(() => { if (!request.signal.aborted) { helpRequest.current = null; setHelpBusy(false); } });
+  };
   const badgeVariant = problemCount === 0 || message.id === 'standby' ? 'serene' : problemCount <= 2 ? 'minor' : 'alert';
 
   return (
@@ -159,77 +176,51 @@ export function AssistantPopover({
         role={open ? 'dialog' : undefined}
         aria-modal={open ? false : undefined}
         aria-labelledby={open ? `${id}-title` : undefined}
-        aria-describedby={open ? `${id}-detail` : undefined}
+        aria-describedby={open && !exploring ? `${id}-detail` : undefined}
         className="assistant-panel"
+        data-codex-surface="inset"
         data-state={robotAction ?? mood}
       >
         {open && (
           <div className="assistant-panel__body">
-            <h2 id={`${id}-title`} className="sr-only">{message.title}</h2>
-            <p id={`${id}-detail`} className="assistant-panel__detail">
-              <CompanionText text={message.detail} highlights={highlights} />
-            </p>
-            {primaryAction ?? (onAction && message.action && (
-              <button
-                type="button"
-                className="assistant-panel__action"
-                disabled={actionBusy}
-                aria-busy={actionBusy || undefined}
-                onClick={() => {
-                  if (!keepOpenOnAction) close();
-                  onAction();
-                }}
-              >
-                <span>{message.action}</span>
-              </button>
-            ))}
-            {!isInstallAppMessage && onDismiss && dismissLabel && (
-              <button
-                type="button"
-                className="assistant-panel__dismiss"
-                onClick={() => {
-                  if (keepOpenOnDismiss) onDismiss();
-                  else handleDismissAndClose(true);
-                }}
-              >
-                {dismissLabel}
-              </button>
-            )}
-            {onSecondaryAction && secondaryActionLabel && (
-              <button
-                type="button"
-                className="assistant-panel__help"
-                onClick={() => {
-                  close();
-                  onSecondaryAction();
-                }}
-              >
-                {secondaryActionLabel}
-              </button>
-            )}
-            {onNextTask && nextTaskLabel && <button type="button" className="assistant-panel__help" onClick={onNextTask}>{nextTaskLabel}</button>}
-            {helpReference && onOpenGuide && (
-              <button
-                type="button"
-                className="assistant-panel__help"
-                disabled={helpBusy}
-                aria-busy={helpBusy || undefined}
-                onClick={() => {
-                  if (helpRequest.current && !helpRequest.current.signal.aborted) return;
-                  const request = new AbortController(); helpRequest.current = request;
-                  setHelpBusy(true); setHelpError(false);
-                  void onOpenGuide(helpReference, request.signal).then(opened => {
-                    if (opened && !request.signal.aborted) close();
-                  }).catch(() => { if (!request.signal.aborted) setHelpError(true); })
-                    .finally(() => { if (!request.signal.aborted) { helpRequest.current = null; setHelpBusy(false); } });
-                }}
-              >
-                {helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
-              </button>
-            )}
-            {helpReference && onOpenGuide && helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
-            {tips && <AssistantTips key={`${tips.day}:${locale}`} locale={locale} {...tips} />}
-            {onContact && contactLabel && <button type="button" className="assistant-panel__contact" onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
+            <h2 id={`${id}-title`} className="sr-only">{exploring ? explore.open : message.title}</h2>
+            {!exploring && <>
+              <div className="assistant-panel__message">
+                <p id={`${id}-detail`} className="assistant-panel__detail" aria-live="polite" aria-atomic="true">
+                  <CompanionText text={message.detail} highlights={highlights} />
+                </p>
+              </div>
+              {(primaryAction || alternateAction || (onAction && message.action) || (onSecondaryAction && secondaryActionLabel)) && <div className="assistant-panel__actions">
+                {primaryAction ?? (onAction && message.action && <button type="button" className="assistant-panel__action"
+                  disabled={actionBusy} aria-busy={actionBusy || undefined} onClick={() => { if (!keepOpenOnAction) close(); onAction(); }}>
+                  <span>{message.action}</span>
+                </button>)}
+                {alternateAction}
+                {onSecondaryAction && secondaryActionLabel && <button type="button" className="assistant-panel__help"
+                  onClick={() => { close(); onSecondaryAction(); }}>{secondaryActionLabel}</button>}
+              </div>}
+              {(onNextTask && nextTaskLabel || onDismiss && dismissLabel) && <div className="assistant-panel__navigation">
+                {onNextTask && nextTaskLabel && <button type="button" className="assistant-panel__next" onClick={onNextTask}>
+                  {nextTaskLabel}<ChevronRight size={14} className="assistant-forward" aria-hidden="true" /></button>}
+                {onDismiss && dismissLabel && <button type="button" className="assistant-panel__dismiss"
+                  onClick={() => { if (keepOpenOnDismiss) onDismiss(); else handleDismissAndClose(true); }}>{dismissLabel}</button>}
+              </div>}
+              {tips && <AssistantTips key={`${tips.day}:${locale}`} locale={locale} {...tips} />}
+            </>}
+            {exploring && workspace && <AssistantExplorer workspace={workspace} locale={locale} guideBusy={helpBusy}
+              onGuide={openReference} onNavigate={action => { close(); workspace.navigate(action); }} />}
+            {(workspace || (!exploring && (helpReference && onOpenGuide || onContact && contactLabel))) && <div className="assistant-panel__tools">
+              {workspace && <button ref={explorerTrigger} type="button" className="assistant-panel__tool" aria-expanded={exploring}
+                onClick={() => { setExploring(value => !value); if (exploring) explorerTrigger.current?.focus(); }}>
+                <Search size={15} aria-hidden="true" />{exploring ? explore.back : explore.open}</button>}
+              {!exploring && helpReference && onOpenGuide && <button type="button" className="assistant-panel__tool"
+                disabled={helpBusy} aria-busy={helpBusy || undefined} onClick={() => openReference(helpReference)}>
+                <BookOpen size={15} aria-hidden="true" />{helpBusy ? companionHelpCopy(locale).opening : helpError ? companionHelpCopy(locale).retry : companionHelpCopy(locale).open}
+              </button>}
+              {!exploring && onContact && contactLabel && <button type="button" className="assistant-panel__tool"
+                onClick={() => { close(); onContact(); }}>{contactLabel}</button>}
+            </div>}
+            {helpError && <p role="alert" className="assistant-panel__detail">{companionHelpCopy(locale).error}</p>}
           </div>
         )}
       </div>
