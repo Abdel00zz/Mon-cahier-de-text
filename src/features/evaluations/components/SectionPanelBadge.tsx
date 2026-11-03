@@ -48,28 +48,28 @@ export function resolveSectionPanelVariant(kindType: string, index: number): {
 
 /** Icône du panneau de section : loupe, crayon, maison ou livre (.ci). */
 export const SectionPanelGlyph: React.FC<{ glyph: SectionPanelGlyphKind }> = ({ glyph }) => (
-  <span className="ev-panel-glyph" data-glyph={glyph} aria-hidden="true">
+  <span className="ev-panel-glyph size-[38px] inline-flex items-center justify-center shrink-0" data-glyph={glyph} aria-hidden="true">
     {glyph === 'loupe' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-[18px] max-w-[18px] max-h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="6.5" />
         <path d="m20 20-4.35-4.35" />
       </svg>
     )}
     {glyph === 'crayon' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-[18px] max-w-[18px] max-h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
         <path d="m15 5 4 4" />
       </svg>
     )}
     {glyph === 'maison' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-[18px] max-w-[18px] max-h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 10.5 12 3l9 7.5" />
         <path d="M5 9.5V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.5" />
         <path d="M9.5 21v-6h5v6" />
       </svg>
     )}
     {glyph === 'livre' && (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-[18px] max-w-[18px] max-h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20" />
       </svg>
     )}

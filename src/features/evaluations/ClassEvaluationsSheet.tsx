@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppConfig, ClassInfo, ClassEvaluationEntry, LessonsData } from '@/types';
-import { formatLocalizedClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { Modal } from '@/components/ui/modal';
@@ -44,10 +44,10 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             mobileMaxHeight={0.96}
             swipeToDismiss={true}
             swipeFromBody={true}
-            className="claude-sheet-dialog claude-sheet-dialog--eval"
+            className="claude-sheet-dialog claude-sheet-dialog--eval evaluation-reference"
             headerClassName="border-b-0 px-5 pt-3 pb-2 bg-transparent"
             bodyClassName="px-4 py-2 sm:px-6 sm:py-3"
-            description={<span dir="auto">{className}{showsSubjectLabels && classInfo.subject ? ` · ${classInfo.subject}` : ''}</span>}
+            description={<span dir="auto">{className}{showsSubjectLabels && classInfo.subject ? ` · ${formatLocalizedSubjectDisplayName(classInfo.subject, locale)}` : ''}</span>}
             title={
                 <div className="claude-sheet-header p-0">
                     <div className="flex-1 min-w-0">

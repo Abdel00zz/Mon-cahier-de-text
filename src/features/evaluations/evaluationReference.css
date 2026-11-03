@@ -425,7 +425,8 @@
 }
 
 /* Icône ronde blanche du panneau (.ci) */
-.evaluation-reference .ev-panel-glyph {
+.evaluation-reference .ev-panel-glyph,
+.ev-panel-glyph {
   display: grid;
   place-items: center;
   width: 2.2rem;
@@ -438,13 +439,17 @@
   box-shadow: none;
 }
 
-.dark .evaluation-reference .ev-panel-glyph {
+.dark .evaluation-reference .ev-panel-glyph,
+.dark .ev-panel-glyph {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.evaluation-reference .ev-panel-glyph svg {
+.evaluation-reference .ev-panel-glyph svg,
+.ev-panel-glyph svg {
   width: 1.1rem;
   height: 1.1rem;
+  max-width: 1.1rem;
+  max-height: 1.1rem;
 }
 
 .evaluation-reference .ev-accordion__label {

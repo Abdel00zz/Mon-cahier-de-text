@@ -24,6 +24,7 @@ import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
 import type { ClassIdentityDraft } from '@/types';
 import { useModalHaptics } from '@/hooks/useModalHaptics';
+import { isTeachingSubject, isClassStream, streamLabelForMistake } from '@/domain/classes/subjectPolicy';
 import './createClassModal.css';
 
 interface CreateClassModalProps {
@@ -51,6 +52,7 @@ const COPY: Record<AppLocale, {
   groupHint: string; invalidGroup: string; duplicateGroup: string; decrementGroup: string; incrementGroup: string;
   subject: string; subjectPlaceholder: string; customLevelPlaceholder: string; customSubjectPlaceholder: string;
   createCustom: string; switchToOfficial: string; selectedClass: string; guidedLabel: string;
+  streamAsSubjectWarning: (streamName: string) => string;
   cycleLabels: Record<Cycle, string>;
 }> = {
   fr: {
@@ -61,6 +63,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'Numéro libre proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.', decrementGroup: 'Groupe libre précédent', incrementGroup: 'Groupe libre suivant',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
     createCustom: 'Autre niveau', switchToOfficial: 'Niveaux officiels', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
+    streamAsSubjectWarning: (stream: string) => `« ${stream} » est une filière et non une matière — veuillez choisir la matière enseignée`,
     otherCycle: 'Autre cycle',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
@@ -72,6 +75,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'يُقترح أول رقم متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.', decrementGroup: 'الفوج المتاح السابق', incrementGroup: 'الفوج المتاح التالي',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
     createCustom: 'مستوى مخصص', switchToOfficial: 'المستويات الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    streamAsSubjectWarning: (stream: string) => `« ${stream} » شعبة دراسية وليست مادة — يرجى اختيار المادة التي تدرّسها لهذا القسم`,
     otherCycle: 'سلك آخر',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
@@ -83,6 +87,7 @@ const COPY: Record<AppLocale, {
     groupHint: 'First free number proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.', decrementGroup: 'Previous free group', incrementGroup: 'Next free group',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
     createCustom: 'Custom level', switchToOfficial: 'Official levels', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
+    streamAsSubjectWarning: (stream: string) => `“${stream}” is a study stream, not a subject — please choose the subject taught`,
     otherCycle: 'Another cycle',
     cycleLabels: { college: 'Middle school', lycee: 'High school', prepa: 'Preparatory class' },
   },
@@ -197,9 +202,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const configuredSubjects = useMemo(() => uniqueValues(teacherSubjects), [teacherSubjects]);
   const subjectOptions = useMemo(() => {
     const options = configuredSubjects.length ? [...configuredSubjects] : [...SUBJECTS];
-    if (editingClass?.subject && !options.includes(editingClass.subject)) options.unshift(editingClass.subject);
+    if (editingClass?.subject && isTeachingSubject(editingClass.subject) && !options.includes(editingClass.subject)) {
+      options.unshift(editingClass.subject);
+    }
     return options;
-  }, [configuredSubjects, editingClass]);
+  }, [configuredSubjects, editingClass?.subject]);
   const cyclePolicy = useMemo(() => classCyclePolicy(teacherCycles, existingClassCycle(editingClass)), [editingClass, teacherCycles]);
   const cycleOptions = cyclePolicy.options;
   /*
@@ -211,7 +218,8 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const [showAllCycles, setShowAllCycles] = useState(false);
   const hasCycleChoice = cyclePolicy.showChoice || showAllCycles;
   const step = !hasCycleChoice && currentStep === 'cycle' ? 'level' : currentStep;
-  const showSubjectChoice = configuredSubjects.length !== 1 || Boolean(editingClass && editingClass.subject !== configuredSubjects[0]);
+  const isEditingStreamMistake = Boolean(editingClass?.subject && isClassStream(editingClass.subject));
+  const showSubjectChoice = configuredSubjects.length !== 1 || Boolean(editingClass && (editingClass.subject !== configuredSubjects[0] || isEditingStreamMistake));
   const levelGroups = useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
   const activeLevelGroup = levelGroups.find(item => item.key === levelGroupKey) ?? levelGroups.find(item => item.levels.includes(level));
   const needsBranchChoice = !customMode && cycle !== 'college' && (activeLevelGroup ? activeLevelGroup.levels.length > 1 : levelGroups.some(item => item.levels.length > 1));
@@ -219,11 +227,17 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
   const stepIndex = Math.max(0, steps.indexOf(step));
   const effectiveLevel = customMode ? customLevel.trim() : level;
   const effectiveSubject = customMode ? (customSubject.trim() || subject) : subject;
+  const activeStreamMistake = isEditingStreamMistake
+    ? editingClass?.subject
+    : (customMode && isClassStream(customSubject))
+      ? customSubject
+      : null;
+  const streamWarning = activeStreamMistake ? copy.streamAsSubjectWarning(streamLabelForMistake(activeStreamMistake, locale)) : null;
   const normalizedGroup = normalizeGroupNumber(group);
   const usedGroups = useMemo(() => usedGroupsForLevel(existingClasses, effectiveLevel, editingClass?.id), [existingClasses, effectiveLevel, editingClass?.id]);
   const duplicateGroup = Boolean(normalizedGroup && usedGroups.has(normalizedGroup));
   const groupError = groupTouched && !normalizedGroup ? copy.invalidGroup : duplicateGroup ? copy.duplicateGroup : null;
-  const isFormValid = Boolean(effectiveLevel && effectiveSubject && normalizedGroup && !duplicateGroup && (editingClass || cycleOptions.includes(cycle)));
+  const isFormValid = Boolean(effectiveLevel && effectiveSubject && isTeachingSubject(effectiveSubject) && normalizedGroup && !duplicateGroup && (editingClass || cycleOptions.includes(cycle)));
 
   const adjacentFreeGroup = (direction: -1 | 1): string | null => {
     const start = normalizedGroup ? Number(normalizedGroup) : direction === 1 ? 0 : 100;
@@ -460,6 +474,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
               <SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent>
             </Select>
           )}
+          {streamWarning && (
+            <p role="alert" className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium mt-1.5">
+              {streamWarning}
+            </p>
+          )}
         </div>
       )}
 
@@ -687,6 +706,11 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent>
                           </Select>
+                        )}
+                        {streamWarning && (
+                          <p role="alert" className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium mt-1.5">
+                            {streamWarning}
+                          </p>
                         )}
                       </div>
                     ) : (

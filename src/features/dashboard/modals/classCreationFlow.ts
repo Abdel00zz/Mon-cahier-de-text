@@ -4,6 +4,7 @@ import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, normalizeOff
 import type { ClassLevelGroupKey } from '@/constants';
 import { isSameClassGroup, normalizeGroupNumber } from '@/domain/classes/classGroup';
 import { normalizeTeacherCycles, TEACHING_CYCLES } from '@/domain/classes/teacherCycles';
+import { isTeachingSubject, subjectFromStreamMistake } from '@/domain/classes/subjectPolicy';
 
 export type WizardStep = 'cycle' | 'level' | 'branch' | 'details';
 
@@ -94,14 +95,19 @@ export const initialClassDraft = (
   const level = officialLevelInName(name, cycle);
   const customMatch = name.match(/^(.*?)\s+([0-9٠-٩۰-۹]{1,2})$/);
   const suffix = level ? name.slice(level.length).trim() : customMatch?.[2] ?? '';
+  const resolvedSubject = editing?.subject
+    ? (isTeachingSubject(editing.subject)
+        ? editing.subject
+        : subjectFromStreamMistake(editing.subject) ?? '')
+    : (subjects[0] || SUBJECTS[0]);
   return {
     cycle, level,
     levelGroupKey: (classLevelGroupsForCycle(cycle).find(item => item.levels.includes(level))?.key ?? '') as ClassLevelGroupKey | '',
     group: normalizeGroupNumber(suffix) ?? suffix,
-    subject: editing?.subject || subjects[0] || SUBJECTS[0],
+    subject: resolvedSubject,
     customMode: Boolean(editing && !level),
     customLevel: editing && !level ? customMatch?.[1] ?? name : '',
-    customSubject: editing?.subject ?? '',
+    customSubject: editing?.subject ? (isTeachingSubject(editing.subject) ? editing.subject : '') : '',
     // L'étape « cycle » n'apparaît que si le PROFIL en liste plusieurs ; sinon
     // on ouvre le choix de classe (le cycle reste changeable par « Autre cycle »).
     step: (editing ? 'details' : policy.showChoice ? 'cycle' : 'level') as WizardStep,

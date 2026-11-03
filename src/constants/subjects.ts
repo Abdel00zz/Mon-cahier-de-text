@@ -25,8 +25,6 @@ export const SUBJECTS = [
   'Éducation Artistique',
   'Éducation Musicale',
   'Sciences Agronomiques',
-  'Sciences et Technologies Électriques',
-  'Sciences et Technologies Mécaniques',
   'Droit',
   'Comptabilité et Mathématiques Financières',
 ] as const;
@@ -58,9 +56,14 @@ const SUBJECT_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
   'Sciences et Technologies Mécaniques': 'العلوم والتكنولوجيات الميكانيكية',
   'Droit': 'القانون والتنظيم الإداري',
   'Comptabilité et Mathématiques Financières': 'المحاسبة والرياضيات المالية',
-  // Anciens libellés conservés pour ne pas casser les données existantes
+  // Anciens libellés et filières historiques conservés pour un affichage propre sans régression
   'Sciences Économiques': 'العلوم الاقتصادية',
   'EPS': 'التربية البدنية والرياضية',
+  'Lettres et Sciences Humaines': 'الآداب والعلوم الإنسانية',
+  'LSH': 'الآداب والعلوم الإنسانية',
+  'Sciences Humaines': 'العلوم الإنسانية',
+  'Sciences Expérimentales': 'العلوم التجريبية',
+  'Sciences Mathématiques': 'العلوم الرياضية',
 };
 
 const SUBJECT_DISPLAY_NAMES_EN: Readonly<Record<string, string>> = {
@@ -92,6 +95,11 @@ const SUBJECT_DISPLAY_NAMES_EN: Readonly<Record<string, string>> = {
   'Comptabilité et Mathématiques Financières': 'Accounting & Financial Math',
   'Sciences Économiques': 'Economics',
   'EPS': 'Physical Education',
+  'Lettres et Sciences Humaines': 'Literature and Humanities',
+  'LSH': 'Literature and Humanities',
+  'Sciences Humaines': 'Humanities',
+  'Sciences Expérimentales': 'Experimental Sciences',
+  'Sciences Mathématiques': 'Mathematical Sciences',
 };
 
 export const formatLocalizedSubjectDisplayName = (subject: string, locale: AppLocale): string => {
