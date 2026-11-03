@@ -424,7 +424,7 @@
   transition: background-color 0.15s ease;
 }
 
-/* Icône ronde blanche du panneau (.ci) */
+/* Icône galet blanche du panneau (.ci) inspirée du style sérénité */
 .evaluation-reference .ev-panel-glyph,
 .ev-panel-glyph {
   display: grid;
@@ -432,11 +432,19 @@
   width: 2.2rem;
   height: 2.2rem;
   flex: 0 0 2.2rem;
-  border-radius: 50%;
+  border-radius: 62% 38% 55% 45% / 48% 58% 42% 52%;
   background: #ffffffcc;
   color: var(--panel-secondary);
   border: 0;
   box-shadow: none;
+  transition: border-radius 450ms cubic-bezier(.2, .8, .2, 1), transform 450ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.evaluation-reference .ev-accordion__trigger:hover .ev-panel-glyph,
+.evaluation-reference .ev-accordion__trigger:active .ev-panel-glyph,
+.evaluation-reference .ev-accordion[data-state='open'] .ev-panel-glyph {
+  border-radius: 50%;
+  transform: rotate(90deg);
 }
 
 .dark .evaluation-reference .ev-panel-glyph,

@@ -1,6 +1,9 @@
 .class-quick-sheet.modal-motion-surface {
   background: linear-gradient(155deg, hsl(var(--card)), hsl(var(--background))) !important;
   border: 1px solid hsl(var(--border) / .8);
+  border-radius: 36px 36px 0 0 !important;
+  backdrop-filter: blur(26px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(1.4) !important;
   box-shadow: 0 -12px 38px hsl(var(--foreground) / .1);
 }
 
@@ -31,7 +34,7 @@
   min-height: 54px;
   padding: 8px 14px;
   border: 1px solid hsl(var(--border) / .65);
-  border-radius: 14px;
+  border-radius: 20px;
   background: hsl(var(--card) / .85);
   color: hsl(var(--foreground));
   text-align: start;
@@ -51,7 +54,7 @@
 .class-quick-sheet__action--danger,
 .class-quick-sheet__action--danger .class-quick-sheet__icon { color: hsl(var(--destructive-strong)); }
 .class-quick-sheet__action:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
-.class-quick-sheet__action:active { transform: scale(.985); }
+.class-quick-sheet__action:active { transform: scale(.96); }
 
 @media (hover: hover) {
   .class-quick-sheet__action:hover { background: hsl(var(--muted)); border-color: hsl(var(--primary) / .3); }
