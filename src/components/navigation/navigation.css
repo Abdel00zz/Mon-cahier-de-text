@@ -48,9 +48,9 @@ html[data-keyboard='open'] .mobile-tab-sheet {
   -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   backdrop-filter: blur(24px) saturate(180%) !important;
   border: 1px solid rgba(229, 223, 213, 0.85) !important;
-  border-radius: 26px !important;
+  border-radius: 32px !important;
   padding: 5px !important;
-  box-shadow: 0 10px 30px rgba(60, 40, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 14px 34px -14px rgba(60, 40, 140, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
   touch-action: pan-y pinch-zoom;
   z-index: 40;
   box-sizing: border-box;
@@ -134,7 +134,10 @@ html[data-keyboard='open'] .mobile-tab-sheet {
   flex-shrink: 0;
   color: #4A433C;
   background: transparent;
-  transition: color 150ms ease, background-color 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease, transform 200ms cubic-bezier(.2, .8, .2, 1);
+}
+.workspace-nav-button--mobile:active {
+  transform: scale(0.95);
 }
 .workspace-nav-button--desktop {
   border-radius: 0.875rem;

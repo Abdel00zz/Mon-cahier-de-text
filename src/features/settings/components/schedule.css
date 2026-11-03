@@ -28,7 +28,17 @@
 .schedule-tab .schedule-grid__day-heading { background: hsl(var(--muted)); }
 .schedule-tab .schedule-grid__day { font-size: 13px; font-weight: 650; background: hsl(var(--card)); }
 .schedule-cell--empty { background: hsl(var(--background) / .42); }
-.schedule-cell--assigned { background: var(--card-bg); border-color: var(--card-border); color: var(--card-title); }
+.schedule-cell--assigned {
+  background: var(--card-bg);
+  background-image: linear-gradient(135deg, var(--card-bg), var(--card-bg2, var(--card-bg)));
+  border-color: var(--card-border);
+  color: var(--card-title);
+  border-radius: 14px;
+  transition: transform 220ms cubic-bezier(.2, .8, .2, 1), box-shadow 220ms ease;
+}
+.schedule-cell--assigned:hover {
+  transform: translateY(-2px);
+}
 .schedule-cell--assigned select { background: transparent; }
 .dark .schedule-cell--assigned {
   background: color-mix(in srgb, var(--card-bg) 12%, hsl(var(--card)));

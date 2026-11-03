@@ -63,6 +63,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             borderColor: isActiveSession ? undefined : palette.border,
             color: palette.title,
             ['--card-bg' as string]: palette.bg,
+            ['--card-bg2' as string]: palette.bg2 ?? palette.bg,
             ['--card-border' as string]: palette.border,
             ['--card-title' as string]: palette.title,
             ['--card-secondary' as string]: palette.secondary,

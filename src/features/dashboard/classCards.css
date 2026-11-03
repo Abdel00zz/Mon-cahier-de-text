@@ -33,16 +33,22 @@
   min-width: 0;
   min-height: 4.8rem;
   height: auto;
-  border-radius: 1.3rem;
-  border-end-start-radius: 0.5rem;
+  border-radius: 1.75rem 1.75rem 1.75rem 0.5rem;
   border: 0 solid var(--card-border, #cfe6d5);
   background-color: var(--card-bg, #e6f3e9);
+  background-image: linear-gradient(135deg, var(--card-bg, #e6f3e9), var(--card-bg2, var(--card-bg, #cfe6d5)));
   color: var(--card-title, #14503a);
   font-family: "Readex Pro", var(--font-sans);
   font-synthesis: weight;
   box-sizing: border-box;
   overflow: hidden;
-  transition: transform 260ms var(--spring-golden), background-color 220ms ease, border-color 220ms ease, box-shadow 260ms var(--spring-golden);
+  transition: transform 260ms var(--spring-golden), background-color 220ms ease, border-color 220ms ease, box-shadow 260ms var(--spring-golden), border-radius 360ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.class-card:hover,
+.class-card--active,
+.class-card[data-session-active="true"] {
+  border-radius: 1.75rem;
 }
 
 .class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
@@ -746,8 +752,15 @@ html[data-platform="ios"] .class-card,
   place-items: center;
   width: 1.85rem;
   height: 1.85rem;
-  border-radius: 0.58rem;
+  border-radius: 62% 38% 55% 45% / 48% 58% 42% 52%;
   flex-shrink: 0;
+  transition: border-radius 400ms cubic-bezier(.2, .8, .2, 1), transform 400ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.class-menu-round-tile:hover .class-menu-round-tile__icon,
+.class-menu-round-tile:active .class-menu-round-tile__icon {
+  border-radius: 50%;
+  transform: scale(1.06);
 }
 
 .class-menu-round-tile--edit .class-menu-round-tile__icon {

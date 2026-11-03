@@ -42,6 +42,8 @@
 /* ── 1. SOCLE DE FEUILLE CLAUDE MOBILE ── */
 .claude-sheet-dialog {
   background-color: var(--cm-sheet);
+  backdrop-filter: blur(26px) saturate(1.4);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4);
   color: var(--cm-text);
   font-family: var(--cm-font-sans);
   -webkit-font-smoothing: antialiased;
@@ -84,8 +86,8 @@
 
 /* ── 2. POIGNÉE DE GLISSEMENT ET EN-TÊTE ── */
 .claude-sheet-handle {
-  width: 36px;
-  height: 4px;
+  width: 38px;
+  height: 4.5px;
   border-radius: 9999px;
   background-color: var(--cm-text-muted);
   opacity: 0.35;

@@ -2,18 +2,19 @@ import { hueOf, isClassColor } from '@/domain/classes/classColors';
 
 export interface DepartmentPalette {
   bg: string;
+  bg2?: string;
   border: string;
   title: string;
   secondary: string;
 }
 
 const DEPARTMENT_PALETTES = {
-  peach: { bg: '#fdeede', border: '#f6d9bd', title: '#6b3a12', secondary: '#a8642a' },
-  lavender: { bg: '#ece9f7', border: '#d9d4ee', title: '#2e2766', secondary: '#5d55a3' },
-  green: { bg: '#e6f3e9', border: '#cfe6d5', title: '#14503a', secondary: '#3f7f63' },
-  sky: { bg: '#e0eefa', border: '#c6dff2', title: '#0f3f6b', secondary: '#3a78a8' },
-  sand: { bg: '#f7f0d4', border: '#ebe0ad', title: '#5c4a05', secondary: '#8f7a1c' },
-  rose: { bg: '#fbe6ee', border: '#f2cddb', title: '#6e1c3e', secondary: '#a8486f' },
+  peach: { bg: '#fdeede', bg2: '#fbd3bf', border: '#f6d9bd', title: '#6b3a12', secondary: '#a8642a' },
+  lavender: { bg: '#ece9f7', bg2: '#d8cbfa', border: '#d9d4ee', title: '#2e2766', secondary: '#5d55a3' },
+  green: { bg: '#e6f3e9', bg2: '#c3e9d8', border: '#cfe6d5', title: '#14503a', secondary: '#3f7f63' },
+  sky: { bg: '#e0eefa', bg2: '#c9dbff', border: '#c6dff2', title: '#0f3f6b', secondary: '#3a78a8' },
+  sand: { bg: '#f7f0d4', bg2: '#ebe0ad', border: '#ebe0ad', title: '#5c4a05', secondary: '#8f7a1c' },
+  rose: { bg: '#fbe6ee', bg2: '#f2cddb', border: '#f2cddb', title: '#6e1c3e', secondary: '#a8486f' },
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
