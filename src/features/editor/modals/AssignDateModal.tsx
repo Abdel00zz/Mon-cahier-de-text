@@ -512,7 +512,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         <div className="flex items-center justify-between gap-3 w-full">
           <div className="flex flex-col text-start min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-base sm:text-lg font-bold text-foreground truncate font-sans">
+              <span className="text-base font-semibold text-foreground truncate font-sans sm:text-[17px]">
                 {intent === 'remark' ? t('remark.title') : t('assignDate.title')}
               </span>
               {selectedCount > 1 && (
@@ -596,29 +596,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 <span>{t('common.save')}</span>
               )}
             </motion.button>
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.94 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              onClick={onClose}
-              disabled={isSuccessSaved}
-              className="rounded-xl h-11 px-6 text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none cursor-pointer transition-colors"
-            >
-              {t('common.cancel')}
-            </motion.button>
           </div>
         ) : (
-          <div className="flex w-full items-center gap-2.5">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.94 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              onClick={onClose}
-              disabled={isSuccessSaved}
-              className="rounded-xl h-10 w-1/3 text-xs sm:text-sm font-semibold bg-[#f2f2ef] hover:bg-[#e8e8e4] text-[#5e5e5a] dark:bg-[#242421] dark:hover:bg-[#2c2c28] dark:text-[#a8a8a2] border-none cursor-pointer transition-colors"
-            >
-              {t('common.cancel')}
-            </motion.button>
+          <div className="flex w-full items-center justify-end">
             <motion.button
               type="button"
               whileTap={{ scale: 0.94 }}

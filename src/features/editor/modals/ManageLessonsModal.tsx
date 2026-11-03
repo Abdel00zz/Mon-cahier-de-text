@@ -136,7 +136,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
               <Layers className="h-5 w-5 stroke-[2.2]" />
             </span>
-            <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
               {t('manageLessons.title')}
             </span>
           </div>
@@ -148,14 +148,6 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         footerClassName="border-t-0 bg-background"
         footer={(
           <div className="flex w-full items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="secondary"
-              className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm transition-transform active:scale-95"
-            >
-              {t('common.cancel')}
-            </Button>
             <Button
               type="button"
               onClick={handleSubmit}

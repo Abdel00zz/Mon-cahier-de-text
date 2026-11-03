@@ -191,7 +191,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
             <Printer className="h-5 w-5 stroke-[2.2]" />
           </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
             {t('print.title')}
           </span>
         </div>
@@ -203,9 +203,6 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
-          <Button type="button" variant="secondary" disabled={isPrinting} onClick={onClose} className="rounded-xl min-h-11 px-4 text-xs font-semibold sm:text-sm">
-            {t('common.cancel')}
-          </Button>
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}

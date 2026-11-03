@@ -105,7 +105,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <HardDriveUpload className="h-5 w-5 stroke-[1.8]" aria-hidden />
           </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
             {t('settings.importModal.title')}
           </span>
         </div>
@@ -119,7 +119,6 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       footerClassName="border-t-0 bg-background/60"
       footer={
         <div className="flex w-full items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose} disabled={isImporting}>{t('common.cancel')}</Button>
           <Button
             variant="destructive"
             onClick={() => {

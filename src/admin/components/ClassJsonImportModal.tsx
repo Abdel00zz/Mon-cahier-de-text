@@ -174,7 +174,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
                         <FileInput className="h-5 w-5 stroke-[2.2]" />
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-foreground">
+                    <span className="text-base sm:text-lg font-semibold text-foreground">
                         Importer un cahier JSON
                     </span>
                 </div>
@@ -182,9 +182,6 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
             description="La destination est verrouillée sur la classe choisie ; l’identifiant éventuellement présent dans le fichier est ignoré."
             footer={(
                 <div className="flex w-full items-center justify-end gap-2.5">
-                    <Button type="button" variant="secondary" onClick={safeClose} disabled={isImporting} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
-                        Annuler
-                    </Button>
                     {preview ? (
                         <Button
                             type="button"

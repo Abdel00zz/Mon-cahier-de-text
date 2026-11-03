@@ -68,8 +68,8 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 }
 .modal-header--closable { padding-inline-end: 64px; }
 .modal-motion-surface .modal-header [data-ui-title] {
-  font-family: var(--font-sans); font-size: 1rem; font-weight: 500;
-  line-height: 1.45; letter-spacing: normal; min-width: 0; overflow-wrap: anywhere;
+  font-family: var(--font-sans); font-size: .9375rem; font-weight: 600;
+  line-height: 1.4; letter-spacing: normal; min-width: 0; overflow-wrap: anywhere;
 }
 .modal-header [data-ui-title] :is(h1, h2, h3) { font-size: inherit; }
 .modal-header [data-ui-title] :is(div, span) { min-width: 0; }
@@ -92,9 +92,10 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 .modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select, label:has([role="radio"]), label:has([role="checkbox"]), label:has(input[type="radio"])) { min-height: 44px; }
 .modal-motion-surface :is([role="radio"], input[type="radio"]) { accent-color: hsl(var(--primary)); }
 .modal-motion-surface .dialog-close {
-  top: 10px; inset-inline-end: 12px; width: 44px; height: 44px; border-radius: 14px;
-  color: hsl(var(--muted-foreground)); border: 1px solid transparent; background: transparent;
-  transition: transform 180ms cubic-bezier(.22, 1, .36, 1), background-color 180ms ease, color 180ms ease;
+  top: 10px; inset-inline-end: 12px; width: 44px; height: 44px; border-radius: 9999px;
+  color: hsl(var(--muted-foreground)); border: 1px solid var(--modal-border-artistic, transparent);
+  background: var(--modal-close-bg, hsl(var(--muted) / .35));
+  transition: transform 220ms cubic-bezier(.18, 1.01, .24, 1), background-color 180ms ease, color 180ms ease;
 }
 .modal-motion-surface .dialog-close:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
 .modal-motion-surface .dialog-close:disabled { opacity: .5; pointer-events: none; }

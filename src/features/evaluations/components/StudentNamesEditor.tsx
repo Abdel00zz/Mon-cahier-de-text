@@ -331,13 +331,6 @@ export const StudentNamesEditor: React.FC<StudentNamesEditorProps> = ({
         <div className="modal-footer pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onCancel}
-            className="btn-cancel"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
             onClick={() => {
               onSave(names);
             }}

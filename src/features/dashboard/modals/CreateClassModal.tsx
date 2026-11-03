@@ -54,7 +54,7 @@ const COPY: Record<AppLocale, {
   cycleLabels: Record<Cycle, string>;
 }> = {
   fr: {
-    createTitle: 'Créer une classe', editTitle: 'Modifier la classe',
+    createTitle: 'Ajouter une nouvelle classe', editTitle: 'Modifier la classe',
     editDescription: 'Modifiez uniquement les informations utiles.',
     cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer la classe', save: 'Enregistrer', saving: 'Enregistrement…',
     cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe', branch: 'Filière', group: 'N° de groupe', customLevel: 'Nom du niveau',
@@ -65,7 +65,7 @@ const COPY: Record<AppLocale, {
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
   ar: {
-    createTitle: 'إضافة قسم', editTitle: 'تعديل القسم',
+    createTitle: 'ابدأ إضافة قسم جديد', editTitle: 'تعديل القسم',
     editDescription: 'عدّل المعلومات الضرورية فقط.',
     cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء القسم', save: 'حفظ', saving: 'جارٍ الحفظ…',
     cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم', branch: 'الشعبة', group: 'رقم الفوج', customLevel: 'اسم المستوى',
@@ -76,7 +76,7 @@ const COPY: Record<AppLocale, {
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
   en: {
-    createTitle: 'Create class', editTitle: 'Edit class',
+    createTitle: 'Add a new class', editTitle: 'Edit class',
     editDescription: 'Edit only the information you need.',
     cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create class', save: 'Save', saving: 'Saving…',
     cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class', branch: 'Stream', group: 'Group number', customLevel: 'Level name',
@@ -522,14 +522,6 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                 {copy.back}
               </button>
             )}
-
-            <button
-              type="button"
-              onClick={requestClose}
-              className="claude-btn-cancel flex-1"
-            >
-              {copy.cancel}
-            </button>
 
             {step === 'level' && customMode && (
               <button

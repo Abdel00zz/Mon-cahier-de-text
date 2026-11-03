@@ -163,8 +163,10 @@
 
 /* Bouton de fermeture circulaire en médaillon antique */
 .remark-close-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;

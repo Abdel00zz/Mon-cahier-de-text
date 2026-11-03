@@ -46,7 +46,7 @@
   --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.46) 92%, hsl(var(--primary) / 0.08));
 
   /* ── Bouton Fermer Circulaire (Médaillon Antique) ──────────────────────── */
-  --modal-close-size: 42px;
+  --modal-close-size: 44px;
   --modal-close-radius: 9999px;
   --modal-close-bg: color-mix(in srgb, hsl(var(--card)) 85%, hsl(var(--muted) / 0.5));
   --modal-close-border: color-mix(in srgb, hsl(var(--border)) 78%, transparent);

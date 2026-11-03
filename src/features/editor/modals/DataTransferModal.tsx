@@ -188,7 +188,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
             {panel === 'export' ? <FileDown className="h-5 w-5 stroke-[2.2]" /> : <FileUp className="h-5 w-5 stroke-[2.2]" />}
           </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          <span className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
             {t('transfer.title')}
           </span>
         </div>
@@ -200,7 +200,6 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
       footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex w-full items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose} disabled={isImporting}>{t('common.close')}</Button>
           {panel === 'export'
             ? <Button onClick={() => onExport(exportChapters)} disabled={exportDisabled}>
                 <HardDriveDownload aria-hidden />

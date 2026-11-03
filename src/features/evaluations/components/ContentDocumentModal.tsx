@@ -181,15 +181,6 @@ export const ContentDocumentModal: React.FC<ContentDocumentModalProps> = ({
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="secondary"
-              size="sm"
-              onClick={onClose}
-              className="rounded-lg px-4 text-xs font-semibold"
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="button"
               variant="default"
               size="sm"
               onClick={handleSave}

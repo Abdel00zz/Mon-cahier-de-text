@@ -249,16 +249,9 @@ export const EventDateModal: FC<EventDateModalProps> = ({
           <div className="flex items-center gap-2 ms-auto">
             <button
               type="button"
-              onClick={onClose}
-              className="claude-btn-cancel h-11 px-4 text-xs font-semibold"
-            >
-              {copy.cancel}
-            </button>
-            <button
-              type="button"
               onClick={handleApply}
               disabled={!startDate}
-              className="claude-btn-primary h-11 px-4 text-xs font-semibold w-auto"
+              className="claude-btn-primary h-11 px-5 text-xs font-semibold w-auto"
             >
               {copy.apply}
             </button>

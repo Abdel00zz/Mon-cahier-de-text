@@ -1051,7 +1051,6 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         className="sm:rounded-2xl"
                         footer={(
                             <div className="flex w-full justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setMessageModalOpen(false)} disabled={busy} className="rounded-xl">Annuler</Button>
                                 <Button type="button" onClick={() => void handleSendMessage()} disabled={busy || !messageBody.trim()} className="rounded-xl">
                                     {busy ? 'Envoi…' : 'Envoyer'}
                                 </Button>

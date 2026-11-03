@@ -40,7 +40,6 @@ export function ClassRosterModal({ phone, classInfo, roster, onClose, onPublishe
             </ol>}
             {(error || parsed.error) && <p role="alert" className="text-sm text-destructive">{error || parsed.error}</p>}
             <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-                <Button variant="outline" onClick={onClose} disabled={busy}>Annuler</Button>
                 <Button onClick={() => void publish()} disabled={busy || !!parsed.error}>{busy ? 'Transmission…' : 'Transmettre au professeur'}</Button>
             </div>
         </div>

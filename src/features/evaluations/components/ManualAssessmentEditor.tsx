@@ -27,7 +27,7 @@ interface ManualAssessmentEditorProps {
   assessments?: { id: string; type: DevoirType; num?: number; semestre?: 1 | 2 }[];
   /** Cycle de la classe : la colle n'est proposée qu'en prépa (une colle existante reste modifiable). */
   cycle?: Cycle;
-  onCancel: () => void;
+  onCancel?: () => void;
   onSave: (manual: ManualAssessment) => void;
 }
 
@@ -38,7 +38,7 @@ const semesterOfDate = (iso: string): 1 | 2 | null => {
   return month >= 2 && month <= 7 ? 2 : 1;
 };
 
-export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, homeworkDate, initial, initialType, assessments = [], cycle, onCancel, onSave }) => {
+export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, homeworkDate, initial, initialType, assessments = [], cycle, onSave }) => {
   const { t } = useLocale();
   const initialKind: DevoirType = initial?.type ?? initialType ?? 'controle';
   // La numérotation officielle repart à 1 à chaque semestre : le suivant se calcule DANS le semestre.
@@ -189,19 +189,11 @@ export const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ 
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            className="min-h-11 rounded-xl bg-muted px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground cursor-pointer"
-          >
-            {t('common.cancel')}
-          </Button>
+        <div className="flex items-center justify-end border-t border-border/60 pt-3">
           <Button
             type="button"
             onClick={submit}
-            className="min-h-11 rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer"
+            className="min-h-11 rounded-xl bg-primary px-6 py-2 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer"
           >
             {t(initial ? 'evaluations.saveAssessment' : 'evaluations.addDevoir')}
           </Button>

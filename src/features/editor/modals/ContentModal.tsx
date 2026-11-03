@@ -301,7 +301,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
           <ArrowLeft className="h-4.5 w-4.5 stroke-[2.2] rtl:rotate-180" />
         </button>
       )}
-      <span className="text-lg sm:text-[19px] font-semibold tracking-tight text-foreground truncate" title={modalTitle}>
+      <span className="text-base sm:text-[17px] font-semibold tracking-tight text-foreground truncate" title={modalTitle}>
         {modalTitle}
       </span>
     </div>
@@ -335,14 +335,6 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
               </Button>
             )}
             <div className="flex w-full sm:w-auto items-center justify-end gap-3">
-              <Button
-                type="button"
-                onClick={onClose}
-                variant="secondary"
-                className="btn-cancel rounded-[14px] h-11 px-6 text-sm font-medium transition-all active:scale-95 bg-[#f5f4ef] dark:bg-stone-800 hover:bg-[#eae8e1] dark:hover:bg-stone-700 text-[#3f403b] dark:text-stone-200 border-0 flex-1 sm:flex-initial"
-              >
-                {t('common.cancel')}
-              </Button>
               <Button 
                 type="submit" 
                 form={formId}
@@ -353,18 +345,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
               </Button>
             </div>
           </div>
-        ) : (
-          <div className="flex w-full items-center justify-end">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="secondary"
-              className="rounded-[14px] h-11 px-6 text-sm font-medium bg-[#f5f4ef] dark:bg-stone-800 hover:bg-[#eae8e1] text-[#3f403b] dark:text-stone-200 border-0"
-            >
-              {t('common.close')}
-            </Button>
-          </div>
-        )
+        ) : undefined
       }
     >
       {/* Context Target Banner */}

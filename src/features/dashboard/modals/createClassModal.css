@@ -165,7 +165,7 @@
   height: max(44px, 2.65rem) !important;
   min-width: 44px !important;
   min-height: 44px !important;
-  border-radius: 14px;
+  border-radius: 9999px !important;
   background: transparent;
   color: hsl(var(--muted-foreground));
   border: 1px solid transparent;

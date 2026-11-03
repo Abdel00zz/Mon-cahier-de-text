@@ -178,7 +178,7 @@ export const DevoirsModals: React.FC<DevoirsModalsProps> = ({
         footerClassName="border-t-0 bg-background"
         title={
           <div className="min-w-0">
-            <span className="block text-base font-extrabold leading-tight tracking-[-0.015em] text-foreground rtl:tracking-normal sm:text-[17px]">
+            <span className="block text-[15px] font-semibold leading-tight tracking-normal text-foreground sm:text-[16px]">
               {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
             </span>
             {selectedClass && (
