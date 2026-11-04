@@ -19,8 +19,10 @@ test('grille mobile bilingue : horaires, cellules tactiles et séance fusionnée
       children: createElement(ScheduleTab, { classes: [classInfo], config, onChange: () => {} }) }));
     assert.equal((html.match(/scope="row"/g) ?? []).length, 6);
     assert.match(html, locale === 'ar' ? /<table dir="rtl"/ : /<table dir="ltr"/);
-    assert.equal((html.match(/<select/g) ?? []).length, 23);
+    assert.equal((html.match(/<select/g) ?? []).length, 24);
     assert.match(html, /colSpan="2"/i);
+    assert.match(html, /aria-label="[^"]*09:00–10:00[^"]*"/, 'la deuxième heure du bloc a sa propre cible');
+    assert.match(html, /data-whole-session/, 'la modification de tout le bloc reste explicite');
     assert.match(html, /schedule-cell__add/);
     assert.match(html, /08:00–09:00/, 'pedagogical hours, not internal bell times');
     assert.match(html, /08:00–10:00/, 'the accessible merged cell announces both hours');

@@ -124,11 +124,16 @@
   display: grid;
   place-items: center;
 }
-.schedule-cell__select {
+.schedule-cell__pickers {
+  display: flex;
   position: absolute;
   inset: 0;
   z-index: 1;
-  width: 100%;
+}
+.schedule-cell__select {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
   height: 100%;
   min-height: 44px;
   padding: 0;
@@ -214,3 +219,6 @@
 @media (prefers-reduced-motion: reduce) {
   .schedule-tab [role='tab'], .schedule-grid .schedule-cell { transition: none; }
 }
+
+.schedule-cell__select :is(option, optgroup) { color: CanvasText; background: Canvas; }
+.schedule-cell__select + .schedule-cell__select { border-inline-start: 1px dashed var(--schedule-rule); }

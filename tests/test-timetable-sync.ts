@@ -9,7 +9,8 @@ import {
 } from '../src/infrastructure/sync/settingsPush';
 import { notifyConfigChanged, subscribe } from '../src/infrastructure/sync/syncBus';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
-import { deriveSchedules } from '../src/domain/calendar/timetable';
+import { deriveSchedules, setTimetableEntry } from '../src/domain/calendar/timetable';
+import { computeClassSessionSchedule } from '../src/domain/calendar/sessionScheduleStatus';
 import type { ClassInfo } from '../src/types';
 import type { HolidayCalendar } from '../src/domain/calendar/calendar';
 
@@ -25,6 +26,19 @@ const settings = {
   sessionEndReminderEnabled: true, missingDateReminderEnabled: true,
   quietDuringVacations: true, gapThreshold: 2, inactivityThresholdDays: 5,
 };
+
+test('après la réaffectation de la deuxième heure, la carte et les alertes basculent à la même sonnerie', () => {
+  const roster = [...classes, { ...classes[0], id: 'c2' }];
+  const double = [0, 1].map(slot => ({ day: 1, slot, classId: 'c1' }));
+  const timetable = setTimetableEntry(double, 1, 1, 'c2');
+  for (const [time, expected] of [['08:54:59', ['c1']], ['08:55:00', ['c2']], ['09:54:59', ['c2']], ['09:55:00', []]] as const) {
+    const now = new Date(`2026-09-14T${time}+01:00`);
+    const current = detectSessionAlerts({ timetable }, roster, calendar, now, () => true).current;
+    const activeCards = roster.filter(c => computeClassSessionSchedule(timetable, 0, c.id, { now, calendar }).state === 'in_progress');
+    assert.deepEqual(current.map(b => b.classId), expected, time);
+    assert.deepEqual(activeCards.map(c => c.id), expected, time);
+  }
+});
 
 test('emploi du temps modifié : l’envoi cloud part tout de suite, une rafale reste coalescente', () => {
   const now = 1_700_000_000_000;

@@ -68,7 +68,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const pickerClasses = React.useMemo(() => suggestedClass
         ? [suggestedClass, ...classes.filter(item => item.id !== suggestedClass.id)] : classes, [classes, suggestedClass]);
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
-    const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
+    const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number } | null>(null);
     // Le matin est la vue initiale la plus rapide à lire, quel que soit
     // l'écran. L'enseignant peut basculer instantanément vers l'après-midi
     // ou la journée complète sans recharger la grille.
@@ -96,12 +96,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
      * libellé accessible du créneau.
      */
     const showSubjectLabels = useShowsSubjectLabels();
-    const assign = (day: number, slot: number, classId: string | null) => {
+    const assign = (day: number, slot: number, classId: string | null, createdName?: string) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
         if (classId) {
             const target = classes.find(c => c.id === classId);
-            const name = target ? classLabel(target.name) : '';
+            const name = classLabel(createdName ?? target?.name ?? '');
             toast.success(
                 t('schedule.toast.slotSaved', { name }),
                 { id: 'schedule-slot-update', duration: 2200 }
@@ -241,33 +241,45 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 data-lunch={hour.lunchBefore || undefined}
                                             >
                                                 <div className="schedule-cell__content">
-                                                    <select
-                                                        value={entry?.classId ?? ''}
-                                                        onChange={e => {
-                                                            if (e.target.value === '__create__') {
-                                                                setPendingCreate({ day: day.value, slot: hour.index, span });
-                                                                e.target.value = entry?.classId ?? '';
-                                                                return;
-                                                            }
-                                                            if (merged) assignRun(day.value, hour.index, span, e.target.value || null);
-                                                            else assign(day.value, hour.index, e.target.value || null);
-                                                        }}
-                                                        title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                        className="schedule-cell__select"
-                                                        aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.displayStartMin, endHour.displayEndMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
-                                                    >
-                                                        <option value="" className="text-muted-foreground bg-card">{t('schedule.noClass')}</option>
-                                                        {pickerClasses.map(c => (
-                                                            <option key={c.id} value={c.id} className="text-foreground bg-card">
-                                                                {subjectLabel(c.subject)} · {classLabel(c.name)}
-                                                            </option>
-                                                        ))}
-                                                        {canCreateFromSchedule && (
-                                                            <option value="__create__" className="text-primary font-bold bg-card">
-                                                                ＋ {t('schedule.createClass')}
-                                                            </option>
-                                                        )}
-                                                    </select>
+                                                    <div className="schedule-cell__pickers">
+                                                        {hourSlots.slice(hour.index, hour.index + span).map(slot => {
+                                                            const range = hourLabel(slot.displayStartMin, slot.displayEndMin);
+                                                            const name = classInfo ? classLabel(classInfo.name) : t('schedule.noClass');
+                                                            const options = (whole: boolean) => <>
+                                                                <option value={whole ? 'whole:' : ''}>{t('schedule.noClass')}</option>
+                                                                {pickerClasses.map(c => (
+                                                                    <option key={c.id} value={whole ? `whole:${c.id}` : c.id}>
+                                                                        {subjectLabel(c.subject)} · {classLabel(c.name)}
+                                                                    </option>
+                                                                ))}
+                                                            </>;
+                                                            return <select key={slot.index}
+                                                                value={entry?.classId ?? ''}
+                                                                className="schedule-cell__select"
+                                                                title={`${range} · ${name}`}
+                                                                aria-label={`${t(`schedule.day.${day.value}`)} ${range}, ${name}`}
+                                                                onChange={event => {
+                                                                    const value = event.currentTarget.value;
+                                                                    const group = event.currentTarget.selectedOptions[0]?.parentElement;
+                                                                    if (group?.hasAttribute('data-whole-session')) {
+                                                                        assignRun(day.value, hour.index, span, value.slice('whole:'.length) || null);
+                                                                    } else if (value === '__create__' && canCreateFromSchedule) {
+                                                                        setPendingCreate({ day: day.value, slot: slot.index });
+                                                                        event.currentTarget.value = '';
+                                                                    } else {
+                                                                        assign(day.value, slot.index, value || null);
+                                                                    }
+                                                                }}>
+                                                                {merged ? <>
+                                                                    <optgroup label={range}>{options(false)}</optgroup>
+                                                                    <optgroup data-whole-session label={`${t('schedule.mergedSession', { count: span })} · ${hourLabel(hour.displayStartMin, endHour.displayEndMin)}`}>
+                                                                        {options(true)}
+                                                                    </optgroup>
+                                                                </> : options(false)}
+                                                                {canCreateFromSchedule && <option value="__create__">＋ {t('schedule.createClass')}</option>}
+                                                            </select>;
+                                                        })}
+                                                    </div>
 
                                                     {!classInfo && (
                                                         <Plus size={14} className="schedule-cell__add" aria-hidden="true" />
@@ -305,8 +317,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     onCreate={details => {
                         if (!pendingCreate) return;
                         const created = onCreateClass(details);
-                        if (pendingCreate.span > 1) assignRun(pendingCreate.day, pendingCreate.slot, pendingCreate.span, created.id);
-                        else assign(pendingCreate.day, pendingCreate.slot, created.id);
+                        assign(pendingCreate.day, pendingCreate.slot, created.id, created.name);
                         setPendingCreate(null);
                     }}
                     defaultCycle={config.selectedCycles?.[0] ?? 'lycee'}

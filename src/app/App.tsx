@@ -219,7 +219,8 @@ const App: React.FC = () => {
     }
     if (backgroundView === 'editor' && backgroundClass) {
       // Le Web propose un retour visible ; Android utilise son bouton système.
-      return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
+      return <Editor classInfo={backgroundClass} onBack={handleBackToDashboard}
+        onOpenSettings={() => handleOpenSchedule(backgroundClass.id)} />;
     }
     return (
       <Dashboard
