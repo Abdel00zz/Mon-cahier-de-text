@@ -2049,7 +2049,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'dashboard.welcome.assessmentTitleOne': 'موعد واحد قريب',
     'dashboard.welcome.assessmentTitleMany': '{count} مواعيد قريبة',
     'dashboard.welcome.assessmentsDetail': 'لديك ما تحتاجه للتقدّم بهدوء.',
-    'dashboard.welcome.nowTitle': 'حصة جارية',
+    'dashboard.welcome.nowTitle': 'الآن:',
     'dashboard.welcome.nowDetail': 'الدفتر جاهز للتسجيل.',
     'dashboard.welcome.todayTitle': 'حصة مبرمجة اليوم',
     'dashboard.welcome.todayDetail': 'كل شيء جاهز لبداية موفقة.',

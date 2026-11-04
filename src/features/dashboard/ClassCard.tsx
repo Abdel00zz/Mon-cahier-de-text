@@ -202,11 +202,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 {isActiveSession && (
                     <div className="class-card__footer">
                         <span className="class-card__live">
-                            <span className="class-card__live-dot" aria-hidden="true" />
+                            {!isRtl && <span className="class-card__live-dot" aria-hidden="true" />}
                             <span>{t('dashboard.welcome.nowTitle')}</span>
                             {scheduleStatus?.remainingMinutes && (
                                 <span className="class-card__live-remaining">
-                                    · {locale === 'ar' ? `${scheduleStatus.remainingMinutes} د` : `${scheduleStatus.remainingMinutes} min`}
+                                    {locale === 'ar' ? `${scheduleStatus.remainingMinutes} د` : `· ${scheduleStatus.remainingMinutes} min`}
                                 </span>
                             )}
                             {multiHourBadge && (

@@ -518,8 +518,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             {group.showTitle && (
                                                 <div className="dashboard-day-group__header flex items-center gap-2.5 mb-2.5 mt-1 px-1">
                                                     <h2 className="dashboard-day-group__title text-xs font-semibold tracking-wide text-muted-foreground/85 flex items-center gap-1.5">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 inline-block flex-shrink-0" aria-hidden="true" />
-                                                        <span>{group.label}</span>
+                                                        <span>{group.label}{locale === 'ar' ? ':' : ''}</span>
                                                     </h2>
                                                     <div className="h-px flex-1 bg-border/40" aria-hidden="true" />
                                                 </div>

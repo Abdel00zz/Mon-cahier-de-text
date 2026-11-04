@@ -130,11 +130,11 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
                             {isActiveSession ? (
                                 <span className="class-card__live">
-                                    <span className="class-card__live-dot" aria-hidden="true" />
+                                    {!isRtl && <span className="class-card__live-dot" aria-hidden="true" />}
                                     <span>{t('dashboard.welcome.nowTitle')}</span>
                                     {scheduleStatus?.remainingMinutes ? (
                                         <span className="class-card__live-remaining">
-                                            {' · '}
+                                            {locale !== 'ar' && ' · '}
                                             {locale === 'ar' ? `متبقي ${scheduleStatus.remainingMinutes} د` : `reste ${scheduleStatus.remainingMinutes} min`}
                                         </span>
                                     ) : null}

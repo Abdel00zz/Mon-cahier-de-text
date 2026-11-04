@@ -56,7 +56,12 @@
   font: 500 clamp(1.75rem, 6.8vw, 2.25rem)/1.25 var(--font-sans) !important;
   color: var(--dash-header-ink) !important; letter-spacing: -.015em !important;
 }
-[dir='rtl'] .dashboard-header-title { font-size: clamp(1.5rem, 5.8vw, 1.95rem) !important; letter-spacing: normal !important; }
+[dir='rtl'] .dashboard-header-title {
+  font-size: clamp(1.35rem, 5.3vw, 1.7rem) !important;
+  letter-spacing: normal !important;
+  position: relative;
+  inset-block-start: .375rem;
+}
 [dir='rtl'] .dashboard-header-title > span[aria-hidden='true'] { margin-inline-start: .22em; }
 .dashboard-header-plus-btn {
   display: grid; place-items: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px;
