@@ -27,6 +27,43 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 .dark .modal-motion-surface { box-shadow: inset 0 1px 0 rgb(255 255 255 / .08), var(--modal-elevation-shadow, var(--modal-shadow-high)); }
 .modal-motion-surface[data-elevation="low"] { --modal-elevation-shadow: var(--modal-shadow-low); }
 .modal-motion-surface[data-elevation="high"] { --modal-elevation-shadow: var(--modal-shadow-high); }
+
+/*
+ * Paramètres et Aide : dialogues « liquides » à taille flexible.
+ * La surface prend la taille de son contenu jusqu'à la limite visible, garde
+ * un verre teinté lisible (AA) et laisse transparaître la page sans jamais
+ * animer le flou. Les deux panneaux gardent leurs fonds papier internes :
+ * seule la coque est en verre, le texte reste parfaitement contrasté.
+ */
+.modal-motion-surface.liquid-modal {
+  --modal-header-bg: transparent;
+  --modal-footer-bg: transparent;
+  height: fit-content;
+  max-height: calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
+  border-radius: 28px;
+  border-color: color-mix(in srgb, hsl(var(--foreground)) 9%, transparent);
+  background-color: color-mix(in srgb, hsl(var(--card)) 82%, transparent);
+  background-image: linear-gradient(155deg, rgb(255 255 255 / .5), rgb(255 255 255 / 0) 42%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 0 30px 70px -30px rgb(24 18 58 / .45),
+    0 10px 24px -18px rgb(24 18 58 / .3);
+  -webkit-backdrop-filter: blur(30px) saturate(1.65);
+  backdrop-filter: blur(30px) saturate(1.65);
+}
+.modal-motion-surface.liquid-modal:not([data-sheet-library]) { border-radius: 28px; }
+.dark .modal-motion-surface.liquid-modal {
+  border-color: rgb(255 255 255 / .1);
+  background-color: color-mix(in srgb, hsl(var(--card)) 84%, transparent);
+  background-image: linear-gradient(155deg, rgb(255 255 255 / .09), rgb(255 255 255 / 0) 42%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .12), 0 30px 70px -26px rgb(0 0 0 / .7);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .modal-motion-surface.liquid-modal {
+    background-color: hsl(var(--card));
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
 .modal-motion-surface:not([data-sheet-library]) {
   position: fixed;
   inset: calc(var(--modal-visible-top) + max(16px, env(safe-area-inset-top, 0px))) 0 calc(var(--modal-keyboard-inset) + max(16px, env(safe-area-inset-bottom, 0px)));
@@ -41,10 +78,10 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 
 /* The library's inline translate owns the gesture; CSS never competes with it.
    Override its fixed max-height to use the app's visual viewport, including keyboard. */
-.modal-sheet-viewport { --modal-sheet-gutter: max(8px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+.modal-sheet-viewport { --modal-sheet-gutter: max(0px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
 .modal-sheet-viewport .modal-motion-surface[data-sheet-library] {
-  max-height: min(calc(var(--modal-visible-height) * var(--sheet-max-height, .94)), calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)))) !important;
-  border-radius: 36px 36px 0 0;
+  max-height: min(calc(var(--modal-visible-height) * var(--sheet-max-height, .94)), calc(var(--modal-visible-height) - max(12px, env(safe-area-inset-top, 0px)))) !important;
+  border-radius: 26px 26px 0 0;
   padding: 0;
 }
 .modal-sheet-overlay[data-state] { animation: none; }
@@ -117,15 +154,23 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 }
 
 @media (max-width: 1023px), ((pointer: coarse) and (max-width: 1180px)) {
-  .modal-pro-header { min-height: 58px; padding: 12px 16px; }
-  .modal-header--closable { padding-inline-end: 62px; }
+  .modal-pro-header { min-height: 56px; padding: 12px 16px; }
+  .modal-header--closable { padding-inline-end: 60px; }
   .modal-motion-surface .modal-body { padding: 14px 16px; }
-  .modal-motion-surface .modal-body--untitled { padding-top: 52px; }
+  .modal-motion-surface .modal-body--untitled { padding-top: 50px; }
   .modal-pro-footer { padding-inline: 16px; gap: 8px; }
   .modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { font-size: 16px; }
 }
 @media (min-width: 640px) {
-  .modal-sheet-viewport .modal-motion-surface[data-sheet-library] { max-width: min(44rem, calc(100vw - 2rem)); }
+  .modal-sheet-viewport { --modal-sheet-gutter: max(16px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+  .modal-sheet-viewport .modal-motion-surface[data-sheet-library] {
+    max-width: min(46rem, calc(100vw - 2rem));
+    border-radius: 28px 28px 0 0;
+  }
+  .modal-sheet-viewport .modal-motion-surface.settings-modal-frame[data-sheet-library],
+  .modal-sheet-viewport .modal-motion-surface.learning-guide-modal[data-sheet-library] {
+    max-width: min(58rem, calc(100vw - 2rem));
+  }
   .modal-motion-surface.settings-modal-frame { width: min(58rem, calc(100vw - 3rem)); max-width: none; }
   .settings-modal-frame .modal-body.settings-modal-body { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
 }

@@ -20,12 +20,13 @@
   --class-radius: 1.3rem;
   --class-title-scale: 1;
   --class-badge-scale: 1;
-  --spring-out: cubic-bezier(0.18, 1.01, 0.24, 1);
-  --spring-golden: cubic-bezier(0.19, 1, 0.22, 1);
-  --spring-bounce: cubic-bezier(0.16, 1.08, 0.28, 1);
+  --spring-out: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
+  --spring-golden: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
+  --spring-bounce: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
 
   position: relative;
   isolation: isolate;
+  container-type: inline-size;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,34 +34,38 @@
   min-width: 0;
   min-height: 4.8rem;
   height: auto;
-  border-radius: 1.75rem 1.75rem 1.75rem 0.5rem;
+  border-radius: 1.375rem;
   border: 0 solid var(--card-border, #cfe6d5);
   background-color: var(--card-bg, #e6f3e9);
   background-image: linear-gradient(135deg, var(--card-bg, #e6f3e9), var(--card-bg2, var(--card-bg, #cfe6d5)));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    0 10px 20px -16px rgba(35, 28, 68, 0.14);
   color: var(--card-title, #14503a);
   font-family: "Readex Pro", var(--font-sans);
   font-synthesis: weight;
   box-sizing: border-box;
   overflow: hidden;
-  transition: transform 260ms var(--spring-golden), background-color 220ms ease, border-color 220ms ease, box-shadow 260ms var(--spring-golden), border-radius 360ms cubic-bezier(.2, .8, .2, 1);
+  transition:
+    transform 300ms var(--spring-golden),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 250ms ease,
+    border-radius 320ms cubic-bezier(.2, .8, .2, 1);
 }
 
 .class-card:hover,
 .class-card--active,
 .class-card[data-session-active="true"] {
-  border-radius: 1.75rem;
-}
-
-.class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
-  box-shadow: none !important;
+  border-radius: 1.5rem;
 }
 
 [dir="rtl"] .class-card {
-  padding: 0.85rem 1.15rem 0.85rem 0.45rem;
+  padding: 0.92rem 1.15rem 0.92rem 0.55rem;
 }
 
 [dir="ltr"] .class-card {
-  padding: 0.85rem 0.45rem 0.85rem 1.15rem;
+  padding: 0.92rem 0.55rem 0.92rem 1.15rem;
 }
 
 .class-card__sheet {
@@ -237,7 +242,7 @@
   z-index: 3;
 }
 
-/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (.mn) */
+/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (.more) */
 .class-card__menu {
   display: grid;
   place-items: center;
@@ -252,21 +257,23 @@
   pointer-events: auto;
   touch-action: manipulation;
   cursor: pointer;
-  transition: opacity 150ms ease, background-color 150ms ease, transform 150ms ease;
+  transition: opacity 150ms ease, background-color 200ms ease, transform 250ms var(--spring-golden);
 }
 
 .class-card__menu:hover,
-.class-card__menu:active {
-  background: #ffffffa6 !important;
+.class-card__menu:active,
+.class-card__menu[data-state="open"] {
+  background: rgba(255, 255, 255, 0.65) !important;
 }
 
 .dark .class-card__menu:hover,
-.dark .class-card__menu:active {
-  background: color-mix(in srgb, var(--card-secondary, currentColor) 16%, transparent) !important;
+.dark .class-card__menu:active,
+.dark .class-card__menu[data-state="open"] {
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
 .class-card__menu:active {
-  transform: scale(0.94);
+  transform: scale(0.85);
 }
 
 .class-card__menu:focus-visible {
@@ -377,48 +384,59 @@
   transition: opacity 180ms ease, color 180ms ease;
 }
 
-/* Capsule horaire moderne, épurée et innovante (liquid glass) */
+/* Badge horaire / jour sans cadre, poussé en bas, en gris moderne transparent */
 .class-card__schedule-capsule {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  align-self: flex-end;
+  gap: 0.3rem;
   margin-inline-start: auto;
-  padding: 0.28rem 0.65rem;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.065);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--card-secondary, #3f7f63);
-  font-size: 0.73rem;
-  line-height: 1.25;
+  margin-bottom: -0.22rem;
+  padding: 0 0.25rem;
+  border-radius: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: rgba(71, 76, 94, 0.66) !important;
+  font-size: 0.74rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
   white-space: nowrap;
   pointer-events: none;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+  transition: color 180ms ease, opacity 180ms ease;
 }
 
 .dark .class-card__schedule-capsule {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.09);
-  color: rgba(255, 255, 255, 0.75);
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(214, 218, 234, 0.56) !important;
 }
 
 .class-card:hover .class-card__schedule-capsule {
-  background: rgba(0, 0, 0, 0.065);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(56, 61, 78, 0.82) !important;
 }
 
 .dark .class-card:hover .class-card__schedule-capsule {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(228, 232, 246, 0.76) !important;
+}
+
+@container (max-width: 340px) {
+  .class-card__schedule-capsule svg {
+    display: none;
+  }
 }
 
 .class-card__schedule-day {
   font-weight: 500;
-  opacity: 0.85;
-  color: inherit;
+  color: inherit !important;
 }
 
 .class-card__schedule-time {
@@ -427,11 +445,11 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  color: var(--card-title, #14503a);
+  color: inherit !important;
 }
 
 .dark .class-card__schedule-time {
-  color: rgba(255, 255, 255, 0.95);
+  color: inherit !important;
 }
 
 /* Clignotement subtil et vivant des deux points de l'horloge */
@@ -480,11 +498,11 @@
 
 .class-card__schedule-icon {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
+  width: 11.5px;
+  height: 11.5px;
   stroke-width: 1.8;
-  opacity: 0.8;
-  color: var(--class-accent);
+  opacity: 0.76;
+  color: currentColor !important;
   transition: opacity 180ms ease, color 180ms ease;
 }
 
@@ -496,7 +514,7 @@
 
 .class-card:hover .class-card__schedule-icon,
 .class-list-item:hover .class-card__schedule-icon {
-  opacity: 1;
+  opacity: 0.92;
 }
 
 .class-card__live-dot {
@@ -589,13 +607,20 @@
 @media (hover: hover) and (pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .class-card:has(.class-card__open:hover) {
     transform: translateY(-2px);
-    box-shadow: 0 1px 2px #2f28220d, 0 10px 28px #2f282214 !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.85),
+      0 14px 26px -14px rgba(35, 28, 68, 0.22) !important;
+  }
+  .dark .class-card:has(.class-card__open:hover) {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+      0 16px 30px -12px rgba(0, 0, 0, 0.65) !important;
   }
 }
 
 .class-card:has(.class-card__open:active) {
-  transform: scale(0.985);
-  transition-duration: 150ms;
+  transform: scale(0.975);
+  transition-duration: 100ms;
 }
 
 /* Couleur par matière (PAL) */
@@ -649,15 +674,17 @@
   background: var(--class-paper);
 }
 
-/* Forme sereine (.cl) : hauteur minimale 4.8rem, rayon asymétrique 1.3rem / 0.5rem */
+/* Forme sereine (.card de aqsami-v2) : hauteur minimale 4.8rem, rayon asymétrique doux 1.375rem / 0.55rem et ombre subtile */
 .class-card {
   min-height: 4.8rem !important;
-  border-radius: 1.3rem !important;
-  border-end-start-radius: 0.5rem !important;
+  border-radius: 1.375rem !important;
+  border-end-start-radius: 0.55rem !important;
 }
 
-.class-card:not(.class-card--active):not([data-session-active="true"]):not(:has(.class-card__open:hover)) {
-  box-shadow: none !important;
+.dark .class-card {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 10px 22px -14px rgba(0, 0, 0, 0.55);
 }
 
 @media (max-width: 767px), ((max-height: 500px) and (pointer: coarse)) {
@@ -813,12 +840,44 @@ html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
 .dashboard-day-group:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
 @media (prefers-reduced-motion: reduce) { .class-card__menu svg { transition: none; } }
 
-/* Des surfaces assombries conservent la teinte sans réduire la lisibilité. */
+/* Des surfaces assombries conservent la teinte en dégradé 135deg profond sans réduire la lisibilité (aqsami-v2). */
 .dark .class-card {
-  background-color: color-mix(in srgb, var(--card-bg, #e7f4ec) 12%, hsl(var(--card))) !important;
+  --dark-c1: color-mix(in srgb, var(--card-bg, #e6f3e9) 15%, #171424);
+  --dark-c2: color-mix(in srgb, var(--card-bg2, var(--card-bg, #cfe6d5)) 22%, #1d192e);
+  --dark-title: color-mix(in srgb, var(--card-bg, #e6f3e9) 78%, #ffffff);
+  --dark-sub: color-mix(in srgb, var(--card-bg2, var(--card-bg, #cfe6d5)) 65%, #b8b2cc);
+  background-color: var(--dark-c1) !important;
+  background-image: linear-gradient(135deg, var(--dark-c1), var(--dark-c2)) !important;
   border-color: color-mix(in srgb, var(--card-border, #c1e2ce) 28%, hsl(var(--border))) !important;
 }
-.dark .class-card__title { color: hsl(var(--foreground)) !important; }
-.dark .class-card__tier-plain { color: hsl(var(--muted-foreground)) !important; }
-.dark .class-card__menu { color: hsl(var(--foreground) / .85) !important; }
+.dark .class-card[data-keep-tone="mint"],
+.dark .class-card[data-keep-tone="lime"] {
+  --dark-c1: #163029; --dark-c2: #1b3d33; --dark-title: #b8f0d8; --dark-sub: #7bcbb0;
+}
+.dark .class-card[data-keep-tone="lavender"],
+.dark .class-card[data-keep-tone="indigo"] {
+  --dark-c1: #241f42; --dark-c2: #2d2556; --dark-title: #ddd6fe; --dark-sub: #b5a8f8;
+}
+.dark .class-card[data-keep-tone="sky"] {
+  --dark-c1: #16293d; --dark-c2: #1c3550; --dark-title: #bae0ff; --dark-sub: #7ebef5;
+}
+.dark .class-card[data-keep-tone="coral"] {
+  --dark-c1: #362119; --dark-c2: #45291e; --dark-title: #fed7bf; --dark-sub: #f3a67c;
+}
+.dark .class-card[data-keep-tone="sand"] {
+  --dark-c1: #312914; --dark-c2: #3e3418; --dark-title: #fef0b8; --dark-sub: #dfca78;
+}
+.dark .class-card[data-keep-tone="rose"] {
+  --dark-c1: #351a28; --dark-c2: #442033; --dark-title: #fbcfe0; --dark-sub: #e895b6;
+}
+.dark .class-card__title { color: var(--dark-title, hsl(var(--foreground))) !important; }
+.dark .class-card__tier-plain { color: var(--dark-sub, hsl(var(--muted-foreground))) !important; }
+.dark .class-card__menu { color: var(--dark-sub, hsl(var(--foreground) / .85)) !important; }
 .dark .class-card .class-card__group.keep-group-watermark { color: inherit !important; }
+.dark .class-card__schedule-capsule { color: rgba(214, 218, 234, 0.56) !important; }
+.dark .class-card__schedule-time { color: inherit !important; }
+.dark .class-card--active .class-card__live {
+  color: var(--dark-title, hsl(var(--foreground)));
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}

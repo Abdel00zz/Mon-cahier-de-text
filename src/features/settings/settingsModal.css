@@ -1,5 +1,17 @@
 /* Continuous structural rules, with one shared inset for content and controls. */
-.settings-modal-frame { --settings-rule: hsl(var(--border) / .85); --settings-inset: 24px; }
+.settings-modal-frame {
+  --settings-rule: hsl(var(--border) / .85);
+  --settings-inset: 24px;
+  --settings-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  .settings-modal-frame {
+    --settings-spring: linear(
+      0, 0.22 4%, 0.62 9%, 0.93 15%, 1.06 22%, 1.08 26%,
+      1.04 33%, 0.995 42%, 0.985 50%, 1.002 65%, 1
+    );
+  }
+}
 .settings-modal-frame.modal-motion-surface .modal-pro-header {
   border-bottom: 1px solid var(--settings-rule);
   padding-block: 8px;
@@ -33,21 +45,23 @@
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  border-inline-start: 2px solid transparent;
-  border-radius: 6px;
+  border: 0;
+  border-radius: 10px;
   color: color-mix(in srgb, hsl(var(--foreground)) 76%, var(--codex-stone));
   font-size: .875rem;
   font-weight: 500;
   line-height: 1.4;
   text-align: start;
   cursor: pointer;
-  transition: background-color 160ms ease, color 160ms ease;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 .settings-nav__link:lang(ar) { font-size: .9375rem; }
 .settings-nav__link svg { width: 18px; height: 18px; flex: none; stroke-width: 1.65; }
+/* Sélection en pastille teintée : aucune barre latérale, l’état reste lisible
+   au premier regard grâce au fond, à la graisse et à la couleur. */
 .settings-nav__link[aria-current='page'] {
-  border-inline-start-color: var(--codex-enamel);
-  background: color-mix(in srgb, var(--codex-enamel) 10%, var(--codex-stone));
+  background: color-mix(in srgb, var(--codex-enamel) 12%, var(--codex-stone));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--codex-enamel) 22%, transparent);
   color: var(--codex-enamel);
   font-weight: 650;
 }
@@ -59,7 +73,7 @@
 }
 .settings-nav__link:focus-visible {
   outline: 2px solid var(--codex-enamel);
-  outline-offset: 1px;
+  outline-offset: -2px;
 }
 @media (prefers-reduced-motion: reduce) {
   .settings-nav__link { transition: none; }
@@ -70,7 +84,7 @@
 }
 .settings-modal-frame .settings-scroll {
   margin: 0;
-  padding: 20px var(--settings-inset) 24px;
+  padding: 20px var(--settings-inset) 28px;
   min-height: 0;
   overscroll-behavior: contain;
   -webkit-mask-image: none;
@@ -81,12 +95,29 @@
 .settings-modal-frame .settings-section__body > :not(:first-child) { border-color: var(--settings-rule); }
 .settings-modal-frame .settings-section { min-width: 0; }
 .settings-modal-frame .modal-pro-footer { border-top: 1px solid var(--settings-rule); padding-inline: var(--settings-inset); }
+@media (min-width: 640px) {
+  .settings-modal-frame.modal-motion-surface {
+    /* fit-content : la fenêtre se serre autour de son contenu. `auto` la
+       faisait remplir tout l'espace entre les deux ancrages. */
+    height: fit-content;
+    max-height: min(86dvh, calc(var(--modal-visible-height, 100dvh) - 2rem));
+  }
+}
 @media (min-width: 1024px) {
-  .settings-modal-frame.modal-motion-surface { height: fit-content; min-height: min(30rem, 70dvh); max-height: min(86dvh, 760px); border-radius: 16px; }
+  .settings-modal-frame.modal-motion-surface {
+    height: fit-content;
+    min-height: 0;
+    max-height: min(86dvh, 760px);
+    border-radius: 28px;
+  }
   .settings-modal-frame .settings-shell { flex: 1; }
 }
 @media (max-width: 639px) {
-  .settings-modal-frame { --settings-inset: 16px; }
+  .settings-modal-frame { --settings-inset: 14px; }
+  .settings-modal-frame.modal-motion-surface {
+    height: fit-content;
+    max-height: min(82dvh, calc(var(--modal-visible-height, 100dvh) - 1rem));
+  }
   .settings-modal-frame .modal-body.settings-modal-body { padding-inline: 0; }
   .settings-modal-frame .settings-home { padding-inline: var(--settings-inset); }
   .settings-modal-frame .settings-scroll { padding-block: 16px 24px; }

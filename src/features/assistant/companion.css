@@ -1,8 +1,8 @@
 .assistant-anchor {
-  --assistant-avatar: #625398;
-  --assistant-surface: #f8f7fd;
-  --assistant-border: #dcd8ed;
-  --assistant-ink: #2a2640;
+  --assistant-avatar: #5f52d6;
+  --assistant-surface: #fbfafe;
+  --assistant-border: rgba(70, 55, 130, .14);
+  --assistant-ink: #221d35;
   --control-ink: #554b7c;
   --control-ink-hover: #44366f;
   --control-wash: #eeebfa;
@@ -10,38 +10,46 @@
   --assistant-safe-bottom: env(safe-area-inset-bottom, 0px);
   --assistant-safe-left: env(safe-area-inset-left, 0px);
   --assistant-safe-right: env(safe-area-inset-right, 0px);
-  --assistant-ease: cubic-bezier(.2,.85,.28,1);
-  position: relative; flex: none; inline-size: 44px; block-size: 44px; text-align: start;
+  --assistant-ease: var(--spring, cubic-bezier(.34, 1.4, .5, 1));
+  position: relative; flex: none; inline-size: 46px; block-size: 46px; text-align: start;
 }
 .dark .assistant-anchor {
-  --assistant-avatar: #c6b9f3;
-  --assistant-surface: #252238;
-  --assistant-border: #49435f;
-  --assistant-ink: #ece9fa;
+  --assistant-avatar: #a99ef6;
+  --assistant-surface: #1c1929;
+  --assistant-border: rgba(210, 198, 255, .14);
+  --assistant-ink: #f2effc;
   --control-ink: #d2c8ef;
   --control-ink-hover: #e7dfff;
   --control-wash: #38324d;
 }
 .assistant-trigger {
-  position: relative; display: grid; place-items: center; inline-size: 44px; block-size: 44px;
+  position: relative; display: grid; place-items: center; inline-size: 46px; block-size: 46px;
   border: 1px solid var(--assistant-border); border-radius: 50%; background: var(--assistant-surface);
-  box-shadow: inset 0 1px 0 hsl(var(--card) / .65), 0 2px 5px rgb(55 43 32 / .09);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .75), 0 8px 18px -12px rgb(35 28 68 / .18);
   padding: 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  transition: transform 180ms var(--assistant-ease), background-color 180ms ease;
+  transition: transform 300ms var(--assistant-ease), background-color 180ms ease, box-shadow 220ms ease;
 }
 .assistant-trigger[aria-expanded='true'] { background: var(--control-wash); }
 .assistant-trigger > .bloub-avatar { pointer-events: none; }
-.assistant-trigger:active { transform: scale(.95); }
+.assistant-trigger:active { transform: scale(.88); transition-duration: 100ms; }
 .assistant-trigger__badge {
-  position: absolute; inset-block-start: -2px; inset-inline-end: -3px; display: grid; place-items: center;
-  min-inline-size: 16px; block-size: 16px; padding-inline: 3px; border-radius: 5px;
+  position: absolute; inset-block-start: -6px; inset-inline-end: -6px; display: grid; place-items: center;
+  min-inline-size: 22px; block-size: 20px; padding-inline: 6px; border-radius: 99px;
   color: #4b407d; background: #e9e4f7; border: 1px solid #c9c0e7;
-  font: 500 10px/1 var(--font-sans); font-variant-numeric: tabular-nums; pointer-events: none;
-  animation: assistant-reveal 180ms var(--assistant-ease) both;
+  box-shadow: 0 0 0 3px hsl(var(--background));
+  font: 700 11px/1 var(--font-sans); font-variant-numeric: tabular-nums; pointer-events: none;
+  animation: assistant-reveal 220ms var(--assistant-ease) both;
 }
-.assistant-trigger__badge--alert { background: #873f31; color: #fff9f1; border-color: #773a2f; }
+.assistant-trigger__badge--alert {
+  background: #8b3a2b; color: #ffffff; border-color: #8b3a2b;
+}
+.assistant-trigger__badge--alert::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit;
+  border: 2px solid #8b3a2b; pointer-events: none;
+  animation: assistant-badge-ping 2.2s cubic-bezier(.2, .7, .3, 1) infinite;
+}
 .dark .assistant-trigger__badge--minor { color: #e9e0ff; background: #40365e; border-color: #796ca2; }
-.dark .assistant-trigger__badge--alert { color: #ffdfd6; background: #67372f; border-color: #996354; }
+.dark .assistant-trigger__badge--alert { color: #ffffff; background: #8b3a2b; border-color: #a34837; }
 
 .assistant-anchor .assistant-panel {
   position: absolute; z-index: 80; inset-block-start: calc(100% + 8px);
@@ -51,7 +59,7 @@
   color: var(--assistant-ink); background: var(--assistant-surface);
   box-shadow: 0 14px 38px -20px rgb(48 38 86 / .3), 0 2px 8px rgb(48 38 86 / .06);
   font-family: var(--font-companion, var(--font-sans));
-  transform-origin: top right; animation: assistant-reveal 190ms var(--assistant-ease) both;
+  transform-origin: top right; animation: assistant-reveal 240ms var(--assistant-ease) both;
 }
 .assistant-panel[hidden] { display: none; }
 .assistant-anchor[dir="rtl"] .assistant-panel { transform-origin: top left; }
@@ -91,7 +99,8 @@
   outline: 2px solid var(--control-ink); outline-offset: 2px;
 }
 @media (hover: hover) and (pointer: fine) {
-  .assistant-trigger:hover, .assistant-panel :is(.assistant-panel__tool,.assistant-panel__next,.assistant-panel__dismiss,.assistant-panel__help):hover,
+  .assistant-trigger:hover { background: var(--control-wash); transform: translateY(-2px); }
+  .assistant-panel :is(.assistant-panel__tool,.assistant-panel__next,.assistant-panel__dismiss,.assistant-panel__help):hover,
   .assistant-explorer button:hover { background: var(--control-wash); }
   .assistant-panel__action:hover { filter: brightness(1.08); }
 }
@@ -127,9 +136,10 @@
 @media (hover: hover) and (pointer: fine) { .assistant-trigger:hover + .assistant-preview:not([hidden]) { opacity: 1; } }
 .assistant-trigger:focus-visible + .assistant-preview:not([hidden]) { opacity: 1; }
 @keyframes assistant-reveal { from { opacity: 0; transform: translate3d(0, -3px, 0) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes assistant-badge-ping { 0% { opacity: .65; transform: scale(1); } 75%, 100% { opacity: 0; transform: scale(1.65); } }
 @media (prefers-reduced-motion: reduce) {
   .assistant-anchor *, [data-assistant-flow] > .dashboard-class-section { animation: none; transition: none; }
-  .assistant-trigger:active, .assistant-panel__action:active { transform: none; }
+  .assistant-trigger:hover, .assistant-trigger:active, .assistant-panel__action:active { transform: none; }
 }
 @media print { .assistant-anchor { display: none; } }
 @media (forced-colors: active) { .assistant-panel, .assistant-panel__action { border-color: ButtonText; } }

@@ -13,10 +13,9 @@ interface GuideModalProps {
   onClose: () => void;
   focusRequest?: GuideReference | null;
   initialReference?: GuideReference | null;
-  variant?: 'modal' | 'page';
 }
 
-export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRequest = null, initialReference = null, variant = 'modal' }) => {
+export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRequest = null, initialReference = null }) => {
   const { locale } = useLocale();
   const reduced = useReducedMotion();
   const isAr = locale === 'ar';
@@ -66,9 +65,8 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
   return (
     <Modal
       isOpen={isOpen} onClose={onClose} dir={isAr ? 'rtl' : 'ltr'}
-      maxWidth="2xl" mobilePresentation={variant === 'page' ? 'dialog' : 'sheet'}
-      mobileMaxHeight={0.94} dragHandle={variant !== 'page'} swipeToDismiss={variant !== 'page'}
-      className="hub-modal learning-guide-modal learning-guide"
+      maxWidth="2xl" mobilePresentation="dialog"
+      className="hub-modal learning-guide-modal learning-guide liquid-modal"
       headerClassName="hub-modal-header learning-guide-modal-header"
       bodyClassName="hub-modal-body learning-guide-modal-body"
       title={<span className="guide-heading" data-codex-title>

@@ -30,7 +30,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     onConfigChange: updateConfig,
     classes,
     addClass,
-    asPage = true,
+    asPage = false,
     initialSection,
     scheduleClassId,
 }) => {
@@ -41,16 +41,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     const requestClose = useCallback((afterClose?: () => void) => {
         if (asPage) {
-            onBack();
-            afterClose?.();
+            if (afterClose) afterClose();
+            else onBack();
             return;
         }
         if (!isSheetOpen) return;
         setSheetOpen(false);
         closeTimerRef.current = window.setTimeout(() => {
-            onBack();
-            afterClose?.();
-        }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
+            if (afterClose) afterClose();
+            else onBack();
+        }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 260);
     }, [asPage, isSheetOpen, onBack]);
 
     useEffect(() => () => {

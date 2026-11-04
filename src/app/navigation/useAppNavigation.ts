@@ -83,9 +83,23 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
     return () => window.removeEventListener('native-back', back);
   }, [enabled, route.view, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp]);
 
+  /*
+   * Une entrée initiale inconnue (ancien lien, hash d’aide ou de notification)
+   * est ramenée à l’accueil UNE SEULE FOIS, quand la navigation devient active.
+   * Cette normalisation vivait dans l’écouteur d’historique et se rejouait donc
+   * à chaque changement de route : elle écrasait aussitôt les liens profonds
+   * `#/classe/…` et `#/parametres` que l’application venait de pousser.
+   */
   useEffect(() => {
     // Auth owns its hashes until the workspace is available. In particular, do
-    // not replace #register/#start during session loading or browser back.
+    // not replace #register/#start during session loading.
+    if (!enabled || initial.view !== 'dashboard') return;
+    if (window.location.hash !== DASHBOARD_HASH) {
+      window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
+    }
+  }, [enabled, initial.view]);
+
+  useEffect(() => {
     if (!enabled) return;
     const restoreRoute = () => {
       saveScroll();
@@ -97,13 +111,10 @@ export function useAppNavigation(updateClass: (id: string, patch: Partial<ClassI
       }
       setRoute(next);
     };
-    if (initial.view === 'dashboard' && window.location.hash !== DASHBOARD_HASH) {
-      window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
-    }
     window.addEventListener('popstate', restoreRoute);
     window.addEventListener('hashchange', restoreRoute);
     return () => { window.removeEventListener('popstate', restoreRoute); window.removeEventListener('hashchange', restoreRoute); };
-  }, [enabled, initial.view, route, saveScroll]);
+  }, [enabled, route, saveScroll]);
 
   useEffect(() => {
     if (!enabled) return;

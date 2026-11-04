@@ -306,8 +306,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   className="hub-card"
                 >
                   <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
-                  <span className="hub-card__title">{t(item.titleKey)}</span>
-                  <span className="hub-card__hint">{t(item.hintKey)}</span>
+                  <span className="hub-card__title line-clamp-2">{t(item.titleKey)}</span>
+                  <span className="hub-card__hint line-clamp-2">{t(item.hintKey)}</span>
                 </button>
               </li>
             );
@@ -315,8 +315,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <li className="contents">
             <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
               <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
-              <span className="hub-card__title">{t('settings.item.support')}</span>
-              <span className="hub-card__hint">{t('settings.card.support')}</span>
+              <span className="hub-card__title line-clamp-2">{t('settings.item.support')}</span>
+              <span className="hub-card__hint line-clamp-2">{t('settings.card.support')}</span>
             </button>
           </li>
         </ul>
@@ -421,7 +421,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         </span>
       ) : <span className="hub-titlebar" data-codex-title>{t('settings.title')}</span>}
       maxWidth="xs"
-      className="hub-modal settings-modal-frame settings-modal-sheet overflow-hidden"
+      mobilePresentation="dialog"
+      className="hub-modal settings-modal-frame settings-modal-sheet liquid-modal overflow-hidden"
       headerClassName="hub-modal-header"
       bodyClassName="hub-modal-body settings-modal-body"
       footer={hasProfileChanges ? footer : undefined}

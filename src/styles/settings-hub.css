@@ -214,6 +214,26 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
   /* Le menu latéral remplace les cartes (cette règle non superposée bat lg:hidden). */
   .settings-home { display: none; }
 }
+
+/* Téléphones (iPhone 13–16, Galaxy S25, 360–430 px) : le hub se resserre
+   sans perdre sa cible tactile de 44 px, et la fenêtre se referme sur son
+   contenu au lieu de remplir l'écran. */
+@media (max-width: 639px) {
+  .settings-modal-frame .settings-home { padding: 0.45rem 0.75rem 0.7rem; }
+  .settings-modal-frame .hub-grid { gap: 0.4rem; }
+  .settings-modal-frame .hub-card {
+    min-height: 5.9rem;
+    gap: 0.2rem;
+    padding: 0.62rem 0.42rem 0.55rem;
+    border-radius: 18px;
+  }
+  .settings-modal-frame .hub-card__icon { width: 2.25rem; height: 2.25rem; border-radius: 11px; margin-bottom: 0.08rem; }
+  .settings-modal-frame .hub-card__icon .app-icon { width: 1.4rem; height: 1.4rem; stroke-width: 1.9; }
+  .settings-modal-frame .hub-card__title { font-size: 0.8125rem; line-height: 1.28; }
+  .settings-modal-frame .hub-card__hint { max-width: 9rem; font-size: 0.6875rem; line-height: 1.3; }
+  html[lang='ar'] .settings-modal-frame .hub-card__title { font-size: 0.9375rem; line-height: 1.32; }
+  html[lang='ar'] .settings-modal-frame .hub-card__hint { font-size: 0.75rem; line-height: 1.34; }
+}
 @media (prefers-reduced-motion: reduce) {
   .hub-card, .hub-card__icon, .hub-back { transition: none; }
   .hub-card:hover, .hub-card:active, .hub-card:hover .hub-card__icon, .hub-card:active .hub-card__icon, .hub-back:active { transform: none; }

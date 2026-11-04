@@ -116,6 +116,43 @@
   font-style: italic; font-weight: 400; font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/*
+ * Tableau de contenu : Computer Modern Sans Serif (CMU, Donald Knuth).
+ * Medium (500) compose le corps, Demi Condensed (600) les titres structurels,
+ * Oblique (500 italique) les intitulés académiques et la voix marginale.
+ * Fichiers embarqués (SIL OFL, `public/fonts/OFL-computer-modern.txt`) : ils
+ * ne portent que le latin, l'arabe retombe donc sur Readex Pro.
+ */
+@font-face {
+  font-family: 'Computer Modern Sans Serif Medium';
+  src: url('/fonts/cmu-sans-serif-medium.woff2') format('woff2');
+  font-style: normal; font-weight: 400 500; font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Computer Modern Sans Serif Medium';
+  src: url('/fonts/cmu-sans-serif-bold.woff2') format('woff2');
+  font-style: normal; font-weight: 600 900; font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Computer Modern Sans Serif Medium';
+  src: url('/fonts/cmu-sans-serif-oblique.woff2') format('woff2');
+  font-style: italic; font-weight: 400 900; font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Computer Modern Sans Serif Demi Condensed';
+  src: url('/fonts/cmu-sans-serif-demi-condensed.woff2') format('woff2');
+  font-style: normal; font-weight: 400 700; font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Computer Modern Sans Serif Oblique';
+  src: url('/fonts/cmu-sans-serif-oblique.woff2') format('woff2');
+  font-style: italic; font-weight: 400 700; font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 @font-face {
   font-family: 'Source Sans 3';
   src: url('@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2') format('woff2');

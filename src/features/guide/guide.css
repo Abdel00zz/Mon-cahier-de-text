@@ -29,24 +29,34 @@
 .learning-guide-modal.modal-motion-surface {
   --modal-header-bg: transparent;
   --modal-close-bg: var(--guide-surface);
-  width: min(94vw, 38rem);
-  max-width: 38rem;
-  max-height: min(86dvh, 44rem);
+  width: min(94vw, 34rem);
+  max-width: 34rem;
+  max-height: min(80dvh, 42rem);
   padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--guide-line);
-  border-radius: 20px;
-  background: var(--guide-bg) !important;
+  border-radius: 28px;
+  /* Coque en verre : le guide se lit au-dessus de la page sans la masquer. */
+  background: color-mix(in srgb, var(--guide-bg) 84%, transparent) !important;
   box-shadow: 0 24px 64px -28px rgb(20 16 35 / .35), inset 0 1px 0 color-mix(in srgb, var(--guide-surface) 75%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(1.6);
+  backdrop-filter: blur(30px) saturate(1.6);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .learning-guide-modal.modal-motion-surface {
+    background: var(--guide-bg) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 .learning-guide-modal .dialog-close { color: var(--guide-mute); background: var(--guide-surface); }
 .learning-guide-modal-header.modal-pro-header {
   flex-shrink: 0;
   min-height: 0;
-  padding: 18px 20px 14px;
-  padding-inline-end: 68px;
+  padding: 16px 20px 12px;
+  padding-inline-end: 64px;
   border: 0;
   background: transparent !important;
 }
@@ -58,8 +68,9 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  padding: 0 20px !important;
+  padding: 0 16px !important;
 }
+
 .guide-search {
   display: flex;
   align-items: center;
@@ -128,13 +139,27 @@
   .guide-questions summary:hover { background: var(--guide-hover); }
   .guide-questions summary:hover .guide-plus { color: var(--guide-accent); background: color-mix(in srgb, var(--guide-accent) 8%, transparent); }
 }
+/* Téléphone : fenêtre serrée et centrée, en-tête compact, liste défilable.
+   Le dialogue garde ses quatre coins arrondis (ce n'est plus une feuille). */
 @media (max-width: 639px) {
-  .learning-guide-modal.modal-motion-surface { width: 100%; max-width: 100%; border-radius: 24px 24px 0 0; }
-  .learning-guide-modal-header.modal-pro-header { padding: 12px 16px 10px; padding-inline-end: 64px; }
-  .learning-guide-modal-body.modal-body { padding-inline: 16px !important; }
+  .learning-guide-modal.modal-motion-surface {
+    width: min(94vw, 30rem);
+    max-width: min(94vw, 30rem);
+    max-height: min(76dvh, 34rem);
+    border-radius: 28px;
+  }
+  .learning-guide-modal-header.modal-pro-header { padding: 12px 14px 8px; padding-inline-end: 58px; }
+  .learning-guide-modal-body.modal-body { padding-inline: 12px !important; }
+  .guide-search { margin-bottom: 8px; }
+  .guide-title { font-size: 19px; }
+  .guide-subtitle { font-size: 11.5px; }
   .guide-questions summary { padding-inline: 12px; }
   .guide-questions details + details::before { inset-inline: 12px; }
   .guide-answer { padding-inline: 12px; }
   .guide-credit { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+@media (max-width: 380px) {
+  .learning-guide-modal.modal-motion-surface { width: 94vw; max-width: 94vw; max-height: 78dvh; }
+  .guide-title { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .learning-guide * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } .guide-questions summary:active { transform: none; } }

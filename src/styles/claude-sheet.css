@@ -746,3 +746,36 @@
   place-items: center;
   flex-shrink: 0;
 }
+
+/* ── 12. OPTIMISATION RESPONSIVE TÉLÉPHONE & TABLETTE ── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .claude-sheet-dialog--wide {
+    max-width: min(92vw, 600px);
+  }
+}
+
+@media (max-width: 639px) {
+  .claude-sheet-dialog--wide,
+  .claude-sheet-dialog--eval {
+    max-width: 100%;
+  }
+
+  .claude-sheet-header {
+    padding: 10px 16px 12px;
+  }
+
+  .claude-grouped-list {
+    margin: 0 14px;
+  }
+
+  .claude-tabs {
+    margin: 0 14px 12px;
+  }
+
+  .claude-choice-card {
+    min-height: 52px;
+    padding: 12px 15px;
+    border-radius: 18px;
+  }
+}
+

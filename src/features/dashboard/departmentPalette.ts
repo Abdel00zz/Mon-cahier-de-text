@@ -9,12 +9,12 @@ export interface DepartmentPalette {
 }
 
 const DEPARTMENT_PALETTES = {
-  peach: { bg: '#fdeede', bg2: '#fbd3bf', border: '#f6d9bd', title: '#6b3a12', secondary: '#a8642a' },
+  peach: { bg: '#fdeede', bg2: '#fbd3bf', border: '#f6d9bd', title: '#6b3a12', secondary: '#9a5b26' },
   lavender: { bg: '#ece9f7', bg2: '#d8cbfa', border: '#d9d4ee', title: '#2a205a', secondary: '#5a3fbf' },
-  green: { bg: '#e6f3e9', bg2: '#c3e9d8', border: '#cfe6d5', title: '#14503a', secondary: '#3f7f63' },
-  sky: { bg: '#e0eefa', bg2: '#c9dbff', border: '#c6dff2', title: '#0f3f6b', secondary: '#3a78a8' },
-  sand: { bg: '#f7f0d4', bg2: '#ebe0ad', border: '#ebe0ad', title: '#5c4a05', secondary: '#8f7a1c' },
-  rose: { bg: '#fbe6ee', bg2: '#f2cddb', border: '#f2cddb', title: '#6e1c3e', secondary: '#a8486f' },
+  green: { bg: '#e6f3e9', bg2: '#c3e9d8', border: '#cfe6d5', title: '#14503a', secondary: '#3a755b' },
+  sky: { bg: '#e0eefa', bg2: '#c9dbff', border: '#c6dff2', title: '#0f3f6b', secondary: '#346c97' },
+  sand: { bg: '#f7f0d4', bg2: '#ebe0ad', border: '#ebe0ad', title: '#5c4a05', secondary: '#7a6818' },
+  rose: { bg: '#fbe6ee', bg2: '#f2cddb', border: '#f2cddb', title: '#6e1c3e', secondary: '#a6476e' },
 } as const;
 
 export type PaletteKey = keyof typeof DEPARTMENT_PALETTES;
@@ -100,7 +100,7 @@ export function buildUnifiedClassPaletteMap(
       const hue = hueOf(item.color).toFixed(3);
       map.set(id, {
         bg: `hsl(${hue} 55% 94%)`, border: `hsl(${hue} 45% 82%)`,
-        title: `hsl(${hue} 65% 18%)`, secondary: `hsl(${hue} 45% 32%)`,
+        title: `hsl(${hue} 65% 18%)`, secondary: `hsl(${hue} 45% 29%)`,
       });
       return;
     }

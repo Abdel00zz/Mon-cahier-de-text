@@ -59,3 +59,8 @@
   .editor-back-button:is(:hover, :active) { transform: none; }
   .editor-back-button:hover .editor-back-button__arrow { transform: rotate(var(--back-rotation)); }
 }
+
+  /* Le titre éditable reste une cible tactile confortable sur téléphone. */
+  @media (max-width: 639px) {
+    .editor-title-editable { display: inline-flex; align-items: center; min-height: 40px; }
+  }

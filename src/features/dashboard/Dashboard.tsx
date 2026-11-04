@@ -31,10 +31,12 @@ import { ClassroomWelcomeIllustration, LessonSearchIllustration } from '@/compon
 import { getBundledCalendar, loadHolidayCalendar, type HolidayCalendar } from '@/domain/calendar/calendar';
 import { computeClassSessionSchedule, type SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import { subscribe as subscribeSyncBus } from '@/infrastructure/sync/syncBus';
-import { ClassAssistant } from '@/features/assistant/ClassAssistant';
 import { readStoredNotebook } from '@/infrastructure/storage/notebookStorage';
+import { useDeferredReady } from '@/hooks/useDeferredReady';
 
 const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
+/* Le compagnon est un confort : son moteur ne bloque jamais l'affichage des classes. */
+const ClassAssistant = lazy(() => import('@/features/assistant/ClassAssistant').then(module => ({ default: module.ClassAssistant })));
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -48,6 +50,12 @@ interface DashboardProps {
 
 const NO_ACTIVE_SESSION_IDS: string[] = [];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
+/**
+ * Budget d'animation : au-delà de ce nombre de cartes visibles, la grille
+ * redevient statique. Trente cahiers animés en même temps ne doivent jamais
+ * coûter la fluidité de la navigation sur un téléphone d'entrée de gamme.
+ */
+const MAX_ANIMATED_CLASS_CARDS = 12;
 const readAssistantLessons = (classId: string) => readStoredNotebook(classId).lessonsData;
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -79,6 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const { isPhone, isNative } = useDevice();
     const isMobile = isPhone || isNative;
+    const assistantReady = useDeferredReady();
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'double' : 'triple';
     const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
@@ -341,6 +350,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         () => JSON.stringify([classDisplayMode, filteredClasses.map(c => [c.id, activeSessionIds.has(c.id)])]),
         [classDisplayMode, filteredClasses, activeSessionIds],
     );
+    // Les animations de position restent un budget, pas une promesse : au-delà
+    // du seuil, la liste garde son ordre sans transition coûteuse.
+    const animateClassLayout = !reduceMotion && filteredClasses.length <= MAX_ANIMATED_CLASS_CARDS;
 
     // Assign palette before temporal sorting so a session never changes a class's color.
     const paletteByClassId = useMemo(() => {
@@ -402,11 +414,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return (
         <div
             style={{ paddingBottom: '118px' }}
-            className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-3 sm:pt-6"
+            className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-0 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-[40rem] px-5 pt-7 sm:pt-11 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-[40rem] px-5 pt-2 sm:pt-11 pl-safe pr-safe">
                     {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}
                     <header className="dashboard-top-header mb-4 pt-1" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                         <DashboardActions
@@ -422,8 +434,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     aria-label={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
                                     title={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
                                 >
-                                    <Plus size={20} strokeWidth={1.8} aria-hidden="true" />
+                                    <Plus size={18} strokeWidth={2} aria-hidden="true" />
                                 </button>
+                                {/* Même empreinte de 46 px pendant le chargement : aucun décalage de mise en page. */}
+                                {assistantReady ? <Suspense fallback={<span aria-hidden="true" className="inline-block size-[46px] shrink-0 rounded-full bg-muted/50" />}>
                                 <ClassAssistant
                                     locale={locale}
                                     classes={classes}
@@ -441,6 +455,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     onOpenEvaluations={(classInfo, entry) => onOpenEvaluations(classInfo, entry ?? 'all')}
                                     onConfigureClass={classInfo => setEditingClass(classInfo)}
                                 />
+                                </Suspense> : <span aria-hidden="true" className="inline-block size-[46px] shrink-0 rounded-full bg-muted/50" />}
                             </div>
                         </DashboardActions>
                         <h1
@@ -514,13 +529,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 marginTop: '1.8rem',
                                             }}
                                         >
-                                            {/* Titre de groupe par jour (« غدا », « الإثنين ») */}
+                                            {/* Titre de groupe par jour (« غدا », « الإثنين ») — épuré sans puce ni ligne */}
                                             {group.showTitle && (
-                                                <div className="dashboard-day-group__header flex items-center gap-2.5 mb-2.5 mt-1 px-1">
-                                                    <h2 className="dashboard-day-group__title text-xs font-semibold tracking-wide text-muted-foreground/85 flex items-center gap-1.5">
+                                                <div className="dashboard-day-group__header flex items-center mb-2 mt-1 px-1">
+                                                    <h2 className="dashboard-day-group__title text-xs font-semibold tracking-wide text-muted-foreground/85">
                                                         <span>{group.label}{locale === 'ar' ? ':' : ''}</span>
                                                     </h2>
-                                                    <div className="h-px flex-1 bg-border/40" aria-hidden="true" />
                                                 </div>
                                             )}
                                             <div className="dashboard-day-group__cards flex flex-col gap-3 w-full">
@@ -530,7 +544,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                         <motion.div
                                                             key={item.classInfo.id}
                                                             role="listitem"
-                                                            layout={reduceMotion ? false : 'position'}
+                                                            layout={animateClassLayout ? 'position' : false}
                                                             layoutDependency={classLayoutKey}
                                                             initial={false}
                                                             transition={{ layout: CLASS_MOVE_TRANSITION }}

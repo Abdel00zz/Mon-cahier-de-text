@@ -55,6 +55,20 @@ test('les fontes arabes et latines ont des plages unicode disjointes sans mélan
   assert.deepEqual(seenLatin, latinFamilies);
 });
 
+test('le tableau de contenu compose en Computer Modern Sans Serif (Medium, Demi Condensed, Oblique)', () => {
+  const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
+  assert.match(editor, /--notebook-heading:\s*'Computer Modern Sans Serif Demi Condensed'/, 'les titres structurels utilisent Demi Condensed');
+  assert.match(editor, /--notebook-paragraph:\s*'Computer Modern Sans Serif Medium'/, 'le corps utilise Medium');
+  assert.match(editor, /--notebook-oblique:\s*'Computer Modern Sans Serif Oblique'/, 'les intitulés académiques utilisent Oblique');
+  const fonts = readFileSync('src/styles/fonts.css', 'utf8');
+  for (const family of ['Computer Modern Sans Serif Medium', 'Computer Modern Sans Serif Demi Condensed', 'Computer Modern Sans Serif Oblique']) {
+    assert.ok(fonts.includes(`font-family: '${family}'`), `${family} déclarée`);
+  }
+  for (const file of ['cmu-sans-serif-medium', 'cmu-sans-serif-demi-condensed', 'cmu-sans-serif-oblique']) {
+    assert.ok(fonts.includes(`/fonts/${file}.woff2`), `${file} embarquée, aucune requête réseau`);
+  }
+});
+
 test('les remarques et les retours système utilisent la police de l’interface', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');

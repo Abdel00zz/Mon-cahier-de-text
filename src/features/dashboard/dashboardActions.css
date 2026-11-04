@@ -14,14 +14,7 @@
 .dashboard-actions-bar[dir="rtl"] {
   direction: rtl;
   justify-content: flex-end;
-  margin-block-start: -8px;
   margin-inline-start: 0;
-}
-
-@media (max-width: 639px) {
-  .dashboard-actions-bar[dir="rtl"] {
-    margin-block-start: -10px;
-  }
 }
 
 .dashboard-actions-bar__mode {

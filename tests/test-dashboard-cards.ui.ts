@@ -143,6 +143,23 @@ test('la création et les dispositions ne dépendent plus du menu', () => {
   assert.doesNotMatch(actions, /DropdownMenu/, 'aucun menu supérieur');
 });
 
+test('la grille garde un budget d’animation quand les classes se multiplient', () => {
+  const source = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
+  assert.match(source, /const MAX_ANIMATED_CLASS_CARDS = 12/, 'un plafond explicite protège les téléphones d’entrée de gamme');
+  assert.match(source, /filteredClasses\.length <= MAX_ANIMATED_CLASS_CARDS/, 'la décision suit le nombre réel de cartes');
+  assert.match(source, /layout=\{animateClassLayout \? 'position' : false\}/, 'au-delà du budget, la liste reste statique');
+});
+
+test('le compagnon est chargé après le premier rendu, hors du bundle d’entrée', () => {
+  const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
+  assert.match(dashboard, /lazy\(\(\)\s*=>\s*import\('@\/features\/assistant\/ClassAssistant'\)/, 'le moteur du compagnon est découpé');
+  assert.match(dashboard, /useDeferredReady\(/, 'le tableau de bord attend un temps mort');
+  assert.doesNotMatch(dashboard, /^import \{ ClassAssistant \}/m, 'aucun import statique dans le bundle d’entrée');
+  // Le cahier ne monte plus un second compagnon : ses circuits existants suffisent.
+  const editor = readFileSync('src/features/editor/Editor.tsx', 'utf8');
+  assert.doesNotMatch(editor, /ClassAssistant/, 'pas de compagnon supplémentaire dans l’éditeur');
+});
+
 test('le tableau de bord place les actions au-dessus de « Mes classes : »', () => {
   const source = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
   assert.match(source, /<DashboardActions[\s\S]*?<h1/, 'actions avant le titre');
