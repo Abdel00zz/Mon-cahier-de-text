@@ -42,9 +42,9 @@
   border: 1px solid var(--guide-line);
   border-radius: 20px;
   background: var(--guide-bg) !important;
+  background-image: var(--modal-surface-tint) !important;
   box-shadow: 0 24px 64px -28px rgb(20 16 35 / .35), inset 0 1px 0 color-mix(in srgb, var(--guide-surface) 75%, transparent);
 }
-.learning-guide-modal[data-codex-surface]::after { display: none; }
 .learning-guide-modal .dialog-close { color: var(--guide-mute); background: var(--guide-surface); }
 .learning-guide-modal-header.modal-pro-header {
   flex-shrink: 0;
