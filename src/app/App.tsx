@@ -37,7 +37,7 @@ import { computeDynamicCanvasStyle } from '../features/dashboard/dashboardCanvas
 const Dashboard = lazy(() => import('../features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('../features/editor/Editor').then(module => ({ default: module.Editor })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
-const GuidePage = lazy(() => import('../features/guide/GuidePage').then(module => ({ default: module.GuidePage })));
+const GuideModal = lazy(() => import('../features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const AuthPage = lazy(() => import('../features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const CommandPalette = lazy(() => import('../components/ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 const TeacherConversation = lazy(() => import('../features/messages/TeacherConversation').then(module => ({ default: module.TeacherConversation })));
@@ -216,29 +216,6 @@ const App: React.FC = () => {
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
-    if (view === 'settings') {
-      return (
-        <SettingsPage
-          asPage
-          initialSection={assistantSettingsSection?.section}
-          scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
-          onBack={handleBackFromSettings}
-          onOpenGuide={handleOpenHelp}
-          config={config}
-          onConfigChange={updateConfig}
-          classes={classes}
-          addClass={addClass}
-        />
-      );
-    }
-    if (view === 'help') {
-      return (
-        <GuidePage
-          onBack={handleBackFromHelp}
-          onClose={handleBackFromHelp}
-        />
-      );
-    }
     if (backgroundView === 'editor' && backgroundClass) {
       // Le Web propose un retour visible ; Android utilise son bouton système.
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
@@ -329,6 +306,25 @@ const App: React.FC = () => {
             {renderContent()}
           </Suspense>
         </div>
+        {view === 'settings' && (
+          <Suspense fallback={null}>
+            <SettingsPage
+              initialSection={assistantSettingsSection?.section}
+              scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
+              onBack={handleBackFromSettings}
+              onOpenGuide={handleOpenHelp}
+              config={config}
+              onConfigChange={updateConfig}
+              classes={classes}
+              addClass={addClass}
+            />
+          </Suspense>
+        )}
+        {view === 'help' && (
+          <Suspense fallback={null}>
+            <GuideModal isOpen onClose={handleBackFromHelp} />
+          </Suspense>
+        )}
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>
