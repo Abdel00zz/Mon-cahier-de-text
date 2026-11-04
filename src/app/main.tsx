@@ -28,6 +28,7 @@ import { startAppUpdateChecks } from '../platform/appUpdates';
 import { initAppViewport } from '../platform/appViewport';
 import { initNativeRuntime } from '../platform/nativeRuntime';
 import { initPwaInstall } from '../platform/pwaInstall';
+import { initWebVitals } from '../platform/webVitals';
 import { requestPersistentStorage } from '../infrastructure/storage/safeStorage';
 import '../styles/index.css';
 
@@ -70,6 +71,10 @@ void initNativeRuntime().catch(error => console.warn('Native initialization fail
 // Protège les cahiers locaux contre l'éviction automatique du navigateur.
 void requestPersistentStorage().catch(() => {});
 startAppUpdateChecks();
+// Mesures terrain (LCP/CLS/INP/TTFB) : l'observation reste locale et ne coûte
+// rien tant qu'aucun point de collecte n'est configuré.
+const disposeVitals = initWebVitals();
+import.meta.hot?.dispose(() => disposeVitals());
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

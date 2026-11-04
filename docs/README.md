@@ -3,6 +3,7 @@
 | Besoin | Dossier / document |
 | --- | --- |
 | Comprendre les dossiers et choisir où ajouter du code | [Architecture](architecture/architecture.md) |
+| Intégration continue, budgets de performance, observabilité, en-têtes | [Infrastructure](architecture/infrastructure.md) |
 | Utiliser le cahier et rédiger des contenus | [Guides](guides/) |
 | Rédiger un contenu, un devoir, une olympiade (syntaxe complète) | [Guide de rédaction des contenus](guide-contenue.md) |
 | Déployer, vérifier la synchronisation ou les notifications | [Exploitation](operations/) |

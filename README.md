@@ -74,6 +74,7 @@ npm run lint
 npm run check:architecture
 npm run check:unused
 npm run check:i18n
+npm run check:headers
 npm test
 npm run test:pilotage
 npm run test:editor
@@ -81,6 +82,7 @@ npm run test:notifications
 npm run test:admin-sync
 npm run test:guide
 npm run build
+npm run check:bundle
 npm run check
 ```
 
@@ -88,9 +90,11 @@ npm run check
 - `check:architecture` interdit les variables inutilisées, les dépendances du domaine vers React, les imports d’écrans dans les primitives UI et les imports client vers les API privées.
 - `check:unused` détecte fichiers, exports et dépendances orphelins.
 - `check:i18n` impose la parité FR/EN/AR et l'absence de clé utilisée sans traduction.
+- `check:headers` vérifie que `vercel.json` conserve HSTS, CSP et les autres en-têtes de sécurité.
+- `check:bundle` compare le poids gzippé de `dist/assets` aux budgets de `scripts/validation/check-bundle-budget.mjs`.
 - `npm test` lance toutes les suites TypeScript, dont les tests de rendu de l’éditeur. Le test PowerShell du script de publication se lance séparément : `pwsh -File tests/test-auto-commit.ps1`.
 - `build` produit les entrées enseignant et administration ainsi que le service worker.
-- `check` exécute toute la chaîne de qualité, y compris les traductions, avec une seule vérification TypeScript.
+- `check` exécute toute la chaîne de qualité, y compris les traductions, avec une seule vérification TypeScript. La même chaîne est rejouée par l’intégration continue (`.github/workflows/ci.yml`) ; voir [docs/architecture/infrastructure.md](docs/architecture/infrastructure.md).
 
 La publication s'effectue par `./auto_commitv2.ps1` : verrou local récupérable, blocage des secrets,
 vérification des motifs de conflit, message de commit déduit des fichiers, puis push sans force-push.

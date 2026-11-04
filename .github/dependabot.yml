@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '05:00'
+      timezone: Africa/Casablanca
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Les correctifs mineurs arrivent ensemble : une seule build à valider.
+      correctifs:
+        applies-to: version-updates
+        update-types: [minor, patch]
+      securite:
+        applies-to: security-updates
+        patterns: ['*']
+    ignore:
+      # Une montée majeure de React, Vite ou Tailwind se décide avec un plan
+      # de migration, pas dans une PR hebdomadaire automatique.
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: vite
+        update-types: [version-update:semver-major]
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+      include: scope

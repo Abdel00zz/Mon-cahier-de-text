@@ -5,6 +5,8 @@ import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRe
 import { Toaster } from '../components/ui/sonner';
 import { GlobalTooltip } from '../components/ui/GlobalTooltip';
 import { AppBootSkeleton, PageTransitionLoader } from '../components/ui/PageSkeleton';
+import { AppErrorBoundary } from '../components/ui/AppErrorBoundary';
+import { reportAppError } from '../platform/errorReporting';
 import { SyncStrip } from '../components/ui/SyncStrip';
 import { AppLocale } from '../types';
 import { useConfigManager } from '../hooks/useConfigManager';
@@ -348,9 +350,13 @@ const App: React.FC = () => {
         <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
         {/* Liseré de synchronisation : discret, sans écran bloquant. */}
         <SyncStrip />
-        <Suspense fallback={<AppBootSkeleton />}>
-          {appSurface}
-        </Suspense>
+        {/* Filet de sécurité : une erreur de rendu ne doit jamais laisser une
+            page blanche ni faire perdre la saisie locale. */}
+        <AppErrorBoundary onError={reportAppError}>
+          <Suspense fallback={<AppBootSkeleton />}>
+            {appSurface}
+          </Suspense>
+        </AppErrorBoundary>
 
 
 

@@ -1,0 +1,68 @@
+name: Qualité
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Vérifications
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Auditer les dépendances livrées
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Vérifier les types
+        run: npx tsc --noEmit
+
+      - name: Vérifier l'architecture
+        run: node scripts/validation/check-architecture.mjs
+
+      - name: Vérifier les traductions
+        run: npm run check:i18n
+
+      - name: Vérifier les en-têtes de sécurité
+        run: npm run check:headers
+
+      - name: Vérifier l'absence de secrets
+        run: npm run check:secrets
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de production
+        run: npm run build
+
+      - name: Budget de bundle
+        run: npm run check:bundle
+
+      - name: Conserver la build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: |
+            dist
+            !dist/**/*.map
+          retention-days: 7
+          if-no-files-found: warn

@@ -190,10 +190,10 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 - Les pages principales sont chargées avec `React.lazy`.
 - Les modales lourdes de l’éditeur sont chargées à la demande.
 - MathProvider partage la promesse de démarrage KaTeX entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
-- Aucun script de mesure tierce (analytics) n’est chargé : le premier affichage ne dépend d’aucun réseau externe.
+- Aucun script de mesure tierce (analytics) n’est chargé : le premier affichage ne dépend d’aucun réseau externe. Les Core Web Vitals sont mesurés localement (`src/platform/webVitals.ts`).
 - Administration et application enseignant sont deux entrées séparées.
-- Aucun service worker n'est enregistré : le préchargement se limite au découpage de chunks produit par Vite.
-- Le budget avertit au-delà de 320 kB par chunk non compressé.
+- Le service worker (`public/sw.js`) précache la coque et met en cache à la volée `/fonts/` et `/assets/`.
+- `scripts/vite/optimization.ts` fixe l’alerte à 320 kB par chunk non compressé ; `npm run check:bundle` ajoute un plafond ferme sur les fichiers gzippés réellement livrés (90 kB par fragment, 1150 kB de JS au total, 160 kB de CSS).
 - Les dépendances directes correspondent aux imports réels ; aucune dépendance de service worker n'est conservée.
 
 ## Qualité
@@ -202,11 +202,13 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 npm run lint
 npm run check:architecture
 npm run check:unused
+npm run check:headers
 npm run build
+npm run check:bundle
 npm audit --omit=dev
 ```
 
-Le contrôle `check:unused` connaît explicitement les entrées serverless et administration grâce à `knip.json`.
+Le contrôle `check:unused` connaît explicitement les entrées serverless et administration grâce à `knip.json`. `check:headers` vérifie que `vercel.json` conserve HSTS, CSP et les autres en-têtes de sécurité. Toutes ces commandes, plus `npm test`, sont rejouées par l’intégration continue : voir [Infrastructure](infrastructure.md).
 
 ## Politique de nettoyage
 
