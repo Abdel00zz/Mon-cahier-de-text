@@ -26,6 +26,47 @@ interface ClassListItemProps {
     scheduleStatus?: SessionScheduleStatus;
 }
 
+const renderScheduleTime = (timeStr?: string) => {
+    if (!timeStr) return null;
+    if (timeStr.includes(':')) {
+        const [hours, minutes] = timeStr.split(':');
+        return (
+            <span className="class-card__schedule-time font-semibold" dir="ltr">
+                <span>{hours}</span>
+                <span className="class-card__schedule-colon" aria-hidden="true">:</span>
+                <span>{minutes}</span>
+            </span>
+        );
+    }
+    return <span className="class-card__schedule-time font-semibold">{timeStr}</span>;
+};
+
+const renderScheduleContent = (status: SessionScheduleStatus) => {
+    const day = status.dayLabel;
+    const time = status.startTimeLabel;
+    if (day && time) {
+        return (
+            <>
+                <span className="class-card__schedule-day">{day}</span>
+                {renderScheduleTime(time)}
+            </>
+        );
+    }
+    const short = status.shortLabel;
+    const parts = short.trim().split(/\s+/);
+    if (parts.length >= 2 && parts[parts.length - 1].includes(':')) {
+        const timePart = parts[parts.length - 1];
+        const dayPart = parts.slice(0, parts.length - 1).join(' ');
+        return (
+            <>
+                <span className="class-card__schedule-day">{dayPart}</span>
+                {renderScheduleTime(timePart)}
+            </>
+        );
+    }
+    return <span>{short}</span>;
+};
+
 const ClassListItemComponent: FC<ClassListItemProps> = ({
     classInfo,
     onSelect,
@@ -99,9 +140,9 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                     ) : null}
                                 </span>
                             ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
-                                <span className="class-card__schedule" title={scheduleStatus.label}>
+                                <span className="class-card__schedule-capsule" title={scheduleStatus.label}>
                                     <Clock className="class-card__schedule-icon" aria-hidden="true" />
-                                    <span>{scheduleStatus.shortLabel}</span>
+                                    {renderScheduleContent(scheduleStatus)}
                                 </span>
                             ) : null}
                             {showsSubjectLabels && classInfo.subject && (

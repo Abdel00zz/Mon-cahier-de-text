@@ -142,7 +142,13 @@ const streamNames = [...ARABIC_STREAM_CODES, 'MPSI', 'PCSI', 'TSI', 'ECS', 'ECT'
     .flatMap(code => [code, ...(['fr', 'ar', 'en'] as const).flatMap(language =>
         [formatClassStreamFullName(code, language), formatClassStreamLabel(code, language)])]
         .filter((label): label is string => Boolean(label))
-        .map(label => ({ code, label: normalizeStreamText(label) })))
+        .flatMap(label => {
+            const norm = normalizeStreamText(label);
+            const withoutAl = norm.replace(/\b(?:ال|و)/g, '');
+            return withoutAl !== norm
+                ? [{ code, label: norm }, { code, label: withoutAl }]
+                : [{ code, label: norm }];
+        }))
     .sort((a, b) => b.label.length - a.label.length);
 
 /** Old class names may contain a translated level and an untranslated stream.

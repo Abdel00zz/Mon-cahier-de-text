@@ -18,6 +18,7 @@ export {
   classLevelGroupsForCycle,
   formatClassLevelGroupLabel,
   formatLocalizedClassDisplayName,
+  formatLocalizedBranchForLevel,
   normalizeOfficialClassName,
 } from './class-levels';
 export type { ClassLevelGroupKey } from './class-levels';

@@ -459,21 +459,21 @@ const CLASS_STREAM_FULL_NAMES: Record<AppLocale, Record<string, string>> = {
   },
   ar: {
     'SVT': 'علوم الحياة والأرض',
-    'SM': 'علوم رياضية',
-    'SM-A': 'علوم رياضية أ',
-    'SM-B': 'علوم رياضية ب',
-    'PC': 'علوم فيزيائية',
-    'SEXP': 'علوم تجريبية',
-    'SECO': 'علوم اقتصادية',
-    'SEG': 'علوم اقتصادية وتدبير',
+    'SM': 'العلوم الرياضية',
+    'SM-A': 'العلوم الرياضية أ',
+    'SM-B': 'العلوم الرياضية ب',
+    'PC': 'العلوم الفيزيائية',
+    'SEXP': 'العلوم التجريبية',
+    'SECO': 'العلوم الاقتصادية',
+    'SEG': 'العلوم الاقتصادية والتدبير',
     'SGC': 'علوم التدبير المحاسباتي',
-    'SH': 'علوم إنسانية',
-    'L': 'آداب',
-    'LSH': 'آداب وعلوم إنسانية',
+    'SH': 'العلوم الإنسانية',
+    'L': 'الآداب',
+    'LSH': 'الآداب والعلوم الإنسانية',
     'SI': 'علوم المهندس',
-    'TC-S': 'جذع مشترك علمي',
-    'TC-L': 'جذع مشترك آداب وعلوم إنسانية',
-    'TC-T': 'جذع مشترك تكنولوجي',
+    'TC-S': 'العلمي',
+    'TC-L': 'الآداب والعلوم الإنسانية',
+    'TC-T': 'التكنولوجي',
     'MPSI': 'رياضيات وفيزياء وعلوم المهندس',
     'PCSI': 'فيزياء وكيمياء وعلوم المهندس',
     'TSI': 'تكنولوجيا وعلوم صناعية',
@@ -603,6 +603,28 @@ export const formatClassStreamLabel = (code: string, locale: AppLocale): string 
 export const formatClassStreamFullName = (code: string, locale: AppLocale): string | null => {
   if (!code) return null;
   return CLASS_STREAM_FULL_NAMES[locale][normalizeStreamCode(code)] ?? null;
+};
+
+/**
+ * Nom officiel de la filière / branche seule (sans le préfixe de palier/niveau).
+ * Exemples :
+ * - 'Tronc Commun Lettres et Sciences Humaines' → 'الآداب والعلوم الإنسانية' (ar) / 'Lettres et Sciences Humaines' (fr)
+ * - 'Tronc Commun Scientifique' → 'العلمي' (ar) / 'Scientifique' (fr)
+ * - '1er Bac Sciences Mathématiques' → 'العلوم الرياضية' (ar) / 'Sciences Mathématiques' (fr)
+ * - '2ème Bac Sciences Physiques' → 'العلوم الفيزيائية' (ar) / 'Sciences Physiques' (fr)
+ */
+export const formatLocalizedBranchForLevel = (level: string, locale: AppLocale): string => {
+  const identityResult = lookupClassLevelIdentity(level);
+  if (identityResult?.identity.stream) {
+    const stream = identityResult.identity.stream;
+    if (PREPA_LEVEL_CODES.has(stream)) {
+      const full = formatClassStreamFullName(stream, locale);
+      return full && full !== stream ? `${stream} · ${full}` : stream;
+    }
+    const label = formatClassStreamFullName(stream, locale) ?? formatClassStreamLabel(stream, locale);
+    if (label) return label;
+  }
+  return formatLocalizedClassDisplayName(level, locale, { includeClassPrefix: false });
 };
 
 export interface ClassLevelIdentity {

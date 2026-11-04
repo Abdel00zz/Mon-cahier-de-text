@@ -15,7 +15,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check } from '@/components/ui/icons';
-import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedBranchForLevel, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
 import { classNameForLevelAndGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/domain/classes/classGroup';
@@ -59,10 +59,10 @@ const COPY: Record<AppLocale, {
     createTitle: 'Ajouter une nouvelle classe', editTitle: 'Modifier la classe',
     editDescription: 'Modifiez uniquement les informations utiles.',
     cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer la classe', save: 'Enregistrer', saving: 'Enregistrement…',
-    cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe', branch: 'Filière', group: 'N° de groupe', customLevel: 'Nom du niveau',
+    cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Niveau scolaire', branch: 'Filière / Série', group: 'N° de groupe', customLevel: 'Nom du niveau',
     groupHint: 'Numéro libre proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.', decrementGroup: 'Groupe libre précédent', incrementGroup: 'Groupe libre suivant',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
-    createCustom: 'Autre niveau', switchToOfficial: 'Niveaux officiels', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
+    createCustom: 'Autre niveau', switchToOfficial: 'Niveaux officiels', selectedClass: 'Classe sélectionnée', guidedLabel: 'Configuration guidée',
     streamAsSubjectWarning: (stream: string) => `« ${stream} » est une filière et non une matière — veuillez choisir la matière enseignée`,
     otherCycle: 'Autre cycle',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
@@ -71,11 +71,11 @@ const COPY: Record<AppLocale, {
     createTitle: 'ابدأ إضافة قسم جديد', editTitle: 'تعديل القسم',
     editDescription: 'عدّل المعلومات الضرورية فقط.',
     cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء القسم', save: 'حفظ', saving: 'جارٍ الحفظ…',
-    cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم', branch: 'الشعبة', group: 'رقم الفوج', customLevel: 'اسم المستوى',
+    cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'المستوى الدراسي', branch: 'الشعبة / المسلك', group: 'رقم الفوج', customLevel: 'اسم المستوى',
     groupHint: 'يُقترح أول رقم متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.', decrementGroup: 'الفوج المتاح السابق', incrementGroup: 'الفوج المتاح التالي',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
-    createCustom: 'مستوى مخصص', switchToOfficial: 'المستويات الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
-    streamAsSubjectWarning: (stream: string) => `« ${stream} » شعبة دراسية وليست مادة — يرجى اختيار المادة التي تدرّسها لهذا القسم`,
+    createCustom: 'مستوى مخصص', switchToOfficial: 'المستويات الرسمية', selectedClass: 'القسم المحدد', guidedLabel: 'إعداد موجّه',
+    streamAsSubjectWarning: (stream: string) => `« ${stream} » شعبة أو مسلك دراسي وليست مادة — يرجى اختيار المادة التي تدرّسها لهذا القسم`,
     otherCycle: 'سلك آخر',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
@@ -83,7 +83,7 @@ const COPY: Record<AppLocale, {
     createTitle: 'Add a new class', editTitle: 'Edit class',
     editDescription: 'Edit only the information you need.',
     cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create class', save: 'Save', saving: 'Saving…',
-    cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class', branch: 'Stream', group: 'Group number', customLevel: 'Level name',
+    cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Grade level', branch: 'Stream / Track', group: 'Group number', customLevel: 'Level name',
     groupHint: 'First free number proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.', decrementGroup: 'Previous free group', incrementGroup: 'Next free group',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
     createCustom: 'Custom level', switchToOfficial: 'Official levels', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
@@ -671,7 +671,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                   <div className="grid grid-cols-1 gap-2.5">
                     {activeLevelGroup.levels.map(item => (
                       <ChoiceCard key={item} selected={item === level} onClick={() => chooseLevel(item)}>
-                        {formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}
+                        {formatLocalizedBranchForLevel(item, locale)}
                       </ChoiceCard>
                     ))}
                   </div>
@@ -684,6 +684,23 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                     <div>
                       <p className="text-xs text-[var(--cm-text-muted)]">{copy.selectedClass}</p>
                       <p className="text-lg font-semibold text-foreground mt-0.5">{selectedClassLabel}</p>
+                      {!customMode && level && (
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                          {activeLevelGroup && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/60 font-medium text-foreground/80">
+                              {formatClassLevelGroupLabel(activeLevelGroup.key, locale)}
+                            </span>
+                          )}
+                          {needsBranchChoice && (
+                            <>
+                              <span aria-hidden="true" className="opacity-40">·</span>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
+                                {formatLocalizedBranchForLevel(level, locale)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1 pt-1">

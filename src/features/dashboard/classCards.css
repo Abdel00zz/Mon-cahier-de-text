@@ -377,6 +377,107 @@
   transition: opacity 180ms ease, color 180ms ease;
 }
 
+/* Capsule horaire moderne, épurée et innovante (liquid glass) */
+.class-card__schedule-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+  padding: 0.28rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.065);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--card-secondary, #3f7f63);
+  font-size: 0.73rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  pointer-events: none;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.dark .class-card__schedule-capsule {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.class-card:hover .class-card__schedule-capsule {
+  background: rgba(0, 0, 0, 0.065);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark .class-card:hover .class-card__schedule-capsule {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.class-card__schedule-day {
+  font-weight: 500;
+  opacity: 0.85;
+  color: inherit;
+}
+
+.class-card__schedule-time {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--card-title, #14503a);
+}
+
+.dark .class-card__schedule-time {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Clignotement subtil et vivant des deux points de l'horloge */
+@keyframes scheduleColonPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.18;
+    transform: scale(0.88);
+  }
+}
+
+.class-card__schedule-colon {
+  display: inline-block;
+  margin-inline: 1px;
+  font-weight: 700;
+  animation: scheduleColonPulse 1.25s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .class-card__schedule-colon {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.class-card__schedule-multihour {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.07);
+  color: currentColor;
+  margin-inline-start: 1px;
+}
+
+.dark .class-card__schedule-multihour {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .class-card__schedule-icon {
   flex-shrink: 0;
   width: 12px;
