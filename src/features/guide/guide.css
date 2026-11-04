@@ -7,7 +7,18 @@
   --guide-line: #e6e3ec;
   --guide-hover: #f0edf5;
   --guide-accent: #6254b2;
+  --guide-ease: cubic-bezier(.2, .8, .3, 1);
+  --guide-title-size: 22px;
+  --guide-question-size: 14px;
+  --guide-section-size: 13.5px;
+  --guide-body-size: 13px;
   color: var(--guide-ink);
+}
+.learning-guide[dir='rtl'] {
+  --guide-title-size: 24px;
+  --guide-question-size: 15px;
+  --guide-section-size: 14.5px;
+  --guide-body-size: 14px;
 }
 .dark .learning-guide {
   --guide-bg: #1b1a21;
@@ -21,100 +32,113 @@
 .learning-guide-modal.modal-motion-surface {
   --modal-header-bg: transparent;
   --modal-close-bg: var(--guide-surface);
-  width: min(94vw, 42rem);
-  max-width: 42rem;
-  max-height: min(90dvh, 50rem);
+  width: min(94vw, 38rem);
+  max-width: 38rem;
+  max-height: min(86dvh, 44rem);
   padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--guide-line);
-  border-radius: 24px;
+  border-radius: 20px;
   background: var(--guide-bg) !important;
+  box-shadow: 0 24px 64px -28px rgb(20 16 35 / .35), inset 0 1px 0 color-mix(in srgb, var(--guide-surface) 75%, transparent);
 }
 .learning-guide-modal[data-codex-surface]::after { display: none; }
 .learning-guide-modal .dialog-close { color: var(--guide-mute); background: var(--guide-surface); }
 .learning-guide-modal-header.modal-pro-header {
   flex-shrink: 0;
   min-height: 0;
-  padding: 24px;
-  padding-inline-end: 76px;
+  padding: 18px 20px 14px;
+  padding-inline-end: 68px;
   border: 0;
   background: transparent !important;
 }
-.guide-heading { display: flex; flex-direction: column; gap: 5px; text-align: start; }
-.guide-title { font-size: 26px; font-weight: 650; line-height: 1.4; letter-spacing: -.025em; }
-.guide-subtitle { font-size: 13px; font-weight: 400; line-height: 1.7; color: var(--guide-mute); }
+.guide-heading { display: flex; flex-direction: column; gap: 2px; text-align: start; }
+.guide-title { font-size: var(--guide-title-size); font-weight: 650; line-height: 1.35; letter-spacing: -.025em; }
+.guide-subtitle { font-size: 12px; font-weight: 400; line-height: 1.6; color: var(--guide-mute); }
 .learning-guide-modal-body.modal-body {
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  padding: 0 24px !important;
+  padding: 0 20px !important;
 }
 .guide-search {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 10px;
-  min-height: 46px;
-  margin-bottom: 18px;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 10px;
   padding-inline: 12px 2px;
   border: 1px solid var(--guide-line);
   border-radius: 10px;
   background: var(--guide-surface);
   color: var(--guide-mute);
+  transition: border-color 180ms var(--guide-ease), box-shadow 180ms var(--guide-ease);
 }
-.guide-search input { width: 100%; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--guide-ink); font: inherit; font-size: 14px; }
+.guide-search input { width: 100%; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--guide-ink); font: inherit; font-size: 13px; }
 .guide-search input::-webkit-search-cancel-button { display: none; }
 .guide-search input::placeholder { color: var(--guide-mute); opacity: 1; }
 .guide-search button { display: grid; place-items: center; width: 44px; min-height: 44px; flex-shrink: 0; cursor: pointer; }
-.guide-search:focus-within { outline: 2px solid var(--guide-accent); outline-offset: 2px; }
+.guide-search:focus-within { border-color: var(--guide-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--guide-accent) 12%, transparent); }
 .guide-main { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 2px 2px 0; }
-.guide-questions { overflow: hidden; border: 1px solid var(--guide-line); border-radius: 18px; background: var(--guide-surface); }
-.guide-questions details + details { border-top: 1px solid var(--guide-line); }
+.guide-questions { overflow: hidden; border: 1px solid var(--guide-line); border-radius: 14px; background: var(--guide-surface); }
+.guide-questions details { position: relative; }
+.guide-questions details + details::before { content: ''; position: absolute; top: 0; inset-inline: 16px; height: 1px; background: linear-gradient(90deg, transparent, var(--guide-line) 8%, var(--guide-line) 92%, transparent); pointer-events: none; }
+.guide-questions details[open] { background: linear-gradient(120deg, color-mix(in srgb, var(--guide-accent) 4%, transparent), transparent 75%); }
 .guide-questions summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  min-height: 64px;
-  padding: 16px 20px;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
   list-style: none;
-  font-size: 15px;
+  font-size: var(--guide-question-size);
   font-weight: 550;
-  line-height: 1.7;
+  line-height: 1.55;
   cursor: pointer;
-  transition: background-color 180ms ease;
+  transition: background-color 180ms var(--guide-ease), color 180ms var(--guide-ease), transform 150ms var(--guide-ease);
 }
 .guide-questions summary::-webkit-details-marker { display: none; }
-.guide-questions summary:hover { background: var(--guide-hover); }
-.guide-plus { flex-shrink: 0; color: var(--guide-mute); font-family: system-ui, sans-serif; font-size: 24px; font-weight: 400; line-height: 1; transition: transform 180ms ease; }
-.guide-questions details[open] > summary .guide-plus { transform: rotate(45deg); }
-.guide-answer { padding: 0 20px 20px; font-size: 14px; line-height: 1.85; color: var(--guide-mute); }
-.guide-answer section { margin-top: 20px; scroll-margin-block: 16px; }
-.guide-answer h3 { margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--guide-ink); }
+.guide-questions summary:active { transform: scale(.995); background: var(--guide-hover); }
+.guide-plus { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; color: var(--guide-mute); font-family: system-ui, sans-serif; font-size: 21px; font-weight: 400; line-height: 1; transition: transform 220ms cubic-bezier(.2, .85, .3, 1.15), color 180ms ease, background-color 180ms ease; }
+.guide-questions details[open] > summary { font-weight: 650; color: var(--guide-ink); }
+.guide-questions details[open] > summary .guide-plus { transform: rotate(45deg); color: var(--guide-accent); background: color-mix(in srgb, var(--guide-accent) 9%, transparent); }
+.guide-answer { padding: 0 16px 16px; font-size: var(--guide-body-size); line-height: 1.75; color: var(--guide-mute); animation: guide-answer-enter 200ms var(--guide-ease); }
+.guide-summary { font-size: var(--guide-body-size); line-height: 1.65; }
+.guide-answer section { margin-top: 14px; scroll-margin-block: 12px; }
+.guide-answer h3 { margin-bottom: 4px; font-size: var(--guide-section-size); font-weight: 650; line-height: 1.5; color: var(--guide-ink); }
 .guide-answer strong { font-weight: 600; color: var(--guide-ink); }
 .guide-answer ol { list-style: decimal; padding-inline-start: 22px; }
-.guide-answer li + li { margin-top: 6px; }
-.guide-answer dl > div + div { margin-top: 10px; }
+.guide-answer li + li { margin-top: 4px; }
+.guide-answer li::marker { color: var(--guide-accent); font-size: .9em; font-weight: 550; }
+.guide-answer dl > div + div { margin-top: 8px; }
 .guide-answer dt { color: var(--guide-ink); font-weight: 550; }
 .guide-answer dd { margin: 0; }
 .guide-answer code { font-size: .9em; padding: 1px 4px; border-radius: 4px; background: var(--guide-hover); }
-.guide-tip { margin-top: 18px; padding-inline-start: 12px; border-inline-start: 2px solid var(--guide-line); }
-.guide-related { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--guide-line); font-size: 12px; }
+.guide-tip { margin-top: 14px; padding-inline-start: 10px; border-inline-start: 2px solid var(--guide-line); }
+.guide-related { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; margin-top: 12px; padding-top: 6px; border-top: 1px solid var(--guide-line); font-size: 12px; }
 .guide-related button { min-height: 44px; color: var(--guide-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.guide-credit { padding: 18px 4px; color: var(--guide-mute); text-align: center; font-size: 10px; line-height: 1.8; }
+.guide-credit { padding: 12px 4px; color: var(--guide-mute); text-align: center; font-size: 10px; line-height: 1.6; }
 .guide-empty { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px 16px; text-align: center; color: var(--guide-mute); }
 .guide-empty button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--guide-line); border-radius: 10px; background: var(--guide-surface); color: var(--guide-ink); cursor: pointer; }
 .learning-guide :is(summary, button, section):focus-visible { outline: 2px solid var(--guide-accent); outline-offset: -3px; border-radius: 6px; }
 .guide-answer .is-focused { padding-inline: 10px; border-inline-start: 2px solid var(--guide-accent); }
+@keyframes guide-answer-enter { from { opacity: .5; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (hover: hover) and (pointer: fine) {
+  .guide-questions summary:hover { background: var(--guide-hover); }
+  .guide-questions summary:hover .guide-plus { color: var(--guide-accent); background: color-mix(in srgb, var(--guide-accent) 8%, transparent); }
+}
 @media (max-width: 639px) {
   .learning-guide-modal.modal-motion-surface { width: 100%; max-width: 100%; border-radius: 24px 24px 0 0; }
-  .learning-guide-modal-header.modal-pro-header { padding: 16px 20px; padding-inline-end: 68px; }
+  .learning-guide-modal-header.modal-pro-header { padding: 12px 16px 10px; padding-inline-end: 64px; }
   .learning-guide-modal-body.modal-body { padding-inline: 16px !important; }
-  .guide-questions summary { padding: 14px 16px; min-height: 60px; }
-  .guide-answer { padding-inline: 16px; }
-  .guide-credit { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  .guide-questions summary { padding-inline: 12px; }
+  .guide-questions details + details::before { inset-inline: 12px; }
+  .guide-answer { padding-inline: 12px; }
+  .guide-credit { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 }
-@media (prefers-reduced-motion: reduce) { .learning-guide * { transition: none !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) { .learning-guide * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } .guide-questions summary:active { transform: none; } }
