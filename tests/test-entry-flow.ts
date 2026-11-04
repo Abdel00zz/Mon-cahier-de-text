@@ -147,6 +147,8 @@ test("connexion directe conservée ; ancien lien preview encore reconnu", () => 
   assert.equal(resolveAuthRoute("#preview", false).view, "onboarding");
   assert.equal(resolveAuthRoute("#onboarding", false).view, "onboarding");
   assert.equal(resolveAuthRoute("#landing", false).view, "auth");
+  assert.deepEqual(resolveAuthRoute("#reset", false), { view: "auth", mode: "reset" });
+  assert.equal(authRouteHash("auth", "reset"), "#reset");
 });
 test("routes d’entrée : liens anciens, routes inconnues et retour canonique", () => {
   for (const hash of ["", "#landing", "#unknown", "#classes", "#login"]) {

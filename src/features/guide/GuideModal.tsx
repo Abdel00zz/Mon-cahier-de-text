@@ -26,6 +26,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
   const [openId, setOpenId] = useState<string | null>(null);
   const [target, setTarget] = useState<GuideReference | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => searchGuide(entries, query), [entries, query]);
 
   useEffect(() => {
@@ -57,6 +58,11 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
     setTarget({ chapterId });
   };
 
+  const clearSearch = () => {
+    setQuery('');
+    searchRef.current?.focus();
+  };
+
   return (
     <Modal
       isOpen={isOpen} onClose={onClose} dir={isAr ? 'rtl' : 'ltr'}
@@ -65,25 +71,25 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
       className="hub-modal learning-guide-modal learning-guide"
       headerClassName="hub-modal-header learning-guide-modal-header"
       bodyClassName="hub-modal-body learning-guide-modal-body"
-      title={<span className="guide-heading">
+      title={<span className="guide-heading" data-codex-title>
         <span className="guide-title">{isAr ? 'المساعدة' : 'Aide'}</span>
         <span className="guide-subtitle">{isAr ? 'أجوبة سريعة لأسئلتك' : 'Réponses rapides à vos questions'}</span>
       </span>}
     >
       <div className="guide-search">
         <Search size={18} aria-hidden="true" />
-        <input type="search" value={query}
+        <input ref={searchRef} type="search" value={query}
           onChange={event => { setQuery(event.target.value); setTarget(null); }}
           placeholder={isAr ? 'ابحث عن سؤال…' : 'Rechercher une question…'}
           aria-label={isAr ? 'البحث في المساعدة' : 'Rechercher dans l’aide'} />
-        {query && <button type="button" onClick={() => setQuery('')}
+        {query && <button type="button" onClick={clearSearch}
           aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'}><X size={17} aria-hidden="true" /></button>}
       </div>
       <div ref={contentRef} className="guide-main">
         {results.length === 0 ? <div className="guide-empty" role="status">
           <Search size={28} aria-hidden="true" />
           <p>{isAr ? 'لا توجد نتائج مطابقة لبحثك.' : 'Aucune réponse pour cette recherche.'}</p>
-          <button type="button" onClick={() => setQuery('')}>{isAr ? 'عرض جميع الأسئلة' : 'Voir toutes les questions'}</button>
+          <button type="button" onClick={clearSearch}>{isAr ? 'عرض جميع الأسئلة' : 'Voir toutes les questions'}</button>
         </div> : <div className="guide-questions">
           {results.map(entry => <details key={entry.id} open={openId === entry.id} data-guide-chapter={entry.id}>
             <summary onClick={event => {

@@ -1,4 +1,4 @@
-export type AuthMode = "login" | "register";
+export type AuthMode = "login" | "register" | "reset";
 export type AuthView = "onboarding" | "auth";
 export interface AuthRoute {
   view: AuthView;
@@ -11,6 +11,7 @@ export function resolveAuthRoute(
   hasPreparation: boolean,
 ): AuthRoute {
   if (hash === "#login") return { view: "auth", mode: "login" };
+  if (hash === "#reset") return { view: "auth", mode: "reset" };
   if (hash === "#register")
     return { view: hasPreparation ? "auth" : "onboarding", mode: "register" };
   if (hash === "#start" || hash === "#onboarding" || hash === "#preview")

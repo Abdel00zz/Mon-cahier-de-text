@@ -1,12 +1,12 @@
 /* One quiet, bilingual accordion. Answers mount only when requested. */
 .learning-guide {
-  --guide-bg: #f6f5f8;
-  --guide-surface: #fdfcfe;
-  --guide-ink: #292735;
-  --guide-mute: #696574;
-  --guide-line: #e6e3ec;
-  --guide-hover: #f0edf5;
-  --guide-accent: #6254b2;
+  --guide-bg: var(--codex-stone);
+  --guide-surface: #fdfcf9;
+  --guide-ink: #292e2a;
+  --guide-mute: #606862;
+  --guide-line: var(--codex-rule);
+  --guide-hover: #f0f3ed;
+  --guide-accent: var(--codex-enamel);
   --guide-ease: cubic-bezier(.2, .8, .3, 1);
   --guide-title-size: 22px;
   --guide-question-size: 14px;
@@ -21,13 +21,10 @@
   --guide-body-size: 14px;
 }
 .dark .learning-guide {
-  --guide-bg: #1b1a21;
-  --guide-surface: #23222b;
-  --guide-ink: #e9e6ef;
-  --guide-mute: #b4aebf;
-  --guide-line: #3b3746;
-  --guide-hover: #2c2935;
-  --guide-accent: #c4b8fa;
+  --guide-surface: #2b302c;
+  --guide-ink: #e5e9e3;
+  --guide-mute: #b4bcb5;
+  --guide-hover: #343d36;
 }
 .learning-guide-modal.modal-motion-surface {
   --modal-header-bg: transparent;
@@ -42,7 +39,6 @@
   border: 1px solid var(--guide-line);
   border-radius: 20px;
   background: var(--guide-bg) !important;
-  background-image: var(--modal-surface-tint) !important;
   box-shadow: 0 24px 64px -28px rgb(20 16 35 / .35), inset 0 1px 0 color-mix(in srgb, var(--guide-surface) 75%, transparent);
 }
 .learning-guide-modal .dialog-close { color: var(--guide-mute); background: var(--guide-surface); }

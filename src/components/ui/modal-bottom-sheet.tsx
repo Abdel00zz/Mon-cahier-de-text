@@ -125,7 +125,7 @@ export function ModalBottomSheet({
       {typeof dragHandle === 'boolean' ? <Sheet.DragIndicator className="modal-drag-indicator" /> : dragHandle}
     </div>}
     {(title || description) && <div className={cn('modal-header modal-pro-header', !hideClose && 'modal-header--closable', headerClassName)}>
-      <Dialog.Title data-ui-title className={!title ? 'sr-only' : undefined}>{title || closeLabel}</Dialog.Title>
+      <Dialog.Title data-ui-title data-codex-title={typeof title === 'string' && title ? '' : undefined} className={!title ? 'sr-only' : undefined}>{title || closeLabel}</Dialog.Title>
       {description && <Dialog.Description data-description>{description}</Dialog.Description>}
     </div>}
     {!title && !description && <Dialog.Title className="sr-only">{closeLabel}</Dialog.Title>}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId } from 'react';
 import { create } from 'zustand';
-import { MoreVertical, Pencil, CalendarCheck } from 'lucide-react';
+import { MoreVertical, Pencil, CalendarCheck, CalendarDays } from 'lucide-react';
 import { Trash2 } from '@/components/ui/icons';
 import { Modal } from '@/components/ui/modal';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -22,12 +22,14 @@ export function ClassActionsMenu({
     name,
     triggerClassName,
     onConfigure,
+    onOpenSchedule,
     onDelete,
     onOpenEvaluations,
 }: {
     name: string;
     triggerClassName: string;
     onConfigure: () => void;
+    onOpenSchedule?: () => void;
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     tier?: string | null;
@@ -102,6 +104,13 @@ export function ClassActionsMenu({
                     bodyClassName="class-quick-sheet__body"
                 >
                     <div className="class-quick-sheet__actions">
+                            {onOpenSchedule && (
+                                <button type="button" className="class-quick-sheet__action"
+                                    onClick={() => { impact('light'); closeMenu(); onOpenSchedule(); }}>
+                                    <CalendarDays className="class-quick-sheet__icon" aria-hidden="true" />
+                                    <span className="flex-1 font-medium">{t('settings.item.schedule')}</span>
+                                </button>
+                            )}
                             {onOpenEvaluations && (
                                 <button
                                     type="button"

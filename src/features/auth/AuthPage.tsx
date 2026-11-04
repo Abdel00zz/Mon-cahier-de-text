@@ -252,7 +252,7 @@ export const AuthPage: React.FC<{
   const [email, setEmail] = useState('');
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [googleBusy, setGoogleBusy] = useState(false);
-  const [resetMode, setResetMode] = useState(false);
+  const resetMode = mode === "reset";
   const [resetSent, setResetSent] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -275,7 +275,7 @@ export const AuthPage: React.FC<{
         Boolean(setupRef.current),
       );
       setError(null);
-      setResetMode(false); setResetSent(false);
+      setResetSent(false);
       setPassword(""); setConfirmPassword("");
       setMode(route.mode);
       setView(route.view);
@@ -307,7 +307,7 @@ export const AuthPage: React.FC<{
       setView(route.view);
       setMode(route.mode);
       setError(null);
-      setResetMode(false); setResetSent(false);
+      setResetSent(false);
       setPassword(""); setConfirmPassword("");
       const hash = authRouteHash(route.view, route.mode);
       if (window.location.hash !== hash)
@@ -326,7 +326,7 @@ export const AuthPage: React.FC<{
       ?.querySelector<HTMLElement>("h1")
       ?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [view, mode, resetMode]);
+  }, [view, mode]);
   useEffect(() => {
     if (error) errorRef.current?.focus();
   }, [error]);
@@ -358,6 +358,8 @@ export const AuthPage: React.FC<{
   };
 
   const switchMode = (next: Mode) => navigateTo("auth", next);
+  const onLoginPage = view === "auth" && mode === "login";
+  const Brand = onLoginPage ? "span" : "button";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -415,17 +417,15 @@ export const AuthPage: React.FC<{
     >
       <header className="auth-header">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              if (view !== "auth" || mode !== "login") {
-                navigateTo("auth", "login");
-              }
-            }}
-            disabled={isSubmitting}
+          <Brand
+            {...(!onLoginPage && {
+              type: "button" as const,
+              onClick: () => navigateTo("auth", "login"),
+              disabled: isSubmitting,
+              title: copy.backToHome,
+              "aria-label": copy.backToHome,
+            })}
             className="auth-brand focus-visible:outline-2 focus-visible:outline-offset-2"
-            title={copy.backToHome}
-            aria-label={copy.backToHome}
           >
             <img
               src="/icons/icon-192.png"
@@ -434,13 +434,8 @@ export const AuthPage: React.FC<{
               alt=""
               className="object-contain"
             />
-            <div className="min-w-0">
-              <p className="auth-brand__name">
-                {copy.brand}
-              </p>
-
-            </div>
-          </button>
+            <span className="auth-brand__name">{copy.brand}</span>
+          </Brand>
         </div>
         <div
           dir="ltr"
@@ -517,7 +512,7 @@ export const AuthPage: React.FC<{
                 {resetSent && <p role="status" className="auth-reset-success">{copy.resetSent}</p>}
                 {error && <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">{error}</p>}
                 <Button type="submit" disabled={isSubmitting || resetSent} className="auth-submit">{isSubmitting ? copy.wait : copy.resetSubmit}</Button>
-                <button type="button" disabled={isSubmitting} className="auth-link" onClick={() => { setResetMode(false); setError(null); }}>{copy.backToLogin}</button>
+                <button type="button" disabled={isSubmitting} className="auth-link" onClick={() => switchMode("login")}>{copy.backToLogin}</button>
               </form> : <>
               <form
                 key={mode}
@@ -700,7 +695,7 @@ export const AuthPage: React.FC<{
                       value={phone} onChange={event => setPhone(formatMoroccanPhone(event.target.value))} className={FIELD_CLASS} placeholder="06 12 34 56 78" />
                     <p>{copy.contactHelp}</p>
                   </details>}
-                  {!isRegister && loginMethod === 'email' && <button type="button" className="auth-link auth-forgot" onClick={() => { setResetMode(true); setResetSent(false); setError(null); }}>{copy.forgotPassword}</button>}
+                  {!isRegister && loginMethod === 'email' && <button type="button" className="auth-link auth-forgot" onClick={() => switchMode("reset")}>{copy.forgotPassword}</button>}
                   {error && (
                     <p
                       ref={errorRef}

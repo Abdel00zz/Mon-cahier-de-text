@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { computeClassSessionSchedule } from '../src/domain/calendar/sessionScheduleStatus';
 import { moroccoClockMinutes } from '../src/domain/notifications/sessionAlertEngine';
+import { deriveSchedules, setTimetableEntry } from '../src/domain/calendar/timetable';
 import type { TimetableEntry } from '../src/types';
 
 function makeCasablancaDate(year: number, month: number, day: number, hours: number, minutes: number): Date {
@@ -73,6 +74,24 @@ test('session schedule status : détecte la prochaine séance demain ou un autre
     assert.equal(status.dayOffset, 2);
     assert.match(status.label, /Prochaine séance : Mercredi à 10h00/);
     assert.equal(status.shortLabel, 'Mercredi à 10h00');
+});
+
+test('une modification de la grille met à jour la durée de la carte et le nombre de séances séparément', () => {
+    const options = { now: makeCasablancaDate(2026, 10, 12, 8, 15) };
+    let grid = setTimetableEntry([], 1, 0, 'A');
+    const card = (id: string) => computeClassSessionSchedule(grid, 0, id, options);
+    assert.equal(card('A').sessionHours, 1);
+    grid = setTimetableEntry(grid, 1, 1, 'A');
+    grid = setTimetableEntry(grid, 1, 2, 'A');
+    grid = setTimetableEntry(grid, 1, 3, 'A');
+    grid = setTimetableEntry(grid, 1, 4, 'A');
+    assert.equal(card('A').sessionHours, 4);
+    assert.equal(deriveSchedules(grid)[0].slots[0].sessions, 2, 'la pause déjeuner sépare les séances');
+    grid = setTimetableEntry(grid, 1, 1, 'B');
+    assert.equal(card('A').sessionHours, 1);
+    assert.equal(card('B').sessionHours, 1);
+    grid = setTimetableEntry(grid, 1, 1, null);
+    assert.equal(card('B').state, 'none');
 });
 
 test('session schedule status : supporte la locale arabe', () => {

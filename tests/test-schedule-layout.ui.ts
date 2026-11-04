@@ -33,6 +33,17 @@ test('grille mobile bilingue : horaires, cellules tactiles et séance fusionnée
   }
 });
 
+test('ouvrir le planning depuis une carte montre les créneaux de cette classe', () => {
+  for (const [slots, period] of [[[5], 'afternoon'], [[0, 5], 'all'], [[], 'morning']] as const) {
+    const timetable = slots.map(slot => ({ day: 2, slot, classId: classInfo.id }));
+    const html = renderToStaticMarkup(createElement(LocaleProvider, { locale: 'fr', manageDocument: false,
+      children: createElement(ScheduleTab, { classes: [classInfo], config: { ...config, timetable },
+        suggestedClassId: classInfo.id, onChange: () => {} }) }));
+    assert.ok(html.includes(`data-period="${period}"`));
+    assert.equal((html.match(/data-class-target="true"/g) ?? []).length, slots.length);
+  }
+});
+
 test('les rubriques gardent un titre accessible sans répéter le nom de l’onglet à l’écran', () => {
   for (const title of ['استعمال الزمن', 'الملف الشخصي', 'المظهر واللغة', 'الإشعارات', 'الحساب والبيانات']) {
     const html = renderToStaticMarkup(createElement(SettingsPanel, { title, children: 'Contenu' }));

@@ -145,6 +145,9 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                     {renderScheduleContent(scheduleStatus)}
                                 </span>
                             ) : null}
+                            {scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1 ? (
+                                <span className="class-card__schedule-multihour">{scheduleStatus.sessionHours}{locale === 'ar' ? 'س' : 'h'}</span>
+                            ) : null}
                             {showsSubjectLabels && classInfo.subject && (
                                 <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>
                                     {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
@@ -182,8 +185,7 @@ const areEqual = (previous: ClassListItemProps, next: ClassListItemProps) =>
     && previous.classInfo.subject === next.classInfo.subject
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
-    && previous.scheduleStatus?.label === next.scheduleStatus?.label
-    && previous.scheduleStatus?.remainingMinutes === next.scheduleStatus?.remainingMinutes;
+    && previous.scheduleStatus === next.scheduleStatus;
 
 ClassListItemComponent.displayName = 'ClassListItem';
 

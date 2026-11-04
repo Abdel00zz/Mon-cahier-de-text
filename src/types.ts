@@ -307,7 +307,7 @@ export interface PedagogicalEvent {
 /** weekday en convention JS getDay() : 0=dimanche … 6=samedi */
 export interface ScheduleSlot {
     weekday: number;
-    /** nombre de séances ce jour-là (défaut 1, 2 = séance double) */
+    /** Nombre de séances distinctes ce jour-là. Deux créneaux consécutifs comptent pour une séance. */
     sessions?: number;
 }
 
@@ -386,7 +386,7 @@ export interface ClassSnapshot {
     /**
      * Projection fidèle de l'emploi du temps. `weekdays` reste présent pour
      * lire les anciens snapshots, mais ne permettait pas de distinguer une
-     * séance simple d'une séance double le même jour.
+     * journée à une séance d’une journée à plusieurs séances distinctes.
      */
     scheduleSlots?: ScheduleSlot[];
     sessionsPerWeek: number;

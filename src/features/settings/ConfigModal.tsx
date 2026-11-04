@@ -114,7 +114,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   initialSection,
   scheduleClassId,
 }) => {
-  const { isRtl, t } = useLocale();
+  const { t } = useLocale();
   // Seuls les champs de profil réellement modifiés attendent « Enregistrer ».
   // Les autres onglets suivent toujours la configuration courante (synchro incluse).
   const [profileDraft, setProfileDraft] = useState<Partial<AppConfig>>({});
@@ -288,14 +288,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   );
 
 
-  const navRowClass = (active: boolean) => cn(
-    'flex h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-start text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-    isRtl && 'text-[15px]',
-    active
-      ? 'bg-muted font-semibold text-foreground'
-      : 'font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-  );
-
   const settingsShell = (
     <div data-settings-ui className="settings-shell rtl-config-split">
       {/* Téléphone et tablette : de grandes cartes, pas d'onglets. */}
@@ -343,19 +335,19 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   onClick={() => setActiveCategory(item.id)}
                   onPointerEnter={() => preloadTabComponent(item.id)}
                   onFocus={() => preloadTabComponent(item.id)}
-                  className={navRowClass(active)}
+                  className="settings-nav__link"
                 >
-                  <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'stroke-[1.75]' : 'stroke-[1.5]')} />
-                  <span className="truncate">{t(item.titleKey)}</span>
+                  <Icon aria-hidden />
+                  <span>{t(item.titleKey)}</span>
                 </button>
               </li>
             );
           })}
         </ul>
-        <div className="settings-nav-footer mt-auto pt-2">
-          <button type="button" onClick={() => requestExit('guide')} className={navRowClass(false)}>
-            <BookOpen className="h-[18px] w-[18px] shrink-0 stroke-[1.5]" />
-            <span className="truncate">{t('settings.item.support')}</span>
+        <div className="settings-nav-footer mt-auto">
+          <button type="button" onClick={() => requestExit('guide')} className="settings-nav__link">
+            <BookOpen aria-hidden />
+            <span>{t('settings.item.support')}</span>
           </button>
         </div>
       </nav>
@@ -427,7 +419,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           </button>
           <span className="min-w-0 truncate">{t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}</span>
         </span>
-      ) : <span className="hub-titlebar">{t('settings.title')}</span>}
+      ) : <span className="hub-titlebar" data-codex-title>{t('settings.title')}</span>}
       maxWidth="xs"
       className="hub-modal settings-modal-frame settings-modal-sheet overflow-hidden"
       headerClassName="hub-modal-header"

@@ -72,7 +72,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     // Le matin est la vue initiale la plus rapide à lire, quel que soit
     // l'écran. L'enseignant peut basculer instantanément vers l'après-midi
     // ou la journée complète sans recharger la grille.
-    const [visiblePeriod, setVisiblePeriod] = React.useState<SchedulePeriod>('morning');
+    const [visiblePeriod, setVisiblePeriod] = React.useState<SchedulePeriod>(() => {
+        if (!suggestedClassId) return 'morning';
+        const slots = timetable.filter(slot => slot.classId === suggestedClassId);
+        if (!slots.some(slot => slot.slot >= 4)) return 'morning';
+        return slots.some(slot => slot.slot < 4) ? 'all' : 'afternoon';
+    });
 
     const classById = React.useMemo(() => {
         const map = new Map<string, ClassInfo>();
@@ -166,20 +171,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }
 
     return (
-        <Tabs dir={locale === 'ar' ? 'rtl' : 'ltr'} value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab space-y-3 pb-1 sm:pb-2">
-            <div className="schedule-controls">
-              <div className="schedule-controls__row">
-                <div className="schedule-periods">
-                    <span className="schedule-periods__label">{t('schedule.periodLabel')} :</span>
-                    <TabsList aria-label={t('schedule.viewLabel')} className="w-full sm:w-auto h-auto p-1 bg-muted/60 border border-border/40">
-                        {periodTabItems.map(item => (
-                            <TabsTrigger key={item.id} value={item.id} className="text-xs min-h-11 px-2.5 sm:px-3">
-                                {item.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </div>
-              </div>
+        <Tabs dir={locale === 'ar' ? 'rtl' : 'ltr'} value={visiblePeriod} onValueChange={value => setVisiblePeriod(value as SchedulePeriod)} className="schedule-tab">
+            <div className="schedule-periods">
+                <span className="schedule-periods__label">{t('schedule.periodLabel')}</span>
+                <TabsList aria-label={t('schedule.viewLabel')}>
+                    {periodTabItems.map(item => (
+                        <TabsTrigger key={item.id} value={item.id}>{item.label}</TabsTrigger>
+                    ))}
+                </TabsList>
             </div>
 
             {suggestedClass && !timetable.some(slot => slot.classId === suggestedClass.id) && (
@@ -190,13 +189,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
             )}
 
-            {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
-            <TabsContent value={visiblePeriod} className="mt-0">
-                <div className="overflow-x-auto overscroll-x-contain">
-                    <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-0 table-fixed'}`}>
+            <TabsContent value={visiblePeriod} className="schedule-grid-frame mt-0">
+                <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className="schedule-grid" data-period={visiblePeriod}>
                     <thead>
                         <tr>
-                            <th scope="col" className={`schedule-grid__day-heading sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center text-muted-foreground`}>
+                            <th scope="col" className="schedule-grid__day-heading">
                                 {t('schedule.day')}
                             </th>
                             {visibleHourSlots.map(hour => (
@@ -204,11 +201,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     key={hour.index}
                                     scope="col"
                                     aria-label={hourLabel(hour.displayStartMin, hour.displayEndMin)}
-                                    className={`schedule-grid__hour rounded-xl px-1 sm:px-2 py-2 sm:py-3 text-center text-muted-foreground ${
-                                        hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
-                                    }`}
+                                    className="schedule-grid__hour"
+                                    data-lunch={hour.lunchBefore || undefined}
                                 >
-                                        <span dir="ltr" aria-hidden="true" className="schedule-hour-label"><span>{clockPart(hour.displayStartMin)}</span><span className="schedule-hour-separator">–</span><span>{clockPart(hour.displayEndMin)}</span></span>
+                                    <span dir="ltr" aria-hidden="true" className="schedule-hour-label"><span>{clockPart(hour.displayStartMin)}</span><span className="schedule-hour-separator">–</span><span>{clockPart(hour.displayEndMin)}</span></span>
                                 </th>
                             ))}
                         </tr>
@@ -216,8 +212,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     <tbody>
                         {TIMETABLE_DAYS.map(day => {
                             return (
-                                <tr key={day.value} className="group transition-colors">
-                                    <th scope="row" className={`schedule-grid__day sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-10 rounded-xl border border-border/70 bg-card px-1.5 sm:px-3 py-2 text-center whitespace-nowrap text-foreground`}>
+                                <tr key={day.value}>
+                                    <th scope="row" className="schedule-grid__day">
                                         {t(`schedule.day.${day.value}`)}
                                     </th>
                                     {visibleHourSlots.map(hour => {
@@ -240,15 +236,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     '--card-border': palette.border,
                                                     '--card-title': palette.title,
                                                 } as React.CSSProperties : undefined}
-                                                className={`schedule-cell ${classInfo ? 'schedule-cell--assigned' : 'schedule-cell--empty'} relative overflow-hidden rounded-xl border p-0 align-middle transition-shadow ${
-                                                    classInfo
-                                                        ? 'shadow-xs'
-                                                        : 'border-dashed border-border/80'
-                                                } ${
-                                                    hour.lunchBefore ? 'border-s-2 border-s-primary/30' : ''
-                                                }`}
+                                                className={`schedule-cell ${classInfo ? 'schedule-cell--assigned' : 'schedule-cell--empty'}`}
+                                                data-class-target={classInfo && classInfo.id === suggestedClassId || undefined}
+                                                data-lunch={hour.lunchBefore || undefined}
                                             >
-                                                <div className="schedule-cell__content min-h-14 lg:min-h-16 w-full">
+                                                <div className="schedule-cell__content">
                                                     <select
                                                         value={entry?.classId ?? ''}
                                                         onChange={e => {
@@ -261,11 +253,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             else assign(day.value, hour.index, e.target.value || null);
                                                         }}
                                                         title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                        className={`absolute inset-0 h-full w-full cursor-pointer appearance-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 ${
-                                                            classInfo
-                                                                ? 'text-transparent hover:brightness-95 active:brightness-90'
-                                                                : 'bg-transparent text-transparent'
-                                                        }`}
+                                                        className="schedule-cell__select"
                                                         aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.displayStartMin, endHour.displayEndMin)}, ${classInfo ? classLabel(classInfo.name) : t('schedule.noClass')}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                                     >
                                                         <option value="" className="text-muted-foreground bg-card">{t('schedule.noClass')}</option>
@@ -281,31 +269,21 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         )}
                                                     </select>
 
-                                                    {/* État vide : une pastille discrète, sans bruit textuel */}
                                                     {!classInfo && (
-                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none">
-                                                             <Plus size={15} className="schedule-cell__add" aria-hidden="true" />
-                                                        </div>
+                                                        <Plus size={14} className="schedule-cell__add" aria-hidden="true" />
                                                     )}
 
-                                                    {/* État assigné : carte pleine sans bords arrondis excessifs, sans badge, typographie nette */}
                                                     {classInfo && (
-                                                        <div
-                                                            className="pointer-events-none relative flex min-h-14 lg:min-h-16 min-w-0 flex-col items-center justify-center px-1 py-1.5 text-center"
-                                                        >
-                                                            <span
-                                                                className="schedule-cell__label max-w-full break-words whitespace-normal text-balance font-semibold leading-tight"
-                                                            >
+                                                        <div className="schedule-cell__details" aria-hidden="true">
+                                                            <span className="schedule-cell__label">
                                                                 {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
-                                                            <span className="schedule-cell__duration" dir="auto">{span} {locale === 'ar' ? 'س' : 'h'}</span>
-                                                            {showSubjectLabels && (
-                                                                <span
-                                                                    className="schedule-cell__subject mt-0.5 max-w-full truncate text-[10px] xl:text-[11px] font-medium uppercase tracking-wider"
-                                                                >
-                                                                    {subjectLabel(classInfo.subject)}
-                                                                </span>
-                                                            )}
+                                                            <span className="schedule-cell__meta">
+                                                                <span dir="auto">{span} {locale === 'ar' ? 'س' : 'h'}</span>
+                                                                {showSubjectLabels && (
+                                                                    <span className="schedule-cell__subject">{subjectLabel(classInfo.subject)}</span>
+                                                                )}
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -317,7 +295,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         })}
                     </tbody>
                 </table>
-            </div>
             </TabsContent>
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
                 aussitôt sur le créneau qui l'a demandée. */}

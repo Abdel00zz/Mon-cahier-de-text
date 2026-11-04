@@ -1,16 +1,71 @@
 /* Continuous structural rules, with one shared inset for content and controls. */
 .settings-modal-frame { --settings-rule: hsl(var(--border) / .85); --settings-inset: 24px; }
-.settings-modal-frame.modal-motion-surface .modal-pro-header { border-bottom: 1px solid var(--settings-rule); padding-block: 12px; }
+.settings-modal-frame.modal-motion-surface .modal-pro-header {
+  border-bottom: 1px solid var(--settings-rule);
+  padding-block: 8px;
+}
+.settings-modal-frame .modal-header .hub-titlebar {
+  font-size: 1.1875rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.settings-modal-frame .dialog-close {
+  border-color: transparent;
+  background: transparent;
+}
+.settings-modal-frame .dialog-close:focus-visible { outline-color: var(--codex-enamel); }
+.settings-modal-frame[data-has-handle='true'] .hub-modal-header.modal-pro-header {
+  /* The 24 px drag handle already occupies the top of the mobile sheet. */
+  padding-block: 4px 8px;
+}
 .settings-modal-frame .settings-shell { min-height: 0; }
 .settings-modal-frame .settings-nav {
+  width: 14rem;
   align-self: stretch;
-  padding: 16px 12px 12px;
+  padding: 16px 10px 10px;
   border-inline-end: 1px solid var(--settings-rule);
-  background: hsl(var(--muted) / .25);
+  background: color-mix(in srgb, var(--codex-stone) 97%, var(--codex-enamel));
+}
+.settings-nav__link {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-inline-start: 2px solid transparent;
+  border-radius: 6px;
+  color: color-mix(in srgb, hsl(var(--foreground)) 76%, var(--codex-stone));
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.settings-nav__link:lang(ar) { font-size: .9375rem; }
+.settings-nav__link svg { width: 18px; height: 18px; flex: none; stroke-width: 1.65; }
+.settings-nav__link[aria-current='page'] {
+  border-inline-start-color: var(--codex-enamel);
+  background: color-mix(in srgb, var(--codex-enamel) 10%, var(--codex-stone));
+  color: var(--codex-enamel);
+  font-weight: 650;
+}
+@media (hover: hover) {
+  .settings-nav__link:hover:not([aria-current]) {
+    background: color-mix(in srgb, var(--codex-stone) 92%, var(--codex-enamel));
+    color: hsl(var(--foreground));
+  }
+}
+.settings-nav__link:focus-visible {
+  outline: 2px solid var(--codex-enamel);
+  outline-offset: 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-nav__link { transition: none; }
 }
 .settings-modal-frame .settings-nav-footer {
-  margin-inline: -12px;
-  padding: 12px 12px 0;
+  padding-top: 8px;
   border-top: 1px solid var(--settings-rule);
 }
 .settings-modal-frame .settings-scroll {
@@ -20,13 +75,14 @@
   overscroll-behavior: contain;
   -webkit-mask-image: none;
   mask-image: none;
+  background: var(--codex-stone);
 }
 .settings-modal-frame .settings-section__body { border-color: var(--settings-rule); }
 .settings-modal-frame .settings-section__body > :not(:first-child) { border-color: var(--settings-rule); }
 .settings-modal-frame .settings-section { min-width: 0; }
 .settings-modal-frame .modal-pro-footer { border-top: 1px solid var(--settings-rule); padding-inline: var(--settings-inset); }
 @media (min-width: 1024px) {
-  .settings-modal-frame.modal-motion-surface { height: min(42rem, calc(var(--modal-visible-height) - 3rem)); border-radius: 16px; }
+  .settings-modal-frame.modal-motion-surface { height: fit-content; min-height: min(30rem, 70dvh); max-height: min(86dvh, 760px); border-radius: 16px; }
   .settings-modal-frame .settings-shell { flex: 1; }
 }
 @media (max-width: 639px) {

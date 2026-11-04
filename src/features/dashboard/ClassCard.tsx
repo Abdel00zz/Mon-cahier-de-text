@@ -21,6 +21,7 @@ interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
+    onOpenSchedule?: (classId: string) => void;
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
@@ -81,6 +82,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     classInfo,
     onSelect,
     onConfigure,
+    onOpenSchedule,
     onDelete,
     onOpenEvaluations,
     isActiveSession,
@@ -189,6 +191,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             color={classInfo.color}
                             palette={palette}
                             onConfigure={onConfigure}
+                            onOpenSchedule={onOpenSchedule && (() => onOpenSchedule(classInfo.id))}
                             onDelete={onDelete}
                             onOpenEvaluations={onOpenEvaluations}
                             triggerClassName="class-card__menu"
@@ -227,9 +230,8 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && previous.index === next.index
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
-    && previous.scheduleStatus?.state === next.scheduleStatus?.state
-    && previous.scheduleStatus?.shortLabel === next.scheduleStatus?.shortLabel
-    && previous.scheduleStatus?.sessionHours === next.scheduleStatus?.sessionHours
+    && previous.scheduleStatus === next.scheduleStatus
+    && previous.onOpenSchedule === next.onOpenSchedule
     && previous.palette?.bg === next.palette?.bg
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 
