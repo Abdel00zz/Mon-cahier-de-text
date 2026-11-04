@@ -95,7 +95,7 @@
     "@upstash/redis": "^1.38.0",
     "@vercel/functions": "^3.10.6",
     "agent-robot-avatar": "^0.5.2",
-    "capacitor-webview-print": "^7.0.0",
+    "capacitor-webview-print": "^8.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
