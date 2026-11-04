@@ -79,6 +79,20 @@
   box-shadow: 0 1px 2px rgb(40 48 58 / 0.04), 0 10px 22px -18px rgb(40 48 58 / 0.32);
   transition: transform 240ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1)), box-shadow 200ms ease, border-color 200ms ease, filter 160ms ease;
 }
+/* Cartes porteuses d’une couleur de rubrique : la surface reste le papier de
+   l’application, seulement effleuré par la teinte ; l’identité vient de la
+   pastille, du filet et du halo — pas d’un aplat pastel. */
+.hub-card[data-tone] {
+  --hub-surface: color-mix(in srgb, var(--codex-stone, hsl(var(--card))) 97%, var(--tone));
+  border-color: color-mix(in srgb, var(--tone) 12%, var(--codex-rule, hsl(var(--border))));
+  background:
+    radial-gradient(115% 82% at 50% 0%, color-mix(in srgb, var(--tone) 6%, transparent), transparent 72%),
+    var(--hub-surface);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent),
+    0 1px 2px rgb(40 48 58 / 0.05),
+    0 10px 22px -18px color-mix(in srgb, var(--tone) 45%, transparent);
+}
 .hub-card__icon {
   display: grid;
   place-items: center;
@@ -87,7 +101,8 @@
   margin-bottom: 0.15rem;
   border-radius: 13px;
   color: var(--tone);
-  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  background: color-mix(in srgb, var(--tone) 15%, var(--codex-stone, hsl(var(--card))));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 20%, transparent);
   transition: transform 240ms var(--ease-spring, cubic-bezier(0.2, 0, 0, 1)), background-color 200ms ease;
 }
 .hub-card__icon .app-icon { width: 1.75rem; height: 1.75rem; stroke-width: 1.8; }
@@ -131,7 +146,12 @@ html[lang='ar'] .hub-card__hint { font-size: 0.8125rem; line-height: 1.45; }
 .dark :is(.hub-card, .evaluation-tone)[data-tone='teal'] { --tone: #6fcfc5; }
 .dark :is(.hub-card, .evaluation-tone)[data-tone='rose'] { --tone: #f2a3b6; }
 .dark :is(.hub-card, .evaluation-tone)[data-tone='slate'] { --tone: #9aa7b4; }
-.dark .hub-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 24px -18px rgb(0 0 0 / 0.6); }
+.dark .hub-card {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent),
+    0 1px 2px rgb(0 0 0 / 0.3),
+    0 12px 24px -18px rgb(0 0 0 / 0.6);
+}
 /* Liste de cartes-lignes : une colonne sur téléphone, deux dès 640 px. */
 .hub-grid[data-rows] { grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 640px) { .hub-grid[data-rows] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -220,19 +240,22 @@ html[lang='ar'] .hub-card[data-layout='tile'] .hub-card__title { font-size: 1.06
    contenu au lieu de remplir l'écran. */
 @media (max-width: 639px) {
   .settings-modal-frame .settings-home { padding: 0.45rem 0.75rem 0.7rem; }
-  .settings-modal-frame .hub-grid { gap: 0.4rem; }
+  .settings-modal-frame .hub-grid { gap: 0.5rem; }
+  /* Les cartes gardent les proportions du bureau (pierre teintée, pastille
+     généreuse, rayon 20 px) : seule l’échelle change pour tenir sur un écran
+     de 360–430 px, avec des cibles toujours ≥ 44 px. */
   .settings-modal-frame .hub-card {
-    min-height: 5.9rem;
-    gap: 0.2rem;
-    padding: 0.62rem 0.42rem 0.55rem;
-    border-radius: 18px;
+    min-height: 6.6rem;
+    gap: 0.28rem;
+    padding: 0.7rem 0.45rem 0.6rem;
+    border-radius: 20px;
   }
-  .settings-modal-frame .hub-card__icon { width: 2.25rem; height: 2.25rem; border-radius: 11px; margin-bottom: 0.08rem; }
-  .settings-modal-frame .hub-card__icon .app-icon { width: 1.4rem; height: 1.4rem; stroke-width: 1.9; }
-  .settings-modal-frame .hub-card__title { font-size: 0.8125rem; line-height: 1.28; }
-  .settings-modal-frame .hub-card__hint { max-width: 9rem; font-size: 0.6875rem; line-height: 1.3; }
-  html[lang='ar'] .settings-modal-frame .hub-card__title { font-size: 0.9375rem; line-height: 1.32; }
-  html[lang='ar'] .settings-modal-frame .hub-card__hint { font-size: 0.75rem; line-height: 1.34; }
+  .settings-modal-frame .hub-card__icon { width: 2.6rem; height: 2.6rem; border-radius: 14px; margin-bottom: 0.1rem; }
+  .settings-modal-frame .hub-card__icon .app-icon { width: 1.6rem; height: 1.6rem; stroke-width: 1.85; }
+  .settings-modal-frame .hub-card__title { font-size: 0.85rem; line-height: 1.3; }
+  .settings-modal-frame .hub-card__hint { max-width: 9.5rem; font-size: 0.72rem; line-height: 1.34; }
+  html[lang='ar'] .settings-modal-frame .hub-card__title { font-size: 0.98rem; line-height: 1.34; }
+  html[lang='ar'] .settings-modal-frame .hub-card__hint { font-size: 0.78rem; line-height: 1.36; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hub-card, .hub-card__icon, .hub-back { transition: none; }

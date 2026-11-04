@@ -17,11 +17,21 @@ test('les fenêtres Paramètres et Aide se serrent autour de leur contenu', () =
 
 test('le hub Paramètres se resserre sans perdre ses cibles tactiles', () => {
   const hub = read('src/styles/settings-hub.css');
-  assert.match(hub, /@media \(max-width: 639px\)[\s\S]*?\.settings-modal-frame \.hub-card[\s\S]*?min-height:\s*5\.9rem/);
-  assert.match(hub, /\.settings-modal-frame \.hub-card__icon \{ width: 2\.25rem; height: 2\.25rem/, 'pastilles compactes');
+  assert.match(hub, /@media \(max-width: 639px\)[\s\S]*?\.settings-modal-frame \.hub-card[\s\S]*?min-height:\s*6\.6rem/);
+  assert.match(hub, /\.settings-modal-frame \.hub-card__icon \{ width: 2\.6rem; height: 2\.6rem/, 'pastilles compactes');
+  assert.match(hub, /\.settings-modal-frame \.hub-card \{[\s\S]*?border-radius: 20px/, 'même rayon qu’au bureau');
   const modal = read('src/features/settings/ConfigModal.tsx');
   assert.match(modal, /hub-card__title line-clamp-2/, 'les titres restent sur deux lignes');
   assert.match(modal, /hub-card__hint line-clamp-2/, 'les descriptions restent sur deux lignes');
+});
+
+test('les cartes Paramètres reprennent la matière du menu latéral bureau', () => {
+  const hub = read('src/styles/settings-hub.css');
+  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?--hub-surface: color-mix\(in srgb, var\(--codex-stone/, 'surface en pierre, pas un blanc générique');
+  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?radial-gradient\(115% 82% at 50% 0%, color-mix\(in srgb, var\(--tone\) 6%/, 'halo de couleur discret en haut de carte');
+  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?border-color: color-mix\(in srgb, var\(--tone\) 12%/, 'filet teinté par rubrique');
+  // Une carte sans couleur de rubrique (lignes d’évaluation) reste neutre.
+  assert.match(hub, /\.hub-card \{[\s\S]{0,900}background: hsl\(var\(--card\)\)/, 'les cartes sans teinte gardent la surface neutre');
 });
 
 test('la grille d’emploi du temps et le dock s’adaptent aux téléphones 360–430 px', () => {

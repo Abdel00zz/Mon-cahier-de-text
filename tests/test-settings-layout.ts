@@ -80,7 +80,9 @@ test('paramètres : grandes cartes colorées sur téléphone et tablette, menu l
   }
   assert.match(css, /@media \(min-width: 1024px\)[\s\S]{0,300}\.settings-home \{ display: none; \}/, 'cartes masquées sur grand écran');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}\.hub-card/, 'mouvement réduit respecté');
-  assert.match(css, /\.hub-card \{[\s\S]{0,400}min-height: 7\.5rem/, 'cartes compactes mais assez grandes pour le pouce');
+  // La règle porte désormais la surface teintée avant la hauteur : la fenêtre
+  // de recherche couvre les deux déclarations, l’intention reste la même.
+  assert.match(css, /\.hub-card \{[\s\S]{0,900}min-height: 7\.5rem/, 'cartes compactes mais assez grandes pour le pouce');
 });
 
 test('absences justifiées : rubrique dédiée, injection automatique dans les cahiers concernés', () => {
