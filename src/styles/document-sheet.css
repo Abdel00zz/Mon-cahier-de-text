@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. EVALUATIONS WIZARD, DOCUMENT SHEET (.devoir-document) & PREVIEW MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ---------------------------------------------------------------------------
+   Le tableau des évaluations (devoirs et activités d'une classe) vit dans
+   `features/evaluations/evaluationsBoard.css` : une surface, des colonnes
+   alignées et des commandes de ligne, à la place des cartes bordées.
+   --------------------------------------------------------------------------- */
+.evaluations-category-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.05rem + .3vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+}
+html[lang='ar'] .evaluations-category-title { letter-spacing: normal; }
+
+/* ── En-tête de famille : le titre, puis le compte ─────────────────────────
+   Les deux familles (« Devoirs et évaluations », « Activités pédagogiques ») se
+   lisent sur UNE ligne : le titre, et le nombre de natures ou d'occurrences
+   qu'elles contiennent. Le compte est un repère, pas une décoration : il dit à
+   l'avance combien de lignes attendent, donc si la liste descend plus bas que
+   l'écran.
+   AUCUNE ICÔNE À CÔTÉ DU TITRE : le titre d'une catégorie se lit, il ne se
+   dessine pas — une pastille répétait en image ce que le titre dit en toutes
+   lettres, à chaque écran et à chaque zone. Le ton de la famille ne subsiste que
+   sur la pastille de compte, où il aide à distinguer les deux sections. */
+.kind-group { display: flex; align-items: center; gap: .6rem; min-height: 32px; }
+/* Le compte des natures : discret, aligné en fin de ligne, chiffres alignés. */
+.kind-group__count {
+  flex: none;
+  min-width: 1.6rem;
+  padding: .1rem .4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: color-mix(in srgb, var(--tone) 78%, hsl(var(--foreground)));
+  font-size: .6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* ── Étapes de l'assistant de création ──────────────────────────────────────
+   Chaque étape vit dans SON panneau : une seule chose à la fois, et la
+   séparation se voit sans qu'on ait à la chercher. La vue des classes, elle, est
+   une simple liste de cartes SANS icône (voir .class-choice) : le palier, le
+   libellé localisé et le numéro de groupe suffisent, écrits avec la graisse des
+   cartes du tableau de bord pour que « 2Bac PC 3 » se repère d'un coup d'œil. */
+.wizard-step {
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 78%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, hsl(var(--card)) 55%, transparent);
+  padding: .75rem;
+}
+/* ── VUE DES CLASSES (entrée de l'écran du contrôle continu) ──────────────
+   De grandes cartes SANS icône : le palier, le libellé localisé, le numéro de
+   groupe et ce que la classe porte déjà. Le groupe s'écrit comme sur les cartes
+   du tableau de bord — graisse 800, chiffres alignés — pour que « 2Bac PC 3 »
+   se repère d'un coup d'œil. */
+.class-choice { align-items: center; }
+.class-choice__tier {
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+/* Ce que la classe porte déjà : devoirs puis activités, chiffres alignés. */
+.class-choice__counts {
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* La pastille « classe active » ne s'étire pas : dans une colonne flex, une
+   pastille pleine largeur ressemble à une barre de progression vide. */
+.class-choice .tone-chip { align-self: flex-start; }
+.class-choice__group {
+  flex: none;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.class-choice[data-current='true'] {
+  border-color: color-mix(in srgb, hsl(var(--primary)) 44%, hsl(var(--border)));
+  background: color-mix(in srgb, hsl(var(--primary)) 5%, hsl(var(--card)));
+}
+.class-choice[data-current='true'] .class-choice__group { color: hsl(var(--primary)); }
+
+/* Pastille de famille d'une activité : la teinte de la carte, en aplat léger.
+   Elle remplace une seconde couleur inventée — une carte, une teinte. */
+.tone-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.dark .tone-chip { background: color-mix(in srgb, var(--tone) 22%, transparent); }
+/* « Réalisé » garde le vert sémantique, comme toute réussite dans l'application. */
+.tone-chip[data-state='done'] { --tone: #15803d; }
+.dark .tone-chip[data-state='done'] { --tone: #76d59a; }
+
+/* ---------------------------------------------------------------------------
+   Feuille de DEVOIR (énoncé, corrigé, fiche) — mise en page du document
+   lui-même : titre centré, barres d'exercice teintées, barème aligné au bord
+   de lecture. Ces règles ne s'appliquent QUE dans une feuille de devoir
+   (`.devoir-document`) : le carnet et l'éditeur gardent leur sobriété.
+   --------------------------------------------------------------------------- */
+/* L'échelle du document en un seul endroit : la page se règle ici, pas dans
+   dix règles dispersées. 14 px de corps, 1,72 d'interligne — la densité d'une
+   feuille d'énoncé, lisible à l'écran comme sur le papier. */
+.devoir-document {
+  --doc-title-ink: #1f3a5f;
+  --doc-title-font: var(--font-display);
+  --doc-fs: 14px;
+  --doc-lh: 1.72;
+  --doc-fs-title: clamp(1.5rem, 1.3rem + 0.6vw, 1.8rem);
+  --doc-fs-heading: 0.875rem;
+  --doc-fs-bareme: 0.875rem;
+  font-family: var(--font-document);
+  font-size: var(--doc-fs);
+  line-height: var(--doc-lh);
+  letter-spacing: 0.002em;
+  color: hsl(var(--foreground));
+  text-align: start;
+  text-wrap: pretty;
+}
+/* Chaque ligne de prose (<bdi dir="rtl|ltr">) est un bloc à part entière dans la feuille :
+   son attribut `dir` gouverne son alignement horizontal (droite en arabe, gauche en français)
+   ainsi que la ponctuation finale, même dans un document bilingue. */
+.devoir-document > bdi,
+.devoir-document .doc-columns > bdi,
+.devoir-document .editor-item-body > bdi {
+  display: block;
+  width: 100%;
+  text-align: start;
+  white-space: pre-wrap;
+  unicode-bidi: isolate;
+}
+.devoir-document .editor-item-body {
+  white-space: normal;
+  text-align: start;
+}
+.devoir-document .editor-list[dir='rtl'],
+.devoir-document .editor-item-body[dir='rtl'],
+.devoir-document > bdi[dir='rtl'],
+.devoir-document .doc-columns > bdi[dir='rtl'],
+.devoir-document .editor-item-body > bdi[dir='rtl'],
+.devoir-document .doc-line[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+.devoir-document .editor-list[dir='ltr'],
+.devoir-document .editor-item-body[dir='ltr'],
+.devoir-document > bdi[dir='ltr'],
+.devoir-document .doc-columns > bdi[dir='ltr'],
+.devoir-document .editor-item-body > bdi[dir='ltr'],
+.devoir-document .doc-line[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+.devoir-document .doc-title {
+  display: block;
+  margin: 0 0 0.85rem;
+  padding-block: 0.1rem 0.2rem;
+  text-align: center;
+  font-family: var(--doc-title-font);
+  font-size: var(--doc-fs-title);
+  font-weight: 700;
+  color: var(--doc-title-ink);
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  letter-spacing: -0.004em;
+}
+/* Surlignage `==texte==` : un aplat OPAQUE, identique sur le texte et sur chaque formule. Une formule haute
+   (fraction, somme, intégrale, matrice) est ainsi surlignée sur toute sa hauteur, sans double teinte là où
+   deux aplats se recouvrent ; une formule affichée est un bloc ajusté à sa largeur. Le surlignage se
+   replie sur plusieurs lignes sans casser ses bords (`box-decoration-break`). */
+mark.doc-hl {
+  --hl: #fde68a;
+  padding-inline: 0.2em;
+  color: inherit;
+  font-weight: inherit;
+  background: var(--hl);
+  border-radius: 0.25em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.dark mark.doc-hl { --hl: #5c4a1a; }
+/* Que des formules affichées : la balise s'efface (aucun éclat jaune aux bords de la ligne), la teinte reste héritée. */
+mark.doc-hl.doc-hl--display { display: contents; padding: 0; background: none; }
+mark.doc-hl .katex {
+  background: var(--hl);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0 0.14em var(--hl);
+}
+mark.doc-hl .katex-display { margin-block: 0.45em; }
+mark.doc-hl .katex-display > .katex {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 0.2em 0.6em;
+  box-shadow: none;
+}
+/* Un bloc de formule et sa ponctuation finale ne se séparent pas ; le texte surligné/gras qui précède se replie. */
+.doc-nowrap { white-space: nowrap; }
+/* La ponctuation qui suit une formule en ligne vit dans sa dernière boîte (voir `appendTail`) : elle reprend la
+   police et la taille du texte, pas celles de KaTeX (1,21 em). */
+.katex .katex-tail { font-family: var(--font-document, inherit); font-size: calc(1em / 1.21); font-style: normal; font-weight: inherit; white-space: nowrap; }
+.doc-nowrap > :is(mark, strong, em, u) { white-space: pre-wrap; }
+/* Ligne vide entre deux paragraphes : une ligne ailleurs, une simple respiration dans une feuille de document. */
+.doc-gap { display: block; height: 1.5em; }
+.devoir-document .doc-gap { height: 0.5em; }
+/* Dans une feuille en colonnes, une longue liste (une question à sous-questions) se répartit entre les colonnes
+   au lieu de s'imposer en bloc et de creuser un vide : seuls ses items restent entiers. */
+.devoir-document .doc-columns > .editor-list { break-inside: auto; }
+/* Le corps suit le document, le titre garde la voix de l'application : les
+   deux écritures cohabitent sans se confondre. */
+.devoir-document :is(strong, b) { font-weight: 700; }
+/* Barre d'exercice : aplat plein, texte blanc. La couleur dit le NUMÉRO de
+   l'exercice, donc « Exercice 3 » garde la même couleur dans l'énoncé et dans
+   son corrigé. Contraste vérifié : 4,8 à 6,0 sur les quatre teintes. */
+.devoir-document .doc-heading {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.9rem 0 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  color: #faf8f5;
+  font-family: var(--font-document);
+  font-size: var(--doc-fs-heading);
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  letter-spacing: 0.005em;
+  background: var(--doc-tone, #2563eb);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.devoir-document .doc-heading[dir='rtl'] {
+  direction: rtl;
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+  letter-spacing: 0;
+}
+.devoir-document .doc-heading[dir='ltr'] {
+  direction: ltr;
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+}
+.devoir-document .doc-heading[data-tone='1'] { --doc-tone: #2563eb; }
+.devoir-document .doc-heading[data-tone='2'] { --doc-tone: #15803d; }
+.devoir-document .doc-heading[data-tone='3'] { --doc-tone: #b45309; }
+.devoir-document .doc-heading[data-tone='4'] { --doc-tone: #6d28d9; }
+.devoir-document .doc-subheading {
+  display: block;
+  margin: 0.9rem 0 0.3rem;
+  font-size: var(--doc-fs-heading);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  text-align: start;
+}
+.devoir-document .doc-subheading[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+  letter-spacing: 0;
+}
+.devoir-document .doc-subheading[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+/* Rangée d'énoncé : le texte se replie, le barème reste au bord de lecture —
+   les points se lisent à la hauteur de la question qu'ils notent. */
+.devoir-document .doc-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: start;
+}
+.devoir-document .doc-line__text { min-width: 0; flex: 1 1 auto; text-align: start; white-space: pre-wrap; }
+.devoir-document .doc-bareme {
+  flex: none;
+  font-size: var(--doc-fs-bareme);
+  font-weight: 700;
+  white-space: nowrap;
+  /* Les points s'alignent d'une question à l'autre : chiffres à chasse fixe,
+     comme sur un barème imprimé. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Academic document headings remain legible independently of the app accent. */
+.document-preview-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1f3a5f;
+}
+/* A shared document surface: restrained corners, quiet chrome and one reading
+   column. Keep the standard modal gestures and accessible entry/exit motion. */
+.document-modal-frame.modal-motion-surface {
+  border-radius: 12px;
+  border-color: hsl(var(--border) / .9);
+}
+.document-modal-frame.modal-motion-surface[data-state='open'] {
+  animation-duration: 240ms;
+}
+.document-modal-frame.modal-motion-surface[data-state='closed'] {
+  animation-duration: 180ms;
+}
+.document-modal-frame .modal-pro-header {
+  background: hsl(var(--card) / .95);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / .035);
+}
+.document-modal-frame .dialog-close { border-radius: 9999px; }
+.document-modal-frame .modal-body {
+  background: color-mix(in srgb, hsl(var(--muted)) 28%, hsl(var(--card)));
+  scrollbar-gutter: stable;
+}
+.document-modal-frame .document-preview-body {
+  max-height: 68dvh;
+}
+.document-modal-frame .document-preview-meta {
+  padding-block: 0.15rem 0.6rem;
+}
+.document-modal-frame .document-preview-paper {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px hsl(var(--foreground) / .035);
+}
+.document-modal-frame .modal-pro-footer {
+  border-top: 1px solid hsl(var(--border) / .7);
+  background: hsl(var(--card));
+}
+@media (max-width: 639px) and (orientation: portrait) {
+  .document-modal-frame.modal-motion-surface[data-mobile-presentation='sheet'] {
+    border-radius: 14px 14px 0 0;
+  }
+  .document-modal-frame .document-preview-body { max-height: none; }
+  .document-modal-frame .document-preview-paper { padding: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .document-modal-frame.modal-motion-surface[data-state] { animation: none; }
+}
+.dark .devoir-document { --doc-title-ink: #b9cdea; }
+.dark .document-preview-title { color: #b9cdea; }
+.devoir-document .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.15rem;
+}
+.devoir-document .doc-line__text { overflow-wrap: anywhere; }
+@media print {
+  .devoir-document { --doc-title-ink: #1f3a5f; }
+  .document-preview-title { color: #1f3a5f; }
+  .devoir-document .katex-display { overflow: visible; }
+}

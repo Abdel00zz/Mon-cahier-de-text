@@ -73,13 +73,13 @@ export const NotificationKind: React.FC<{
     label: string;
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-lg bg-muted/60 p-2.5">
+    <div className="flex min-w-0 items-start gap-2.5 rounded-lg bg-muted/60 p-2.5">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground">
             <Icon className="h-[18px] w-[18px] stroke-[1.5]" />
         </span>
         <span className="min-w-0">
-            <span className="block truncate text-xs font-bold text-foreground">{label}</span>
-            <span className="block truncate text-[10px] font-medium text-muted-foreground">{detail}</span>
+            <span className="block break-words text-xs font-semibold leading-snug text-foreground">{label}</span>
+            <span className="mt-0.5 block break-words text-xs leading-relaxed text-muted-foreground">{detail}</span>
         </span>
     </div>
 );

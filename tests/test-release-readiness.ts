@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
@@ -80,7 +81,7 @@ const mixedColor = (foreground: string, background: string, fraction: number) =>
 };
 
 test('les tokens de texte et d’action gardent le contraste AA sur les deux thèmes', () => {
-  const css = fs.readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const paletteStart = css.indexOf('--background:');
   const darkStart = css.indexOf('  .dark {', paletteStart);
   const light = css.slice(paletteStart, darkStart);
@@ -95,7 +96,7 @@ test('les tokens de texte et d’action gardent le contraste AA sur les deux th�
 });
 
 test('les huit couleurs de classe et les couleurs supplémentaires restent lisibles', () => {
-  const css = fs.readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   for (const match of css.matchAll(/\[data-keep-tone="([a-z]+)"\] \{([^}]+)\}/g)) {
     const [, name, values] = match;
     const token = (key: string) => values.match(new RegExp(`--keep-${key}: (#[A-Fa-f0-9]{6});`))?.[1];

@@ -63,6 +63,7 @@ export const PushActivationCard: React.FC<{
             : state.serverRegistered ? t('notifications.state.registered') : t(local ? 'notifications.nativeRemotePending' : 'notifications.state.notRegistered')],
         ...(local ? [
             [t('notifications.nativeBackground'), checking ? t('notifications.state.checking')
+                : state.batteryOptimizationIgnored === undefined ? t('notifications.state.unavailable')
                 : state.batteryOptimizationIgnored ? t('notifications.nativeBackgroundOptimal')
                 : t('notifications.nativeBackgroundRestricted')],
             ...(state.canScheduleExactAlarms !== undefined ? [

@@ -28,10 +28,13 @@ interface ProfileTabProps {
 export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggleSubject, onToggleCycle }) => {
   const { locale, t } = useLocale();
   const [expanded, setExpanded] = useState(false);
+  const subjectsId = React.useId();
   const selectedSubjects = config.selectedSubjects ?? [];
   const selectedCycles = config.selectedCycles ?? [];
   const selectedAcademy = config.academyRegion ?? '';
   const provinces = getProvincesForAcademy(selectedAcademy);
+  const visibleSubjects = expanded ? SUBJECTS : SUBJECTS.filter((subject, index) =>
+    index < VISIBLE_SUBJECTS || selectedSubjects.includes(subject));
 
   return (
     <SettingsPanel title={t('settings.item.profile')}>
@@ -69,12 +72,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggl
           colon={false}
           label={
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-foreground">
+              <span id={`${subjectsId}-label`} className="text-sm font-medium text-foreground">
                 {t('settings.subjects')} :
               </span>
               {SUBJECTS.length > VISIBLE_SUBJECTS && (
                 <button
                   type="button"
+                  aria-expanded={expanded}
+                  aria-controls={`${subjectsId}-choices`}
                   onClick={() => setExpanded(value => !value)}
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
@@ -85,8 +90,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggl
             </div>
           }
         >
-          <div className="flex flex-wrap gap-2 pt-0.5">
-            {SUBJECTS.slice(0, expanded ? SUBJECTS.length : VISIBLE_SUBJECTS).map(subject => {
+          <div id={`${subjectsId}-choices`} role="group" aria-labelledby={`${subjectsId}-label`} className="flex flex-wrap gap-2 pt-0.5">
+            {visibleSubjects.map(subject => {
               const active = selectedSubjects.includes(subject);
               return (
                 <button
@@ -111,7 +116,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ config, onDraft, onToggl
       {/* Carte 2 : المؤسسة والتأطير الإداري */}
       <SettingsSection title={t('settings.group.school')} icon={School}>
         <SettingsRow stacked label={t('settings.cycle')}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full">
+          <div role="group" aria-label={t('settings.cycle')} className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full">
             {CYCLES.map(({ key, icon: Icon }) => {
               const active = selectedCycles.includes(key);
               return (

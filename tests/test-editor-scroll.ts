@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -41,7 +42,7 @@ test('multi-touch, cancellation, wheel and cleanup cannot leave scroll correctio
 
 test('portrait page does not create a second vertical scroll container; horizontal rails pass vertical swipes', () => {
   const css = (path: string) => postcss.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
-  const index = css('../src/styles/index.css');
+  const index = postcss.parse(readIndexCss());
   let checkedPortrait = false;
   index.walkAtRules('media', media => {
     if (media.params !== '(max-width: 639px)') return;

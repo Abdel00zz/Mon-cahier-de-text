@@ -208,3 +208,10 @@ Un produit engageant et durable combine **rassurance psychologique immédiate** 
 * **Réponse physique instantanée :** Composants `motion.button` configurés avec `whileTap={{ scale: 0.90 }}` et `transition={{ type: 'spring', stiffness: 500, damping: 28 }}`.
 * **Navigation par onglets fluide :** Pastille coulissante dynamique (`layoutId="mobile-tab-active-pill"`) reliant visuellement les changements d'écrans.
 * **Respect de l'accessibilité motrice :** Prise en compte immédiate de `prefers-reduced-motion` pour les utilisateurs sensibles.
+
+## 13. Préserver les travaux et les restaurations
+
+- Avant toute remise à zéro, nettoyage ou restauration massive (`reset --hard`, `clean`, remplacement complet d'une interface), vérifier `git status` et conserver les modifications ainsi que les fichiers non suivis dans un point de récupération identifiable.
+- Ne jamais traiter les fichiers CSS non suivis comme des fichiers jetables : ils peuvent constituer des modules actifs nécessaires à l'interface.
+- Après une refonte validée, enregistrer tous les fichiers nécessaires dans Git, y compris les nouveaux modules, puis vérifier que l'arbre de travail est propre.
+- Préserver les changements utiles d'autres intervenants et comparer l'historique avant de remplacer leurs fichiers.

@@ -1,5 +1,12 @@
-.absence-form input { transition: border-color 180ms ease, box-shadow 180ms ease; }
+.absence-settings-section .settings-section__header { padding-bottom: 12px; }
+.absence-settings-section .settings-section__header p { max-inline-size: 78ch; margin-top: 10px; line-height: 1.75; }
+.absence-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 20px; }
+.absence-form__field { display: flex; flex-direction: column; gap: 10px; }
+.absence-form__field > span { line-height: 1.5; font-weight: 500; }
+.absence-form input { min-height: 50px; height: auto; padding-block: 12px; transition: border-color 180ms ease, box-shadow 180ms ease; }
+.absence-form button[type='submit'] { min-height: 48px; margin-top: 4px; }
 .absence-period { animation: absence-appear 180ms ease-out; }
 @keyframes absence-appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 639px) { .absence-form input { font-size: 16px; } }
+@media (max-width: 639px) { .absence-form { gap: 20px 16px; } .absence-form input { font-size: 16px; } }
+@media (max-width: 479px) { .absence-form { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .absence-period { animation: none; } .absence-form input { transition: none; } }

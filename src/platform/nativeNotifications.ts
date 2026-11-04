@@ -31,11 +31,11 @@ export async function nativeNotificationState(requestPermission = false) {
       remote = requestPermission ? await connectNativePush(locale) : await nativeRemoteState();
     } catch { remote = { available: false, registered: null }; }
   }
-  let background = { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+  let background: { batteryOptimizationIgnored?: boolean; canScheduleExactAlarms?: boolean } = {};
   try {
     const { getNativeBackgroundStatus, requestNativeIgnoreBatteryOptimization } = await import('./nativeRuntime');
     background = await getNativeBackgroundStatus();
-    if (requestPermission && display === 'granted' && !background.batteryOptimizationIgnored) {
+    if (requestPermission && display === 'granted' && background.batteryOptimizationIgnored === false) {
       await requestNativeIgnoreBatteryOptimization();
       background = await getNativeBackgroundStatus();
     }

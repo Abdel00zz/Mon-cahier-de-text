@@ -38,7 +38,12 @@
 
 /* Only the selected section has a surface; the strip scrolls in both directions. */
 .settings-tab-navigation {
-  --rail-surface: hsl(var(--background));
+  --settings-nav-ink: #f8f7f5;
+  --settings-nav-muted: #625f62;
+  --settings-nav-selected: #29282d;
+  --settings-nav-border: transparent;
+  display: flex;
+  justify-content: center;
   min-width: 0;
   margin-bottom: 14px;
   padding: 0;
@@ -47,7 +52,11 @@
   background: transparent;
   box-shadow: none;
 }
+.dark .settings-tab-navigation { --settings-nav-ink: #f3f1f8; --settings-nav-muted: #c3bfca; --settings-nav-selected: #504d59; }
+.settings-tab-navigation > div { min-width: 0; max-width: 100%; }
 .settings-tab-navigation [role='tablist'] {
+  width: max-content;
+  max-width: 100%;
   justify-content: flex-start;
   gap: 4px;
   padding: 4px 2px;
@@ -58,6 +67,8 @@
 }
 .settings-tab-navigation [role='tablist']::-webkit-scrollbar { display: none; }
 .settings-tab-navigation [role='tab'] {
+  position: relative;
+  isolation: isolate;
   min-height: 44px;
   padding-inline: 14px;
   border: 1px solid transparent;
@@ -75,28 +86,30 @@ html[lang='ar'] .settings-tab-navigation [role='tab'] {
   letter-spacing: 0;
 }
 .settings-tab-navigation [role='tab'][aria-selected='false'] {
-  color: hsl(var(--muted-foreground));
+  color: var(--settings-nav-muted);
   background: transparent;
 }
 .settings-tab-navigation [role='tab'][aria-selected='true'] {
-  color: hsl(var(--primary));
-  font-weight: 600;
-  background: hsl(var(--primary) / .12);
-  border-color: hsl(var(--primary) / .16);
-  box-shadow: 0 1px 2px hsl(var(--foreground) / .06);
+  color: var(--settings-nav-ink); font-weight: 600; background: transparent;
 }
-.dark .settings-tab-navigation [role='tab'][aria-selected='true'] { background: hsl(var(--primary) / .2); }
+.settings-tab-navigation__indicator { position: absolute; inset: 0; z-index: -1; border: 1px solid var(--settings-nav-border); border-radius: inherit; background: var(--settings-nav-selected); box-shadow: 0 1px 2px hsl(var(--foreground) / .06); pointer-events: none; }
 @media (hover: hover) {
   .settings-tab-navigation [role='tab'][aria-selected='false']:hover { background: hsl(var(--muted) / .65); color: hsl(var(--foreground)); }
 }
 .settings-tab-navigation [role='tab']:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
+.settings-section h3 { line-height: 1.35; }
+.settings-section__header { align-items: flex-start; }
+.settings-section__header svg { color: hsl(var(--foreground) / .72); }
+.settings-section__body { min-width: 0; }
+.settings-section .status-notice[data-tone='info'], .settings-section .status-notice[data-tone='success'] { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.settings-field { background: hsl(var(--background) / .68); }
+.settings-choice, .settings-action { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.settings-action { border-color: hsl(var(--border) / .8); background: hsl(var(--muted) / .35); }
+.settings-row { line-height: 1.45; }
+.settings-row__control { max-width: 100%; }
+@media (max-width: 380px) { .settings-row { flex-wrap: wrap; gap: 6px 12px; } .settings-row__control { margin-inline-start: auto; } }
 .settings-page-section { animation: settings-section-in 180ms cubic-bezier(.22,1,.36,1); }
 @keyframes settings-section-in { from { opacity: .65; transform: translate3d(0,4px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
-.schedule-start-field { flex-wrap: wrap; }
-.schedule-start-field > label { font-size: 12px; font-weight: 500; }
-.schedule-start-field__input { width: 154px; flex: 0 1 154px; min-width: 134px; }
-.schedule-start-field input[type='date'] { min-height: 44px; height: 44px; font-size: 14px; font-weight: 500; line-height: 1.25; }
-.schedule-start-field input::-webkit-date-and-time-value { text-align: start; }
 .schedule-periods [role='tablist'] { padding-block: 0; gap: 4px; }
 .schedule-periods [role='tab'] { font-size: 12px; border-radius: 9px; }
 .schedule-tab th, .schedule-tab td:first-child { font-weight: 500; }
@@ -126,7 +139,6 @@ html[lang='ar'] .settings-tab-navigation [role='tab'] {
     border-radius: 16px;
     padding: 14px 15px;
   }
-  .schedule-start-field input[type='date'] { font-size: 16px; }
   /* Prevent iOS Safari from zooming when a form field receives focus. */
   [data-settings-ui] input:not([type='checkbox']):not([type='radio']):not([type='range']),
   [data-settings-ui] textarea, [data-settings-ui] select { font-size: 16px; }

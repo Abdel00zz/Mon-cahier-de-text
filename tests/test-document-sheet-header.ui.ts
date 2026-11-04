@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import React from 'react';
@@ -59,7 +60,7 @@ test('sheet css: no blank top/bottom margin, header on both edges, 44px print co
 });
 
 test('formulas stay left-to-right inside Arabic documents', () => {
-  assert.match(read('src/styles/index.css'), /\.katex, \.katex-display \{ direction: ltr; unicode-bidi: isolate; \}/);
+  assert.match(readIndexCss(), /\.katex, \.katex-display \{ direction: ltr; unicode-bidi: isolate; \}/);
 });
 
 test('every document surface mounts the shared header with its class', () => {
@@ -83,7 +84,7 @@ test('le titre d’en-tête est centré, en texte dégradé sans fond ni soulign
   assert.match(css, /\.dark \.doc-sheet-header \{[^}]*--sheet-ink-from/);
   assert.match(css, /\.pedagogical-print-root \.doc-sheet-header \{[^}]*--sheet-ink-from: #1f3a8a/, 'impression toujours claire');
   assert.match(css, /\.pedagogical-print-root \.doc-sheet-header \{ print-color-adjust: exact/);
-  const index = read('src/styles/index.css');
+  const index = readIndexCss();
   const docTitle = index.match(/\.devoir-document \.doc-title \{[^}]*\}/)?.[0] ?? '';
   assert.doesNotMatch(docTitle, /background|border-bottom/);
 });

@@ -401,11 +401,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            style={{ backgroundColor: '#faf8f4', paddingBottom: '110px' }}
+            style={{ paddingBottom: '118px' }}
             className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-3 sm:pt-6"
             data-dashboard-root
         >
-            <div className="halo" aria-hidden="true"><i /><i /></div>
+            <div className="halo" aria-hidden="true" />
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[40rem] px-5 pt-7 sm:pt-11 pl-safe pr-safe">
                     {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}
@@ -415,7 +415,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             onModeChange={setClassDisplayMode}
                             showDisplayModes={false}
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="dashboard-header-actions flex items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setCreateModalOpen(true)}
@@ -423,7 +423,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     aria-label={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
                                     title={locale === 'ar' ? 'إضافة قسم' : 'Ajouter une classe'}
                                 >
-                                    <Plus size={20} strokeWidth={2.2} aria-hidden="true" />
+                                    <Plus size={20} strokeWidth={1.8} aria-hidden="true" />
                                 </button>
                                 <ClassAssistant
                                     locale={locale}
@@ -559,20 +559,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </main>
                 </div>
             </div>
-
-            {/* Bouton flottant « + » (.fab) */}
-            <motion.button
-                type="button"
-                whileHover={reduceMotion ? undefined : { scale: 1.05 }}
-                whileTap={reduceMotion ? undefined : { scale: 0.94 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                onClick={() => setCreateModalOpen(true)}
-                className="dashboard-floating-add-btn"
-                aria-label={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
-                title={locale === 'ar' ? 'إضافة قسم جديد' : 'Ajouter une classe'}
-            >
-                <Plus size={22} strokeWidth={2.2} color="#FFFFFF" aria-hidden="true" />
-            </motion.button>
 
             <ConfirmDialog
                 open={Boolean(classPendingDelete)}

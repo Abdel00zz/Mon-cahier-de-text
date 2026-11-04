@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -38,7 +39,7 @@ test('une formule, même haute, se surligne comme un mot ; la formule affichée 
 });
 
 test('la feuille peint le surlignage en aplat opaque, formule comprise, et le garde à l’impression', () => {
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const rule = css.match(/mark\.doc-hl \{[^}]*\}/)?.[0] ?? '';
   assert.match(rule, /background: var\(--hl\)/);
   assert.match(rule, /box-decoration-break: clone/, 'se replie sur plusieurs lignes');

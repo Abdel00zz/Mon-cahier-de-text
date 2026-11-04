@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -1125,7 +1126,7 @@ test('regroupement : même date, remarques distinctes et grandes séances borné
 });
 
 test('tableau : les colonnes viennent des jetons, pas de pourcentages codés en dur', () => {
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
   // Le jeton existe pour le téléphone (bornes minimales) et pour le desktop.
   assert.equal((css.match(/--cdt-table-cols:/g) ?? []).length >= 2, true, 'Les deux jeux de colonnes existent');
@@ -1276,7 +1277,7 @@ test('mise en page : les commandes LaTeX de document sont traitées par la mise 
 
   // KaTeX ne sait PAS couper une formule d'affichage : seule une formule plus
   // large que sa colonne devient défilable, et rien d'autre ne défile.
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   assert.match(css, /\.katex-display[^{}]*\{[^}]*overflow-x:\s*auto/, 'Une formule display débordante défile');
   assert.ok(
     !/\.editor-item-body[^{}]*\{[^}]*overflow-x:\s*auto/.test(css),
@@ -1556,7 +1557,7 @@ test('formateurs Intl : une seule instance partagee par locale et options', () =
 
 test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', () => {
   // Le runner s'execute depuis la racine du depot.
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const renderer = readFileSync('src/features/editor/ContentRenderer.tsx', 'utf8');
   for (const level of ['1', '2', '3']) {
     assert.match(css, new RegExp('\\.editor-indent-' + level + ' \\{ margin-inline-start: var\\(--editor-indent-' + level + '\\)'));
@@ -1641,7 +1642,7 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   // chiffres à chasse fixe. Non layerisée, donc elle tient même lorsqu'un bouton
   // voisin porte ses propres utilitaires de rembourrage.
   assert.match(shape, /content-badge/);
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const rule = css.slice(css.indexOf('.content-badge {'), css.indexOf('}', css.indexOf('.content-badge {')));
   assert.match(rule, /min-width: 30px/);
   assert.match(rule, /padding: 2px 5px/);
@@ -1667,7 +1668,7 @@ test('titre d’un devoir : rouge profond et voix éditoriale, écran comme papi
   assert.match(content, /titleColorClass = isAssessment \? 'editor-type-evaluation' : config\.color/, 'les corrections gardent leur couleur de famille');
   assert.match(content, /flex items-center \$\{titleColorClass\} \$\{indentClass\}/, 'écran');
   assert.match(content, /'text-red-700' : titleColorClass/, 'papier : le chapitre garde son rouge, le devoir prend la teinte éditoriale');
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const start = css.indexOf('.editor-type-evaluation {');
   const rule = css.slice(start, css.indexOf('}', start));
   assert.match(rule, /font-family: var\(--font-display\)/, 'fonte des titres, pas la fonte du corps');

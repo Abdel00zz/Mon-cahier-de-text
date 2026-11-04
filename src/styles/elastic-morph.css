@@ -1,18 +1,12 @@
-/* Elastic SVG Morphing Form Controls (.checkbox, .radio, .switch) */
+/* SVG selection controls; switches use the independent Radix/CSS component. */
 .checkbox,
-.radio,
-.switch {
+.radio {
   --toggle: hsl(var(--card));
   --toggle-active: hsl(var(--primary));
   --toggle-border: color-mix(in srgb, hsl(var(--border)) 85%, transparent);
   --toggle-border-hover: color-mix(in srgb, hsl(var(--primary)) 45%, hsl(var(--border)));
   --toggle-border-active: hsl(var(--primary));
   --toggle-inner: hsl(var(--primary-foreground));
-  --switch: color-mix(in srgb, hsl(var(--muted-foreground)) 30%, hsl(var(--card)));
-  --switch-hover: color-mix(in srgb, hsl(var(--muted-foreground)) 40%, hsl(var(--card)));
-  --switch-active: hsl(var(--primary));
-  --switch-dot: #fff;
-  --switch-dot-shadow: rgba(0, 0, 0, 0.18);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -21,8 +15,7 @@
 }
 
 .checkbox input,
-.radio input,
-.switch input {
+.radio input {
   display: block;
   -webkit-tap-highlight-color: transparent;
   -webkit-appearance: none;
@@ -37,8 +30,7 @@
 }
 
 .checkbox svg,
-.radio svg,
-.switch svg {
+.radio svg {
   fill: var(--svg-fill, none);
   stroke: var(--svg-stroke, none);
   stroke-width: var(--svg-stroke-width, 0);
@@ -116,35 +108,4 @@
   --svg-left: 4px;
   --svg-scale: 0;
   transform-origin: center center;
-}
-
-.switch {
-  --input-width: 44px;
-  --svg-width: 40px;
-  --svg-height: 20px;
-  --svg-top: 2px;
-  --svg-left: 2px;
-  --svg-fill: var(--switch-dot);
-}
-
-.switch input {
-  background: var(--b, var(--switch));
-  border-radius: 999px;
-  transition: background 0.32s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.switch input:hover {
-  --b: var(--switch-hover);
-}
-
-.switch input:checked {
-  --b: var(--switch-active);
-}
-
-.switch input:checked + svg {
-  transform: scaleX(-1);
-}
-
-.switch svg {
-  filter: drop-shadow(0 1px 2px var(--switch-dot-shadow));
 }

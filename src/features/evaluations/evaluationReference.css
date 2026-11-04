@@ -184,23 +184,16 @@
 .evaluation-reference .modal-header {
   position: relative;
   overflow: hidden;
-  padding: 1rem var(--pad, 1.35rem) 0.9rem;
+  padding-block: 14px;
+  padding-inline-start: 20px;
+  padding-inline-end: 64px;
   border-bottom: 0 !important;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 85%, #ffffff), transparent) !important;
-  color: var(--hero-ink) !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
-.dark .evaluation-reference .modal-header {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hero-bg) 60%, var(--bg-page)), transparent) !important;
-}
-
-@media (max-width: 639px) {
-  .evaluation-reference .modal-header {
-    padding: 1.75rem var(--pad, 1.25rem) 0.9rem;
-  }
-}
 
 .evaluation-reference .modal-drag-indicator {
   width: 2.4rem !important;
@@ -215,24 +208,19 @@
   min-width: 44px !important;
   min-height: 44px !important;
   border-radius: 50% !important;
-  background: #ffffffb3 !important;
-  color: var(--text-dark) !important;
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
   border: 0 !important;
   box-shadow: none !important;
   transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1), background-color 0.15s ease;
 }
 
-.dark .evaluation-reference .dialog-close {
-  background: color-mix(in srgb, #ffffff 14%, var(--hero-bg)) !important;
-  color: hsl(var(--foreground)) !important;
-}
-
 .evaluation-reference .dialog-close:hover {
-  background: #ffffff !important;
+  background: hsl(var(--muted) / .7) !important;
 }
 
 .evaluation-reference .dialog-close:active {
-  transform: scale(0.86);
+  transform: scale(0.95);
 }
 
 .course-hero-shapes,

@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -76,7 +77,7 @@ test('les titres et le barème ne cassent pas la structure existante', () => {
 });
 
 test('la feuille de style porte la mise en page, hors @layer', () => {
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   const start = css.indexOf('.devoir-document {');
   assert.ok(start > 0, 'la feuille de devoir a ses règles');
   const rule = css.slice(start, css.indexOf('}', start));
@@ -98,7 +99,7 @@ test('la feuille de style porte la mise en page, hors @layer', () => {
 });
 
 test('le texte de la feuille est composé par une fonte de document', () => {
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   // La fonte demandée d'abord, son relais ensuite, la fonte arabe en dernier
   // recours — c'est la plage de caractères qui départage les écritures.
   assert.match(css, /--font-document: 'Latin Modern Sans', 'Source Sans 3', var\(--font-latin-body\), var\(--font-arabic-body\), sans-serif/);
@@ -135,7 +136,7 @@ test('l’aide de la feuille cite les trois marqueurs', () => {
 });
 
 test('les titres principaux sont un peu plus gras et finissent par deux points, sans doublon', () => {
-  const css = readFileSync('src/styles/index.css', 'utf8');
+  const css = readIndexCss();
   assert.match(css, /\.devoir-document \.doc-title \{[^}]*font-weight: 700/, 'titre : un peu plus de gras');
   // Ajoutés à l'affichage seulement : espace insécable en français, rien en arabe.
   assert.match(render('# Fiche de cours'), /<span class="doc-title"[^>]*>Fiche de cours\u00A0:<\/span>/);

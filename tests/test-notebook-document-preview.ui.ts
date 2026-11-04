@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -90,7 +91,7 @@ test('l’aperçu est une fenêtre de lecture, minimale par construction', () =>
     assert.match(source, /overflow-y-auto/, 'une page longue défile dans la fenêtre, jamais la page entière');
 
     // La classe de la pastille vit dans la charte, pas en ligne.
-    const css = readFileSync('src/styles/index.css', 'utf8');
+    const css = readIndexCss();
     assert.match(css, /\.editor-doc-chip \{/, 'style dédié');
     assert.match(css, /\.editor-doc-chip:active \{[\s\S]*?brightness\(0\.92\)/, 'état pressé conforme (assombri)');
     assert.match(css, /touch-action: manipulation/, 'réactif au doigt, sans délai de double-tap');

@@ -151,7 +151,7 @@ export function AssistantPopover({
         <BloubAvatar
           interactive={false}
           size={30}
-          color="var(--control-ink, #725b47)"
+          color="var(--assistant-avatar, #625398)"
           expression={activeExpression}
           attention={unread && activeExpression !== 'excited' && message.id !== 'standby'}
           antennaFlash={Boolean(antennaFlash && unread && activeExpression !== 'excited' && message.id !== 'standby')}

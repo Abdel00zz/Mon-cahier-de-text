@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -69,7 +70,7 @@ test('paramètres : grandes cartes colorées sur téléphone et tablette, menu l
   assert.match(modal, /Object\.hasOwn\(TAB_ALIASES, requested\)/, 'les liens directs ne lisent que les identifiants connus');
   assert.match(modal, /key !== 'Escape'[\s\S]{0,400}setSectionOpen\(false\)/, 'Échap / retour Android revient à la grille avant de fermer');
   assert.match(modal, /listbox[\s\S]{0,80}menu/, 'un menu ouvert garde sa propre touche Échap');
-  const css = read('src/styles/index.css');
+  const css = readIndexCss();
   for (const tone of ['blue', 'violet', 'pink', 'amber', 'green', 'teal', 'rose']) {
     // Une seule règle sert les deux familles de cartes (`:is(.hub-card, .evaluation-tone)`) :
     // la teinte est écrite une fois, jamais recopiée pour chaque famille.
@@ -102,7 +103,7 @@ test('absences justifiées : rubrique dédiée, injection automatique dans les c
 test('pastilles de type : une seule boîte, de la modale de séance aux réglages', () => {
   const keys = read('src/constants/type-keys.ts');
   assert.match(keys, /`content-badge inline-flex/, 'la forme partagée est nommée, jamais recopiée');
-  const css = read('src/styles/index.css');
+  const css = readIndexCss();
   assert.match(
     css,
     /\.content-badge\s*\{[^}]*min-width: 30px;[^}]*padding: 2px 5px;[^}]*font-family: var\(--font-document\);[^}]*font-size: 10px;[^}]*line-height: 1;[^}]*font-variant-numeric: tabular-nums;/,

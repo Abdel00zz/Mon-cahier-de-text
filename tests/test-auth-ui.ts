@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -48,7 +49,7 @@ test('les trois libellés institutionnels sont complets dans les trois langues',
 });
 
 test('chaque ton de carte conserve un contraste AA pour les libellés secondaires', () => {
-  const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+  const css = readIndexCss();
   const luminance = (hex: string) => {
     const rgb = hex.match(/[\da-f]{2}/gi)!.map(value => parseInt(value, 16) / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
     return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
@@ -109,7 +110,7 @@ test('éditeur : la hiérarchie typographique du titre de chapitre reste verroui
     new URL('../src/features/editor/ContentRenderer.tsx', import.meta.url),
     'utf8',
   );
-  const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+  const css = readIndexCss();
   assert.match(content, /renderChapterLabel/);
   assert.match(content, /text-\[1em\]/);
   assert.match(content, /text-\[0\.94em\]/);
@@ -118,7 +119,7 @@ test('éditeur : la hiérarchie typographique du titre de chapitre reste verroui
 });
 
 test('éditeur : une échelle mobile unique reste stable après rotation', () => {
-  const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+  const css = readIndexCss();
   const content = readFileSync(
     new URL('../src/features/editor/ContentRenderer.tsx', import.meta.url),
     'utf8',
@@ -148,10 +149,7 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
 });
 
 test('modales & sidebar arabe : augmentation de taille (+15%)', () => {
-  const css = readFileSync(
-    new URL('../src/styles/index.css', import.meta.url),
-    'utf8',
-  );
+  const css = readIndexCss();
   assert.match(css, /html\[lang="ar"\] \[role="dialog"\]/);
   assert.match(css, /0\.75rem \* 1\.15/);
   assert.match(css, /0\.875rem \* 1\.15/);

@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -66,7 +67,7 @@ test('les remarques et les retours système utilisent la police de l’interface
 
 test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="ltr" vs dir="rtl") même en interface arabe', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
-  const indexCss = readFileSync('src/styles/index.css', 'utf8');
+  const indexCss = readIndexCss();
 
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-editor-title:\s*var\(--font-latin-display\)/, 'les titres de contenu LTR utilisent la famille de l’interface');
   assert.match(typography, /:where\(\[data-content-direction='ltr'\]\)[\s\S]*?--font-content:\s*var\(--font-latin-reading\)/, 'les blocs LTR reçoivent les polices françaises');

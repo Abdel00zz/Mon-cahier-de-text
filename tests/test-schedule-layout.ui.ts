@@ -28,8 +28,7 @@ test('grille mobile bilingue : horaires, cellules tactiles et séance fusionnée
     assert.match(html, /schedule-cell--assigned/);
     assert.doesNotMatch(html, /<h2/);
     assert.match(html, locale === 'ar' ? /الفترة/ : /Période/);
-    assert.match(html, locale === 'ar' ? /تغيير التاريخ/ : /Modifier la date/);
-    assert.match(html, /class="schedule-date-toggle" aria-expanded="false"/);
+    assert.doesNotMatch(html, /schedule-date-toggle/);
     assert.doesNotMatch(html, /type="date"/);
   }
 });
@@ -41,21 +40,18 @@ test('les rubriques gardent un titre accessible sans répéter le nom de l’ong
   }
 });
 
-test('premier emploi du temps : la date de début est visible sans modification automatique', () => {
+test('premier emploi du temps : aucune date personnelle ne se modifie automatiquement', () => {
   const changes: unknown[] = [];
   const html = renderToStaticMarkup(createElement(LocaleProvider, { locale: 'ar', manageDocument: false,
     children: createElement(ScheduleTab, { classes: [classInfo], config: { ...config, timetable: [] }, onChange: patch => changes.push(patch) }) }));
-  assert.match(html, /class="schedule-date-toggle" aria-expanded="true"/);
-  assert.match(html, /تحديد تاريخ البداية/);
-  assert.match(html, /type="date"/);
+  assert.doesNotMatch(html, /schedule-date-toggle|type="date"/);
   assert.deepEqual(changes, []);
 });
 
-test('date déjà configurée sans créneaux : action de modification repliée', () => {
+test('une ancienne date reste inchangée sans champ de modification', () => {
   const html = renderToStaticMarkup(createElement(LocaleProvider, { locale: 'fr', manageDocument: false,
     children: createElement(ScheduleTab, { classes: [classInfo], config: { ...config, timetable: [], schoolYearStart: '2026-09-07' }, onChange: () => {} }) }));
-  assert.match(html, /Modifier la date/);
-  assert.match(html, /class="schedule-date-toggle" aria-expanded="false"/);
+  assert.doesNotMatch(html, /schedule-date-toggle|type="date"/);
 });
 
 test('la grille reprend la couleur du dashboard avant et après un ordre personnalisé', () => {
@@ -64,6 +60,11 @@ test('la grille reprend la couleur du dashboard avant et après un ordre personn
     const palette = buildUnifiedClassPaletteMap(classes, resolveDashboardClassOrder(classes, dashboardClassOrder)).get('a')!;
     const html = renderToStaticMarkup(createElement(LocaleProvider, { locale: 'fr', manageDocument: false,
       children: createElement(ScheduleTab, { classes, config: { ...config, dashboardClassOrder }, onChange: () => {} }) }));
-    assert.ok(html.includes(`--card-bg:${palette.bg};--card-border:${palette.border};--card-title:${palette.title}`));
+    for (const [name, value] of Object.entries({
+      '--card-bg': palette.bg, '--card-bg2': palette.bg2 ?? palette.bg,
+      '--card-border': palette.border, '--card-title': palette.title,
+    })) {
+      assert.ok(html.includes(`${name}:${value}`), `${name} stays consistent with the dashboard palette`);
+    }
   }
 });

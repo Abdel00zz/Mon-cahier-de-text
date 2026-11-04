@@ -97,17 +97,10 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
   background: var(--modal-close-bg, hsl(var(--muted) / .35));
   transition: transform 260ms cubic-bezier(.2, .8, .2, 1), background-color 180ms ease, color 180ms ease;
 }
-.modal-motion-surface .dialog-close:hover {
-  transform: rotate(90deg);
-  color: hsl(var(--foreground));
-}
-.modal-motion-surface .dialog-close:active {
-  transform: rotate(90deg) scale(0.95);
-}
 .modal-motion-surface .dialog-close:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -2px; }
 .modal-motion-surface .dialog-close:disabled { opacity: .5; pointer-events: none; }
-@media (hover: hover) {
-  .modal-motion-surface .dialog-close:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+@media (hover: hover) and (pointer: fine) {
+  .modal-motion-surface .dialog-close:hover { transform: rotate(90deg); color: hsl(var(--foreground)); background: hsl(var(--muted)); }
 }
 .modal-motion-surface .dialog-close:active { transform: scale(.94); }
 .modal-motion-surface[data-has-handle="true"] .dialog-close { top: 27px; }
@@ -148,6 +141,7 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 @keyframes modal-dialog-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, 8px, 0) scale(.99); } }
 @media (prefers-reduced-motion: reduce) {
   .modal-motion-surface[data-state], .modal-motion-overlay[data-state], .modal-motion-surface .dialog-close, .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success, .glow-pulse-warning { animation: none; transition: none; }
+  .modal-motion-surface .dialog-close:is(:hover, :active) { transform: none; }
 }
 @media (forced-colors: active) {
   .modal-motion-overlay { backdrop-filter: none; }

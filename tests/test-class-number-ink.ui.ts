@@ -1,6 +1,6 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassGroupWatermark } from '../src/features/dashboard/ClassGroupWatermark';
@@ -14,7 +14,7 @@ import { LocaleProvider } from '../src/i18n/LocaleProvider';
  *    ivoire en sombre) et un contour couleur carte nettement visible.
  */
 
-const css = readFileSync('src/styles/index.css', 'utf8');
+const css = readIndexCss();
 
 // Le composant est rendu seul : il n'importe aucune feuille de styles, donc le
 // test tourne en Node, sans navigateur (ClassCard, lui, tire des CSS).

@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -109,7 +110,7 @@ test('CreateClassModal renders neutral uncolored branch choice cards without ton
 });
 
 test('sidebar background harmonizes with canvas background in index.css and icon size is balanced', () => {
-  const indexCss = readFileSync('src/styles/index.css', 'utf8');
+  const indexCss = readIndexCss();
   assert.doesNotMatch(indexCss, /\[data-app-sidebar\]\s*\{[^}]*backdrop-filter:/s, 'scrolling sidebar uses an opaque surface');
   assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
   assert.match(indexCss, /\.dark \[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);

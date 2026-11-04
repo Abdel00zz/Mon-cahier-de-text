@@ -15,8 +15,8 @@ const NativeShell = registerPlugin<{
 }>('NativeShell');
 
 export interface NativeBackgroundStatus {
-  batteryOptimizationIgnored: boolean;
-  canScheduleExactAlarms: boolean;
+  batteryOptimizationIgnored?: boolean;
+  canScheduleExactAlarms?: boolean;
 }
 
 export async function openNativeNotificationSettings(): Promise<void> {
@@ -24,11 +24,11 @@ export async function openNativeNotificationSettings(): Promise<void> {
 }
 
 export async function getNativeBackgroundStatus(): Promise<NativeBackgroundStatus> {
-  if (!Capacitor.isNativePlatform()) return { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+  if (!Capacitor.isNativePlatform()) return {};
   try {
     return await NativeShell.getBackgroundExecutionStatus();
   } catch {
-    return { batteryOptimizationIgnored: true, canScheduleExactAlarms: true };
+    return {};
   }
 }
 

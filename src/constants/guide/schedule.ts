@@ -9,7 +9,7 @@ export const schedule = chapter('schedule', ['classes', 'dates', 'notifications'
       {
         title: 'Établir la grille hebdomadaire',
         steps: [
-          'Dans Paramètres → Emploi du temps, vérifiez la date de début de l’année scolaire conforme au calendrier ministériel.',
+          'Ouvrez Paramètres → Emploi du temps. Le calendrier scolaire est défini par l’administration.',
           'Affectez chaque classe à ses plages horaires respectives en cliquant à l’intersection du jour et de l’heure (matin ou après-midi).',
           'Pour une séance double (bloc de 2 heures consécutives), sélectionnez la même classe sur les deux créneaux consécutifs : le système les regroupe automatiquement.',
           'Pour libérer un créneau, sélectionnez la case vide. Contrôlez le récapitulatif global de la masse horaire par classe pour vérifier la conformité avec votre emploi du temps officiel.',
@@ -30,7 +30,7 @@ export const schedule = chapter('schedule', ['classes', 'dates', 'notifications'
       {
         title: 'برمجة الحصص على جدول الأسبوع',
         steps: [
-          'في «الإعدادات» ثم «استعمال الزمن»، تحقق من تاريخ انطلاق الموسم الدراسي المعتمد في المقرر الوزاري لتنظيم السنة الدراسية.',
+          'افتح «الإعدادات» ثم «استعمال الزمن». تتولى الإدارة ضبط التقويم الدراسي.',
           'اضغط على الخانة المتقاطعة بين اليوم وساعة التدريس (صباحاً أو بعد الزوال) لإسناد القسم الدراسي المعني.',
           'لحصة من ساعتين، أسند القسم نفسه إلى الخانتين المتتاليتين؛ سيجمعهما التطبيق في حصة واحدة.',
           'لحذف حصة، اختر الخانة الفارغة. راجع بعد ذلك جدول الحصيلة للتأكد من مطابقة الغلاف الزمني الأسبوعي لحصص المادة المقررة رسمياً.',

@@ -2,7 +2,6 @@ import React from 'react';
 import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
-import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/domain/calendar/calendar';
 import { SUBJECT_ABBREV_MAP, formatLocalizedSubjectDisplayName } from '@/constants';
 import { scheduleClassLabel } from '@/domain/classes/classAbbreviation';
 import { classIdentityFor } from '@/domain/classes/classIdentity';
@@ -18,8 +17,7 @@ import {
 } from '@/domain/calendar/timetable';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { ChevronDown, Plus } from '@/components/ui/icons';
+import { Plus } from '@/components/ui/icons';
 import { buildUnifiedClassPaletteMap } from '@/features/dashboard/departmentPalette';
 import './schedule.css';
 
@@ -47,7 +45,6 @@ type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass, suggestedClassId }) => {
     const { locale, t } = useLocale();
-    const yearStartId = React.useId();
     const hourNumber = React.useMemo(
         () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, numberingSystem: 'latn', useGrouping: false }),
         [locale],
@@ -66,24 +63,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const subjectLabel = (subject: string) => locale === 'ar'
         ? formatLocalizedSubjectDisplayName(subject, locale)
         : (SUBJECT_ABBREV_MAP[subject] || subject);
-    const calendar = getBundledCalendar();
-    const effectiveSchoolYear = getEffectiveSchoolYear(
-        calendar,
-        config.schoolYearStart,
-        todayInMorocco(new Date(), calendar),
-    );
-    const schoolYearStart = config.schoolYearStart ?? effectiveSchoolYear.debut;
-    const displaySchoolYearStart = React.useMemo(() => {
-        const [year, month, day] = schoolYearStart.split('-');
-        return `${day}/${month}/${year}`;
-    }, [schoolYearStart]);
     const timetable = config.timetable ?? [];
     const suggestedClass = classes.find(item => item.id === suggestedClassId);
     const pickerClasses = React.useMemo(() => suggestedClass
         ? [suggestedClass, ...classes.filter(item => item.id !== suggestedClass.id)] : classes, [classes, suggestedClass]);
-    const hasSchedule = timetable.length > 0 || Boolean(config.schoolYearStart);
-    // Keep the date visible while the first timetable is being prepared.
-    const [startDateOpen, setStartDateOpen] = React.useState(() => !hasSchedule);
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
     const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
     // Le matin est la vue initiale la plus rapide à lire, quel que soit
@@ -162,14 +145,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return hourSlots;
     }, [visiblePeriod, hourSlots]);
 
-    const setSchoolYearStart = (value: string) => {
-        onChange({ schoolYearStart: value || undefined });
-        toast.success(
-            t('schedule.toast.startDateUpdated'),
-            { id: 'schedule-year-start', duration: 2200 }
-        );
-    };
-
     // ZÉRO classe ≠ blocage : la grille reste affichée, les classes se créent
     // directement depuis les cases (« + Créer une classe… »). On encourage.
     const noClassesYet = classes.length === 0;
@@ -204,35 +179,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         ))}
                     </TabsList>
                 </div>
-                <button type="button" className="schedule-date-toggle" aria-expanded={startDateOpen}
-                  aria-controls={`${yearStartId}-date-settings`} onClick={() => setStartDateOpen(value => !value)}>
-                    <span>{t(hasSchedule ? 'schedule.startYearChange' : 'schedule.startYearSet')}</span>
-                    <ChevronDown size={13} strokeWidth={1.5} className="schedule-date-settings__chevron" aria-hidden="true" />
-                </button>
               </div>
-                {startDateOpen && <div id={`${yearStartId}-date-settings`} className="schedule-start-field flex min-w-0 items-center gap-2">
-                    <label htmlFor={yearStartId}>{t('schedule.startYear')}</label>
-                    <div className="schedule-start-field__input relative">
-                        <Input
-                            id={yearStartId}
-                            type="date"
-                            value={schoolYearStart}
-                            onChange={e => setSchoolYearStart(e.target.value)}
-                            lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
-                            dir="ltr"
-                            className={`h-11 w-full min-w-0 rounded-lg border border-border bg-card px-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
-                        />
-                        {locale === 'ar' && (
-                            <span
-                                aria-hidden
-                                dir="ltr"
-                                className="pointer-events-none absolute inset-y-0 left-2.5 right-9 flex items-center text-sm font-medium text-foreground"
-                            >
-                                {displaySchoolYearStart}
-                            </span>
-                        )}
-                    </div>
-                </div>}
             </div>
 
             {suggestedClass && !timetable.some(slot => slot.classId === suggestedClass.id) && (
@@ -246,7 +193,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             {/* Grille jours × créneaux : tuiles séparées, arrondies, détachées du fond */}
             <TabsContent value={visiblePeriod} className="mt-0">
                 <div className="overflow-x-auto overscroll-x-contain">
-                    <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-[20rem] sm:min-w-full table-fixed'}`}>
+                    <table dir={locale === 'ar' ? 'rtl' : 'ltr'} aria-label={t('settings.item.schedule')} className={`schedule-grid rtl-table w-full border-separate border-spacing-1 sm:border-spacing-1.5 lg:border-spacing-2 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-0 table-fixed'}`}>
                     <thead>
                         <tr>
                             <th scope="col" className={`schedule-grid__day-heading sticky ${locale === 'ar' ? 'right-0' : 'left-0'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center text-muted-foreground`}>
@@ -289,6 +236,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 colSpan={span}
                                                 style={palette ? {
                                                     '--card-bg': palette.bg,
+                                                    '--card-bg2': palette.bg2 ?? palette.bg,
                                                     '--card-border': palette.border,
                                                     '--card-title': palette.title,
                                                 } as React.CSSProperties : undefined}

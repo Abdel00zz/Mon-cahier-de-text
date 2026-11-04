@@ -1,0 +1,31 @@
+.ui-switch {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  min-width: 52px; min-height: 44px; padding: 0; border: 0; border-radius: 10px;
+  background: transparent; cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-switch:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.ui-switch:disabled { opacity: .5; cursor: not-allowed; }
+.ui-switch__track {
+  position: relative; display: block; width: 42px; height: 24px; border-radius: 12px;
+  background: var(--ui-switch-inactive, hsl(var(--muted-foreground) / .35));
+  box-shadow: inset 0 0 0 1px hsl(var(--foreground) / .08);
+  transition: background-color 180ms ease;
+}
+.ui-switch[data-state='checked'] .ui-switch__track { background: var(--ui-switch-active, var(--ui-action-bg)); }
+.ui-switch__thumb {
+  position: absolute; left: 3px; top: 3px; display: block; width: 18px; height: 18px;
+  border-radius: 50%; background: hsl(var(--card));
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .2);
+  transform: translate3d(0, 0, 0);
+  transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+}
+.ui-switch[data-state='checked'] .ui-switch__thumb { transform: translate3d(18px, 0, 0); }
+.ui-switch:dir(rtl) .ui-switch__thumb { transform: translate3d(18px, 0, 0); }
+.ui-switch:dir(rtl)[data-state='checked'] .ui-switch__thumb { transform: translate3d(0, 0, 0); }
+@media (prefers-reduced-motion: reduce) { .ui-switch__track, .ui-switch__thumb { transition: none; } }
+@media (forced-colors: active) {
+  .ui-switch__track { forced-color-adjust: none; background: Canvas; border: 1px solid ButtonText; }
+  .ui-switch[data-state='checked'] .ui-switch__track { background: Highlight; }
+  .ui-switch__thumb { background: ButtonText; }
+}

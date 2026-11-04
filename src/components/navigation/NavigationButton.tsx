@@ -12,7 +12,7 @@ export function NavigationButton({ tab, active, onSelect, copy, expanded = true,
   const Icon = tab === 'dashboard' ? Users : tab === 'settings' ? Settings : CircleHelp;
   const prepare = tab === 'settings' ? preloadSettingsPage : undefined;
   return <motion.button type="button" onClick={() => onSelect(tab)} onPointerEnter={prepare} onFocus={prepare}
-    whileTap={reduced ? undefined : { scale: mobile ? 0.92 : 0.96 }}
+    whileTap={reduced ? undefined : { scale: 0.96 }}
     transition={{ type: 'spring', stiffness: 500, damping: 28 }}
     aria-label={copy[tab]} aria-current={active ? 'page' : undefined} title={copy[tab]}
     className={cn('workspace-nav-button', mobile ? 'workspace-nav-button--mobile' : 'workspace-nav-button--desktop',

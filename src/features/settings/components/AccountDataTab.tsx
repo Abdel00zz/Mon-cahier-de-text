@@ -35,13 +35,11 @@ export const AccountDataTab: React.FC<AccountDataTabProps> = ({ config, onExport
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title={t('account.adminPortalTitle')} icon={ShieldCheck}>
-        <SettingsRow label={t('account.adminPortalTitle')} hint={t('account.adminPortalHint')}>
+      <SettingsSection title={t('account.adminPortalTitle')} hint={t('account.adminPortalHint')} icon={ShieldCheck}>
           <a href="/admin.html" className={settingsButtonClass}>
             <ShieldCheck className="h-[18px] w-[18px] stroke-[1.5]" />
             <span>{t('account.adminPortalAction')}</span>
           </a>
-        </SettingsRow>
       </SettingsSection>
 
       <React.Suspense fallback={<div className="h-24 w-full rounded-lg skeleton-shimmer" />}>

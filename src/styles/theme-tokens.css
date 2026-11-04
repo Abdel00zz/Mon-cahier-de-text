@@ -1,0 +1,716 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. THEME TOKENS, FLUID TYPOGRAPHY, SPRING UTILITIES & BASE LAYER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
+   Mixing with foreground keeps even yellow custom accents legible as text. */
+:root {
+  --ui-action-bg: #29282d;
+  --ui-action-ink: #f8f7f5;
+  --font-companion: 'SamsungOne Arabic', 'SamsungOne', 'Samsung Sans', 'One UI Sans', system-ui, -apple-system, sans-serif;
+  --control-ink: hsl(27 25% 35%);
+  --control-ink-hover: hsl(25 32% 27%);
+  --control-wash: hsl(30 25% 90%);
+  --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground)));
+  --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 11%, hsl(var(--card)));
+  --workspace-focus: color-mix(in srgb, hsl(var(--primary)) 55%, hsl(var(--foreground)));
+  /* Densité de texte : base contextuelle (réduite sur téléphone) × choix du
+     professeur. Seules les tailles de police en dépendent. */
+  --app-text-scale-base: 1;
+  --app-text-density: 1;
+}
+.dark {
+  --ui-action-bg: #d7d1e7;
+  --ui-action-ink: #24212c;
+  --control-ink: hsl(30 28% 74%);
+  --control-ink-hover: hsl(30 36% 84%);
+  --control-wash: hsl(25 12% 24%);
+  --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--foreground)));
+  --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 13%, hsl(var(--card)));
+}
+/* The application theme controller owns .dark (including system mode). */
+@custom-variant dark (&:where(.dark, .dark *));
+/* ── shadcn/ui · Modern Clean Academic Theme ────────────────────────────── */
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-success-strong: hsl(var(--success-strong));
+  --color-warning-strong: hsl(var(--warning-strong));
+  --color-destructive-strong: hsl(var(--destructive-strong));
+  --color-alert: hsl(var(--alert));
+  --color-alert-strong: hsl(var(--alert-strong));
+  --color-scheduled: hsl(var(--scheduled));
+  --color-scheduled-foreground: hsl(var(--scheduled-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-3xl: 28px;
+
+  /* Les rôles et les langues sont centralisés dans typography.css.
+     La composition des documents garde sa pile dédiée. */
+  --font-document: 'Latin Modern Sans', 'Source Sans 3', var(--font-latin-body), var(--font-arabic-body), sans-serif;
+  --font-mono: var(--font-mono);
+
+  /* La densité de texte ne redimensionne jamais les espacements ou les cibles. */
+  --text-xs: calc(0.75rem * var(--app-text-scale, 1));
+  --text-sm: calc(0.875rem * var(--app-text-scale, 1));
+  --text-base: calc(1rem * var(--app-text-scale, 1));
+  --text-lg: calc(1.125rem * var(--app-text-scale, 1));
+  --text-xl: calc(1.25rem * var(--app-text-scale, 1));
+  --text-2xl: calc(1.5rem * var(--app-text-scale, 1));
+  --text-3xl: calc(1.875rem * var(--app-text-scale, 1));
+  --text-4xl: calc(2.25rem * var(--app-text-scale, 1));
+  --text-5xl: calc(3rem * var(--app-text-scale, 1));
+
+  /* ── 1. Dynamic Fluid Typography Tokens (clamp) ─────────────────────────── */
+  --text-fluid-xs: clamp(0.6875rem, 0.64rem + 0.2vw, 0.75rem);
+  --text-fluid-sm: clamp(0.8125rem, 0.76rem + 0.25vw, 0.875rem);
+  --text-fluid-base: clamp(0.9375rem, 0.88rem + 0.3vw, 1rem);
+  --text-fluid-lg: clamp(1.0625rem, 0.98rem + 0.4vw, 1.1875rem);
+  --text-fluid-xl: clamp(1.2rem, 1.08rem + 0.6vw, 1.375rem);
+  --text-fluid-2xl: clamp(1.35rem, 1.18rem + 0.85vw, 1.625rem);
+  --text-fluid-3xl: clamp(1.55rem, 1.3rem + 1.25vw, 2rem);
+  --text-fluid-4xl: clamp(1.85rem, 1.5rem + 1.75vw, 2.5rem);
+
+  /* ── 2. Spring Physics Curve Tokens (Harmoniques & Longues) ────────────── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-smooth: cubic-bezier(0.18, 1.01, 0.24, 1);
+  --ease-spring-golden: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-spring-snappy: cubic-bezier(0.2, 1.4, 0.5, 1);
+
+  /* Design system mobile : une seule échelle, une seule profondeur, une seule voix fonctionnelle. */
+  --ui-radius-control: 0.75rem;
+  --ui-radius-surface: 1.25rem;
+  --ui-shadow-surface: 0 14px 34px -26px hsl(var(--foreground) / 0.32);
+  --ui-focus-ring: 0 0 0 3px hsl(var(--primary) / 0.16);
+  --ui-space-page: clamp(1rem, 3vw, 1.5rem);
+  --ui-space-section: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+/* ── 1. Dynamic Fluid Typography Utility Classes ───────────────────────── */
+@media screen and (max-width: 639px),
+       screen and (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
+       screen and (pointer: coarse) and (max-width: 960px) and (max-height: 540px) and (orientation: landscape) {
+  :root { --app-text-scale-base: 0.92; }
+}
+
+/* ── Taille du texte : un seul curseur, quatre crans ─────────────────────
+   `--app-text-density` est posé par le contrôleur de thème (1 = normal) et
+   multiplie la base contextuelle. Espacements, rayons et cibles tactiles
+   restent en pixels : agrandir le texte ne casse jamais la mise en page. */
+html {
+  --app-text-scale: calc(var(--app-text-scale-base, 1) * var(--app-text-density, 1));
+}
+
+/* Hauteur de ligne de la liste des classes (3e affichage) : une seule valeur,
+   partagée, pour que les lignes restent alignées entre elles. La géométrie
+   des CARTES, elle, vit dans `features/dashboard/classCards.css`. */
+:root {
+  --class-list-row-h: 60px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --class-list-row-h: 72px;
+  }
+}
+
+/* ── 2. Spring Physics Micro-Interactions ───────────────────────────────── */
+/* Le survol est déclaré plus bas dans un `@media (hover: hover)` : sur un
+   écran tactile, `:hover` reste « collé » après le tap et fige l'élément dans
+   une position élevée. Seul l'état pressé est donc inconditionnel ici. */
+@utility spring-interactive {
+  transition: transform 260ms var(--ease-spring), box-shadow 260ms ease, background-color 180ms ease, border-color 180ms ease;
+  &:active {
+    transform: translateY(0) scale(0.975);
+    transition-duration: 120ms;
+  }
+}
+
+@utility spring-press {
+  transition: transform 180ms var(--ease-spring), opacity 180ms ease;
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+/* ── 3. Color States & Accessibility Tokens (Kole Jain Rules) ─────────── */
+@utility state-interactive {
+  transition: filter 160ms ease, transform 160ms var(--ease-spring), background-color 160ms ease;
+  &:active:not(:disabled) {
+    filter: brightness(0.90);
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.5;
+    filter: grayscale(40%);
+    pointer-events: none;
+  }
+}
+
+/* ── Cibles tactiles des menus ──────────────────────────────────────────
+   Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
+   44px recommandé par la ligne directrice iOS/Android. */
+@media (pointer: coarse) {
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"],
+  [role="option"] {
+    min-height: 44px;
+  }
+}
+
+/* ── 4. GPU-Accelerated Structural Shimmer Skeletons (CLS = 0) ─────────── */
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: hsl(var(--muted) / 0.6);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--card) / 0.45) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.dark .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+/* Accessibilité motrice : un squelette reste un signal de chargement, mais il
+   cesse de bouger si l'appareil demande moins d'animation (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after { animation: none; opacity: 0.45; }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* La famille du titre suit la langue du panneau. */
+html[lang="ar"] .keep-class-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Lecture latine : interlignage optique des titres sans serif. Les titres de
+   classe portent leur propre typographie, posée en ligne depuis
+   `constants/classTitleTypography.ts`, qui l'emporte sur cette règle. */
+[dir='ltr'] .keep-class-title {
+  letter-spacing: -0.025em;
+}
+
+@layer base {
+  /* ── Modern Sophisticated Light Theme ──────────────────────────────── */
+  :root {
+    /* Design Tokens · Cahier de textes */
+
+    /* Le thème est piloté par l'application. `only` empêche les navigateurs
+       mobiles de recolorer automatiquement les champs et les textes. */
+    color-scheme: only light;
+    /* Palette « papier d’argile » : un ivoire franchement plus profond que le
+       blanc (#F3EFE7) porte la page, les cartes se détachent d’un cran
+       (#FCFAF4), les filets deviennent lisibles (#D6D0C1, 1,3:1) et le texte
+       secondaire passe AA haut la main (34 % → 8:1 sur carte). L’accent terre
+       cuite reste la seule couleur d’action ; le vert ne sert qu’au succès,
+       le rouge qu’aux ruptures. Les gris gardent une teinte chaude de 2 à 5 %. */
+    --background: 37.5 44.44% 96.47%; /* #faf7f2 */
+    --foreground: 25 35.29% 13.33%; /* #2e2016 */
+    --card: 40 100% 98.82%; /* #fffdf9 */
+    --card-foreground: 25 35.29% 13.33%;
+    --popover: 40 100% 98.82%;
+    --popover-foreground: 25 35.29% 13.33%;
+    --primary: 25.56 33.75% 31.37%; /* #6b4c35 */
+    --primary-foreground: 37.5 44.44% 96.47%;
+    --secondary: 35.29 34.69% 90.39%;
+    --secondary-foreground: 45 12% 16%;
+    --muted: 38.57 43.75% 93.73%; /* #f6f1e8 */
+    --muted-foreground: 27.57 20.22% 35.88%; /* #6e5a49 */
+    --accent: 18 42% 89%;          /* argile de survol */
+    --accent-foreground: 15 55% 25%;
+    --border: 34.74 26.76% 86.08%; /* #e5ddd2 */
+    --input: 33 22.22% 82.35%; /* #dcd3c8 */
+    --ring: 26 34% 31%;
+    --destructive: 4.62 56.52% 45.10%; /* #b43c32 */
+    --destructive-foreground: 45 40% 98%;
+    --success: 130 28% 26%;
+    --warning: 38 92% 45%;
+    --success-strong: 130 30% 21%;
+    --warning-strong: 36 88% 27%;
+    --destructive-strong: 352 58% 34%;
+    --alert: 352 66% 46%;
+    --alert-strong: 352 64% 36%;
+    --scheduled: 18 42% 90%;       /* argile très claire */
+    --scheduled-foreground: 15 55% 25%;
+    --badge-bg: 18 38% 90%;
+    --badge-border: 18 32% 76%;
+    --badge-text: 15 55% 25%;
+    --dock-shadow: 0 10px 30px rgba(28, 26, 22, 0.10);
+    --chart-1: 38 84% 44%;
+    --chart-2: 15 55% 47%;
+    --chart-3: 110 26% 36%;
+    --chart-4: 208 42% 46%;
+    --chart-5: 338 42% 48%;
+
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-3xl: 28px;
+    --radius: var(--radius-md);
+
+  }
+
+  .dark {
+    color-scheme: only dark;
+    /* Nuit « argile brûlée » : le fond descend à 12 % — la profondeur de
+       Material (#121212) en gardant la chaleur du sable — et chaque niveau
+       au-dessus remonte d’un cran (carte 17 %, menu 19 %, muet 20 %), comme
+       un empilement de surfaces éclairées. Les accents s’éclaircissent et se
+       désaturent pour ne plus vibrer sur le sombre, et l’encre ivoire reste
+       au-dessus de 11:1 sur la carte la plus claire. Jamais une inversion. */
+    --background: 40 6% 12%;       /* #1F1D1A nuit d’argile */
+    --foreground: 42 18% 92%;
+    --card: 38 6% 17%;             /* surface élevée : plus claire que le fond */
+    --card-foreground: 42 18% 92%;
+    --popover: 38 6% 19%;
+    --popover-foreground: 42 18% 92%;
+    --primary: 15 58% 62%;         /* terre cuite éclaircie, légèrement désaturée */
+    --primary-foreground: 30 12% 10%;
+    --secondary: 38 6% 21%;
+    --secondary-foreground: 42 18% 92%;
+    --muted: 38 5% 20%;
+    --muted-foreground: 42 8% 67%;
+    --accent: 18 20% 22%;
+    --accent-foreground: 18 58% 84%;
+    --border: 38 7% 26%;
+    --input: 38 8% 40%;
+    --ring: 15 58% 62%;
+    --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
+    --destructive-foreground: 352 45% 12%;
+    --success: 128 26% 64%;
+    --warning: 38 88% 58%;
+    --success-strong: 128 28% 70%;
+    --warning-strong: 38 90% 62%;
+    --destructive-strong: 352 55% 72%;
+    --alert: 352 62% 68%;
+    --alert-strong: 352 70% 78%;
+    --scheduled: 18 20% 20%;
+    --scheduled-foreground: 18 55% 84%;
+    --badge-bg: 18 20% 20%;
+    --badge-border: 18 16% 30%;
+    --badge-text: 18 55% 83%;
+    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.66);
+    --chart-1: 38 88% 62%;
+    --chart-2: 15 58% 64%;
+    --chart-3: 110 26% 62%;
+    --chart-4: 208 44% 66%;
+    --chart-5: 338 45% 68%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  /* Sureté tactile : supprime le délai de 300 ms du double-tap et le zoom
+     accidentel lors d'un appui répété sur un contrôle. Consolidé ici, sur les
+     éléments réellement interactifs, plutôt que répété dans chaque écran. */
+  button, a, label, select, summary, [role="button"], [role="menuitem"], [role="option"] {
+    touch-action: manipulation;
+  }
+
+  /* iOS / iPadOS : un champ sous 16px déclenche un zoom automatique du
+     viewport au focus. Le plancher n'est appliqué qu'au focus pour ne pas
+     modifier la densité des tableaux et des grilles au repos. */
+  @media (pointer: coarse) {
+    input:focus,
+    select:focus,
+    textarea:focus {
+      font-size: max(1rem, 1em);
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: none;
+    min-width: 0;
+    min-height: 100dvh;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Les familles sont définies par rôle dans typography.css. */
+  html[lang="fr"] body {
+    font-family: var(--font-sans);
+    font-variant-numeric: proportional-nums;
+  }
+  html:not([lang="ar"]) :is(h1, h2, h3, .keep-class-title, [data-ui-title]) {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-feature-settings: 'opsz' 36, 'liga', 'kern';
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  html:not([lang="ar"]) :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) :is(button, [role="button"], .workspace-nav-label) {
+    font-family: var(--font-sans);
+  }
+  html[lang="fr"] .workspace-nav,
+  html[lang="fr"] .dashboard-artisan-nav,
+  html[lang="fr"] .onboarding-artisan-shell,
+  html[lang="fr"] [role="dialog"] {
+    font-family: var(--font-sans);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(h1, h2, h3, [data-ui-title]) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(h4, h5, h6) {
+    font-family: var(--font-display);
+  }
+  html:not([lang="ar"]) [role="dialog"] :is(button, [role="button"]) {
+    font-family: var(--font-sans);
+  }
+
+  /* Détails de finition : paragraphes sans ligne orpheline, sélection et
+     curseur à la couleur de l'accent, comme dans les interfaces d'Anthropic. */
+  p { text-wrap: pretty; }
+  ::selection { background: hsl(var(--primary) / 0.22); color: inherit; }
+  input, textarea, [contenteditable="true"] { caret-color: hsl(var(--primary)); }
+
+  /* Les contrôles de l'interface héritent de la langue locale, sans écraser les rôles du tableau éditeur. */
+  html[lang="ar"] body,
+  html[lang="ar"] button:not(.editor-document-highlight, [data-editor-table] *),
+  html[lang="ar"] input:not([data-editor-table] *),
+  html[lang="ar"] textarea:not([data-editor-table] *),
+  html[lang="ar"] select:not([data-editor-table] *) {
+    font-family: var(--font-sans);
+    letter-spacing: normal;
+  }
+
+  /* Modales en version arabe : augmentation de taille (+15%) pour une lisibilité optimale */
+  html[lang="ar"] [role="dialog"],
+  html[lang="ar"] [data-sheet-detent],
+  html[lang="ar"] .modal-body,
+  html[lang="ar"] .modal-header,
+  html[lang="ar"] .modal-footer {
+    --modal-text-scale: 1.15;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xs, .text-\[10px\], .text-\[11px\], [data-slot="description"], .form-hint) {
+    font-size: calc(0.75rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.45;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-sm, label, input, select, textarea) {
+    font-size: calc(0.875rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] button:not(.dialog-close) {
+    font-size: calc(0.875rem * 1.15 * var(--app-text-scale, 1));
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-base) {
+    font-size: calc(1rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-lg, h3) {
+    font-size: calc(1.125rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.4;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xl, h2, [data-ui-title]) {
+    font-size: calc(1.25rem * 1.15 * var(--app-text-scale, 1));
+    line-height: 1.35;
+  }
+
+  /* Navigation & Barre latérale / mobile en version arabe (+15%) */
+  /* Libellés de la barre d'onglets mobile : la taille suit la largeur réelle
+     de l'écran, afin de ne jamais tronquer « Évaluations » sur un écran de
+     320px tout en restant généreuse sur les grands téléphones. Le sélecteur
+     vise uniquement le libellé (`> span`), jamais la pastille de notification
+     imbriquée dans le conteneur d'icône. */
+  .mobile-tab-bar .mobile-tab-label,
+  html[lang="ar"] .mobile-tab-bar .mobile-tab-label {
+    font-size: 12px;
+    line-height: 1.2;
+    letter-spacing: normal;
+  }
+
+  html[lang="ar"] .font-serif,
+  html[lang="ar"] [data-ui-title],
+  html[lang="ar"] [data-dashboard-main] h1,
+  html[lang="ar"] [data-dashboard-main] h2,
+  html[lang="ar"] [data-dashboard-main] h3,
+  html[lang="ar"] [data-settings-ui] h2,
+  html[lang="ar"] [data-settings-ui] h3,
+  html[lang="ar"] [data-dashboard-root] h1,
+  html[lang="ar"] [data-dashboard-root] h2,
+  html[lang="ar"] .modal-header h2,
+  html[lang="ar"] .modal-header h3 {
+    font-family: var(--font-display);
+    letter-spacing: normal;
+    line-height: 1.35;
+  }
+
+  /* Titres de classe : police d'affichage de la langue courante. */
+  .keep-class-title {
+    font-family: var(--font-display);
+    font-size: 1.25em;
+    line-height: 1.22;
+  }
+
+  html[lang="ar"] .keep-class-title {
+    font-family: var(--font-display);
+    font-size: 1.3em;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.42) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Scrollbars discrètes et cohérentes pour les pages, listes et modales. */
+  * {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    min-height: 2.5rem;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: hsl(var(--muted-foreground) / 0.36);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.55);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Safe Area Utility Classes for Mobile & Tablet Landscape (iPhone Notch/Island, Samsung & Pixel) */
+  .pl-safe { padding-left: max(0.75rem, env(safe-area-inset-left, 0px)); }
+  .pr-safe { padding-right: max(0.75rem, env(safe-area-inset-right, 0px)); }
+  /* High DPI Image & SVG rendering */
+  img, svg {
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .auth-page-shell {
+    background-color: hsl(var(--background));
+    font-family: var(--font-sans);
+  }
+
+  [data-dashboard-root] {
+    font-family: var(--font-sans);
+  }
+
+  [data-dashboard-root] h1,
+  [data-dashboard-root] h2,
+  [data-dashboard-root] h3,
+  .auth-page-shell h1,
+  .auth-page-shell h2,
+  .auth-page-shell h3 {
+    font-family: var(--font-display);
+  }
+
+  /* Cadre extérieur bien visible du tableau du cahier de textes */
+  [data-editor-table] {
+    border: 2px solid hsl(var(--border) / 0.95) !important;
+  }
+
+  /* A lighter paper surface shared by content, dates and remarks. Keep the
+     surrounding workspace warm and let the dark theme retain its own surfaces. */
+  html:not(.dark) [data-editor-table] {
+    --card: 45 16% 99%;
+    --muted: 45 12% 96%;
+  }
+
+  [data-content-direction="ltr"] [data-row-content="true"],
+  .content-font-latin {
+    font-family: var(--content-font-latin), var(--content-font-arabic), sans-serif;
+  }
+
+  [data-content-direction="rtl"] [data-row-content="true"],
+  .content-font-arabic {
+    font-family: var(--content-font-arabic), var(--content-font-latin), sans-serif;
+  }
+
+  /* Éditeur : polices système fluides pour éviter les blocages de chargement */
+  .font-editor-system {
+    font-family: var(--font-content);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .editor-table-content {
+    color: hsl(var(--foreground));
+  }
+
+  /* Métriques propres au moteur (KaTeX) : aucune police imposée, aucun italique global. */
+  .math-text { min-width: 0; }
+
+  /* Une seule grille par liste : la colonne des marqueurs se règle sur le
+     plus large d'entre eux, donc puces, numéros et libellés de longueurs
+     différentes laissent leur texte démarrer exactement sur la même
+     verticale (aucune largeur devinée). */
+  .editor-list {
+    display: grid;
+    /* Colonne des marqueurs PLAFONNÉE à 45 % : un libellé long se replie
+       dans sa colonne au lieu de ramener celle du texte à zéro (mesuré :
+       291 px contre 0 px, texte illisible une lettre par ligne). En deçà du
+       plafond, la colonne garde la largeur du plus large marqueur : c’est ce
+       qui aligne tous les textes sur la même verticale. */
+    grid-template-columns: fit-content(45%) minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 0.375rem;
+    padding-inline-start: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .editor-item-body {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Marqueur aligné vers le texte, dans le sens d'écriture courant. */
+  .editor-item-marker {
+    text-align: end;
+    user-select: none;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    white-space: nowrap;
+  }
+
+  /* Libellé de \item[terme] : seule cellule autorisée à se replier. Sa
+     largeur minimale (le mot le plus long) ne doit pas dépasser le plafond
+     de 45 %, sinon la colonne de texte tombe à zéro (mesuré sur téléphone :
+     173 lignes d'une seule lettre). */
+  .editor-item-marker-label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .katex .mord,
+  .dark .katex .mbin,
+  .dark .katex .mrel,
+  .dark .katex .mopen,
+  .dark .katex .mclose,
+  .dark .katex .mpunct {
+    color: inherit !important;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.5);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 6px);
+  }
+
+  /* L’arabe ne se compose pas avec l’espacement latin des capitales ;
+     un bloc explicitement français (dir="ltr") conserve son approche latine. */
+  [dir='rtl'] :is(.tracking-wider, .tracking-tight, .tracking-\[0\.09em\]):not([dir='ltr'], [dir='ltr'] *) {
+    letter-spacing: normal;
+  }
+
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+  }
+}

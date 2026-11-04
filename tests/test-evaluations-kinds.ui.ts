@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -77,7 +78,7 @@ test('chaque famille ouvre sa grille par un titre sans statistiques décoratives
 test('les tuiles de nature : deux par ligne, plus grandes, icône plus grande', () => {
     const html = render(React.createElement(KindChooser, { onSelect: () => undefined }));
     const chooser = readFileSync('src/features/evaluations/components/KindChooser.tsx', 'utf8');
-    const css = readFileSync('src/styles/index.css', 'utf8');
+    const css = readIndexCss();
     // Deux colonnes À TOUTE LARGEUR : la liste d'une seule colonne obligeait à
     // faire défiler quinze lignes pour lire cinq devoirs et neuf activités.
     assert.match(html, /class="hub-grid" data-tiles/, 'la grille des natures passe en tuiles');

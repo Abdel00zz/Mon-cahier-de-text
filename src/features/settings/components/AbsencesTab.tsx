@@ -23,6 +23,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
     const { t } = useLocale();
     const absences = useMemo(() => config.absences ?? [], [config.absences]);
     const startInput = useRef<HTMLInputElement>(null);
+    const rangeErrorId = React.useId();
 
     const { watch, setValue, reset } = useForm<{ debut: string; fin: string; motif: string }>({
         defaultValues: { debut: '', fin: '', motif: '' },
@@ -50,6 +51,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
             hint={t('notifications.absenceHint')}
             icon={FileSignature}
             separators={false}
+            className="absence-settings-section"
         >
             {absences.length > 0 && (
                 <ul className="space-y-2">
@@ -78,8 +80,8 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                 </ul>
             )}
 
-            <form onSubmit={event => { event.preventDefault(); addAbsence(); }} className="absence-form grid grid-cols-2 items-end gap-3">
-                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
+            <form onSubmit={event => { event.preventDefault(); addAbsence(); }} className="absence-form grid items-end">
+                <label className="absence-form__field min-w-0 text-sm text-muted-foreground">
                     <span>{t('notifications.absenceStart')}</span>
                     <Input
                         type="date"
@@ -91,7 +93,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                         aria-label={t('notifications.absenceStart')}
                     />
                 </label>
-                <label className="min-w-0 space-y-1.5 text-sm text-muted-foreground">
+                <label className="absence-form__field min-w-0 text-sm text-muted-foreground">
                     <span>{t('notifications.absenceEnd')}</span>
                     <Input
                         type="date"
@@ -101,10 +103,10 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                         className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                         aria-label={t('notifications.absenceEnd')}
                         aria-invalid={invalidRange || undefined}
-                        aria-describedby={invalidRange ? 'absence-range-error' : undefined}
+                        aria-describedby={invalidRange ? rangeErrorId : undefined}
                     />
                 </label>
-                <label className="col-span-full space-y-1.5 text-sm text-muted-foreground">
+                <label className="absence-form__field col-span-full min-w-0 text-sm text-muted-foreground">
                     <span>{t('notifications.reasonOptional')}</span>
                     <Input
                         type="text"
@@ -123,7 +125,7 @@ export const AbsencesTab: React.FC<AbsencesTabProps> = ({ config, onConfigChange
                     {t('notifications.add')}
                 </Button>
             </form>
-            {invalidRange && <div id="absence-range-error"><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
+            {invalidRange && <div id={rangeErrorId}><StatusNotice tone="error" title={t('notifications.absenceRangeError')} announce /></div>}
 
             {absences.length > 0 && (
                 <p className="mt-3 text-[13px] leading-snug text-muted-foreground" role="status" aria-live="polite">

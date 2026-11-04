@@ -4,11 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "paper-button inline-flex cursor-pointer select-none touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[10px] text-sm font-medium tracking-[-0.01em] ring-offset-background transition-[transform,box-shadow,background-color,border-color,opacity] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
+  "paper-button inline-flex max-w-full cursor-pointer select-none touch-manipulation items-center justify-center gap-2 whitespace-normal text-center rounded-[10px] text-sm leading-snug font-medium tracking-[-0.01em] ring-offset-background transition-[transform,box-shadow,background-color,border-color,opacity] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground font-medium hover:brightness-110 active:brightness-90",
+        default: "bg-[var(--ui-action-bg)] text-[var(--ui-action-ink)] font-medium hover:brightness-110 active:brightness-90",
         success: "border border-success-strong/30 bg-success/10 text-success-strong font-medium shadow-xs",
         charcoal: "bg-foreground text-background hover:brightness-110 active:brightness-95 active:scale-[0.97]",
         accent: "bg-primary text-primary-foreground font-medium hover:brightness-105 active:brightness-95",
@@ -19,9 +19,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-11 min-h-[44px] min-w-[44px] px-4 sm:px-5 py-2.5",
-        sm: "h-11 min-h-[44px] min-w-[44px] px-3 sm:px-3.5 text-xs font-medium",
-        lg: "h-11 min-h-[48px] sm:min-h-[44px] px-5 sm:px-6 text-base font-medium",
+        default: "h-auto min-h-[44px] min-w-[44px] px-4 sm:px-5 py-2.5",
+        sm: "h-auto min-h-[44px] min-w-[44px] px-3 sm:px-3.5 py-2 text-xs font-medium",
+        lg: "h-auto min-h-[48px] min-w-[44px] px-5 sm:px-6 py-3 text-base font-medium",
         icon: "h-11 w-11 min-h-[44px] min-w-[44px] p-0",
       },
     },

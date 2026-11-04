@@ -57,7 +57,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           </button>
         }
       >
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-0.5">
+        <div role="group" aria-label={t('settings.appearance.themeTitle')} className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-0.5">
           {THEME_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
             <button
               key={id}
@@ -66,11 +66,11 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
               onClick={() => onConfigChange({ theme: id })}
               className={cn(
                 settingsChoiceClass(currentTheme === id),
-                'min-w-0 gap-2 whitespace-nowrap px-3 rounded-xl'
+                'min-w-0 gap-2 whitespace-normal px-3 rounded-xl last:col-span-2 sm:last:col-span-1'
               )}
             >
               <Icon className="size-4.5 shrink-0 stroke-[1.75]" />
-              <span className="text-sm font-medium">{t(labelKey)}</span>
+              <span className="min-w-0 text-sm font-medium leading-snug">{t(labelKey)}</span>
             </button>
           ))}
         </div>
@@ -82,7 +82,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         hint={t('settings.appearance.textSizeDesc')}
         icon={Type}
       >
-        <div className="grid grid-cols-2 gap-2.5 pt-0.5 sm:grid-cols-4">
+        <div role="group" aria-label={t('settings.appearance.textSizeTitle')} className="grid grid-cols-2 gap-2.5 pt-0.5 sm:grid-cols-4">
           {TEXT_SIZES.map(size => (
             <button
               key={size}

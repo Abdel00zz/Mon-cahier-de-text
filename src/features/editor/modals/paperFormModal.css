@@ -43,7 +43,7 @@
 .paper-form-modal .content-category:disabled .content-category__icon { color: hsl(var(--muted-foreground)); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]) { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: 0 1px 2px hsl(var(--foreground) / .025); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]):focus-visible { border-color: hsl(var(--primary)); }
-.paper-form-modal .date-card { display: grid; gap: 2px; padding: 12px; border: 1px solid var(--form-line); border-radius: 12px; background: var(--form-surface); }
+.paper-form-modal .date-card { display: grid; gap: 2px; padding: 0; border: 0; background: transparent; }
 .content-date-actions { display: flex; justify-content: flex-start; }
 .content-date-action { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 6px; border-radius: 8px; color: var(--control-ink); font-size: 12px; line-height: 1.4; text-align: start; cursor: pointer; touch-action: manipulation; transition: background-color 180ms ease, color 180ms ease; }
 .content-date-action:hover { background: var(--form-well); color: var(--control-ink-hover); }
@@ -73,7 +73,7 @@
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .date-card {
     display: grid;
     gap: 6px;
-    padding: 10px 12px;
+    padding: 0;
   }
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .date-card > * { margin-block: 0; }
   html:not([data-platform="android"]):not([data-platform="ios"]) .paper-form-modal .content-date-fields { width: 100%; gap: 6px; }

@@ -1,0 +1,706 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. EDITOR SURFACE, HIERARCHY, SELECTION BAR, MATH & CONTENT FRAMES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Échelle typographique du tableau de l’éditeur ───────────────────────
+   Les composants utilisent des rôles sémantiques plutôt que des tailles
+   dispersées. Les mêmes valeurs téléphone sont conservées à la rotation :
+   le paysage gagne en largeur sans faire regrossir brutalement le texte. */
+@layer components {
+  [data-editor-table] {
+    --editor-fs-chapter: 22px;
+    --editor-fs-top: 19px;
+    --editor-fs-section: 18px;
+    --editor-fs-subsection: 17px;
+    --editor-fs-subsubsection: 16px;
+    --editor-fs-item-title: 15px;
+    --editor-fs-description: 14px;
+    --editor-fs-remark: 13px;
+    --editor-fs-table-main: 12.5px;
+    --editor-fs-table-side: 11.5px;
+    --editor-fs-page: 11.5px;
+    --editor-fs-badge: 11px;
+    --editor-badge-min-width: 30px;
+    --editor-badge-padding-inline: 5px;
+    --editor-lesson-gap: 6px;
+    --editor-lesson-indent: 0px;
+    --editor-description-indent: 12px;
+    --editor-description-padding: 8px;
+  }
+
+  .editor-type-chapter,
+  .editor-type-chapter > [dir],
+  .editor-type-chapter [dir]:not(.katex, .katex *) {
+    font-family: var(--font-display);
+    font-size: var(--editor-fs-chapter);
+    line-height: 1.25;
+    color: #2b6d73;
+  }
+  .dark .editor-type-chapter,
+  .dark .editor-type-chapter > [dir],
+  .dark .editor-type-chapter [dir]:not(.katex, .katex *) { color: #91cec8; }
+
+  .editor-type-top,
+  .editor-type-top [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-top);
+    line-height: 1.3;
+  }
+  /*
+   * Titre d'un DEVOIR (maison / contrôle continu) : rouge profond, dans la voix
+   * éditoriale des titres de l'application (Roboto Slab en latin, KOMission en
+   * arabe). C'est un repère de l'année, pas une action : la couleur situe le
+   * devoir dans le cahier, elle ne remplace aucune sémantique (le rouge d'alerte
+   * et de destruction vit ailleurs). Interligne plus ample que les autres blocs,
+   * car le titre d'un devoir se lit comme un titre de document.
+   */
+  .editor-type-evaluation {
+    font-family: var(--font-display);
+    line-height: 1.45;
+    color: #9f1239;
+  }
+  .editor-type-evaluation [dir]:not(.katex, .katex *) {
+    font-family: var(--font-display);
+  }
+  .dark .editor-type-evaluation { color: #f0a3b4; }
+  .editor-type-section,
+  .editor-type-section [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-section);
+    line-height: 1.32;
+  }
+  .editor-type-subsection,
+  .editor-type-subsection [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-subsection);
+    line-height: 1.35;
+  }
+  .editor-type-subsubsection,
+  .editor-type-subsubsection [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-subsubsection);
+    line-height: 1.38;
+  }
+  .editor-type-item-title,
+  .editor-type-item-title [dir]:not(.katex, .katex *) {
+    font-family: var(--font-editor-title);
+    font-size: var(--editor-fs-item-title);
+    line-height: 1.45;
+  }
+  .editor-type-description {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-description);
+    line-height: 1.6;
+  }
+  .editor-type-page {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-page);
+    line-height: 1.25;
+  }
+  .editor-type-badge {
+    font-family: var(--font-secondary);
+    font-size: var(--editor-fs-badge) !important;
+    line-height: 1.1 !important;
+  }
+  .editor-type-table-side {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-table-side);
+    line-height: 1.2;
+  }
+  .editor-type-table-main {
+    font-family: var(--font-sans);
+    font-size: var(--editor-fs-table-main);
+    line-height: 1.2;
+  }
+  .editor-type-remark {
+    font-family: var(--font-content);
+    font-size: var(--editor-fs-remark);
+    line-height: 1.45;
+  }
+  .editor-type-remark[dir='rtl'],
+  .editor-type-remark[dir='rtl'] :not(.katex, .katex *),
+  .editor-type-remark [dir='rtl']:not(.katex, .katex *),
+  .editor-session-note[dir='rtl'],
+  .editor-session-note[dir='rtl'] :not(.katex, .katex *),
+  .editor-session-note [dir='rtl']:not(.katex, .katex *),
+  [data-remark-cell='true'] [dir='rtl']:not(.katex, .katex *) {
+    font-family: var(--font-feedback);
+    letter-spacing: normal;
+  }
+  .editor-type-remark[dir='ltr'],
+  .editor-type-remark [dir='ltr']:not(.katex, .katex *),
+  .editor-session-note[dir='ltr'],
+  .editor-session-note [dir='ltr']:not(.katex, .katex *) {
+    font-family: var(--font-content);
+  }
+  .editor-free-content,
+  .editor-session-note:not([dir='rtl']),
+  .editor-list[dir],
+  .editor-item-body > bdi[dir],
+  :where(.editor-type-description, .editor-item-description, .editor-free-content) [dir]:not(.katex, .katex *) {
+    font-family: var(--font-content);
+  }
+
+  /*
+   * Pastille « Document » : un devoir maison / contrôle continu qui a un sujet
+   * rédigé le dit sur sa propre ligne et l'ouvre en un geste. Teinte d'accent
+   * discrète (l'accent reste réservé aux actions), icône héritée du texte, donc
+   * aucun nouveau rôle couleur dans le cahier. Cible compacte mais franche
+   * (≈ 24 px de haut dans une rangée de 52 px) et `touch-action: manipulation`
+   * pour supprimer le délai de double-tap sur téléphone.
+   */
+  .editor-doc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid color-mix(in srgb, hsl(var(--primary)) 22%, transparent);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, hsl(var(--primary)) 8%, transparent);
+    color: hsl(var(--primary));
+    font-size: var(--editor-fs-badge);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 150ms ease, filter 150ms ease, transform 150ms ease;
+  }
+  .editor-doc-chip:hover {
+    background: color-mix(in srgb, hsl(var(--primary)) 14%, transparent);
+    filter: brightness(1.06);
+  }
+  .editor-doc-chip:active {
+    filter: brightness(0.92);
+    transform: scale(0.97);
+  }
+  .editor-doc-chip:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  html[lang='ar'] .editor-doc-chip { font-size: 0.75rem; }
+  @media (prefers-reduced-motion: reduce) {
+    .editor-doc-chip { transition: none; }
+    .editor-doc-chip:active { transform: none; }
+  }
+
+  /*
+   * Badge cadre moderne, sobre et élégant pour les éléments avec document.
+   * Typographie sans-serif propre (sans italique), cadre fin délicat sans aplat de couleur vif (sans couleur),
+   * rendu calme, lisible et épuré avec micro-interactions tactiles fluides.
+   */
+  .editor-document-highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.55rem;
+    min-height: 28px;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent) !important;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, currentColor 2.5%, transparent);
+    color: inherit;
+    font-family: var(--font-sans);
+    font-style: normal !important;
+    font-size: 0.95em;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, currentColor 4%, transparent);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms cubic-bezier(0.16, 1, 0.3, 1), filter 160ms ease;
+  }
+  @media (min-width: 640px) {
+    .editor-document-highlight {
+      padding: 0.22rem 0.65rem;
+    }
+  }
+  .editor-document-highlight:hover {
+    background: color-mix(in srgb, currentColor 6.5%, transparent);
+    border-color: color-mix(in srgb, currentColor 34%, transparent) !important;
+    box-shadow: 0 2px 5px -1px color-mix(in srgb, currentColor 7%, transparent);
+    filter: brightness(1.02);
+    transform: translateY(-0.5px);
+  }
+  .editor-document-highlight:active {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    border-color: color-mix(in srgb, currentColor 42%, transparent) !important;
+    filter: brightness(0.95);
+    transform: scale(0.985);
+  }
+  .editor-document-highlight:focus-visible {
+    outline: 2px solid color-mix(in srgb, currentColor 45%, transparent);
+    outline-offset: 2px;
+  }
+  .editor-document-highlight[dir='rtl'],
+  [dir='rtl'] .editor-document-highlight:not([dir='ltr']),
+  html[lang='ar'] .editor-document-highlight:not([dir='ltr']) {
+    font-family: var(--font-sans);
+    font-style: normal !important;
+    font-weight: 700;
+    font-size: 0.95em;
+    letter-spacing: 0;
+  }
+  .editor-document-highlight[dir='ltr'],
+  .editor-document-highlight[dir='ltr'] > [dir='ltr'] {
+    font-family: var(--font-sans);
+    font-style: normal !important;
+    font-weight: 600;
+    font-size: 0.95em;
+    letter-spacing: -0.005em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .editor-document-highlight { transition: none; }
+    .editor-document-highlight:active { transform: none; }
+  }
+
+  .editor-kind-badge {
+    min-width: var(--editor-badge-min-width) !important;
+    padding-inline: var(--editor-badge-padding-inline) !important;
+  }
+
+  .editor-lesson-row {
+    gap: var(--editor-lesson-gap);
+    padding-inline-start: var(--editor-lesson-indent);
+  }
+
+  .editor-item-description {
+    margin-inline-start: var(--editor-description-indent);
+    padding-inline-start: var(--editor-description-padding);
+  }
+
+  .editor-type-item-title[dir="rtl"],
+  .editor-type-description[dir="rtl"],
+  [data-editor-table][dir="rtl"] .editor-type-item-title:not([dir="ltr"]),
+  [data-editor-table][dir="rtl"] .editor-type-description:not([dir="ltr"]) {
+    line-height: 1.5;
+  }
+  .editor-type-description[dir="ltr"] {
+    line-height: 1.6;
+  }
+
+  /* Échelle typographique strictement proportionnelle selon la hiérarchie pédagogique :
+     Chapitre (1.45) > Bloc/Évaluation (1.25) > Section (1.16) > Sous-section (1.08)
+     > Sous-sous-section (1.02) > Titre de contenu Déf/Prop/Exo (0.96)
+     > Description/Corps (0.90) > Remarque (0.84) > En-tête/Page (0.75) > Badge (0.72). */
+  [data-editor-table] {
+    --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
+    --cdt-table-cols: minmax(4.75rem, 18%) minmax(0, 1fr) minmax(3.5rem, 20%);
+    --editor-fs-chapter: calc(var(--editor-scale) * 1.45);
+    --editor-fs-top: calc(var(--editor-scale) * 1.25);
+    --editor-fs-section: calc(var(--editor-scale) * 1.16);
+    --editor-fs-subsection: calc(var(--editor-scale) * 1.08);
+    --editor-fs-subsubsection: calc(var(--editor-scale) * 1.02);
+    --editor-fs-item-title: calc(var(--editor-scale) * 0.96);
+    --editor-fs-description: calc(var(--editor-scale) * 0.90);
+    --editor-fs-remark: calc(var(--editor-scale) * 0.84);
+    --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
+    --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
+    --editor-fs-page: calc(var(--editor-scale) * 0.75);
+    --editor-fs-badge: calc(var(--editor-scale) * 0.72);
+    --editor-badge-min-width: calc(var(--editor-scale) * 1.95);
+    --editor-badge-padding-inline: 5px;
+    --editor-lesson-gap: clamp(5px, 1vw, 10px);
+    --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
+    /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
+       imbriqué s'enfonce d'un cran régulier (section, sous-section,
+       sous-sous-section). Le cran de marge suffit : aucun filet vertical,
+       à l'écran comme sur le papier. */
+    --editor-indent-1: 4px;
+    --editor-indent-2: 8px;
+    --editor-indent-3: 14px;
+  }
+
+  /* Une grille partagée par l'en-tête, les lignes et les cellules fusionnées.
+     Le contenu peut rétrécir sans repousser la colonne des remarques. */
+  .editor-table-grid { grid-template-columns: var(--cdt-table-cols); }
+  [data-editor-table] [data-row-content],
+  [data-editor-table] .editor-type-remark,
+  [data-editor-table] .editor-type-table-side {
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 639px) {
+    [data-editor-table] {
+      --cdt-table-cols: minmax(3.5rem, 14%) minmax(0, 1fr) minmax(3.5rem, 16%);
+      --editor-description-indent: 0px;
+      --editor-description-padding: 8px;
+    }
+    [data-editor-table] .editor-type-remark {
+      word-break: normal;
+      overflow-wrap: normal;
+      text-wrap: balance;
+    }
+  }
+
+  @media (min-width: 768px) {
+    [data-editor-table] {
+      --cdt-table-cols: minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%);
+    }
+  }
+  /* Esprit éditeur de livre : la marge raconte la profondeur. */
+  .editor-indent-1 { margin-inline-start: var(--editor-indent-1); }
+  .editor-indent-2 { margin-inline-start: var(--editor-indent-2); }
+  .editor-indent-3 { margin-inline-start: var(--editor-indent-3); }
+
+  @media (min-width: 640px) {
+    [data-editor-table] {
+      --editor-indent-1: 16px;
+      --editor-indent-2: 32px;
+      --editor-indent-3: 48px;
+    }
+  }
+
+  /* Téléphone ou tablette tenu à l'horizontale : la largeur est abondante
+     et la hauteur comptée. On creuse donc les niveaux horizontalement
+     pour que la hiérarchie du cahier se lise d'un seul regard. */
+  @media (pointer: coarse) and (orientation: landscape) {
+    [data-editor-table] {
+      --editor-indent-1: 22px;
+      --editor-indent-2: 42px;
+      --editor-indent-3: 62px;
+      --editor-lesson-indent: 16px;
+    }
+  }
+
+  @media (pointer: coarse) {
+    [data-editor-table] {
+      /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
+      --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vmin), 1rem) * var(--app-text-scale, 1)));
+    }
+  }
+}
+
+.selection-bar-anchor {
+  position: fixed;
+  inset-inline: max(12px, env(safe-area-inset-left, 0px)) max(12px, env(safe-area-inset-right, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5.75rem);
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.selection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 5px 7px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 14px;
+  background: hsl(var(--card) / 0.90);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: hsl(var(--card-foreground));
+  box-shadow: 0 16px 36px -4px rgb(0 0 0 / 0.16), 0 4px 12px -2px rgb(0 0 0 / 0.08), inset 0 1px 0.5px 0 rgb(255 255 255 / 0.45);
+  pointer-events: auto;
+  position: relative;
+}
+@media (max-width: 639px) {
+  .selection-bar { border-radius: 12px; flex-wrap: nowrap; }
+  /* Ces règles dépassent les utilitaires de colonnes et de taille des champs. */
+  [data-editor-table] .editor-item-description { grid-column: 1 / -1; }
+  :is(input, textarea, select):not([type='checkbox']):not([type='radio']):not([type='range']) {
+    font-size: max(16px, 1em);
+    min-height: 44px;
+  }
+}
+.dark .selection-bar {
+  box-shadow: 0 16px 36px -4px rgb(0 0 0 / 0.45), 0 4px 12px -2px rgb(0 0 0 / 0.25), inset 0 1px 0.5px 0 rgb(255 255 255 / 0.15);
+  border-color: hsl(var(--border) / 0.85);
+  background: hsl(var(--card) / 0.88);
+}
+.selection-action {
+  min-width: 44px;
+  min-height: 44px;
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.selection-action:active:not(:disabled) { transform: scale(0.92); }
+@media (hover: hover) {
+  .selection-action:hover:not(:disabled) { transform: scale(1.04); }
+}
+/* Entrée et sortie en CSS pur (transform + opacity seulement, 220 / 180 ms). */
+.selection-bar[data-state='open'] { animation: selection-bar-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.selection-bar[data-state='closed'] { animation: selection-bar-out 180ms cubic-bezier(0.4, 0, 1, 1) both; pointer-events: none; }
+@keyframes selection-bar-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes selection-bar-out {
+  to { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.97); }
+}
+.selection-bar { touch-action: pan-x; }
+@media (min-width: 640px) {
+  .selection-bar-anchor { bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .selection-bar, .selection-bar[data-state] { animation: none; }
+  .selection-action, .selection-action:active:not(:disabled) { transition: none; transform: none; }
+}
+/* Aucune barre contextuelle par-dessus le champ et le clavier virtuel. */
+html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
+@media (pointer: coarse) {
+  input:focus, select:focus, textarea:focus { font-size: max(16px, 1em) !important; }
+}
+@media print {
+  .editor-type-chapter, .dark .editor-type-chapter { color: inherit; }
+}
+
+/* Entrée de la barre de sélection de l'éditeur. Définie hors @theme car
+   consomme par un `style={{ animation }}` inline, sans variable --animate-*.
+   `backwards` (voir SelectionBar) évite un flash au premier rendu. */
+@keyframes slide-in-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   POLICE MAGHRIBI - FALLBACK LOCAL
+   ══════════════════════════════════════════════════════════════════════
+
+   Police locale "maghribi-font 3" (المغربي المبسوط) disponible dans /public
+
+   Deux polices embarquées, aucune dépendance distante :
+   · Arabswell 3      (/arabswell-3.ttf)      → texte arabe
+   · Maghribi Font 3  (/maghribi-font-3.ttf)  → titres arabes
+   Les polices latines sont également embarquées (styles/fonts.css).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Déclaration @font-face pour la police locale Maghribi Font 3 */
+@font-face {
+  font-family: 'Maghribi Font 3';
+  src: url('/maghribi-font-3.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  /* Les glyphes latins ne sont pas composés par cette fonte : le navigateur
+     les prend dans DM Sans (séparation par écriture, pas par classe). */
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
+}
+
+/* Déclaration @font-face pour la police locale Arabswell 3 */
+@font-face {
+  font-family: 'Arabswell 3';
+  src: url('/arabswell-3.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
+}
+
+/* Une ligne libre n'appartient PAS à la structure du cours : encadré en
+   pointillés, fond très légèrement teinté, sans couleur d'accent ni filet
+   vertical. Elle peut être déplacée n'importe où : son cadre la suit. */
+.editor-free-content {
+  border: 1px dashed rgba(120, 120, 110, 0.45);
+  border-radius: 10px;
+  padding-inline: 10px;
+  padding-block: 6px;
+}
+
+.dark .editor-free-content {
+  border-color: rgba(200, 200, 190, 0.35);
+}
+
+/* ---------------------------------------------------------------------------
+   Formules (KaTeX, embarqué : aucune requête réseau, donc hors ligne inclus).
+   Option retenue : une formule d'affichage plus large que sa colonne devient
+   défilable horizontalement — et seulement dans ce cas — car KaTeX ne sait pas
+   couper une ligne de formule automatiquement. Rien d'autre ne défile.
+   --------------------------------------------------------------------------- */
+.math-text .katex { font-size: 1.06em; }
+/* Une formule se lit toujours de gauche à droite : dans un texte arabe (dir=rtl), sans cela
+   KaTeX inverse l'ordre des symboles ("2 + 3x" devant "f(x)"). */
+.katex, .katex-display { direction: ltr; unicode-bidi: isolate; }
+
+.editor-item-description .katex-display,
+.editor-free-content .katex-display,
+.print-document .katex-display {
+  margin: 0.35em 0;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Le premier bloc d'affichage d'une cellule ne pousse pas la ligne vers le bas. */
+.editor-item-body > .math-text > .katex-display:first-child,
+.editor-free-content > .math-text > .katex-display:first-child {
+  margin-top: 0;
+}
+
+/* Une commande non reconnue s'affiche en rouge, sans casser la formule. */
+.math-text .katex-error { color: #b91c1c; }
+
+/* ---------------------------------------------------------------------------
+   Pastilles de type (DÉF, THM, EXO, ACT…) — géométrie PARTAGÉE.
+   Une seule boîte pour l'éditeur, la modale de séance et les réglages : 10 px
+   de corps, 6 px de rembourrage en ligne, 34 px de largeur au minimum pour que
+   les sigles s'alignent d'une surface à l'autre. La règle est volontairement
+   NON layerisée : les utilitaires Tailwind des modales ne peuvent pas
+   l'emporter par accident. Dans le tableau, les jetons `--editor-badge-*`
+   (déclarés `!important`) restent maîtres, car la colonne de pastilles y garde
+   une largeur calculée à partir de l'échelle de lecture.
+   --------------------------------------------------------------------------- */
+.content-badge {
+  min-width: 30px;
+  padding: 2px 5px;
+  border-radius: 0 !important;
+  /* Sigle académique : la fonte de composition (Latin Modern Sans) donne au
+     jeton la voix d'un ouvrage, pas celle d'un bouton. Chiffres à chasse fixe
+     pour que « EXO 1 » et « EXO 11 » s'alignent d'une ligne à l'autre. */
+  font-family: var(--font-document);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Cadres type Définition, Théorème, Proposition, Propriété, Lemme, Corollaire...
+   SANS ARRONDI (angles vifs, tradition mathématique et scientifique stricte).
+   --------------------------------------------------------------------------- */
+.editor-item-description {
+  border-radius: 0 !important;
+  border: 1px solid hsl(var(--border) / 0.85);
+  border-inline-start: 3.5px solid hsl(var(--primary));
+  background: color-mix(in srgb, hsl(var(--muted)) 35%, hsl(var(--card)));
+  padding: 0.35rem 0.65rem;
+}
+
+/* Famille Bleu : Définitions & Introduction */
+.editor-item-description[data-content-type="définition"],
+.editor-item-description[data-content-type="introduction"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #0d549b 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #0d549b;
+  background: color-mix(in srgb, #0d549b 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="définition"],
+.dark .editor-item-description[data-content-type="introduction"] {
+  border-inline-start-color: #8fc3ff;
+  border-color: color-mix(in srgb, #122842 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #122842 20%, hsl(var(--card)));
+}
+
+/* Famille Rouge/Brique : Théorèmes, Propositions, Propriétés, Lemmes, Corollaires, Règles, Lois, Principes */
+.editor-item-description[data-content-type="théorème"],
+.editor-item-description[data-content-type="proposition"],
+.editor-item-description[data-content-type="propriété"],
+.editor-item-description[data-content-type="lemme"],
+.editor-item-description[data-content-type="corollaire"],
+.editor-item-description[data-content-type="conséquence"],
+.editor-item-description[data-content-type="règle"],
+.editor-item-description[data-content-type="loi"],
+.editor-item-description[data-content-type="principe"],
+.editor-item-description[data-content-type="sécurité"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #ad2d24 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #ad2d24;
+  background: color-mix(in srgb, #ad2d24 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="théorème"],
+.dark .editor-item-description[data-content-type="proposition"],
+.dark .editor-item-description[data-content-type="propriété"],
+.dark .editor-item-description[data-content-type="lemme"],
+.dark .editor-item-description[data-content-type="corollaire"],
+.dark .editor-item-description[data-content-type="conséquence"],
+.dark .editor-item-description[data-content-type="règle"],
+.dark .editor-item-description[data-content-type="loi"],
+.dark .editor-item-description[data-content-type="principe"],
+.dark .editor-item-description[data-content-type="sécurité"] {
+  border-inline-start-color: #fca597;
+  border-color: color-mix(in srgb, #381614 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #381614 20%, hsl(var(--card)));
+}
+
+/* Famille Verte : Activités, Applications, Exemples, Exercices */
+.editor-item-description[data-content-type="activité"],
+.editor-item-description[data-content-type="application"],
+.editor-item-description[data-content-type="exemple"],
+.editor-item-description[data-content-type="exercice"],
+.editor-item-description[data-content-type="expérience"],
+.editor-item-description[data-content-type="observation"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #196336 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #196336;
+  background: color-mix(in srgb, #196336 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="activité"],
+.dark .editor-item-description[data-content-type="application"],
+.dark .editor-item-description[data-content-type="exemple"],
+.dark .editor-item-description[data-content-type="exercice"],
+.dark .editor-item-description[data-content-type="expérience"],
+.dark .editor-item-description[data-content-type="observation"] {
+  border-inline-start-color: #8de3a6;
+  border-color: color-mix(in srgb, #122b1c 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #122b1c 20%, hsl(var(--card)));
+}
+
+/* Famille Neutre : Remarques, Preuves, Méthodes */
+.editor-item-description[data-content-type="remarque"],
+.editor-item-description[data-content-type="preuve"],
+.editor-item-description[data-content-type="méthode"],
+.editor-item-description[data-content-type="protocole"] {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, #3e444e 30%, hsl(var(--border)));
+  border-inline-start: 3.5px solid #3e444e;
+  background: color-mix(in srgb, #3e444e 6%, hsl(var(--card)));
+}
+.dark .editor-item-description[data-content-type="remarque"],
+.dark .editor-item-description[data-content-type="preuve"],
+.dark .editor-item-description[data-content-type="méthode"],
+.dark .editor-item-description[data-content-type="protocole"] {
+  border-inline-start-color: #cbd5e1;
+  border-color: color-mix(in srgb, #20252d 50%, hsl(var(--border)));
+  background: color-mix(in srgb, #20252d 20%, hsl(var(--card)));
+}
+
+/* Pastilles de type sans arrondi pour TOUS les types (style artistique / éditorial) */
+.editor-kind-badge,
+.editor-type-badge,
+.content-badge,
+[data-content-type].editor-kind-badge,
+[data-content-type].content-badge {
+  border-radius: 0 !important;
+}
+
+/* Les champs conservent une taille lisible et évitent le zoom iOS. */
+@media screen {
+  .content-fields :is(input, textarea, [role="combobox"]) { font-size: 1rem; line-height: 1.5; }
+}
+
+/* Feuille éditoriale : fontes embarquées et marge de date continue. */
+@media screen {
+  [data-editor-table] {
+    border: 1px solid hsl(var(--border) / .8) !important;
+    border-radius: 8px;
+    box-shadow: 0 18px 48px -24px hsl(var(--foreground) / .22);
+    --editor-badge-min-width: 60px;
+    --editor-lesson-gap: clamp(8px, 1.5vw, 20px);
+  }
+  [data-editor-table] .editor-kind-badge {
+    min-width: 60px !important;
+    border-radius: 4px !important;
+    padding: 3px 6px;
+  }
+  html:not(.dark) [data-editor-table] :is(.editor-type-top, .editor-type-evaluation) { color: #8c2f39; }
+  html:not(.dark) [data-editor-table] .editor-type-chapter,
+  html:not(.dark) [data-editor-table] .editor-type-chapter [dir]:not(.katex, .katex *) { color: #2b5961; }
+  html:not(.dark) [data-editor-table] .editor-date-value:not(.text-alert-strong) { color: #8c2f39; }
+  html:not(.dark) [data-editor-table] :is(.editor-type-item-title, .editor-type-description) { color: #333; }
+  .dark [data-editor-table] :is(.editor-type-top, .editor-type-evaluation),
+  .dark [data-editor-table] .editor-date-value:not(.text-alert-strong) { color: #efaab2; }
+  [data-editor-table] :is(.editor-table-grid > :first-child, [data-session-cell='date']) {
+    border-inline-end: 2px solid hsl(var(--border));
+  }
+}

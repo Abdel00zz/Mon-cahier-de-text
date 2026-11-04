@@ -15,7 +15,10 @@
   --ui-font-latin: var(--font-latin-body);
 }
 
-/* Short operational messages and printed Arabic remarks use Samsung font. */
+/* Arabic labels preserve connected letterforms even in tracked Latin controls. */
+.paper-button:lang(ar), .settings-choice:lang(ar) { letter-spacing: normal; }
+
+/* Short operational messages and printed remarks use the shared feedback role. */
 [data-sonner-toaster]:lang(ar),
 [data-sonner-toast]:lang(ar),
 [data-sonner-toast]:lang(ar) :is([data-title], [data-description], button),

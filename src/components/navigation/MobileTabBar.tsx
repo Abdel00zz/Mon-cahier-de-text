@@ -8,7 +8,6 @@ export function MobileTabBar({ activeTab, goTo, copy, isRtl }: {
   const swipe = useTabSwipe(activeTab, isRtl, goTo);
   return (
     <>
-      <div className="mobile-tab-sheet" aria-hidden="true" />
       <nav
         {...swipe}
         aria-label={copy.mobileNav}

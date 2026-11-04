@@ -90,45 +90,6 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
     </div>
     {canEditDate && (
       <div className="date-card">
-        <div className="content-date-header">
-          <span className="text-[13.5px] font-bold text-foreground">
-            {t('editor.date')}
-          </span>
-          <div className="content-date-actions">
-            {!isRange ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRange(true);
-                  if (!value.endDate && value.date) {
-                    onChange({ ...value, endDate: value.date });
-                  }
-                }}
-                className="content-date-action"
-                title={t('editor.defineRange')}
-              >
-                <Plus className="h-3.5 w-3.5 stroke-[2.4]" />
-                <span>{t('editor.defineRangeCompact')}</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRange(false);
-                  const next = { ...value };
-                  delete next.endDate;
-                  onChange(next);
-                }}
-                className="content-date-action"
-                title={t('editor.removeRange')}
-                aria-label={t('editor.removeRange')}
-              >
-                <X className="h-3.5 w-3.5 stroke-[2.4]" />
-                <span>{t('editor.removeRange')}</span>
-              </button>
-            )}
-          </div>
-        </div>
         <div className="content-date-fields">
           <div className="content-date-field">
             <label htmlFor={`${id}-date`} className="date-card-label text-[13.5px] font-medium text-foreground/80">
@@ -140,7 +101,6 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                 id={`${id}-date`}
                 type="date"
                 value={value.date ?? ''}
-                placeholder={translateLocaleMessage('ar', 'editor.startDate') ? 'يوم / شهر / سنة' : 'JJ / MM / AAAA'}
                 onChange={event => onChange({ ...value, date: event.target.value })}
                 className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-3 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
               />
@@ -159,13 +119,28 @@ export function ContentFields({ value, onChange, subject, contentDirection, titl
                   type="date"
                   min={value.date || undefined}
                   value={value.endDate ?? ''}
-                  placeholder={translateLocaleMessage('ar', 'editor.endDate') ? 'يوم / شهر / سنة' : 'JJ / MM / AAAA'}
                   onChange={event => onChange({ ...value, endDate: event.target.value })}
                   className="h-11 w-full rounded-[16px] border border-[#e0ded7] dark:border-stone-700 bg-background px-3 text-[14.5px] text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/60 shadow-2xs"
                 />
               </div>
             </div>
           )}
+        </div>
+        <div className="content-date-actions">
+          <button type="button" className="content-date-action"
+            title={t(isRange ? 'editor.removeRange' : 'editor.defineRange')}
+            aria-label={t(isRange ? 'editor.removeRange' : 'editor.defineRange')}
+            onClick={() => {
+              setShowRange(!isRange);
+              if (isRange) {
+                const next = { ...value };
+                delete next.endDate;
+                onChange(next);
+              } else if (!value.endDate && value.date) onChange({ ...value, endDate: value.date });
+            }}>
+            {isRange ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+            <span>{t(isRange ? 'editor.removeRange' : 'editor.defineRangeCompact')}</span>
+          </button>
         </div>
       </div>
     )}

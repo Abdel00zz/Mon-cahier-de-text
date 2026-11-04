@@ -1,0 +1,517 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. CLASS TONES, KEEP SURFACES, WATERMARK & DASHBOARD ALERTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Shared Keep surfaces: no filters or perpetual animations. */
+@layer components {
+  .keep-surface {
+    --keep-border: #e0e0e0;
+    border: 1px solid var(--keep-border);
+    border-radius: 0px;
+    background-color: var(--keep-light, #fff);
+    color: #202124;
+  }
+
+  /*
+   * Taches de peinture des cartes de classe.
+   * Adoucies pour un rendu épuré, sans surcharge visuelle sur smartphone.
+   */
+  .card-texture {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    opacity: 0.25;
+  }
+  .dark .card-texture { opacity: 0.15; }
+
+  /* Crème dorée : deux éclaboussures au coin haut-droite, une traînée en bas. */
+  .card-texture[data-texture="sand"] {
+    background-image:
+      radial-gradient(58% 46% at 50% 50%, rgb(180 83 9 / 0.32), transparent 63%),
+      radial-gradient(52% 44% at 50% 50%, rgb(253 230 138 / 0.74), transparent 72%),
+      radial-gradient(60% 48% at 50% 50%, rgb(180 83 9 / 0.10), transparent 74%);
+    background-position: 104% -20%, 78% -30%, -14% 124%;
+    background-size: 46% 68%, 38% 54%, 44% 60%;
+  }
+
+  /* Menthe : large lavis en haut à gauche, goutte franche à mi-hauteur. */
+  .card-texture[data-texture="mint"] {
+    background-image:
+      radial-gradient(60% 44% at 50% 50%, rgb(167 243 208 / 0.72), transparent 72%),
+      radial-gradient(56% 50% at 50% 50%, rgb(4 120 87 / 0.30), transparent 63%),
+      radial-gradient(50% 42% at 50% 50%, rgb(4 120 87 / 0.09), transparent 74%);
+    background-position: -12% -24%, 96% 46%, 58% 128%;
+    background-size: 50% 70%, 40% 60%, 34% 46%;
+  }
+
+  /* Azur : traînée verticale haute, éclaboussure bas-droite. */
+  .card-texture[data-texture="sky"] {
+    background-image:
+      radial-gradient(48% 62% at 50% 50%, rgb(186 230 253 / 0.70), transparent 72%),
+      radial-gradient(58% 46% at 50% 50%, rgb(2 132 199 / 0.30), transparent 63%),
+      radial-gradient(52% 44% at 50% 50%, rgb(2 132 199 / 0.09), transparent 76%);
+    background-position: 88% -28%, -18% 116%, 62% 132%;
+    background-size: 40% 74%, 48% 62%, 32% 44%;
+  }
+
+  /* Lilas : deux nappes superposées en bas à gauche, touche discrète en haut. */
+  .card-texture[data-texture="lavender"] {
+    background-image:
+      radial-gradient(56% 48% at 50% 50%, rgb(233 213 255 / 0.70), transparent 72%),
+      radial-gradient(62% 52% at 50% 50%, rgb(126 34 206 / 0.29), transparent 63%),
+      radial-gradient(48% 40% at 50% 50%, rgb(126 34 206 / 0.10), transparent 74%);
+    background-position: -16% 118%, 14% 132%, 108% -26%;
+    background-size: 44% 62%, 50% 66%, 30% 44%;
+  }
+
+  /* Couche fonctionnelle : IBM Plex pour les zones de travail, sans empilement décoratif. */
+  [role="dialog"], [role="menu"], [role="listbox"], [data-radix-popper-content-wrapper],
+  input, textarea, select, button, [role="button"] {
+    font-family: var(--font-sans);
+  }
+  [role="dialog"] h1, [role="dialog"] h2, [role="dialog"] h3,
+  [role="dialog"] label, [role="dialog"] p, [role="dialog"] span,
+  [role="dialog"] button { line-height: 1.55; }
+  :is(input, textarea, select, button, [role="button"]):focus-visible {
+    outline: 0;
+    box-shadow: var(--ui-focus-ring);
+  }
+
+  /* Fondation Swiss mobile : hiérarchie stricte, surfaces calmes et densité maîtrisée. */
+  :root {
+    --app-ink: #1f1e1d;
+    --app-ink-muted: #6b6a64;
+    --app-surface: #fefdfb;
+    --app-surface-soft: #f0eee6;
+    --app-line: rgb(20 20 19 / 0.10);
+    --app-accent: #b35230;
+    --app-accent-soft: rgb(179 82 48 / 0.1);
+  }
+  .dark {
+    --app-ink: #ecebe0;
+    --app-ink-muted: #b0aea5;
+    --app-surface: #30302e;
+    --app-surface-soft: #3a3a37;
+    --app-line: rgb(236 235 224 / 0.12);
+    --app-accent: #e08a6b;
+    --app-accent-soft: rgb(217 119 87 / 0.14);
+  }
+  :is(.dashboard-artisan-shell, .onboarding-artisan-shell, .auth-artisan-shell) {
+    color: var(--app-ink);
+  }
+  :is(.dashboard-artisan-shell, .onboarding-artisan-shell) :is(h1, h2, h3) {
+    text-wrap: balance;
+  }
+  :is(.dashboard-artisan-shell, .onboarding-artisan-shell) :is(button, [role="button"]) {
+    min-height: 2.75rem;
+    border-radius: var(--ui-radius-control);
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+  :is(.dashboard-artisan-shell, .onboarding-artisan-shell) :is(button, [role="button"]):active {
+    transform: scale(0.985);
+  }
+  @media (max-width: 639px) {
+    :is(.dashboard-artisan-shell, .onboarding-artisan-shell, .auth-artisan-shell) {
+      --ui-space-page: 1rem;
+      --ui-space-section: 1rem;
+    }
+    :is(.dashboard-artisan-shell, .onboarding-artisan-shell) :is(input, textarea, select) {
+      min-height: 2.75rem;
+    }
+  }
+
+  /* Zones d'information : deux lignes lisibles, icône forte, décor minimal. */
+  .info-alert-futuristic {
+    position: relative;
+    overflow: hidden;
+    border-color: hsl(38 90% 58% / 0.32);
+    background: linear-gradient(135deg, hsl(42 100% 97% / 0.9), hsl(34 100% 94% / 0.58));
+    box-shadow: 0 16px 34px -28px hsl(34 88% 42% / 0.75), inset 0 1px 0 rgb(255 255 255 / 0.8);
+  }
+  .info-alert-futuristic::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -2.5rem;
+    top: -3rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 999px;
+    background: hsl(38 90% 58% / 0.1);
+    box-shadow: 0 0 0 1px hsl(38 90% 58% / 0.08), 0 0 0 14px hsl(38 90% 58% / 0.04);
+    pointer-events: none;
+  }
+  .info-alert-icon {
+    position: relative;
+    z-index: 1;
+    color: hsl(34 84% 42%);
+    background: linear-gradient(145deg, hsl(39 92% 95%), hsl(38 92% 86%));
+    border: 1px solid hsl(38 90% 58% / 0.34);
+    box-shadow: 0 12px 24px -16px hsl(34 88% 42% / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  }
+  .info-alert-futuristic > div { position: relative; z-index: 1; min-width: 0; }
+  .info-alert-futuristic p { line-height: 1.75; }
+  @media (max-width: 639px) {
+    .info-alert-futuristic { gap: 0.75rem; padding: 1rem; }
+    .info-alert-icon { width: 3rem; height: 3rem; border-radius: 0.95rem; }
+    .info-alert-icon svg { width: 1.7rem; height: 1.7rem; }
+  }
+  .dark .info-alert-futuristic { background: linear-gradient(135deg, hsl(35 32% 18% / 0.95), hsl(35 28% 14% / 0.85)); border-color: hsl(38 90% 58% / 0.3); }
+  .dark .info-alert-icon { color: hsl(38 90% 72%); background: linear-gradient(145deg, hsl(38 65% 25%), hsl(35 55% 19%)); }
+
+  /* Alerte date : information prioritaire, futuriste et minimaliste. */
+  .date-review-icon {
+    background: linear-gradient(145deg, hsl(39 92% 95%), hsl(38 92% 86%));
+    border: 1px solid hsl(38 90% 58% / 0.36);
+    box-shadow: 0 12px 24px -16px hsl(34 88% 42% / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  }
+  .date-review-title { text-wrap: balance; }
+  .date-review-alert {
+    position: relative;
+    overflow: hidden;
+    border-color: hsl(38 90% 58% / 0.35);
+    background: linear-gradient(135deg, hsl(42 100% 97% / 0.9), hsl(34 100% 94% / 0.62));
+    box-shadow: 0 16px 34px -28px hsl(34 88% 42% / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.8);
+  }
+  .date-review-alert::before {
+    content: "";
+    position: absolute;
+    inset-inline-end: -2.5rem;
+    top: -3rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 999px;
+    background: hsl(38 90% 58% / 0.12);
+    box-shadow: 0 0 0 1px hsl(38 90% 58% / 0.08), 0 0 0 14px hsl(38 90% 58% / 0.04);
+    pointer-events: none;
+  }
+  .date-review-alert [role="status"] { position: relative; z-index: 1; }
+  .date-review-alert ul { list-style: none; }
+  .date-review-alert li { min-height: 2.8rem; }
+  .date-review-alert li + li { border-top: 1px solid hsl(38 90% 58% / 0.14); }
+  .date-review-alert li > span:last-child { font-size: 0.86rem; line-height: 1.75; }
+  .date-review-alert label { position: relative; z-index: 1; border-top: 1px solid hsl(38 90% 58% / 0.14); padding-top: 0.75rem; }
+  @media (max-width: 639px) {
+    .date-review-icon { width: 3rem; height: 3rem; border-radius: 0.95rem; }
+    .date-review-icon svg { width: 1.7rem; height: 1.7rem; }
+    .date-review-title { max-width: 12rem; }
+    .date-review-alert { padding: 1rem; }
+    .date-review-alert li > span:last-child { font-size: 0.8rem; }
+  }
+  .dark .date-review-icon { background: linear-gradient(145deg, hsl(38 65% 25%), hsl(35 55% 19%)); border-color: hsl(38 90% 58% / 0.38); }
+  .dark .date-review-alert { background: linear-gradient(135deg, hsl(35 32% 18% / 0.95), hsl(35 28% 14% / 0.85)); border-color: hsl(38 90% 58% / 0.32); }
+
+  /* Mobile premium : Pixel, Galaxy S24 et iPhone 16 — safe areas, densité et tactile. */
+  @media (max-width: 639px) {
+    :root { --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; }
+    /* Keep window as the vertical scroll owner. `hidden` makes body a
+       scroll container on both axes; its overscroll rule can trap swipes. */
+    html, body { min-width: 0; overflow-x: clip; }
+    body { padding-bottom: env(safe-area-inset-bottom); }
+    button, [role="button"], a { touch-action: manipulation; }
+    input, textarea, select { font-size: 16px; }
+  }
+
+  .dark .card-andalusian::before { border-color: color-mix(in srgb, var(--keep-accent, #99f6e4) 20%, transparent); }
+
+  /* Les noms longs restent entièrement lisibles, notamment en arabe. */
+  .keep-class-title { overflow-wrap: anywhere; hyphens: auto; }
+  /* Numéro de classe : de l'ENCRE, sans pastille ni cadre.
+     Le numéro de classe n'a qu'une seule définition : encre du thème et contour
+     couleur carte, jamais une teinte par ton. Le ton de la classe reste porté
+     par la carte ; le numéro se lit comme un chiffre écrit à l'encre — noir
+     chaud en clair, ivoire en sombre —, pleinement opaque, et sa silhouette est
+     détourée d'un filet couleur carte sur les quatre côtés : le contour reste
+     net sur tous les fonds teintés. */
+  .keep-group-watermark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  min-height: 2.1rem;
+  margin-inline-start: 0.35rem;
+  padding: 0.15rem 0.1rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.45rem, 3.2vw, 1.9rem);
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  vertical-align: baseline;
+  white-space: nowrap;
+  color: hsl(var(--foreground));
+  opacity: 1;
+  /* Contour net : un filet plein couleur carte, doublé du détourage en quatre
+     directions qui garde la silhouette lisible sur les fonds teintés. */
+  -webkit-text-stroke: 1.5px hsl(var(--card));
+  paint-order: stroke fill;
+  text-shadow:
+    -1px -1px 0 hsl(var(--card)),
+    1px -1px 0 hsl(var(--card)),
+    -1px 1px 0 hsl(var(--card)),
+    1px 1px 0 hsl(var(--card)),
+    0 3px 6px hsl(var(--foreground) / 0.18);
+  transform: none;
+  transition: transform 220ms ease, filter 220ms ease, color 150ms ease;
+  }
+  .keep-group-watermark:hover { transform: translateY(-1px); filter: drop-shadow(0 4px 6px hsl(var(--foreground) / 0.2)); }
+  .dark .keep-group-watermark {
+  text-shadow:
+    -1px -1px 0 hsl(var(--card)),
+    1px -1px 0 hsl(var(--card)),
+    -1px 1px 0 hsl(var(--card)),
+    1px 1px 0 hsl(var(--card)),
+    0 3px 6px rgb(0 0 0 / 0.55);
+  }
+
+  /* Variante « fin de nom » : un cran plus grand, jamais détachée du titre,
+     et le même contour ivoire pour rester lisible sur les fonds teintés. */
+  .keep-group-watermark[data-variant='end'] {
+    font-size: 1.4em;
+    letter-spacing: 0.01em;
+  }
+
+  /* Direction arabe : palette fès/vert zellige et géométrie andalouse plus calme. */
+  body:has(.card-andalusian[dir="rtl"]) .keep-class-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-align: right;
+  }
+  body:has(.card-andalusian[dir="rtl"]) .card-andalusian .text-stone-500\/90 {
+  color: rgb(91 77 59 / 0.72);
+  }
+  .dark body:has(.card-andalusian[dir="rtl"]) { background: #17201d; }
+  .dark body:has(.card-andalusian[dir="rtl"]) .card-andalusian {
+  background-color: #1e2b27;
+  border-color: rgb(151 190 157 / 0.28);
+  background-image:
+    linear-gradient(45deg, transparent 42%, rgb(151 190 157 / 0.055) 43%, rgb(151 190 157 / 0.055) 57%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, rgb(151 190 157 / 0.055) 43%, rgb(151 190 157 / 0.055) 57%, transparent 58%);
+  }
+
+  .dark .keep-surface {
+    --keep-border: #3f4348;
+    background-color: var(--keep-dark, #202124);
+    color: #e8eaed;
+  }
+
+  .dark .dashboard-class-surface {
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--keep-dark, #202124) 85%, #2d3038) 0%,
+      var(--keep-dark, #202124) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--keep-accent, #94a3b8) 24%, var(--keep-border, #3f4348));
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+      0 2px 6px rgba(0, 0, 0, 0.32),
+      0 10px 24px -10px color-mix(in srgb, var(--keep-accent, #94a3b8) 20%, transparent);
+  }
+
+  @media (hover: hover) {
+    .dark .dashboard-class-surface:hover {
+      border-color: color-mix(in srgb, var(--keep-accent, #94a3b8) 38%, var(--keep-border, #3f4348));
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+        0 4px 12px rgba(0, 0, 0, 0.42),
+        0 16px 32px -8px color-mix(in srgb, var(--keep-accent, #94a3b8) 30%, transparent);
+    }
+  }
+
+  /* Palette chromatique des classes : teintes modernes, fraîches et équilibrées */
+  .keep-surface[data-keep-tone="sand"],
+  [data-keep-tone="sand"] { --keep-vivid: #FFC701; --keep-light: #FFF1B8; --keep-dark: #261F10; --keep-border: #E8D69A; --keep-accent: #8A5A00; --keep-accent-soft: rgb(138 90 0 / 0.10); } /* Ambre solaire */
+  .keep-surface[data-keep-tone="coral"],
+  [data-keep-tone="coral"] { --keep-vivid: #FE7235; --keep-light: #FFE3D5; --keep-dark: #2A1D15; --keep-border: #EFC4AF; --keep-accent: #A43E10; --keep-accent-soft: rgb(164 62 16 / 0.10); } /* Orange mandarine */
+  .keep-surface[data-keep-tone="lime"],
+  [data-keep-tone="lime"] { --keep-vivid: #89DA38; --keep-light: #E7F5C9; --keep-dark: #1E2611; --keep-border: #CCDEAB; --keep-accent: #3F6200; --keep-accent-soft: rgb(63 98 0 / 0.10); } /* Vert frais */
+  .keep-surface[data-keep-tone="mint"],
+  [data-keep-tone="mint"] { --keep-vivid: #21C08B; --keep-light: #DBF3E7; --keep-dark: #14231E; --keep-border: #B5DCC8; --keep-accent: #0B6B4F; --keep-accent-soft: rgb(11 107 79 / 0.10); } /* Émeraude fraîche */
+  .keep-surface[data-keep-tone="sky"],
+  [data-keep-tone="sky"] { --keep-vivid: #38BDF8; --keep-light: #DEEEFF; --keep-dark: #152230; --keep-border: #BBD4ED; --keep-accent: #0A5E9E; --keep-accent-soft: rgb(10 94 158 / 0.10); } /* Azur lumineux */
+  .keep-surface[data-keep-tone="indigo"],
+  [data-keep-tone="indigo"] { --keep-vivid: #4255FF; --keep-light: #E9E8FF; --keep-dark: #1B1B33; --keep-border: #CCCAF0; --keep-accent: #3431D2; --keep-accent-soft: rgb(52 49 210 / 0.10); } /* Indigo électrique */
+  .keep-surface[data-keep-tone="lavender"],
+  [data-keep-tone="lavender"] { --keep-vivid: #E28CF8; --keep-light: #F2E2FA; --keep-dark: #271D31; --keep-border: #DEC3EB; --keep-accent: #8C2BA8; --keep-accent-soft: rgb(140 43 168 / 0.10); } /* Orchidée digitale */
+  .keep-surface[data-keep-tone="rose"],
+  [data-keep-tone="rose"] { --keep-vivid: #F43F5E; --keep-light: #FCE1E7; --keep-dark: #2B1A20; --keep-border: #EABFC9; --keep-accent: #B01B3C; --keep-accent-soft: rgb(176 27 60 / 0.10); } /* Framboise vive */
+
+  /*
+   * Badge de palier raffiné, translucide et compact : hauteur réduite, coins sobres et moins arrondis (3px).
+   */
+  .keep-level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    min-height: 1.3rem;
+    padding: 0.06rem 0.45rem 0.12rem;
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: visible;
+    user-select: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .dark .keep-surface[data-keep-tone="sand"],
+  .dark [data-keep-tone="sand"] { --keep-vivid: #EFC24A; --keep-border: #5C4A22; --keep-accent: #FFD86B; --keep-accent-soft: rgb(255 216 107 / 0.14); }
+  .dark .keep-surface[data-keep-tone="coral"],
+  .dark [data-keep-tone="coral"] { --keep-vivid: #F2854F; --keep-border: #653823; --keep-accent: #FFAB7E; --keep-accent-soft: rgb(255 171 126 / 0.14); }
+  .dark .keep-surface[data-keep-tone="lime"],
+  .dark [data-keep-tone="lime"] { --keep-vivid: #D6EE8E; --keep-border: #4C5922; --keep-accent: #CDF55E; --keep-accent-soft: rgb(205 245 94 / 0.14); }
+  .dark .keep-surface[data-keep-tone="mint"],
+  .dark [data-keep-tone="mint"] { --keep-vivid: #3FBF92; --keep-border: #2F5648; --keep-accent: #6EDCAB; --keep-accent-soft: rgb(110 220 171 / 0.14); }
+  .dark .keep-surface[data-keep-tone="sky"],
+  .dark [data-keep-tone="sky"] { --keep-vivid: #4FB4E8; --keep-border: #32556F; --keep-accent: #7DC7F7; --keep-accent-soft: rgb(125 199 247 / 0.14); }
+  .dark .keep-surface[data-keep-tone="indigo"],
+  .dark [data-keep-tone="indigo"] { --keep-vivid: #5F5CF0; --keep-border: #3E3C78; --keep-accent: #A5A3FF; --keep-accent-soft: rgb(165 163 255 / 0.14); }
+  .dark .keep-surface[data-keep-tone="lavender"],
+  .dark [data-keep-tone="lavender"] { --keep-vivid: #D18FE4; --keep-border: #583E69; --keep-accent: #E4A9F8; --keep-accent-soft: rgb(228 169 248 / 0.14); }
+  .dark .keep-surface[data-keep-tone="rose"],
+  .dark [data-keep-tone="rose"] { --keep-vivid: #EE5A76; --keep-border: #6A3543; --keep-accent: #F79FB0; --keep-accent-soft: rgb(247 159 176 / 0.14); }
+
+  /* Cells reuse the class palette. A 12% vivid tint preserves AA text on
+     the stronger light pastels; the dark-theme mix remains 22%. */
+  [data-keep-tone] {
+    --keep-cell: color-mix(in srgb, var(--keep-vivid) 12%, var(--keep-light));
+    --keep-cell-ink: var(--keep-accent);
+  }
+  [data-class-color] {
+    --keep-vivid: hsl(var(--class-hue) 65% 58%);
+    --keep-light: hsl(var(--class-hue) 60% 97%);
+    --keep-dark: hsl(var(--class-hue) 22% 15%);
+    --keep-accent: hsl(var(--class-hue) 60% 28%);
+    --keep-border: hsl(var(--class-hue) 30% 80%);
+    --keep-accent-soft: hsl(var(--class-hue) 60% 40% / .1);
+  }
+  .dark [data-class-color] {
+    --keep-vivid: hsl(var(--class-hue) 50% 65%);
+    --keep-accent: hsl(var(--class-hue) 60% 78%);
+    --keep-border: hsl(var(--class-hue) 25% 32%);
+    --keep-accent-soft: hsl(var(--class-hue) 60% 78% / .14);
+  }
+  .dark [data-keep-tone] {
+    --keep-cell: color-mix(in srgb, var(--keep-vivid) 22%, var(--keep-dark));
+  }
+
+  @keyframes keep-session-focus {
+    0%, 100% {
+      border-color: #9A3412;
+      box-shadow:
+        inset 0 0 0 1px rgb(154 52 18 / 0.28),
+        0 0 0 1px rgb(194 65 12 / 0.22),
+        0 6px 18px -6px rgb(154 52 18 / 0.26);
+    }
+    50% {
+      border-color: #EA580C;
+      box-shadow:
+        inset 0 0 0 1.5px rgb(234 88 12 / 0.72),
+        0 0 0 3px rgb(194 65 12 / 0.28),
+        0 10px 26px -6px rgb(194 65 12 / 0.44);
+    }
+  }
+  .keep-session-active {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #C2410C;
+    box-shadow:
+      inset 0 0 0 1px rgb(154 52 18 / 0.28),
+      0 0 0 1px rgb(194 65 12 / 0.22),
+      0 6px 18px -6px rgb(154 52 18 / 0.26);
+    animation: keep-session-focus 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .keep-session-active .keep-session-footer {
+    border-color: color-mix(in srgb, var(--keep-accent) 18%, transparent);
+    background-color: var(--keep-accent-soft);
+  }
+  .keep-session-active .keep-session-action {
+    color: var(--keep-accent);
+  }
+  .keep-session-active .keep-class-title {
+    color: color-mix(in srgb, var(--keep-accent) 68%, #202124);
+  }
+  .dark .keep-session-active .keep-class-title {
+    color: color-mix(in srgb, var(--keep-accent) 72%, #e8eaed);
+  }
+  .keep-session-active .keep-session-intro {
+    color: color-mix(in srgb, currentColor 86%, var(--keep-light));
+  }
+  .dark .keep-session-active .keep-session-intro {
+    color: color-mix(in srgb, currentColor 86%, var(--keep-dark));
+  }
+  .keep-session-active .keep-class-icon {
+    border: 1px solid color-mix(in srgb, var(--keep-accent) 25%, transparent);
+    background-color: var(--keep-accent-soft);
+    color: var(--keep-accent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 13%, transparent);
+  }
+  .keep-interactive {
+    transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+  }
+  .keep-interactive:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  .keep-choice[aria-pressed="true"],
+  .keep-choice[aria-checked="true"],
+  .keep-choice[data-selected="true"] {
+    background-color: #feefc3;
+    border-color: #b69b55;
+  }
+  .dark .keep-choice[aria-pressed="true"],
+  .dark .keep-choice[aria-checked="true"],
+  .dark .keep-choice[data-selected="true"] {
+    background-color: #41331c;
+    border-color: #a89462;
+  }
+  @media (hover: hover) {
+    .keep-interactive:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.7),
+        0 10px 22px -15px color-mix(in srgb, var(--keep-accent) 70%, rgb(15 23 42 / 0.28));
+      border-color: color-mix(in srgb, var(--keep-accent) 36%, var(--keep-border));
+    }
+    .dark .keep-interactive:hover {
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.08),
+        0 12px 24px -15px color-mix(in srgb, var(--keep-accent) 54%, rgb(0 0 0 / 0.72));
+      border-color: color-mix(in srgb, var(--keep-accent) 42%, var(--keep-border));
+    }
+    .keep-session-active:hover,
+    .dark .keep-session-active:hover {
+      transform: translateY(-2px);
+      border-color: #EA580C;
+      box-shadow:
+        inset 0 0 0 1.5px rgb(234 88 12 / 0.78),
+        0 0 0 3px rgb(194 65 12 / 0.32),
+        0 14px 30px -8px rgb(194 65 12 / 0.48);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .keep-interactive { transition: none; }
+    .keep-session-active { animation: none; }
+  }
+}
+
+/* ── 4. Design System WhatsApp (seul jeu de couleurs de marque conservé) ─── */
+:root {
+  --ds-whatsapp: #25d366;
+  --ds-whatsapp-hover: #20bd5a;
+  --ds-whatsapp-soft: #e8f5ee;
+}
+
+.dark {
+  --ds-whatsapp: #25d366;
+  --ds-whatsapp-hover: #20bd5a;
+  --ds-whatsapp-soft: #1c2b21;
+}

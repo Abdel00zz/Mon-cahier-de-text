@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -16,7 +17,7 @@ import { KEEP_TONES } from '../src/platform/keepTheme';
  * native Android) sans casser la lisibilité au passage.
  */
 
-const css = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+const css = readIndexCss();
 
 /** Read the theme blocks themselves: component-scoped light overrides later
  * in the stylesheet must never be mistaken for dark theme tokens. */
@@ -164,7 +165,7 @@ test('le numéro de groupe porte une encre pleine et reste décoratif', () => {
   assert.match(identity, /sr-only[\s\S]*aria-hidden/, 'le nom accessible porte déjà le groupe');
 
   // Le numéro de la liste : encre pleine et même contour net.
-  const styles = readFileSync(new URL('../src/styles/index.css', import.meta.url), 'utf8');
+  const styles = readIndexCss();
   const watermark = styles.slice(styles.indexOf('.keep-group-watermark {'), styles.indexOf(".keep-group-watermark[data-variant='end']"));
   assert.match(watermark, /color: hsl\(var\(--foreground\)\)/);
   assert.match(watermark, /opacity: 1/);

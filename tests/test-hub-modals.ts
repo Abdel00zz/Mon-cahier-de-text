@@ -1,3 +1,4 @@
+import { readIndexCss } from './readIndexCss';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -15,7 +16,7 @@ test('paramètres : le titre de la rubrique vit dans l’en-tête avec le retour
   assert.ok(!modal.includes('settings-backbar'), 'plus de ligne de retour dans le contenu');
   const primitives = read('src/features/settings/components/SettingsPrimitives.tsx');
   assert.match(primitives, /sr-only/, 'le titre de rubrique n’est plus affiché deux fois, mais reste lu par les lecteurs d’écran');
-  const css = read('src/styles/index.css');
+  const css = readIndexCss();
   assert.match(css, /\.hub-modal-header\.modal-pro-header \{ min-height: 0;/, 'en-tête compact');
   assert.match(css, /\[data-has-handle='true'\]\.hub-modal \.dialog-close \{ top: 1\.75rem; \}/, 'titre et bouton fermer sur le même axe');
   assert.match(css, /\.hub-back \{[\s\S]{0,200}width: 2\.75rem;[\s\S]{0,60}height: 2\.75rem;/, 'cible tactile de 44 px');
