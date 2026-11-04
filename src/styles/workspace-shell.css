@@ -52,8 +52,7 @@
   --sidebar-shadow-x: 5px;
   --sidebar-radius: 20px;
   --sidebar-body-bg: var(--serenite-sheet);
-  background:
-    linear-gradient(180deg, var(--serenite-solid), var(--serenite-bg));
+  background: var(--serenite-sheet);
   border-inline-end: 1px solid var(--serenite-line);
   border-start-end-radius: var(--sidebar-radius);
   border-end-end-radius: var(--sidebar-radius);
@@ -65,8 +64,7 @@
 }
 .dark [data-app-sidebar] {
   --sidebar-body-bg: var(--serenite-sheet);
-  background:
-    linear-gradient(180deg, var(--serenite-solid), var(--serenite-bg));
+  background: var(--serenite-sheet);
   border-inline-end: 1px solid var(--serenite-line);
   box-shadow: inset -1px 0 0.5px rgba(255, 255, 255, 0.05), var(--sidebar-shadow-x) 0 24px -6px rgba(0, 0, 0, 0.65);
 }

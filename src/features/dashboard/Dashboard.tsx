@@ -405,7 +405,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="keep-dashboard-canvas min-h-dvh text-foreground font-sans antialiased pt-3 sm:pt-6"
             data-dashboard-root
         >
-            <div className="halo" aria-hidden="true" />
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[40rem] px-5 pt-7 sm:pt-11 pl-safe pr-safe">
                     {/* En-tête : Titre à droite (Readex Pro 600), actions et bouton + à gauche en RTL */}

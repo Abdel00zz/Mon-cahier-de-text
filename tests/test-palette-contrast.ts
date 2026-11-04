@@ -122,8 +122,7 @@ for (const theme of ['clair', 'sombre'] as const) {
   });
 
   test(`la profondeur reste perceptible · thème ${theme}`, () => {
-    // Material : les surfaces élevées sont plus CLAIRES que le fond ; en clair,
-    // la carte se détache du papier. Sans écart mesurable, l'étagement disparaît.
+    // Dark surfaces use elevation; the white theme separates surfaces with borders.
     const card = token('card');
     const background = token('background');
     const ratioBg = ratio(card, background);
@@ -133,8 +132,9 @@ for (const theme of ['clair', 'sombre'] as const) {
       assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
       assert.ok(ratioBg >= 1.12, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
     } else {
-      assert.ok(cardL > bgL, `la carte (${cardL}%) doit se détacher du fond (${bgL}%)`);
-      assert.ok(ratioBg >= 1.05, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
+      assert.deepEqual(background, [0, 0, 100], 'fond blanc uni');
+      assert.deepEqual(card, background, 'pas de couche de papier teintée');
+      assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures distinguent les surfaces blanches');
     }
   });
 }

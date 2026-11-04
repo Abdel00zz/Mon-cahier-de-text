@@ -1,16 +1,12 @@
-/* Quiet tinted canvas shared with navigation and assistant surfaces. */
+/* One solid canvas shared with navigation and assistant surfaces. */
 :root {
-  --serenite-bg: #f5f3fc;
+  --serenite-bg: hsl(var(--background));
   --serenite-ink: #2a2640;
   --serenite-mute: #6e688c;
   --serenite-line: rgba(70, 55, 130, .11);
-  --serenite-glass: rgba(253, 252, 255, .94);
-  --serenite-solid: #fdfcff;
-  --serenite-sheet: rgba(250, 248, 255, .94);
-  --serenite-o1: #e4dcff;
-  --serenite-o2: #d3e4ff;
-  --serenite-o3: #fbe3ee;
-  --serenite-o4: #daf1e9;
+  --serenite-glass: hsl(var(--card));
+  --serenite-solid: hsl(var(--background));
+  --serenite-sheet: hsl(var(--background));
   --serenite-g1: #6554bb;
   --serenite-g2: #436caf;
   --serenite-grad: linear-gradient(135deg, var(--serenite-g1), var(--serenite-g2));
@@ -27,29 +23,14 @@
   --dash-tabbar-active-bg: var(--serenite-grad);
 }
 .dark {
-  --serenite-bg: #14121f;
+  --serenite-bg: hsl(var(--background));
   --serenite-ink: #ece9fa;
   --serenite-mute: #b0a9ca;
   --serenite-line: rgba(200, 190, 255, .14);
   --serenite-glass: rgba(36, 32, 58, .94);
   --serenite-solid: #201d33;
   --serenite-sheet: rgba(30, 27, 48, .94);
-  --serenite-o1: #2a2150;
-  --serenite-o2: #18284d;
-  --serenite-o3: #3a1f3a;
-  --serenite-o4: #1d3839;
 }
-/* One gradient layer; transform animation avoids repainting blurred DOM blobs. */
-.halo {
-  position: fixed; inset: -15%; pointer-events: none; overflow: hidden; z-index: 0;
-  background:
-    radial-gradient(ellipse 48% 42% at 20% 15%, var(--serenite-o1), transparent 75%),
-    radial-gradient(ellipse 45% 40% at 85% 30%, var(--serenite-o2), transparent 75%),
-    radial-gradient(ellipse 45% 38% at 65% 90%, var(--serenite-o3), transparent 75%),
-    radial-gradient(ellipse 36% 32% at 10% 75%, var(--serenite-o4), transparent 75%);
-  animation: serenite-drift 30s ease-in-out infinite alternate;
-}
-@keyframes serenite-drift { to { transform: translate3d(-3%, 2%, 0) scale(1.04); } }
 [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
   --pixel-spring: var(--serenite-ease);
   --pixel-golden: var(--serenite-ease);
@@ -95,7 +76,6 @@
 }
 [dir='rtl'] .dashboard-day-group__title > span[aria-hidden='true'] { margin-inline-start: .2em; }
 @media (prefers-reduced-motion: reduce) {
-  .halo { animation: none; }
   .dashboard-header-plus-btn { transition: none; }
   .dashboard-header-plus-btn:is(:hover, :active) { transform: none; }
 }

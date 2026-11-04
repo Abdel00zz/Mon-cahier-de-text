@@ -112,8 +112,8 @@ test('CreateClassModal renders neutral uncolored branch choice cards without ton
 test('sidebar background harmonizes with canvas background in index.css and icon size is balanced', () => {
   const indexCss = readIndexCss();
   assert.doesNotMatch(indexCss, /\[data-app-sidebar\]\s*\{[^}]*backdrop-filter:/s, 'scrolling sidebar uses an opaque surface');
-  assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
-  assert.match(indexCss, /\.dark \[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
+  assert.match(indexCss, /\[data-app-sidebar\]\s*\{[^}]*background: var\(--serenite-sheet\)/s);
+  assert.doesNotMatch(indexCss, /\[data-app-sidebar\]\s*\{[^}]*linear-gradient/s);
 
   const tabBar = readFileSync('src/components/navigation/NavigationButton.tsx', 'utf8');
   assert.ok(tabBar.includes('size-[22px]'), 'sidebar icons are rebalanced to 20.5px');
