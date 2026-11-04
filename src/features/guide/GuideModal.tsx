@@ -1,174 +1,125 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
-import { Input } from '@/components/ui/input';
-import { Modal } from '@/components/ui/modal';
-import { Search, X, ChevronRight, ChevronLeft, Menu } from '@/components/ui/icons';
-import { useLocale } from '@/i18n/LocaleProvider';
-import { GuideFigure } from './GuideFigure';
-import { GuideText } from './GuideText';
-import { APP_VERSION } from '@/platform/appVersion';
 import type { GuideReference } from '@/constants/guide/model';
-import { resolveGuideReference } from '@/constants/guide/navigation';
+import { Modal } from '@/components/ui/modal';
+import { Search, X } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { GuideText } from './GuideText';
 import './guide.css';
 
-interface GuideModalProps { isOpen: boolean; onClose: () => void; initialReference?: GuideReference }
+interface GuideModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  focusRequest?: GuideReference | null;
+  initialReference?: GuideReference | null;
+  variant?: 'modal' | 'page';
+}
 
-export const GuideModal = ({ isOpen, onClose, initialReference }: GuideModalProps) => {
+export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRequest = null, initialReference = null, variant = 'modal' }) => {
   const { locale } = useLocale();
-  const lang = locale === 'ar' ? 'ar' : 'fr';
-  const [query, setQuery] = useState('');
-  const [chapterId, setChapterId] = useState(initialReference?.chapterId ?? 'start');
-  const [isSidebarOpen, setSidebarOpen] = useState(!initialReference);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const sectionRef = useRef<HTMLHeadingElement>(null);
-  const isAr = lang === 'ar';
+  const reduced = useReducedMotion();
+  const isAr = locale === 'ar';
   const entries = isAr ? GUIDE_AR : GUIDE_FR;
+  const reference = focusRequest ?? initialReference;
+  const [query, setQuery] = useState('');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [target, setTarget] = useState<GuideReference | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const results = useMemo(() => searchGuide(entries, query), [entries, query]);
-  const active = results.find(entry => entry.id === chapterId) ?? results[0];
-  const activeIndex = active ? entries.indexOf(active) : -1;
 
   useEffect(() => {
-    if (!isOpen) return;
     setQuery('');
-    setChapterId(resolveGuideReference(entries, initialReference ?? { chapterId: 'start' }).chapter?.id ?? 'start');
-    setSidebarOpen(!initialReference);
-  }, [isOpen, locale, initialReference?.chapterId, initialReference?.sectionId]);
+    setOpenId(isOpen && reference && entries.some(entry => entry.id === reference.chapterId) ? reference.chapterId : null);
+    setTarget(isOpen ? reference : null);
+  }, [isOpen, reference, entries]);
 
   useEffect(() => {
-    if (!isOpen) return;
-    const section = sectionRef.current;
-    const reader = scrollRef.current;
-    if (reader) reader.scrollTo({ top: section
-      ? section.getBoundingClientRect().top - reader.getBoundingClientRect().top + reader.scrollTop - 16 : 0 });
-    (section ?? headingRef.current)?.focus({ preventScroll: true });
-  }, [active?.id, lang, isOpen, initialReference?.sectionId]);
+    if (!isOpen || !target) return;
+    const frame = window.requestAnimationFrame(() => {
+      const container = contentRef.current;
+      const chapter = container?.querySelector<HTMLElement>(`[data-guide-chapter="${CSS.escape(target.chapterId)}"]`);
+      const section = target.sectionId
+        ? chapter?.querySelector<HTMLElement>(`[data-guide-section="${CSS.escape(target.sectionId)}"]`)
+        : null;
+      const anchor = section ?? chapter?.querySelector<HTMLElement>('summary');
+      anchor?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'instant' : 'smooth' });
+      anchor?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen, openId, target, reduced]);
 
-  const openChapter = (id: string, clearSearch = false) => {
-    if (clearSearch) setQuery('');
-    setChapterId(id);
+  if (!isOpen) return null;
+
+  const openChapter = (chapterId: string) => {
+    setQuery('');
+    setOpenId(chapterId);
+    setTarget({ chapterId });
   };
-  const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="4xl"
-      dir={isAr ? 'rtl' : 'ltr'}
-      elevation="high"
-      className="learning-guide h-[90dvh] sm:rounded-[24px]"
-      headerClassName="learning-guide-header" bodyClassName="learning-guide-body"
-      title={
-        <div className="guide-heading" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
-          <div className="guide-title-wrap">
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(prev => !prev)}
-              className="guide-sidebar-toggle"
-              aria-label={isSidebarOpen ? (isAr ? 'إخفاء الفهرس' : 'Masquer le sommaire') : (isAr ? 'إظهار الفهرس' : 'Afficher le sommaire')}
-              title={isSidebarOpen ? (isAr ? 'إخفاء الفهرس' : 'Masquer le sommaire') : (isAr ? 'إظهار الفهرس' : 'Afficher le sommaire')}
-              aria-expanded={isSidebarOpen}
-              aria-controls="guide-navigation"
-            >
-              <Menu size={16} aria-hidden="true" />
-            </button>
-            <span className="guide-title">{isAr ? 'دليل الاستخدام' : 'Guide d’utilisation'}</span>
-          </div>
-        </div>
-      }>
-      <div
-        className="guide-layout"
-        data-sidebar={isSidebarOpen ? 'open' : 'closed'}
-        dir={isAr ? 'rtl' : 'ltr'}
-        lang={lang}
-      >
-        {isSidebarOpen && (
-          <aside id="guide-navigation" className="guide-navigation" aria-label={toc}>
-            <label className="guide-search">
-              <Search size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-              <Input type="search" value={query} onChange={event => setQuery(event.target.value)}
-                aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
-                placeholder={isAr ? 'بحث في الدليل…' : 'Rechercher…'} />
-              {query.trim() && (
-                <button type="button" onClick={() => setQuery('')} aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'} className="guide-search-clear text-muted-foreground hover:text-foreground cursor-pointer">
-                  <X size={12} aria-hidden="true" />
-                </button>
-              )}
-            </label>
-            {query.trim() && (
-              <p className="guide-result-count" role="status" aria-live="polite">
-                {isAr ? `${results.length} نتائج` : `${results.length} résultat${results.length === 1 ? '' : 's'}`}
-              </p>
-            )}
-            <label className="guide-mobile-toc">
-              <span className="sr-only">{toc}</span>
-              <select value={active?.id ?? ''} disabled={!results.length} onChange={event => openChapter(event.target.value)}>
-                {!results.length && <option value="">{isAr ? 'لا توجد نتائج مطابقة' : 'Aucun résultat'}</option>}
-                {results.map(entry => <option key={entry.id} value={entry.id}>{entry.title}</option>)}
-              </select>
-            </label>
-            <nav className="guide-desktop-toc" aria-label={toc}>
-              <ol>{results.map(entry => (
-                <li key={entry.id}>
-                  <button type="button" aria-current={entry.id === active?.id ? 'page' : undefined}
-                    onClick={() => openChapter(entry.id)}>
-                    <span className="truncate flex-1">{entry.title}</span>
-                  </button>
-                </li>
-              ))}</ol>
-            </nav>
-          </aside>
-        )}
-
-        <div ref={scrollRef} className="guide-reader" tabIndex={0}
-          aria-label={isAr ? 'محتوى الدليل' : 'Contenu du guide'}>
-          {active ? <article className="guide-article" aria-labelledby="guide-chapter-title">
-            <header>
-              <span className="guide-eyebrow">{isAr ? 'دليل الاستخدام' : 'Mode d’emploi'}</span>
-              <h2 id="guide-chapter-title" ref={headingRef} tabIndex={-1}>{active.title}</h2>
-              <p className="guide-summary"><GuideText>{active.summary}</GuideText></p>
-            </header>
-            {active.image && <GuideFigure key={`${active.image.key}-${lang}`} image={active.image} lang={lang} />}
-            {active.sections.map((section, index) => <section key={`${active.id}-${index}`}>
-              <h3 tabIndex={-1} ref={active.id === initialReference?.chapterId && section.id === initialReference.sectionId && section.id ? sectionRef : undefined}>{section.title}</h3>
-              {section.body && <p dir="auto"><GuideText>{section.body}</GuideText></p>}
-              {section.steps && <ol className="guide-steps">{section.steps.map((step, i) =>
-                <li key={i}><span dir="auto"><GuideText>{step}</GuideText></span></li>)}</ol>}
-              {section.items && <dl className="guide-terms">{section.items.map(item => <div key={item.term}>
-                <dt>{item.term}</dt><dd dir="auto"><GuideText>{item.detail}</GuideText></dd>
-              </div>)}</dl>}
-            </section>)}
-            {active.tip && <div className="guide-tip"><strong>{isAr ? 'نصيحة' : 'Conseil'}</strong> — <GuideText>{active.tip}</GuideText></div>}
-            <nav className="guide-related" aria-label={isAr ? 'محاور ومساطر ذات صلة' : 'Pour aller plus loin'}>
-              <h3>{isAr ? 'مواضيع ذات صلة' : 'À lire aussi'}</h3>
-              {active.related.map(id => {
-                const entry = entries.find(item => item.id === id);
-                return entry && (
-                  <button key={id} type="button" onClick={() => openChapter(id, true)}>
-                    <span>{entry.title}</span>
-                    {isAr ? <ChevronLeft size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
-                  </button>
-                );
-              })}
-            </nav>
-            <nav className="guide-pagination" aria-label={isAr ? 'التنقل بين الفصول' : 'Parcourir les chapitres'}>
-              <button type="button" disabled={activeIndex <= 0} onClick={() => openChapter(entries[activeIndex - 1].id, true)}>{isAr ? 'الفصل السابق' : 'Chapitre précédent'}</button>
-              {activeIndex < entries.length - 1
-                ? <button type="button" onClick={() => openChapter(entries[activeIndex + 1].id, true)}>{isAr ? 'الفصل الموالي' : 'Chapitre suivant'}</button>
-                : <button type="button" onClick={onClose}>{isAr ? 'إغلاق والعودة للدفتر' : 'Fermer et revenir au cahier'}</button>}
-            </nav>
-          </article> : <div className="guide-empty">
-            <Search size={24} className="mx-auto text-muted-foreground opacity-60" aria-hidden="true" />
-            <h2>{isAr ? 'لم يُعثر على نتائج مطابقة' : 'Aucun résultat trouvé'}</h2>
-            <p>{isAr ? 'جرّب البحث بكلمات دقيقة من قبيل: فرض، تقويم تشخيصي، استعمال الزمن، تأريخ، طباعة.' : 'Par exemple : devoir, séance, horaire, date ou impression.'}</p>
-            <button type="button" onClick={() => setQuery('')}><X size={14} aria-hidden="true" />{isAr ? 'إلغاء التصفية' : 'Effacer la recherche'}</button>
-          </div>}
-        </div>
+    <Modal
+      isOpen={isOpen} onClose={onClose} dir={isAr ? 'rtl' : 'ltr'}
+      maxWidth="2xl" mobilePresentation={variant === 'page' ? 'dialog' : 'sheet'}
+      mobileMaxHeight={0.94} dragHandle={variant !== 'page'} swipeToDismiss={variant !== 'page'}
+      className="hub-modal learning-guide-modal learning-guide"
+      headerClassName="hub-modal-header learning-guide-modal-header"
+      bodyClassName="hub-modal-body learning-guide-modal-body"
+      title={<span className="guide-heading">
+        <span className="guide-title">{isAr ? 'المساعدة' : 'Aide'}</span>
+        <span className="guide-subtitle">{isAr ? 'أجوبة سريعة لأسئلتك' : 'Réponses rapides à vos questions'}</span>
+      </span>}
+    >
+      <div className="guide-search">
+        <Search size={18} aria-hidden="true" />
+        <input type="search" value={query}
+          onChange={event => { setQuery(event.target.value); setTarget(null); }}
+          placeholder={isAr ? 'ابحث عن سؤال…' : 'Rechercher une question…'}
+          aria-label={isAr ? 'البحث في المساعدة' : 'Rechercher dans l’aide'} />
+        {query && <button type="button" onClick={() => setQuery('')}
+          aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'}><X size={17} aria-hidden="true" /></button>}
       </div>
-      <footer className="guide-credit" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
-        <div className="guide-credit-line">
-          <span>{isAr ? <>الفكرة والتصميم: <bdi>بدوح عبد المالك</bdi></> : <>Idée et conception : <bdi>BOUDOUH ABDELMALEK</bdi></>}</span>
-          <span className="guide-version" aria-label={isAr ? `الإصدار ${APP_VERSION}` : `Version ${APP_VERSION}`}><bdi dir="ltr">v{APP_VERSION}</bdi></span>
-        </div>
-      </footer>
+      <div ref={contentRef} className="guide-main">
+        {results.length === 0 ? <div className="guide-empty" role="status">
+          <Search size={28} aria-hidden="true" />
+          <p>{isAr ? 'لا توجد نتائج مطابقة لبحثك.' : 'Aucune réponse pour cette recherche.'}</p>
+          <button type="button" onClick={() => setQuery('')}>{isAr ? 'عرض جميع الأسئلة' : 'Voir toutes les questions'}</button>
+        </div> : <div className="guide-questions">
+          {results.map(entry => <details key={entry.id} open={openId === entry.id} data-guide-chapter={entry.id}>
+            <summary onClick={event => {
+              event.preventDefault();
+              setTarget(null);
+              setOpenId(current => current === entry.id ? null : entry.id);
+            }}>
+              <span>{entry.title}</span><span className="guide-plus" aria-hidden="true">+</span>
+            </summary>
+            {openId === entry.id && <div className="guide-answer">
+              <p className="guide-summary"><GuideText>{entry.summary}</GuideText></p>
+              {entry.sections.map(section => <section key={section.id ?? section.title}
+                data-guide-section={section.id} tabIndex={-1}
+                className={target?.sectionId === section.id && target?.chapterId === entry.id ? 'is-focused' : undefined}>
+                <h3>{section.title}</h3>
+                {section.body && <p><GuideText>{section.body}</GuideText></p>}
+                {section.steps && <ol>{section.steps.map((step, index) => <li key={index}><GuideText>{step}</GuideText></li>)}</ol>}
+                {section.items && <dl>{section.items.map(item => <div key={item.term}>
+                  <dt><GuideText>{item.term}</GuideText></dt><dd><GuideText>{item.detail}</GuideText></dd>
+                </div>)}</dl>}
+              </section>)}
+              {entry.tip && <p className="guide-tip"><GuideText>{entry.tip}</GuideText></p>}
+              {entry.related.length > 0 && <div className="guide-related">
+                <span>{isAr ? 'مواضيع ذات صلة' : 'Voir aussi'}</span>
+                {entry.related.map(id => {
+                  const related = entries.find(item => item.id === id);
+                  return related && <button key={id} type="button" onClick={() => openChapter(id)}>{related.title}</button>;
+                })}
+              </div>}
+            </div>}
+          </details>)}
+        </div>}
+        <p className="guide-credit" aria-label={isAr ? 'إعداد وتصميم التطبيق' : 'Conception et réalisation'}>
+          <span dir="ltr">BOUDOUH ABDELMALEK</span><span aria-hidden="true"> · </span><span dir="rtl" lang="ar">بدوح عبد المالك</span>
+        </p>
+      </div>
     </Modal>
   );
 };

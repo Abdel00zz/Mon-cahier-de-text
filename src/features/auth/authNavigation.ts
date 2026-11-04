@@ -1,5 +1,5 @@
 export type AuthMode = "login" | "register";
-export type AuthView = "landing" | "onboarding" | "auth";
+export type AuthView = "onboarding" | "auth";
 export interface AuthRoute {
   view: AuthView;
   mode: AuthMode;
@@ -9,20 +9,17 @@ export interface AuthRoute {
 export function resolveAuthRoute(
   hash: string,
   hasPreparation: boolean,
-  returning = false,
 ): AuthRoute {
   if (hash === "#login") return { view: "auth", mode: "login" };
   if (hash === "#register")
     return { view: hasPreparation ? "auth" : "onboarding", mode: "register" };
   if (hash === "#start" || hash === "#onboarding" || hash === "#preview")
     return { view: "onboarding", mode: "register" };
-  if (hash === "#landing") return { view: "landing", mode: "login" };
-  return { view: returning ? "auth" : "landing", mode: "login" };
+  // The first screen and legacy landing links always open the login form.
+  return { view: "auth", mode: "login" };
 }
 export function authRouteHash(view: AuthView, mode: AuthMode) {
-  return view === "landing"
-    ? "#landing"
-    : view === "onboarding"
+  return view === "onboarding"
       ? "#start"
       : `#${mode}`;
 }

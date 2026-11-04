@@ -98,7 +98,8 @@ const App: React.FC = () => {
     markCurrentSessionHandled(session.scope, session.key);
   }, []);
   const { view, activeClass, backgroundRoute, initialView, handleSelectClass, handleBackToDashboard,
-    handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor);
+    handleOpenSettings, handleBackFromSettings, handleOpenHelp, handleBackFromHelp, resetNavigation } = useAppNavigation(updateClass, markSessionHandledFor,
+      !AUTH_REQUIRED || authStatus === 'authenticated' || (authStatus === 'offline' && Boolean(authUser)));
   useEffect(() => {
     setAssistantSettingsSection(undefined);
   }, [authOwner]);
@@ -216,29 +217,6 @@ const App: React.FC = () => {
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
-    if (view === 'settings') {
-      return (
-        <SettingsPage
-          asPage
-          initialSection={assistantSettingsSection?.section}
-          scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
-          onBack={handleBackFromSettings}
-          onOpenGuide={handleOpenHelp}
-          config={config}
-          onConfigChange={updateConfig}
-          classes={classes}
-          addClass={addClass}
-        />
-      );
-    }
-    if (view === 'help') {
-      return (
-        <GuidePage
-          onBack={handleBackFromHelp}
-          onClose={handleBackFromHelp}
-        />
-      );
-    }
     if (backgroundView === 'editor' && backgroundClass) {
       // Le Web propose un retour visible ; Android utilise son bouton système.
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} onBack={handleBackToDashboard} />;
@@ -250,57 +228,61 @@ const App: React.FC = () => {
         onSelectClass={handleSelectClass}
         onEvaluationVisibilityChange={setClassActivitiesOpen}
         activeSessionClassIds={currentSession.classIds}
-          accountTeacherName={teacherName}
+        accountTeacherName={teacherName}
         onOnboardingVisibilityChange={setOnboardingVisible}
       />
     );
   };
 
-  const routeKey = view === 'editor' && activeClass
-    ? `editor-${activeClass.id}`
-    : view;
+  const routeKey = backgroundView === 'editor' && backgroundClass
+    ? `editor-${backgroundClass.id}`
+    : 'dashboard';
   const routeFallback = <PageTransitionLoader />;
 
   const activeTab: TabType = view === 'settings' ? 'settings' : view === 'help' ? 'help' : 'dashboard';
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (tab === 'dashboard') {
-      if (view !== 'dashboard') {
+      if (view === 'settings') {
+        handleBackFromSettings();
+      } else if (view === 'help') {
+        handleBackFromHelp();
+      } else if (view !== 'dashboard') {
         handleBackToDashboard();
       }
-
     } else if (tab === 'settings') {
       handleOpenSettings();
     } else if (tab === 'help') {
       handleOpenHelp();
     }
-  }, [view, handleBackToDashboard, handleOpenSettings, handleOpenHelp]);
+  }, [view, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp, handleOpenSettings, handleOpenHelp]);
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
 
   // Une classe ajoutée pendant la préparation ne termine pas le parcours.
   const shouldBootOnboarding =
-    view === 'dashboard' &&
+    backgroundView === 'dashboard' &&
     !hasCompletedOnboarding(config, authUser);
   const isCurrentlyOnboarding =
     isOnboardingVisible || shouldBootOnboarding;
 
-  const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
+  const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
+  const isOverlayOpen = !isAuthView && !isBooting && (view === 'settings' || view === 'help');
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const dynamicCanvasStyle = useMemo(() => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
   }, [classes, currentSession.classIds]);
 
-  const mandatoryAdminMessage = adminMessages.find(message => !message.replyTo || view !== 'dashboard');
+  const mandatoryAdminMessage = adminMessages.find(message => !message.replyTo || backgroundView !== 'dashboard');
 
   const appSurface = (
     <div
       className="workspace-shell relative min-h-dvh overflow-x-clip text-foreground bg-background"
       data-phone-navigation={isPhone ? 'true' : 'false'}
-      style={view === 'dashboard' ? dynamicCanvasStyle : undefined}
+      style={backgroundView === 'dashboard' ? dynamicCanvasStyle : undefined}
       /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
-      data-dashboard-surface={view === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
+      data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
     >
       {showNavigation && (
         <TabBar
@@ -318,7 +300,7 @@ const App: React.FC = () => {
         />
       )}
       <div
-        data-settings-sheet-open="false"
+        data-settings-sheet-open={isOverlayOpen ? 'true' : 'false'}
         data-workspace-navigation={showNavigation ? 'true' : 'false'}
         data-sidebar-expanded={isSidebarExpanded ? 'true' : 'false'}
         dir={isRtl ? 'rtl' : 'ltr'}
@@ -329,6 +311,29 @@ const App: React.FC = () => {
             {renderContent()}
           </Suspense>
         </div>
+        {!isBooting && !isAuthView && view === 'settings' && (
+          <Suspense fallback={null}>
+            <SettingsPage
+              asPage={false}
+              initialSection={assistantSettingsSection?.section}
+              scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
+              onBack={handleBackFromSettings}
+              onOpenGuide={handleOpenHelp}
+              config={config}
+              onConfigChange={updateConfig}
+              classes={classes}
+              addClass={addClass}
+            />
+          </Suspense>
+        )}
+        {!isBooting && !isAuthView && view === 'help' && (
+          <Suspense fallback={null}>
+            <GuidePage
+              onBack={handleBackFromHelp}
+              onClose={handleBackFromHelp}
+            />
+          </Suspense>
+        )}
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
       </div>

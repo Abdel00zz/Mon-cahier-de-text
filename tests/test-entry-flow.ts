@@ -125,9 +125,9 @@ test("retour au tableau de bord : bouton de l'éditeur câblé et séance marqu�
   );
 });
 
-test("nouveau visiteur : entrée principale et inscription après préparation", () => {
+test("nouveau visiteur : connexion immédiate et inscription après préparation", () => {
   assert.deepEqual(resolveAuthRoute("", false), {
-    view: "landing",
+    view: "auth",
     mode: "login",
   });
   assert.equal(resolveAuthRoute("#register", false).view, "onboarding");
@@ -136,7 +136,7 @@ test("nouveau visiteur : entrée principale et inscription après préparation",
   assert.equal(authRouteHash("onboarding", "register"), "#start");
 });
 test("connexion directe conservée ; ancien lien preview encore reconnu", () => {
-  assert.deepEqual(resolveAuthRoute("", false, true), {
+  assert.deepEqual(resolveAuthRoute("", false), {
     view: "auth",
     mode: "login",
   });
@@ -146,7 +146,18 @@ test("connexion directe conservée ; ancien lien preview encore reconnu", () => 
   });
   assert.equal(resolveAuthRoute("#preview", false).view, "onboarding");
   assert.equal(resolveAuthRoute("#onboarding", false).view, "onboarding");
-  assert.equal(resolveAuthRoute("#landing", false, true).view, "landing");
+  assert.equal(resolveAuthRoute("#landing", false).view, "auth");
+});
+test("routes d’entrée : liens anciens, routes inconnues et retour canonique", () => {
+  for (const hash of ["", "#landing", "#unknown", "#classes", "#login"]) {
+    assert.deepEqual(resolveAuthRoute(hash, false), { view: "auth", mode: "login" });
+  }
+  for (const prepared of [false, true]) {
+    for (const hash of ["#start", "#onboarding", "#preview", "#register", "#login", "#landing"]) {
+      const route = resolveAuthRoute(hash, prepared);
+      assert.deepEqual(resolveAuthRoute(authRouteHash(route.view, route.mode), prepared), route);
+    }
+  }
 });
 const point = {
   pointerId: 1,

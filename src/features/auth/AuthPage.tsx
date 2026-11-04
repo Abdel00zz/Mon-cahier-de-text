@@ -5,26 +5,18 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   CircleCheck,
   Eye,
   EyeOff,
   Loader2,
   TriangleAlert,
-  LockKeyhole,
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
   ShieldCheck,
 } from "@/components/ui/icons";
 import type { AppLocale } from "@/types";
-import { AuthShowcase } from "./AuthShowcase";
-import { LandingPage } from "./LandingPage";
 import { RegistrationOnboarding } from "./RegistrationOnboarding";
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { prepareGoogleAuth } from '@/platform/googleAuth';
@@ -38,7 +30,6 @@ import {
   passwordScore,
 } from "./authForm";
 import {
-  readWorkspaceScope,
   WorkspaceSwitchError,
 } from "@/infrastructure/storage/accountWorkspace";
 import type { RegistrationSetup, RegistrationDraft } from "./registrationSetup";
@@ -53,10 +44,8 @@ type AuthLocale = Extract<AppLocale, "ar" | "fr">;
 const AUTH_COPY = {
   fr: {
     brand: "Mon cahier de textes",
-    teacherAccess: "Espace enseignant",
-    backToHome: "Retour à l’accueil",
+    backToHome: "Retour à la connexion",
     returnToPreparation: "Modifier ma classe",
-    savePreparation: "Conservez votre premier cahier.",
     savePreparationDetail:
       "Dernière étape : créez votre compte pour conserver votre classe et ouvrir votre cahier.",
     existingAccountHint:
@@ -65,11 +54,9 @@ const AUTH_COPY = {
       "Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.",
     accountBlocked:
       "Votre accès a été suspendu par votre établissement. Contactez la direction pour le rétablir.",
-    welcomeTitle: "Heureux de vous retrouver.",
     welcomeDetail: "Connectez-vous pour retrouver vos classes et vos séances.",
     login: "Se connecter",
     createAccount: "Créer un compte",
-    modeLabel: "Accès au compte",
     name: "Nom",
     firstName: "Prénom",
     phone: "Numéro de téléphone",
@@ -97,7 +84,6 @@ const AUTH_COPY = {
     samePassword: "Mots de passe identiques",
     wait: "Traitement en cours…",
     createMyAccount: "Créer mon compte",
-    secure: "Vos identifiants restent personnels.",
     languageLabel: "Choisir la langue",
     nameRequired: "Renseignez votre nom et votre prénom.",
     passwordRequired: "Le mot de passe doit contenir au moins 8 caractères.",
@@ -106,26 +92,11 @@ const AUTH_COPY = {
       "Connexion impossible. Vérifiez vos identifiants et votre connexion Internet.",
     strengthLabel: "Robustesse indicative",
     strength: ["Faible", "Moyenne", "Bonne", "Forte"],
-    portalLabel: "Choisir votre espace",
-    portalTeacher: "Session Enseignant",
-    portalAdmin: "Tableau de bord Admin",
-    adminPortalBadge: "Direction de l’établissement",
-    adminPortalTitle: "Tableau de bord d’administration",
-    adminPortalDetail: "Espace réservé à la direction pour la supervision des cahiers de textes, l’emploi du temps officiel, les arrêtés et la gestion des comptes enseignants.",
-    adminPortalCodeLabel: "Code d’accès confidentiel",
-    adminPortalCodePlaceholder: "Code secret d’administration",
-    adminPortalSubmit: "Accéder au tableau de bord",
-    adminPortalDirectLink: "Ouvrir directement la console d’administration (/admin.html)",
-    adminSwitchPrompt: "Vous faites partie de la direction ou de l’administration ?",
-    adminSwitchAction: "Accéder au tableau de bord administrateur",
-    teacherSwitchAction: "Revenir à la session enseignant (Mon cahier de textes)",
   },
   ar: {
     brand: "دفتر نصوصي",
-    teacherAccess: "فضاء الأستاذ",
-    backToHome: "العودة إلى الرئيسية",
+    backToHome: "العودة إلى تسجيل الدخول",
     returnToPreparation: "تعديل قسمي",
-    savePreparation: "احفظ دفترك الأول.",
     savePreparationDetail:
       "الخطوة الأخيرة: أنشئ حسابك لحفظ قسمك وفتح دفتر نصوصك.",
     existingAccountHint:
@@ -134,11 +105,9 @@ const AUTH_COPY = {
       "أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.",
     accountBlocked:
       "تم إيقاف ولوجك من طرف إدارتك. تواصل مع الإدارة لاستعادة الدخول.",
-    welcomeTitle: "سعداء بعودتك.",
     welcomeDetail: "سجّل دخولك للعودة إلى أقسامك وحصصك.",
     login: "تسجيل الدخول",
     createAccount: "إنشاء حساب جديد",
-    modeLabel: "الولوج إلى الحساب",
     name: "الاسم العائلي",
     firstName: "الاسم الشخصي",
     phone: "رقم الهاتف",
@@ -166,7 +135,6 @@ const AUTH_COPY = {
     samePassword: "كلمتا المرور متطابقتان",
     wait: "جارٍ المعالجة…",
     createMyAccount: "إنشاء حسابي",
-    secure: "بيانات الدخول خاصة بك، لا تشاركها.",
     languageLabel: "اختيار اللغة",
     nameRequired: "أدخل الاسم الشخصي والعائلي.",
     passwordRequired: "يجب أن تتضمن كلمة المرور 8 أحرف على الأقل.",
@@ -174,19 +142,6 @@ const AUTH_COPY = {
     unknownError: "تعذّر الاتصال. تحقق من بيانات الدخول ومن اتصالك بالإنترنت.",
     strengthLabel: "مؤشر قوة كلمة المرور",
     strength: ["ضعيفة", "متوسطة", "جيدة", "قوية"],
-    portalLabel: "اختيار الفضاء",
-    portalTeacher: "فضاء الأستاذ (المستخدم)",
-    portalAdmin: "لوحة قيادة الإدارة",
-    adminPortalBadge: "إدارة المؤسسة التربوية",
-    adminPortalTitle: "لوحة قيادة الإدارة",
-    adminPortalDetail: "فضاء مخصص لإدارة المؤسسة لمراقبة وتتبع دفاتر النصوص، استعمال الزمن، المذكرات الرسمية، وتدبير أساتذة المؤسسة.",
-    adminPortalCodeLabel: "رمز الدخول السري للإدارة",
-    adminPortalCodePlaceholder: "الرمز السري المخصص لإدارة المؤسسة",
-    adminPortalSubmit: "الدخول إلى لوحة القيادة الإدارية",
-    adminPortalDirectLink: "فتح لوحة الإدارة مباشرة (/admin.html)",
-    adminSwitchPrompt: "هل أنت من إدارة المؤسسة أو الإشراف الإداري؟",
-    adminSwitchAction: "الولوج إلى لوحة قيادة الإدارة",
-    teacherSwitchAction: "العودة إلى فضاء الأستاذ (دفتر نصوصي)",
   },
 } as const;
 const FIELD_CLASS =
@@ -274,19 +229,7 @@ export const AuthPage: React.FC<{
   const { login, register, loginGoogle } = useAuth();
   const displayLocale: AuthLocale = locale === "ar" ? "ar" : "fr";
   const copy = AUTH_COPY[displayLocale];
-  const reducedMotion = useReducedMotion();
-
-  const getInitialState = () => {
-    let returning = false;
-    try {
-      returning =
-        Boolean(readWorkspaceScope()?.owner) ||
-        localStorage.getItem("authSignedOut_v1") === "true";
-    } catch {
-      /* storage unavailable */
-    }
-    return resolveAuthRoute(window.location.hash, false, returning);
-  };
+  const getInitialState = () => resolveAuthRoute(window.location.hash, false);
 
   const [initial] = useState(getInitialState);
   const [mode, setMode] = useState<Mode>(initial.mode);
@@ -324,34 +267,6 @@ export const AuthPage: React.FC<{
   const passwordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
 
-  const [portal, setPortal] = useState<'teacher' | 'admin'>('teacher');
-  const [adminCode, setAdminCode] = useState('');
-  const [adminError, setAdminError] = useState<string | null>(null);
-  const [isAdminSubmitting, setIsAdminSubmitting] = useState(false);
-
-  const handleAdminLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adminCode.trim() || isAdminSubmitting) return;
-    setIsAdminSubmitting(true);
-    setAdminError(null);
-    try {
-      const res = await apiFetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', code: adminCode.trim() }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { message?: string };
-        throw new Error(data?.message || (displayLocale === 'ar' ? 'رمز الدخول غير صحيح.' : 'Code d’accès invalide.'));
-      }
-      window.location.href = '/admin.html';
-    } catch (err: unknown) {
-      setAdminError(err instanceof Error ? err.message : (displayLocale === 'ar' ? 'تعذر الاتصال بالإدارة.' : 'Connexion impossible.'));
-    } finally {
-      setIsAdminSubmitting(false);
-    }
-  };
-
   const navigateTo = useCallback(
     (nextView: AuthView, nextMode: Mode = "login") => {
       if (submittingRef.current) return;
@@ -361,6 +276,7 @@ export const AuthPage: React.FC<{
       );
       setError(null);
       setResetMode(false); setResetSent(false);
+      setPassword(""); setConfirmPassword("");
       setMode(route.mode);
       setView(route.view);
       const hash = authRouteHash(route.view, route.mode);
@@ -391,6 +307,8 @@ export const AuthPage: React.FC<{
       setView(route.view);
       setMode(route.mode);
       setError(null);
+      setResetMode(false); setResetSent(false);
+      setPassword(""); setConfirmPassword("");
       const hash = authRouteHash(route.view, route.mode);
       if (window.location.hash !== hash)
         window.history.replaceState(null, "", hash);
@@ -500,8 +418,8 @@ export const AuthPage: React.FC<{
           <button
             type="button"
             onClick={() => {
-              if (view !== "landing") {
-                navigateTo("landing");
+              if (view !== "auth" || mode !== "login") {
+                navigateTo("auth", "login");
               }
             }}
             disabled={isSubmitting}
@@ -520,9 +438,7 @@ export const AuthPage: React.FC<{
               <p className="auth-brand__name">
                 {copy.brand}
               </p>
-              <p className="auth-brand__detail">
-                {copy.teacherAccess}
-              </p>
+
             </div>
           </button>
         </div>
@@ -550,19 +466,6 @@ export const AuthPage: React.FC<{
           ))}
         </div>
       </header>
-      {view === "landing" && (
-        <LandingPage
-          locale={displayLocale}
-          onLogin={() => navigateTo("auth", "login")}
-          onRegister={completePreparation}
-          draft={draft}
-          onDraftChange={(next) => {
-            setDraft(next);
-            setSetup(null);
-            setupRef.current = null;
-          }}
-        />
-      )}
       {view === "onboarding" && (
         <RegistrationOnboarding
           locale={displayLocale}
@@ -578,125 +481,13 @@ export const AuthPage: React.FC<{
       )}
       {view === "auth" && (
         <div className="auth-view-enter auth-access-layout">
-          <AuthShowcase locale={displayLocale} />
           <main dir={displayLocale === 'ar' ? 'rtl' : 'ltr'} className="auth-form-main">
             <div className="auth-form-content">
-              <button type="button" disabled={isSubmitting} onClick={() => navigateTo('landing')} className="auth-back auth-action focus-visible:outline-2 focus-visible:outline-offset-2">
-                {displayLocale === 'ar' ? <ArrowRight aria-hidden="true" /> : <ArrowLeft aria-hidden="true" />}{copy.backToHome}
-              </button>
-
-              <div role="tablist" aria-label={copy.portalLabel} className="auth-portal-selector mb-6 grid grid-cols-2 gap-1 rounded-xl border border-border/80 bg-muted/60 p-1">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={portal === 'teacher'}
-                  onClick={() => { setPortal('teacher'); setError(null); }}
-                  className={cn(
-                    "flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all",
-                    portal === 'teacher'
-                      ? "bg-card text-foreground shadow-sm border border-border/50"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <span>{copy.portalTeacher}</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={portal === 'admin'}
-                  onClick={() => { setPortal('admin'); setError(null); }}
-                  className={cn(
-                    "flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all",
-                    portal === 'admin'
-                      ? "bg-card text-foreground shadow-sm border border-border/50"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <span>{copy.portalAdmin}</span>
-                </button>
-              </div>
-
-              {portal === 'admin' ? (
-                <div className="auth-admin-box space-y-5">
-                  <div className="rounded-2xl border-2 border-primary/25 bg-primary/[0.04] p-5">
-                    <div className="flex items-center gap-2 text-primary">
-                      <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
-                      <span className="text-[11px] font-bold uppercase tracking-wider">{copy.adminPortalBadge}</span>
-                    </div>
-                    <h1 className="mt-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                      {copy.adminPortalTitle}
-                    </h1>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {copy.adminPortalDetail}
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
-                    <div>
-                      <label htmlFor={id + '-admin-code'} className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        {copy.adminPortalCodeLabel}
-                      </label>
-                      <Input
-                        id={id + '-admin-code'}
-                        type="password"
-                        value={adminCode}
-                        onChange={e => setAdminCode(e.target.value)}
-                        autoComplete="current-password"
-                        placeholder={copy.adminPortalCodePlaceholder}
-                        className={FIELD_CLASS}
-                        required
-                        autoFocus
-                      />
-                    </div>
-
-                    {adminError && (
-                      <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs font-medium text-destructive">
-                        {adminError}
-                      </p>
-                    )}
-
-                    <Button
-                      type="submit"
-                      disabled={isAdminSubmitting || !adminCode.trim()}
-                      className="auth-submit auth-action min-h-12 w-full"
-                    >
-                      {isAdminSubmitting && (
-                        <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                      )}
-                      {isAdminSubmitting ? copy.wait : copy.adminPortalSubmit}
-                    </Button>
-
-                    <div className="pt-2 text-center">
-                      <a
-                        href="/admin.html"
-                        className="auth-link text-xs"
-                        title={copy.adminPortalDirectLink}
-                      >
-                        {copy.adminPortalDirectLink} →
-                      </a>
-                    </div>
-                  </form>
-
-                  <div className="border-t border-border/80 pt-4 text-center">
-                    <button
-                      type="button"
-                      onClick={() => { setPortal('teacher'); setAdminError(null); }}
-                      className="inline-flex min-h-11 items-center justify-center gap-1.5 text-xs font-bold text-primary hover:underline"
-                    >
-                      <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
-                      <span>{copy.teacherSwitchAction}</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
                   <h1
                     tabIndex={-1}
                     id={id + "-title"}
                   >
-                {resetMode ? copy.resetTitle : isRegister ? copy.savePreparation : copy.welcomeTitle}
+                {resetMode ? copy.resetTitle : isRegister ? copy.createAccount : copy.login}
               </h1>
               <p className="auth-form-detail">
                 {resetMode ? copy.resetDetail : isRegister
@@ -705,7 +496,7 @@ export const AuthPage: React.FC<{
                     ? copy.existingAccountHint
                     : copy.welcomeDetail}
               </p>
-              {setup && (
+              {isRegister && setup && (
                 <button
                   type="button"
                   disabled={isSubmitting}
@@ -715,39 +506,6 @@ export const AuthPage: React.FC<{
                   {copy.returnToPreparation}
                 </button>
               )}
-              {!resetMode && <div
-                role="group"
-                aria-label={copy.modeLabel}
-                className="auth-modes"
-              >
-                {(["login", "register"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    disabled={isSubmitting}
-                    aria-pressed={mode === value}
-                    aria-controls={id + "-form"}
-                    onClick={() => switchMode(value)}
-                    className="auth-choice focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    {mode === value && (
-                      <motion.span
-                        layoutId={id + "-active-mode"}
-                        aria-hidden="true"
-                        className="auth-mode-active"
-                        transition={
-                          reducedMotion
-                            ? { duration: 0 }
-                            : { type: "spring", stiffness: 450, damping: 36 }
-                        }
-                      />
-                    )}
-                    <span className="relative">
-                      {value === "login" ? copy.login : copy.createAccount}
-                    </span>
-                  </button>
-                ))}
-              </div>}
               {!resetMode && <>
                 <GoogleSignInButton label={copy.google} busy={googleBusy} disabled={isSubmitting} onClick={() => void handleGoogle()} />
                 <div className="auth-divider"><span>{loginMethod === 'phone' && !isRegister ? copy.phone : copy.emailDivider}</span></div>
@@ -976,35 +734,15 @@ export const AuthPage: React.FC<{
                 {loginMethod === 'email' ? copy.legacyPhone : copy.useEmail}
               </button>}
               </>}
-              <p className="auth-secure">
-                <LockKeyhole
-                  className="h-3.5 w-3.5 shrink-0"
-                  aria-hidden="true"
-                />
-                {copy.secure}
-              </p>
-
-              <div className="auth-admin-callout mt-8 rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
-                <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <ShieldCheck className="h-4.5 w-4.5" aria-hidden="true" />
-                </div>
-                <p className="text-xs font-bold text-foreground">
-                  {copy.adminSwitchPrompt}
-                </p>
-                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                  {displayLocale === 'ar' ? 'فضاء خاص بإدارة المؤسسة لمراقبة دفاتر النصوص والمذكرات الرسمية.' : 'Espace réservé à la direction pour la supervision des cahiers de textes et le pilotage.'}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { setPortal('admin'); setError(null); }}
-                  className="mt-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/10 focus-visible:outline-2"
-                >
-                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                  <span>{copy.adminSwitchAction} →</span>
+              {!resetMode && <p className="auth-account-switch">
+                <span>{displayLocale === 'ar' ? (isRegister ? 'لديك حساب؟' : 'أول زيارة لك؟') : (isRegister ? 'Déjà un compte ?' : 'Vous débutez ?')}</span>
+                <button type="button" disabled={isSubmitting} className="auth-link" onClick={() => switchMode(isRegister ? 'login' : 'register')}>
+                  {isRegister ? copy.login : copy.createAccount}
                 </button>
-              </div>
-            </>
-          )}
+              </p>}
+              <footer className="auth-footer">
+                <a href="/admin.html" className="auth-link"><ShieldCheck size={15} aria-hidden="true" />{displayLocale === 'ar' ? 'فضاء الإدارة' : 'Espace administration'}</a>
+              </footer>
             </div>
           </main>
         </div>

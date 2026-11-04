@@ -398,7 +398,7 @@ function Preview() {
   );
 
   return <>
-    {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} /></>}
+    {screen === 'guide' && <><button className="m-6 p-3" onClick={() => setOpen(true)}>Ouvrir le guide / فتح الدليل</button><GuideModal isOpen={open} onClose={() => setOpen(false)} initialReference={params.has('chapter') ? { chapterId: params.get('chapter')!, sectionId: params.get('section') ?? undefined } : undefined} /></>}
     {screen === 'loading' && <PageTransitionLoader />}
     {screen === 'landing' && <LandingPage locale={locale} onLogin={() => location.assign(`?screen=auth&lang=${locale}`)} onRegister={() => location.assign(`?screen=auth&lang=${locale}`)} />}
     {screen === 'auth' && <AuthProvider><AuthPage locale={locale} onLocaleChange={lang => location.assign(`?screen=auth&lang=${lang}`)} /></AuthProvider>}
@@ -469,7 +469,7 @@ function Preview() {
         <AuthProvider>
           <div className="pb-24 sm:ps-[84px] max-w-6xl mx-auto">
             <TabBar activeTab="settings" onTabChange={noop} isExpanded={false} onToggleExpanded={noop} />
-            <SettingsPage asPage onBack={noop} onOpenGuide={noop} config={config} onConfigChange={onChange} classes={classes} addClass={() => classes[0]} />
+            <SettingsPage onBack={noop} onOpenGuide={noop} config={config} onConfigChange={onChange} classes={classes} addClass={() => classes[0]} />
           </div>
         </AuthProvider>
       )}

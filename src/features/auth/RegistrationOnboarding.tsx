@@ -1,3 +1,4 @@
+import "./landing.css";
 import { useId, useMemo, type ReactNode } from "react";
 import {
   Select,
@@ -125,12 +126,12 @@ export function RegistrationOnboarding({
         tabIndex={-1}
         className="text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
       >
-        {ar ? "دفتر نصوصك يبدأ هنا" : "Votre cahier prend forme."}
+        {ar ? "لنُعِدّ قسمك الأول" : "Préparons votre première classe."}
       </h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
         {ar
-          ? "قسمك، مادتك، ودفتر جاهز للتخصيص. ستنشئ حسابك في الخطوة التالية."
-          : "Votre classe, votre matière, un cahier prêt à personnaliser. Le compte vient à l’étape suivante."}
+          ? "اختر قسمك ومادتك، ثم أنشئ حسابك."
+          : "Choisissez votre classe et votre matière, puis créez votre compte."}
       </p>
       </div>
       <svg className="registration-notebook" viewBox="0 0 120 130" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
