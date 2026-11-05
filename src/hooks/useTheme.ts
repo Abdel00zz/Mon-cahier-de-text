@@ -11,10 +11,10 @@ import { readThemeBackground } from '@/platform/themeColor';
  * ne casse donc jamais la mise en page ni les zones de 44 px.
  */
 const TEXT_SIZE_SCALE: Record<AppTextSize, number> = {
-  sm: 0.9,
+  sm: 0.94,
   md: 1,
-  lg: 1.12,
-  xl: 1.25,
+  lg: 1.08,
+  xl: 1.16,
 };
 
 /**
