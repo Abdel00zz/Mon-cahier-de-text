@@ -104,6 +104,36 @@
   display: flex; align-items: center;
   margin: .25rem .25rem .55rem !important;
 }
+/* ── Grille des classes ───────────────────────────────────────────────────────
+   Sur téléphone, une carte par ligne : la largeur est rare et le pouce lit
+   verticalement. Le bureau utilise la largeur disponible, selon la disposition
+   retenue (`data-display` : triple, double, single, list). Aucune carte ne perd
+   sa cible tactile : la grille se contente de répartir l'espace. */
+.dashboard-classes-container .dashboard-day-group__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .75rem;
+  align-items: stretch;
+}
+@media (min-width: 768px) {
+  .dashboard-classes-container[data-display='double'] .dashboard-day-group__cards,
+  .dashboard-classes-container[data-display='triple'] .dashboard-day-group__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .dashboard-classes-container[data-display='triple'] .dashboard-day-group__cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+/* Le bureau n'est pas un téléphone agrandi : le titre prend la taille d'une
+   vraie page d'accueil et les groupes respirent davantage. */
+@media (min-width: 1024px) {
+  .dashboard-header-title { font-size: 2.5rem !important; }
+  [dir='rtl'] .dashboard-header-title { font-size: 2rem !important; }
+  .dashboard-day-group__title { font-size: 0.875rem !important; }
+  .dashboard-top-header { padding-block: .25rem .5rem; }
+}
 .dashboard-day-group__header::before,
 .dashboard-day-group__header::after,
 .dashboard-day-group__title::before,

@@ -420,7 +420,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <span className="min-w-0 truncate">{t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)}</span>
         </span>
       ) : <span className="hub-titlebar" data-codex-title>{t('settings.title')}</span>}
-      maxWidth="xs"
+      maxWidth="lg"
       mobilePresentation="dialog"
       className="hub-modal settings-modal-frame settings-modal-sheet liquid-modal overflow-hidden"
       headerClassName="hub-modal-header"
