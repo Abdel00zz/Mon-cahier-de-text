@@ -279,7 +279,7 @@ html[lang="ar"] .keep-class-title {
     /* System UI : papier albâtre chaud (charte §2.1) et une seule surface de
        carte blanche, séparée par un filet d'un pixel — jamais par un
        empilement d'aplats colorés. */
-    --background: 45 30% 95%;      /* #F6F4EE papier albâtre */
+    --background: 45 30% 94%;      /* papier albâtre #F4F2EB, un cran sous la carte */
     --foreground: 25 35.29% 13.33%; /* #2e2016 */
     --card: 0 0% 100%;             /* #FFFFFF : la feuille posée sur le papier */
     --card-foreground: 25 35.29% 13.33%;
@@ -345,19 +345,19 @@ html[lang="ar"] .keep-class-title {
        inversion. Les accents restent légèrement désaturés pour ne pas vibrer. */
     --background: 0 0% 10%;        /* #191919 carbone */
     --foreground: 42 18% 92%;
-    --card: 0 0% 13%;              /* #212121 : surface élevée, plus claire que le fond */
+    --card: 0 0% 15%;              /* #262626 : surface élevée, plus claire que le fond */
     --card-foreground: 42 18% 92%;
-    --popover: 0 0% 15%;           /* #252525 surface surélevée */
+    --popover: 0 0% 17%;           /* surface surélevée */
     --popover-foreground: 42 18% 92%;
     --primary: 15 58% 62%;         /* terre cuite éclaircie, légèrement désaturée */
     --primary-foreground: 30 12% 10%;
-    --secondary: 0 0% 17%;
+    --secondary: 0 0% 19%;
     --secondary-foreground: 42 18% 92%;
-    --muted: 0 0% 16%;
+    --muted: 0 0% 18%;
     --muted-foreground: 42 8% 67%;
     --accent: 18 20% 22%;
     --accent-foreground: 18 58% 84%;
-    --border: 0 0% 16%;
+    --border: 0 0% 18%;            /* ≥ 1,25:1 sur le fond : un filet qui se voit */
     --input: 0 0% 30%;
     --ring: 15 58% 62%;
     --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
