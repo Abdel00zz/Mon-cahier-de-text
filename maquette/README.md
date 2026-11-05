@@ -1,8 +1,8 @@
 # Maquette HTML — Mon cahier de textes
 
-Maquette statique, sans build ni dépendance, qui reprend le langage visuel de
-l’application : tokens de couleur, typographie, cartes, barre d’onglets mobile,
-fenêtres plein écran et feuilles tactiles.
+Maquette statique, sans build ni dépendance, relevée page par page sur
+l’application réelle : tokens de couleur, typographie, cartes de classe teintées,
+barre d’onglets mobile, fenêtres plein écran et dialogue de confirmation.
 
 ## Ouvrir
 
@@ -26,47 +26,62 @@ La police Readex Pro est chargée depuis Google Fonts ; hors ligne, la pile
 
 ## Écrans
 
-- **Classes** : en-tête (identité, année), actions assistant et `+` au-dessus du
-  titre, onglets de vue, groupes `الآن` / `اليوم`, cartes de classe et carte
-  d’ajout. Le libellé du groupe et la pastille « maintenant » suivent l’état de
-  séance.
-- **Cahier** : en-tête de classe, barre d’actions, tableau date / contenu / durée.
-- **Actions de classe** : feuille à trois tuiles (évaluations, modifier, supprimer).
+- **Classes** : barre d’actions (messages avec compteur `42`, bouton `+`) au-dessus
+  du titre « أقسامي الدراسية : », groupes `الآن` / `اليوم`, cartes teintées à la
+  couleur de la classe avec menu `⋮`, carte d’ajout. Le libellé du groupe et la
+  pastille « maintenant » suivent l’état de séance.
+- **Cahier** : titre de classe centré, barre d’icônes (menu, recherche,
+  annuler/rétablir, témoin d’enregistrement), rangée d’actions sur bureau et
+  tableau `التاريخ / المحتوى / ملاحظة` — dates centrées, chapitres et évaluations
+  centrés, sections et items au bord de lecture, puces `Cours 1`.
+- **Édition de classe** : modale plein écran (onglets `المعلومات` / `تلاميذ القسم`,
+  pastilles de couleur, sélecteurs, numéro de groupe, pied `حفظ` + `حذف القسم`).
 - **Paramètres** : grille de sept cartes sur téléphone, rail de navigation sur
   bureau ; panneaux Emploi du temps, Absences, Profil, Apparence, Notifications,
   Compte et données.
 - **Aide** : recherche, accordéons, rubrique « À propos / من نحن », crédit.
-- **Créer une classe** : assistant en trois étapes (niveau, filière, détails),
-  avec groupe, couleur et récapitulatif.
-- **Évaluations** : contexte de classe, groupes accordéon, lignes datées et
-  actions.
+- **Créer une classe** : assistant en trois étapes (niveau, filière, détails).
+- **Évaluations** : contexte de classe, groupes accordéon, lignes datées.
+- **Messages** : boîte de réception, compteur de non-lus, items horodatés.
+- **Aperçu d’impression** : feuille papier, en-tête d’année, tableau daté, actions.
+- **Connexion** : marque, Google, e-mail/mot de passe, mot de passe oublié,
+  création de compte (ouverte depuis Compte → Se déconnecter).
 - **Confirmation destructive** : alerte compacte ancrée en bas sur téléphone.
 
 ## Interactions
 
 - `Échap`, clic sur le voile ou bouton de fermeture ferment la fenêtre active.
 - Thème clair / sombre / système ; langue arabe (RTL) ou française (LTR) ;
-  quatre densités de texte. Ces trois choix sont mémorisés dans `localStorage`.
+  quatre densités de texte, mémorisées dans `localStorage`.
 - Les onglets Paramètres basculent entre la grille et le panneau ; le retour
   revient à la grille sur téléphone/tablette.
+- Les onglets de l’édition de classe affichent la fiche ou la liste d’élèves ;
+  les pastilles de couleur, le compteur de groupe et le bouton d’impression
+  répondent au clic.
 - L’assistant avance et recule, coche les étapes terminées et affiche le
   récapitulatif de la classe.
 
 ## Mesures de référence
 
-Les valeurs viennent des feuilles du dépôt (`src/styles`, `features/**/*.css`) :
+Valeurs relevées dans les feuilles du dépôt (`src/styles`, `features/**/*.css`) :
 
-- cibles tactiles ≥ 44 px, barre mobile de 60 px par item ;
-- cartes de classe de 76,8 px minimum, rayon 22 px ;
-- fenêtres plein écran sous 768 px, dialogues centrés au-delà ;
-- en-tête/pied collants avec verre dépoli sur téléphone ;
-- barre d’onglets mobile : accent `#0071e3`, pastille active `rgba(0,113,227,.08)` ;
+- cibles tactiles 44 px au pointeur fin, **48 px au doigt** (`--touch-min`) ;
+- barre mobile de 60 px par item, libellé 11 px, pastille active ;
+- cartes de classe : `min-height` 76,8 px, rayon 22 px, dégradé 135° entre deux
+  teintes de la palette, filet 1 px ;
+- fenêtres plein écran sous 768 px, dialogues centrés au-delà ; seules les
+  alertes de confirmation gardent un format de dialogue ;
+- en-tête et pied collants en verre dépoli sur téléphone ;
+- accent de navigation `#0a5bbd` (6,2:1 sur `#fafafa`), lavis `rgb(10 91 189 / .08)` ;
 - paramètres : cartes de 136 px minimum, icône 44 px, rayon 16 px ;
-- transitions de 150 à 320 ms, supprimées avec `prefers-reduced-motion`.
+- transitions de 150 à 320 ms, supprimées avec `prefers-reduced-motion` ;
+- cahier sur téléphone : échelle propre (base 12,1 px), écarts d’au moins 0,7 px
+  entre niveaux de lecture.
 
 ## Limites
 
 - Maquette : aucune donnée réelle, aucune synchronisation, aucune impression.
-- Seuls les parcours listés sont représentés ; les autres écrans de
-  l’application ne sont pas dupliqués.
-- Les dimensions sont déclaratives, pas mesurées sur un appareil physique.
+- Les écrans de l’administration (`/admin.html`), la restauration de sauvegarde et
+  l’assistant de première visite ne sont pas dupliqués.
+- Les dimensions sont déclaratives, vérifiées dans le navigateur mais pas sur un
+  appareil physique.

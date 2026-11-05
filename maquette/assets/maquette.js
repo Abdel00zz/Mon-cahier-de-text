@@ -264,11 +264,33 @@
       return;
     }
 
-    const tab = target.closest('.dash-tab');
-    if (tab) {
-      document.querySelectorAll('.dash-tab').forEach(node => node.setAttribute('aria-selected', 'false'));
-      tab.setAttribute('aria-selected', 'true');
-      if (tab.dataset.soon) toast(root.lang === 'ar' ? 'هذا العرض متاح في النسخة الكاملة' : 'Cette vue existe dans l’application complète');
+    const segTab = target.closest('.seg-tab');
+    if (segTab) {
+      const modal = segTab.closest('.modal');
+      modal?.querySelectorAll('.seg-tab').forEach(node => node.setAttribute('aria-selected', String(node === segTab)));
+      modal?.querySelectorAll('[data-class-panel]').forEach(panel => {
+        panel.hidden = panel.dataset.classPanel !== segTab.dataset.tab;
+      });
+      return;
+    }
+
+    const swatch = target.closest('.swatches .swatch');
+    if (swatch) {
+      swatch.closest('.swatches')?.querySelectorAll('.swatch').forEach(node => node.setAttribute('aria-pressed', String(node === swatch)));
+      return;
+    }
+
+    const stepBtn = target.closest('.stepper__btn[data-step]');
+    if (stepBtn) {
+      const output = stepBtn.closest('.stepper')?.querySelector('.stepper__value');
+      if (output) output.textContent = String(Math.min(9, Math.max(0, Number(output.textContent || '0') + Number(stepBtn.dataset.step))));
+      return;
+    }
+
+    const toastButton = target.closest('[data-toast-ar]');
+    if (toastButton) {
+      event.preventDefault();
+      toast(root.lang === 'ar' ? toastButton.dataset.toastAr : (toastButton.dataset.toastFr || toastButton.dataset.toastAr));
       return;
     }
 

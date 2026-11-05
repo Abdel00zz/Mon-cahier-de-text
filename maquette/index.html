@@ -47,6 +47,10 @@
     <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19.5H3L12 4Z"/><path d="M12 10v4M12 17h.01"/></symbol>
     <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5L14 3.5Z"/><path d="M14 3.5v5h5"/></symbol>
     <symbol id="i-hash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 4 7.5 20M16.5 4 15 20M4.5 9h15M4 15h15"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H2.8a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V2.8a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6.5h16M4 12h12M4 17.5h8"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2-2.4 3.7"/><path d="M12 17h.01"/></symbol>
   </defs>
 </svg>
 
@@ -55,29 +59,29 @@
 
   <!-- Rail bureau -->
   <aside class="workspace-sidebar" aria-label="Navigation principale" data-ar-aria="التنقل الرئيسي">
-    <button id="rail-toggle" class="rail-logo" type="button" title="توسيع القائمة" data-title-ar="توسيع القائمة" data-title-fr="Déplier le menu" aria-label="توسيع القائمة" data-label-ar="توسيع القائمة" data-label-fr="Déplier le menu">
-      <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>
-    </button>
+    <div class="rail-head">
+      <button id="rail-toggle" class="rail-logo" type="button" title="توسيع القائمة" data-title-ar="توسيع القائمة" data-title-fr="Déplier le menu" aria-label="توسيع القائمة" data-label-ar="توسيع القائمة" data-label-fr="Déplier le menu">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <div class="rail-identity">
+        <span class="rail-avatar" aria-hidden="true">PD</span>
+        <span class="rail-names">
+          <strong>Prof Dev</strong>
+          <small data-ar="فضاء الأستاذ" data-fr="Espace enseignant">فضاء الأستاذ</small>
+        </span>
+      </div>
+    </div>
     <nav class="rail-nav">
       <button class="rail-btn" type="button" data-screen="dashboard" aria-current="page">
         <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="الأقسام" data-fr="Classes">الأقسام</span>
       </button>
-      <button class="rail-btn" type="button" data-screen="editor">
-        <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg><span data-ar="دفتر النصوص" data-fr="Cahier">دفتر النصوص</span>
-      </button>
       <button class="rail-btn" type="button" data-open="overlay-settings">
-        <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span>
-      </button>
-      <button class="rail-btn" type="button" data-open="overlay-settings">
-        <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg><span data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+        <svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg><span data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
       </button>
     </nav>
     <div class="rail-footer">
       <button class="rail-btn" type="button" data-open="overlay-help">
         <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span data-ar="المساعدة" data-fr="Aide">المساعدة</span>
-      </button>
-      <button class="rail-btn" type="button" data-action="toggle-theme" aria-label="الوضع الليلي">
-        <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span data-ar="المظهر" data-fr="Apparence">المظهر</span>
       </button>
     </div>
   </aside>
@@ -87,44 +91,18 @@
     <!-- ═══════════════ Écran 1 · Classes ═══════════════ -->
     <section class="screen is-active" id="screen-dashboard">
       <div class="dash">
-        <header class="dash-top">
-          <div class="brand">
-            <span class="brand__mark" aria-hidden="true"><svg class="icon"><use href="#i-book"/></svg></span>
-            <span class="brand__copy">
-              <strong class="brand__name" data-ar="دفتر نصوصي" data-fr="Mon cahier de textes">دفتر نصوصي</strong>
-              <span class="brand__hint" data-ar="مساحة واضحة ليوم دراسي منظّم" data-fr="Un espace clair pour une journée organisée">مساحة واضحة ليوم دراسي منظّم</span>
-            </span>
-          </div>
-          <span class="year-pill">2026 - 2027</span>
-        </header>
-
         <div class="dash-head">
           <div class="dash-actions">
-            <button class="icon-btn icon-btn--bot" type="button" data-open="overlay-help" aria-label="المساعد">
-              <svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg>
+            <button class="icon-btn icon-btn--bot" type="button" data-open="overlay-inbox" aria-label="الرسائل" data-label-ar="الرسائل" data-label-fr="Messages">
+              <svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg>
+              <span class="icon-btn__badge" aria-hidden="true">42</span>
             </button>
             <button class="plus-btn" type="button" data-open="overlay-create" aria-label="إضافة قسم" data-label-ar="إضافة قسم" data-label-fr="Ajouter une classe">
               <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
             </button>
           </div>
           <h1 class="dash-title" id="classes-heading"><span data-ar="أقسامي الدراسية" data-fr="Mes classes">أقسامي الدراسية</span><span aria-hidden="true">:</span></h1>
-          <p class="dash-hint" data-ar="كل شيء في مكانه" data-fr="Tout est à sa place">كل شيء في مكانه</p>
         </div>
-
-        <nav class="dash-tabs" role="tablist" aria-label="عروض الفضاء" data-label-ar="عروض الفضاء" data-label-fr="Vues de l’espace">
-          <button class="dash-tab" role="tab" aria-selected="true" data-soon="1">
-            <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="الأقسام" data-fr="Classes">الأقسام</span>
-          </button>
-          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
-            <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg><span data-ar="دفتر النصوص" data-fr="Cahier de textes">دفتر النصوص</span>
-          </button>
-          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
-            <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span>
-          </button>
-          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
-            <svg class="icon" aria-hidden="true"><use href="#i-trend"/></svg><span data-ar="شريط الحركة" data-fr="Fil d’activité">شريط الحركة</span>
-          </button>
-        </nav>
 
         <!-- Groupe : en cours -->
         <section class="day-group" aria-labelledby="group-now">
@@ -136,7 +114,7 @@
           <div class="class-grid" role="list">
             <article class="class-card is-live" role="listitem"
               style="--cbg:#e0eefa;--cbg2:#c9dbff;--cbl:#c6dff2;--cti:#0f3f6b;--cse:#346c97">
-              <button class="class-card__open" type="button" aria-label="فتح قسم رياضيات 1"></button>
+              <button class="class-card__open" type="button" data-screen="editor" aria-label="فتح قسم رياضيات 1"></button>
               <div class="class-card__content">
                 <div class="class-card__text-block">
                   <h3 class="class-card__title" data-ar="رياضيات 1" data-fr="Maths 1">رياضيات 1</h3>
@@ -158,7 +136,7 @@
           <h2 class="day-group__title" id="group-today"><span data-ar="اليوم" data-fr="Aujourd’hui">اليوم</span><span aria-hidden="true">:</span></h2>
           <div class="class-grid" data-display="triple" role="list">
             <article class="class-card" role="listitem" style="--cbg:#ece9f7;--cbg2:#d8cbfa;--cbl:#d9d4ee;--cti:#2a205a;--cse:#5a3fbf">
-              <button class="class-card__open" type="button" aria-label="فتح قسم علوم فيزيائية 1"></button>
+              <button class="class-card__open" type="button" data-screen="editor" aria-label="فتح قسم علوم فيزيائية 1"></button>
               <div class="class-card__content">
                 <div class="class-card__text-block">
                   <h3 class="class-card__title" data-ar="علوم فيزيائية 1" data-fr="Sciences physiques 1">علوم فيزيائية 1</h3>
@@ -171,7 +149,7 @@
             </article>
 
             <article class="class-card" role="listitem" style="--cbg:#fdeede;--cbg2:#fbd3bf;--cbl:#f6d9bd;--cti:#6b3a12;--cse:#9a5b26">
-              <button class="class-card__open" type="button" aria-label="فتح قسم علوم فيزيائية 2"></button>
+              <button class="class-card__open" type="button" data-screen="editor" aria-label="فتح قسم علوم فيزيائية 2"></button>
               <div class="class-card__content">
                 <div class="class-card__text-block">
                   <h3 class="class-card__title" data-ar="علوم فيزيائية 2" data-fr="Sciences physiques 2">علوم فيزيائية 2</h3>
@@ -184,7 +162,7 @@
             </article>
 
             <article class="class-card" role="listitem" style="--cbg:#e6f3e9;--cbg2:#c3e9d8;--cbl:#cfe6d5;--cti:#14503a;--cse:#3a755b">
-              <button class="class-card__open" type="button" aria-label="فتح قسم علوم الحياة والأرض 1"></button>
+              <button class="class-card__open" type="button" data-screen="editor" aria-label="فتح قسم علوم الحياة والأرض 1"></button>
               <div class="class-card__content">
                 <div class="class-card__text-block">
                   <h3 class="class-card__title" data-ar="علوم الحياة والأرض 1" data-fr="SVT 1">علوم الحياة والأرض 1</h3>
@@ -215,16 +193,27 @@
             <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
           </button>
           <div class="editor-top__copy">
-            <span class="editor-top__title" data-ar="علوم فيزيائية 1" data-fr="Sciences physiques 1">علوم فيزيائية 1</span>
-            <span class="editor-top__sub" data-ar="الثانية باكالوريا · الفيزياء والكيمياء" data-fr="2ᵉ Bac · Physique-Chimie">الثانية باكالوريا · الفيزياء والكيمياء</span>
+            <span class="editor-top__title" data-ar="قسم السنة الأولى · PCSI 1" data-fr="Classe 1ʳᵉ année · PCSI 1">قسم السنة الأولى · PCSI 1</span>
           </div>
-          <button class="icon-btn" type="button" data-open="overlay-evaluations" aria-label="التقييمات" data-label-ar="التقييمات" data-label-fr="Évaluations">
-            <svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg>
-          </button>
-          <button class="icon-btn" type="button" data-action="toggle-theme" aria-label="المظهر" data-label-ar="المظهر" data-label-fr="Apparence">
-            <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
-          </button>
+          <span class="editor-status" data-ar="محفوظ هنا" data-fr="Enregistré ici">محفوظ هنا</span>
         </header>
+
+        <div class="editor-icons">
+          <button class="icon-btn" type="button" data-action="toggle-editor-menu" aria-label="إجراءات الدفتر" data-label-ar="إجراءات الدفتر" data-label-fr="Actions du cahier">
+            <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+          </button>
+          <button class="icon-btn" type="button" aria-label="بحث" data-label-ar="بحث" data-label-fr="Rechercher">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          </button>
+          <span class="editor-icons__spacer"></span>
+          <button class="icon-btn" type="button" aria-label="تراجع" data-label-ar="تراجع" data-label-fr="Annuler">
+            <svg class="icon icon--flip" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+          <button class="icon-btn" type="button" aria-label="إعادة" data-label-ar="إعادة" data-label-fr="Rétablir">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+          <span class="editor-dot" aria-hidden="true"></span>
+        </div>
 
         <div class="editor-toolbar">
           <button class="chip chip--primary" type="button" data-open="overlay-create">
@@ -236,8 +225,11 @@
           <button class="chip" type="button">
             <svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg><span data-ar="ملاحظة" data-fr="Remarque">ملاحظة</span>
           </button>
-          <button class="chip" type="button">
+          <button class="chip" type="button" data-open="overlay-print">
             <svg class="icon" aria-hidden="true"><use href="#i-printer"/></svg><span data-ar="طباعة" data-fr="Imprimer">طباعة</span>
+          </button>
+          <button class="chip" type="button" data-open="overlay-evaluations">
+            <svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg><span data-ar="التقييمات" data-fr="Évaluations">التقييمات</span>
           </button>
           <button class="chip" type="button">
             <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="إدارة الدروس" data-fr="Gérer les leçons">إدارة الدروس</span>
@@ -245,32 +237,55 @@
         </div>
 
         <div class="notebook" role="table" aria-label="جدول الحصص" data-label-ar="جدول الحصص" data-label-fr="Tableau des séances">
-          <div class="nb-row" role="row">
-            <div class="nb-cell nb-cell--date" role="cell"><b>12</b><span>11 / 2026</span></div>
-            <div class="nb-cell" role="cell">
-              <div class="nb-chapter">الوحدة 3 · التحولات النووية</div>
-              <div class="nb-item">النشاط التجريبي: قياس نشاط عينة مشعّة</div>
-              <div class="nb-item muted">تمارين التطبيق 4 و5 صفحة 78</div>
-              <div style="margin-top:.45rem"><span class="nb-badge nb-badge--eval">فرض منزلي 2</span></div>
-            </div>
-            <div class="nb-cell nb-cell--side" role="cell">2 h</div>
+          <div class="nb-row nb-row--head" role="row">
+            <div class="nb-cell nb-cell--date" role="columnheader" data-ar="التاريخ" data-fr="Date">التاريخ</div>
+            <div class="nb-cell" role="columnheader" data-ar="المحتوى" data-fr="Contenu">المحتوى</div>
+            <div class="nb-cell nb-cell--side" role="columnheader" data-ar="ملاحظة" data-fr="Remarque">ملاحظة</div>
           </div>
           <div class="nb-row" role="row">
-            <div class="nb-cell nb-cell--date" role="cell"><b>10</b><span>11 / 2026</span></div>
+            <div class="nb-cell nb-cell--date" role="cell"><b>09</b><span>/ 12</span></div>
             <div class="nb-cell" role="cell">
-              <div class="nb-chapter">الوحدة 3 · التحولات النووية</div>
-              <div class="nb-item">قانون التفكك الإشعاعي — النشاط الإشعاعي</div>
+              <div class="nb-eval" data-ar="التقويم التشخيصي 1" data-fr="Évaluation diagnostique 1">التقويم التشخيصي 1</div>
+              <div class="nb-chapter" data-ar="الفصل 1 : الأعداد العقدية والحساب المثلثي" data-fr="Chapitre 1 : Nombres complexes et trigonométrie">الفصل 1 : الأعداد العقدية والحساب المثلثي</div>
+              <div class="nb-section" data-ar="أ. جبر الأعداد العقدية" data-fr="A. Algèbre des nombres complexes">أ. جبر الأعداد العقدية</div>
+              <div class="nb-item">
+                <span class="nb-chip">Cours 1</span>
+                <span data-ar="الشكل الجبري، العدد المرفق، المعيار والعمدة." data-fr="Forme algébrique, conjugué, module et argument.">الشكل الجبري، العدد المرفق، المعيار والعمدة.</span>
+              </div>
+              <div class="nb-item">
+                <span class="nb-chip">Cours 2</span>
+                <span data-ar="الشكل المثلثي وصيغة أويلر وصيغة دي موافر." data-fr="Forme trigonométrique, formule d’Euler et de Moivre.">الشكل المثلثي وصيغة أويلر وصيغة دي موافر.</span>
+              </div>
             </div>
-            <div class="nb-cell nb-cell--side" role="cell">1 h</div>
+            <div class="nb-cell nb-cell--side" role="cell"><span class="nb-note">إحضار الأدوات</span></div>
           </div>
           <div class="nb-row" role="row">
-            <div class="nb-cell nb-cell--date" role="cell"><b>05</b><span>11 / 2026</span></div>
+            <div class="nb-cell nb-cell--date" role="cell"><b>12</b><span>/ 12</span></div>
             <div class="nb-cell" role="cell">
-              <div class="nb-chapter">الوحدة 2 · الكهرباء</div>
-              <div class="nb-item">تصحيح التمرين 7 و8 — استدراك</div>
-              <div style="margin-top:.45rem"><span class="nb-badge">مراجعة</span></div>
+              <div class="nb-chapter" data-ar="الفصل 2 : الاستدلال والمجموعات والتطبيقات" data-fr="Chapitre 2 : Raisonnement, ensembles et applications">الفصل 2 : الاستدلال والمجموعات والتطبيقات</div>
+              <div class="nb-section" data-ar="أ. أسس المنطق" data-fr="A. Fondements logiques">أ. أسس المنطق</div>
+              <div class="nb-item">
+                <span class="nb-chip">Cours 1</span>
+                <span data-ar="المكممات، الاستلزام والتكافؤ." data-fr="Quantificateurs, implication et équivalence.">المكممات، الاستلزام والتكافؤ.</span>
+              </div>
+              <div class="nb-item">
+                <span class="nb-chip nb-chip--eval" data-ar="فرض منزلي 1" data-fr="Devoir maison 1">فرض منزلي 1</span>
+                <span data-ar="تمارين 4 و5 صفحة 32." data-fr="Exercices 4 et 5 page 32.">تمارين 4 و5 صفحة 32.</span>
+              </div>
             </div>
-            <div class="nb-cell nb-cell--side" role="cell">1 h</div>
+            <div class="nb-cell nb-cell--side" role="cell"></div>
+          </div>
+          <div class="nb-row" role="row">
+            <div class="nb-cell nb-cell--date nb-cell--empty" role="cell"><span data-ar="بلا تاريخ" data-fr="Sans date">بلا تاريخ</span></div>
+            <div class="nb-cell" role="cell">
+              <div class="nb-chapter" data-ar="الفصل 2 : الاستدلال والمجموعات والتطبيقات" data-fr="Chapitre 2 : Raisonnement, ensembles et applications">الفصل 2 : الاستدلال والمجموعات والتطبيقات</div>
+              <div class="nb-section" data-ar="ب. المجموعات والتطبيقات" data-fr="B. Ensembles et applications">ب. المجموعات والتطبيقات</div>
+              <div class="nb-item">
+                <span class="nb-chip">Cours 3</span>
+                <span data-ar="التطبيقات التباينية، التطبيقات المتكافئة، التركيب." data-fr="Injections, surjections, bijections et composition.">التطبيقات التباينية، التطبيقات المتكافئة، التركيب.</span>
+              </div>
+            </div>
+            <div class="nb-cell nb-cell--side" role="cell"></div>
           </div>
         </div>
       </div>
@@ -285,11 +300,11 @@
         <span class="tab-btn__label" data-ar="الأقسام" data-fr="Classes">الأقسام</span>
       </button>
       <button class="tab-btn" type="button" data-open="overlay-settings">
-        <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg>
+        <svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg>
         <span class="tab-btn__label" data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
       </button>
       <button class="tab-btn" type="button" data-open="overlay-help">
-        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <svg class="icon" aria-hidden="true"><use href="#i-help"/></svg>
         <span class="tab-btn__label" data-ar="المساعدة" data-fr="Aide">المساعدة</span>
       </button>
     </div>
@@ -566,7 +581,7 @@
               <div class="section__body">
                 <div class="row">
                   <div><span class="row__label">بدوح عبد المالك</span><span class="row__hint" dir="ltr">abdelmalek@ecole.ma</span></div>
-                  <button class="btn btn--secondary" type="button" data-ar="تسجيل الخروج" data-fr="Se déconnecter">تسجيل الخروج</button>
+                  <button class="btn btn--secondary" type="button" data-open="overlay-login" data-ar="تسجيل الخروج" data-fr="Se déconnecter">تسجيل الخروج</button>
                 </div>
                 <div class="row">
                   <div><span class="row__label" data-ar="المزامنة" data-fr="Synchronisation">المزامنة</span><span class="row__hint" data-ar="آخر مزامنة: منذ 3 دقائق" data-fr="Dernière synchro : il y a 3 minutes">آخر مزامنة: منذ 3 دقائق</span></div>
@@ -889,30 +904,92 @@
 <!-- ═══════════════════════  Actions de classe  ═══════════════════════ -->
 <div class="overlay" id="overlay-class-actions" aria-hidden="true">
   <div class="overlay__scrim" data-close></div>
-  <div class="modal modal--sheet" role="dialog" aria-modal="true" aria-labelledby="actions-title">
+  <div class="modal modal--class-edit" role="dialog" aria-modal="true" aria-labelledby="class-edit-title">
     <header class="modal__header">
       <div class="modal__handle" aria-hidden="true"><span></span></div>
       <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
         <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
       </button>
-      <div class="modal__title"><span id="actions-title" data-ar="إجراءات القسم" data-fr="Actions de la classe">إجراءات القسم</span></div>
+      <div class="modal__title">
+        <span id="class-edit-title" data-ar="تعديل القسم" data-fr="Modifier la classe">تعديل القسم</span>
+        <small class="modal__subtitle" data-ar="قسم السنة الأولى · PCSI 1" data-fr="Classe 1ʳᵉ année · PCSI 1">قسم السنة الأولى · PCSI 1</small>
+      </div>
     </header>
     <div class="modal__body">
-      <div class="tile-grid">
-        <button class="tile" type="button" data-tone="blue" data-open="overlay-evaluations">
-          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg></span>
-          <span data-ar="التقييمات" data-fr="Évaluations">التقييمات</span>
+      <div class="seg-tabs" role="tablist" aria-label="أقسام التعديل" data-label-ar="أقسام التعديل" data-label-fr="Sections de la classe">
+        <button class="seg-tab" type="button" role="tab" aria-selected="true" data-tab="identity" data-ar="المعلومات" data-fr="Informations">المعلومات</button>
+        <button class="seg-tab" type="button" role="tab" aria-selected="false" data-tab="roster" data-ar="تلاميذ القسم" data-fr="Élèves">تلاميذ القسم
+          <span class="seg-tab__count">24</span>
         </button>
-        <button class="tile" type="button" data-tone="violet" data-open="overlay-create">
-          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg></span>
-          <span data-ar="تعديل" data-fr="Modifier">تعديل</span>
-        </button>
-        <button class="tile tile--danger" type="button" data-stack="1" data-open="overlay-delete">
-          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></span>
-          <span data-ar="حذف" data-fr="Supprimer">حذف</span>
+      </div>
+
+      <div class="panel-stack" data-class-panel="identity">
+        <div class="class-field">
+          <span class="class-field__label" data-ar="اللون" data-fr="Couleur">اللون</span>
+          <div class="swatches">
+            <button class="swatch" type="button" aria-pressed="false" aria-label="برتقالي"><span style="background:#f97316"></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="ذهبي"><span style="background:#ca8a04"></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="أخضر"><span style="background:#16a34a"></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="أزرق"><span style="background:#2563eb"></span></button>
+            <button class="swatch" type="button" aria-pressed="true" aria-label="بنفسجي"><span style="background:#a855f7"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+          </div>
+        </div>
+
+        <label class="class-field">
+          <span class="class-field__label" data-ar="السلك التعليمي" data-fr="Cycle">السلك التعليمي</span>
+          <div class="select" role="combobox" aria-expanded="false" tabindex="0">
+            <span data-ar="الأقسام التحضيرية" data-fr="Classes préparatoires">الأقسام التحضيرية</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </div>
+        </label>
+
+        <label class="class-field">
+          <span class="class-field__label">
+            <span data-ar="المستوى الدراسي" data-fr="Niveau">المستوى الدراسي</span>
+            <span class="badge-accent" data-ar="مستوى مخصص" data-fr="Niveau personnalisé">مستوى مخصص</span>
+          </span>
+          <div class="select" role="combobox" aria-expanded="false" tabindex="0">
+            <span data-ar="السنة الأولى · PCSI" data-fr="1ʳᵉ année · PCSI">السنة الأولى · PCSI</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </div>
+        </label>
+
+        <div class="class-field">
+          <span class="class-field__label" data-ar="رقم الفوج" data-fr="Numéro de groupe">رقم الفوج</span>
+          <div class="stepper">
+            <button class="stepper__btn" type="button" data-step="-1" aria-label="نقصان">−</button>
+            <output class="stepper__value">1</output>
+            <button class="stepper__btn" type="button" data-step="1" aria-label="زيادة">+</button>
+          </div>
+        </div>
+
+        <label class="class-field">
+          <span class="class-field__label" data-ar="المادة الدراسية" data-fr="Matière">المادة الدراسية</span>
+          <div class="select" role="combobox" aria-expanded="false" tabindex="0">
+            <span data-ar="الرياضيات" data-fr="Mathématiques">الرياضيات</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </div>
+        </label>
+      </div>
+
+      <div class="panel-stack" data-class-panel="roster" hidden>
+        <p class="roster-hint" data-ar="اسم واحد في كل سطر، أو استيراد قائمة القسم من ملف." data-fr="Un nom par ligne, ou importez la liste depuis un fichier.">اسم واحد في كل سطر، أو استيراد قائمة القسم من ملف.</p>
+        <div class="roster-box">
+          <div class="roster-line">أحمد بنعلي</div>
+          <div class="roster-line">سلمى الإدريسي</div>
+          <div class="roster-line">يوسف المرابط</div>
+          <div class="roster-line roster-line--more" data-ar="… 21 تلميذاً آخر" data-fr="… 21 autres élèves">… 21 تلميذاً آخر</div>
+        </div>
+        <button class="btn btn--secondary btn--block" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+          <span data-ar="استيراد قائمة القسم" data-fr="Importer la liste">استيراد قائمة القسم</span>
         </button>
       </div>
     </div>
+    <footer class="modal__footer modal__footer--class">
+      <button class="btn btn--gradient" type="button" data-close data-ar="حفظ" data-fr="Enregistrer">حفظ</button>
+      <button class="btn btn--danger-ghost" type="button" data-stack="1" data-open="overlay-delete" data-ar="حذف القسم" data-fr="Supprimer la classe">حذف القسم</button>
+    </footer>
   </div>
 </div>
 
@@ -934,6 +1011,140 @@
       <button class="btn btn--secondary" type="button" data-close data-ar="إلغاء" data-fr="Annuler">إلغاء</button>
       <button class="btn btn--danger" type="button" data-close data-ar="حذف" data-fr="Supprimer">حذف</button>
     </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Boîte de réception  ═══════════════════════ -->
+<div class="overlay" id="overlay-inbox" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--inbox" role="dialog" aria-modal="true" aria-labelledby="inbox-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title">
+        <span id="inbox-title" data-ar="الرسائل" data-fr="Messages">الرسائل</span>
+        <small class="modal__subtitle" data-ar="42 رسالة غير مقروءة" data-fr="42 messages non lus">42 رسالة غير مقروءة</small>
+      </div>
+    </header>
+    <div class="modal__body">
+      <div class="inbox-list">
+        <article class="inbox-item">
+          <span class="inbox-item__dot" aria-hidden="true"></span>
+          <div class="inbox-item__copy">
+            <strong data-ar="تذكير: مراقبة مستمرة الأسبوع القادم" data-fr="Rappel : contrôle continu la semaine prochaine">تذكير: مراقبة مستمرة الأسبوع القادم</strong>
+            <p data-ar="أضف تواريخ المراقبة إلى أقسامك قبل يوم الجمعة." data-fr="Ajoutez les dates du contrôle à vos classes avant vendredi.">أضف تواريخ المراقبة إلى أقسامك قبل يوم الجمعة.</p>
+          </div>
+          <span class="inbox-item__time">08:20</span>
+        </article>
+        <article class="inbox-item">
+          <span class="inbox-item__dot" aria-hidden="true"></span>
+          <div class="inbox-item__copy">
+            <strong data-ar="نموذج جاهز: دفتر نصوص رقمي" data-fr="Modèle prêt : cahier de textes numérique">نموذج جاهز: دفتر نصوص رقمي</strong>
+            <p data-ar="اطّلع على دليل المسك والضوابط الرسمية من قسم المساعدة." data-fr="Consultez le guide de tenue et les références officielles dans l’aide.">اطّلع على دليل المسك والضوابط الرسمية من قسم المساعدة.</p>
+          </div>
+          <span class="inbox-item__time">أمس</span>
+        </article>
+        <article class="inbox-item is-read">
+          <span class="inbox-item__dot" aria-hidden="true"></span>
+          <div class="inbox-item__copy">
+            <strong data-ar="تحديث التطبيق" data-fr="Mise à jour de l’application">تحديث التطبيق</strong>
+            <p data-ar="أصبحت المزامنة تُنفَّذ كل ثلاث دقائق فقط، مع رسالة واضحة عند امتلاء التخزين." data-fr="La synchronisation s’espace à trois minutes, avec un message clair si le stockage est plein.">أصبحت المزامنة تُنفَّذ كل ثلاث دقائق فقط، مع رسالة واضحة عند امتلاء التخزين.</p>
+          </div>
+          <span class="inbox-item__time">الاثنين</span>
+        </article>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Aperçu d’impression  ═══════════════════════ -->
+<div class="overlay" id="overlay-print" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--print" role="dialog" aria-modal="true" aria-labelledby="print-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title">
+        <span id="print-title" data-ar="معاينة الطباعة" data-fr="Aperçu avant impression">معاينة الطباعة</span>
+        <small class="modal__subtitle" data-ar="قسم السنة الأولى · PCSI 1" data-fr="Classe 1ʳᵉ année · PCSI 1">قسم السنة الأولى · PCSI 1</small>
+      </div>
+    </header>
+    <div class="modal__body">
+      <div class="print-sheet" dir="rtl">
+        <div class="print-sheet__head">
+          <span data-ar="دفتر النصوص — الرياضيات" data-fr="Cahier de textes — Mathématiques">دفتر النصوص — الرياضيات</span>
+          <span data-ar="السنة الدراسية 2026 / 2027" data-fr="Année scolaire 2026 / 2027">السنة الدراسية 2026 / 2027</span>
+        </div>
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th data-ar="التاريخ" data-fr="Date">التاريخ</th>
+              <th data-ar="المحتوى" data-fr="Contenu">المحتوى</th>
+              <th data-ar="ملاحظة" data-fr="Remarque">ملاحظة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>09/12</td>
+              <td><strong data-ar="الفصل 1 : الأعداد العقدية" data-fr="Chapitre 1 : Nombres complexes">الفصل 1 : الأعداد العقدية</strong><br><span data-ar="الشكل الجبري، المعيار والعمدة." data-fr="Forme algébrique, module et argument.">الشكل الجبري، المعيار والعمدة.</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>12/12</td>
+              <td><strong data-ar="الفصل 2 : الاستدلال والمجموعات" data-fr="Chapitre 2 : Raisonnement et ensembles">الفصل 2 : الاستدلال والمجموعات</strong><br><span data-ar="فرض منزلي 1: تمارين 4 و5." data-fr="Devoir maison 1 : exercices 4 et 5.">فرض منزلي 1: تمارين 4 و5.</span></td>
+              <td data-ar="سلم التصحيح مرفق" data-fr="Barème joint">سلم التصحيح مرفق</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--secondary" type="button" data-close data-ar="إلغاء" data-fr="Annuler">إلغاء</button>
+      <button class="btn btn--primary" type="button" data-toast-ar="تم إرسال الملف إلى الطابعة" data-toast-fr="Fichier envoyé à l’imprimante" data-ar="طباعة" data-fr="Imprimer">طباعة</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Connexion  ═══════════════════════ -->
+<div class="overlay" id="overlay-login" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <header class="modal__header" style="border-bottom:0">
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="login-brand">
+        <span class="login-brand__mark" aria-hidden="true"><svg class="icon"><use href="#i-book"/></svg></span>
+        <span data-ar="دفتر نصوصي" data-fr="Mon cahier de textes">دفتر نصوصي</span>
+      </div>
+    </header>
+    <div class="modal__body">
+      <h2 class="login-title" id="login-title" data-ar="تسجيل الدخول" data-fr="Se connecter">تسجيل الدخول</h2>
+      <p class="login-hint" data-ar="سجّل دخولك للعودة إلى أقسامك وحصصك." data-fr="Connectez-vous pour retrouver vos classes et vos séances.">سجّل دخولك للعودة إلى أقسامك وحصصك.</p>
+      <button class="btn btn--secondary btn--block login-google" type="button">
+        <svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg>
+        <span data-ar="المتابعة باستخدام Google" data-fr="Continuer avec Google">المتابعة باستخدام Google</span>
+      </button>
+      <p class="login-or" data-ar="أو ببريدك الإلكتروني" data-fr="ou avec votre e-mail">أو ببريدك الإلكتروني</p>
+      <label class="class-field">
+        <span class="class-field__label" data-ar="البريد الإلكتروني" data-fr="E-mail">البريد الإلكتروني</span>
+        <input class="field" type="email" placeholder="vous@exemple.com" autocomplete="username">
+      </label>
+      <label class="class-field">
+        <span class="class-field__label" data-ar="كلمة المرور" data-fr="Mot de passe">كلمة المرور</span>
+        <input class="field" type="password" placeholder="••••••••" autocomplete="current-password">
+      </label>
+      <button class="login-link" type="button" data-ar="نسيت كلمة المرور؟" data-fr="Mot de passe oublié ?">نسيت كلمة المرور؟</button>
+      <button class="btn btn--primary btn--block" type="button" data-close data-ar="تسجيل الدخول" data-fr="Se connecter">تسجيل الدخول</button>
+      <p class="login-foot">
+        <span data-ar="أول زيارة لك؟" data-fr="Première visite ?">أول زيارة لك؟</span>
+        <button class="login-link" type="button" data-open="overlay-create" data-ar="إنشاء حساب جديد" data-fr="Créer un compte">إنشاء حساب جديد</button>
+      </p>
+    </div>
   </div>
 </div>
 
