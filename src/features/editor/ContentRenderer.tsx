@@ -243,7 +243,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
+        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top w-full font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
             <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
               {documentPreview ? (
                 <button

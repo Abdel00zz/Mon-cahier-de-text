@@ -114,6 +114,29 @@ test('les titres structurels restent centrés, le corps du cahier sur le bord de
   assert.match(content, /editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1\.5 sm:gap-2 text-start/, 'les sections gardent le bord de lecture');
 });
 
+test('tous les blocs de tête occupent la colonne et se centrent', () => {
+  // Sans `w-full`, le titre se rétracte sur son texte : `justify-center` ne
+  // centrait plus rien et le bloc restait collé au bord de lecture (≈ 48 px
+  // d’écart mesurés). Chaque type de tête doit donc porter la largeur entière.
+  const types = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'controle_court', 'controle_global',
+    'oral', 'correction_devoir_maison', 'correction_controle_continu', 'examen_blanc', 'olympiade', 'concours', 'colle'];
+  for (const type of types) {
+    const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', manageDocument: false, children:
+      React.createElement(ContentRenderer, {
+        data: { type, title: 'Titre du bloc' },
+        elementType: type as React.ComponentProps<typeof ContentRenderer>['elementType'],
+        indices: { chapterIndex: 0, itemIndex: 0 },
+        showDescriptions: true,
+      }),
+    }));
+    assert.match(html, /class="editor-type-top w-full [^"]*justify-center text-center/, `${type} est centré sur toute la largeur de la colonne`);
+  }
+  const chapter = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', manageDocument: false, children:
+    React.createElement(ContentRenderer, { data: { type: 'chapter', title: 'Chapitre 1' }, elementType: 'chapter', indices: { chapterIndex: 0 } }),
+  }));
+  assert.match(chapter, /editor-type-chapter my-3 flex w-full items-center justify-center text-center/, 'le chapitre est centré sur toute la largeur');
+});
+
 test('les remarques et les retours système utilisent la police de l’interface', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
