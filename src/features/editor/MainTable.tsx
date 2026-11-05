@@ -93,7 +93,7 @@ const TableHeader: React.FC = React.memo(() => {
   <div className="border-b border-border/60 bg-muted/30">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-start border-e border-border/60 px-1 py-1.5 text-start sm:px-2.5 sm:py-2">
+      <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
         <span dir={textDirectionAttribute(t('editor.date'))} className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-start border-e border-border px-2 py-1.5 text-start sm:px-3 sm:py-2">

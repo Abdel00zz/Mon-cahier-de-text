@@ -191,9 +191,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     }
 
-    const isEvaluation = ['evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'controle_court', 'controle_global', 'oral', 'correction_devoir_maison', 'correction_controle_continu'].includes(item.type);
-    const isCenteredInApp = isEvaluation;
-
     /*
      * Pastille « Document » : elle n'apparaît QUE là où un sujet existe, une
      * seule fois par ligne (le devoir est un bloc, pas une liste de contenus).
@@ -214,9 +211,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1';
     }
 
-    // System UI : un titre se cale toujours sur le bord de lecture, jamais au
-    // centre ; seule la nature du bloc change sa couleur et sa graisse.
-    const justificationClass = 'justify-start text-start';
+    // System UI : les titres structurels (chapitre, bloc, évaluation de tête)
+    // restent centrés — c'est la ligne de repère du cahier ; les niveaux
+    // imbriqués (section, sous-section, contenu) se calent sur le bord de
+    // lecture. Le corps du texte, lui, ne se centre jamais.
+    const justificationClass = 'justify-center text-center';
     
     if (isCorrection) {
       indentClass = 'editor-indent-1';
@@ -226,7 +225,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-start text-start font-bold tracking-tight select-none">
+          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-bold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-pretty">
               {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
@@ -244,7 +243,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div dir={textDirectionAttribute(item.title)} className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${titleColorClass} ${indentClass} ${justificationClass}`}>
             <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
               {documentPreview ? (
                 <button

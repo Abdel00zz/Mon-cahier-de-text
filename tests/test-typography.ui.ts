@@ -76,10 +76,42 @@ test('les cellules de date restent centrées et la typographie du cahier s’ada
   const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
 
   assert.match(surface, /--editor-fs-date:\s*calc\(var\(--editor-scale\)\s*\*\s*0\.88\)/, 'les dates suivent la même échelle typographique');
-  assert.match(surface, /@media \(max-width: 639px\) and \(pointer: coarse\)[\s\S]*?--editor-scale:\s*max\(0\.875rem,[\s\S]*?var\(--app-text-scale, 1\)/, 'le texte du téléphone est réduit sans ignorer le réglage de taille');
+  const phone = surface.slice(surface.indexOf('@media (max-width: 639px) and (pointer: coarse)'));
+  assert.match(phone, /--editor-scale:\s*max\(0\.73rem,[\s\S]*?var\(--app-text-scale, 1\)/, 'le texte du téléphone descend sous 14 px sans ignorer le réglage de taille');
+  const phoneLadder = ['--editor-fs-chapter', '--editor-fs-top', '--editor-fs-section', '--editor-fs-subsection',
+    '--editor-fs-subsubsection', '--editor-fs-item-title', '--editor-fs-description', '--editor-fs-remark',
+    '--editor-fs-table-main', '--editor-fs-table-side', '--editor-fs-badge'].map(token => {
+      const match = phone.match(new RegExp(`${token}:\\s*calc\\(var\\(--editor-scale\\)\\s*\\*\\s*([0-9.]+)\\)`));
+      assert.ok(match, `${token} défini pour le téléphone`);
+      return Number.parseFloat(match[1]);
+    });
+  for (let i = 1; i < phoneLadder.length; i++) {
+    assert.ok(phoneLadder[i - 1] > phoneLadder[i], 'la hiérarchie du téléphone reste strictement décroissante');
+  }
+  // Échelle réelle du téléphone ≈ 12 px : les niveaux de LECTURE doivent se
+  // distinguer d’au moins 0,7 px, sinon deux titres se confondent.
+  for (let i = 1; i < 7; i++) {
+    assert.ok((phoneLadder[i - 1] - phoneLadder[i]) * 12 >= 0.7, `l’écart ${phoneLadder[i - 1]} → ${phoneLadder[i]} reste visible`);
+  }
+  // Les repères (remarque, colonne latérale, badge) peuvent être plus fins,
+  // mais jamais sous 9,5 px : une date ou une pastille doit rester lisible.
+  for (const multiplier of phoneLadder.slice(7)) {
+    assert.ok(multiplier * 12 >= 9.5, `le repère ${multiplier} reste lisible sur téléphone`);
+  }
   assert.match(row, /flex h-full min-h-\[48px\] w-full flex-col items-center justify-center/, 'les cellules date simples et fusionnées centrent leur contenu');
   assert.match(session, /data-session-cell="date"[\s\S]*?items-center justify-center/, 'la date d’une séance fusionnée reste centrée');
   assert.match(table, /data-absence-session[\s\S]*?items-center justify-center[\s\S]*?text-center editor-type-table-side/, 'les dates d’absence suivent le même alignement');
+  assert.match(surface, /\[data-editor-table\] \.editor-date-value \{ justify-content: center; text-align: center; \}/, 'la date reste centrée même si une classe utilitaire manque');
+});
+
+test('les titres structurels restent centrés, le corps du cahier sur le bord de lecture', () => {
+  const content = readFileSync('src/features/editor/ContentRenderer.tsx', 'utf8');
+  assert.match(content, /editor-type-chapter my-3 flex w-full items-center justify-center text-center/, 'le titre de chapitre est centré');
+  assert.match(content, /const justificationClass = 'justify-center text-center'/, 'l’évaluation de tête est centrée');
+  assert.doesNotMatch(content, /isCenteredInApp/, 'plus de centrage conditionnel : une seule règle pour les titres de tête');
+  const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
+  assert.match(table, /justify-center border-e border-border\/60 px-1 py-1\.5 text-center[\s\S]{0,140}editor\.date/, 'l’en-tête de la colonne date est centré');
+  assert.match(content, /editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1\.5 sm:gap-2 text-start/, 'les sections gardent le bord de lecture');
 });
 
 test('les remarques et les retours système utilisent la police de l’interface', () => {

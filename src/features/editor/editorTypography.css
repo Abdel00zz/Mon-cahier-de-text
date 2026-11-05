@@ -121,7 +121,7 @@
   [data-editor-table] .editor-type-badge { font-weight: 500; font-style: normal; }
   [data-editor-table] :is(.editor-type-table-main, .editor-type-table-side) { font-weight: 500; }
   [data-editor-table] :is(.editor-type-remark, .editor-session-note) {
-    font-size: max(.75rem, var(--editor-fs-remark));
+    font-size: max(.6875rem, var(--editor-fs-remark));
     font-weight: 500;
     font-style: italic;
     line-height: 1.55;
