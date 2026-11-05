@@ -7,6 +7,7 @@ données de l'utilisateur au premier lancement, puis rouverte à chaque session.
 from __future__ import annotations
 
 import sys
+from contextlib import suppress
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
@@ -14,6 +15,7 @@ from PyQt6.QtWidgets import QApplication
 from .core.models import Theme
 from .data.database import Database
 from .data.repository import Repository
+from .diagnostics import install as install_diagnostics
 from .paths import database_path
 from .state import AppState
 from .ui.main_window import MainWindow
@@ -34,6 +36,7 @@ def main() -> int:
 
     database = Database(database_path())
     state = AppState(Repository(database))
+    install_diagnostics(state.t)
     apply_theme(app, dark=state.is_dark, size=state.config.app_text_size, rtl=state.is_rtl)
     app.setLayoutDirection(
         Qt.LayoutDirection.RightToLeft if state.is_rtl else Qt.LayoutDirection.LeftToRight
@@ -46,7 +49,8 @@ def main() -> int:
     try:
         code = app.exec()
     finally:
-        database.close()
+        with suppress(Exception):
+            database.close()
     return code
 
 

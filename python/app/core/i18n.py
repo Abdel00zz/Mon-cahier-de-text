@@ -157,6 +157,16 @@ _STRINGS: Translations = {
         "en": "Backup written",
     },
     "message.import_failed": {"fr": "Fichier illisible", "ar": "ملف غير صالح", "en": "Unreadable file"},
+    "error.unexpected_title": {
+        "fr": "Une action n'a pas pu aboutir",
+        "ar": "لم تكتمل إحدى العمليات",
+        "en": "An action could not complete",
+    },
+    "error.unexpected_hint": {
+        "fr": "Vos données sont intactes. L'incident a été consigné dans le fichier ci-dessous ; vous pouvez continuer à travailler.",
+        "ar": "بياناتك سليمة. سُجّل العطل في الملف أدناه، ويمكنك متابعة العمل.",
+        "en": "Your data is intact. The incident was written to the file below; you can keep working.",
+    },
 }
 
 

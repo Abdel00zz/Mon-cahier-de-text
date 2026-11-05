@@ -61,6 +61,7 @@ Ou, après `pip install -e .`, la commande `cahier` fait la même chose.
 | Base | `%LOCALAPPDATA%\CahierDeTextes\cahier.sqlite3` |
 | Sauvegardes | `%LOCALAPPDATA%\CahierDeTextes\sauvegardes\` |
 | Archives | `%LOCALAPPDATA%\CahierDeTextes\archives\` |
+| Journal d'incidents | `%LOCALAPPDATA%\CahierDeTextes\journaux\incidents.log` |
 
 Le dossier exact est affiché dans **Réglages → Données**. Pour un usage sur clé
 USB, définir `CAHIER_HOME` avant le lancement : la base et les sauvegardes sont
@@ -68,6 +69,11 @@ alors écrites dans ce dossier.
 
 La base est en mode WAL : une coupure de courant n'abîme pas le fichier, et une
 écriture en cours ne bloque pas la lecture.
+
+Si une action échoue malgré tout, l'application **reste ouverte** : le détail de
+l'incident est écrit dans `journaux\incidents.log` et un message le signale. Ce
+fichier est le seul élément à transmettre en cas de problème ; il ne contient
+que des traces techniques, jamais le contenu du cahier.
 
 ## Sauvegarde et archivage
 
