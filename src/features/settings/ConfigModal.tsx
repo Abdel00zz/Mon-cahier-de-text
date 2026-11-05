@@ -306,8 +306,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   className="hub-card"
                 >
                   <span className="hub-card__icon" aria-hidden="true"><Icon /></span>
-                  <span className="hub-card__title line-clamp-2">{t(item.titleKey)}</span>
-                  <span className="hub-card__hint line-clamp-2">{t(item.hintKey)}</span>
+                  <span className="hub-card__body">
+                    <span className="hub-card__title line-clamp-2">{t(item.titleKey)}</span>
+                    <span className="hub-card__hint line-clamp-2">{t(item.hintKey)}</span>
+                  </span>
                 </button>
               </li>
             );
@@ -315,8 +317,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <li className="contents">
             <button type="button" data-tone={GUIDE_TONE} onClick={() => requestExit('guide')} className="hub-card">
               <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
-              <span className="hub-card__title line-clamp-2">{t('settings.item.support')}</span>
-              <span className="hub-card__hint line-clamp-2">{t('settings.card.support')}</span>
+              <span className="hub-card__body">
+                <span className="hub-card__title line-clamp-2">{t('settings.item.support')}</span>
+                <span className="hub-card__hint line-clamp-2">{t('settings.card.support')}</span>
+              </span>
             </button>
           </li>
         </ul>

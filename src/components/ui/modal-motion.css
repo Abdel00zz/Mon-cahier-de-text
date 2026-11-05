@@ -7,8 +7,8 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
    or height animation while an instructor reads or types. */
 .modal-motion-overlay {
   background: var(--modal-scrim-bg, hsl(var(--foreground) / .44));
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 .modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 200ms ease-out both; }
 .modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 160ms ease-in both; }
@@ -184,6 +184,72 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
 @keyframes modal-scrim-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes modal-dialog-in { from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.98); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
 @keyframes modal-dialog-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, 8px, 0) scale(.99); } }
+@keyframes modal-fullscreen-in { from { opacity: .6; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+/* ── Téléphones : fenêtres plein écran (System UI) ────────────────────────
+   Sous 768 px, une fenêtre n'est plus une feuille posée sur la page : c'est
+   un écran. Bords vifs, hauteur visible complète, en-tête et pied de page
+   collants, animation de montée courte. Le verre dépoli remplace l'aplat.
+   Les alertes de confirmation (`data-modal-alert`) gardent leur format de
+   boîte de dialogue : une décision courte ne mérite pas un écran entier. */
+@media (max-width: 767px) {
+  .modal-sheet-viewport { --modal-sheet-gutter: 0px; }
+  .modal-sheet-viewport .modal-motion-surface,
+  .modal-sheet-viewport .modal-motion-surface[data-sheet-library],
+  .modal-motion-surface[data-mobile-presentation]:not([data-modal-alert]) {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: var(--modal-visible-height) !important;
+    max-height: var(--modal-visible-height) !important;
+    border-radius: 0 !important;
+    border-inline: 0;
+    border-block-start: 0;
+    box-shadow: none;
+  }
+  .modal-motion-surface[data-mobile-presentation="dialog"]:not([data-modal-alert]) {
+    inset: var(--modal-visible-top) 0 var(--modal-keyboard-inset) 0;
+    height: 100%;
+    max-height: none;
+    border: 0;
+  }
+  .modal-motion-surface[data-mobile-presentation="dialog"]:not([data-modal-alert])[data-state="open"] {
+    animation: modal-fullscreen-in 280ms cubic-bezier(.22, 1, .36, 1) both;
+  }
+  /* En-tête et pied collants : ils restent lisibles sur le contenu qui défile. */
+  .modal-motion-surface:not([data-modal-alert]) .modal-pro-header,
+  .modal-motion-surface:not([data-modal-alert]) .modal-pro-footer {
+    position: sticky;
+    z-index: 2;
+    background-color: var(--ui-glass-bg);
+    -webkit-backdrop-filter: var(--ui-glass-filter);
+    backdrop-filter: var(--ui-glass-filter);
+  }
+  .modal-motion-surface:not([data-modal-alert]) .modal-pro-header {
+    top: 0;
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    border-bottom: 1px solid var(--ui-glass-border);
+  }
+  .modal-motion-surface:not([data-modal-alert]) .modal-pro-footer {
+    bottom: 0;
+    border-top: 1px solid var(--ui-glass-border);
+  }
+  /* Une fenêtre plein écran n'a plus de poignée : le bouton fermer remonte. */
+  .modal-motion-surface .modal-handle-region { display: none; }
+  .modal-motion-surface[data-has-handle="true"] .dialog-close { top: max(12px, env(safe-area-inset-top, 0px)); }
+  /* Le verre reste réservé aux barres collantes : le corps, lui, est opaque. */
+  .modal-motion-surface.liquid-modal {
+    background-color: hsl(var(--card));
+    background-image: none;
+  }
+}
+@media (max-width: 767px) and (prefers-reduced-transparency: reduce) {
+  .modal-motion-surface .modal-pro-header,
+  .modal-motion-surface .modal-pro-footer {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: hsl(var(--card));
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .modal-motion-surface[data-state], .modal-motion-overlay[data-state], .modal-motion-surface .dialog-close, .glow-pulse-primary, .glow-pulse-danger, .glow-pulse-success, .glow-pulse-warning { animation: none; transition: none; }
   .modal-motion-surface .dialog-close:is(:hover, :active) { transform: none; }

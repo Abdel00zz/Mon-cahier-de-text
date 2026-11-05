@@ -17,21 +17,21 @@ test('les fenêtres Paramètres et Aide se serrent autour de leur contenu', () =
 
 test('le hub Paramètres se resserre sans perdre ses cibles tactiles', () => {
   const hub = read('src/styles/settings-hub.css');
-  assert.match(hub, /@media \(max-width: 639px\)[\s\S]*?\.settings-modal-frame \.hub-card[\s\S]*?min-height:\s*6\.6rem/);
-  assert.match(hub, /\.settings-modal-frame \.hub-card__icon \{ width: 2\.6rem; height: 2\.6rem/, 'pastilles compactes');
-  assert.match(hub, /\.settings-modal-frame \.hub-card \{[\s\S]*?border-radius: 20px/, 'même rayon qu’au bureau');
+  assert.match(hub, /@media \(max-width: 639px\)[\s\S]*?\.settings-modal-frame \.hub-card[\s\S]*?min-height:\s*4\.5rem/);
+  assert.match(hub, /\.settings-modal-frame \.hub-card__icon \{ width: 2\.35rem; height: 2\.35rem/, 'pastilles compactes');
+  assert.match(hub, /\.settings-modal-frame \.hub-card \{[\s\S]*?border-radius: var\(--ui-radius-surface, 1\.25rem\)/, 'même rayon qu’au bureau');
   const modal = read('src/features/settings/ConfigModal.tsx');
   assert.match(modal, /hub-card__title line-clamp-2/, 'les titres restent sur deux lignes');
   assert.match(modal, /hub-card__hint line-clamp-2/, 'les descriptions restent sur deux lignes');
 });
 
-test('les cartes Paramètres reprennent la matière du menu latéral bureau', () => {
+test('les cartes Paramètres partagent une seule surface neutre', () => {
   const hub = read('src/styles/settings-hub.css');
-  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?--hub-surface: color-mix\(in srgb, var\(--codex-stone/, 'surface en pierre, pas un blanc générique');
-  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?radial-gradient\(115% 82% at 50% 0%, color-mix\(in srgb, var\(--tone\) 6%/, 'halo de couleur discret en haut de carte');
-  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?border-color: color-mix\(in srgb, var\(--tone\) 12%/, 'filet teinté par rubrique');
-  // Une carte sans couleur de rubrique (lignes d’évaluation) reste neutre.
-  assert.match(hub, /\.hub-card \{[\s\S]{0,900}background: hsl\(var\(--card\)\)/, 'les cartes sans teinte gardent la surface neutre');
+  assert.match(hub, /\.hub-card \{[\s\S]{0,900}background: hsl\(var\(--card\)\)/, 'surface unique pour toutes les cartes');
+  assert.match(hub, /\.hub-card \{[\s\S]{0,900}border: 1px solid hsl\(var\(--border\)\)/, 'filet d’un pixel');
+  assert.match(hub, /\.hub-card\[data-tone\] \{[\s\S]*?background: hsl\(var\(--card\)\)/, 'aucune carte ne porte un aplat coloré');
+  assert.match(hub, /\.hub-card__icon \{[\s\S]*?color: var\(--tone\)/, 'la couleur de rubrique reste dans l’icône');
+  assert.match(hub, /\.hub-card \{[\s\S]{0,900}text-align: start/, 'alignement naturel, pas de centrage systématique');
 });
 
 test('la grille d’emploi du temps et le dock s’adaptent aux téléphones 360–430 px', () => {

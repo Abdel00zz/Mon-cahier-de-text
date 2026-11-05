@@ -14,6 +14,15 @@
   --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground)));
   --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 11%, hsl(var(--card)));
   --workspace-focus: color-mix(in srgb, hsl(var(--primary)) 55%, hsl(var(--foreground)));
+  /* System UI : une surface de carte, un filet, un verre. Aucune carte ne
+     porte sa propre teinte ; la couleur reste au contenu et aux badges. */
+  --ui-hairline: hsl(var(--border));
+  --ui-card-surface: hsl(var(--card));
+  --ui-card-shadow: 0 1px 2px hsl(var(--foreground) / 0.045);
+  --ui-card-shadow-raised: 0 2px 6px -2px hsl(var(--foreground) / 0.06), 0 12px 28px -24px hsl(var(--foreground) / 0.22);
+  --ui-glass-bg: color-mix(in srgb, hsl(var(--card)) 84%, transparent);
+  --ui-glass-border: color-mix(in srgb, hsl(var(--border)) 88%, transparent);
+  --ui-glass-filter: blur(20px) saturate(150%);
   /* Densité de texte : base contextuelle (réduite sur téléphone) × choix du
      professeur. Seules les tailles de police en dépendent. */
   --app-text-scale-base: 1;
@@ -264,23 +273,25 @@ html[lang="ar"] .keep-class-title {
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Solid white workspace; accents remain on actions and class cards. */
-    --background: 0 0% 100%;
+    /* System UI : papier neutre légèrement chaud (équivalent One UI #F2F2F2),
+       une seule surface de carte presque blanche, séparée par un filet d'un
+       pixel — jamais par un empilement d'aplats colorés. */
+    --background: 40 18% 94%;
     --foreground: 25 35.29% 13.33%; /* #2e2016 */
-    --card: 0 0% 100%;
+    --card: 40 32% 99%;            /* surface unique de toutes les cartes */
     --card-foreground: 25 35.29% 13.33%;
-    --popover: 0 0% 100%;
+    --popover: 40 32% 99%;
     --popover-foreground: 25 35.29% 13.33%;
     --primary: 25.56 33.75% 31.37%; /* #6b4c35 */
     --primary-foreground: 37.5 44.44% 96.47%;
-    --secondary: 35.29 34.69% 90.39%;
+    --secondary: 35.29 20% 89%;
     --secondary-foreground: 45 12% 16%;
-    --muted: 38.57 43.75% 93.73%; /* #f6f1e8 */
+    --muted: 36 20% 91%;
     --muted-foreground: 27.57 20.22% 35.88%; /* #6e5a49 */
     --accent: 18 42% 89%;          /* argile de survol */
     --accent-foreground: 15 55% 25%;
-    --border: 34.74 26.76% 86.08%; /* #e5ddd2 */
-    --input: 33 22.22% 82.35%; /* #dcd3c8 */
+    --border: 35 14% 84%;          /* filet d'un pixel, jamais un cadre */
+    --input: 35 12% 80%;
     --ring: 26 34% 31%;
     --destructive: 4.62 56.52% 45.10%; /* #b43c32 */
     --destructive-foreground: 45 40% 98%;

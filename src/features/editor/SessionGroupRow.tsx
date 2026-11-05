@@ -203,7 +203,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             <button
                 type="button"
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-start self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -258,10 +258,10 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                 </div>
             ))}
 
-            {/* Colonne 3 : Remarque unique et fusionnée pour toute la séance, parfaitement centrée */}
+            {/* Colonne 3 : Remarque unique et fusionnée pour toute la séance */}
             <div
                 data-session-cell="remark"
-                className={`flex flex-col justify-center items-center min-w-0 self-stretch p-1 sm:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
+                className={`flex flex-col justify-center items-start min-w-0 self-stretch p-1 sm:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                 style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
                 onClick={() => onOpenRemark?.(items[0].indices)}
             >
@@ -271,7 +271,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                     title={t('remark.editTitle')}
                     aria-label={t('remark.editTitle')}
                     data-remark-cell="true"
-                    className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-center justify-center text-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="flex min-h-11 h-full flex-1 w-full cursor-pointer flex-col items-start justify-center text-start gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                     {(() => {
                       const { homeworkLine, otherRemark } = splitRemarkContent(displayRemark);
@@ -281,7 +281,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                             <span
                               data-session-homework="true"
                               dir={textDirectionAttribute(homeworkLine)}
-                              className="editor-session-note block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
+                              className="editor-session-note block w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
                             >
                               {homeworkLine}
                             </span>
@@ -289,7 +289,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                           {otherRemark && (
                             <div
                               dir={textDirectionAttribute(otherRemark)}
-                              className="editor-type-remark w-full whitespace-pre-wrap break-words text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm"
+                              className="editor-type-remark w-full whitespace-pre-wrap break-words text-start font-semibold leading-snug text-foreground/80 text-xs sm:text-sm"
                             >
                               {renderDescriptionWithBold(otherRemark)}
                             </div>
@@ -305,7 +305,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         key={annotation}
                         data-session-annotation="true"
                         dir={textDirectionAttribute(annotation)}
-                        className="editor-session-note mt-0.5 block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
+                        className="editor-session-note mt-0.5 block w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
                       >
                         {annotation}
                       </span>

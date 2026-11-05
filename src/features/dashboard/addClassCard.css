@@ -10,13 +10,10 @@
   inset: 0;
   border-radius: inherit;
   overflow: hidden;
-  border: 1px solid hsl(var(--border) / .8);
+  border: 1px dashed hsl(var(--border));
   border-inline-end-width: 1px;
-  background: var(--class-paper);
-  box-shadow:
-    inset 0 1.5px 1px 0 hsl(0 0% 100% / 0.55),
-    inset 0 -1px 1px 0 hsl(var(--foreground) / 0.03),
-    0 8px 24px -10px hsl(var(--foreground) / 0.06);
+  background: hsl(var(--card));
+  box-shadow: none;
   mask: none !important;
   -webkit-mask: none !important;
   mask-image: none !important;
@@ -35,20 +32,14 @@
   display: none !important;
 }
 
-/* Mode sombre verre fumé (Glassmorphism) */
+/* Mode sombre : même surface que les autres cartes, filet discret. */
 .dark .class-card--create .class-card__sheet {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-inline-end: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow:
-    inset 0 1px 0.5px 0 hsl(0 0% 100% / 0.15),
-    inset 0 -1px 1px 0 hsl(0 0% 0% / 0.3),
-    0 10px 30px -10px hsl(var(--background) / 0.28);
+  background: hsl(var(--card));
+  border: 1px dashed hsl(var(--border));
+  box-shadow: none;
 }
 
-/* Contenu centré et aéré */
+/* Contenu calé sur le bord de lecture, comme une ligne de liste système */
 .class-create-card__content {
   position: relative;
   z-index: 2;
@@ -56,7 +47,7 @@
   flex: 1;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   padding-block: 20px;
   padding-inline: 24px;
@@ -72,8 +63,8 @@
   flex: 0 0 auto;
   border-radius: 16px;
   color: hsl(var(--primary));
-  background: hsl(45 16% 99%);
-  border: 1px solid hsl(var(--primary) / .08);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
   box-shadow:
     inset 0 1.5px 1px 0 hsl(0 0% 100% / 0.75),
     0 6px 16px -4px hsl(var(--foreground) / 0.1);
@@ -103,8 +94,8 @@
   font-size: 15.5px;
   font-weight: 650;
   line-height: 1.4;
-  text-align: center;
-  text-wrap: balance;
+  text-align: start;
+  text-wrap: pretty;
   color: hsl(var(--foreground));
   letter-spacing: -0.015em;
   transition: color 180ms ease, transform 180ms ease;

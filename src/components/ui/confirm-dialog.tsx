@@ -126,6 +126,7 @@ export function ConfirmDialog({
                     data-glow={variant === 'destructive' ? 'danger' : 'primary'}
                     data-ambient="true"
                     data-mobile-presentation="dialog"
+                    data-modal-alert="true"
                     onOpenAutoFocus={(event) => {
                         const previous = document.activeElement;
                         if (previous instanceof HTMLElement) returnFocusRef.current = previous;

@@ -132,9 +132,11 @@ for (const theme of ['clair', 'sombre'] as const) {
       assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
       assert.ok(ratioBg >= 1.12, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
     } else {
-      assert.deepEqual(background, [0, 0, 100], 'fond blanc uni');
-      assert.deepEqual(card, background, 'pas de couche de papier teintée');
-      assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures distinguent les surfaces blanches');
+      // System UI : un papier neutre, une surface de carte unique plus claire,
+      // et un filet d'un pixel qui porte la séparation — pas d'aplat coloré.
+      assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
+      assert.ok(ratioBg >= 1.10, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
+      assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures distinguent les surfaces');
     }
   });
 }

@@ -34,14 +34,13 @@
   min-width: 0;
   min-height: 4.8rem;
   height: auto;
-  border-radius: 1.375rem;
-  border: 0 solid var(--card-border, #cfe6d5);
-  background-color: var(--card-bg, #e6f3e9);
-  background-image: linear-gradient(135deg, var(--card-bg, #e6f3e9), var(--card-bg2, var(--card-bg, #cfe6d5)));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
-    0 10px 20px -16px rgba(35, 28, 68, 0.14);
-  color: var(--card-title, #14503a);
+  border-radius: var(--ui-radius-surface, 1.25rem);
+  border: 1px solid var(--card-border, hsl(var(--border)));
+  /* Une seule surface de carte : l'aplat neutre remplace les lavis par matière. */
+  background-color: hsl(var(--card));
+  background-image: none;
+  box-shadow: var(--ui-card-shadow);
+  color: var(--card-title, hsl(var(--foreground)));
   font-family: "Readex Pro", var(--font-sans);
   font-synthesis: weight;
   box-sizing: border-box;
@@ -57,7 +56,7 @@
 .class-card:hover,
 .class-card--active,
 .class-card[data-session-active="true"] {
-  border-radius: 1.5rem;
+  border-radius: var(--ui-radius-surface, 1.25rem);
 }
 
 [dir="rtl"] .class-card {
@@ -607,14 +606,10 @@
 @media (hover: hover) and (pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .class-card:has(.class-card__open:hover) {
     transform: translateY(-2px);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.85),
-      0 14px 26px -14px rgba(35, 28, 68, 0.22) !important;
+    box-shadow: var(--ui-card-shadow-raised) !important;
   }
   .dark .class-card:has(.class-card__open:hover) {
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
-      0 16px 30px -12px rgba(0, 0, 0, 0.65) !important;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 30px -20px rgb(0 0 0 / 0.7) !important;
   }
 }
 
@@ -623,12 +618,13 @@
   transition-duration: 100ms;
 }
 
-/* Couleur par matière (PAL) */
+/* Couleur par matière (PAL) : la surface reste celle de l'application. */
 .class-card {
-  --card-bg: #e6f3e9;
-  --card-border: #cfe6d5;
-  --card-title: #14503a;
-  --card-secondary: #3f7f63;
+  --card-bg: hsl(var(--card));
+  --card-bg2: hsl(var(--card));
+  --card-border: hsl(var(--border));
+  --card-title: hsl(var(--foreground));
+  --card-secondary: hsl(var(--muted-foreground));
 }
 
 .class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf4e4; --class-accent: #724405; --class-vivid: #d97706; --card-bg: #f7f0d4; --card-border: #ebe0ad; --card-title: #5c4a05; --card-secondary: #8f7a1c; }
@@ -662,6 +658,16 @@
   --class-pill-bg: hsl(var(--class-hue) 32% 24%);
 }
 
+/* Surface unique, encre unique : la teinte de la classe ne vit plus que dans
+   le filet (--card-border) et les accents internes. */
+.class-card[data-keep-tone]:not([data-class-color]),
+.class-card[data-class-color] {
+  --card-bg: hsl(var(--card));
+  --card-bg2: hsl(var(--card));
+  --card-title: hsl(var(--foreground));
+  --card-secondary: hsl(var(--muted-foreground));
+}
+
 .dark .class-card {
   --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
   --class-ink: hsl(var(--foreground));
@@ -674,17 +680,14 @@
   background: var(--class-paper);
 }
 
-/* Forme sereine (.card de aqsami-v2) : hauteur minimale 4.8rem, rayon asymétrique doux 1.375rem / 0.55rem et ombre subtile */
+/* Forme System UI : rayon unique, hauteur minimale 4.8rem, ombre de carte. */
 .class-card {
   min-height: 4.8rem !important;
-  border-radius: 1.375rem !important;
-  border-end-start-radius: 0.55rem !important;
+  border-radius: var(--ui-radius-surface, 1.25rem) !important;
 }
 
 .dark .class-card {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 10px 22px -14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 12px 28px -24px rgb(0 0 0 / 0.6);
 }
 
 @media (max-width: 767px), ((max-height: 500px) and (pointer: coarse)) {
@@ -741,10 +744,10 @@ html[data-platform="ios"] .class-card,
   gap: 4px;
   min-height: 88px;
   padding-inline-end: 12px;
-  border: 1px solid hsl(var(--border) / .8);
-  border-radius: 16px;
-  background: hsl(42 38% 98%);
-  box-shadow: 0 2px 8px hsl(var(--foreground) / .025);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--ui-radius-surface, 1.25rem);
+  background: hsl(var(--card));
+  box-shadow: var(--ui-card-shadow);
   font-family: var(--font-sans);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
@@ -840,44 +843,21 @@ html[data-platform="ios"] .class-list-item[dir="rtl"] .class-list-item__title,
 .dashboard-day-group:has(.class-card__menu[data-state='open']) { position: relative; z-index: 30; }
 @media (prefers-reduced-motion: reduce) { .class-card__menu svg { transition: none; } }
 
-/* Des surfaces assombries conservent la teinte en dégradé 135deg profond sans réduire la lisibilité (aqsami-v2). */
+/* Mode sombre : la même surface unique, un cran au-dessus du fond, et un
+   filet seulement effleuré par la teinte de la classe. */
 .dark .class-card {
-  --dark-c1: color-mix(in srgb, var(--card-bg, #e6f3e9) 15%, #171424);
-  --dark-c2: color-mix(in srgb, var(--card-bg2, var(--card-bg, #cfe6d5)) 22%, #1d192e);
-  --dark-title: color-mix(in srgb, var(--card-bg, #e6f3e9) 78%, #ffffff);
-  --dark-sub: color-mix(in srgb, var(--card-bg2, var(--card-bg, #cfe6d5)) 65%, #b8b2cc);
-  background-color: var(--dark-c1) !important;
-  background-image: linear-gradient(135deg, var(--dark-c1), var(--dark-c2)) !important;
-  border-color: color-mix(in srgb, var(--card-border, #c1e2ce) 28%, hsl(var(--border))) !important;
+  background-color: hsl(var(--card)) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--card-border, hsl(var(--border))) 45%, hsl(var(--border))) !important;
 }
-.dark .class-card[data-keep-tone="mint"],
-.dark .class-card[data-keep-tone="lime"] {
-  --dark-c1: #163029; --dark-c2: #1b3d33; --dark-title: #b8f0d8; --dark-sub: #7bcbb0;
-}
-.dark .class-card[data-keep-tone="lavender"],
-.dark .class-card[data-keep-tone="indigo"] {
-  --dark-c1: #241f42; --dark-c2: #2d2556; --dark-title: #ddd6fe; --dark-sub: #b5a8f8;
-}
-.dark .class-card[data-keep-tone="sky"] {
-  --dark-c1: #16293d; --dark-c2: #1c3550; --dark-title: #bae0ff; --dark-sub: #7ebef5;
-}
-.dark .class-card[data-keep-tone="coral"] {
-  --dark-c1: #362119; --dark-c2: #45291e; --dark-title: #fed7bf; --dark-sub: #f3a67c;
-}
-.dark .class-card[data-keep-tone="sand"] {
-  --dark-c1: #312914; --dark-c2: #3e3418; --dark-title: #fef0b8; --dark-sub: #dfca78;
-}
-.dark .class-card[data-keep-tone="rose"] {
-  --dark-c1: #351a28; --dark-c2: #442033; --dark-title: #fbcfe0; --dark-sub: #e895b6;
-}
-.dark .class-card__title { color: var(--dark-title, hsl(var(--foreground))) !important; }
-.dark .class-card__tier-plain { color: var(--dark-sub, hsl(var(--muted-foreground))) !important; }
-.dark .class-card__menu { color: var(--dark-sub, hsl(var(--foreground) / .85)) !important; }
+.dark .class-card__title { color: hsl(var(--foreground)) !important; }
+.dark .class-card__tier-plain { color: hsl(var(--muted-foreground)) !important; }
+.dark .class-card__menu { color: hsl(var(--muted-foreground)) !important; }
 .dark .class-card .class-card__group.keep-group-watermark { color: inherit !important; }
-.dark .class-card__schedule-capsule { color: rgba(214, 218, 234, 0.56) !important; }
+.dark .class-card__schedule-capsule { color: hsl(var(--muted-foreground)) !important; }
 .dark .class-card__schedule-time { color: inherit !important; }
 .dark .class-card--active .class-card__live {
-  color: var(--dark-title, hsl(var(--foreground)));
+  color: hsl(var(--foreground));
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.14);
 }

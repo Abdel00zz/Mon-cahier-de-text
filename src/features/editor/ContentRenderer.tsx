@@ -214,8 +214,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1';
     }
 
-    const isTopLevel = item.type === 'chapter' || isEvaluation;
-    const justificationClass = isTopLevel ? 'justify-center' : '';
+    // System UI : un titre se cale toujours sur le bord de lecture, jamais au
+    // centre ; seule la nature du bloc change sa couleur et sa graisse.
+    const justificationClass = 'justify-start text-start';
     
     if (isCorrection) {
       indentClass = 'editor-indent-1';
@@ -225,8 +226,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
         <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-bold tracking-tight select-none">
-            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
+          <div dir={textDirectionAttribute(chapterTitle)} className="editor-type-chapter my-3 flex w-full items-center justify-start text-start font-bold tracking-tight select-none">
+            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-pretty">
               {contentNumber && <bdi dir="ltr" className="me-2">{contentNumber}.</bdi>}
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />

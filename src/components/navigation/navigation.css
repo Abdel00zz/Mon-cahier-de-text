@@ -24,17 +24,17 @@
      (360 dp), 352 px sur un iPhone 16 — des cibles plus larges au pouce. */
   width: min(22rem, calc(100vw - 24px)); max-width: calc(100vw - 24px);
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  background: var(--serenite-sheet, hsl(var(--background)));
-  border: 1px solid var(--serenite-line, rgba(70, 55, 130, .11));
+  background: var(--ui-glass-bg);
+  border: 1px solid var(--ui-glass-border);
   border-radius: 30px; padding: 6px;
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  box-shadow: 0 0 0 1px var(--serenite-line, rgba(70, 55, 130, .08)), 0 12px 24px -14px rgba(35, 28, 68, .22), inset 0 1px 0 rgba(255, 255, 255, .75);
+  backdrop-filter: var(--ui-glass-filter);
+  -webkit-backdrop-filter: var(--ui-glass-filter);
+  box-shadow: 0 12px 24px -18px rgb(0 0 0 / .28), 0 1px 1px rgb(0 0 0 / .04);
   touch-action: pan-y pinch-zoom; z-index: 40; box-sizing: border-box;
 }
 .dark .mobile-tab-bar {
-  background: color-mix(in srgb, var(--serenite-bg, #13111c) 42%, #1c1929 58%);
-  box-shadow: 0 0 0 1px rgba(210, 198, 255, .1), 0 12px 28px -14px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .08);
+  background: var(--ui-glass-bg);
+  box-shadow: 0 12px 28px -18px rgb(0 0 0 / .7);
 }
 .mobile-tab-bar__items { display: flex; align-items: center; gap: 4px; width: 100%; padding: 0; margin: 0; }
 .workspace-nav-button {
@@ -63,12 +63,12 @@
 .mobile-tab-label { max-width: 100%; text-align: center; overflow-wrap: anywhere; font-size: 11px; font-weight: 600; line-height: 1.2; }
 .workspace-nav-active { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
 .workspace-nav-button--mobile .workspace-nav-active {
-  background: linear-gradient(135deg, var(--serenite-g1, #5f52d6), var(--serenite-g2, #3e6ec9));
-  box-shadow: 0 10px 18px -8px rgba(95, 82, 214, .75), inset 0 1px 0 rgba(255, 255, 255, .24);
+  background: hsl(var(--primary));
+  box-shadow: none;
 }
 .workspace-nav-button--mobile[aria-current='page'],
 .workspace-nav-button--mobile[aria-current='page'] svg,
-.workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label { color: #fff; }
+.workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label { color: hsl(var(--primary-foreground)); }
 .workspace-nav-button--mobile:not([aria-current='page']) { background: transparent; }
 .workspace-nav-button--mobile:not([aria-current='page']) svg { fill: none; }
 .workspace-nav-button--desktop { border-radius: .875rem; }

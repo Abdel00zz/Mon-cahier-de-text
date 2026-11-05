@@ -1,22 +1,23 @@
 /* One solid canvas shared with navigation and assistant surfaces. */
 :root {
   --serenite-bg: hsl(var(--background));
-  --serenite-ink: #221d35;
-  --serenite-mute: #6b6385;
-  --serenite-line: rgba(70, 55, 130, .11);
+  --serenite-ink: hsl(var(--foreground));
+  --serenite-mute: hsl(var(--muted-foreground));
+  --serenite-line: hsl(var(--border));
   --serenite-glass: hsl(var(--card));
   --serenite-solid: hsl(var(--background));
   --serenite-sheet: hsl(var(--background));
-  --serenite-g1: #5f52d6;
-  --serenite-g2: #3e6ec9;
-  --serenite-grad: linear-gradient(135deg, var(--serenite-g1), var(--serenite-g2));
+  --serenite-g1: hsl(var(--primary));
+  --serenite-g2: hsl(var(--primary));
+  /* Un seul accent : la couleur d'action de l'application, sans dégradé. */
+  --serenite-grad: linear-gradient(0deg, var(--serenite-g1), var(--serenite-g2));
   --serenite-ease: cubic-bezier(.34, 1.4, .5, 1);
   --spring: cubic-bezier(.34, 1.4, .5, 1);
   --dash-bg: var(--serenite-bg);
   --dash-header-ink: var(--serenite-ink);
   --dash-group-ink: var(--serenite-mute);
-  --dash-btn-bg: var(--serenite-grad);
-  --dash-btn-shadow: 0 10px 20px -8px rgba(95, 82, 214, .75), inset 0 1px 0 rgba(255, 255, 255, .28);
+  --dash-btn-bg: hsl(var(--primary));
+  --dash-btn-shadow: 0 8px 18px -12px hsl(var(--primary) / .8);
   --dash-robot-badge-bg: #8b3a2b;
   --dash-tabbar-bg: var(--serenite-glass);
   --dash-tabbar-border: var(--serenite-line);
@@ -31,14 +32,14 @@
 }
 .dark {
   --serenite-bg: hsl(var(--background));
-  --serenite-ink: #f2effc;
-  --serenite-mute: #9e96b8;
-  --serenite-line: rgba(210, 198, 255, .12);
-  --serenite-glass: rgba(36, 32, 58, .94);
-  --serenite-solid: #201d33;
-  --serenite-sheet: rgba(30, 27, 48, .94);
-  --serenite-g1: #6c5ce7;
-  --serenite-g2: #487eb0;
+  --serenite-ink: hsl(var(--foreground));
+  --serenite-mute: hsl(var(--muted-foreground));
+  --serenite-line: hsl(var(--border));
+  --serenite-glass: hsl(var(--card));
+  --serenite-solid: hsl(var(--background));
+  --serenite-sheet: hsl(var(--background));
+  --serenite-g1: hsl(var(--primary));
+  --serenite-g2: hsl(var(--primary));
 }
 [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
   --pixel-spring: var(--spring);
@@ -76,7 +77,7 @@
 .dashboard-header-plus-btn {
   position: relative;
   display: grid; place-items: center; width: 38px; height: 38px; min-width: 38px; min-height: 38px;
-  border-radius: 50%; background: var(--serenite-grad); color: #fff; border: 0;
+  border-radius: 50%; background: var(--dash-btn-bg); color: hsl(var(--primary-foreground)); border: 0;
   box-shadow: var(--dash-btn-shadow); cursor: pointer; touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: transform 300ms var(--spring), box-shadow 250ms ease, filter 250ms ease;
@@ -96,7 +97,7 @@
 @media (hover: hover) and (pointer: fine) {
   .dashboard-header-plus-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 24px -8px rgba(95, 82, 214, .85), inset 0 1px 0 rgba(255, 255, 255, .34);
+    box-shadow: 0 12px 22px -14px hsl(var(--primary) / .9);
   }
   .dashboard-header-plus-btn:hover svg { transform: rotate(90deg); }
 }

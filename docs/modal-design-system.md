@@ -99,7 +99,40 @@ import { ModalEmptyState } from '@/components/ui/ModalEmptyState';
 
 ---
 
-## 4. Accessibilité & Dégradation Gracieuse
+## 4. Téléphones : la fenêtre devient un écran (System UI)
+
+Sous **768 px**, une fenêtre n'est plus une feuille posée sur la page : elle
+remplit l'écran, bords vifs, et se lit comme une application système native
+(One UI / Google Pixel).
+
+| Règle | Réalisation (`modal-motion.css`) |
+| --- | --- |
+| Plein écran | `width/height: 100 %`, `max-height: var(--modal-visible-height)`, `border-radius: 0` |
+| Zone visible réelle | `--modal-visible-height` suit clavier et barres système |
+| En-tête et pied collants | `position: sticky` + verre `--ui-glass-bg` / `--ui-glass-filter` |
+| Poignée masquée | `.modal-handle-region { display: none }` : plus de glissement à fermer |
+| Entrée | `modal-fullscreen-in` — 280 ms, montée douce, `prefers-reduced-motion` respecté |
+| Corps opaque | seule la coque est en verre ; le texte reste à 4.5:1 |
+
+Au-delà de 768 px, la fenêtre reste un dialogue flottant (28 px de rayon, verre
+teinté), centré dans la zone visible.
+
+## 5. Une surface, un filet, un accent
+
+Les fenêtres ne portent plus de frise, de cannelure ni de dégradé coloré :
+
+- `--modal-surface-bg` = `hsl(var(--card))`, la même surface que toutes les cartes ;
+- `--modal-surface-tint` = un simple voile de lumière en haut (`linear-gradient`) ;
+- `--modal-border-artistic` = `hsl(var(--border))`, un filet d'un pixel ;
+- la couleur ne sert plus qu'au sens : action principale (`--primary`), succès,
+  avertissement, destruction.
+
+Les titres de fenêtre, de section et de contenu se calent toujours sur le bord
+de lecture : plus de centrage systématique.
+
+---
+
+## 6. Accessibilité & Dégradation Gracieuse
 
 1. **`prefers-reduced-motion`** :
    Toutes les animations de pulsations lumineuses (`.glow-pulse-*`), de ressorts et de transitions sont désactivées instantanément lorsque le système de l'enseignant le demande :

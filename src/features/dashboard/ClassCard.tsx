@@ -110,16 +110,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const cardStyle = useMemo<CSSProperties>(() => {
         if (!palette) return {};
         return {
-            backgroundColor: palette.bg,
-            borderColor: isActiveSession ? undefined : palette.border,
-            color: palette.title,
-            ['--card-bg' as string]: palette.bg,
-            ['--card-bg2' as string]: palette.bg2 ?? palette.bg,
+            // System UI : une surface unique pour toutes les cartes. La palette
+            // de la classe ne peint plus le fond ; elle ne teinte que le filet.
+            ['--card-bg' as string]: 'hsl(var(--card))',
+            ['--card-bg2' as string]: 'hsl(var(--card))',
             ['--card-border' as string]: palette.border,
-            ['--card-title' as string]: palette.title,
-            ['--card-secondary' as string]: palette.secondary,
+            ['--card-title' as string]: 'hsl(var(--foreground))',
+            ['--card-secondary' as string]: 'hsl(var(--muted-foreground))',
+            ['--class-accent' as string]: palette.secondary,
+            ['--class-vivid' as string]: palette.border,
         } as CSSProperties;
-    }, [isActiveSession, palette]);
+    }, [palette]);
 
     return (
         <div className="dashboard-class-slot w-full">

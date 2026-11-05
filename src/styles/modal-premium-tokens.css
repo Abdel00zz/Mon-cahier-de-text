@@ -33,17 +33,14 @@
   --modal-timing-content: 280ms;
   --modal-timing-stagger: 55ms;
 
-  /* ── Palette Classique Hellénique (Marbre Pentélique, Blanc Pur & Voile Irisé) ─── */
+  /* ── Palette neutre (une surface, un filet, un verre) ──────────────────── */
   --modal-surface-bg: hsl(var(--card));
-  --modal-surface-tint: radial-gradient(
-    130% 75% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 4%, hsla(250, 45%, 98%, 0.45)) 0%,
-    transparent 74%
-  );
+  /* Voile de lumière discret, sans motif ni vignette colorée. */
+  --modal-surface-tint: linear-gradient(180deg, rgb(255 255 255 / 0.55), transparent 34%);
   --modal-header-bg: hsl(var(--card));
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 96%, hsl(240 10% 96%) 4%);
-  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 88%, transparent);
-  --modal-scrim-bg: color-mix(in srgb, hsl(222 28% 12% / 0.46) 92%, hsl(var(--primary) / 0.08));
+  --modal-footer-bg: hsl(var(--card));
+  --modal-border-artistic: hsl(var(--border));
+  --modal-scrim-bg: color-mix(in srgb, hsl(var(--foreground)) 48%, transparent);
 
   /* ── Bouton Fermer Circulaire (Médaillon Antique) ──────────────────────── */
   --modal-close-size: 44px;
@@ -52,14 +49,6 @@
   --modal-close-border: color-mix(in srgb, hsl(var(--border)) 78%, transparent);
   --modal-close-hover-bg: color-mix(in srgb, hsl(var(--primary)) 8.5%, hsl(var(--card)));
   --modal-close-hover-border: color-mix(in srgb, hsl(var(--primary)) 36%, hsl(var(--border)));
-
-  /* ── Motifs & Ornements Helléniques (Frise Méandre & Cannelures) ───────── */
-  --modal-frieze-color: color-mix(in srgb, hsl(var(--primary)) 22%, hsl(var(--foreground) / 0.15));
-  --modal-column-fluting: linear-gradient(90deg, 
-    transparent 0%, 
-    color-mix(in srgb, hsl(var(--foreground) / 0.04) 50%, transparent) 50%, 
-    transparent 100%
-  );
 
   /* ── Magnetic & Ambient Breath Tokens ──────────────────────────────────── */
   --modal-magnetic-glow: 0 0 36px -4px color-mix(in srgb, hsl(var(--primary)) 46%, transparent);
@@ -80,25 +69,18 @@
   --modal-shadow-high: 0 30px 72px -18px rgb(0 0 0 / 0.74);
 
   /* Palette Sombre (Basalte noble sculpté, zéro noir pur) */
-  --modal-surface-bg: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 28% 15%) 5%);
-  --modal-surface-tint: radial-gradient(
-    130% 70% at 50% 0%,
-    color-mix(in srgb, hsl(var(--primary)) 8%, hsla(222, 35%, 22%, 0.32)) 0%,
-    transparent 72%
-  );
-  --modal-header-bg: color-mix(in srgb, hsl(var(--card)) 93%, hsl(224 25% 18%) 7%);
-  --modal-footer-bg: color-mix(in srgb, hsl(var(--card)) 95%, hsl(224 28% 14%) 5%);
-  --modal-border-artistic: color-mix(in srgb, hsl(var(--border)) 88%, hsl(220 25% 32%) 12%);
-  --modal-scrim-bg: hsl(224 32% 6% / 0.78);
+  --modal-surface-bg: hsl(var(--card));
+  --modal-surface-tint: linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 34%);
+  --modal-header-bg: hsl(var(--card));
+  --modal-footer-bg: hsl(var(--card));
+  --modal-border-artistic: hsl(var(--border));
+  --modal-scrim-bg: rgb(8 7 6 / 0.72);
 
   /* Bouton Fermer Circulaire Sombre */
   --modal-close-bg: color-mix(in srgb, hsl(var(--card)) 82%, hsl(224 25% 18%) 18%);
   --modal-close-border: color-mix(in srgb, hsl(var(--border)) 82%, transparent);
   --modal-close-hover-bg: color-mix(in srgb, hsl(var(--primary)) 16%, hsl(var(--card)));
   --modal-close-hover-border: color-mix(in srgb, hsl(var(--primary)) 45%, hsl(var(--border)));
-
-  /* Frise Méandre Sombre */
-  --modal-frieze-color: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground) / 0.18));
 
   /* Magnetic & Ambient Sombre */
   --modal-magnetic-glow: 0 0 40px -4px color-mix(in srgb, hsl(var(--primary)) 40%, transparent);

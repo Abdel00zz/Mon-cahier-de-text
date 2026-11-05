@@ -183,7 +183,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
 
     return (
-      <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
+      <div className={`flex h-full min-h-[48px] w-full flex-col items-start justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
         {isMiddle && <DateCard dateStr={dateStr} hasWarning={hasWarning} />}
       </div>
     );
@@ -191,7 +191,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
   // Not merged
   return (
-    <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
+    <div className={`flex h-full min-h-[48px] w-full flex-col items-start justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
       <DateCard dateStr={dateStr} hasWarning={hasWarning} />
     </div>
   );
@@ -231,7 +231,7 @@ const RemarkCell: FC<{
   const editable = typeof onOpenRemark === 'function';
   const cellTitle = editable ? t('remark.editTitle') : undefined;
   const body = (isMergedCell: boolean) => (
-    <div className="flex w-full h-full flex-col justify-center items-center text-center">
+    <div className="flex w-full h-full flex-col justify-center items-start text-start">
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); onOpenRemark?.(); }}
@@ -239,7 +239,7 @@ const RemarkCell: FC<{
       title={cellTitle}
       aria-label={cellTitle}
       data-remark-cell="true"
-      className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-center text-center ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+      className={`flex min-h-[44px] h-full flex-1 w-full flex-col justify-center items-start text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (() => {
         const fullRemark = merge?.sharedRemark ?? value;
@@ -250,13 +250,13 @@ const RemarkCell: FC<{
               <span
                 data-session-homework="true"
                 dir={textDirectionAttribute(homeworkLine)}
-                className="editor-session-note block w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
+                className="editor-session-note block w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
               >
                 {homeworkLine}
               </span>
             )}
             {otherRemark && (
-              <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
+              <div dir={textDirectionAttribute(otherRemark)} className="editor-type-remark min-h-[22px] w-full whitespace-pre-wrap break-words p-0.5 text-start font-semibold leading-snug text-foreground/80 text-xs sm:text-sm">
                 {renderDescriptionWithBold(otherRemark)}
               </div>
             )}
@@ -271,7 +271,7 @@ const RemarkCell: FC<{
         <span
           data-session-annotation="true"
           dir={textDirectionAttribute(sessionAnnotation)}
-          className="editor-session-note mt-0.5 w-full whitespace-pre-line break-words text-center text-[11px] font-semibold leading-snug text-muted-foreground"
+          className="editor-session-note mt-0.5 w-full whitespace-pre-line break-words text-start text-[11px] font-semibold leading-snug text-muted-foreground"
         >
           {sessionAnnotation}
         </span>
@@ -283,8 +283,8 @@ const RemarkCell: FC<{
 
   if (shouldMerge) {
     return (
-      <div className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-center ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
-        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center w-full">
+      <div className={`relative flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+        <div className="relative z-10 h-full flex flex-col justify-center items-start text-start w-full">
           {body(true)}
         </div>
       </div>
@@ -292,7 +292,7 @@ const RemarkCell: FC<{
   }
 
   return (
-    <div className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-center ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
+    <div className={`flex min-w-0 p-1 md:p-1.5 cursor-pointer hover:bg-primary/[0.03] transition-colors items-center justify-start ${borderClass} ${lineClass} ${bgClass}`} onClick={() => editable && onOpenRemark?.()}>
       {body(false)}
     </div>
   );
@@ -446,7 +446,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`relative flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-start px-2 py-1.5 sm:px-3 cursor-pointer ${sortable ? 'editor-row-content--sortable' : ''} ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         data-reorder-direction={reorderDirection}
         tabIndex={sortable ? 0 : undefined}
@@ -462,7 +462,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         {sortable && <button type="button" data-reorder-handle onClick={event => event.stopPropagation()} className="editor-reorder-handle" aria-label={t('editor.reorderHandle')} title={t('editor.reorderHandle')}><GripVertical size={18} aria-hidden="true" /></button>}
         <div className="min-w-0 w-full">
-          <div className="flex w-full items-center justify-center py-1">
+          <div className="flex w-full items-center justify-start py-1">
             <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} getDocumentPreview={getDocumentPreview} onOpenDocumentPreview={onOpenDocumentPreview} />
           </div>
         </div>
