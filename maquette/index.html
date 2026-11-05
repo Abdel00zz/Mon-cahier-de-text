@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fr" dir="ltr" data-theme="light" data-size="md">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cahier de textes — maquette</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/app.css" />
+  </head>
+  <body>
+    <!-- ── Jeu d'icônes (tracés de 24 px, dessinés au trait) ─────────────── -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-classes" viewBox="0 0 24 24"><path d="M4 7h7v12H4zM13 7h7v7h-7zM13 16h7v3h-7z" /></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5zM19 18v3H6.5A2.5 2.5 0 0 1 4 18.5" /></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19zM4 9.5h16M8.5 3v3.5M15.5 3v3.5" /></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1H21a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.4 1z" /></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.3a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.2 1-1.2 1.8v.4M12 17.2h.01" /></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3" /></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M5 8h14M5 12h14M5 16h14" /></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z" /></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v6M14 11v6" /></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></symbol>
+      <symbol id="i-arrow-start" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" /></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6" /></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 11.5 12 16l4.5-4.5M5 19h14" /></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5M7.5 8.5 12 4l4.5 4.5M5 19h14" /></symbol>
+      <symbol id="i-archive" viewBox="0 0 24 24"><path d="M4 8h16v12H4zM3 4h18v4H3zM9.5 12h5" /></symbol>
+      <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6" /></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6" /></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2" /></symbol>
+    </svg>
+
+    <div class="app">
+      <!-- ── Rail de navigation ─────────────────────────────────────────── -->
+      <aside class="rail">
+        <div class="rail-brand">
+          <span class="rail-title" data-i18n="app.title">Cahier de textes</span>
+          <span class="rail-sub" data-i18n="app.establishment">Lycée Al Massira</span>
+        </div>
+
+        <nav class="rail-nav" aria-label="Navigation principale">
+          <button class="rail-item is-active" data-screen="classes" type="button">
+            <svg class="icon"><use href="#i-classes" /></svg>
+            <span class="rail-long" data-i18n="nav.classes">Classes</span>
+            <span class="rail-short" data-i18n="nav.classes">Classes</span>
+          </button>
+          <button class="rail-item" data-screen="cahier" type="button">
+            <svg class="icon"><use href="#i-book" /></svg>
+            <span class="rail-long" data-i18n="nav.cahier">Cahier</span>
+            <span class="rail-short" data-i18n="nav.cahier">Cahier</span>
+          </button>
+          <button class="rail-item" data-screen="emploi" type="button">
+            <svg class="icon"><use href="#i-calendar" /></svg>
+            <span class="rail-long" data-i18n="nav.emploi">Emploi du temps</span>
+            <span class="rail-short" data-i18n="nav.emploiShort">Emploi</span>
+          </button>
+          <button class="rail-item" data-screen="reglages" type="button">
+            <svg class="icon"><use href="#i-settings" /></svg>
+            <span class="rail-long" data-i18n="nav.reglages">Réglages</span>
+            <span class="rail-short" data-i18n="nav.reglagesShort">Réglages</span>
+          </button>
+          <button class="rail-item" data-screen="aide" type="button">
+            <svg class="icon"><use href="#i-help" /></svg>
+            <span class="rail-long" data-i18n="nav.aide">Aide</span>
+            <span class="rail-short" data-i18n="nav.aide">Aide</span>
+          </button>
+        </nav>
+
+        <div class="rail-foot">
+          <button class="rail-theme" id="theme-toggle" type="button" aria-label="Basculer le thème">
+            <svg class="icon"><use href="#i-moon" /></svg>
+          </button>
+        </div>
+      </aside>
+
+      <!-- ── Contenu ────────────────────────────────────────────────────── -->
+      <main class="content">
+        <!-- ══ Écran 1 — Classes ═════════════════════════════════════════ -->
+        <section class="page is-active" id="screen-classes" aria-labelledby="classes-title">
+          <header class="page-head">
+            <h1 class="page-title" id="classes-title" data-i18n="classes.title">Mes classes</h1>
+            <div class="head-actions">
+              <label class="search">
+                <svg class="icon"><use href="#i-search" /></svg>
+                <input id="classes-search" type="search" data-i18n-placeholder="classes.search" placeholder="Rechercher une classe" />
+              </label>
+              <button class="btn btn-round" id="classes-add" type="button" aria-label="Ajouter une classe">
+                <svg class="icon"><use href="#i-plus" /></svg>
+              </button>
+            </div>
+          </header>
+
+          <p class="page-meta" id="classes-meta"></p>
+
+          <div class="page-body">
+            <div class="class-grid" id="class-grid"></div>
+
+            <div class="empty" id="classes-empty" hidden>
+              <svg class="empty-glyph"><use href="#i-classes" /></svg>
+              <h2 class="empty-title" data-i18n="classes.empty.title">Créez votre première classe</h2>
+              <p class="empty-text" data-i18n="classes.empty.text">
+                Une classe suffit pour organiser votre progression et remplir votre cahier.
+              </p>
+              <button class="empty-cta" data-open-dialog="class-dialog" type="button">
+                <span class="empty-cta-glyph"><svg class="icon"><use href="#i-plus" /></svg></span>
+                <span data-i18n="classes.empty.action">Ajouter une classe</span>
+              </button>
+            </div>
+
+            <div class="empty" id="classes-noresult" hidden>
+              <svg class="empty-glyph"><use href="#i-search" /></svg>
+              <h2 class="empty-title" data-i18n="classes.noresult.title">Aucune classe ne correspond</h2>
+              <p class="empty-text" data-i18n="classes.noresult.text">Essayez un autre nom, une matière ou un niveau.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══ Écran 2 — Cahier ══════════════════════════════════════════ -->
+        <section class="page" id="screen-cahier" aria-labelledby="cahier-title">
+          <header class="page-head page-head--stack">
+            <button class="btn btn-ghost btn-icon" id="cahier-back" type="button" aria-label="Retour aux classes">
+              <svg class="icon"><use href="#i-arrow-start" /></svg>
+            </button>
+            <h1 class="page-title" id="cahier-title">1 PCSI</h1>
+            <p class="page-sub" id="cahier-sub">Mathématiques · Prépa</p>
+            <div class="head-actions">
+              <button class="btn" id="session-new" type="button" data-i18n="cahier.newSession">Nouvelle séance</button>
+              <button class="btn" id="session-pdf" type="button" data-i18n="cahier.export">Exporter en PDF</button>
+            </div>
+          </header>
+
+          <div class="page-body">
+            <div class="cahier-workspace" id="cahier-workspace">
+              <div class="sessions">
+                <div class="sessions-head">
+                  <span class="overline" data-i18n="cahier.sessions">Séances</span>
+                  <label class="date-field">
+                    <span class="visually-hidden" data-i18n="cahier.date">Date</span>
+                    <input id="session-date" type="date" />
+                  </label>
+                </div>
+                <ul class="session-list" id="session-list" role="listbox" aria-label="Séances"></ul>
+                <button class="btn btn-danger" id="session-delete" type="button" data-i18n="cahier.deleteSession">
+                  Supprimer la séance
+                </button>
+              </div>
+
+              <div class="plan">
+                <div class="tools">
+                  <button class="btn" data-add="chapter" type="button" data-i18n="cahier.addChapter">Chapitre</button>
+                  <button class="btn" data-add="section" type="button" data-i18n="cahier.addSection">Section</button>
+                  <button class="btn" data-add="subsection" type="button" data-i18n="cahier.addSubsection">Sous-section</button>
+                  <button class="btn" data-add="item" type="button" data-i18n="cahier.addItem">Élément</button>
+                  <button class="btn" data-add="evaluation" type="button" data-i18n="cahier.addEvaluation">Évaluation</button>
+                  <span class="tools-gap"></span>
+                  <button class="btn btn-icon" id="item-up" type="button" aria-label="Monter">
+                    <svg class="icon"><use href="#i-up" /></svg>
+                  </button>
+                  <button class="btn btn-icon" id="item-down" type="button" aria-label="Descendre">
+                    <svg class="icon"><use href="#i-down" /></svg>
+                  </button>
+                  <button class="btn btn-danger" id="item-remove" type="button" data-i18n="cahier.remove">Retirer</button>
+                </div>
+
+                <div class="tree" id="plan-tree" role="tree"></div>
+
+                <div class="empty empty-inline" id="plan-empty" hidden>
+                  <svg class="empty-glyph"><use href="#i-book" /></svg>
+                  <h2 class="empty-title" data-i18n="cahier.planEmpty.title">Le plan est vide</h2>
+                  <p class="empty-text" data-i18n="cahier.planEmpty.text">
+                    Ajoutez un chapitre, puis ses sections. La numérotation suit toute seule.
+                  </p>
+                </div>
+
+                <div class="notes">
+                  <label class="note">
+                    <span class="overline" data-i18n="cahier.remark">Remarque</span>
+                    <textarea id="session-remark" rows="2" data-i18n-placeholder="cahier.remark" placeholder="Remarque"></textarea>
+                  </label>
+                  <label class="note">
+                    <span class="overline" data-i18n="cahier.homework">Travail à faire</span>
+                    <textarea id="session-homework" rows="2" data-i18n-placeholder="cahier.homework" placeholder="Travail à faire"></textarea>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty" id="cahier-empty" hidden>
+              <svg class="empty-glyph"><use href="#i-book" /></svg>
+              <h2 class="empty-title" data-i18n="cahier.noClass.title">Aucun cahier ouvert</h2>
+              <p class="empty-text" data-i18n="cahier.noClass.text">Choisissez une classe pour reprendre la rédaction.</p>
+              <button class="empty-cta" data-goto="classes" type="button">
+                <span class="empty-cta-glyph"><svg class="icon"><use href="#i-classes" /></svg></span>
+                <span data-i18n="nav.classes">Classes</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══ Écran 3 — Emploi du temps ═════════════════════════════════ -->
+        <section class="page" id="screen-emploi" aria-labelledby="emploi-title">
+          <header class="page-head">
+            <h1 class="page-title" id="emploi-title" data-i18n="emploi.title">Emploi du temps</h1>
+            <div class="head-actions seg" role="group" aria-label="Période">
+              <button class="seg-item is-active" data-period="morning" type="button" data-i18n="emploi.morning">Matin</button>
+              <button class="seg-item" data-period="afternoon" type="button" data-i18n="emploi.afternoon">Après-midi</button>
+            </div>
+          </header>
+
+          <p class="page-meta" data-i18n="emploi.hint">Cliquez sur une case pour y placer une classe.</p>
+
+          <div class="page-body">
+            <div class="timetable-wrap">
+              <table class="timetable" id="timetable">
+                <thead id="timetable-head"></thead>
+                <tbody id="timetable-body"></tbody>
+              </table>
+            </div>
+            <p class="legend" id="timetable-legend"></p>
+          </div>
+        </section>
+
+        <!-- ══ Écran 4 — Réglages ════════════════════════════════════════ -->
+        <section class="page" id="screen-reglages" aria-labelledby="reglages-title">
+          <header class="page-head">
+            <h1 class="page-title" id="reglages-title" data-i18n="reglages.title">Réglages</h1>
+          </header>
+
+          <div class="page-body scroll">
+            <section class="card">
+              <h2 class="card-title" data-i18n="reglages.identity">Identité</h2>
+              <div class="fields">
+                <label class="field">
+                  <span class="field-label" data-i18n="reglages.teacher">Nom de l'enseignant</span>
+                  <input type="text" value="M. Abdelhak" />
+                </label>
+                <label class="field">
+                  <span class="field-label" data-i18n="reglages.establishment">Établissement</span>
+                  <input type="text" value="Lycée Al Massira" />
+                </label>
+                <label class="field">
+                  <span class="field-label" data-i18n="reglages.academy">Académie</span>
+                  <input type="text" value="Casablanca-Settat" />
+                </label>
+                <label class="field">
+                  <span class="field-label" data-i18n="reglages.province">Direction provinciale</span>
+                  <input type="text" value="Mohammedia" />
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2 class="card-title" data-i18n="reglages.subjects">Matières</h2>
+              <div class="check-grid" id="subjects-grid"></div>
+            </section>
+
+            <section class="card">
+              <h2 class="card-title" data-i18n="reglages.appearance">Apparence</h2>
+              <div class="fields">
+                <div class="field-row">
+                  <span class="field-label" data-i18n="reglages.theme">Thème</span>
+                  <div class="seg" role="group" aria-label="Thème">
+                    <button class="seg-item" data-theme-set="light" type="button" data-i18n="reglages.theme.light">Clair</button>
+                    <button class="seg-item" data-theme-set="dark" type="button" data-i18n="reglages.theme.dark">Sombre</button>
+                    <button class="seg-item" data-theme-set="system" type="button" data-i18n="reglages.theme.system">Système</button>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <span class="field-label" data-i18n="reglages.size">Taille du texte</span>
+                  <div class="seg" role="group" aria-label="Taille du texte">
+                    <button class="seg-item" data-size-set="sm" type="button" data-i18n="reglages.size.sm">Petit</button>
+                    <button class="seg-item is-active" data-size-set="md" type="button" data-i18n="reglages.size.md">Normal</button>
+                    <button class="seg-item" data-size-set="lg" type="button" data-i18n="reglages.size.lg">Grand</button>
+                    <button class="seg-item" data-size-set="xl" type="button" data-i18n="reglages.size.xl">Très grand</button>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <span class="field-label" data-i18n="reglages.language">Langue</span>
+                  <div class="seg" role="group" aria-label="Langue">
+                    <button class="seg-item is-active" data-locale-set="fr" type="button">Français</button>
+                    <button class="seg-item" data-locale-set="ar" type="button">العربية</button>
+                    <button class="seg-item" data-locale-set="en" type="button">English</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2 class="card-title" data-i18n="reglages.data">Données</h2>
+              <div class="fields">
+                <div class="field-row">
+                  <span class="field-label" data-i18n="reglages.data.actions">Sauvegarde</span>
+                  <div class="row-actions">
+                    <button class="btn" type="button" data-toast="backup.export">
+                      <svg class="icon"><use href="#i-download" /></svg>
+                      <span data-i18n="reglages.data.export">Exporter la sauvegarde</span>
+                    </button>
+                    <button class="btn" type="button" data-toast="backup.import">
+                      <svg class="icon"><use href="#i-upload" /></svg>
+                      <span data-i18n="reglages.data.import">Restaurer une sauvegarde</span>
+                    </button>
+                    <button class="btn" type="button" data-toast="backup.archive">
+                      <svg class="icon"><use href="#i-archive" /></svg>
+                      <span data-i18n="reglages.data.archive">Archiver l'année</span>
+                    </button>
+                  </div>
+                </div>
+                <label class="field">
+                  <span class="field-label" data-i18n="reglages.schoolYear">Début de l'année scolaire</span>
+                  <input type="date" value="2025-09-01" />
+                </label>
+                <p class="hint" data-i18n="reglages.data.location">Vos données restent sur cet ordinateur.</p>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ══ Écran 5 — Aide ════════════════════════════════════════════ -->
+        <section class="page" id="screen-aide" aria-labelledby="aide-title">
+          <header class="page-head">
+            <h1 class="page-title" id="aide-title" data-i18n="aide.title">Aide</h1>
+          </header>
+          <p class="page-meta" data-i18n="aide.intro">Quelques repères pour tenir votre cahier sans effort.</p>
+
+          <div class="page-body scroll">
+            <article class="help-card">
+              <div class="help-head">
+                <svg class="icon"><use href="#i-classes" /></svg>
+                <h2 data-i18n="aide.classes.title">Créer une classe</h2>
+              </div>
+              <p data-i18n="aide.classes.text">
+                Le bouton + ouvre le formulaire : nom, matière, niveau et groupe. La couleur est choisie
+                automatiquement selon la matière et sert de repère partout.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <div class="help-head">
+                <svg class="icon"><use href="#i-calendar" /></svg>
+                <h2 data-i18n="aide.emploi.title">Remplir l'emploi du temps</h2>
+              </div>
+              <p data-i18n="aide.emploi.text">
+                Cliquez sur une case libre pour y placer une classe. Un créneau n'accueille qu'une classe :
+                cliquer sur une case occupée permet de la remplacer ou de la vider.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <div class="help-head">
+                <svg class="icon"><use href="#i-book" /></svg>
+                <h2 data-i18n="aide.seance.title">Rédiger une séance</h2>
+              </div>
+              <p data-i18n="aide.seance.text">
+                Une séance correspond à une date. Ajoutez un chapitre, puis ses sections : la numérotation
+                (I, A, 1°, a)) est calculée automatiquement. Un numéro saisi à la main reste prioritaire.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <div class="help-head">
+                <svg class="icon"><use href="#i-file" /></svg>
+                <h2 data-i18n="aide.pdf.title">Exporter en PDF</h2>
+              </div>
+              <p data-i18n="aide.pdf.text">
+                Le bouton produit un document A4 identique à l'écran : dates, contenu numéroté et remarques.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <div class="help-head">
+                <svg class="icon"><use href="#i-archive" /></svg>
+                <h2 data-i18n="aide.sauvegarde.title">Sauvegarder et archiver</h2>
+              </div>
+              <p data-i18n="aide.sauvegarde.text">
+                Tout reste sur cet ordinateur. Exporter écrit un fichier lisible ; archiver garde une copie
+                figée de l'année avant de repartir à zéro.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ── Dialogues ─────────────────────────────────────────────────────── -->
+    <dialog class="dialog" id="class-dialog" aria-labelledby="class-dialog-title">
+      <form class="dialog-inner" id="class-form">
+        <h2 class="dialog-title" id="class-dialog-title" data-i18n="dialog.newClass">Nouvelle classe</h2>
+        <div class="fields">
+          <label class="field">
+            <span class="field-label" data-i18n="dialog.name">Nom de la classe</span>
+            <input name="name" type="text" placeholder="1 PCSI" required />
+          </label>
+          <label class="field">
+            <span class="field-label" data-i18n="dialog.subject">Matière</span>
+            <select name="subject" id="dialog-subject"></select>
+          </label>
+          <label class="field">
+            <span class="field-label" data-i18n="dialog.level">Niveau</span>
+            <input name="level" type="text" placeholder="Tronc commun, 1er Bac…" />
+          </label>
+          <label class="field">
+            <span class="field-label" data-i18n="dialog.cycle">Cycle</span>
+            <select name="cycle">
+              <option value="" data-i18n="dialog.cycle.none">Non précisé</option>
+              <option value="college" data-i18n="cycle.college">Collège</option>
+              <option value="lycee" data-i18n="cycle.lycee">Lycée</option>
+              <option value="prepa" data-i18n="cycle.prepa">Préparation</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label" data-i18n="dialog.group">Groupe</span>
+            <input name="group" type="text" placeholder="1, 2, A…" />
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn" type="button" data-close-dialog data-i18n="action.cancel">Annuler</button>
+          <button class="btn btn-primary" type="submit" data-i18n="action.save">Enregistrer</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+      <div class="dialog-inner">
+        <h2 class="dialog-title" id="confirm-title" data-i18n="confirm.class.title">Supprimer cette classe ?</h2>
+        <p class="dialog-text" id="confirm-text" data-i18n="confirm.class.text">
+          Le cahier et les séances de cette classe seront retirés. Cette action est définitive.
+        </p>
+        <div class="dialog-actions">
+          <button class="btn" type="button" data-close-dialog data-i18n="action.cancel">Annuler</button>
+          <button class="btn btn-danger-solid" id="confirm-ok" type="button" data-i18n="action.delete">Supprimer</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="menu" id="card-menu" role="menu" hidden>
+      <button role="menuitem" data-card-action="open" type="button">
+        <svg class="icon"><use href="#i-book" /></svg><span data-i18n="card.open">Ouvrir le cahier</span>
+      </button>
+      <button role="menuitem" data-card-action="schedule" type="button">
+        <svg class="icon"><use href="#i-calendar" /></svg><span data-i18n="card.schedule">Emploi du temps</span>
+      </button>
+      <hr />
+      <button role="menuitem" data-card-action="edit" type="button">
+        <svg class="icon"><use href="#i-edit" /></svg><span data-i18n="card.edit">Modifier la classe</span>
+      </button>
+      <button role="menuitem" class="danger" data-card-action="delete" type="button">
+        <svg class="icon"><use href="#i-trash" /></svg><span data-i18n="card.delete">Supprimer</span>
+      </button>
+    </div>
+
+    <div class="menu" id="slot-menu" role="menu" hidden>
+      <p class="menu-title" id="slot-menu-title"></p>
+      <div id="slot-menu-items"></div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <div class="review" id="review" aria-label="Outils de revue de la maquette">
+      <button class="review-toggle" id="review-toggle" type="button" aria-expanded="false" aria-label="Outils de revue">
+        <svg class="icon"><use href="#i-settings" /></svg>
+      </button>
+      <div class="review-panel">
+        <span class="review-label">Maquette</span>
+        <div class="seg seg-sm" role="group" aria-label="Jeu de données">
+          <button class="seg-item is-active" data-state-set="full" type="button">Données</button>
+          <button class="seg-item" data-state-set="empty" type="button">Vide</button>
+          <button class="seg-item" data-state-set="noresult" type="button">Sans résultat</button>
+        </div>
+        <div class="seg seg-sm" role="group" aria-label="Langue">
+          <button class="seg-item is-active" data-locale-set="fr" type="button">FR</button>
+          <button class="seg-item" data-locale-set="ar" type="button">AR</button>
+          <button class="seg-item" data-locale-set="en" type="button">EN</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>

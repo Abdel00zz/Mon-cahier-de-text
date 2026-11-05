@@ -1,0 +1,291 @@
+/* ============================================================================
+   Jetons de design — relevés sur l'application réelle (localhost:3000).
+   Encre brune pour le texte, accent indigo dégradé pour les actions, surfaces
+   blanches, filets lavande. La carte latérale et le dock reprennent les mêmes
+   rayons et la même profondeur que l'application.
+   ========================================================================== */
+
+:root {
+  /* ── Typographie (Readex Pro, comme l'application) ───────────────────── */
+  --font: "Readex Pro", system-ui, -apple-system, "Segoe UI", "Noto Sans", "SamsungOne Arabic",
+    "Noto Naskh Arabic", sans-serif;
+
+  /* La densité de texte ne touche jamais les espacements ni les cibles. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.3125rem;
+  --text-2xl: 1.63rem;
+
+  /* ── Rythme ──────────────────────────────────────────────────────────── */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --hit: 44px;
+
+  /* ── Rayons (échelle shadcn de l'application) ────────────────────────── */
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ── Encres et surfaces ──────────────────────────────────────────────── */
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #fbfaf7;
+  --sheet: #fbfafe;
+  --foreground: #2e2016;
+  --ink-strong: #221d35;
+  --muted: #f6f1e8;
+  --muted-foreground: #6e5a49;
+  --muted-soft: #6b6385;
+  --border: #e5ddd2;
+  --hairline: rgba(70, 55, 130, 0.11);
+  --input: #dcd3c8;
+  --accent: hsl(18 42% 89%);
+  --primary: #6b4c35;
+  --primary-ink: #fbf7f0;
+  --destructive: #b43c32;
+  --success: #2f6b46;
+  --warning: #8a5a12;
+
+  /* ── Accent d'action : dégradé indigo → bleu, halo coloré ────────────── */
+  --action-gradient: linear-gradient(135deg, #5f52d6, #3e6ec9);
+  --action-ink: #ffffff;
+  --action-glow: 0 10px 20px -8px rgba(95, 82, 214, 0.75);
+
+  /* ── Profondeur (halo interne clair + ombre très basse) ──────────────── */
+  --shadow-sm: 0 1px 2px rgba(35, 28, 68, 0.06);
+  --shadow-surface: 0 10px 20px -16px rgba(35, 28, 68, 0.14);
+  --shadow-float: 0 12px 24px -14px rgba(35, 28, 68, 0.22);
+  --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --ring: 0 0 0 3px rgba(95, 82, 214, 0.22);
+
+  /* ── Teintes de classes (partagées cartes / emploi du temps) ─────────── */
+  --peach-a: #fdeede;
+  --peach-b: #fbd3bf;
+  --peach-ink: #6b3a12;
+  --peach-sub: #9a5b26;
+  --peach-border: #f6d9bd;
+
+  --lavender-a: #ece9f7;
+  --lavender-b: #d8cbfa;
+  --lavender-ink: #2a205a;
+  --lavender-sub: #5a3fbf;
+  --lavender-border: #d9d4ee;
+
+  --green-a: #e6f3e9;
+  --green-b: #c3e9d8;
+  --green-ink: #14503a;
+  --green-sub: #3a755b;
+  --green-border: #cfe6d5;
+
+  --sky-a: #e0eefa;
+  --sky-b: #c9dbff;
+  --sky-ink: #0f3f6b;
+  --sky-sub: #346c97;
+  --sky-border: #c6dff2;
+
+  --sand-a: #f7f0d4;
+  --sand-b: #ebe0ad;
+  --sand-ink: #5c4a05;
+  --sand-sub: #7a6818;
+  --sand-border: #ebe0ad;
+
+  --rose-a: #fbe6ee;
+  --rose-b: #f2cddb;
+  --rose-ink: #6e1c3e;
+  --rose-sub: #a6476e;
+  --rose-border: #f2cddb;
+}
+
+/* ── Mode sombre : nuit d'argile, surfaces plus claires que le fond ─────── */
+:root[data-theme="dark"] {
+  --background: #1f1d1a;
+  --surface: #2b2823;
+  --surface-alt: #23201d;
+  --sheet: #262232;
+  --foreground: #efe9dd;
+  --ink-strong: #f6f2ea;
+  --muted: #322e29;
+  --muted-foreground: #b3a696;
+  --muted-soft: #a9a1c0;
+  --border: #3d372f;
+  --hairline: rgba(210, 198, 255, 0.1);
+  --input: #4a433a;
+  --accent: #3a3129;
+  --primary: #d9a37f;
+  --primary-ink: #241a12;
+  --destructive: #e08a80;
+  --success: #8fd0a8;
+  --warning: #e2b567;
+
+  --action-gradient: linear-gradient(135deg, #7b6eea, #5b8ad9);
+  --action-ink: #ffffff;
+  --action-glow: 0 10px 22px -8px rgba(123, 110, 234, 0.6);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-surface: 0 10px 24px -18px rgba(0, 0, 0, 0.55);
+  --shadow-float: 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --ring: 0 0 0 3px rgba(123, 110, 234, 0.28);
+
+  --peach-a: #3a2416;
+  --peach-b: #4a2d1b;
+  --peach-ink: #ffe0c4;
+  --peach-sub: #e3b48f;
+  --peach-border: #553320;
+
+  --lavender-a: #241f3d;
+  --lavender-b: #2f2854;
+  --lavender-ink: #ddd6ff;
+  --lavender-sub: #b3a5ec;
+  --lavender-border: #3a3266;
+
+  --green-a: #16291f;
+  --green-b: #1d3a2c;
+  --green-ink: #c6f2dd;
+  --green-sub: #96c8b3;
+  --green-border: #244735;
+
+  --sky-a: #132434;
+  --sky-b: #1b3448;
+  --sky-ink: #c9e6ff;
+  --sky-sub: #93b7d4;
+  --sky-border: #224055;
+
+  --sand-a: #2c2712;
+  --sand-b: #3a331a;
+  --sand-ink: #f4e6ac;
+  --sand-sub: #cbb985;
+  --sand-border: #463d20;
+
+  --rose-a: #33161f;
+  --rose-b: #451e2b;
+  --rose-ink: #ffd3e2;
+  --rose-sub: #d59ab0;
+  --rose-border: #522432;
+}
+
+/* ── Tailles de texte : choix du professeur, sans toucher aux espacements ─ */
+:root[data-size="sm"] { --app-text-scale: 0.94; }
+:root[data-size="md"] { --app-text-scale: 1; }
+:root[data-size="lg"] { --app-text-scale: 1.08; }
+:root[data-size="xl"] { --app-text-scale: 1.16; }
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: calc(var(--text-base) * var(--app-text-scale, 1));
+  line-height: 1.6;
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--radius);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* `display` d'une classe l'emporterait sur l'attribut hidden : on tranche. */
+[hidden] {
+  display: none !important;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
