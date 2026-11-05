@@ -249,12 +249,12 @@
   z-index: 3;
 }
 
-/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (.more) */
+/* Bouton menu ⋮ dans une zone tactile ronde 44x44px (48px au doigt) */
 .class-card__menu {
   display: grid;
   place-items: center;
-  width: max(44px, 2.75rem);
-  height: max(44px, 2.75rem);
+  width: max(var(--touch-min, 44px), 2.75rem);
+  height: max(var(--touch-min, 44px), 2.75rem);
   min-width: 44px;
   min-height: 44px;
   border: none;

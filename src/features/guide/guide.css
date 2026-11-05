@@ -140,15 +140,9 @@
   .guide-questions summary:hover { background: var(--guide-hover); }
   .guide-questions summary:hover .guide-plus { color: var(--guide-accent); background: color-mix(in srgb, var(--guide-accent) 8%, transparent); }
 }
-/* Téléphone : fenêtre serrée et centrée, en-tête compact, liste défilable.
-   Le dialogue garde ses quatre coins arrondis (ce n'est plus une feuille). */
+/* Téléphone : en-tête compact, liste défilable. Le socle partagé impose déjà
+   le plein écran sous 768 px ; seuls les réglages internes restent ici. */
 @media (max-width: 639px) {
-  .learning-guide-modal.modal-motion-surface {
-    width: min(94vw, 30rem);
-    max-width: min(94vw, 30rem);
-    max-height: min(76dvh, 34rem);
-    border-radius: 28px;
-  }
   .learning-guide-modal-header.modal-pro-header { padding: 12px 14px 8px; padding-inline-end: 58px; }
   .learning-guide-modal-body.modal-body { padding-inline: 12px !important; }
   .guide-search { margin-bottom: 8px; }
@@ -160,7 +154,6 @@
   .guide-credit { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 }
 @media (max-width: 380px) {
-  .learning-guide-modal.modal-motion-surface { width: 94vw; max-width: 94vw; max-height: 78dvh; }
   .guide-title { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .learning-guide * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } .guide-questions summary:active { transform: none; } }

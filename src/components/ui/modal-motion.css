@@ -123,14 +123,14 @@ html:has(body[data-scroll-locked]) { overflow-y: hidden; }
   background: var(--modal-footer-bg, hsl(var(--card)));
 }
 .modal-pro-footer > * { min-width: 0; }
-.modal-motion-surface .modal-pro-footer button { font-size: .875rem; line-height: 1.4; min-height: 44px; height: auto; white-space: normal; }
+.modal-motion-surface .modal-pro-footer button { font-size: .875rem; line-height: 1.4; min-height: var(--touch-min, 44px); height: auto; white-space: normal; }
 .modal-pro-footer button svg { width: 16px; height: 16px; flex-shrink: 0; }
-.modal-motion-surface :is(button:not([role="checkbox"]), summary) { min-width: 44px; min-height: 44px; }
+.modal-motion-surface :is(button:not([role="checkbox"]), summary) { min-width: var(--touch-min, 44px); min-height: var(--touch-min, 44px); }
 .modal-motion-surface summary { align-content: center; cursor: pointer; }
-.modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select, label:has([role="radio"]), label:has([role="checkbox"]), label:has(input[type="radio"])) { min-height: 44px; }
+.modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), select, label:has([role="radio"]), label:has([role="checkbox"]), label:has(input[type="radio"])) { min-height: var(--touch-min, 44px); }
 .modal-motion-surface :is([role="radio"], input[type="radio"]) { accent-color: hsl(var(--primary)); }
 .modal-motion-surface .dialog-close {
-  top: 10px; inset-inline-end: 12px; width: 44px; height: 44px; border-radius: 9999px;
+  top: 10px; inset-inline-end: 12px; width: var(--touch-min, 44px); height: var(--touch-min, 44px); border-radius: 9999px;
   color: hsl(var(--muted-foreground)); border: 1px solid var(--modal-border-artistic, transparent);
   background: var(--modal-close-bg, hsl(var(--muted) / .35));
   transition: transform 260ms cubic-bezier(.2, .8, .2, 1), background-color 180ms ease, color 180ms ease;

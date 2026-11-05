@@ -232,7 +232,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                 </div>
 
                 {mode === 'replace' && (
-                    <p className="rounded-xl border border-warning/30 bg-warning/10 p-3.5 text-xs font-semibold text-warning leading-relaxed">
+                    <p className="rounded-xl border border-warning/30 bg-warning/10 p-3.5 text-xs font-semibold text-warning-strong leading-relaxed">
                         Le remplacement est destructif. Une vérification du contenu et de la version cloud est faite avant l’écriture.
                     </p>
                 )}

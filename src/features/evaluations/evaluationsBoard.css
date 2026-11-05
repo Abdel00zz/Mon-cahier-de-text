@@ -102,7 +102,13 @@
 .ev-row__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin-top: .2rem; }
 /* « Aligner sur le cahier » est une commande : 44 px au doigt, discrète à la souris. */
 .ev-row__align { min-height: 1.75rem; }
-@media (pointer: coarse) { .ev-row__align { min-height: 2.75rem; padding-inline: .75rem; } }
+@media (pointer: coarse) { .ev-row__align { min-height: var(--touch-min, 2.75rem); padding-inline: .75rem; } }
+
+/* Material 3 : une ligne de 36 px reste compacte à la souris, mais la cible
+   atteint 48 px au doigt — la grille grandit sans changer de colonnes. */
+@media (pointer: coarse) {
+    .ev-board__rows > .ev-row { min-height: var(--touch-min, 48px); }
+}
 
 /* Repère de groupe (semestre) : discret, en capitales, il range sans
    concurrencer le titre de la zone — la hiérarchie se lit d'un coup. */
@@ -465,10 +471,10 @@
     font-weight: 650;
 }
 
-/* ── Optimisation mobile et Android téléphone : boutons alignés et cibles de 44 px ── */
+/* ── Optimisation mobile et Android téléphone : boutons alignés et cibles tactiles ── */
 @media (max-width: 768px), (pointer: coarse) {
     .ev-board__rows > .ev-row {
-        min-height: 44px;
+        min-height: var(--touch-min, 44px);
         padding: 0.25rem 0.5rem;
         gap: 0.25rem 0.4rem;
     }
@@ -498,7 +504,7 @@
         height: 16px !important;
     }
     .ev-accordion__toggle {
-        min-height: 44px;
+        min-height: var(--touch-min, 44px);
         padding: 0.5rem 0.75rem;
     }
 }

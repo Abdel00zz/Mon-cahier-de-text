@@ -42,8 +42,8 @@ const INACTIVE_DAYS = 14;
 
 const SEVERITY_META: Record<LatenessSeverity, { label: string; chip: string; dot: string }> = {
     ok: { label: 'À jour', chip: 'bg-success/10 text-success border-success/25', dot: 'bg-success' },
-    notice: { label: 'À surveiller', chip: 'bg-warning/10 text-warning border-warning/30', dot: 'bg-warning/70' },
-    warning: { label: 'En retard', chip: 'bg-warning/10 text-warning border-warning/30', dot: 'bg-warning' },
+    notice: { label: 'À surveiller', chip: 'bg-warning/10 text-warning-strong border-warning/30', dot: 'bg-warning/70' },
+    warning: { label: 'En retard', chip: 'bg-warning/10 text-warning-strong border-warning/30', dot: 'bg-warning' },
     critical: { label: 'Critique', chip: 'bg-destructive/10 text-destructive border-destructive/25', dot: 'bg-destructive' },
 };
 
@@ -227,7 +227,7 @@ const TeacherCard = memo(function TeacherCard({ teacher, severity, inactive, com
                     <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">{teacher.pendingRequests} demande(s) à traiter</span>
                 )}
                 {teacher.pendingMessages > 0 && (
-                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning">
+                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning-strong">
                         {teacher.pendingMessages} lecture{teacher.pendingMessages > 1 ? 's' : ''} attendue{teacher.pendingMessages > 1 ? 's' : ''}
                     </span>
                 )}
@@ -420,7 +420,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     </p>
                     <p
                         role="status"
-                        className={`mt-0.5 flex items-center gap-1.5 text-[11px] ${refreshFailed ? 'font-bold text-warning' : 'text-muted-foreground'}`}
+                        className={`mt-0.5 flex items-center gap-1.5 text-[11px] ${refreshFailed ? 'font-bold text-warning-strong' : 'text-muted-foreground'}`}
                     >
                         <span className={`h-1.5 w-1.5 rounded-full ${refreshFailed ? 'bg-warning' : isLoading ? 'animate-pulse bg-primary' : 'bg-success'}`} aria-hidden />
                         {refreshFailed ? 'Actualisation interrompue : les données affichées peuvent être anciennes' : isLoading ? 'Actualisation…' : freshnessLabel(lastUpdatedAt, now)}
@@ -485,7 +485,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     className={`admin-metric-card rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${severityFilter === 'messages' ? 'border-warning bg-warning/5 ring-2 ring-warning/15' : 'border-border bg-card'}`}
                 >
                     <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Messages à suivre</span>
-                    <span className="mt-1 block text-3xl font-black text-warning">{distribution.pendingMessages}</span>
+                    <span className="mt-1 block text-3xl font-black text-warning-strong">{distribution.pendingMessages}</span>
                     <span className="mt-1 block text-xs text-muted-foreground">demande(s) et lecture(s) en attente</span>
                 </button>
                 <button
@@ -557,7 +557,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 </button>
                 <button
                     onClick={() => toggleSeverityFilter('messages')}
-                    className={`inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning transition-all ${
+                    className={`inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning-strong transition-all ${
                         severityFilter === 'messages' ? 'ring-2 ring-offset-1 ring-warning/40' : 'opacity-90 hover:opacity-100'
                     }`}
                     title="Demandes à traiter et messages à confirmer"

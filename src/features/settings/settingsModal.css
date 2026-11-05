@@ -41,7 +41,7 @@
 .settings-nav__link {
   display: flex;
   width: 100%;
-  min-height: 44px;
+  min-height: var(--touch-min, 44px);
   align-items: center;
   gap: 10px;
   padding: 6px 12px;

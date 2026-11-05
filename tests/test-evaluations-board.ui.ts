@@ -98,15 +98,15 @@ test('une surface, des filets : plus de pile de cartes', () => {
   assert.doesNotMatch(row, /border: 1px solid|border-radius|box-shadow/, 'la ligne reste une ligne');
 });
 
-test('au téléphone, les boutons restent alignés et les cibles atteignent 44 px au doigt', () => {
+test('au téléphone, les boutons restent alignés et les cibles suivent le token tactile', () => {
   const tablet = css.slice(css.indexOf('@media (max-width: 1023px)'), css.indexOf('@media (max-width: 639px)'));
   assert.match(tablet, /\.ev-board__head \{ display: none; \}/, 'l’en-tête de colonnes est masqué sur mobile');
   assert.match(tablet, /grid-template-areas: 'id date actions'/, 'identité, date et actions alignées sur une ligne');
   const phone = css.slice(css.indexOf('@media (max-width: 639px)'), css.indexOf('@media (prefers-reduced-motion: reduce)'));
   assert.match(phone, /grid-template-areas: 'id date actions'/, 'alignement conservé sur smartphone');
   const touch = css.slice(css.indexOf('@media (max-width: 768px), (pointer: coarse)'));
-  assert.match(touch, /\.ev-board__rows > \.ev-row \{[\s\S]{0,80}min-height: 44px/, 'ligne de 44 px sur mobile');
-  assert.match(touch, /\.ev-accordion__toggle \{[\s\S]{0,80}min-height: 44px/, 'tiroir de 44 px sur mobile');
+  assert.match(touch, /\.ev-board__rows > \.ev-row \{[\s\S]{0,80}min-height: var\(--touch-min, 44px\)/, 'ligne à la cible tactile : 44 px au pointeur fin, 48 px au doigt');
+  assert.match(touch, /\.ev-accordion__toggle \{[\s\S]{0,80}min-height: var\(--touch-min, 44px\)/, 'tiroir à la même cible, sans redevenir 44 px au doigt');
   assert.match(touch, /inset: -4\.5px/, 'extension tactile invisible à 44 px (35 + 2×4.5)');
 });
 
@@ -121,7 +121,7 @@ test('plus de colonne « État » : l’écart de date reste signalé et actionn
   assert.match(view, /evaluations\.homework\.dueOn/, 'la date limite de rendu est rappelée sous le titre du devoir maison');
   assert.match(view, /ev-row--correction/, 'la date de correction est celle de l’entrée « Correction du devoir maison »');
   assert.match(css, /\.ev-row__meta \{/, 'la ligne secondaire a son style');
-  assert.match(css, /@media \(pointer: coarse\) \{ \.ev-row__align \{ min-height: 2\.75rem/, 'et atteint 44 px au doigt');
+  assert.match(css, /@media \(pointer: coarse\) \{ \.ev-row__align \{ min-height: var\(--touch-min, 2\.75rem\)/, 'et suit la cible tactile : 44 px, 48 px au doigt');
 });
 
 test('le bouton document distingue un sujet associé, requis ou facultatif', () => {

@@ -725,10 +725,10 @@ html[lang='ar'] :is(.action-link, .notebook-text-action) {
         grid-column: 3;
         grid-row: 1;
         justify-self: end;
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
+        width: var(--touch-min, 44px);
+        height: var(--touch-min, 44px);
+        min-width: var(--touch-min, 44px);
+        min-height: var(--touch-min, 44px);
     }
 
 

@@ -322,6 +322,17 @@ html[lang="ar"] .keep-class-title {
     --radius-3xl: 28px;
     --radius: var(--radius-md);
 
+    /* Cibles tactiles : 44 px au pointeur fin, 48 px au doigt (Material 3).
+       Les composants qui doivent suivre le doigt lisent ces deux tokens. */
+    --touch-min: 44px;
+    --touch-gap: 8px;
+
+  }
+
+  /* Material 3 recommande 48 dp sur écran tactile ; le pointeur fin garde la
+     densité de l’interface (44 px reste le plancher absolu). */
+  @media (pointer: coarse) {
+    :root { --touch-min: 48px; }
   }
 
   .dark {

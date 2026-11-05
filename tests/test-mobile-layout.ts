@@ -10,9 +10,15 @@ test('les fenêtres Paramètres et Aide se serrent autour de leur contenu', () =
   assert.match(settings, /max-height:\s*min\(82dvh/, 'la limite téléphone laisse voir la page derrière');
 
   const guide = read('src/features/guide/guide.css');
-  assert.match(guide, /width:\s*min\(94vw, 30rem\)/, 'l’aide garde une largeur de dialogue sur téléphone');
-  assert.match(guide, /max-height:\s*min\(76dvh, 34rem\)/, 'l’aide se limite à sa liste, pas à l’écran');
-  assert.match(guide, /border-radius:\s*28px/, 'les quatre coins restent arrondis : ce n’est plus une feuille');
+  const guideModal = read('src/features/guide/GuideModal.tsx');
+  const modalMotion = read('src/components/ui/modal-motion.css');
+  // Au-delà de 768 px, l’aide est un dialogue compact ; en dessous, le socle
+  // partagé la transforme en écran plein (une seule règle effective).
+  assert.match(guide, /width:\s*min\(94vw, 34rem\)/, 'l’aide garde un dialogue compact sur grand écran');
+  assert.match(guide, /max-height:\s*min\(80dvh, 42rem\)/, 'la hauteur du dialogue reste limitée');
+  assert.match(guide, /border-radius:\s*28px/, 'le dialogue desktop garde ses quatre coins arrondis');
+  assert.match(guideModal, /mobilePresentation="dialog"/, 'l’aide utilise la présentation immersive du socle');
+  assert.match(modalMotion, /@media \(max-width: 767px\) \{[\s\S]*?width: 100% !important;/, 'le socle impose le plein écran sous 768 px');
 });
 
 test('le hub Paramètres se resserre sans perdre ses cibles tactiles', () => {
