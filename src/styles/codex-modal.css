@@ -1,5 +1,5 @@
-/* Limewashed plaster and one glazed zellige rosette at the reading edge.
-   Custom headings with navigation or status icons keep their own structure. */
+/* Surface neutre des fenêtres : un papier clair, sans ornement.
+   Les en-têtes personnalisés (navigation, statut) gardent leur structure. */
 :root {
   --codex-stone: #faf9f5;
   --codex-rule: #deded4;
@@ -27,31 +27,9 @@
     background: var(--modal-header-bg);
     border-block-end-color: var(--codex-rule);
   }
-  [data-codex-title] {
-    --rosette-size: 1.45rem;
-    position: relative;
-    padding-inline-start: calc(var(--rosette-size) + .55rem);
-  }
-  [data-codex-title]::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 50%;
-    transform: translateY(-50%);
-    inline-size: var(--rosette-size);
-    block-size: var(--rosette-size);
-    background-color: var(--codex-enamel);
-    -webkit-mask: url("./zellige-rosette.svg") center / contain no-repeat;
-    mask: url("./zellige-rosette.svg") center / contain no-repeat;
-    pointer-events: none;
-  }
   [data-codex-surface="inset"] {
     background-color: var(--codex-stone);
     background-image: none;
     border-color: var(--codex-rule);
   }
-}
-@media (forced-colors: active) {
-  [data-codex-title] { padding-inline-start: 0; }
-  [data-codex-title]::before { content: none; }
 }

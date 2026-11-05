@@ -107,11 +107,11 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                 )) : (
                     <div className="flex flex-col items-center gap-2 py-8 text-center">
                         <FolderArchive className="h-7 w-7 stroke-[1.5] text-muted-foreground" />
+                        {/* La consigne (« conserver l’année ») vit déjà dans le
+                            sous-titre de la section, et le bouton d’archivage
+                            est juste au-dessus : l’état vide ne la répète pas. */}
                         <p className="text-sm font-medium text-foreground">
                             {t('archives.empty.title')}
-                        </p>
-                        <p className="max-w-sm text-[13px] leading-snug text-muted-foreground">
-                            {t('archives.empty.body')}
                         </p>
                     </div>
                 )}

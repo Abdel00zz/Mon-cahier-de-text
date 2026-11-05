@@ -105,28 +105,25 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </SettingsSection>
 
-      {/* Carte 3 : Langue de l'interface */}
+      {/* Carte 3 : Langue de l'interface. Le titre de section nomme déjà la
+          langue : la ligne ne répète pas « langue de l'interface ». */}
       <SettingsSection title={t('language.settings.title')} icon={Globe}>
-        <SettingsRow
-          label={<span className="flex items-center gap-2">{t('language.settings.active')} :</span>}
-        >
-          <div className="flex flex-wrap justify-end gap-2.5">
-            {INTERFACE_LOCALES.map(option => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={currentLocale === option.value}
-                onClick={() => onConfigChange({ applicationLocale: option.value as AppLocale })}
-                className={cn(
-                  settingsChoiceClass(currentLocale === option.value),
-                  'min-h-11 px-4 rounded-xl text-sm font-medium'
-                )}
-              >
-                <span lang={option.value}>{option.nativeName}</span>
-              </button>
-            ))}
-          </div>
-        </SettingsRow>
+        <div className="flex flex-wrap justify-end gap-2.5">
+          {INTERFACE_LOCALES.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={currentLocale === option.value}
+              onClick={() => onConfigChange({ applicationLocale: option.value as AppLocale })}
+              className={cn(
+                settingsChoiceClass(currentLocale === option.value),
+                'min-h-11 px-4 rounded-xl text-sm font-medium'
+              )}
+            >
+              <span lang={option.value}>{option.nativeName}</span>
+            </button>
+          ))}
+        </div>
       </SettingsSection>
     </SettingsPanel>
   );

@@ -222,7 +222,9 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     return (
         <div className="space-y-6">
             {/* Activation explicite des rappels sur cet appareil */}
-            <SettingsSection title={l('Cet appareil', 'هذا الجهاز', 'This device')} hint={t('notifications.intro')} icon={Bell}>
+            {/* Le titre de section (« Cet appareil ») suffit : pas de
+                sous-titre qui le répète. */}
+            <SettingsSection title={l('Cet appareil', 'هذا الجهاز', 'This device')} icon={Bell}>
                 <div className="space-y-3 pt-0.5">
                     <PushActivationCard
                         state={pushState}

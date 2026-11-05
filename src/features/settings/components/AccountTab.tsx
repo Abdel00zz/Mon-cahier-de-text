@@ -93,10 +93,15 @@ export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
         label={
           <span className="flex flex-wrap items-center gap-2">
             {t('account.sync')}
-            <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', TONE_CLASS[status.tone])}>
-              {StatusIcon && <StatusIcon className={cn('h-3 w-3 stroke-[2]', syncStatus === 'syncing' && 'animate-spin motion-reduce:animate-none')} />}
-              {t(`account.status.${syncStatus}`)}
-            </span>
+            {/* Une seule information à la fois : la pastille n’apparaît que
+                pendant un état qui demande l’attention ; une fois synchronisé,
+                la ligne « dernière synchronisation » suffit. */}
+            {syncStatus !== 'synced' && (
+              <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', TONE_CLASS[status.tone])}>
+                {StatusIcon && <StatusIcon className={cn('h-3 w-3 stroke-[2]', syncStatus === 'syncing' && 'animate-spin motion-reduce:animate-none')} />}
+                {t(`account.status.${syncStatus}`)}
+              </span>
+            )}
           </span>
         }
         hint={lastSyncAt ? t('account.lastSync', { time: timeAgo(lastSyncAt, locale, t('account.unknownDate')) }) : undefined}

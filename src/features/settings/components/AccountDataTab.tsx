@@ -35,7 +35,7 @@ export const AccountDataTab: React.FC<AccountDataTabProps> = ({ config, onExport
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title={t('account.adminPortalTitle')} hint={t('account.adminPortalHint')} icon={ShieldCheck}>
+      <SettingsSection title={t('account.adminPortalTitle')} icon={ShieldCheck}>
           <a href="/admin.html" className={settingsButtonClass}>
             <ShieldCheck className="h-[18px] w-[18px] stroke-[1.5]" />
             <span>{t('account.adminPortalAction')}</span>
