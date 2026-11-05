@@ -110,8 +110,11 @@
   --text-fluid-4xl: clamp(1.85rem, 1.5rem + 1.75vw, 2.5rem);
 
   /* ── 2. Spring Physics Curve Tokens (Harmoniques & Longues) ────────────── */
+  /* `--ease-spring` = courbe à rebond de la charte (--sp) ; `--ease-spring-smooth`
+     = décélération native iOS (--ios) : les panneaux ralentissent en fin de
+     course au lieu de démarrer doucement. */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-spring-smooth: cubic-bezier(0.18, 1.01, 0.24, 1);
+  --ease-spring-smooth: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring-golden: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-spring-snappy: cubic-bezier(0.2, 1.4, 0.5, 1);
 
