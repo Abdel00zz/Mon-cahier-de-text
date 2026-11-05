@@ -7,6 +7,7 @@ import { EMPTY_EVALUATION_POLICY, normalizeEvaluationPolicy } from '../domain/ev
 import { SYNCABLE_KEYS } from '../infrastructure/sync/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../infrastructure/sync/syncBus';
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
+import { writeDurably } from '../infrastructure/storage/safeStorage';
 import { DEFAULT_SESSION_REMINDER_MINUTES, sessionReminderMinutes } from '../domain/notifications/sessionReminderTiming';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
@@ -228,13 +229,13 @@ export const useConfigManager = () => {
     const updateConfig = useCallback((newConfig: Partial<AppConfig>) => {
         if (!workspaceIsActive()) return;
         if ((Object.keys(newConfig) as Array<keyof AppConfig>).every(key => Object.is(configRef.current[key], newConfig[key]))) return;
-        // La persistance doit précéder l'événement `config-changed` : plusieurs
+        // La persistance durable doit précéder l'événement `config-changed` : plusieurs
         // vues possèdent leur propre instance du hook et relisent le stockage
         // dès cet événement. Une écriture différée par React les faisait donc
         // relire l'ancienne valeur et imposait un second clic à l'utilisateur.
         const nextConfig: AppConfig = { ...configRef.current, ...newConfig };
         try {
-            localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
+            writeDurably(CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
         } catch (error) {
             logger.error("Failed to save config to localStorage", error);
             throw error;

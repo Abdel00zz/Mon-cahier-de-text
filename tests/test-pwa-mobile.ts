@@ -103,6 +103,41 @@ test('synchronisation : aucune requête simultanée, attente après completion',
   stop();
 });
 
+test('synchronisation cloud : les reprises réseau ne contournent pas la fenêtre de trois minutes', async context => {
+  const originalNow = Date.now;
+  let now = 1_800_000_000_000;
+  Date.now = () => now;
+  context.after(() => { Date.now = originalNow; });
+  const fake = fakeEnvironment();
+  let lastCloudRun = 0;
+  let calls = 0;
+  const stop = startForegroundPolling(async () => {
+    calls++;
+    lastCloudRun = Date.now();
+    return true;
+  }, {
+    interval: 180_000,
+    minIntervalBetweenRuns: 180_000,
+    getLastRunAt: () => lastCloudRun,
+    environment: fake.environment,
+  });
+  await flush();
+  assert.equal(calls, 1);
+  assert.equal(fake.delay(), 180_000);
+
+  now += 60_000;
+  lastCloudRun = now; // un push manuel partage la même fenêtre que les pulls automatiques
+  fake.wake();
+  assert.equal(calls, 1);
+  assert.equal(fake.delay(), 180_000);
+
+  now += 180_000;
+  fake.fire();
+  await flush();
+  assert.equal(calls, 2);
+  stop();
+});
+
 test('Android visible : pause native sans réveil périodique, reprise unique malgré les événements doublés', async context => {
   const descriptors = ['window', 'document', 'navigator'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
   const timers = new Map<number, () => void>();

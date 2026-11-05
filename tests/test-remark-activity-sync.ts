@@ -5,7 +5,7 @@ import { syncNotebookToEvaluations, detectEventsFromRemarks, reconcileClassesEva
 import { sessionRemarkSettingsPatch } from '../src/domain/evaluations/sessionRemarkChanges';
 import { buildSessionRemarkEntries } from '../src/domain/evaluations/sessionActivityRemarks';
 import { localizedActivityTitle } from '../src/domain/evaluations/activityTitle';
-import { touchesImmediateSettings } from '../src/infrastructure/sync/settingsPush';
+import { touchesSyncableSettings } from '../src/infrastructure/sync/settingsPush';
 import { buildLessonRows } from '../src/domain/notebook/lessonRows';
 
 const baseConfig: AppConfig = {
@@ -187,7 +187,7 @@ test('sessionRemarkSettingsPatch immediately materializes Contrôle des cahiers 
 
 });
 
-test('reconcileClassesEvaluationConfig and touchesImmediateSettings keep cloud and dashboard in sync', () => {
+test('reconcileClassesEvaluationConfig and touchesSyncableSettings keep cloud and dashboard in sync', () => {
   const lessonsByClass: Record<string, LessonsData> = {
     c1: [{
       type: 'chapter',
@@ -198,7 +198,7 @@ test('reconcileClassesEvaluationConfig and touchesImmediateSettings keep cloud a
   const reconciled = reconcileClassesEvaluationConfig([{ id: 'c1' }], baseConfig, id => lessonsByClass[id] ?? []);
   assert.equal(reconciled.updated, true);
   assert.equal(reconciled.config.pedagogicalEvents?.c1?.[0].type, 'controle_cahiers');
-  assert.equal(touchesImmediateSettings(['pedagogicalEvents']), true);
-  assert.equal(touchesImmediateSettings(['manualAssessments']), true);
-  assert.equal(touchesImmediateSettings(['assessmentParticipants']), true);
+  assert.equal(touchesSyncableSettings(['pedagogicalEvents']), true);
+  assert.equal(touchesSyncableSettings(['manualAssessments']), true);
+  assert.equal(touchesSyncableSettings(['assessmentParticipants']), true);
 });

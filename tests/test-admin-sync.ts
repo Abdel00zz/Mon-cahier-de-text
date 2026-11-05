@@ -210,6 +210,6 @@ test('wiring: staged pull commits follow all downloads and active scope validati
     const source = readFileSync(new URL('../src/contexts/SyncContext.tsx', import.meta.url), 'utf8');
     assert.match(source, /subscribe\('dirty', \(\) => pullAbortRef.current\?\.abort\(\)\)/);
     assert.match(source, /if \(!isCurrent\(\)\) return;\s*\/\/ No await below[^\n]*\n\s*for \(const commit of commits\) commit\(\);/);
-    assert.match(source, /startForegroundPolling\(refresh, \{\s*interval: 60_000/);
+    assert.match(source, /startForegroundPolling\(refresh, \{\s*interval: CLOUD_SYNC_INTERVAL_MS,\s*minIntervalBetweenRuns: CLOUD_SYNC_INTERVAL_MS/);
     assert.doesNotMatch(source, /const refreshClock/);
 });

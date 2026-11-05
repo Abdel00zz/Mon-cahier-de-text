@@ -55,7 +55,13 @@ const browserEnvironment = (): ForegroundSchedulerEnvironment => ({
 /** One timer after completion; zero periodic wakeups while hidden/offline, bounded error backoff. */
 export function startForegroundPolling(
   task: () => Promise<boolean | void>,
-  options: { interval: number; onInactive?: () => void; environment?: ForegroundSchedulerEnvironment },
+  options: {
+    interval: number;
+    minIntervalBetweenRuns?: number;
+    getLastRunAt?: () => number;
+    onInactive?: () => void;
+    environment?: ForegroundSchedulerEnvironment;
+  },
 ): () => void {
   const environment = options.environment ?? browserEnvironment();
   let timer: number | undefined;
@@ -63,12 +69,20 @@ export function startForegroundPolling(
   let running = false;
   let wakeRequested = false;
   let failures = 0;
+  let lastStartedAt = 0;
   const clear = () => { if (timer !== undefined) environment.clearTimer(timer); timer = undefined; };
   const wake = () => {
     clear();
     if (stopped) return;
     if (!environment.active()) { wakeRequested = false; options.onInactive?.(); return; }
+    const lastRunAt = Math.max(lastStartedAt, options.getLastRunAt?.() ?? 0);
+    const minimumWait = (options.minIntervalBetweenRuns ?? 0) - (Date.now() - lastRunAt);
+    if (lastRunAt > 0 && minimumWait > 0) {
+      timer = environment.setTimer(wake, minimumWait);
+      return;
+    }
     if (running) { wakeRequested = true; return; }
+    lastStartedAt = Date.now();
     running = true;
     void (async () => {
       let success: boolean | void = false;

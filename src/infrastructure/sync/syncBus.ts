@@ -3,6 +3,7 @@
 // État module-level : les marqueurs "dirty" survivent aux démontages de composants.
 import { dequal } from 'dequal';
 import { createStore } from 'zustand/vanilla';
+import { writeDurably } from '../storage/safeStorage';
 
 export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed';
 
@@ -90,18 +91,14 @@ let classesListVersion = persistedPending?.classesListVersion ?? 0;
 let classesListSyncedVersion = persistedPending?.classesListSyncedVersion ?? 0;
 
 const persistPendingState = (): void => {
-    try {
-        localStorage.setItem(SYNC_PENDING_KEY, JSON.stringify({
-            dirtySeq,
-            dirtyClassVersions: Object.fromEntries(dirtyClassVersions),
-            deletedClassIds: Array.from(deletedClasses.keys()),
-            deletedClasses: Object.fromEntries(deletedClasses),
-            classesListVersion,
-            classesListSyncedVersion,
-        } satisfies PersistedPendingState));
-    } catch {
-        // stockage indisponible : la file reste en mémoire pour cette session
-    }
+    writeDurably(SYNC_PENDING_KEY, JSON.stringify({
+        dirtySeq,
+        dirtyClassVersions: Object.fromEntries(dirtyClassVersions),
+        deletedClassIds: Array.from(deletedClasses.keys()),
+        deletedClasses: Object.fromEntries(deletedClasses),
+        classesListVersion,
+        classesListSyncedVersion,
+    } satisfies PersistedPendingState));
 };
 
 export interface SyncMeta {

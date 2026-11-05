@@ -39,10 +39,11 @@ import { isForegroundOnline, startForegroundPolling } from '../platform/mobileSc
 import { requestSyncPush, retryDelayMs, syncJsonBytes, SyncRequestError, planPushBatches } from '../infrastructure/sync/syncTransport';
 import { PUSH_BATCH_BUDGET_BYTES } from '../infrastructure/sync/syncProtocol';
 import { readLocalSyncSnapshot } from '../infrastructure/sync/localSnapshot';
-import { settingsPushDelay, touchesImmediateSettings } from '../infrastructure/sync/settingsPush';
+import { cloudSyncDelay, CLOUD_SYNC_INTERVAL_MS, touchesSyncableSettings } from '../infrastructure/sync/settingsPush';
 import { LocalSyncDataError } from '../infrastructure/storage/localJson';
 import { readCachedConfig } from '../infrastructure/storage/configStorage';
 import { readStoredNotebook } from '../infrastructure/storage/notebookStorage';
+import { isQuotaError, writeDurably } from '../infrastructure/storage/safeStorage';
 import {
     backupConflictVersion,
     computePullDecisions,
@@ -59,13 +60,11 @@ interface SyncContextValue {
     syncStatus: SyncStatus;
     lastSyncAt: string | null;
     syncNow: () => Promise<void>;
-    /** Envoie tout de suite les réglages en attente (fermeture des Réglages). */
+    /** Réveille la file locale sans contourner la cadence cloud. */
     flushPush: () => void;
 }
 
 const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {}, flushPush: () => {} });
-
-const PUSH_DEBOUNCE_MS = 3_000;
 
 const syncText = (key: string, values: Record<string, string | number> = {}): string => {
     const locale = readCachedConfig().applicationLocale;
@@ -78,14 +77,14 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
     const debounceRef = useRef<number | null>(null);
     const scheduledPushAtRef = useRef<number | null>(null);
-    /** Échéance du dernier envoi de réglages : cadence les modifications d'emploi du temps. */
-    const lastSettingsPushRef = useRef(0);
+    /** Début du dernier échange cloud, partagé entre push, pull et reprises réseau. */
+    const lastCloudRequestAtRef = useRef(0);
     const pushingRef = useRef(false);
     const retryAttemptRef = useRef(0);
     const immediatePushRequestedRef = useRef(false);
     const pushAbortRef = useRef<AbortController | null>(null);
     const pullAbortRef = useRef<AbortController | null>(null);
-    const refreshRef = useRef<(() => Promise<boolean | void>) | null>(null);
+    const refreshRef = useRef<((options?: { force?: boolean }) => Promise<boolean | void>) | null>(null);
     const authStatusRef = useRef(authStatus);
     authStatusRef.current = authStatus;
     const userRef = useRef(user);
@@ -122,6 +121,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 lastErrorKeyRef.current = 'local-data';
                 toast.error(syncText('sync.localDataUnreadable'), { duration: 10_000 });
             }
+        } else if (isQuotaError(error)) {
+            setSyncStatus('error');
+            if (lastErrorKeyRef.current !== 'local-storage-quota') {
+                lastErrorKeyRef.current = 'local-storage-quota';
+                toast.error(syncText('sync.localStorageFull'), { duration: 10_000 });
+            }
         } else if (error instanceof SyncRequestError && error.status !== 0) {
             setSyncStatus('error');
             notifySyncError(error.status, error.message);
@@ -130,10 +135,16 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [notifySyncError]);
 
-    const push = useCallback(async (options?: { keepalive?: boolean }) => {
+    const push = useCallback(async (options?: { keepalive?: boolean; force?: boolean }) => {
         const currentUser = userRef.current;
         const scope = readWorkspaceScope();
         if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== accountOwner(currentUser) || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
+        const cooldown = cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current);
+        if (!options?.force && cooldown > 0) {
+            setSyncStatus('pending');
+            schedulePush(cooldown);
+            return;
+        }
         if (!options?.keepalive && !isForegroundOnline()) {
             if (!isNetworkOnline()) setSyncStatus('offline');
             return;
@@ -144,6 +155,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pushAbortRef.current = controller;
         const isCurrent = () => !controller.signal.aborted && userRef.current && accountOwner(userRef.current) === accountOwner(currentUser) && workspaceIsCurrent(scope);
 
+        lastCloudRequestAtRef.current = Date.now();
         pushingRef.current = true;
         setSyncStatus('syncing');
         const work = getPendingWork();
@@ -291,7 +303,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const latest = snapshot.config;
                     const classRosters = rostersForClasses(reconcileClassRosters(latest.classRosters, data.classRosters), snapshot.classes.map(item => item.id));
                     if (!dequal(latest.classRosters ?? {}, classRosters)) {
-                        localStorage.setItem('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
+                        writeDurably('appConfig_v1', JSON.stringify({ ...latest, classRosters }));
                         notifyPullApplied();
                     }
                 }
@@ -364,7 +376,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (failure && failure.status !== 0 && failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
             // Bounded jitter and Retry-After avoid synchronized retries and preserve dirty work.
             if (failure && (failure.status === 0 || failure.status === 408 || failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT')) {
-                const delay = retryDelayMs(retryAttemptRef.current++, failure.retryAfter);
+                const delay = Math.max(CLOUD_SYNC_INTERVAL_MS, retryDelayMs(retryAttemptRef.current++, failure.retryAfter));
                 if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
                 scheduledPushAtRef.current = Date.now() + delay;
                 debounceRef.current = window.setTimeout(() => {
@@ -382,37 +394,41 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 pushAbortRef.current = null;
                 const repeatImmediately = immediatePushRequestedRef.current;
                 immediatePushRequestedRef.current = false;
-                // A second association made during an in-flight push must not wait for
-                // the ordinary 20-second debounce. Do not create an error retry loop.
+                // Explicitly requested follow-up work remains immediate; ordinary
+                // edits are already queued at the next cloud cadence.
                 if (repeatImmediately && succeeded && isCurrent() && hasPendingWork()) {
                     if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
                     scheduledPushAtRef.current = Date.now();
                     debounceRef.current = window.setTimeout(() => {
                         debounceRef.current = null;
                         scheduledPushAtRef.current = null;
-                        void push();
+                        void push({ force: true });
                     }, 0);
                 } else if (requiresPull && succeeded && isCurrent() && !hasPendingWork() && !options?.keepalive) {
                     // Reconcile rejected older imports/settings before claiming that
                     // local content is identical to the authoritative cloud version.
-                    window.setTimeout(() => { if (isCurrent()) void refreshRef.current?.(); }, 0);
+                    window.setTimeout(() => { if (isCurrent()) void refreshRef.current?.(); }, CLOUD_SYNC_INTERVAL_MS);
                 }
             }
         }
     }, [reportSyncFailure]);
 
-    useEffect(() => () => {
-        pushAbortRef.current?.abort();
-        pushingRef.current = false;
-        immediatePushRequestedRef.current = false;
-        if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+    useEffect(() => {
+        lastCloudRequestAtRef.current = 0;
+        return () => {
+            pushAbortRef.current?.abort();
+            pushingRef.current = false;
+            immediatePushRequestedRef.current = false;
+            if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+        };
     }, [authStatus, user?.id, user?.phone]);
 
     const schedulePush = useCallback(
-        (delayMs: number = PUSH_DEBOUNCE_MS) => {
-            const targetAt = Date.now() + delayMs;
-            // Une suppression a une priorité plus haute : une modification de
-            // réglage qui suit ne doit pas repousser son envoi de 20 secondes.
+        (delayMs: number = CLOUD_SYNC_INTERVAL_MS) => {
+            const now = Date.now();
+            const delay = Math.max(delayMs, cloudSyncDelay(now, lastCloudRequestAtRef.current));
+            const targetAt = now + delay;
+            // Keep the earliest queued cloud cycle; later edits join that batch.
             if (debounceRef.current !== null && scheduledPushAtRef.current !== null && scheduledPushAtRef.current <= targetAt) {
                 return;
             }
@@ -422,7 +438,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 debounceRef.current = null;
                 scheduledPushAtRef.current = null;
                 void push();
-            }, delayMs);
+            }, delay);
         },
         [push]
     );
@@ -437,12 +453,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             immediatePushRequestedRef.current = true;
             return Promise.resolve();
         }
-        return hasPendingWork() ? push() : Promise.resolve(refreshRef.current?.()).then(() => {});
+        return hasPendingWork() ? push({ force: true }) : Promise.resolve(refreshRef.current?.({ force: true })).then(() => {});
     }, [push]);
 
     /**
-     * Envoi immédiat des réglages en attente : appelé quand l'enseignant quitte
-     * les Réglages, pour que la grille qu'il vient de modifier parte sans attendre.
+     * Réveille la file locale à la prochaine fenêtre cloud, sans contourner la cadence.
      */
     const flushPush = useCallback(() => {
         if (!hasPendingWork()) return;
@@ -459,8 +474,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let inFlight = false;
         let associationOffered = false;
         const unsubscribeDirty = subscribe('dirty', () => pullAbortRef.current?.abort());
-        const refresh = async () => {
+        const refresh = async (options?: { force?: boolean }) => {
             if (cancelled || inFlight || pushingRef.current || !isForegroundOnline()) return;
+            if (!options?.force && lastCloudRequestAtRef.current > 0
+                && cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current) > 0) return true;
             inFlight = true;
             const controller = new AbortController();
             pullAbortRef.current = controller;
@@ -473,6 +490,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             measurements.start(MEASURES.syncClasses);
             notifySyncProgress({ state: 'pulling', total: 0, done: 0, classId: null });
             try {
+                lastCloudRequestAtRef.current = Date.now();
                 const response = await apiFetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': accountOwner(user) }, signal: controller.signal });
                 if (!response.ok) {
                     if (isCurrent()) {
@@ -502,7 +520,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         const timetableClock = server.timetableClock !== undefined ? normalizeTimetableClock(server.timetableClock) : config.timetableClock;
                         const evaluationPolicy = server.evaluationPolicy !== undefined ? normalizeEvaluationPolicy(server.evaluationPolicy) : config.evaluationPolicy;
                         if (!dequal(config.timetableClock, timetableClock) || !dequal(config.evaluationPolicy, evaluationPolicy)) {
-                            localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock, evaluationPolicy }));
+                            writeDurably('appConfig_v1', JSON.stringify({ ...config, timetableClock, evaluationPolicy }));
                             notifyPullApplied();
                         }
                     }
@@ -599,7 +617,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             const contentDirection = isContentDirection(blob.contentDirection)
                                 ? blob.contentDirection
                                 : undefined;
-                            commits.push(() => localStorage.setItem(
+                            commits.push(() => writeDurably(
                                 `classData_v1_${serverClass.id}`,
                                 JSON.stringify({
                                     lessonsData: blob.lessonsData ?? [],
@@ -690,7 +708,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 if (configChanged) {
                     // A failed local write must not acknowledge a cloud version.
-                    localStorage.setItem('appConfig_v1', JSON.stringify(nextConfig));
+                    writeDurably('appConfig_v1', JSON.stringify(nextConfig));
                     localChanged = true;
                 }
                 if (appliedSettingsAt) markSettingsSynced(appliedSettingsAt);
@@ -706,7 +724,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     markClassesListDirty();
                 }
                 if (localChanged) {
-                    localStorage.setItem('classManager_v1', JSON.stringify(coloredClasses));
+                    writeDurably('classManager_v1', JSON.stringify(coloredClasses));
                     writeSyncMeta(syncMeta);
                     notifyPullApplied();
                 }
@@ -743,7 +761,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         refreshRef.current = refresh;
         const stopPolling = startForegroundPolling(refresh, {
-            interval: 60_000,
+            interval: CLOUD_SYNC_INTERVAL_MS,
+            minIntervalBetweenRuns: CLOUD_SYNC_INTERVAL_MS,
+            getLastRunAt: () => lastCloudRequestAtRef.current,
             onInactive: () => pullAbortRef.current?.abort(),
         });
 
@@ -762,7 +782,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const unsubscribeDirty = subscribe('dirty', () => {
             setSyncStatus(current => (current === 'syncing' ? current : 'pending'));
-            schedulePush(getPendingWork().deletedClassIds.length > 0 ? 50 : PUSH_DEBOUNCE_MS);
+            schedulePush(cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current));
         });
 
         /*
@@ -771,18 +791,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
          * tout de suite, avec un plafond qui absorbe une rafale d'édition.
          */
         const unsubscribeConfig = subscribe('config-changed', (_source, keys) => {
-            if (!touchesImmediateSettings(keys)) return;
-            const now = Date.now();
-            const delay = settingsPushDelay(now, lastSettingsPushRef.current);
-            lastSettingsPushRef.current = now + delay;
-            schedulePush(delay);
+            if (!touchesSyncableSettings(keys)) return;
+            schedulePush(cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current));
         });
         const unsubscribeClasses = subscribe('classes-changed', () => {
-            if (getPendingWork().classesListDirty) schedulePush(300);
+            if (getPendingWork().classesListDirty) schedulePush(cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current));
         });
 
         const handleOnline = () => {
-            if (isForegroundOnline() && hasPendingWork()) schedulePush(1_000);
+            if (isForegroundOnline() && hasPendingWork()) schedulePush(cloudSyncDelay(Date.now(), lastCloudRequestAtRef.current));
         };
 
         const flush = () => {

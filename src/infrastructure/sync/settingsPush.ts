@@ -1,19 +1,11 @@
 /**
- * Envoi cloud des réglages structurants (emploi du temps).
- *
- * Le professeur règle sa grille case par case : la modification doit partir tout
- * de suite — l'ouverture automatique d'une séance, les rappels et le repère
- * « séance en cours » s'appuient dessus. Mais une rafale d'édition doit rester
- * coalescente : une grille de trente cases ne doit pas produire trente requêtes.
- *
- * D'où deux bornes : réactif (300 ms) sur un changement isolé, et jamais deux
- * envois à moins de deux secondes d'écart quand les modifications s'enchaînent.
+ * La grille et les cahiers sont enregistrés localement sans attendre le cloud.
+ * Les changements synchronisables sont regroupés dans un cycle cloud espacé.
  */
-export const SETTINGS_PUSH_DELAY_MS = 300;
-export const SETTINGS_PUSH_MIN_INTERVAL_MS = 2_000;
+export const CLOUD_SYNC_INTERVAL_MS = 3 * 60_000;
 
-/** Clés dont la modification déclenche l'envoi immédiat. */
-const IMMEDIATE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
+/** Clés de configuration qui doivent rejoindre la file de synchronisation cloud. */
+const SYNCABLE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
     'timetable',
     'schedules',
     'classRosters',
@@ -27,9 +19,11 @@ const IMMEDIATE_SETTINGS_KEYS: ReadonlySet<string> = new Set([
     'sessionRemarkOverrides',
 ]);
 
-export const touchesImmediateSettings = (keys: readonly string[] | undefined): boolean =>
-    Boolean(keys?.some(key => IMMEDIATE_SETTINGS_KEYS.has(key)));
+export const touchesSyncableSettings = (keys: readonly string[] | undefined): boolean =>
+    Boolean(keys?.some(key => SYNCABLE_SETTINGS_KEYS.has(key)));
 
-/** Délai du prochain envoi, `lastScheduledAt` étant l'échéance déjà programmée. */
-export const settingsPushDelay = (now: number, lastScheduledAt: number): number =>
-    Math.max(SETTINGS_PUSH_DELAY_MS, lastScheduledAt + SETTINGS_PUSH_MIN_INTERVAL_MS - now);
+/** Temps restant avant la prochaine fenêtre cloud; la première fenêtre s'ouvre dans trois minutes. */
+export const cloudSyncDelay = (now: number, lastRequestAt: number): number =>
+    lastRequestAt > 0
+        ? Math.max(0, lastRequestAt + CLOUD_SYNC_INTERVAL_MS - now)
+        : CLOUD_SYNC_INTERVAL_MS;

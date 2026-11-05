@@ -2,10 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import {
-  SETTINGS_PUSH_DELAY_MS,
-  SETTINGS_PUSH_MIN_INTERVAL_MS,
-  settingsPushDelay,
-  touchesImmediateSettings,
+  CLOUD_SYNC_INTERVAL_MS,
+  cloudSyncDelay,
+  touchesSyncableSettings,
 } from '../src/infrastructure/sync/settingsPush';
 import { notifyConfigChanged, subscribe } from '../src/infrastructure/sync/syncBus';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
@@ -40,26 +39,21 @@ test('après la réaffectation de la deuxième heure, la carte et les alertes ba
   }
 });
 
-test('emploi du temps modifié : l’envoi cloud part tout de suite, une rafale reste coalescente', () => {
+test('les changements locaux rejoignent la prochaine fenêtre cloud de trois minutes', () => {
   const now = 1_700_000_000_000;
-  // Changement isolé : quelques centaines de millisecondes, pas le debounce de 3 s.
-  assert.equal(settingsPushDelay(now, 0), SETTINGS_PUSH_DELAY_MS);
-  assert.ok(SETTINGS_PUSH_DELAY_MS < 1_000, 'réactif : moins d’une seconde');
-  // Deuxième case touchée juste après : l’envoi ne double pas, il est repoussé au plafond.
-  const scheduled = now + SETTINGS_PUSH_DELAY_MS;
-  const secondDelay = settingsPushDelay(now + 100, scheduled);
-  assert.equal(now + 100 + secondDelay, scheduled + SETTINGS_PUSH_MIN_INTERVAL_MS, 'au moins deux secondes entre deux envois');
-  // Une fois le plafond écoulé, un nouveau changement repart à pleine réactivité.
-  assert.equal(settingsPushDelay(now + SETTINGS_PUSH_MIN_INTERVAL_MS + 50, scheduled), SETTINGS_PUSH_DELAY_MS);
+  assert.equal(CLOUD_SYNC_INTERVAL_MS, 180_000);
+  assert.equal(cloudSyncDelay(now, 0), CLOUD_SYNC_INTERVAL_MS, 'premier cycle auto après trois minutes');
+  assert.equal(cloudSyncDelay(now + 60_000, now), 120_000, 'prochain cycle calculé depuis la dernière requête');
+  assert.equal(cloudSyncDelay(now + CLOUD_SYNC_INTERVAL_MS, now), 0, 'la fenêtre est ouverte après trois minutes');
 });
 
-test('emploi du temps et liste de classe déclenchent l’envoi immédiat', () => {
-  assert.equal(touchesImmediateSettings(['timetable']), true);
-  assert.equal(touchesImmediateSettings(['classRosters']), true);
-  assert.equal(touchesImmediateSettings(['schedules', 'theme']), true);
-  assert.equal(touchesImmediateSettings(['theme', 'appTextSize']), false);
-  assert.equal(touchesImmediateSettings([]), false);
-  assert.equal(touchesImmediateSettings(undefined), false);
+test('les réglages synchronisables restent détectés sans déclencher le cloud avant la fenêtre', () => {
+  assert.equal(touchesSyncableSettings(['timetable']), true);
+  assert.equal(touchesSyncableSettings(['classRosters']), true);
+  assert.equal(touchesSyncableSettings(['schedules', 'theme']), true);
+  assert.equal(touchesSyncableSettings(['theme', 'appTextSize']), false);
+  assert.equal(touchesSyncableSettings([]), false);
+  assert.equal(touchesSyncableSettings(undefined), false);
 });
 
 test('le bus transmet les réglages réellement modifiés avec config-changed', () => {
@@ -72,7 +66,7 @@ test('le bus transmet les réglages réellement modifiés avec config-changed', 
   assert.deepEqual(seen, [['timetable', 'schedules'], undefined]);
 });
 
-test('les mécanismes de séance et l’envoi immédiat sont bien branchés sur config-changed', () => {
+test('les mécanismes de séance et la file cloud espacée sont branchés sur config-changed', () => {
   const alerts = read('src/hooks/useSessionAlerts.ts');
   assert.match(alerts, /\['dirty', 'pull-applied', 'config-changed', 'classes-changed'\]/, 'le recalcul écoute config-changed');
 
@@ -81,9 +75,12 @@ test('les mécanismes de séance et l’envoi immédiat sont bien branchés sur 
   assert.match(config, /touchesSyncable[\s\S]{0,200}markClassesListDirty\(\)/, 'l’emploi du temps reste dans la file de synchronisation');
 
   const sync = read('src/contexts/SyncContext.tsx');
-  assert.match(sync, /subscribe\('config-changed', \(_source, keys\)[\s\S]{0,300}touchesImmediateSettings\(keys\)/, 'l’envoi immédiat écoute les clés d’emploi du temps');
-  assert.match(sync, /settingsPushDelay\(now, lastSettingsPushRef\.current\)/, 'la cadence vient du module partagé');
-  assert.match(sync, /const flushPush = useCallback\(\(\) => \{[\s\S]{0,120}schedulePush\(0\)/, 'envoi immédiat sur demande');
+  assert.match(sync, /subscribe\('config-changed', \(_source, keys\)[\s\S]{0,300}touchesSyncableSettings\(keys\)/, 'la file écoute les clés de réglages synchronisables');
+  assert.match(sync, /cloudSyncDelay\(Date\.now\(\), lastCloudRequestAtRef\.current\)/, 'les envois automatiques respectent la fenêtre cloud');
+  assert.match(sync, /interval:\s*CLOUD_SYNC_INTERVAL_MS/, 'le pull automatique suit la même cadence de trois minutes');
+  assert.match(sync, /push\(\{ force: true \}\)/, 'seule la demande explicite contourne la cadence');
+  assert.match(sync, /refreshRef\.current\?\.\(\{ force: true \}\)/, 'la demande manuelle force aussi un pull');
+  assert.match(sync, /const flushPush = useCallback\(\(\) => \{[\s\S]{0,120}schedulePush\(0\)/, 'la fermeture demande un envoi sans contourner la cadence');
 
   const app = read('src/app/App.tsx');
   assert.match(app, /const \{ flushPush \} = useSync\(\)/, 'App peut demander l’envoi immédiat');

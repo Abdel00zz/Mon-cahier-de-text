@@ -5,7 +5,7 @@ import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesCh
 import { captureWorkspaceLease } from '../infrastructure/storage/accountWorkspace';
 import { CLASS_STORAGE_KEY, readStoredClasses } from '../infrastructure/storage/localClassStorage';
 import { assignClassColors, isClassColor } from '../domain/classes/classColors';
-import { removeQuarantine } from '../infrastructure/storage/safeStorage';
+import { removeQuarantine, writeDurably } from '../infrastructure/storage/safeStorage';
 import { updateClassMetadata } from '../domain/classes/classMetadata';
 
 const DATA_PREFIX = 'classData_v1_';
@@ -27,7 +27,7 @@ export const useClassManager = () => {
             const normalized = readStoredClasses();
             const raw = localStorage.getItem(CLASS_STORAGE_KEY);
             if (raw !== null && raw !== JSON.stringify(normalized)) {
-                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(normalized));
+                writeDurably(CLASS_STORAGE_KEY, JSON.stringify(normalized));
                 markClassesListDirty();
             }
             setClasses(normalized);
@@ -41,7 +41,7 @@ export const useClassManager = () => {
         if (!workspaceIsActive() || typeof localStorage === 'undefined') return false;
         try {
             const colored = assignClassColors(next);
-            localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(colored));
+            writeDurably(CLASS_STORAGE_KEY, JSON.stringify(colored));
             setClasses(colored);
             if (markDirty) markClassesListDirty();
             notifyClassesChanged();
@@ -75,8 +75,8 @@ export const useClassManager = () => {
             createdAt: new Date().toISOString(), metadataUpdatedAt: new Date().toISOString(), color: isClassColor(details.color) ? details.color : '',
         };
         const next = assignClassColors([...readStoredClasses(), newClass]);
-        // Initialiser le cahier avant d'exposer sa carte et de réveiller le cloud.
-        localStorage.setItem(DATA_PREFIX + newClass.id, '[]');
+        // Initialiser durablement le cahier avant d'exposer sa carte et de réveiller le cloud.
+        writeDurably(DATA_PREFIX + newClass.id, '[]');
         if (!persistClassesNow(next)) {
             localStorage.removeItem(DATA_PREFIX + newClass.id);
             throw new Error('Impossible de sauvegarder la classe sur cet appareil.');

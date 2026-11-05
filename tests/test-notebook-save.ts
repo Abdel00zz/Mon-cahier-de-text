@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { saveNotebook } from '../src/infrastructure/storage/saveNotebook';
 import { QUARANTINE_PREFIX, isQuotaError, quarantineRaw, releaseComfortSpace, writeDurably } from '../src/infrastructure/storage/safeStorage';
-import { clearPendingWork, getPendingWork, readSyncMeta, reloadSyncState, subscribe } from '../src/infrastructure/sync/syncBus';
+import { clearPendingWork, getPendingWork, markClassDirty, readSyncMeta, reloadSyncState, subscribe } from '../src/infrastructure/sync/syncBus';
 import type { LessonsData } from '../src/types';
 import { buildLessonRows } from '../src/domain/notebook/lessonRows';
 import { lastDatedContentKey } from '../src/domain/notebook/notebookOpening';
@@ -118,4 +118,22 @@ test('a full quota trims comfort journals only, then the write succeeds', contex
   assert.equal(JSON.parse(storage.getItem('editJournal_v1_e')!).length, 10);
   assert.equal(storage.getItem('classData_v1_keep'), notebook, 'notebooks are never evicted');
   assert.equal(releaseComfortSpace(storage), 0, 'nothing more to release');
+});
+
+test('la file cloud est durable et ne masque pas un échec de quota', context => {
+  const storage = memoryStorage();
+  installGlobal(context, storage);
+  markClassDirty('a');
+  reloadSyncState();
+  assert.deepEqual(getPendingWork().dirtyClassIds, ['a']);
+
+  storage.full = true;
+  assert.throws(() => markClassDirty('b'), error => isQuotaError(error));
+  reloadSyncState();
+  assert.deepEqual(getPendingWork().dirtyClassIds, ['a'], 'une file non écrite ne doit pas survivre en mémoire seulement');
+
+  storage.full = false;
+  markClassDirty('b');
+  reloadSyncState();
+  assert.deepEqual(getPendingWork().dirtyClassIds.sort(), ['a', 'b']);
 });
