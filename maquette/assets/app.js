@@ -40,6 +40,9 @@ const I18N = {
     "cahier.addEvaluation": "Évaluation",
     "cahier.remove": "Retirer",
     "cahier.remark": "Remarque",
+    "cahier.remarkColumn": "Remarque",
+    "cahier.remarkShort": "Rem.",
+    "cahier.saved": "Enregistré",
     "cahier.homework": "Travail à faire",
     "cahier.planEmpty.title": "Le plan est vide",
     "cahier.planEmpty.text": "Ajoutez un chapitre, puis ses sections. La numérotation suit toute seule.",
@@ -170,6 +173,9 @@ const I18N = {
     "cahier.addEvaluation": "تقويم",
     "cahier.remove": "إزالة",
     "cahier.remark": "ملاحظة",
+    "cahier.remarkColumn": "ملاحظة",
+    "cahier.remarkShort": "ملاحظة",
+    "cahier.saved": "تم الحفظ",
     "cahier.homework": "العمل المنزلي",
     "cahier.planEmpty.title": "المخطط فارغ",
     "cahier.planEmpty.text": "أضف درساً ثم فروعه، والترقيم يُحسب تلقائياً.",
@@ -300,6 +306,9 @@ const I18N = {
     "cahier.addEvaluation": "Assessment",
     "cahier.remove": "Remove",
     "cahier.remark": "Remark",
+    "cahier.remarkColumn": "Remark",
+    "cahier.remarkShort": "Rem.",
+    "cahier.saved": "Saved",
     "cahier.homework": "Homework",
     "cahier.planEmpty.title": "The outline is empty",
     "cahier.planEmpty.text": "Add a chapter, then its sections. Numbering follows automatically.",
@@ -614,6 +623,7 @@ const state = {
   sessionId: null,
   period: "morning",
   selectedItemId: null,
+  editingItemId: null,
   menuClassId: null,
   menuSlot: null,
   editingClassId: null,
@@ -741,118 +751,191 @@ function nextLessonLabel() {
   return `${t("day.2")} ${slot.label.split(" – ")[0]}`;
 }
 
-/* ── Rendu : cahier ──────────────────────────────────────────────────────── */
+/* ── Rendu : cahier ────────────────────────────────────────────────────────
+   Reproduction de l'éditeur de l'application : une seule grille
+   Date | Contenu | Remarque, une ligne par élément du plan, date et remarque
+   fusionnées sur la première ligne de la séance. */
+
+/** Aplatit les séances d'une classe en lignes de tableau, dans l'ordre du plan. */
+function notebookRows(classId) {
+  const sessions = sessionsOf(classId)
+    .slice()
+    .sort((left, right) => left.date.localeCompare(right.date));
+  const rows = [];
+
+  for (const session of sessions) {
+    const numbers = planNumbers(session);
+    let first = true;
+    const walk = (items, depth) => {
+      for (const node of items) {
+        rows.push({
+          node,
+          depth,
+          number: numbers.get(node.id) ?? "",
+          sessionId: session.id,
+          date: session.date,
+          remark: session.remark,
+          merged: !first,
+        });
+        first = false;
+        walk(node.children, depth + 1);
+      }
+    };
+    walk(session.items, 0);
+  }
+  return rows;
+}
+
+const LESSON_TEXT_CLASS = {
+  section: "nb-text-section",
+  subsection: "nb-text-subsection",
+  subsubsection: "nb-text-subsubsection",
+};
+
+function shortDateParts(iso) {
+  const [year, month, day] = iso.split("-");
+  return { short: `${day}/${month}`, full: `${day}/${month}/${year}` };
+}
+
 function renderCahier() {
-  const workspace = $("#cahier-workspace");
+  const notebook = $("#notebook");
   const emptyState = $("#cahier-empty");
   const title = $("#cahier-title");
-  const sub = $("#cahier-sub");
   const entry = classById(state.openClassId);
 
   if (!entry || state.dataSet === "empty") {
-    workspace.hidden = true;
+    notebook.hidden = true;
     emptyState.hidden = false;
     title.textContent = t("nav.cahier");
-    sub.textContent = "";
     return;
   }
 
-  workspace.hidden = false;
+  notebook.hidden = false;
   emptyState.hidden = true;
-  title.textContent = entry.name;
-  sub.textContent = [entry.subject, entry.level].filter(Boolean).join(" · ");
+  if (title.textContent !== entry.name) title.textContent = entry.name;
 
   const sessions = sessionsOf(entry.id);
   if (!sessions.some((session) => session.id === state.sessionId)) {
     state.sessionId = sessions.at(-1)?.id ?? null;
   }
 
-  const list = $("#session-list");
-  list.replaceChildren();
-  for (const session of sessions) {
-    const item = document.createElement("li");
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `session-item${session.id === state.sessionId ? " is-active" : ""}`;
-    button.dataset.sessionId = session.id;
-    button.setAttribute("role", "option");
-    button.setAttribute("aria-selected", String(session.id === state.sessionId));
-
-    const date = document.createElement("span");
-    date.className = "session-date";
-    date.textContent = shortDate(session.date);
-
-    const heading = document.createElement("span");
-    heading.className = "session-title";
-    heading.textContent = session.items[0]?.text || t("cahier.planEmpty.title");
-
-    button.append(date, heading);
-    item.append(button);
-    list.append(item);
-  }
-
-  const session = currentSession();
-  $("#session-date").value = session?.date ?? "";
-  $("#session-date").disabled = !session;
-  $("#session-delete").disabled = !session;
-  $("#session-pdf").disabled = !session;
-  $("#session-remark").value = session?.remark ?? "";
-  $("#session-homework").value = session?.homework ?? "";
-  $("#session-remark").disabled = !session;
-  $("#session-homework").disabled = !session;
-
-  renderPlan(session);
+  renderNotebook(entry);
 }
 
-function renderPlan(session) {
-  const tree = $("#plan-tree");
-  const empty = $("#plan-empty");
-  tree.replaceChildren();
+function renderNotebook(entry) {
+  const body = $("#notebook-body");
+  const rows = notebookRows(entry.id);
+  body.replaceChildren();
 
-  const rows = [];
-  const numbers = planNumbers(session);
-  const walk = (items, depth) => {
-    for (const node of items) {
-      rows.push({ node, depth, number: numbers.get(node.id) ?? "" });
-      walk(node.children, depth + 1);
-    }
-  };
-  if (session) walk(session.items, 0);
-
-  empty.hidden = !session || rows.length > 0;
-  tree.hidden = !session || rows.length === 0;
-
-  if (!session || rows.length === 0) return;
-
-  const head = document.createElement("div");
-  head.className = "tree-head";
-  head.innerHTML = `<span>${t("cahier.kind")}</span><span>${t("cahier.number")}</span><span>${t("cahier.content")}</span>`;
-  tree.append(head);
+  if (rows.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty empty-inline";
+    empty.innerHTML = `<svg class="empty-glyph"><use href="#i-book" /></svg>
+      <h2 class="empty-title">${t("cahier.planEmpty.title")}</h2>
+      <p class="empty-text">${t("cahier.planEmpty.text")}</p>`;
+    body.append(empty);
+    return;
+  }
 
   for (const row of rows) {
     const line = document.createElement("div");
-    line.className = "tree-row";
-    if (row.node.kind in STRUCTURAL) line.classList.add("is-structural");
-    if (row.node.id === state.selectedItemId) line.classList.add("is-selected");
+    line.className = "nb-row";
     line.dataset.itemId = row.node.id;
-    line.style.paddingInlineStart = `${12 + row.depth * 16}px`;
+    line.dataset.sessionId = row.sessionId;
+    const editing = row.node.id === state.editingItemId;
+    line.dataset.rowState = [
+      row.node.id === state.selectedItemId ? "selected" : "",
+      editing ? "editing" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    const kind = document.createElement("span");
-    kind.className = "tree-kind";
-    kind.textContent = t(`kind.${row.node.kind}`);
+    // Colonne 1 — date, fusionnée sur la séance.
+    if (row.merged) {
+      const blank = document.createElement("div");
+      blank.className = "nb-date-empty";
+      line.append(blank);
+    } else {
+      const parts = shortDateParts(row.date);
+      const date = document.createElement("button");
+      date.type = "button";
+      date.className = "nb-date";
+      date.innerHTML = `<span class="nb-date-short">${parts.short}</span><span class="nb-date-full">${parts.full}</span>`;
+      line.append(date);
+    }
 
-    const number = document.createElement("span");
-    number.className = "tree-number";
-    number.textContent = row.number;
+    // Colonne 2 — contenu.
+    const content = document.createElement("div");
+    content.className = "nb-content";
+    content.dataset.rowContent = "true";
+    content.append(buildContent(row, editing));
+    line.append(content);
 
-    const text = document.createElement("span");
-    text.className = "tree-text";
-    text.textContent = row.node.text || "…";
-    text.title = row.node.text;
+    // Colonne 3 — remarque, fusionnée sur la séance.
+    const remark = document.createElement("div");
+    remark.className = "nb-remark";
+    remark.textContent = row.merged ? "" : row.remark ?? "";
+    line.append(remark);
 
-    line.append(kind, number, text);
-    tree.append(line);
+    body.append(line);
   }
+}
+
+function buildContent(row, editing) {
+  const { node, depth, number } = row;
+
+  if (node.kind === "chapter") {
+    const chapter = document.createElement("div");
+    chapter.className = "nb-chapter";
+    const text = document.createElement("span");
+    text.className = "nb-chapter-text";
+    text.dataset.editable = "true";
+    if (editing) text.contentEditable = "true";
+    text.innerHTML = `${number ? `<bdi class="nb-chapter-number">${number}.</bdi>` : ""}${escapeHtml(node.text)}`;
+    chapter.append(text);
+    return chapter;
+  }
+
+  const level = Math.min(3, Math.max(1, depth));
+  const lesson = document.createElement("div");
+  lesson.className = `nb-lesson nb-indent-${level}`;
+
+  const badge = document.createElement("span");
+  badge.className = "nb-badge";
+  badge.innerHTML = `${escapeHtml(t(`kind.${node.kind}`))}${number ? ` <bdi>${escapeHtml(number)}</bdi>` : ""}`;
+
+  const text = document.createElement("div");
+  text.className = `nb-text ${LESSON_TEXT_CLASS[node.kind] ?? "nb-text-item"}`;
+  text.dataset.editable = "true";
+  if (editing) text.contentEditable = "true";
+  text.textContent = node.text;
+
+  lesson.append(badge, text);
+
+  if (node.kind === "definition" || node.kind === "theorem") {
+    const description = document.createElement("span");
+    description.className = "nb-description";
+    description.textContent = node.children[0]?.text ?? "";
+    if (description.textContent) text.append(description);
+  }
+
+  return lesson;
+}
+
+function escapeHtml(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function commitEdit(target) {
+  const row = target.closest(".nb-row");
+  const itemId = row?.dataset.itemId;
+  const found = itemId ? findItem(itemId) : null;
+  if (found) {
+    found.node.text = target.textContent.trim().replaceAll(/\s+/g, " ");
+    renderCahier();
+  }
+  state.editingItemId = null;
+  renderCahier();
 }
 
 /* ── Rendu : emploi du temps ─────────────────────────────────────────────── */
@@ -1225,20 +1308,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const sessionButton = target.closest("[data-session-id]");
-  if (sessionButton) {
-    state.sessionId = sessionButton.dataset.sessionId;
-    renderCahier();
-    return;
-  }
-
-  const treeRow = target.closest("[data-item-id]");
-  if (treeRow) {
-    state.selectedItemId = treeRow.dataset.itemId;
-    renderPlan(currentSession());
-    return;
-  }
-
   const slotCell = target.closest(".slot");
   if (slotCell) {
     openSlotMenu(Number(slotCell.dataset.day), Number(slotCell.dataset.slot), slotCell);
@@ -1341,39 +1410,61 @@ $("#session-new").addEventListener("click", () => {
   const session = { id: uid(), date: iso, remark: "", homework: "", items: [] };
   sessions.push(session);
   state.sessionId = session.id;
+  state.selectedItemId = null;
   renderCahier();
   toast(t("cahier.toast.session"));
 });
 
 $("#session-pdf").addEventListener("click", () => toast(t("cahier.toast.pdf")));
 
-$("#session-delete").addEventListener("click", () => {
-  const session = currentSession();
-  if (!session) return;
-  askConfirmation("session", `${shortDate(session.date)} — ${t("confirm.session.text")}`, () => {
-    data.sessions[state.openClassId] = sessionsOf(state.openClassId).filter((row) => row.id !== session.id);
-    state.sessionId = null;
-    renderCahier();
-    toast(t("cahier.toast.deleted"));
-  });
+/* Sélection d'une ligne : la date, la remarque et l'élément suivent ensemble. */
+$("#notebook-body").addEventListener("click", (event) => {
+  const cell = event.target.closest("[data-row-content]");
+  const row = event.target.closest(".nb-row");
+  if (!row) return;
+  state.sessionId = row.dataset.sessionId ?? state.sessionId;
+  if (!cell || event.target.isContentEditable) return;
+  state.selectedItemId = row.dataset.itemId;
+  renderCahier();
 });
 
-$("#session-date").addEventListener("change", (event) => {
-  const session = currentSession();
-  if (session) {
-    session.date = event.target.value;
-    renderCahier();
+/* Double-clic : édition en ligne, comme l'éditeur réel. */
+$("#notebook-body").addEventListener("dblclick", (event) => {
+  const target = event.target.closest("[data-editable]");
+  const row = event.target.closest(".nb-row");
+  if (!target || !row) return;
+  state.editingItemId = row.dataset.itemId;
+  state.selectedItemId = row.dataset.itemId;
+  renderCahier();
+  const editable = $(`.nb-row[data-item-id="${row.dataset.itemId}"] [data-editable="true"]`);
+  if (editable) {
+    editable.focus();
+    const range = document.createRange();
+    range.selectNodeContents(editable);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
 });
 
-$("#session-remark").addEventListener("input", (event) => {
-  const session = currentSession();
-  if (session) session.remark = event.target.value;
+$("#notebook-body").addEventListener("focusout", (event) => {
+  const target = event.target.closest("[data-editable]");
+  if (!target || !state.editingItemId) return;
+  commitEdit(target);
 });
 
-$("#session-homework").addEventListener("input", (event) => {
-  const session = currentSession();
-  if (session) session.homework = event.target.value;
+$("#notebook-body").addEventListener("keydown", (event) => {
+  const target = event.target.closest("[data-editable]");
+  if (!target || !state.editingItemId) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    target.blur();
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    state.editingItemId = null;
+    renderCahier();
+  }
 });
 
 for (const button of $$("[data-add]")) {

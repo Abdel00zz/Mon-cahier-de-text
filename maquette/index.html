@@ -127,83 +127,65 @@
 
         <!-- ══ Écran 2 — Cahier ══════════════════════════════════════════ -->
         <section class="page" id="screen-cahier" aria-labelledby="cahier-title">
-          <header class="page-head page-head--stack">
-            <button class="btn btn-ghost btn-icon" id="cahier-back" type="button" aria-label="Retour aux classes">
+          <header class="editor-head">
+            <button class="editor-back" id="cahier-back" type="button" aria-label="Retour aux classes">
               <svg class="icon"><use href="#i-arrow-start" /></svg>
             </button>
-            <h1 class="page-title" id="cahier-title">1 PCSI</h1>
-            <p class="page-sub" id="cahier-sub">Mathématiques · Prépa</p>
-            <div class="head-actions">
-              <button class="btn" id="session-new" type="button" data-i18n="cahier.newSession">Nouvelle séance</button>
-              <button class="btn" id="session-pdf" type="button" data-i18n="cahier.export">Exporter en PDF</button>
+            <div class="editor-heading">
+              <h1 class="editor-title" id="cahier-title" contenteditable="true" spellcheck="false" role="textbox" aria-label="Nom de la classe">1 PCSI</h1>
+            </div>
+            <div class="editor-head-actions">
+              <span class="editor-save" id="editor-save">
+                <svg class="icon"><use href="#i-check" /></svg>
+                <span data-i18n="cahier.saved">Enregistré</span>
+              </span>
             </div>
           </header>
 
-          <div class="page-body">
-            <div class="cahier-workspace" id="cahier-workspace">
-              <div class="sessions">
-                <div class="sessions-head">
-                  <span class="overline" data-i18n="cahier.sessions">Séances</span>
-                  <label class="date-field">
-                    <span class="visually-hidden" data-i18n="cahier.date">Date</span>
-                    <input id="session-date" type="date" />
-                  </label>
-                </div>
-                <ul class="session-list" id="session-list" role="listbox" aria-label="Séances"></ul>
-                <button class="btn btn-danger" id="session-delete" type="button" data-i18n="cahier.deleteSession">
-                  Supprimer la séance
-                </button>
-              </div>
-
-              <div class="plan">
-                <div class="tools">
-                  <button class="btn" data-add="chapter" type="button" data-i18n="cahier.addChapter">Chapitre</button>
-                  <button class="btn" data-add="section" type="button" data-i18n="cahier.addSection">Section</button>
-                  <button class="btn" data-add="subsection" type="button" data-i18n="cahier.addSubsection">Sous-section</button>
-                  <button class="btn" data-add="item" type="button" data-i18n="cahier.addItem">Élément</button>
-                  <button class="btn" data-add="evaluation" type="button" data-i18n="cahier.addEvaluation">Évaluation</button>
-                  <span class="tools-gap"></span>
-                  <button class="btn btn-icon" id="item-up" type="button" aria-label="Monter">
-                    <svg class="icon"><use href="#i-up" /></svg>
-                  </button>
-                  <button class="btn btn-icon" id="item-down" type="button" aria-label="Descendre">
-                    <svg class="icon"><use href="#i-down" /></svg>
-                  </button>
-                  <button class="btn btn-danger" id="item-remove" type="button" data-i18n="cahier.remove">Retirer</button>
-                </div>
-
-                <div class="tree" id="plan-tree" role="tree"></div>
-
-                <div class="empty empty-inline" id="plan-empty" hidden>
-                  <svg class="empty-glyph"><use href="#i-book" /></svg>
-                  <h2 class="empty-title" data-i18n="cahier.planEmpty.title">Le plan est vide</h2>
-                  <p class="empty-text" data-i18n="cahier.planEmpty.text">
-                    Ajoutez un chapitre, puis ses sections. La numérotation suit toute seule.
-                  </p>
-                </div>
-
-                <div class="notes">
-                  <label class="note">
-                    <span class="overline" data-i18n="cahier.remark">Remarque</span>
-                    <textarea id="session-remark" rows="2" data-i18n-placeholder="cahier.remark" placeholder="Remarque"></textarea>
-                  </label>
-                  <label class="note">
-                    <span class="overline" data-i18n="cahier.homework">Travail à faire</span>
-                    <textarea id="session-homework" rows="2" data-i18n-placeholder="cahier.homework" placeholder="Travail à faire"></textarea>
-                  </label>
-                </div>
-              </div>
+          <div class="editor-toolbar" role="toolbar" aria-label="Actions du cahier">
+            <div class="toolbar-group">
+              <button class="btn" data-add="chapter" type="button" data-i18n="cahier.addChapter">Chapitre</button>
+              <button class="btn" data-add="section" type="button" data-i18n="cahier.addSection">Section</button>
+              <button class="btn" data-add="subsection" type="button" data-i18n="cahier.addSubsection">Sous-section</button>
+              <button class="btn" data-add="item" type="button" data-i18n="cahier.addItem">Élément</button>
+              <button class="btn" data-add="evaluation" type="button" data-i18n="cahier.addEvaluation">Évaluation</button>
             </div>
-
-            <div class="empty" id="cahier-empty" hidden>
-              <svg class="empty-glyph"><use href="#i-book" /></svg>
-              <h2 class="empty-title" data-i18n="cahier.noClass.title">Aucun cahier ouvert</h2>
-              <p class="empty-text" data-i18n="cahier.noClass.text">Choisissez une classe pour reprendre la rédaction.</p>
-              <button class="empty-cta" data-goto="classes" type="button">
-                <span class="empty-cta-glyph"><svg class="icon"><use href="#i-classes" /></svg></span>
-                <span data-i18n="nav.classes">Classes</span>
+            <div class="toolbar-group toolbar-end">
+              <button class="btn btn-icon" id="item-up" type="button" aria-label="Monter">
+                <svg class="icon"><use href="#i-up" /></svg>
               </button>
+              <button class="btn btn-icon" id="item-down" type="button" aria-label="Descendre">
+                <svg class="icon"><use href="#i-down" /></svg>
+              </button>
+              <button class="btn btn-danger" id="item-remove" type="button" data-i18n="cahier.remove">Retirer</button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button class="btn" id="session-new" type="button" data-i18n="cahier.newSession">Nouvelle séance</button>
+              <button class="btn btn-primary" id="session-pdf" type="button" data-i18n="cahier.export">Exporter en PDF</button>
             </div>
+          </div>
+
+          <div class="notebook" id="notebook" data-editor-table>
+            <div class="notebook-head">
+              <div class="notebook-grid">
+                <div class="nb-h nb-h-side" data-i18n="cahier.date">Date</div>
+                <div class="nb-h nb-h-main" data-i18n="cahier.content">Contenu</div>
+                <div class="nb-h nb-h-side">
+                  <span class="nb-h-long" data-i18n="cahier.remarkColumn">Remarque</span>
+                  <span class="nb-h-short" data-i18n="cahier.remarkShort">Rem.</span>
+                </div>
+              </div>
+            </div>
+            <div class="notebook-body" id="notebook-body"></div>
+          </div>
+
+          <div class="empty" id="cahier-empty" hidden>
+            <svg class="empty-glyph"><use href="#i-book" /></svg>
+            <h2 class="empty-title" data-i18n="cahier.noClass.title">Aucun cahier ouvert</h2>
+            <p class="empty-text" data-i18n="cahier.noClass.text">Choisissez une classe pour reprendre la rédaction.</p>
+            <button class="empty-cta" data-goto="classes" type="button">
+              <span class="empty-cta-glyph"><svg class="icon"><use href="#i-classes" /></svg></span>
+              <span data-i18n="nav.classes">Classes</span>
+            </button>
           </div>
         </section>
 

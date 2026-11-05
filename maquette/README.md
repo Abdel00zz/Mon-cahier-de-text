@@ -31,6 +31,27 @@ Les valeurs sont relevées sur l'application (jetons `--primary`, `--border`,
 | Dock mobile | pilule 352 px, rayon 30, verre dépoli, pastille active dégradée |
 | Cartes de classe | rayon `22px 22px 12px`, halo interne clair, ombre très basse |
 
+### L'éditeur du cahier, repris de l'application
+
+Le tableau n'est pas un tableau générique : c'est celui de l'application, avec
+ses trois colonnes **Date | Contenu | Remarque**, sa grille et sa typographie.
+
+| Élément | Valeur reprise |
+| --- | --- |
+| Grille | `--cdt-table-cols` : `18% · 1fr · 20%` (< 640), `13% · 1fr · 16%` (≥ 768) |
+| Carte | rayon 14 px, bordure 2 px à 80 %, `shadow-xs` |
+| En-tête | fond `muted/30`, capitales 0,08 em, colonnes latérales en `muted-foreground` |
+| Échelle | `clamp(0.9375rem, 0.875rem + 0.2vw, 1rem)`, chapitre ×1,45 → badge ×0,72 |
+| Voix typographiques | chapitre et section en **Demi Condensed 600**, sous-sections et éléments en **Oblique**, corps en **Medium**, remarque en oblique |
+| Chapitre | centré, couleur `#2b6d73` (mode sombre `#91cec8`), numéro en marge |
+| Élément | pastille de nature + numéro, retrait 4/8/14 px (16/32/48 px ≥ 640) |
+| Ligne | `min-h 56 px`, filets verticaux entre colonnes, dates et remarques fusionnées par séance |
+| États | sélection 14 % d'encre d'accent, édition 20 % + filet interne 1 px |
+
+Interactions : clic sur une ligne pour la sélectionner, double-clic sur un titre
+pour l'éditer en ligne (Entrée valide, Échap annule), barre d'outils pour
+ajouter, déplacer et retirer, « Nouvelle séance » pour créer une date.
+
 ## Balayer les interfaces
 
 La barre **Maquette** (en bas à droite ; icône ⚙ sur téléphone) permet de changer
@@ -49,8 +70,9 @@ de jeu de données et de langue sans rien recharger.
 
 1. **Classes** — cartes pastel, pastille « En cours », recherche, deux états vides,
    menu de carte (ouvrir, emploi du temps, modifier, supprimer).
-2. **Cahier** — liste des séances, date, plan numéroté (I / A / 1° / a), barre
-   d'outils, remarque et travail à faire, plan vide, aucune classe ouverte.
+2. **Cahier** — tableau Date / Contenu / Remarque : en-tête, chapitres centrés,
+   sections et éléments numérotés avec pastille, remarques en marge fusionnées
+   par séance, sélection, édition en ligne, plan vide, aucune classe ouverte.
 3. **Emploi du temps** — bascule matin / après-midi, grille 6 jours, cases
    colorées par classe, affectation et suppression par menu.
 4. **Réglages** — identité, matières, apparence, données.

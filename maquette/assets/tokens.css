@@ -5,6 +5,43 @@
    rayons et la même profondeur que l'application.
    ========================================================================== */
 
+/* ── Computer Modern (cahier) : les trois voix de l'éditeur ─────────────── */
+@font-face {
+  font-family: "Computer Modern Sans Serif Medium";
+  src: url("../../public/fonts/cmu-sans-serif-medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Computer Modern Sans Serif Medium";
+  src: url("../../public/fonts/cmu-sans-serif-bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Computer Modern Sans Serif Medium";
+  src: url("../../public/fonts/cmu-sans-serif-oblique.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Computer Modern Sans Serif Demi Condensed";
+  src: url("../../public/fonts/cmu-sans-serif-demi-condensed.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Computer Modern Sans Serif Oblique";
+  src: url("../../public/fonts/cmu-sans-serif-oblique.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
 :root {
   /* ── Typographie (Readex Pro, comme l'application) ───────────────────── */
   --font: "Readex Pro", system-ui, -apple-system, "Segoe UI", "Noto Sans", "SamsungOne Arabic",
