@@ -59,6 +59,40 @@ Trois règles structurent tout le reste :
    synchroniser, quoi notifier, quoi montrer du robot) est un point unique,
    ordonné et déterministe — jamais une conséquence accidentelle d’un rendu.
 
+### 1.1 La carte des signaux
+
+Les circuits ne s’appellent pas : ils publient quatre signaux, et chaque écran
+écoute celui qui le concerne.
+
+| Signal | Émis quand | Ce qui se recalcule |
+|---|---|---|
+| **Travail en attente** | Une écriture locale n’est pas encore poussée | État de synchronisation, libellé « enregistré ici », file d’envoi |
+| **Lot appliqué** | Une synchronisation a déposé des changements distants | Classes, cahiers, configuration, statuts de séance, tableau éditeur |
+| **Configuration changée** | Réglages (emploi du temps, notifications, politique, apparence) | Emploi du temps, statuts, alertes, feuille d’évaluations, thème |
+| **Classes changées** | Création, modification, suppression, changement de couleur ou de niveau | Tableau de bord, en-tête du cahier, listes d’élèves, évaluations |
+
+Trois événements système s’ajoutent aux signaux applicatifs : **retour de
+visibilité**, **focus de la fenêtre** et **reprise native**. Ils ne changent pas
+les données, ils forcent un recalcul de l’heure (statut de séance, alertes) et une
+vérification de version.
+
+**Règle** : un écran ne relit jamais tout l’espace de travail à chaque signal ; il
+ne recalcule que les valeurs dérivées de ce signal. C’est ce qui garde la saisie
+fluide même sur un téléphone modeste.
+
+### 1.2 Les quatre branchements majeurs
+
+| Branchement | De → vers | Où il est détaillé |
+|---|---|---|
+| **Écriture** | Geste de l’enseignant → intention → validation métier → nouvelle version → stockage durable → file de synchronisation | §4, §7.1 |
+| **Projection** | Arbre du cahier → lignes → fusion des séances → tableau, papier, alertes, compagnon | §7.2, §14 |
+| **Observation** | Signaux (travail en attente, lot appliqué, configuration, classes) → recalculs ciblés par écran | §1.1, §5 |
+| **Décision** | Diagnostic pédagogique → arbitrage ordonné → une action → posture du robot | §13 |
+
+Aucun de ces quatre branchements n’écrit dans un autre : ils échangent des
+*faits* (une version, un signal, un diagnostic), jamais des ordres. C’est la
+raison pour laquelle une panne d’un circuit n’entraîne pas les autres.
+
 ---
 
 ## 2. Démarrage : la chaîne d’ouverture
@@ -352,18 +386,74 @@ le nom, le contenu et la date. **Règle** : un contenu trouvé entraîne
 l’affichage de tous ses ancêtres ; un filtre ne doit jamais casser une séance en
 laissant une ligne orpheline.
 
-### 7.5 Sélection et opérations groupées
+### 7.5 Le mécanisme de sélection
+
+#### État de sélection
+
+Une sélection n’est pas un ensemble de numéros de lignes : c’est un ensemble de
+**clés de ligne** accompagné de leurs coordonnées dans l’arbre.
 
 ```
-Clic simple  → sélectionne une ligne (ou ouvre l’édition selon le mode)
-Ctrl/Cmd     → ajoute ou retire de la sélection
-Maj          → étend la sélection dans l’ordre source
+sélection = { clés }  +  { clé → coordonnées (chapitre, section, …, contenu) }
 ```
 
-Les opérations groupées (dater, déplacer, supprimer, dupliquer, changer le type)
-s’appliquent **dans l’ordre source**, jamais dans l’ordre des clics, pour que le
-résultat soit reproductible. Une sélection devenue obsolète est ignorée : elle ne
-peut pas viser une autre ligne par accident.
+Conséquence : une sélection reste valide après un filtre de recherche, un
+repliement de section ou une réorganisation — et devient **inoffensive** si la
+ligne a disparu entre-temps (elle est ignorée au lieu de viser une autre ligne).
+
+#### Les gestes
+
+| Geste | Effet |
+|---|---|
+| **Clic simple** sur la zone de ligne | Sélectionne **ou** désélectionne cette ligne (bascule). |
+| **Double-clic** sur le contenu | Ouvre l’édition du contenu, sans changer la sélection. |
+| **Clic sur l’en-tête d’une séance fusionnée** | Sélectionne ou désélectionne **tout le groupe** : si toutes les lignes du groupe sont déjà sélectionnées, elles sont retirées ; sinon, elles sont ajoutées (règle du tout-ou-rien). |
+| **Glisser une ligne** | Propose un déplacement ; le point d’insertion est calculé avant le dépôt, pas après. |
+| **Échap** | Vide la sélection et ferme la fenêtre ouverte, dans cet ordre. |
+
+#### Le déplacement (glisser-déposer)
+
+```
+source + cible + côté (avant/après)
+   → calcul d’un PLAN de déplacement (est-ce possible ? où exactement ?)
+   → application du plan (une seule nouvelle version)
+   → la sélection SUIT le bloc déplacé
+   → l’état passe à « non enregistré » puis l’écriture durable suit
+```
+
+**Règles** :
+
+- un dépôt impossible n’est jamais appliqué (pas de demi-déplacement) ;
+- le déplacement est calculé sur l’ordre source, pas sur l’ordre affiché : un
+  glisser dans une liste filtrée ne peut pas atterrir « entre deux résultats » ;
+- la sélection se replace sur les lignes déplacées : on peut enchaîner deux
+  gestes sans re-sélectionner.
+
+#### La barre de sélection
+
+Dès qu’une ligne est sélectionnée, la barre contextuelle apparaît avec le nombre
+exact de lignes et des actions limitées à ce qui a du sens :
+
+| Action | Condition d’apparition |
+|---|---|
+| **Ajouter après** | Toujours |
+| **Aujourd’hui** / **Choisir une date** | Toujours |
+| **Retirer la date** | Au moins une ligne sélectionnée porte une date |
+| **Modifier** | Une seule ligne sélectionnée (sur grand écran) |
+| **Supprimer** | Toujours, avec confirmation |
+| **Plus d’actions** | Actions secondaires repliées (dupliquer, changer de type…) |
+| **Vider la sélection** | Toujours |
+
+Le nombre de lignes est **annoncé** aux lecteurs d’écran à chaque changement
+(zone vivante), et les actions sont désactivées pendant une transition de
+sélection : on ne peut pas lancer deux opérations groupées concurrentes.
+
+#### Opérations groupées
+
+Elles s’appliquent **dans l’ordre source**, jamais dans l’ordre des clics, et
+produisent **une seule nouvelle version** du cahier. Une sélection vidée par
+l’opération elle-même (par exemple après suppression) ne laisse pas la barre
+ouverte sur du vide.
 
 ### 7.6 Annuler / refaire
 
@@ -490,6 +580,73 @@ cohérent quand ce ne l’est pas.
 
 Une absence déclarée n’efface pas une évaluation : elle indique qui était
 absent, pour que la correction et le suivi restent justes.
+
+### 10.2 Les seize natures d’évaluation
+
+Le cahier et la feuille officielle partagent **seize natures**, dans cet ordre de
+lecture :
+
+| Famille | Natures | Rôle |
+|---|---|---|
+| **Devoirs (bulletin)** | contrôle, contrôle court, contrôle global, oral, devoir maison, colle | Épreuves qui comptent dans le contrôle continu |
+| **Diagnostic** | évaluation diagnostique | Point de départ, situe le niveau sans noter |
+| **Activités et suites** | contrôle des cahiers, correction de contrôle continu, examen blanc, olympiade, concours, soutien, remédiation, rattrapage, autre | Faits pédagogiques consignés, transmis ou non |
+
+**Règle** : ces seize natures sont **identiques pour toutes les matières**. La
+matière ne crée pas de type de résultat propre ; elle change le libellé de la
+classe, sa couleur et les filtres de lecture. Un « contrôle continu » se comporte
+donc exactement de la même façon en mathématiques, en français ou en éducation
+physique — seules les capacités activées par la direction peuvent varier.
+
+### 10.3 Les types de résultats, nature par nature
+
+Chaque nature ne peut porter que ce qu’elle sait porter. Le tableau ci-dessous
+est la **capacité maximale** ; la direction peut ensuite restreindre (jamais
+étendre).
+
+| Nature | Document | Liste d’élèves | Retour par élève | Note /20 | Absents | Correction datée |
+|---|---|---|---|---|---|---|
+| Contrôle, contrôle court, contrôle global | **requis** | facultatif | niveaux (si activé) | oui (si retour) | **oui** | — |
+| Oral, colle | facultatif | **oui** | **niveaux** | **oui** | oui | — |
+| Devoir maison | **requis** | **oui** | **remise** (rendu / non rendu) | — (jamais de note) | — | **oui** |
+| Évaluation diagnostique | **requis** | **oui** | — | — | — | — |
+| Contrôle des cahiers | **aucun document** | **oui** | **état du cahier** | — | — | — |
+| Correction de contrôle continu | **requis** | **oui** | — | — | — | — |
+| Examen blanc | **requis** | **oui** | niveaux | oui | — | — |
+| Olympiade, concours, soutien, remédiation, rattrapage, autre | facultatif | **oui** | niveaux | oui | — | — |
+
+Trois formes de **retour par élève** existent, et une seule par nature :
+
+- **niveaux** : appréciation de maîtrise (insuffisant → excellent) ;
+- **remise** : le devoir a-t-il été rendu (le devoir maison ne se note pas, il se
+  rend) ;
+- **cahier** : le cahier de l’élève a-t-il été tenu (contrôle des cahiers).
+
+### 10.4 Les règles de cohérence (jamais d’état impossible)
+
+1. **La note suppose le retour par élève**, qui suppose la liste d’élèves :
+   activer une note sans retour est impossible, l’activer sans liste non plus.
+2. **Une capacité que la nature ne porte pas reste éteinte**, quoi qu’on
+   publie (pas d’absents pour une activité, pas de note pour un devoir maison).
+3. **La correction n’existe que pour un devoir maison transmis** : sans le
+   devoir, elle n’a rien à dater.
+4. **La politique ne stocke que les écarts** : les valeurs par défaut
+   reproduisent le comportement historique ; une nature inconnue (donnée plus
+   récente) se comporte comme « autre ».
+
+### 10.5 Disponibilité selon le cycle et le niveau
+
+Ce qui suit ne masque **que la création** : une donnée déjà saisie reste toujours
+visible et modifiable.
+
+| Nature | Proposée seulement si |
+|---|---|
+| **Colle** | Classe préparatoire |
+| **Contrôle des cahiers**, **Olympiade** | Hors classe préparatoire |
+| **Examen blanc** | Année d’examen : 3ᵉ année du collège (examen régional), 1ʳᵉ Bac, 2ᵉ Bac, prépa (concours blanc) — jamais en 1ʳᵉ/2ᵉ année du collège ni en tronc commun |
+
+Quand le niveau n’est pas reconnaissable, l’application **propose** : mieux vaut
+une carte de trop qu’une nature introuvable.
 
 ---
 
@@ -753,6 +910,50 @@ réglages d’impression (périmètre, période, options)
 - **Conservation** : l’enseignant peut toujours retrouver la version imprimée
   (date, périmètre) pour prouver ce qui a été fait.
 
+### Anatomie de la fenêtre d’impression
+
+```
+┌────────────────────────────────────────────────┐
+│ [imprimante]  Imprimer ou exporter PDF      ×  │  ← barre supérieure : titre, fermeture
+├────────────────────────────────────────────────┤
+│ Sortie                                         │
+│   ● Nouveautés seulement     (recommandé)      │
+│   ○ Tout le document                           │  ← corps défilant
+│   ○ Séances choisies                           │
+│                                                │
+│ Dates de séance                                │
+│   [12/09 · nouveau] [14/09 · déjà imprimé] …   │
+│   tout · aucune · nouveautés                   │
+│                                                │
+│ Typographie   petit · normal · grand           │
+│ Interligne    compact · normal · aéré          │
+│ Options       couleur du contenu · n° de page  │
+│               en-tête : 1ʳᵉ page / toutes / non │
+├────────────────────────────────────────────────┤
+│                    [ Imprimer · 3 séances ]    │  ← barre inférieure collante
+└────────────────────────────────────────────────┘
+```
+
+**Règles de cette fenêtre**
+
+- **Deux barres, une action** : la barre du haut ne défile pas (on peut toujours
+  fermer), la barre du bas porte **une seule** action principale, collée au bord
+  et toujours atteignable au pouce.
+- **Le compte est dans le bouton** : « Imprimer · 3 séances » ou « … tout le
+  document ». On sait ce qui va sortir avant de cliquer.
+- **Désactivation honnête** : l’action reste éteinte s’il n’y a rien à imprimer
+  (aucune nouveauté en mode « nouveautés », aucune date en mode « séances
+  choisies »).
+- **Chaque séance dit son état** : nouvelle ou déjà imprimée. C’est ce qui
+  permet de n’imprimer que le complément sans feuilleter le cahier.
+- **Pendant l’impression**, les réglages se verrouillent et une métaphore
+  physique remplace le sablier : la feuille sort d’une fente d’imprimante. On
+  voit ce qui quitte l’appareil, on ne fixe pas une animation abstraite.
+- **Les options retenues ne modifient pas le cahier** : elles changent le papier
+  (taille, interligne, couleurs, en-tête, pagination), jamais la donnée.
+- **Support** : plein écran sur téléphone, dialogue centré au-delà — même
+  convention que toutes les fenêtres.
+
 ---
 
 ## 15. Administration et messages
@@ -893,6 +1094,15 @@ tombent à zéro si le système demande de réduire le mouvement.
   arrive toutes les trois minutes, jamais avant la saisie.
 - **Le cahier est un arbre immuable** projeté en lignes : la même projection
   sert à l’écran, au papier, aux alertes et au compagnon.
+- **La sélection est un ensemble de clés**, pas de positions : elle survit au
+  filtre, au repli et au déplacement, et n’agit jamais sur une ligne disparue.
+- **Quatre branchements seulement** : écrire, projeter, observer, décider. Ils
+  échangent des faits, jamais des ordres.
+- **Seize natures d’évaluation** ; chacune ne peut porter que ce qu’elle sait
+  porter (note, remise, cahier, absents, correction) et la direction ne peut que
+  restreindre.
+- **L’impression a deux barres** : une barre haute qui ne défile pas, une barre
+  basse qui porte l’unique action avec le nombre exact de séances.
 - **Les séances naissent des dates** : mêmes dates = une séance, une remarque,
   une cellule ; les structures séparent, les contenus se suivent.
 - **Les numéros sont calculés**, sauf quand l’enseignant écrit le sien — qui
