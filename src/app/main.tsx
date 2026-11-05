@@ -1,22 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
+import { createStableFetch } from '../platform/stableFetch';
 
-// Safeguard against third-party libraries (like Capacitor) and extensions attempting to re-assign window.fetch
-// in environments (like AI Studio preview) where it is read-only (getter only).
-try {
-  let activeFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : window.fetch;
-  const desc = Object.getOwnPropertyDescriptor(window, 'fetch');
-  if (!desc || !desc.set || desc.writable === false) {
-    Object.defineProperty(window, 'fetch', {
-      get: () => activeFetch,
-      set: function(val) {
-        if (typeof val === 'function') activeFetch = val;
-      },
-      configurable: true,
-      enumerable: true
-    });
+// `index.html` capture le fetch natif avant tout module et mémorise les
+// wrappers posés très tôt (extension, aperçu embarqué). On installe ici le
+// pipeline résilient : un wrapper qui échoue dans son propre code est remplacé
+// par le fetch natif au lieu de couper toutes les requêtes (voir `stableFetch`).
+declare global {
+  interface Window {
+    __cdtFetchState?: { native?: typeof fetch; take: () => typeof fetch | null };
   }
+}
+try {
+  const state = window.__cdtFetchState;
+  const current = typeof window.fetch === 'function' ? window.fetch.bind(window) : window.fetch;
+  const nativeFetch = state?.native ?? current;
+  const stable = createStableFetch(nativeFetch);
+  const early = state?.take();
+  if (early) stable.adopt(early);
+  Object.defineProperty(window, 'fetch', {
+    get: () => stable.fetch,
+    set: value => stable.adopt(value),
+    configurable: true,
+    enumerable: true
+  });
 } catch {
   /* environment protected */
 }

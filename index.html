@@ -20,32 +20,26 @@
         }
       });
 
-      // 2. Safeguard window.fetch against getter-only environments for extensions & Capacitor
+      // 2. Capture le fetch natif et mémorise les wrappers posés avant le
+      //    chargement des modules. Le pipeline résilient (src/platform/stableFetch)
+      //    décide ensuite de les utiliser ou de revenir au natif : un wrapper qui
+      //    casse dans son propre code ne doit pas couper toutes les requêtes.
       try {
-        var globalObj = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this);
-        if (globalObj) {
-          var currentFetch = globalObj.fetch;
-          var activeFetch = typeof currentFetch === 'function' ? currentFetch.bind(globalObj) : currentFetch;
-          Object.defineProperty(globalObj, 'fetch', {
-            get: function() { return activeFetch; },
-            set: function(val) { activeFetch = val; },
-            configurable: true,
-            enumerable: true
-          });
-        }
+        var target = typeof window !== 'undefined' ? window : globalThis;
+        var nativeFetch = typeof target.fetch === 'function' ? target.fetch.bind(target) : target.fetch;
+        var earlyWrapper = null;
+        Object.defineProperty(target, 'fetch', {
+          get: function() { return earlyWrapper || nativeFetch; },
+          set: function(val) { if (typeof val === 'function') earlyWrapper = val; },
+          configurable: true,
+          enumerable: true
+        });
+        window.__cdtFetchState = {
+          native: nativeFetch,
+          take: function() { var value = earlyWrapper; earlyWrapper = null; return value; }
+        };
       } catch (_) {
-        try {
-          if (typeof Window !== 'undefined' && Window.prototype) {
-            var protoFetch = Window.prototype.fetch;
-            var activeProtoFetch = typeof protoFetch === 'function' ? protoFetch : undefined;
-            Object.defineProperty(Window.prototype, 'fetch', {
-              get: function() { return activeProtoFetch; },
-              set: function(val) { activeProtoFetch = val; },
-              configurable: true,
-              enumerable: true
-            });
-          }
-        } catch (__) {}
+        /* environnement protégé : main.tsx se rabat sur le fetch courant */
       }
     })();
   </script>
