@@ -115,6 +115,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const offClasses = subscribeSyncBus('classes-changed', refreshClock);
         document.addEventListener('visibilitychange', refreshClock);
         window.addEventListener('focus', refreshClock);
+        window.addEventListener('pageshow', refreshClock);
+        window.addEventListener('native-resume', refreshClock);
         return () => {
             active = false;
             clearTimeout(timer);
@@ -123,6 +125,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             offClasses();
             document.removeEventListener('visibilitychange', refreshClock);
             window.removeEventListener('focus', refreshClock);
+            window.removeEventListener('pageshow', refreshClock);
+            window.removeEventListener('native-resume', refreshClock);
         };
     }, []);
 

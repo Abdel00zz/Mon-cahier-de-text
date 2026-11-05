@@ -82,6 +82,15 @@ test('séance en cours : la carte de la classe active, et elle seule, porte le r
 
 });
 
+test('l’horloge du planning se recale à la minute et à chaque reprise de l’application', () => {
+  const dashboard = readFileSync('src/features/dashboard/Dashboard.tsx', 'utf8');
+  assert.match(dashboard, /setTimeout\(refreshClock,\s*60000\s*-\s*Date\.now\(\)\s*%\s*60000\s*\+\s*20\)/, 'le statut se recalcule à la prochaine minute');
+  for (const event of ['visibilitychange', 'focus', 'pageshow', 'native-resume']) {
+    assert.match(dashboard, new RegExp(`addEventListener\\('${event}', refreshClock\\)`), `${event} relance l’horloge`);
+    assert.match(dashboard, new RegExp(`removeEventListener\\('${event}', refreshClock\\)`), `${event} est nettoyé au démontage`);
+  }
+});
+
 test('le groupe fait partie de la même phrase que le nom dans le titre de la carte', () => {
   const [first] = renderCards(new Set());
   const identity = first.html.slice(
