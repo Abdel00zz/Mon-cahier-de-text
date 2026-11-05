@@ -199,39 +199,41 @@ section.cahier-scr (Conteneur d'écran avec halo dégradé supérieur ::before)
 | Courbes de mouvement et respect de `prefers-reduced-motion` | En place, valeurs légèrement différentes (voir 7.2) |
 | Tuiles tactiles de 44 px (48 px au doigt) | En place |
 
-### 7.2 Écarts mesurés entre le document et le code
+### 7.2 État après application (point par point)
 
-| Point | Document (`style.md`) | Implémentation actuelle | Écart |
+| Point | Document | État dans le code | Statut |
 |---|---|---|---|
-| Fond clair | `#F6F4EE` | `hsl(40 18% 94%)` ≈ `#F3F1EC` | Teinte plus claire et moins chaude chez nous |
-| Surface de carte | `#FFFFFF` | `hsl(40 32% 99%)` ≈ `#FEFDFB` | Blanc cassé au lieu du blanc pur (choix assumé pour éviter l’éblouissement) |
-| Fond sombre | `#141413` / `#191919` | `hsl(40 6% 12%)` ≈ `#21201E` | Notre nuit est plus claire (argile) |
-| Carte sombre | `#1E1E1C` / `#202020` | `hsl(38 6% 17%)` ≈ `#2E2C29` | Élévation plus marquée chez nous |
-| Brun primaire | `#6E4D36` | `#6b4c35` | Négligeable (3 unités) |
-| Accent interactif | `#1B6EC2` / `#2383E2` | Accent de navigation `#0a5bbd` | Nous avons assombri l’accent pour atteindre 6,2:1 (AA sur texte de 11 px) |
-| Densité de texte | `0,94 · 1 · 1,08 · 1,16` | `0,90 · 1 · 1,12 · 1,25` | Notre échelle est plus étendue aux extrémités |
-| Courbe ressort | `--sp` = `cubic-bezier(0.34, 1.56, 0.64, 1)` | `--spring` = `cubic-bezier(0.34, 1.4, 0.5, 1)` | Notre rebond est plus contenu |
-| Courbe iOS | `--ios` = `cubic-bezier(0.32, 0.72, 0, 1)` | `--ease-spring-smooth` = `cubic-bezier(0.18, 1.01, 0.24, 1)` | Décélération plus douce chez nous |
-| Rayon des cartes de classe | `21 px` | `22 px` (`1.375rem`) | 1 px |
-| Rayon des cartes groupées | `1rem` (16 px) | `14 px` | 2 px |
-| En-tête d’accueil | 3 boutons circulaires (langue, `+`, robot) | Deux boutons (messages avec compteur, `+`) ; la langue est dans les réglages | La langue n’est pas dans l’en-tête |
-| En-têtes de section de l’aide | Accordéon avec badge emoji | Accordéon avec icône SVG teintée | Même rôle, pictogramme différent |
-| Pied de page d’impression | Cases « lignes de séparation », « pied et signature » | Interligne, couleur, numéros de page, en-tête | Jeu d’options voisin, pas identique |
+| Papier clair | `#F6F4EE` | `#F4F2EB` (94 %) | Appliqué, un cran plus soutenu : à 95 % la carte blanche ne se détachait plus assez (1,098 < seuil 1,10) |
+| Surface de carte | `#FFFFFF` | `#FFFFFF` | **Conforme** |
+| Nuit — fond | `#191919` | `#1A1A1A` (10 %) | **Conforme** (une unité) |
+| Nuit — carte | `#202020` | `#262626` (15 %) | Appliqué avec élévation : 13 % ne franchissait pas le seuil de profondeur (1,09 < 1,12) |
+| Nuit — surélevée / filet | `#252525` / 8 % | 17 % / 18 % | **Conforme** |
+| Brun primaire | `#6E4D36` | `#6b4c35` | **Conforme** (3 unités, invisible) |
+| Courbe ressort `--sp` | `(.34, 1.56, .64, 1)` | identique | **Déjà conforme** |
+| Courbe iOS `--ios` | `(.32, .72, 0, 1)` | identique désormais | **Appliqué** |
+| Densité de texte | `0,94 · 1 · 1,08 · 1,16` | identique | **Appliqué** |
+| Écran de lancement, icône, manifestes | suivre la palette | alignés sur le nouveau papier | **Appliqué** |
+| Rayon des cartes de classe | 21 px | 22 px | En attente : fichier en cours de modification par vous |
+| Rayon des cartes groupées | 16 px | 14 px | En attente : même raison |
+| Accent interactif | `#1B6EC2` / `#2383E2` | `#0a5bbd` (contraste AA) puis `hsl(var(--primary))` dans votre travail en cours | Arbitré par vous |
+| En-tête d’accueil | 3 boutons (langue, `+`, robot) | 2 boutons (messages, `+`) | En attente : la langue reste dans les réglages |
+| En-têtes de section de l’aide | Badge emoji | Icône SVG teintée | Écart de pictogramme assumé |
+| Options d’impression | En-tête, lignes, pied | Interligne, couleur, pagination, en-tête | Jeu voisin, à compléter si besoin |
 
-### 7.3 Ce qu’il faut trancher avant d’appliquer
+### 7.3 Ce qui reste à trancher
 
-1. **Blanc pur ou blanc cassé** pour les cartes : le document demande `#FFFFFF`,
-   la charte interne évite le blanc pur. Le blanc cassé actuel est un choix
-   assumé, pas un oubli.
-2. **Accent bleu** : `#2383E2` (document) contre `#0a5bbd` (implémentation).
-   Le second a été choisi pour dépasser 4,5:1 sur le fond teinté ; le premier
-   échoue ce seuil en texte de 11 px.
-3. **Densité de texte** : élargir à `0,94 / 1,08 / 1,16` réduit l’amplitude du
-   réglage ; l’échelle actuelle (`0,90 / 1,12 / 1,25`) sert davantage les
-   enseignants qui agrandissent.
-4. **Bouton de langue dans l’en-tête** : ajout d’une cible de 42 px, donc un
-   troisième bouton à côté du compteur de messages et du `+`.
+1. **Rayons** (21 px pour les cartes de classe, 16 px pour les cartes groupées) :
+   les deux valeurs vivent dans des feuilles que vous modifiez en ce moment ;
+   je ne les toucherai qu'une fois votre travail enregistré.
+2. **Bouton de langue dans l'en-tête d'accueil** : ajoute une troisième cible de
+   42 px à côté du compteur de messages et du `+`. À confirmer.
+3. **Accent bleu** : vous avez engagé le passage au brun primaire
+   (`hsl(var(--primary))`) dans la barre de navigation ; la charte parle d'un
+   bleu `#1B6EC2`. Les deux se défendent : le brun garde une seule couleur
+   d'action, le bleu reste le repère « navigation » des plateformes mobiles.
+4. **Options d'impression** : ajouter « lignes de séparation » et « pied et
+   signature » demanderait deux nouveaux réglages dans la fenêtre d'impression.
 
-Tant que ces quatre points ne sont pas arbitrés, les sections 1 à 6 restent la
-**cible** et `mesur.md` la **mesure du réel** ; les deux documents se lisent
-ensemble.
+Les sections 1 à 6 restent la **cible** ; `mesur.md` reste la **mesure du réel**
+et `mecanisme.md` la **logique**. Les quatre points de la section 2.1 et les deux
+courbes de la section 4 sont désormais appliqués dans le code.
