@@ -1044,7 +1044,96 @@ tombent à zéro si le système demande de réduire le mouvement.
 
 ---
 
-## 18. Invariants : ce que l’application garantit toujours
+## 18. Branchements réciproques entre les éléments
+
+### 18.1 Le principe
+
+Aucun élément n’en « possède » un autre : chaque relation est **orientée** et
+**qualifiée**. Pour chaque paire, trois questions ont une réponse unique :
+
+1. **Qui fait autorité ?** (quelle donnée est la source, laquelle est dérivée)
+2. **Qu’est-ce qui remonte ?** (ce que le second élément renvoie au premier)
+3. **Qu’est-ce qui est interdit ?** (l’écriture qui créerait une boucle ou une
+   perte)
+
+### 18.2 La matrice des allers-retours
+
+| Paire | Sens A → B | Sens B → A | Autorité |
+|---|---|---|---|
+| **Compte ↔ Espace de travail** | Le compte désigne le propriétaire, donc la portée des données | L’espace conservé permet de rouvrir hors ligne et de restaurer au retour | Le compte pour l’identité, l’espace pour le contenu |
+| **Espace ↔ Stockage** | L’espace délimite ce qui peut être lu et écrit | Le stockage rend l’espace durable et le restaure au démarrage | Le stockage est la mémoire, l’espace est le filtre |
+| **Stockage ↔ Synchronisation** | Une écriture locale marque du travail en attente | Un lot appliqué réécrit le local (fusion, jamais écrasement) | Le local gagne en cas de doute |
+| **Synchronisation ↔ Écrans** | Les signaux (travail en attente, lot appliqué, configuration, classes) déclenchent des recalculs ciblés | Aucun écran ne pousse directement : il décrit une intention | Les signaux, jamais les appels directs |
+| **Classe ↔ Emploi du temps** | La classe fournit cycle, niveau, matière et couleur des créneaux | Les créneaux donnent à la classe ses séances réelles ; sans eux, elle n’est pas « datable » | La classe pour l’identité, l’emploi du temps pour le temps |
+| **Emploi du temps + Calendrier ↔ Séance** | Les créneaux et le calendrier engendrent les séances (jours travaillés uniquement) | Une séance manquée par absence ne supprime pas le créneau ; elle retire la séance du cahier | Le calendrier tranche ce qui est jour de cours |
+| **Séance ↔ Cahier** | La séance donne une date ; la date regroupe les contenus en une seule ligne de séance | Les contenus datés rendent la séance visible ; une séance sans contenu devient un signal de suivi | La date appartient au contenu, la séance est calculée |
+| **Cahier ↔ Évaluations** | Un bloc d’évaluation du cahier alimente la feuille de contrôle continu | Une évaluation planifiée (date prévue) revient proposer sa liaison au cahier | Le cahier fait foi pour la date affichée, la planification garde la prévision |
+| **Évaluations ↔ Documents** | Un devoir déclare le besoin d’un sujet (requis, facultatif, aucun) | Le sujet déposé satisfait la condition et s’ouvre depuis la ligne | L’évaluation dit le besoin, le document dit la disponibilité |
+| **Absences ↔ Emploi du temps** | Les séances réellement prévues pendant l’absence sont identifiées par créneau | Chaque séance manquée reçoit **sa** ligne datée, jamais un jour de calendrier | L’emploi du temps choisit les dates, l’absence ne fait que les couvrir |
+| **Absences ↔ Cahier** | Une absence justifiée dépose une ligne « certificat » à la date de la séance | La ligne se fusionne par date avec les contenus du jour ; la réinjection est idempotente | Le cahier reste maître de son contenu |
+| **Absences ↔ Évaluations** | Une absence marque les élèves absents à une évaluation | Une évaluation marquée n’est jamais supprimée par l’absence | L’absence qualifie, elle n’efface pas |
+| **Contenu ↔ Remarque de séance** | Une remarque écrite sur une séance fusionnée est posée sur la **dernière** ligne du groupe | La cellule de remarque affiche la remarque unique du groupe, sans la répéter | Une seule remarque par séance |
+| **Contenu ↔ Numérotation** | Le type et la position du contenu produisent son numéro automatique | Un numéro saisi à la main fait **avancer** le compteur pour la suite | La main de l’enseignant prime sur le calcul |
+| **Cahier ↔ Impression** | Le papier lit la projection du cahier (mêmes lignes, mêmes numéros) | L’impression écrit seulement la **mémoire** de ce qui a été imprimé | Le papier ne modifie jamais le cahier |
+| **Mémoire d’impression ↔ Compagnon** | Les séances déjà imprimées distinguent le complément du tout | Le suivi signale ce qui est nouveau sans accuser d’oubli | La mémoire informe, elle ne juge pas |
+| **Direction ↔ Enseignant (messages)** | Un message déposé alimente le compteur et la conversation | La réponse, puis sa lecture, reviennent à la direction avec une date | La direction émet, l’enseignant acquitte |
+| **Messages ↔ Compagnon** | Une réponse non lue devient l’action prioritaire du robot | La lecture la retire de l’arbitrage, sans effacer l’historique | Le message non lu prime sur tout conseil |
+| **Réglages ↔ Écrans, alertes, papier** | La politique d’évaluation, les notifications, la numérotation et l’apparence fixent les règles | Chaque écran applique sans réécrire les réglages ; l’aperçu montre le résultat | Les réglages décident, les écrans obéissent |
+| **Sélection ↔ Lignes et recherche** | La sélection retient des clés de lignes | Un filtre peut masquer une ligne sélectionnée sans l’annuler ; une opération groupée la retrouve | La clé fait foi, pas la position affichée |
+| **Version publiée ↔ Écrans** | Une nouvelle version détectée propose un rechargement différé | Un rechargement n’est jamais déclenché pendant une saisie ou une fenêtre ouverte | La version attend le calme |
+| **Compagnon ↔ Diagnostic** | Le diagnostic alimente la décision et la posture | Le compagnon **n’écrit rien** dans le diagnostic : il ne consigne que son attention (mémoire d’attention, reports) | Le diagnostic est en lecture seule |
+
+### 18.3 Les cinq règles d’or des relations
+
+1. **Une seule autorité par donnée.** Deux éléments ne peuvent pas écrire la
+   même valeur : la date vit dans le contenu, la séance est dérivée ; le besoin
+   de document vit dans l’évaluation, la disponibilité dans le document.
+2. **Ce qui est dérivé n’est jamais stocké.** Numéros, fusions, statuts,
+   conflits, suggestions : tout est recalculé à la lecture. Une valeur dérivée
+   stockée finirait par mentir.
+3. **Toute écriture croisée passe par une intention validée.** Le tableau ne
+   modifie pas le cahier ; il demande « donner cette date à ces lignes ». Le
+   domaine vérifie (jour de cours, absence, cohérence) puis produit une version.
+4. **Aucune relation ne supprime en silence.** Une absence ajoute une ligne
+   datée sans supprimer le créneau ni le contenu. Supprimer une classe efface
+   **son** cahier, son journal et sa mémoire d’impression, puis laisse une
+   **pierre tombale** pour que la suppression se propage ; ses créneaux
+   deviennent orphelins et sont ignorés, jamais réaffectés à une autre classe.
+   Vider une sélection ne supprime aucune ligne.
+5. **La rétroaction est explicite et bornée.** Un numéro manuel influence le
+   compteur — une fois, pour la suite. Une impression alimente la mémoire
+   d’impression — sans jamais revenir modifier le cahier. Aucune boucle ne
+   s’auto-entretient : un lot appliqué ne relance pas immédiatement un envoi, et
+   une remarque enregistrée ne rouvre pas sa fenêtre.
+
+### 18.4 Le schéma des allers-retours
+
+```
+        Compte ──propriété──▶ Espace de travail ──écritures──▶ Stockage
+           ▲                        │                            │
+           │                    lectures                         │ lots
+           │                        ▼                            ▼
+      Écrans ◀──signaux──▶ Domaine pédagogique ◀──pull/push──▶ Cloud
+        │  ▲                     │        ▲
+        │  │                     │        └──politique, notifications, numérotation
+        │  │                     ▼
+        │  │              Diagnostic (lecture seule)
+        │  │                     │
+        │  └──── une action ── Compagnon ──mémoire d’attention──▶ (rien d’autre)
+        │
+        └── impression ──▶ Papier ◀──projection── Cahier
+                            │
+                            └──▶ Mémoire d’impression ──▶ fenêtre d’impression & suivi
+```
+
+**Lecture du schéma** : tout ce qui descend du compte vers le stockage est une
+**écriture** ; tout ce qui remonte vers les écrans est un **signal** ; le
+compagnon et le papier sont les deux seuls éléments qui **lisent tout et
+n’écrivent presque rien** (une mémoire d’attention, une mémoire d’impression).
+
+---
+
+## 19. Invariants : ce que l’application garantit toujours
 
 1. **Aucune perte silencieuse** : une écriture refusée est dite ; un conflit est
    isolé, pas écrasé.
@@ -1067,7 +1156,7 @@ tombent à zéro si le système demande de réduire le mouvement.
 
 ---
 
-## 19. Tableau des dépendances
+## 20. Tableau des dépendances
 
 | Circuit | Dépend de | Influence |
 |---|---|---|
@@ -1087,7 +1176,7 @@ tombent à zéro si le système demande de réduire le mouvement.
 
 ---
 
-## 20. Résumé en une page
+## 21. Résumé en une page
 
 - **Un espace de travail possède tout** ; rien ne fuit d’un compte à l’autre.
 - **Le stockage local est la vérité** ; le cloud est une copie organisée qui
