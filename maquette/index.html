@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2efe9">
+<title>دفتر نصوصي — maquette UI</title>
+<link rel="stylesheet" href="assets/maquette.css">
+</head>
+<body>
+
+<!-- ─────────────────────────────  Icônes  ───────────────────────────── -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/><path d="M20 18.5H6.5A2.5 2.5 0 0 0 4 21"/><path d="M8 7h8M8 11h6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></symbol>
+    <symbol id="i-calendar-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M9 15l2 2 4-4"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.5 2.5 0 0 0-3.5-3.5L4.5 16.5 4 20Z"/><path d="M13.5 6.5 17.5 10.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5 8 12l6.5 7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8 12 3.5Z"/><path d="M18.5 15.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7.7-1.9Z"/></symbol>
+    <symbol id="i-notebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3.5h13v17H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M9 3.5v17"/><path d="M12.5 8h4M12.5 12h4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.7"/><path d="M4.5 20c.8-3.6 3.8-5.6 7.5-5.6s6.7 2 7.5 5.6"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.4 0 2-.8 2-1.8 0-1.6-1.5-1.9-1.5-3.2 0-1 .8-1.7 2-1.7h1.3A4.7 4.7 0 0 0 20.5 9C19.6 5.7 16.2 3.5 12 3.5Z"/><circle cx="8" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="11" cy="6.8" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.6" r="1.1" fill="currentColor" stroke="none"/><circle cx="7.2" cy="13" r="1.1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.5V11a6 6 0 1 0-12 0v5.5L4.5 18.5h15L18 16.5Z"/><path d="M10 21h4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 18.5a4 4 0 0 1-.4-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 18.5H7Z"/></symbol>
+    <symbol id="i-file-signature" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5L14 3.5Z"/><path d="M14 3.5v5h5"/><path d="M8 16c1.2-2.4 2.2-2 2.6-.8.4 1.4-1.4 1.8-1.2.4.2-1.4 2.3-2.1 3.4-.6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 6v6c0 4-3 7-7 8.5-4-1.5-7-4.5-7-8.5V6l7-2.5Z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="4.5" rx="1.6"/><path d="M5 9v9.5a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 18.5V9"/><path d="M10 13h4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7.5 11 4.5 4.5L16.5 11"/><path d="M5 19.5h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2"/><path d="M6.5 7l.8 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.8-12"/><path d="M10.5 11v6M13.5 11v6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="5" width="15" height="10" rx="2"/><path d="M2.5 18.5h19"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.7 12h16.6"/><path d="M12 3.5c2.4 2.2 3.6 5.2 3.6 8.5s-1.2 6.3-3.6 8.5c-2.4-2.2-3.6-5.2-3.6-8.5S9.6 5.7 12 3.5Z"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3 3-4.7 5.5-4.7s4.9 1.7 5.5 4.7"/><path d="M16 5.6a3.2 3.2 0 0 1 0 6.2"/><path d="M17 14.6c2 .5 3.3 2.1 3.7 4.4"/></symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8V4.5h10V8"/><rect x="4" y="8" width="16" height="7.5" rx="2"/><path d="M7 15.5h10V20H7z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.5 8 4.2-8 4.2-8-4.2 8-4.2Z"/><path d="m4 12 8 4.2 8-4.2"/><path d="m4 16.3 8 4.2 8-4.2"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3.5 3.5L20 8"/><path d="M15.5 8H20v4.5"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m13 6.5 5.5 5.5L13 17.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19.5H3L12 4Z"/><path d="M12 10v4M12 17h.01"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5L14 3.5Z"/><path d="M14 3.5v5h5"/></symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 4 7.5 20M16.5 4 15 20M4.5 9h15M4 15h15"/></symbol>
+  </defs>
+</svg>
+
+<!-- ─────────────────────────────  Application  ───────────────────────────── -->
+<div class="workspace-shell">
+
+  <!-- Rail bureau -->
+  <aside class="workspace-sidebar" aria-label="Navigation principale" data-ar-aria="التنقل الرئيسي">
+    <button id="rail-toggle" class="rail-logo" type="button" title="توسيع القائمة" data-title-ar="توسيع القائمة" data-title-fr="Déplier le menu" aria-label="توسيع القائمة" data-label-ar="توسيع القائمة" data-label-fr="Déplier le menu">
+      <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>
+    </button>
+    <nav class="rail-nav">
+      <button class="rail-btn" type="button" data-screen="dashboard" aria-current="page">
+        <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="الأقسام" data-fr="Classes">الأقسام</span>
+      </button>
+      <button class="rail-btn" type="button" data-screen="editor">
+        <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg><span data-ar="دفتر النصوص" data-fr="Cahier">دفتر النصوص</span>
+      </button>
+      <button class="rail-btn" type="button" data-open="overlay-settings">
+        <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span>
+      </button>
+      <button class="rail-btn" type="button" data-open="overlay-settings">
+        <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg><span data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+      </button>
+    </nav>
+    <div class="rail-footer">
+      <button class="rail-btn" type="button" data-open="overlay-help">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span data-ar="المساعدة" data-fr="Aide">المساعدة</span>
+      </button>
+      <button class="rail-btn" type="button" data-action="toggle-theme" aria-label="الوضع الليلي">
+        <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span data-ar="المظهر" data-fr="Apparence">المظهر</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+
+    <!-- ═══════════════ Écran 1 · Classes ═══════════════ -->
+    <section class="screen is-active" id="screen-dashboard">
+      <div class="dash">
+        <header class="dash-top">
+          <div class="brand">
+            <span class="brand__mark" aria-hidden="true"><svg class="icon"><use href="#i-book"/></svg></span>
+            <span class="brand__copy">
+              <strong class="brand__name" data-ar="دفتر نصوصي" data-fr="Mon cahier de textes">دفتر نصوصي</strong>
+              <span class="brand__hint" data-ar="مساحة واضحة ليوم دراسي منظّم" data-fr="Un espace clair pour une journée organisée">مساحة واضحة ليوم دراسي منظّم</span>
+            </span>
+          </div>
+          <span class="year-pill">2026 - 2027</span>
+        </header>
+
+        <div class="dash-head">
+          <div class="dash-actions">
+            <button class="icon-btn icon-btn--bot" type="button" data-open="overlay-help" aria-label="المساعد">
+              <svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg>
+            </button>
+            <button class="plus-btn" type="button" data-open="overlay-create" aria-label="إضافة قسم" data-label-ar="إضافة قسم" data-label-fr="Ajouter une classe">
+              <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+            </button>
+          </div>
+          <h1 class="dash-title" id="classes-heading"><span data-ar="أقسامي الدراسية" data-fr="Mes classes">أقسامي الدراسية</span><span aria-hidden="true">:</span></h1>
+          <p class="dash-hint" data-ar="كل شيء في مكانه" data-fr="Tout est à sa place">كل شيء في مكانه</p>
+        </div>
+
+        <nav class="dash-tabs" role="tablist" aria-label="عروض الفضاء" data-label-ar="عروض الفضاء" data-label-fr="Vues de l’espace">
+          <button class="dash-tab" role="tab" aria-selected="true" data-soon="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="الأقسام" data-fr="Classes">الأقسام</span>
+          </button>
+          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg><span data-ar="دفتر النصوص" data-fr="Cahier de textes">دفتر النصوص</span>
+          </button>
+          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span>
+          </button>
+          <button class="dash-tab" role="tab" aria-selected="false" data-soon="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-trend"/></svg><span data-ar="شريط الحركة" data-fr="Fil d’activité">شريط الحركة</span>
+          </button>
+        </nav>
+
+        <!-- Groupe : en cours -->
+        <section class="day-group" aria-labelledby="group-now">
+          <h2 class="day-group__title day-group__title--live" id="group-now">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span data-ar="الآن" data-fr="Maintenant">الآن</span>
+            <span aria-hidden="true">:</span>
+          </h2>
+          <div class="class-grid" role="list">
+            <article class="class-card is-live" role="listitem"
+              style="--cbg:#e0eefa;--cbg2:#c9dbff;--cbl:#c6dff2;--cti:#0f3f6b;--cse:#346c97">
+              <button class="class-card__open" type="button" aria-label="فتح قسم رياضيات 1"></button>
+              <div class="class-card__content">
+                <div class="class-card__text-block">
+                  <h3 class="class-card__title" data-ar="رياضيات 1" data-fr="Maths 1">رياضيات 1</h3>
+                  <span class="class-card__tier" data-ar="الأولى باكالوريا" data-fr="1ʳᵉ Bac">الأولى باكالوريا</span>
+                </div>
+                <button class="class-card__menu" type="button" data-open="overlay-class-actions" aria-expanded="false" aria-label="إجراءات القسم" data-label-ar="إجراءات القسم" data-label-fr="Actions de la classe">
+                  <svg class="icon" aria-hidden="true"><use href="#i-more"/></svg>
+                </button>
+              </div>
+              <div class="class-card__footer">
+                <span class="class-card__live"><span data-ar="الآن" data-fr="Maintenant">الآن</span><span class="class-card__live-remaining" data-ar="· 24 د" data-fr="· 24 min">· 24 د</span></span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Groupe : aujourd’hui -->
+        <section class="day-group" aria-labelledby="group-today">
+          <h2 class="day-group__title" id="group-today"><span data-ar="اليوم" data-fr="Aujourd’hui">اليوم</span><span aria-hidden="true">:</span></h2>
+          <div class="class-grid" data-display="triple" role="list">
+            <article class="class-card" role="listitem" style="--cbg:#ece9f7;--cbg2:#d8cbfa;--cbl:#d9d4ee;--cti:#2a205a;--cse:#5a3fbf">
+              <button class="class-card__open" type="button" aria-label="فتح قسم علوم فيزيائية 1"></button>
+              <div class="class-card__content">
+                <div class="class-card__text-block">
+                  <h3 class="class-card__title" data-ar="علوم فيزيائية 1" data-fr="Sciences physiques 1">علوم فيزيائية 1</h3>
+                  <span class="class-card__tier" data-ar="الثانية باكالوريا" data-fr="2ᵉ Bac">الثانية باكالوريا</span>
+                </div>
+                <button class="class-card__menu" type="button" data-open="overlay-class-actions" aria-expanded="false" aria-label="إجراءات القسم" data-label-ar="إجراءات القسم" data-label-fr="Actions de la classe">
+                  <svg class="icon" aria-hidden="true"><use href="#i-more"/></svg>
+                </button>
+              </div>
+            </article>
+
+            <article class="class-card" role="listitem" style="--cbg:#fdeede;--cbg2:#fbd3bf;--cbl:#f6d9bd;--cti:#6b3a12;--cse:#9a5b26">
+              <button class="class-card__open" type="button" aria-label="فتح قسم علوم فيزيائية 2"></button>
+              <div class="class-card__content">
+                <div class="class-card__text-block">
+                  <h3 class="class-card__title" data-ar="علوم فيزيائية 2" data-fr="Sciences physiques 2">علوم فيزيائية 2</h3>
+                  <span class="class-card__tier" data-ar="الثانية باكالوريا" data-fr="2ᵉ Bac">الثانية باكالوريا</span>
+                </div>
+                <button class="class-card__menu" type="button" data-open="overlay-class-actions" aria-expanded="false" aria-label="إجراءات القسم" data-label-ar="إجراءات القسم" data-label-fr="Actions de la classe">
+                  <svg class="icon" aria-hidden="true"><use href="#i-more"/></svg>
+                </button>
+              </div>
+            </article>
+
+            <article class="class-card" role="listitem" style="--cbg:#e6f3e9;--cbg2:#c3e9d8;--cbl:#cfe6d5;--cti:#14503a;--cse:#3a755b">
+              <button class="class-card__open" type="button" aria-label="فتح قسم علوم الحياة والأرض 1"></button>
+              <div class="class-card__content">
+                <div class="class-card__text-block">
+                  <h3 class="class-card__title" data-ar="علوم الحياة والأرض 1" data-fr="SVT 1">علوم الحياة والأرض 1</h3>
+                  <span class="class-card__tier" data-ar="الجدع المشترك العلمي" data-fr="Tronc commun scientifique">الجدع المشترك العلمي</span>
+                </div>
+                <button class="class-card__menu" type="button" data-open="overlay-class-actions" aria-expanded="false" aria-label="إجراءات القسم" data-label-ar="إجراءات القسم" data-label-fr="Actions de la classe">
+                  <svg class="icon" aria-hidden="true"><use href="#i-more"/></svg>
+                </button>
+              </div>
+            </article>
+
+            <button class="class-card class-card--create" type="button" data-open="overlay-create" role="listitem">
+              <span class="inner">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+                <span data-ar="إضافة قسم" data-fr="Ajouter une classe">إضافة قسم</span>
+              </span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ═══════════════ Écran 2 · Cahier ═══════════════ -->
+    <section class="screen" id="screen-editor">
+      <div class="editor">
+        <header class="editor-top">
+          <button class="editor-top__back" type="button" data-screen="dashboard" aria-label="رجوع" data-label-ar="رجوع" data-label-fr="Retour">
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </button>
+          <div class="editor-top__copy">
+            <span class="editor-top__title" data-ar="علوم فيزيائية 1" data-fr="Sciences physiques 1">علوم فيزيائية 1</span>
+            <span class="editor-top__sub" data-ar="الثانية باكالوريا · الفيزياء والكيمياء" data-fr="2ᵉ Bac · Physique-Chimie">الثانية باكالوريا · الفيزياء والكيمياء</span>
+          </div>
+          <button class="icon-btn" type="button" data-open="overlay-evaluations" aria-label="التقييمات" data-label-ar="التقييمات" data-label-fr="Évaluations">
+            <svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg>
+          </button>
+          <button class="icon-btn" type="button" data-action="toggle-theme" aria-label="المظهر" data-label-ar="المظهر" data-label-fr="Apparence">
+            <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+          </button>
+        </header>
+
+        <div class="editor-toolbar">
+          <button class="chip chip--primary" type="button" data-open="overlay-create">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span data-ar="إضافة محتوى" data-fr="Ajouter un contenu">إضافة محتوى</span>
+          </button>
+          <button class="chip" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-ar="تعيين تاريخ" data-fr="Attribuer une date">تعيين تاريخ</span>
+          </button>
+          <button class="chip" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg><span data-ar="ملاحظة" data-fr="Remarque">ملاحظة</span>
+          </button>
+          <button class="chip" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-printer"/></svg><span data-ar="طباعة" data-fr="Imprimer">طباعة</span>
+          </button>
+          <button class="chip" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-ar="إدارة الدروس" data-fr="Gérer les leçons">إدارة الدروس</span>
+          </button>
+        </div>
+
+        <div class="notebook" role="table" aria-label="جدول الحصص" data-label-ar="جدول الحصص" data-label-fr="Tableau des séances">
+          <div class="nb-row" role="row">
+            <div class="nb-cell nb-cell--date" role="cell"><b>12</b><span>11 / 2026</span></div>
+            <div class="nb-cell" role="cell">
+              <div class="nb-chapter">الوحدة 3 · التحولات النووية</div>
+              <div class="nb-item">النشاط التجريبي: قياس نشاط عينة مشعّة</div>
+              <div class="nb-item muted">تمارين التطبيق 4 و5 صفحة 78</div>
+              <div style="margin-top:.45rem"><span class="nb-badge nb-badge--eval">فرض منزلي 2</span></div>
+            </div>
+            <div class="nb-cell nb-cell--side" role="cell">2 h</div>
+          </div>
+          <div class="nb-row" role="row">
+            <div class="nb-cell nb-cell--date" role="cell"><b>10</b><span>11 / 2026</span></div>
+            <div class="nb-cell" role="cell">
+              <div class="nb-chapter">الوحدة 3 · التحولات النووية</div>
+              <div class="nb-item">قانون التفكك الإشعاعي — النشاط الإشعاعي</div>
+            </div>
+            <div class="nb-cell nb-cell--side" role="cell">1 h</div>
+          </div>
+          <div class="nb-row" role="row">
+            <div class="nb-cell nb-cell--date" role="cell"><b>05</b><span>11 / 2026</span></div>
+            <div class="nb-cell" role="cell">
+              <div class="nb-chapter">الوحدة 2 · الكهرباء</div>
+              <div class="nb-item">تصحيح التمرين 7 و8 — استدراك</div>
+              <div style="margin-top:.45rem"><span class="nb-badge">مراجعة</span></div>
+            </div>
+            <div class="nb-cell nb-cell--side" role="cell">1 h</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Barre mobile -->
+  <nav class="mobile-tab-bar" aria-label="التنقل على الهاتف" data-label-ar="التنقل على الهاتف" data-label-fr="Navigation mobile">
+    <div class="mobile-tab-bar__items">
+      <button class="tab-btn" type="button" data-screen="dashboard" aria-current="page">
+        <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg>
+        <span class="tab-btn__label" data-ar="الأقسام" data-fr="Classes">الأقسام</span>
+      </button>
+      <button class="tab-btn" type="button" data-open="overlay-settings">
+        <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg>
+        <span class="tab-btn__label" data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+      </button>
+      <button class="tab-btn" type="button" data-open="overlay-help">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <span class="tab-btn__label" data-ar="المساعدة" data-fr="Aide">المساعدة</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- ═══════════════════════  Paramètres  ═══════════════════════ -->
+<div class="overlay" id="overlay-settings" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--settings modal--liquid" role="dialog" aria-modal="true" aria-labelledby="settings-title-text">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title">
+        <button class="hub-back" id="settings-back" type="button" hidden aria-label="رجوع" data-label-ar="رجوع" data-label-fr="Retour">
+          <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+        </button>
+        <span id="settings-title-text" data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+      </div>
+    </header>
+
+    <div class="modal__body" style="padding:0;overflow:hidden">
+      <div class="settings-shell">
+        <div class="settings-home">
+          <ul class="hub-grid">
+            <li><button class="hub-card" type="button" data-tone="blue" data-panel-target="emploi" data-name-ar="استعمال الزمن" data-name-fr="Emploi du temps">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span><span class="hub-card__hint" data-ar="حصصك الأسبوعية" data-fr="Vos séances de la semaine">حصصك الأسبوعية</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="rose" data-panel-target="absences" data-name-ar="الغيابات والشهادات" data-name-fr="Absences et certificats">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-file-signature"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="الغيابات والشهادات" data-fr="Absences et certificats">الغيابات والشهادات</span><span class="hub-card__hint" data-ar="شهادات مرضية، رخص" data-fr="Certificats et autorisations">شهادات مرضية، رخص</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="violet" data-panel-target="profil" data-name-ar="الملف الشخصي" data-name-fr="Profil">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="الملف الشخصي" data-fr="Profil">الملف الشخصي</span><span class="hub-card__hint" data-ar="الاسم والمؤسسة والمواد" data-fr="Nom, établissement et matières">الاسم والمؤسسة والمواد</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="pink" data-panel-target="apparence" data-name-ar="المظهر واللغة" data-name-fr="Apparence et langue">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="المظهر واللغة" data-fr="Apparence et langue">المظهر واللغة</span><span class="hub-card__hint" data-ar="المظهر والألوان واللغة" data-fr="Thème, couleurs et langue">المظهر والألوان واللغة</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="amber" data-panel-target="notifications" data-name-ar="الإشعارات" data-name-fr="Notifications">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="الإشعارات" data-fr="Notifications">الإشعارات</span><span class="hub-card__hint" data-ar="التذكيرات والتنبيهات" data-fr="Rappels et alertes">التذكيرات والتنبيهات</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="green" data-panel-target="compte" data-name-ar="الحساب والبيانات" data-name-fr="Compte et données">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="الحساب والبيانات" data-fr="Compte et données">الحساب والبيانات</span><span class="hub-card__hint" data-ar="النسخ الاحتياطي والمزامنة" data-fr="Sauvegarde et synchronisation">النسخ الاحتياطي والمزامنة</span></span>
+            </button></li>
+            <li><button class="hub-card" type="button" data-tone="teal" data-open="overlay-help">
+              <span class="hub-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></span>
+              <span class="hub-card__body"><span class="hub-card__title" data-ar="الدليل" data-fr="Guide">الدليل</span><span class="hub-card__hint" data-ar="الاستعمال والتأطير التربوي" data-fr="Utilisation et cadre pédagogique">الاستعمال والتأطير التربوي</span></span>
+            </button></li>
+          </ul>
+        </div>
+
+        <nav class="settings-nav" aria-label="أقسام الإعدادات" data-label-ar="أقسام الإعدادات" data-label-fr="Rubriques des paramètres">
+          <button class="settings-nav__link" type="button" data-panel-target="emploi" data-name-ar="استعمال الزمن" data-name-fr="Emploi du temps">
+            <svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-ar="استعمال الزمن" data-fr="Emploi du temps">استعمال الزمن</span>
+          </button>
+          <button class="settings-nav__link" type="button" data-panel-target="absences" data-name-ar="الغيابات والشهادات" data-name-fr="Absences et certificats">
+            <svg class="icon" aria-hidden="true"><use href="#i-file-signature"/></svg><span data-ar="الغيابات والشهادات" data-fr="Absences et certificats">الغيابات والشهادات</span>
+          </button>
+          <button class="settings-nav__link" type="button" data-panel-target="profil" data-name-ar="الملف الشخصي" data-name-fr="Profil">
+            <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span data-ar="الملف الشخصي" data-fr="Profil">الملف الشخصي</span>
+          </button>
+          <button class="settings-nav__link" type="button" data-panel-target="apparence" data-name-ar="المظهر واللغة" data-name-fr="Apparence et langue">
+            <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg><span data-ar="المظهر واللغة" data-fr="Apparence et langue">المظهر واللغة</span>
+          </button>
+          <button class="settings-nav__link" type="button" data-panel-target="notifications" data-name-ar="الإشعارات" data-name-fr="Notifications">
+            <svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg><span data-ar="الإشعارات" data-fr="Notifications">الإشعارات</span>
+          </button>
+          <button class="settings-nav__link" type="button" data-panel-target="compte" data-name-ar="الحساب والبيانات" data-name-fr="Compte et données">
+            <svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><span data-ar="الحساب والبيانات" data-fr="Compte et données">الحساب والبيانات</span>
+          </button>
+          <div class="settings-nav__footer">
+            <button class="settings-nav__link" type="button" data-open="overlay-help">
+              <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span data-ar="الدليل" data-fr="Guide">الدليل</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="settings-scroll">
+
+          <!-- Apparence -->
+          <section class="panel is-active" data-panel="apparence">
+            <div class="section">
+              <div class="section__head">
+                <div>
+                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span data-ar="الوضع" data-fr="Thème">الوضع</span></h3>
+                </div>
+                <button class="btn btn--ghost" type="button" style="min-height:36px;padding:.25rem .6rem;font-size:.75rem" data-ar="إعادة التعيين" data-fr="Réinitialiser">إعادة التعيين</button>
+              </div>
+              <div class="section__body">
+                <div class="choice-grid" data-pressed-group role="group" aria-label="الوضع" data-label-ar="الوضع" data-label-fr="Thème">
+                  <button class="choice" type="button" data-theme-choice="light" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span data-ar="نهاري" data-fr="Clair">نهاري</span></button>
+                  <button class="choice" type="button" data-theme-choice="dark" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span data-ar="ليلي" data-fr="Sombre">ليلي</span></button>
+                  <button class="choice" type="button" data-theme-choice="system" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg><span data-ar="تلقائي" data-fr="Système">تلقائي</span></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section__head">
+                <div>
+                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-type"/></svg><span data-ar="حجم النص" data-fr="Taille du texte">حجم النص</span></h3>
+                  <p class="section__hint" data-ar="اللوحة والدفتر" data-fr="Tableau de bord et cahier">اللوحة والدفتر</p>
+                </div>
+              </div>
+              <div class="section__body">
+                <div class="choice-grid" data-pressed-group role="group" aria-label="حجم النص" data-label-ar="حجم النص" data-label-fr="Taille du texte">
+                  <button class="choice choice--stack" type="button" data-text-size="sm" aria-pressed="false"><span class="choice__sample" style="font-size:.94rem">Aa</span><span class="choice__size" data-ar="صغير" data-fr="Petit">صغير</span></button>
+                  <button class="choice choice--stack" type="button" data-text-size="md" aria-pressed="true"><span class="choice__sample" style="font-size:1.05rem">Aa</span><span class="choice__size" data-ar="عادي" data-fr="Normal">عادي</span></button>
+                  <button class="choice choice--stack" type="button" data-text-size="lg" aria-pressed="false"><span class="choice__sample" style="font-size:1.18rem">Aa</span><span class="choice__size" data-ar="كبير" data-fr="Grand">كبير</span></button>
+                  <button class="choice choice--stack" type="button" data-text-size="xl" aria-pressed="false"><span class="choice__sample" style="font-size:1.3rem">Aa</span><span class="choice__size" data-ar="كبير جدا" data-fr="Très grand">كبير جدا</span></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section__head">
+                <div>
+                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span data-ar="اللغة" data-fr="Langue">اللغة</span></h3>
+                  <p class="section__hint" data-ar="لغة الواجهة" data-fr="Langue de l’interface">لغة الواجهة</p>
+                </div>
+              </div>
+              <div class="section__body">
+                <div class="choice-grid" data-pressed-group role="group" aria-label="اللغة" data-label-ar="اللغة" data-label-fr="Langue">
+                  <button class="choice" type="button" data-lang-choice="ar" aria-pressed="true"><span lang="ar">العربية</span></button>
+                  <button class="choice" type="button" data-lang-choice="fr" aria-pressed="false"><span lang="fr">Français</span></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profil -->
+          <section class="panel" data-panel="profil">
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span data-ar="معلومات شخصية" data-fr="Informations personnelles">معلومات شخصية</span></h3></div>
+              <div class="section__body">
+                <div class="field-grid field-grid--2">
+                  <div><label class="label" for="teacher-name" data-ar="اسم الأستاذ" data-fr="Nom de l’enseignant">اسم الأستاذ</label><input class="field" id="teacher-name" value="بدوح عبد المالك"></div>
+                  <div><label class="label" for="teacher-phone" data-ar="الهاتف" data-fr="Téléphone">الهاتف</label><input class="field" id="teacher-phone" dir="ltr" value="06 12 34 56 78"></div>
+                </div>
+                <div>
+                  <span class="label" data-ar="المواد" data-fr="Matières">المواد</span>
+                  <div class="pill-row" data-pressed-group>
+                    <button class="pill-choice" type="button" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-ar="الفيزياء والكيمياء" data-fr="Physique-Chimie">الفيزياء والكيمياء</span></button>
+                    <button class="pill-choice" type="button" aria-pressed="false"><span data-ar="الرياضيات" data-fr="Mathématiques">الرياضيات</span></button>
+                    <button class="pill-choice" type="button" aria-pressed="false"><span data-ar="علوم الحياة والأرض" data-fr="SVT">علوم الحياة والأرض</span></button>
+                    <button class="pill-choice" type="button" aria-pressed="false"><span data-ar="المزيد" data-fr="Voir plus">المزيد</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span data-ar="المؤسسة والتأطير الإداري" data-fr="Établissement et cadre administratif">المؤسسة والتأطير الإداري</span></h3></div>
+              <div class="section__body">
+                <div class="choice-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+                  <button class="choice" type="button" aria-pressed="false"><span data-ar="الإعدادي" data-fr="Collège">الإعدادي</span></button>
+                  <button class="choice" type="button" aria-pressed="true"><span data-ar="الثانوي" data-fr="Lycée">الثانوي</span></button>
+                  <button class="choice" type="button" aria-pressed="false"><span data-ar="الأقسام التحضيرية" data-fr="Prépa">الأقسام التحضيرية</span></button>
+                </div>
+                <div><label class="label" for="school" data-ar="المؤسسة" data-fr="Établissement">المؤسسة</label><input class="field" id="school" value="ثانوية ابن الهيثم التأهيلية"></div>
+                <div class="field-grid field-grid--2">
+                  <div><label class="label" for="academy" data-ar="الأكاديمية" data-fr="Académie">الأكاديمية</label>
+                    <select class="field" id="academy"><option data-ar="الدار البيضاء - سطات" data-fr="Casablanca - Settat">الدار البيضاء - سطات</option></select></div>
+                  <div><label class="label" for="province" data-ar="المديرية" data-fr="Direction provinciale">المديرية</label>
+                    <select class="field" id="province"><option data-ar="المديرية الإقليمية بالمحمدية" data-fr="Direction de Mohammedia">المديرية الإقليمية بالمحمدية</option></select></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Notifications -->
+          <section class="panel" data-panel="notifications">
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg><span data-ar="هذا الجهاز" data-fr="Cet appareil">هذا الجهاز</span></h3></div>
+              <div class="section__body">
+                <div class="row">
+                  <div><span class="row__label" data-ar="التنبيهات مفعّلة" data-fr="Notifications activées">التنبيهات مفعّلة</span><span class="row__hint" data-ar="إشعارات محلية ونظامية" data-fr="Notifications locales et système">إشعارات محلية ونظامية</span></div>
+                  <div class="row__control"><span class="badge badge--success" data-ar="مفعّل" data-fr="Actif">مفعّل</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-ar="التذكيرات" data-fr="Rappels">التذكيرات</span></h3></div>
+              <div class="section__body">
+                <div class="toggle-row" data-on="true">
+                  <span class="label-wrap"><span class="toggle-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg></span>
+                    <span><span class="toggle-row__name" data-ar="تفعيل التذكيرات" data-fr="Activer les rappels">تفعيل التذكيرات</span><span class="toggle-row__state" data-ar="مفعّل" data-fr="Activé">مفعّل</span></span></span>
+                  <button class="switch" type="button" role="switch" aria-checked="true" aria-label="تفعيل التذكيرات"></button>
+                </div>
+                <div class="toggle-row" data-on="true">
+                  <span class="label-wrap"><span class="toggle-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span>
+                    <span><span class="toggle-row__name" data-ar="تذكير قبل النهاية" data-fr="Rappel avant la fin">تذكير قبل النهاية</span><span class="toggle-row__state" data-ar="مفعّل" data-fr="Activé">مفعّل</span></span></span>
+                  <button class="switch" type="button" role="switch" aria-checked="true" aria-label="تذكير قبل النهاية"></button>
+                </div>
+                <div class="row">
+                  <span class="row__label" data-ar="الدقائق قبل النهاية" data-fr="Minutes avant la fin">الدقائق قبل النهاية</span>
+                  <select class="mini-select"><option>1</option><option>2</option><option selected>5</option><option>10</option></select>
+                </div>
+                <div class="toggle-row" data-on="false">
+                  <span class="label-wrap"><span class="toggle-row__icon"><svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg></span>
+                    <span><span class="toggle-row__name" data-ar="تذكير إن لم يُسجَّل تاريخ" data-fr="Rappel si aucune date">تذكير إن لم يُسجَّل تاريخ</span><span class="toggle-row__state" data-ar="غير مفعّل" data-fr="Désactivé">غير مفعّل</span></span></span>
+                  <button class="switch" type="button" role="switch" aria-checked="false" aria-label="تذكير إن لم يُسجَّل تاريخ"></button>
+                </div>
+              </div>
+            </div>
+            <div class="section">
+              <details>
+                <summary style="cursor:pointer;font-size:.84rem;font-weight:600;min-height:44px;display:flex;align-items:center" data-ar="للمزيد" data-fr="À savoir">للمزيد</summary>
+                <p class="section__hint" style="margin-top:.35rem" data-ar="قد يؤخر وضع توفير الطاقة التنبيهات على أندرويد. تُبرمج تذكيرات نهاية الحصة حتى والتطبيق مغلق." data-fr="Le mode économie d’énergie peut retarder les alertes. Les rappels de fin de séance restent programmés même application fermée.">قد يؤخر وضع توفير الطاقة التنبيهات على أندرويد. تُبرمج تذكيرات نهاية الحصة حتى والتطبيق مغلق.</p>
+              </details>
+            </div>
+          </section>
+
+          <!-- Emploi du temps -->
+          <section class="panel" data-panel="emploi">
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-ar="حصصك الأسبوعية" data-fr="Vos séances de la semaine">حصصك الأسبوعية</span></h3></div>
+              <div class="section__body">
+                <div class="week" role="table" aria-label="استعمال الزمن" data-label-ar="استعمال الزمن" data-label-fr="Emploi du temps">
+                  <div class="week__head"><span data-ar="اليوم" data-fr="Jour">اليوم</span></div>
+                  <div class="week__head">08:00–09:00</div>
+                  <div class="week__head">09:00–10:00</div>
+                  <div class="week__head">10:00–11:00</div>
+                  <div class="week__head">11:00–12:00</div>
+                  <div class="week__day" data-ar="الإثنين" data-fr="Lundi">الإثنين</div>
+                  <div></div>
+                  <div><span class="week__slot tone-a">علوم فيزيائية 1<small data-ar="الفيزياء" data-fr="Physique">الفيزياء</small></span></div>
+                  <div></div>
+                  <div></div>
+                  <div class="week__day" data-ar="الثلاثاء" data-fr="Mardi">الثلاثاء</div>
+                  <div></div>
+                  <div></div>
+                  <div><span class="week__slot tone-b">علوم فيزيائية 2<small data-ar="الفيزياء" data-fr="Physique">الفيزياء</small></span></div>
+                  <div></div>
+                  <div class="week__day" data-ar="الأربعاء" data-fr="Mercredi">الأربعاء</div>
+                  <div><span class="week__slot tone-c">رياضيات 1<small data-ar="الرياضيات" data-fr="Maths">الرياضيات</small></span></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Absences -->
+          <section class="panel" data-panel="absences">
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-file-signature"/></svg><span data-ar="الغيابات الإدارية" data-fr="Absences administratives">الغيابات الإدارية</span></h3></div>
+              <div class="section__body">
+                <div class="row" style="padding:.5rem .75rem;border-radius:12px;background:hsl(var(--muted)/.5)">
+                  <div><span class="row__label num">12/10/2026 – 14/10/2026</span><span class="row__hint" data-ar="شهادة مرضية" data-fr="Certificat médical">شهادة مرضية</span></div>
+                  <button class="icon-action icon-action--danger" type="button" aria-label="حذف" data-label-ar="حذف" data-label-fr="Supprimer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+                </div>
+                <div class="field-grid field-grid--2">
+                  <div><label class="label" data-ar="من" data-fr="Du">من</label><input class="field" type="date" value="2026-11-20"></div>
+                  <div><label class="label" data-ar="إلى" data-fr="Au">إلى</label><input class="field" type="date" value="2026-11-21"></div>
+                </div>
+                <div><label class="label" data-ar="السبب (اختياري)" data-fr="Motif (facultatif)">السبب (اختياري)</label><input class="field" placeholder="—"></div>
+                <button class="btn btn--primary btn--block" type="button" data-ar="إضافة" data-fr="Ajouter">إضافة</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Compte -->
+          <section class="panel" data-panel="compte">
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span data-ar="الحساب" data-fr="Compte">الحساب</span></h3></div>
+              <div class="section__body">
+                <div class="row">
+                  <div><span class="row__label">بدوح عبد المالك</span><span class="row__hint" dir="ltr">abdelmalek@ecole.ma</span></div>
+                  <button class="btn btn--secondary" type="button" data-ar="تسجيل الخروج" data-fr="Se déconnecter">تسجيل الخروج</button>
+                </div>
+                <div class="row">
+                  <div><span class="row__label" data-ar="المزامنة" data-fr="Synchronisation">المزامنة</span><span class="row__hint" data-ar="آخر مزامنة: منذ 3 دقائق" data-fr="Dernière synchro : il y a 3 minutes">آخر مزامنة: منذ 3 دقائق</span></div>
+                  <div class="row__control"><span class="badge badge--success" data-ar="متزامن" data-fr="Synchronisé">متزامن</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="section">
+              <div class="section__head"><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><span data-ar="النسخ الاحتياطي" data-fr="Sauvegarde">النسخ الاحتياطي</span></h3></div>
+              <div class="section__body">
+                <div class="row"><div><span class="row__label" data-ar="تصدير البيانات" data-fr="Exporter les données">تصدير البيانات</span></div><button class="btn btn--secondary" type="button" data-ar="تصدير" data-fr="Exporter">تصدير</button></div>
+                <div class="row"><div><span class="row__label" data-ar="استيراد البيانات" data-fr="Importer les données">استيراد البيانات</span></div><button class="btn btn--secondary" type="button" data-ar="استيراد" data-fr="Importer">استيراد</button></div>
+              </div>
+            </div>
+            <div class="section">
+              <div class="section__head">
+                <div><h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-archive"/></svg><span data-ar="أرشيف السنوات" data-fr="Archives annuelles">أرشيف السنوات</span></h3>
+                  <p class="section__hint" data-ar="احفظ السنة الدراسية كاملة" data-fr="Figez l’année scolaire complète">احفظ السنة الدراسية كاملة</p></div>
+                <button class="btn btn--secondary" type="button" style="min-height:36px;padding:.3rem .6rem;font-size:.75rem" data-ar="أرشفة 2025-2026" data-fr="Archiver 2025-2026">أرشفة 2025-2026</button>
+              </div>
+              <div class="section__body">
+                <div class="archive-row">
+                  <div><span class="row__label">2025 – 2026</span><span class="row__hint num">4 <span data-ar="أقسام" data-fr="classes">أقسام</span> · 1,2 MB</span></div>
+                  <div class="row__control">
+                    <button class="icon-action" type="button" aria-label="تحميل" data-label-ar="تحميل" data-label-fr="Télécharger"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg></button>
+                    <button class="icon-action icon-action--danger" type="button" aria-label="حذف" data-label-ar="حذف" data-label-fr="Supprimer"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button>
+                  </div>
+                </div>
+                <div class="archive-row" style="border-top:1px solid hsl(var(--border)/.5)">
+                  <div><span class="row__label">2024 – 2025</span><span class="row__hint num">3 <span data-ar="أقسام" data-fr="classes">أقسام</span> · 890 KB</span></div>
+                  <div class="row__control">
+                    <button class="icon-action" type="button" aria-label="تحميل" data-label-ar="تحميل" data-label-fr="Télécharger"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg></button>
+                    <button class="icon-action icon-action--danger" type="button" aria-label="حذف" data-label-ar="حذف" data-label-fr="Supprimer"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer" id="settings-footer" hidden>
+      <button class="btn btn--secondary" type="button"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-x"/></svg><span data-ar="إلغاء التغييرات" data-fr="Annuler les modifications">إلغاء التغييرات</span></button>
+      <button class="btn btn--primary" type="button"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg><span data-ar="حفظ الملف" data-fr="Enregistrer le profil">حفظ الملف</span></button>
+    </footer>
+
+    <nav class="modal-bottom-navigation" aria-label="التنقل على الهاتف" data-label-ar="التنقل على الهاتف" data-label-fr="Navigation mobile">
+      <div class="mobile-tab-bar mobile-tab-bar--modal">
+        <div class="mobile-tab-bar__items">
+          <button class="tab-btn" type="button" data-screen="dashboard">
+            <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg>
+            <span class="tab-btn__label" data-ar="الأقسام" data-fr="Classes">الأقسام</span>
+          </button>
+          <button class="tab-btn" type="button" aria-current="page">
+            <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg>
+            <span class="tab-btn__label" data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+          </button>
+          <button class="tab-btn" type="button" data-open="overlay-help" data-close-first="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <span class="tab-btn__label" data-ar="المساعدة" data-fr="Aide">المساعدة</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Aide  ═══════════════════════ -->
+<div class="overlay" id="overlay-help" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--help modal--liquid" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="guide-heading">
+        <span class="guide-title" id="guide-title" data-ar="المساعدة" data-fr="Aide">المساعدة</span>
+        <span class="guide-subtitle" data-ar="أجوبة سريعة لأسئلتك" data-fr="Des réponses rapides à vos questions">أجوبة سريعة لأسئلتك</span>
+      </div>
+    </header>
+    <div class="modal__body">
+      <div class="guide-search">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <input type="search" placeholder="ابحث عن سؤال…" data-ph-ar="ابحث عن سؤال…" data-ph-fr="Rechercher une question…" aria-label="البحث في المساعدة" data-label-ar="البحث في المساعدة" data-label-fr="Rechercher dans l’aide">
+      </div>
+
+      <div class="guide-list">
+        <details class="guide-item" open>
+          <summary><span data-ar="كيف أنشئ قسماً جديداً؟" data-fr="Comment créer une nouvelle classe ?">كيف أنشئ قسماً جديداً؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <div class="guide-answer">
+            <p class="guide-summary" data-ar="من شاشة الأقسام، اضغط زر + ثم اختر المستوى والشعبة وأدخل رقم القسم. يمكنك اختيار لون القسم للتمييز البصري." data-fr="Depuis l’écran Classes, appuyez sur + puis choisissez le niveau, la filière et le numéro de groupe. Une couleur permet de distinguer la classe.">من شاشة الأقسام، اضغط زر + ثم اختر المستوى والشعبة وأدخل رقم القسم. يمكنك اختيار لون القسم للتمييز البصري.</p>
+            <section><h3 data-ar="الخطوات" data-fr="Étapes">الخطوات</h3>
+              <ol>
+                <li data-ar="اضغط + أعلى شاشة الأقسام." data-fr="Appuyez sur + en haut de l’écran Classes.">اضغط + أعلى شاشة الأقسام.</li>
+                <li data-ar="اختر الدورة ثم المستوى." data-fr="Choisissez le cycle puis le niveau.">اختر الدورة ثم المستوى.</li>
+                <li data-ar="أدخل رقم القسم واختر المادة واللون." data-fr="Saisissez le groupe, la matière et la couleur.">أدخل رقم القسم واختر المادة واللون.</li>
+              </ol>
+            </section>
+            <p class="guide-tip"><span data-ar="نصيحة: يمكنك لصق قائمة التلاميذ مرة واحدة، مفصولة بـ « ؛ »." data-fr="Astuce : collez la liste des élèves en une fois, séparée par « ؛ ».">نصيحة: يمكنك لصق قائمة التلاميذ مرة واحدة، مفصولة بـ « ؛ ».</span></p>
+          </div>
+        </details>
+
+        <details class="guide-item">
+          <summary><span data-ar="كيف أُعيّن تاريخاً لحصة؟" data-fr="Comment attribuer une date à une séance ?">كيف أُعيّن تاريخاً لحصة؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <div class="guide-answer">
+            <p class="guide-summary" data-ar="افتح القسم، ثم اختر «تعيين تاريخ». يتحقق التطبيق من استعمال الزمن والعطل والغيابات قبل التسجيل." data-fr="Ouvrez la classe puis « Attribuer une date ». L’application vérifie l’emploi du temps, les congés et les absences avant l’enregistrement.">افتح القسم، ثم اختر «تعيين تاريخ». يتحقق التطبيق من استعمال الزمن والعطل والغيابات قبل التسجيل.</p>
+            <div class="guide-related"><span data-ar="انظر أيضاً" data-fr="Voir aussi">انظر أيضاً</span><button type="button" data-ar="إدارة الدروس" data-fr="Gérer les leçons">إدارة الدروس</button><button type="button" data-ar="الطباعة" data-fr="Impression">الطباعة</button></div>
+          </div>
+        </details>
+
+        <details class="guide-item">
+          <summary><span data-ar="كيف أنقل بياناتي إلى هاتف آخر؟" data-fr="Comment transférer mes données sur un autre appareil ?">كيف أنقل بياناتي إلى هاتف آخر؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <div class="guide-answer">
+            <p class="guide-summary" data-ar="من الإعدادات ▸ الحساب والبيانات، صدّر ملف JSON ثم استورده في الجهاز الجديد. المزامنة السحابية تحفظ نسخة تلقائية كل ثلاث دقائق." data-fr="Dans Paramètres ▸ Compte et données, exportez un fichier JSON puis importez-le sur le nouvel appareil. La synchronisation cloud conserve une copie automatique toutes les trois minutes.">من الإعدادات ▸ الحساب والبيانات، صدّر ملف JSON ثم استورده في الجهاز الجديد. المزامنة السحابية تحفظ نسخة تلقائية كل ثلاث دقائق.</p>
+          </div>
+        </details>
+
+        <details class="guide-item" id="about">
+          <summary><span data-ar="من نحن" data-fr="À propos">من نحن</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <div class="guide-answer">
+            <p class="guide-summary" data-ar="دفتر نصوصي أداة مغربية لتنظيم العمل اليومي للأستاذ: الأقسام، الحصص، التواريخ، التقويم والتقييم — بواجهة هادئة تعمل دون اتصال." data-fr="Mon cahier de textes est un outil marocain pensé pour le quotidien de l’enseignant : classes, séances, dates, évaluations — dans une interface calme, utilisable hors ligne.">دفتر نصوصي أداة مغربية لتنظيم العمل اليومي للأستاذ: الأقسام، الحصص، التواريخ، التقويم والتقييم — بواجهة هادئة تعمل دون اتصال.</p>
+            <section>
+              <h3 data-ar="مبادئ التصميم" data-fr="Principes de conception">مبادئ التصميم</h3>
+              <p data-ar="سطح واحد للبطاقات، لون واحد للفعل، ومساحات تنفّس ثابتة. لا زخرفة تُنافس المحتوى." data-fr="Une seule surface de carte, une seule couleur d’action, une respiration constante. Aucune décoration ne concurrence le contenu.">سطح واحد للبطاقات، لون واحد للفعل، ومساحات تنفّس ثابتة. لا زخرفة تُنافس المحتوى.</p>
+            </section>
+            <p class="guide-tip"><span dir="ltr">BOUDOUH ABDELMALEK</span> · <span dir="rtl" lang="ar">بدوح عبد المالك</span></p>
+          </div>
+        </details>
+      </div>
+
+      <p class="guide-credit"><span dir="ltr">BOUDOUH ABDELMALEK</span> · <span dir="rtl" lang="ar">بدوح عبد المالك</span></p>
+    </div>
+
+    <nav class="modal-bottom-navigation" aria-label="التنقل على الهاتف" data-label-ar="التنقل على الهاتف" data-label-fr="Navigation mobile">
+      <div class="mobile-tab-bar mobile-tab-bar--modal">
+        <div class="mobile-tab-bar__items">
+          <button class="tab-btn" type="button" data-screen="dashboard">
+            <svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg>
+            <span class="tab-btn__label" data-ar="الأقسام" data-fr="Classes">الأقسام</span>
+          </button>
+          <button class="tab-btn" type="button" data-open="overlay-settings" data-close-first="1">
+            <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg>
+            <span class="tab-btn__label" data-ar="الإعدادات" data-fr="Paramètres">الإعدادات</span>
+          </button>
+          <button class="tab-btn" type="button" aria-current="page">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <span class="tab-btn__label" data-ar="المساعدة" data-fr="Aide">المساعدة</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Créer une classe  ═══════════════════════ -->
+<div class="overlay" id="overlay-create" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--create modal--liquid" role="dialog" aria-modal="true" aria-labelledby="create-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="create-hero">
+        <span class="create-hero__icon" aria-hidden="true"><svg class="icon"><use href="#i-users"/></svg></span>
+        <span class="create-hero__copy">
+          <span class="create-hero__eyebrow" data-ar="الثانوي التأهيلي" data-fr="Lycée qualifiant">الثانوي التأهيلي</span>
+          <span class="create-hero__title" id="create-title" data-ar="إنشاء قسم" data-fr="Créer une classe">إنشاء قسم</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="modal__body">
+      <div class="stepper">
+        <span class="stepper__track" aria-hidden="true"><span class="stepper__fill"></span></span>
+        <div class="stepper__step" data-state="current"><span class="stepper__node">1</span><span class="stepper__label" data-ar="القسم" data-fr="Niveau">القسم</span></div>
+        <div class="stepper__step" data-state="upcoming"><span class="stepper__node">2</span><span class="stepper__label" data-ar="الشعبة" data-fr="Filière">الشعبة</span></div>
+        <div class="stepper__step" data-state="upcoming"><span class="stepper__node">3</span><span class="stepper__label" data-ar="التفاصيل" data-fr="Détails">التفاصيل</span></div>
+      </div>
+
+      <div class="wizard-step is-active" data-step="niveau">
+        <h3 class="wizard-title" data-ar="القسم" data-fr="Niveau">القسم</h3>
+        <div class="stack-2">
+          <button class="choice-card choice-card--dashed" type="button" data-ar="دورة أخرى · الثانوي التأهيلي / الإعدادي / التحضيري" data-fr="Autre cycle · Lycée / Collège / Prépa">دورة أخرى · الثانوي التأهيلي / الإعدادي / التحضيري</button>
+          <button class="choice-card" type="button" data-flow="goto-group" aria-pressed="true"><span data-ar="الجذع المشترك" data-fr="Tronc commun">الجذع المشترك</span><span class="choice-card__check" aria-hidden="true"><svg class="icon"><use href="#i-check"/></svg></span></button>
+          <button class="choice-card" type="button" data-flow="goto-group" aria-pressed="false"><span data-ar="الأولى باكالوريا" data-fr="1ʳᵉ Bac">الأولى باكالوريا</span></button>
+          <button class="choice-card" type="button" data-flow="goto-group" aria-pressed="false"><span data-ar="الثانية باكالوريا" data-fr="2ᵉ Bac">الثانية باكالوريا</span></button>
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="groupe">
+        <h3 class="wizard-title" data-ar="الشعبة" data-fr="Filière">الشعبة</h3>
+        <div class="stack-2">
+          <button class="choice-card" type="button" data-flow="goto-details" aria-pressed="false"><span data-ar="مسلك العلوم الفيزيائية" data-fr="Sciences physiques">مسلك العلوم الفيزيائية</span></button>
+          <button class="choice-card" type="button" data-flow="goto-details" aria-pressed="false"><span data-ar="مسلك علوم الحياة والأرض" data-fr="Sciences de la vie et de la Terre">مسلك علوم الحياة والأرض</span></button>
+          <button class="choice-card" type="button" data-flow="goto-details" aria-pressed="false"><span data-ar="مسلك العلوم الرياضية" data-fr="Sciences mathématiques">مسلك العلوم الرياضية</span></button>
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="details">
+        <h3 class="wizard-title" data-ar="التفاصيل" data-fr="Détails">التفاصيل</h3>
+        <div class="summary-card">
+          <span class="summary-card__label" data-ar="القسم المختار" data-fr="Classe sélectionnée">القسم المختار</span>
+          <div class="summary-card__value">علوم فيزيائية 1</div>
+          <div class="stat-line" style="margin-top:.5rem">
+            <span class="badge badge--muted" data-ar="الثانية باكالوريا" data-fr="2ᵉ Bac">الثانية باكالوريا</span>
+            <span class="badge badge--rose" data-ar="مسلك العلوم الفيزيائية" data-fr="Sciences physiques">مسلك العلوم الفيزيائية</span>
+          </div>
+        </div>
+        <div class="row" style="margin-top:1rem">
+          <span class="row__label" data-ar="رقم القسم" data-fr="Numéro de groupe">رقم القسم</span>
+          <div class="group-stepper">
+            <button type="button" aria-label="إنقاص">−</button>
+            <input value="1" inputmode="numeric" maxlength="2" aria-label="رقم القسم">
+            <button type="button" aria-label="زيادة">+</button>
+          </div>
+        </div>
+        <div style="margin-top:1rem">
+          <span class="label" data-ar="اللون" data-fr="Couleur">اللون</span>
+          <div class="swatches" data-pressed-group role="group" aria-label="اللون" data-label-ar="اللون" data-label-fr="Couleur">
+            <button class="swatch" type="button" aria-pressed="false" aria-label="وردي" style="color:oklch(0.70 0.14 355)"><span style="background:oklch(0.70 0.14 355)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+            <button class="swatch" type="button" aria-pressed="true" aria-label="بنفسجي" style="color:oklch(0.66 0.19 285)"><span style="background:oklch(0.66 0.19 285)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="أزرق" style="color:oklch(0.68 0.14 245)"><span style="background:oklch(0.68 0.14 245)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="أخضر" style="color:oklch(0.70 0.14 150)"><span style="background:oklch(0.70 0.14 150)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="رملي" style="color:oklch(0.75 0.10 95)"><span style="background:oklch(0.75 0.10 95)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+            <button class="swatch" type="button" aria-pressed="false" aria-label="برتقالي" style="color:oklch(0.72 0.14 45)"><span style="background:oklch(0.72 0.14 45)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+          </div>
+        </div>
+        <div class="field-grid field-grid--2" style="margin-top:1rem">
+          <div><label class="label" data-ar="المادة" data-fr="Matière">المادة</label><select class="field"><option data-ar="الفيزياء والكيمياء" data-fr="Physique-Chimie">الفيزياء والكيمياء</option></select></div>
+          <div><label class="label" data-ar="عدد التلاميذ" data-fr="Élèves">عدد التلاميذ</label><input class="field" value="32" inputmode="numeric"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__footer" style="justify-content:space-between">
+      <button class="btn btn--secondary" id="wizard-back" type="button" hidden data-ar="رجوع" data-fr="Retour">رجوع</button>
+      <div style="display:flex;gap:.6rem;margin-inline-start:auto">
+        <button class="btn btn--ghost" type="button" data-close data-ar="إلغاء" data-fr="Annuler">إلغاء</button>
+        <button class="btn btn--primary" id="wizard-next" type="button">متابعة</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Évaluations  ═══════════════════════ -->
+<div class="overlay" id="overlay-evaluations" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--eval" role="dialog" aria-modal="true" aria-labelledby="eval-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title" style="min-height:auto;font-size:1rem;font-weight:700">
+        <span id="eval-title" data-ar="المراقبة المستمرة والأنشطة" data-fr="Contrôle continu et activités">المراقبة المستمرة والأنشطة</span>
+      </div>
+      <p class="modal__subtitle">علوم فيزيائية 1 · الفيزياء والكيمياء</p>
+    </header>
+    <div class="modal__body">
+      <details class="eval-group" open>
+        <summary>
+          <span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-ar="فروض وامتحانات" data-fr="Devoirs et évaluations">فروض وامتحانات</span><span class="eval-group__count">4</span></span>
+          <svg class="icon icon--sm muted" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+        </summary>
+        <div class="eval-rows">
+          <div class="eval-row">
+            <span class="eval-date">12/11/2026</span>
+            <span class="eval-name" data-ar="فرض منزلي 2" data-fr="Devoir maison 2">فرض منزلي 2</span>
+            <span class="eval-meta" data-ar="وثيقة مطلوبة · مُسلَّم" data-fr="Document requis · rendu">وثيقة مطلوبة · مُسلَّم</span>
+            <span class="eval-actions">
+              <button class="icon-action" type="button" aria-label="فتح" data-label-ar="فتح" data-label-fr="Ouvrir"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+            </span>
+          </div>
+          <div class="eval-row">
+            <span class="eval-date">05/11/2026</span>
+            <span class="eval-name" data-ar="فرض محروس 1" data-fr="Devoir surveillé 1">فرض محروس 1</span>
+            <span class="eval-meta" data-ar="المشاركون: 30 · الغياب: 2" data-fr="Participants : 30 · absents : 2">المشاركون: 30 · الغياب: 2</span>
+            <span class="eval-actions">
+              <button class="icon-action" type="button" aria-label="فتح" data-label-ar="فتح" data-label-fr="Ouvrir"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+            </span>
+          </div>
+          <div class="eval-row">
+            <span class="eval-date">22/10/2026</span>
+            <span class="eval-name" data-ar="شفهي 1" data-fr="Oral 1">شفهي 1</span>
+            <span class="eval-meta" data-ar="نقطة /20" data-fr="Note /20">نقطة /20</span>
+            <span class="eval-actions">
+              <button class="icon-action" type="button" aria-label="فتح" data-label-ar="فتح" data-label-fr="Ouvrir"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+            </span>
+          </div>
+        </div>
+      </details>
+
+      <details class="eval-group">
+        <summary>
+          <span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-ar="أنشطة تربوية" data-fr="Activités pédagogiques">أنشطة تربوية</span><span class="eval-group__count">2</span></span>
+          <svg class="icon icon--sm muted" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+        </summary>
+        <div class="eval-rows">
+          <div class="eval-row">
+            <span class="eval-date">10/11/2026</span>
+            <span class="eval-name" data-ar="مراقبة الدفاتر" data-fr="Contrôle des cahiers">مراقبة الدفاتر</span>
+            <span class="eval-meta" data-ar="مُنجَز: 26 / 32" data-fr="Fait : 26 / 32">مُنجَز: 26 / 32</span>
+            <span class="eval-actions">
+              <button class="icon-action" type="button" aria-label="فتح" data-label-ar="فتح" data-label-fr="Ouvrir"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+            </span>
+          </div>
+        </div>
+      </details>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--secondary" type="button" data-close data-ar="إغلاق" data-fr="Fermer">إغلاق</button>
+      <button class="btn btn--primary" type="button" data-ar="إضافة تقييم" data-fr="Ajouter une évaluation">إضافة تقييم</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Actions de classe  ═══════════════════════ -->
+<div class="overlay" id="overlay-class-actions" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--sheet" role="dialog" aria-modal="true" aria-labelledby="actions-title">
+    <header class="modal__header">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title"><span id="actions-title" data-ar="إجراءات القسم" data-fr="Actions de la classe">إجراءات القسم</span></div>
+    </header>
+    <div class="modal__body">
+      <div class="tile-grid">
+        <button class="tile" type="button" data-tone="blue" data-open="overlay-evaluations">
+          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-calendar-check"/></svg></span>
+          <span data-ar="التقييمات" data-fr="Évaluations">التقييمات</span>
+        </button>
+        <button class="tile" type="button" data-tone="violet" data-open="overlay-create">
+          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg></span>
+          <span data-ar="تعديل" data-fr="Modifier">تعديل</span>
+        </button>
+        <button class="tile tile--danger" type="button" data-stack="1" data-open="overlay-delete">
+          <span class="icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></span>
+          <span data-ar="حذف" data-fr="Supprimer">حذف</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════  Confirmation destructive  ═══════════════════════ -->
+<div class="overlay" id="overlay-delete" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--alert" role="alertdialog" aria-modal="true" aria-labelledby="delete-title">
+    <header class="modal__header" style="border-bottom:0">
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </header>
+    <div class="modal__body" style="flex:none">
+      <span class="alert-icon" aria-hidden="true"><svg class="icon"><use href="#i-alert"/></svg></span>
+      <h2 class="alert-title" id="delete-title" data-ar="حذف القسم «علوم فيزيائية 1» نهائياً؟" data-fr="Supprimer définitivement la classe « Sciences physiques 1 » ?">حذف القسم «علوم فيزيائية 1» نهائياً؟</h2>
+      <p class="alert-desc" data-ar="سيُحذف دفتر النصوص والبيانات المرتبطة به. لا يمكن التراجع عن هذه العملية." data-fr="Le cahier de textes et les données associées seront effacés. Cette action est irréversible.">سيُحذف دفتر النصوص والبيانات المرتبطة به. لا يمكن التراجع عن هذه العملية.</p>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--secondary" type="button" data-close data-ar="إلغاء" data-fr="Annuler">إلغاء</button>
+      <button class="btn btn--danger" type="button" data-close data-ar="حذف" data-fr="Supprimer">حذف</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/maquette.js"></script>
+</body>
+</html>
