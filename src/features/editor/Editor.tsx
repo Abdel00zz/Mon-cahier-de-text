@@ -19,6 +19,7 @@ import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
 import { AppBootSkeleton, EditorSkeleton } from '@/components/ui/PageSkeleton';
+import { preloadEditorFonts } from './editorFontLoading';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/features/editor/hooks/useHistoryState';
@@ -125,6 +126,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const historyContext = useRef({ operationType, historyAction });
   historyContext.current = { operationType, historyAction };
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
+  const [editorFontsReady, setEditorFontsReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void preloadEditorFonts().then(() => {
+      if (active) setEditorFontsReady(true);
+    }).catch(error => {
+      logger.error('Failed to load notebook fonts; using browser fallbacks.', error);
+      if (active) {
+        toast.error(t('editorNotice.fontLoadFallback'));
+        setEditorFontsReady(true);
+      }
+    });
+    return () => { active = false; };
+  }, [t]);
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
@@ -1271,6 +1287,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
   const isLoading = isClassLoading || isConfigLoading;
   const isInitialMathPreparing = notebookHasMath && !initialMathTypesetComplete;
+
+  if (!editorFontsReady) {
+    return <AppBootSkeleton />;
+  }
 
   if (isLoading) {
     return <EditorSkeleton />;
