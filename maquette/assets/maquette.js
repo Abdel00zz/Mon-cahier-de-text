@@ -188,6 +188,7 @@
   };
 
   /* ── Délégation d’événements ──────────────────────────────────────────── */
+  let nudgeShown = false;
   document.addEventListener('click', event => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;
@@ -201,6 +202,9 @@
         });
       }
       openOverlay(open.dataset.open);
+      if (open.dataset.toastAr) {
+        toast(root.lang === 'ar' ? open.dataset.toastAr : (open.dataset.toastFr || open.dataset.toastAr));
+      }
       if (open.dataset.open === 'overlay-settings') backToHub();
       if (open.dataset.open === 'overlay-create') { wizard.step = 0; renderWizard(); }
       return;
@@ -218,6 +222,12 @@
       event.preventDefault();
       closeAll();
       showScreen(screenBtn.dataset.screen);
+      // Comme dans l'application : au premier cahier ouvert sans séances
+      // planifiées, on propose de verser les créneaux dans l'emploi du temps.
+      if (screenBtn.dataset.screen === 'editor' && !nudgeShown) {
+        nudgeShown = true;
+        openOverlay('overlay-nudge');
+      }
       return;
     }
 

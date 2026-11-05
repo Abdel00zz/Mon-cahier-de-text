@@ -1140,6 +1140,29 @@
   </div>
 </div>
 
+<!-- ═══════════════════════  Rappel : emploi du temps  ═══════════════════════ -->
+<div class="overlay" id="overlay-nudge" aria-hidden="true">
+  <div class="overlay__scrim" data-close></div>
+  <div class="modal modal--nudge" role="dialog" aria-modal="true" aria-labelledby="nudge-title">
+    <header class="modal__header" style="border-bottom:0">
+      <div class="modal__handle" aria-hidden="true"><span></span></div>
+      <button class="modal__close" type="button" data-close aria-label="إغلاق" data-label-ar="إغلاق" data-label-fr="Fermer">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <div class="modal__title">
+        <span id="nudge-title" data-ar="إضافة الحصص إلى استعمال الزمن" data-fr="Ajouter les séances à l’emploi du temps">إضافة الحصص إلى استعمال الزمن</span>
+      </div>
+    </header>
+    <div class="modal__body" style="flex:none">
+      <p class="nudge-desc" data-ar="أضف حصص « قسم السنة الأولى · PCSI 1 » إلى استعمال الزمن لتفعيل المتابعة." data-fr="Ajoutez les séances de « Classe 1ʳᵉ année · PCSI 1 » à l’emploi du temps pour activer le suivi.">أضف حصص « قسم السنة الأولى · PCSI 1 » إلى استعمال الزمن لتفعيل المتابعة.</p>
+    </div>
+    <footer class="modal__footer">
+      <button class="btn btn--primary btn--block" type="button" data-close data-open="overlay-settings" data-toast-ar="أُضيفت الحصص إلى استعمال الزمن" data-toast-fr="Séances ajoutées à l’emploi du temps" data-ar="إضافة إلى استعمال الزمن" data-fr="Ajouter à l’emploi du temps">إضافة إلى استعمال الزمن</button>
+      <button class="btn btn--ghost btn--block" type="button" data-close data-ar="فهمت" data-fr="Compris">فهمت</button>
+    </footer>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/maquette.js"></script>

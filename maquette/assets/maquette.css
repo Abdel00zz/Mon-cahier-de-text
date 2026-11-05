@@ -1562,3 +1562,48 @@ html[dir='rtl'] .screen.is-active { animation-name: screen-in-rtl; }
   .screen.is-active, .guide-answer { animation: none; }
   .hq-chev, .hq-ic, .seg button, .tab-btn .icon, .switch::after { transition: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Panneaux de réglages harmonisés avec les listes groupées, et rappel
+   « emploi du temps » tel qu’il apparaît à l’ouverture d’une classe.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modal--settings .section {
+  padding: 0;
+  border-color: hsl(var(--border));
+  border-radius: 14px;
+  overflow: hidden;
+}
+.modal--settings .section__head {
+  align-items: center;
+  padding: .6rem .8rem;
+  border-bottom: 1px solid hsl(var(--border) / .7);
+}
+.modal--settings .section__title { align-items: center; font-size: .8rem; font-weight: 600; }
+.modal--settings .section__title .icon { width: 1rem; height: 1rem; }
+.modal--settings .section__hint { margin-top: 0; font-size: .7rem; }
+.modal--settings .section__body { margin: 0; padding: .55rem .8rem .75rem; gap: .7rem; }
+.modal--settings .section + .section { margin-top: .6rem; }
+.modal--settings .toggle-row + .toggle-row {
+  padding-top: .6rem;
+  border-top: 1px solid hsl(var(--border) / .7);
+}
+.modal--settings .panel > .gl:first-child { margin-top: 0; }
+
+.modal--nudge { --modal-width: min(30rem, calc(100vw - 2rem)); }
+@media (max-width: 767px) {
+  .modal--nudge {
+    inset: auto 0 0 0;
+    top: auto; left: 0; translate: none;
+    width: calc(100% - 1.25rem);
+    height: auto;
+    max-height: 80dvh;
+    margin: .625rem auto;
+    border: 1px solid hsl(var(--border));
+    border-radius: 22px;
+    box-shadow: 0 24px 60px -30px hsl(var(--foreground) / .5);
+    animation: nudge-in 320ms var(--ease-ios) both;
+  }
+  @keyframes nudge-in { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
+}
+.modal--nudge .modal__footer { flex-direction: column; align-items: stretch; gap: .45rem; }
+.nudge-desc { font-size: .84rem; line-height: 1.65; color: hsl(var(--muted-foreground)); }

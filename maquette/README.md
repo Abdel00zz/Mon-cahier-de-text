@@ -36,7 +36,7 @@ La police Readex Pro est chargée depuis Google Fonts ; hors ligne, la pile
   centrés, sections et items au bord de lecture, puces `Cours 1`.
 - **Édition de classe** : modale plein écran (onglets `المعلومات` / `تلاميذ القسم`,
   pastilles de couleur, sélecteurs, numéro de groupe, pied `حفظ` + `حذف القسم`).
-- **Paramètres** : panneaux en listes groupées (libellé de groupe, une seule carte, filets fins) avec contrôles segmentés pour le thème, la taille du texte et la langue ; grille de sept cartes sur téléphone, rail de navigation sur
+- **Paramètres** : panneaux en listes groupées (libellé de groupe, une seule carte, filets fins) avec contrôles segmentés pour le thème, la taille du texte et la langue ; les autres panneaux reprennent la même carte compacte à en-tête filet et séparateurs fins ; grille de sept cartes sur téléphone, rail de navigation sur
   bureau ; panneaux Emploi du temps, Absences, Profil, Apparence, Notifications,
   Compte et données.
 - **Aide** : recherche en pastille, accordéons à icône teintée et chevron qui pivote, réponses indentées avec étapes et astuce, rubrique « À propos / من نحن », crédit.
@@ -46,6 +46,7 @@ La police Readex Pro est chargée depuis Google Fonts ; hors ligne, la pile
 - **Aperçu d’impression** : feuille papier, en-tête d’année, tableau daté, actions.
 - **Connexion** : marque, Google, e-mail/mot de passe, mot de passe oublié,
   création de compte (ouverte depuis Compte → Se déconnecter).
+- **Rappel emploi du temps** : au premier cahier ouvert, la boîte « إضافة الحصص إلى استعمال الزمن » propose de verser les créneaux, puis ouvre les réglages avec un retour de confirmation.
 - **Confirmation destructive** : alerte compacte ancrée en bas sur téléphone.
 
 ## Interactions
