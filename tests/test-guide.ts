@@ -51,6 +51,9 @@ for (const entries of [GUIDE_FR, GUIDE_AR]) {
 assert.ok(searchGuide(GUIDE_FR, 'élèves liste').some(entry => entry.id === 'students'));
 assert.ok(searchGuide(GUIDE_AR, 'لائحة تلاميذ').some(entry => entry.id === 'students'));
 assert.ok(searchGuide(GUIDE_FR, 'déplacement').some(entry => entry.id === 'editor'));
+assert.equal(GUIDE_AR.find(entry => entry.id === 'about')?.title, 'من نحن');
+assert.ok(searchGuide(GUIDE_AR, 'من نحن').some(entry => entry.id === 'about'));
+assert.ok(searchGuide(GUIDE_FR, 'à propos').some(entry => entry.id === 'about'));
 const richText = renderToStaticMarkup(createElement(GuideText, { children: 'Paramètres → Profil, الإعدادات, $x^2$ <script>alert(1)</script>' }));
 assert.ok(richText.includes('<strong>Paramètres → Profil</strong>'));
 assert.ok(richText.includes('<strong>الإعدادات</strong>'));

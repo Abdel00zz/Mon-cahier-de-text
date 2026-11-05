@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from '@/components/ui/icons';
 import { ClassInfo } from '@/types';
+import { acquireModalLayer } from '@/platform/modalStack';
 
 interface CommandItem {
   id: string;
@@ -51,6 +52,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isDarkMode = false,
   onToggleDarkMode,
 }) => {
+  const [layer, setLayer] = React.useState(0);
+  React.useLayoutEffect(() => {
+    if (!isOpen) return;
+    const lease = acquireModalLayer();
+    setLayer(lease.layer);
+    return lease.release;
+  }, [isOpen]);
+
   const items = React.useMemo<CommandItem[]>(() => {
     const list: CommandItem[] = [];
 
@@ -169,16 +178,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 dark:bg-black/75 backdrop-blur-md animate-in fade-in-0 duration-250" />
+        <DialogPrimitive.Overlay
+          style={{ zIndex: 100 + layer * 20 }}
+          className="modal-motion-overlay fixed inset-0"
+        />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed inset-x-0 top-16 sm:top-24 z-50 mx-auto w-full max-w-xl px-3 sm:px-6 outline-none"
+          style={{ zIndex: 110 + layer * 20 }}
+          className="command-palette-surface fixed inset-x-0 top-16 mx-auto w-full max-w-xl px-3 outline-none sm:top-24 sm:px-6"
         >
           <DialogPrimitive.Title className="sr-only">Palette de commandes</DialogPrimitive.Title>
           <Command
             data-codex-surface="inset"
             label="Palette de commandes"
-            className="relative w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 dark:bg-card/95 text-foreground shadow-2xl ring-1 ring-primary/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-260 [transition-timing-function:cubic-bezier(0.18,1.01,0.24,1)]"
+            className="relative w-full overflow-hidden rounded-2xl border border-border/80 bg-popover/95 text-foreground shadow-2xl ring-1 ring-primary/10 backdrop-blur-xl dark:bg-card/95"
           >
             <div data-codex-heading className="relative flex items-center gap-3 border-b border-border/60 bg-muted/30 px-4 py-3.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">

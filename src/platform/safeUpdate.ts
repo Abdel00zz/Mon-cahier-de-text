@@ -31,6 +31,37 @@ const browserEnvironment = (): SafePwaActionEnvironment => ({
   },
 });
 
+const pendingReloads = new Set<() => void>();
+let stopPendingReloads: (() => void) | undefined;
+
+/** Coalesces simultaneous service-worker and version-check reload requests. */
+export function scheduleSafePwaReload(
+  reload: () => void,
+  environment?: SafePwaActionEnvironment,
+): () => void {
+  const request = () => reload();
+  pendingReloads.add(request);
+  if (!stopPendingReloads) {
+    stopPendingReloads = startSafePwaAction(() => {
+      const [firstReload] = pendingReloads;
+      pendingReloads.clear();
+      stopPendingReloads = undefined;
+      firstReload?.();
+    }, environment);
+  }
+
+  let cancelled = false;
+  return () => {
+    if (cancelled) return;
+    cancelled = true;
+    pendingReloads.delete(request);
+    if (pendingReloads.size === 0) {
+      stopPendingReloads?.();
+      stopPendingReloads = undefined;
+    }
+  };
+}
+
 /** Apply once after a quiet moment; wait for events rather than polling an open form. */
 export function startSafePwaAction(action: () => void, environment = browserEnvironment()): () => void {
   let stopped = false;

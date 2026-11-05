@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AppLocale } from '@/types';
 import type { PwaPlatform } from '@/platform/pwaInstall';
@@ -87,88 +88,70 @@ export function PwaInstallModal({
   const steps = activeTab === 'ios' ? copy.iosSteps : copy.androidSteps;
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={nextOpen => { if (!nextOpen) onClose(); }}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-xs" />
-        <DialogPrimitive.Content
-          dir={locale === 'ar' ? 'rtl' : 'ltr'}
-          lang={locale}
-          className="fixed inset-0 z-[120] flex items-end justify-center px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] outline-none sm:items-center sm:p-4"
-          onClick={onClose}
-        >
-          <div
-            data-codex-surface="inset"
-            className="relative max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl"
-            onClick={event => event.stopPropagation()}
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title={
+        <span className="flex min-w-0 items-center gap-3">
+          <img
+            src="/icons/apple-touch-icon-180.png"
+            alt=""
+            width={40}
+            height={40}
+            className="size-10 shrink-0 rounded-xl border border-border/60 object-cover"
+          />
+          <span className="min-w-0">{copy.title}</span>
+        </span>
+      }
+      description={copy.subtitle}
+      maxWidth="sm"
+      mobilePresentation="dialog"
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
+      footer={
+        <div className="flex w-full flex-col gap-2 sm:flex-row-reverse">
+          <Button
+            type="button"
+            onClick={onConfirmInstalled}
+            className="min-h-11 flex-1 rounded-xl text-xs font-semibold"
           >
-            <div className="flex items-center gap-3.5">
-              <img
-                src="/icons/apple-touch-icon-180.png"
-                alt=""
-                width={48}
-                height={48}
-                className="h-12 w-12 shrink-0 rounded-xl border border-border/60 object-cover shadow-xs"
-              />
-              <div className="min-w-0 flex-1">
-                <DialogPrimitive.Title id="pwa-install-modal-title" className="text-base font-bold text-foreground">
-                  {copy.title}
-                </DialogPrimitive.Title>
-                <DialogPrimitive.Description className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  {copy.subtitle}
-                </DialogPrimitive.Description>
-              </div>
-            </div>
+            {copy.confirmInstalled}
+          </Button>
+          <Dialog.Close asChild>
+            <Button type="button" variant="outline" className="min-h-11 rounded-xl text-xs font-medium">
+              {copy.close}
+            </Button>
+          </Dialog.Close>
+        </div>
+      }
+    >
+      <Tabs
+        value={activeTab}
+        onValueChange={val => setActiveTab(val as 'ios' | 'android')}
+        dir={locale === 'ar' ? 'rtl' : 'ltr'}
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="ios" className="min-h-11 text-xs">
+            {copy.iosTab}
+          </TabsTrigger>
+          <TabsTrigger value="android" className="min-h-11 text-xs">
+            {copy.androidTab}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-            <Tabs
-              value={activeTab}
-              onValueChange={val => setActiveTab(val as 'ios' | 'android')}
-              dir={locale === 'ar' ? 'rtl' : 'ltr'}
-              className="mt-4"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ios" className="min-h-11 text-xs">
-                  {copy.iosTab}
-                </TabsTrigger>
-                <TabsTrigger value="android" className="min-h-11 text-xs">
-                  {copy.androidTab}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <ol className="mt-4 space-y-2.5">
-              {steps.map((step, index) => (
-                <li
-                  key={index}
-                  className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/60 p-3 text-xs leading-relaxed text-foreground"
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
-                    {index + 1}
-                  </span>
-                  <span className="pt-0.5">{step}</span>
-                </li>
-              ))}
-            </ol>
-
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
-              <Button
-                type="button"
-                onClick={onConfirmInstalled}
-                className="min-h-11 flex-1 rounded-xl text-xs font-semibold"
-              >
-                {copy.confirmInstalled}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="min-h-11 rounded-xl text-xs font-medium"
-              >
-                {copy.close}
-              </Button>
-            </div>
-          </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+      <ol className="mt-4 space-y-2.5">
+        {steps.map((step, index) => (
+          <li
+            key={index}
+            className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/60 p-3 text-xs leading-relaxed text-foreground"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+              {index + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+    </Modal>
   );
 }

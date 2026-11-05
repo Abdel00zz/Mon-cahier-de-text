@@ -6,12 +6,17 @@
 
 .dashboard-class-slot { container-type: inline-size; display: flex; min-width: 0; }
 .class-card {
-  --class-surface: var(--keep-light, #fcfaf6);
-  --class-accent: var(--keep-accent, #754c04);
-  --class-vivid: var(--keep-vivid, #f59e0b);
-  --class-border: color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border)));
+  --class-surface: var(--class-palette-bg, var(--keep-light, #fcfaf6));
+  --class-accent: var(--class-palette-secondary, var(--keep-accent, #754c04));
+  --class-vivid: var(--class-palette-border, var(--keep-vivid, #f59e0b));
+  --class-border: var(--class-palette-border, color-mix(in srgb, var(--class-accent) 24%, hsl(var(--border))));
   --class-ink: var(--class-accent, hsl(var(--foreground)));
   --class-muted: color-mix(in srgb, var(--class-ink) 72%, transparent);
+  --card-bg: var(--class-palette-bg, hsl(var(--card)));
+  --card-bg2: var(--class-palette-bg2, var(--card-bg));
+  --card-border: var(--class-palette-border, hsl(var(--border)));
+  --card-title: var(--class-palette-title, hsl(var(--foreground)));
+  --card-secondary: var(--class-palette-secondary, hsl(var(--muted-foreground)));
   --class-paper: hsl(42 46% 96%);
   --class-pill-bg: color-mix(in srgb, var(--class-vivid) 13%, var(--class-paper));
   --class-rule-step: 28px;
@@ -34,12 +39,15 @@
   min-width: 0;
   min-height: 4.8rem;
   height: auto;
-  border-radius: var(--ui-radius-surface, 1.25rem);
+  border-radius: 1.375rem;
   border: 1px solid var(--card-border, hsl(var(--border)));
-  /* Une seule surface de carte : l'aplat neutre remplace les lavis par matière. */
-  background-color: hsl(var(--card));
-  background-image: none;
-  box-shadow: var(--ui-card-shadow);
+  background-color: var(--card-bg, hsl(var(--card)));
+  background-image: linear-gradient(
+    135deg,
+    var(--card-bg, hsl(var(--card))),
+    color-mix(in srgb, var(--card-bg2, var(--card-bg)) 40%, var(--card-bg, hsl(var(--card))))
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .58), var(--ui-card-shadow);
   color: var(--card-title, hsl(var(--foreground)));
   font-family: "Readex Pro", var(--font-sans);
   font-synthesis: weight;
@@ -56,7 +64,7 @@
 .class-card:hover,
 .class-card--active,
 .class-card[data-session-active="true"] {
-  border-radius: var(--ui-radius-surface, 1.25rem);
+  border-radius: 1.5rem;
 }
 
 [dir="rtl"] .class-card {
@@ -618,29 +626,21 @@
   transition-duration: 100ms;
 }
 
-/* Couleur par matière (PAL) : la surface reste celle de l'application. */
-.class-card {
-  --card-bg: hsl(var(--card));
-  --card-bg2: hsl(var(--card));
-  --card-border: hsl(var(--border));
-  --card-title: hsl(var(--foreground));
-  --card-secondary: hsl(var(--muted-foreground));
-}
-
-.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf4e4; --class-accent: #724405; --class-vivid: #d97706; --card-bg: #f7f0d4; --card-border: #ebe0ad; --card-title: #5c4a05; --card-secondary: #8f7a1c; }
-.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #fceee9; --class-accent: #7f2912; --class-vivid: #ea580c; --card-bg: #fdeede; --card-border: #f6d9bd; --card-title: #6b3a12; --card-secondary: #a8642a; }
-.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fcebf2; --class-accent: #7c1f4e; --class-vivid: #db2777; --card-bg: #fbe6ee; --card-border: #f2cddb; --card-title: #6e1c3e; --card-secondary: #a8486f; }
-.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f4effd; --class-accent: #5a3fbf; --class-vivid: #8b7cf6; --card-bg: #f4effd; --card-border: #ded5fb; --card-title: #221a4f; --card-secondary: #5a3fbf; }
-.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #ebeffc; --class-accent: #283c82; --class-vivid: #4f46e5; --card-bg: #ece9f7; --card-border: #d9d4ee; --card-title: #2e2766; --card-secondary: #5d55a3; }
-.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e6f4f9; --class-accent: #0f4c64; --class-vivid: #0284c7; --card-bg: #e0eefa; --card-border: #c6dff2; --card-title: #0f3f6b; --card-secondary: #3a78a8; }
-.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e6f6ef; --class-accent: #13533b; --class-vivid: #059669; --card-bg: #e6f3e9; --card-border: #cfe6d5; --card-title: #14503a; --card-secondary: #3f7f63; }
-.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eff7e2; --class-accent: #365314; --class-vivid: #65a30d; --card-bg: #e6f3e9; --card-border: #cfe6d5; --card-title: #14503a; --card-secondary: #3f7f63; }
+.class-card[data-keep-tone="sand"]:not([data-class-color]) { --class-surface: #fdf4e4; --class-accent: #7a6818; --class-palette-bg: #f7f0d4; --class-palette-bg2: #ebe0ad; --class-palette-border: #ebe0ad; --class-palette-title: #5c4a05; --class-palette-secondary: #7a6818; }
+.class-card[data-keep-tone="coral"]:not([data-class-color]) { --class-surface: #fceee9; --class-accent: #9a5b26; --class-palette-bg: #fdeede; --class-palette-bg2: #fbd3bf; --class-palette-border: #f6d9bd; --class-palette-title: #6b3a12; --class-palette-secondary: #9a5b26; }
+.class-card[data-keep-tone="rose"]:not([data-class-color]) { --class-surface: #fcebf2; --class-accent: #a6476e; --class-palette-bg: #fbe6ee; --class-palette-bg2: #f2cddb; --class-palette-border: #f2cddb; --class-palette-title: #6e1c3e; --class-palette-secondary: #a6476e; }
+.class-card[data-keep-tone="lavender"]:not([data-class-color]) { --class-surface: #f4effd; --class-accent: #5a3fbf; --class-palette-bg: #ece9f7; --class-palette-bg2: #d8cbfa; --class-palette-border: #d9d4ee; --class-palette-title: #2a205a; --class-palette-secondary: #5a3fbf; }
+.class-card[data-keep-tone="indigo"]:not([data-class-color]) { --class-surface: #ebeffc; --class-accent: #5d55a3; --class-palette-bg: #ece9f7; --class-palette-bg2: #d9d4ee; --class-palette-border: #d9d4ee; --class-palette-title: #2e2766; --class-palette-secondary: #5d55a3; }
+.class-card[data-keep-tone="sky"]:not([data-class-color]) { --class-surface: #e6f4f9; --class-accent: #346c97; --class-palette-bg: #e0eefa; --class-palette-bg2: #c9dbff; --class-palette-border: #c6dff2; --class-palette-title: #0f3f6b; --class-palette-secondary: #346c97; }
+.class-card[data-keep-tone="mint"]:not([data-class-color]) { --class-surface: #e6f6ef; --class-accent: #3a755b; --class-palette-bg: #e6f3e9; --class-palette-bg2: #c3e9d8; --class-palette-border: #cfe6d5; --class-palette-title: #14503a; --class-palette-secondary: #3a755b; }
+.class-card[data-keep-tone="lime"]:not([data-class-color]) { --class-surface: #eff7e2; --class-accent: #4f7021; --class-palette-bg: #e6f3e9; --class-palette-bg2: #c3e9d8; --class-palette-border: #cfe6d5; --class-palette-title: #14503a; --class-palette-secondary: #4f7021; }
 
 .class-card[data-class-color] {
-  --card-bg: hsl(var(--class-hue) 55% 94%);
-  --card-border: hsl(var(--class-hue) 45% 82%);
-  --card-title: hsl(var(--class-hue) 65% 18%);
-  --card-secondary: hsl(var(--class-hue) 45% 32%);
+  --class-palette-bg: hsl(var(--class-hue) 55% 94%);
+  --class-palette-bg2: hsl(var(--class-hue) 55% 88%);
+  --class-palette-border: hsl(var(--class-hue) 45% 82%);
+  --class-palette-title: hsl(var(--class-hue) 65% 18%);
+  --class-palette-secondary: hsl(var(--class-hue) 45% 32%);
 }
 
 .dark .class-card[data-keep-tone] {
@@ -658,17 +658,12 @@
   --class-pill-bg: hsl(var(--class-hue) 32% 24%);
 }
 
-/* Surface unique, encre unique : la teinte de la classe ne vit plus que dans
-   le filet (--card-border) et les accents internes. */
-.class-card[data-keep-tone]:not([data-class-color]),
-.class-card[data-class-color] {
-  --card-bg: hsl(var(--card));
-  --card-bg2: hsl(var(--card));
-  --card-title: hsl(var(--foreground));
-  --card-secondary: hsl(var(--muted-foreground));
-}
-
 .dark .class-card {
+  --card-bg: color-mix(in srgb, var(--class-palette-bg, hsl(var(--card))) 20%, hsl(var(--card)));
+  --card-bg2: color-mix(in srgb, var(--class-palette-bg2, hsl(var(--card))) 26%, hsl(var(--card)));
+  --card-border: color-mix(in srgb, var(--class-palette-border, hsl(var(--border))) 48%, hsl(var(--border)));
+  --card-title: color-mix(in srgb, var(--class-palette-title, hsl(var(--foreground))) 18%, hsl(var(--foreground)));
+  --card-secondary: color-mix(in srgb, var(--class-palette-secondary, hsl(var(--foreground))) 36%, hsl(var(--foreground)));
   --class-paper: color-mix(in srgb, hsl(var(--card)) 88%, var(--class-surface));
   --class-ink: hsl(var(--foreground));
   --class-muted: hsl(var(--muted-foreground));

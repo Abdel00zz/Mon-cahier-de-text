@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { isNetworkOnline } from './networkStatus';
-import { startSafePwaAction } from './safeUpdate';
+import { scheduleSafePwaReload } from './safeUpdate';
 
 /*
  * Vérification de la version publiée, indépendante du cache PWA. Un
@@ -16,6 +16,12 @@ export interface WebUpdateEnvironment {
     currentVersion(): string;
     reload(): void;
     schedule(action: () => void): () => void;
+}
+
+export interface WebUpdateControl {
+    check(): Promise<void> | void;
+    getSnapshot?(): WebUpdateState;
+    apply?(): void;
 }
 
 declare const __APP_VERSION__: string;
@@ -41,7 +47,7 @@ const browserEnvironment = (): WebUpdateEnvironment => ({
     publishedVersion: () => readPublishedWebVersion(),
     currentVersion: () => (typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0'),
     reload: () => window.location.reload(),
-    schedule: action => startSafePwaAction(action),
+    schedule: action => scheduleSafePwaReload(action),
 });
 
 /** Un seul contrôleur pour les vérifications automatiques de version. */
@@ -95,7 +101,7 @@ const webUpdates = createWebUpdateControl();
  * Vérifie au retour dans la page, au plus une fois par heure : aucun minuteur
  * permanent, aucune requête en arrière-plan.
  */
-export function startAppUpdateChecks(env?: { active: () => boolean; now: () => number; subscribe: (check: () => void) => () => void }, control: { check: () => Promise<void> | void } = webUpdates) {
+export function startAppUpdateChecks(env?: { active: () => boolean; now: () => number; subscribe: (check: () => void) => () => void }, control: WebUpdateControl = webUpdates) {
     const environment = env ?? {
         active: () => document.visibilityState === 'visible' && isNetworkOnline()
             && !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
@@ -116,7 +122,9 @@ export function startAppUpdateChecks(env?: { active: () => boolean; now: () => n
     const check = () => {
         if (stopped || !environment.active() || environment.now() < nextCheck) return;
         nextCheck = environment.now() + 3600_000;
-        void control.check();
+        void Promise.resolve(control.check()).then(() => {
+            if (!stopped && control.getSnapshot?.() === 'downloaded') control.apply?.();
+        });
     };
     const unsubscribe = environment.subscribe(check);
     check();

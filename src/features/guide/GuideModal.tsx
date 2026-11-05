@@ -11,11 +11,12 @@ import './guide.css';
 interface GuideModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mobileNavigation?: React.ReactNode;
   focusRequest?: GuideReference | null;
   initialReference?: GuideReference | null;
 }
 
-export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRequest = null, initialReference = null }) => {
+export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, mobileNavigation, focusRequest = null, initialReference = null }) => {
   const { locale } = useLocale();
   const reduced = useReducedMotion();
   const isAr = locale === 'ar';
@@ -59,16 +60,18 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
 
   const clearSearch = () => {
     setQuery('');
+    if (contentRef.current) contentRef.current.scrollTop = 0;
     searchRef.current?.focus();
   };
 
   return (
     <Modal
       isOpen={isOpen} onClose={onClose} dir={isAr ? 'rtl' : 'ltr'}
-      maxWidth="2xl" mobilePresentation="dialog"
+      maxWidth="2xl" mobilePresentation="dialog" hideClose
       className="hub-modal learning-guide-modal learning-guide liquid-modal"
       headerClassName="hub-modal-header learning-guide-modal-header"
       bodyClassName="hub-modal-body learning-guide-modal-body"
+      bottomNavigation={mobileNavigation}
       title={<span className="guide-heading" data-codex-title>
         <span className="guide-title">{isAr ? 'المساعدة' : 'Aide'}</span>
         <span className="guide-subtitle">{isAr ? 'أجوبة سريعة لأسئلتك' : 'Réponses rapides à vos questions'}</span>
@@ -77,13 +80,22 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, focusRe
       <div className="guide-search">
         <Search size={18} aria-hidden="true" />
         <input ref={searchRef} type="search" value={query}
-          onChange={event => { setQuery(event.target.value); setTarget(null); }}
+          onChange={event => {
+            if (contentRef.current) contentRef.current.scrollTop = 0;
+            setQuery(event.target.value);
+            setTarget(null);
+          }}
           placeholder={isAr ? 'ابحث عن سؤال…' : 'Rechercher une question…'}
           aria-label={isAr ? 'البحث في المساعدة' : 'Rechercher dans l’aide'} />
         {query && <button type="button" onClick={clearSearch}
           aria-label={isAr ? 'مسح البحث' : 'Effacer la recherche'}><X size={17} aria-hidden="true" /></button>}
       </div>
       <div ref={contentRef} className="guide-main">
+        {query.trim() && results.length > 0 && <p className="guide-result-count" role="status" aria-atomic="true">
+          {isAr
+            ? `عدد النتائج: ${results.length}`
+            : `${results.length} rubrique${results.length > 1 ? 's' : ''} trouvée${results.length > 1 ? 's' : ''}`}
+        </p>}
         {results.length === 0 ? <div className="guide-empty" role="status">
           <Search size={28} aria-hidden="true" />
           <p>{isAr ? 'لا توجد نتائج مطابقة لبحثك.' : 'Aucune réponse pour cette recherche.'}</p>

@@ -1,12 +1,12 @@
 .class-quick-sheet.modal-motion-surface {
-  background: linear-gradient(155deg, hsl(var(--card)), hsl(var(--background))) !important;
-  border: 1px solid hsl(var(--border) / .85);
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border));
   border-radius: 32px 32px 0 0 !important;
-  backdrop-filter: blur(26px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(26px) saturate(1.4) !important;
+  backdrop-filter: blur(20px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .65),
-    0 -12px 38px hsl(var(--foreground) / .12);
+    inset 0 1px 0 hsl(var(--foreground) / .04),
+    0 -12px 38px hsl(var(--foreground) / .1);
 }
 
 .dark .class-quick-sheet.modal-motion-surface {
@@ -30,67 +30,38 @@
 }
 
 .class-quick-sheet__actions {
-  display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
 }
 
 .class-quick-sheet__action {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 52px;
-  padding: 8px 14px;
-  border: 1px solid hsl(var(--border) / .65);
-  border-radius: 16px;
-  background: hsl(var(--card) / .9);
-  color: hsl(var(--foreground));
-  text-align: start;
-  cursor: pointer;
-  box-shadow: 0 2px 6px -2px rgba(15, 15, 15, .04);
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 250ms var(--spring, cubic-bezier(.34, 1.4, .5, 1));
-  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  min-height: clamp(5rem, 16dvh, 8rem);
+  padding: 1.1rem 0.65rem;
 }
 
-.class-quick-sheet__icon {
-  flex: none;
-  width: 19px;
-  height: 19px;
-  stroke-width: 1.8;
-  color: hsl(var(--primary));
+.class-quick-sheet__action .hub-card__icon > svg {
+  width: 2.25rem;
+  height: 2.25rem;
+  stroke-width: 1.75;
 }
 
-.class-quick-sheet__action--danger,
-.class-quick-sheet__action--danger .class-quick-sheet__icon {
-  color: #e03e3e;
-}
-
-.dark .class-quick-sheet__action--danger,
-.dark .class-quick-sheet__action--danger .class-quick-sheet__icon {
-  color: #f87171;
-}
-
-.class-quick-sheet__action:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
-.class-quick-sheet__action:active { transform: scale(.96); transition-duration: 100ms; }
-
-@media (hover: hover) {
-  .class-quick-sheet__action:hover {
-    background: hsl(var(--muted));
-    border-color: hsl(var(--primary) / .3);
-    transform: translateY(-1px);
+/* Actions de classe : feuille ajustée au contenu, plafonnée par le viewport.
+   Le corps devient défilable seulement si les tuiles ne tiennent plus. */
+@media (max-width: 767px) {
+  .modal-sheet-viewport .modal-motion-surface.class-quick-sheet[data-sheet-library] {
+    width: min(calc(100vw - 24px), 30rem) !important;
+    max-width: min(calc(100vw - 24px), 30rem) !important;
+    height: fit-content !important;
+    max-height: min(calc(var(--modal-visible-height) * var(--sheet-max-height, .72)), calc(var(--modal-visible-height) - max(12px, env(safe-area-inset-top, 0px)))) !important;
+    border-radius: 28px 28px 0 0 !important;
   }
-  .class-quick-sheet__action--danger:hover {
-    background: rgba(224, 62, 62, .08);
-    border-color: rgba(224, 62, 62, .28);
+  .class-quick-sheet .class-quick-sheet__action.hub-card[data-layout='tile'] {
+    min-height: clamp(5rem, 16dvh, 8rem);
+    padding-block: clamp(0.55rem, 2.4dvh, 1rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .class-quick-sheet__action { transition: none; }
-  .class-quick-sheet__action:hover,
-  .class-quick-sheet__action:active { transform: none; }
 }

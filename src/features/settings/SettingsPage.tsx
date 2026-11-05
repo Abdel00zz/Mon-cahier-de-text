@@ -20,6 +20,7 @@ interface SettingsPageProps {
     asPage?: boolean;
     initialSection?: 'emploi' | 'notifications';
     scheduleClassId?: string;
+    mobileNavigation?: React.ReactNode;
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
@@ -33,6 +34,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     asPage = false,
     initialSection,
     scheduleClassId,
+    mobileNavigation,
 }) => {
     const { t } = useLocale();
     const [isImportOpen, setImportOpen] = useState(false);
@@ -95,6 +97,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 scheduleClassId={scheduleClassId}
                 onClose={requestClose}
                 onOpenGuide={() => requestClose(onOpenGuide)}
+                mobileNavigation={mobileNavigation}
                 config={config}
                 onConfigChange={updateConfig}
                 onExportPlatform={() => {

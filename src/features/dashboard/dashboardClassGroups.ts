@@ -15,20 +15,23 @@ export function groupDashboardClasses(
   classes: readonly ClassInfo[], schedules: ReadonlyMap<string, SessionScheduleStatus>, locale: AppLocale,
 ): DashboardClassGroup[] {
   const groups = new Map<string, DashboardClassGroup>();
-  const labels = locale === 'ar' ? ['اليوم', 'غداً', 'أقسام أخرى', 'حصص قادمة']
-    : locale === 'en' ? ['Today', 'Tomorrow', 'Other classes', 'Upcoming sessions']
-      : ['Aujourd’hui', 'Demain', 'Autres classes', 'Séances à venir'];
+  const labels = locale === 'ar'
+    ? { now: 'الآن', today: 'اليوم', tomorrow: 'غداً', other: 'أقسام أخرى', upcoming: 'حصص قادمة' }
+    : locale === 'en'
+      ? { now: 'Now', today: 'Today', tomorrow: 'Tomorrow', other: 'Other classes', upcoming: 'Upcoming sessions' }
+      : { now: 'En cours', today: 'Aujourd’hui', tomorrow: 'Demain', other: 'Autres classes', upcoming: 'Séances à venir' };
   for (const classInfo of classes) {
     const schedule = schedules.get(classInfo.id);
+    const inProgress = schedule?.state === 'in_progress';
     const upcoming = schedule && schedule.state !== 'none';
     const offset = upcoming ? schedule.dayOffset ?? 0 : 999;
-    const key = upcoming ? `day-${offset}` : 'other';
-    const label = !upcoming ? labels[2] : offset < 2 ? labels[offset]
+    const key = inProgress ? 'now' : upcoming ? `day-${offset}` : 'other';
+    const label = inProgress ? labels.now : !upcoming ? labels.other : offset < 2 ? [labels.today, labels.tomorrow][offset]
       : offset >= 7 && schedule.date
         ? new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${schedule.date}T12:00:00Z`))
-        : schedule.dayLabel || labels[3];
+        : schedule.dayLabel || labels.upcoming;
     let group = groups.get(key);
-    if (!group) { group = { key, label, order: offset, showTitle: true, items: [] }; groups.set(key, group); }
+    if (!group) { group = { key, label, order: inProgress ? -1 : offset, showTitle: true, items: [] }; groups.set(key, group); }
     group.items.push({ classInfo, startMin: upcoming ? schedule.startMin ?? 9999 : 9999 });
   }
   const result = [...groups.values()].sort((a, b) => a.order - b.order);

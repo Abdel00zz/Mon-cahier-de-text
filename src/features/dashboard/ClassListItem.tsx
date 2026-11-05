@@ -1,5 +1,4 @@
 import { memo, useMemo, type FC } from 'react';
-import { Clock } from 'lucide-react';
 import { ClassInfo, ClassEvaluationEntry } from '@/types';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
@@ -25,47 +24,6 @@ interface ClassListItemProps {
     isActiveSession?: boolean;
     scheduleStatus?: SessionScheduleStatus;
 }
-
-const renderScheduleTime = (timeStr?: string) => {
-    if (!timeStr) return null;
-    if (timeStr.includes(':')) {
-        const [hours, minutes] = timeStr.split(':');
-        return (
-            <span className="class-card__schedule-time font-semibold" dir="ltr">
-                <span>{hours}</span>
-                <span className="class-card__schedule-colon" aria-hidden="true">:</span>
-                <span>{minutes}</span>
-            </span>
-        );
-    }
-    return <span className="class-card__schedule-time font-semibold">{timeStr}</span>;
-};
-
-const renderScheduleContent = (status: SessionScheduleStatus) => {
-    const day = status.dayLabel;
-    const time = status.startTimeLabel;
-    if (day && time) {
-        return (
-            <>
-                <span className="class-card__schedule-day">{day}</span>
-                {renderScheduleTime(time)}
-            </>
-        );
-    }
-    const short = status.shortLabel;
-    const parts = short.trim().split(/\s+/);
-    if (parts.length >= 2 && parts[parts.length - 1].includes(':')) {
-        const timePart = parts[parts.length - 1];
-        const dayPart = parts.slice(0, parts.length - 1).join(' ');
-        return (
-            <>
-                <span className="class-card__schedule-day">{dayPart}</span>
-                {renderScheduleTime(timePart)}
-            </>
-        );
-    }
-    return <span>{short}</span>;
-};
 
 const ClassListItemComponent: FC<ClassListItemProps> = ({
     classInfo,
@@ -126,7 +84,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                 {label.group && <>{'\u00a0'}<bdi className="class-list-item__group" dir="ltr">{label.group}</bdi></>}
                             </span>
                     </h3>
-                    {(isActiveSession || (showsSubjectLabels && classInfo.subject) || (scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel)) && (
+                    {(isActiveSession || (showsSubjectLabels && classInfo.subject)) && (
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
                             {isActiveSession ? (
                                 <span className="class-card__live">
@@ -139,14 +97,6 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                                         </span>
                                     ) : null}
                                 </span>
-                            ) : scheduleStatus && scheduleStatus.state !== 'none' && scheduleStatus.shortLabel ? (
-                                <span className="class-card__schedule-capsule" title={scheduleStatus.label}>
-                                    <Clock className="class-card__schedule-icon" aria-hidden="true" />
-                                    {renderScheduleContent(scheduleStatus)}
-                                </span>
-                            ) : null}
-                            {scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1 ? (
-                                <span className="class-card__schedule-multihour">{scheduleStatus.sessionHours}{locale === 'ar' ? 'س' : 'h'}</span>
                             ) : null}
                             {showsSubjectLabels && classInfo.subject && (
                                 <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>

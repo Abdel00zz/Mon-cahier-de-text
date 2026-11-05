@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MobileTabBar } from '../src/components/navigation/MobileTabBar';
@@ -13,10 +14,12 @@ test('navigation FR/AR/EN : classes et paramètres en haut, aide accessible en b
   for (const locale of ['fr', 'ar', 'en'] as const) {
     const props = { activeTab: 'dashboard' as const, goTo: () => {}, copy: NAV_COPY[locale], isRtl: locale === 'ar' };
     const mobile = renderToStaticMarkup(createElement(MobileTabBar, props));
+    const modalMobile = renderToStaticMarkup(createElement(MobileTabBar, { ...props, presentation: 'modal' }));
     assert.equal((mobile.match(/<button\b/g) ?? []).length, 3);
     assert.ok(mobile.includes(NAV_COPY[locale].dashboard));
     assert.ok(mobile.includes(NAV_COPY[locale].settings));
     assert.equal((mobile.match(/aria-current="page"/g) ?? []).length, 1);
+    assert.match(modalMobile, /mobile-tab-bar--modal/, 'la barre de la fenêtre est embarquée dans sa pile de focus');
     const desktop = renderToStaticMarkup(createElement(DesktopSidebar, { ...props, expanded: true, toggle: () => {}, teacherName: 'Professeur test' }));
     assert.equal((desktop.match(/<button\b/g) ?? []).length, 4); // expand/collapse, classes, settings, help
     assert.ok(desktop.includes('Professeur test'));
@@ -45,6 +48,24 @@ test('mobile navigation requires a deliberate swipe, mirrors RTL and never opens
   }
   assert.equal(navigationSwipeTarget('settings', -90, 0, 200, false), undefined);
   assert.equal(navigationSwipeTarget('help', -90, 0, 200, false), undefined);
+});
+
+test('mobile bottom navigation stays compact, safe-area aware and visually restrained', () => {
+  const styles = readFileSync('src/components/navigation/navigation.css', 'utf8');
+  const performanceStyles = readFileSync('src/styles/mobile-performance.css', 'utf8');
+  assert.match(styles, /\.mobile-tab-bar\s*\{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
+  assert.match(styles, /border-top:\s*1px solid var\(--ui-glass-border\)/);
+  assert.match(styles, /border-radius:\s*0/);
+  assert.match(styles, /padding:\s*5px 8px calc\(5px \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(styles, /--mobile-tab-accent:\s*#0071e3/);
+  assert.match(styles, /--mobile-tab-accent-wash:\s*rgb\(0 113 227 \/ \.08\)/);
+  assert.match(styles, /min-height:\s*60px/);
+  assert.match(styles, /\.mobile-tab-bar--modal \{[^}]*position:\s*relative/, 'la barre de la modale reste dans son flux');
+  assert.match(styles, /@media \(max-width: 1023px\) \{\s*\.modal-bottom-navigation \{ display: block !important; \}/,
+    'la barre intégrée apparaît dans la fenêtre sur téléphone et tablette');
+  assert.match(styles, /width:\s*min\(72px, calc\(100% - 8px\)\)/);
+  assert.match(styles, /padding-bottom:\s*calc\(4\.5rem \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(performanceStyles, /html:root \.mobile-tab-bar\s*\{[^}]*backdrop-filter:\s*blur\(8px\)/s);
 });
 
 test('anciens liens, identifiants mal encodés et classes absentes reviennent aux classes', () => {

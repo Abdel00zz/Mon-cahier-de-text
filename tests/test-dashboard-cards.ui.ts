@@ -4,12 +4,14 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassCard } from '../src/features/dashboard/ClassCard';
+import { ClassListItem } from '../src/features/dashboard/ClassListItem';
 import { DashboardActions } from '../src/features/dashboard/DashboardActions';
 import { CLASS_DISPLAY_MODES, isClassDisplayMode, nextClassDisplayMode } from '../src/features/dashboard/classDisplayMode';
 import { LocaleProvider } from '../src/i18n/LocaleProvider';
 import { translateLocaleMessage } from '../src/i18n/messages';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
 import { prioritizeActiveClasses } from '../src/domain/classes/classOrder';
+import { buildUnifiedClassPaletteMap } from '../src/features/dashboard/departmentPalette';
 import type { HolidayCalendar } from '../src/domain/calendar/calendar';
 import type { AppConfig, ClassInfo, TimetableEntry } from '../src/types';
 
@@ -19,6 +21,7 @@ const makeClass = (id: string, name: string): ClassInfo => ({
   id, name, level: '1AC', cycle: 'college', subject: 'Mathematiques', teacherName: '', color: '', createdAt: '2026-09-01',
 });
 const classes = [makeClass('a', '1AC 1'), makeClass('b', '2AC 2'), makeClass('c', '3AC 3')];
+const palettes = buildUnifiedClassPaletteMap(classes);
 const calendar: HolidayCalendar = {
   version: 1, pays: 'Maroc', fuseau: 'Africa/Casablanca',
   anneeScolaire: { libelle: '2026-2027', debut: '2026-09-07', fin: '2027-06-30' }, joursFeries: [], vacances: [],
@@ -39,7 +42,7 @@ const renderCards = (active: ReadonlySet<string>) => {
   return ordered.map(classInfo => ({
     id: classInfo.id,
     html: renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
-      React.createElement(ClassCard, { classInfo, onSelect: noop, onConfigure: noop, isActiveSession: active.has(classInfo.id) }) })),
+      React.createElement(ClassCard, { classInfo, onSelect: noop, onConfigure: noop, isActiveSession: active.has(classInfo.id), palette: palettes.get(classInfo.id) }) })),
   }));
 };
 
@@ -94,6 +97,82 @@ test('le groupe fait partie de la même phrase que le nom dans le titre de la ca
   // Le chiffre a quitté le corps de la carte : plus de chiffre géant entre l'en-tête et le titre.
   const body = first.html.slice(first.html.indexOf('class-card__body'), first.html.indexOf('class-card__identity'));
   assert.doesNotMatch(body, /class-card__group/, 'plus aucun filigrane détaché du titre');
+});
+
+test('la palette de chaque classe traverse le tableau de bord jusqu’au fond, au texte et au mode sombre', () => {
+  const cards = renderCards(new Set());
+  for (const card of cards) {
+    const palette = palettes.get(card.id);
+    assert.ok(palette, `palette de la classe ${card.id}`);
+    assert.ok(card.html.includes(`--class-palette-bg:${palette.bg}`), `fond de ${card.id}`);
+    assert.ok(card.html.includes(`--class-palette-border:${palette.border}`), `bordure de ${card.id}`);
+    assert.ok(card.html.includes(`--class-palette-title:${palette.title}`), `titre de ${card.id}`);
+    assert.ok(card.html.includes(`--class-palette-secondary:${palette.secondary}`), `texte secondaire de ${card.id}`);
+  }
+  const styles = readFileSync('src/features/dashboard/classCards.css', 'utf8');
+  assert.match(styles, /background-image:\s*linear-gradient\(/, 'les aplats de classe retrouvent leur dégradé pastel discret');
+  assert.match(styles, /\.dark \.class-card\s*\{[\s\S]*?--card-bg:\s*color-mix/, 'les couleurs restent désaturées en mode sombre');
+  assert.doesNotMatch(styles, /Surface unique, encre unique/, 'aucune règle finale ne neutralise les palettes');
+});
+
+test('les cartes de classe ne montrent plus le jour, l’heure ou la durée du prochain cours', () => {
+  const scheduleStatus = {
+    state: 'upcoming' as const,
+    label: 'Prochaine séance : Lundi à 10h00',
+    shortLabel: 'Lundi à 10h00',
+    dayLabel: 'Lundi',
+    startTimeLabel: '10h00',
+    sessionHours: 2,
+  };
+  const render = (children: React.ReactNode) =>
+    renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children }));
+  const card = render(React.createElement(ClassCard, {
+    classInfo: makeClass('scheduled-card', '1AC 1'),
+    onSelect: () => {},
+    onConfigure: () => {},
+    scheduleStatus,
+  }));
+  const listItem = render(React.createElement(ClassListItem, {
+    classInfo: makeClass('scheduled-row', '1AC 1'),
+    onSelect: () => {},
+    onConfigure: () => {},
+    scheduleStatus,
+  }));
+  for (const html of [card, listItem]) {
+    assert.doesNotMatch(html, /class-card__schedule-capsule|class-card__schedule-day|class-card__schedule-time|class-card__schedule-multihour/,
+      'aucun badge d’horaire ne subsiste en mode carte ou liste');
+    assert.doesNotMatch(html, /Lundi|10h00|2h/, 'le jour, l’heure et la durée ne sont plus affichés sur la classe');
+  }
+});
+
+test('la teinte personnalisée reste branchée avec la palette de la carte', () => {
+  const classInfo = { ...makeClass('custom', '1AC 4'), color: 'class-hue:34' };
+  const palette = buildUnifiedClassPaletteMap([classInfo]).get(classInfo.id);
+  const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ClassCard, { classInfo, palette, onSelect: () => {}, onConfigure: () => {} }) }));
+  assert.match(html, /--class-hue:/, 'l’attribut de teinte reste présent sur la carte');
+  assert.ok(html.includes(`--class-palette-bg:${palette?.bg}`), 'la palette calculée reste présente en parallèle');
+});
+
+test('menu de classe : emploi du temps retiré, choix en tuiles avec icônes encadrées', () => {
+  const menu = readFileSync('src/features/dashboard/ClassActionsMenu.tsx', 'utf8');
+  const styles = readFileSync('src/features/dashboard/classActionsSheet.css', 'utf8');
+  assert.doesNotMatch(menu, /onOpenSchedule|CalendarDays|settings\.item\.schedule/,
+    'le raccourci emploi du temps ne figure plus dans le menu ⋮');
+  assert.match(menu, /class-quick-sheet__actions hub-grid" data-tiles/,
+    'les actions restantes reprennent la grille de tuiles');
+  assert.equal((menu.match(/data-layout="tile"/g) ?? []).length, 3,
+    'évaluations, modification et suppression utilisent le même format de tuile');
+  assert.match(menu, /<span className="hub-card__icon" aria-hidden="true"><CalendarCheck \/><\/span>/,
+    'l’icône des évaluations est placée dans sa boîte neutre');
+  assert.match(styles, /\.class-quick-sheet__action \.hub-card__icon > svg \{[\s\S]*?width: 2\.25rem;[\s\S]*?height: 2\.25rem;/,
+    'les icônes sont dimensionnées comme celles des cartes devoirs/évaluations');
+  assert.match(styles, /\.modal-sheet-viewport \.modal-motion-surface\.class-quick-sheet\[data-sheet-library\] \{[\s\S]*?height: fit-content !important;[\s\S]*?max-height: min\(calc\(var\(--modal-visible-height\) \* var\(--sheet-max-height, \.72\)\)/,
+    'la feuille d’actions suit les tuiles et se limite à la hauteur visible du téléphone');
+  assert.match(styles, /min-height: clamp\(5rem, 16dvh, 8rem\)/,
+    'les tuiles réduisent leur hauteur sur les petits écrans');
+  assert.match(styles, /\.class-quick-sheet \.class-quick-sheet__action\.hub-card\[data-layout='tile'\] \{[\s\S]*?min-height: clamp\(5rem, 16dvh, 8rem\);[\s\S]*?padding-block: clamp/,
+    'la hauteur adaptative prévaut sur la hauteur minimale générique des cartes');
 });
 
 test('la fiche reste décorative et un nom libre conserve son identité sans icône de cahier dans les trois langues', () => {
@@ -170,4 +249,3 @@ test('le tableau de bord place les actions au-dessus de « Mes classes : »', ()
   assert.match(source, /dashboard_class_display_v1/, 'la disposition survit au rechargement');
   assert.match(source, /isClassDisplayMode\(classDisplayMode\)/, 'une valeur inconnue retombe sur la disposition par défaut');
 });
-

@@ -1,5 +1,4 @@
 import { memo, useMemo, type CSSProperties, type FC } from 'react';
-import { Clock } from 'lucide-react';
 import type { ClassInfo, ClassEvaluationEntry } from '@/types';
 import type { SessionScheduleStatus } from '@/domain/calendar/sessionScheduleStatus';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -21,7 +20,6 @@ interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
-    onOpenSchedule?: (classId: string) => void;
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     index?: number;
@@ -30,59 +28,10 @@ interface ClassCardProps {
     palette?: DepartmentPalette;
 }
 
-const renderScheduleTime = (timeStr?: string) => {
-    if (!timeStr) return null;
-    if (timeStr.includes(':')) {
-        const [hours, minutes] = timeStr.split(':');
-        return (
-            <span className="class-card__schedule-time" dir="ltr">
-                <span>{hours}</span>
-                <span className="class-card__schedule-colon" aria-hidden="true">:</span>
-                <span>{minutes}</span>
-            </span>
-        );
-    }
-    return <span className="class-card__schedule-time font-semibold">{timeStr}</span>;
-};
-
-const renderScheduleContent = (status: SessionScheduleStatus, multiHourBadge?: string | null) => {
-    const day = status.dayLabel;
-    const time = status.startTimeLabel;
-    if (day && time) {
-        return (
-            <>
-                <span className="class-card__schedule-day">{day}</span>
-                {renderScheduleTime(time)}
-                {multiHourBadge && <span className="class-card__schedule-multihour">{multiHourBadge}</span>}
-            </>
-        );
-    }
-    const short = status.shortLabel;
-    const parts = short.trim().split(/\s+/);
-    if (parts.length >= 2 && parts[parts.length - 1].includes(':')) {
-        const timePart = parts[parts.length - 1];
-        const dayPart = parts.slice(0, parts.length - 1).join(' ');
-        return (
-            <>
-                <span className="class-card__schedule-day">{dayPart}</span>
-                {renderScheduleTime(timePart)}
-                {multiHourBadge && <span className="class-card__schedule-multihour">{multiHourBadge}</span>}
-            </>
-        );
-    }
-    return (
-        <>
-            <span className="class-card__schedule-day">{short}</span>
-            {multiHourBadge && <span className="class-card__schedule-multihour">{multiHourBadge}</span>}
-        </>
-    );
-};
-
 const ClassCardComponent: FC<ClassCardProps> = ({
     classInfo,
     onSelect,
     onConfigure,
-    onOpenSchedule,
     onDelete,
     onOpenEvaluations,
     isActiveSession,
@@ -97,10 +46,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { surfaceRef, rippleRef, surfaceHandlers } = useCardSurface();
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
     const colorAttrs = classColorAttributes(classInfo);
-    const multiHourBadge = scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1
-        ? (locale === 'ar' ? `${scheduleStatus.sessionHours}س` : `${scheduleStatus.sessionHours}h`)
-        : null;
-    const showScheduleLine = !isActiveSession && scheduleStatus && scheduleStatus.state !== 'none' && Boolean(scheduleStatus.shortLabel);
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -110,15 +55,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const cardStyle = useMemo<CSSProperties>(() => {
         if (!palette) return {};
         return {
-            // System UI : une surface unique pour toutes les cartes. La palette
-            // de la classe ne peint plus le fond ; elle ne teinte que le filet.
-            ['--card-bg' as string]: 'hsl(var(--card))',
-            ['--card-bg2' as string]: 'hsl(var(--card))',
-            ['--card-border' as string]: palette.border,
-            ['--card-title' as string]: 'hsl(var(--foreground))',
-            ['--card-secondary' as string]: 'hsl(var(--muted-foreground))',
-            ['--class-accent' as string]: palette.secondary,
-            ['--class-vivid' as string]: palette.border,
+            ['--class-palette-bg' as string]: palette.bg,
+            ['--class-palette-bg2' as string]: palette.bg2 ?? palette.bg,
+            ['--class-palette-border' as string]: palette.border,
+            ['--class-palette-title' as string]: palette.title,
+            ['--class-palette-secondary' as string]: palette.secondary,
         } as CSSProperties;
     }, [palette]);
 
@@ -134,7 +75,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 data-session-hours={scheduleStatus?.sessionHours && scheduleStatus.sessionHours > 1 ? String(scheduleStatus.sessionHours) : undefined}
                 data-device-phone={isPhone ? 'true' : undefined}
                 data-platform-native={isNative ? 'true' : undefined}
-                style={cardStyle}
+                style={{ ...colorAttrs.style, ...cardStyle }}
                 className={cn('class-card group', isActiveSession && 'class-card--active')}
             >
                 {/* Zone cliquable sur toute la carte */}
@@ -172,18 +113,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         )}
                     </div>
 
-                    {/* Capsule horaire innovante : poussée à gauche en RTL (ms-auto), à droite en LTR */}
-                    {showScheduleLine && scheduleStatus && (
-                        <div
-                            className="class-card__schedule-capsule"
-                            title={scheduleStatus.label}
-                            aria-label={scheduleStatus.label}
-                        >
-                            <Clock className="class-card__schedule-icon" aria-hidden="true" />
-                            {renderScheduleContent(scheduleStatus, multiHourBadge)}
-                        </div>
-                    )}
-
                     <div className="class-card__actions-block">
                         <ClassActionsMenu
                             name={label.fullName}
@@ -192,7 +121,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             color={classInfo.color}
                             palette={palette}
                             onConfigure={onConfigure}
-                            onOpenSchedule={onOpenSchedule && (() => onOpenSchedule(classInfo.id))}
                             onDelete={onDelete}
                             onOpenEvaluations={onOpenEvaluations}
                             triggerClassName="class-card__menu"
@@ -208,11 +136,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             {scheduleStatus?.remainingMinutes && (
                                 <span className="class-card__live-remaining">
                                     {locale === 'ar' ? `${scheduleStatus.remainingMinutes} د` : `· ${scheduleStatus.remainingMinutes} min`}
-                                </span>
-                            )}
-                            {multiHourBadge && (
-                                <span className="class-card__live-remaining">
-                                    · {multiHourBadge}
                                 </span>
                             )}
                         </span>
@@ -232,8 +155,11 @@ const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     && Boolean(previous.onOpenEvaluations) === Boolean(next.onOpenEvaluations)
     && previous.isActiveSession === next.isActiveSession
     && previous.scheduleStatus === next.scheduleStatus
-    && previous.onOpenSchedule === next.onOpenSchedule
     && previous.palette?.bg === next.palette?.bg
+    && previous.palette?.bg2 === next.palette?.bg2
+    && previous.palette?.border === next.palette?.border
+    && previous.palette?.title === next.palette?.title
+    && previous.palette?.secondary === next.palette?.secondary
     && Boolean(previous.onDelete) === Boolean(next.onDelete);
 
 ClassCardComponent.displayName = 'ClassCard';

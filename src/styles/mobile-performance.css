@@ -74,9 +74,9 @@ html[data-platform="android"] {
   }
 
   html:root .mobile-tab-bar {
-    /* The 97% opaque surface stays readable without continuously blurring scrolling content. */
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    /* A restrained blur keeps the dock legible without a heavy scrolling effect. */
+    backdrop-filter: blur(8px) saturate(130%);
+    -webkit-backdrop-filter: blur(8px) saturate(130%);
     transition: transform 240ms cubic-bezier(0.2, 0, 0, 1), opacity 180ms ease, box-shadow 200ms ease;
   }
 

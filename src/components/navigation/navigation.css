@@ -1,5 +1,15 @@
 /* One navigation surface shared by the rail and the phone dock. */
 .workspace-shell { --workspace-rail-width: 76px; --workspace-expanded-width: 236px; }
+:root {
+  --mobile-tab-accent: #0071e3;
+  --mobile-tab-accent-wash: rgb(0 113 227 / .08);
+  --mobile-tab-surface: rgb(250 250 250 / .96);
+}
+.dark {
+  --mobile-tab-accent: #78adf2;
+  --mobile-tab-accent-wash: rgb(120 173 242 / .14);
+  --mobile-tab-surface: rgb(37 38 42 / .96);
+}
 .workspace-sidebar {
   width: var(--workspace-rail-width); display: none;
   padding-top: max(1.25rem, env(safe-area-inset-top, 0px));
@@ -15,28 +25,26 @@
 }
 .app-settings-parent[data-workspace-navigation='true'] {
   --workspace-sidebar-width: var(--workspace-rail-width);
-  padding-bottom: calc(5.25rem * max(1, var(--app-text-scale, 1)) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 .app-settings-parent[data-sidebar-expanded='true'] { --workspace-sidebar-width: var(--workspace-expanded-width); }
 .mobile-tab-bar {
-  position: fixed; display: block; left: 50%; transform: translateX(-50%);
-  /* Le dock suit la largeur réelle du téléphone : 336 px sur un Galaxy S25
-     (360 dp), 352 px sur un iPhone 16 — des cibles plus larges au pouce. */
-  width: min(22rem, calc(100vw - 24px)); max-width: calc(100vw - 24px);
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  background: var(--ui-glass-bg);
-  border: 1px solid var(--ui-glass-border);
-  border-radius: 30px; padding: 6px;
-  backdrop-filter: var(--ui-glass-filter);
-  -webkit-backdrop-filter: var(--ui-glass-filter);
-  box-shadow: 0 12px 24px -18px rgb(0 0 0 / .28), 0 1px 1px rgb(0 0 0 / .04);
+  position: fixed; display: block; left: 0; right: 0; bottom: 0;
+  width: 100%; max-width: none;
+  background: var(--mobile-tab-surface);
+  border: 0; border-top: 1px solid var(--ui-glass-border);
+  border-radius: 0;
+  padding: 5px 8px calc(5px + env(safe-area-inset-bottom, 0px));
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
   touch-action: pan-y pinch-zoom; z-index: 40; box-sizing: border-box;
 }
-.dark .mobile-tab-bar {
-  background: var(--ui-glass-bg);
-  box-shadow: 0 12px 28px -18px rgb(0 0 0 / .7);
+.modal-bottom-navigation { display: none; flex: 0 0 auto; }
+.mobile-tab-bar--modal {
+  position: relative; inset: auto; z-index: auto;
+  border-top: 1px solid var(--ui-glass-border);
 }
-.mobile-tab-bar__items { display: flex; align-items: center; gap: 4px; width: 100%; padding: 0; margin: 0; }
+.mobile-tab-bar__items { display: flex; flex-shrink: 0; align-items: center; gap: 4px; width: 100%; padding: 0; margin: 0; }
 .workspace-nav-button {
   position: relative; display: flex; width: 100%; min-height: 44px; align-items: center;
   gap: .75rem; border-radius: .75rem; padding: .625rem .875rem;
@@ -48,10 +56,11 @@
 .workspace-nav-button:focus-visible, .workspace-menu-toggle:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 .workspace-nav-button--compact { justify-content: center; padding-inline: .25rem; }
 .workspace-nav-button--mobile {
-  flex: 1 1 0; width: auto; min-width: 0; min-height: 50px; height: auto;
-  flex-direction: column; justify-content: center; gap: 3px; padding: 6px 4px; border-radius: 24px;
+  flex: 1 1 0; width: auto; min-width: 0; min-height: 60px; height: auto;
+  flex-direction: column; justify-content: center; gap: 2px; padding: 4px; border-radius: 16px;
   background: transparent;
 }
+.workspace-nav-button--mobile:hover { background: transparent; }
 .workspace-nav-button--mobile svg {
   transition: transform 350ms var(--spring, cubic-bezier(.34, 1.4, .5, 1));
 }
@@ -60,15 +69,18 @@
 }
 .workspace-nav-button--mobile:active { transform: scale(.92); }
 .workspace-nav-button--mobile:focus-visible { outline-offset: -2px; }
-.mobile-tab-label { max-width: 100%; text-align: center; overflow-wrap: anywhere; font-size: 11px; font-weight: 600; line-height: 1.2; }
+.mobile-tab-bar .mobile-tab-label { max-width: 100%; text-align: center; overflow-wrap: anywhere; font-size: 11px; font-weight: 500; line-height: 1.2; letter-spacing: .01em; }
 .workspace-nav-active { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
 .workspace-nav-button--mobile .workspace-nav-active {
-  background: hsl(var(--primary));
+  inset: 0 auto 0 50%;
+  width: min(72px, calc(100% - 8px));
+  translate: -50% 0;
+  background: var(--mobile-tab-accent-wash);
   box-shadow: none;
 }
 .workspace-nav-button--mobile[aria-current='page'],
 .workspace-nav-button--mobile[aria-current='page'] svg,
-.workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label { color: hsl(var(--primary-foreground)); }
+.workspace-nav-button--mobile[aria-current='page'] .mobile-tab-label { color: var(--mobile-tab-accent); }
 .workspace-nav-button--mobile:not([aria-current='page']) { background: transparent; }
 .workspace-nav-button--mobile:not([aria-current='page']) svg { fill: none; }
 .workspace-nav-button--desktop { border-radius: .875rem; }
@@ -90,11 +102,15 @@
   .mobile-tab-bar { display: none; }
   .app-settings-parent[data-workspace-navigation='true'] { padding-inline-start: var(--workspace-sidebar-width); padding-bottom: 2.5rem; }
 }
+@media (max-width: 1023px) {
+  .modal-bottom-navigation { display: block !important; }
+  .mobile-tab-bar--modal { display: block; }
+}
 .workspace-shell[data-phone-navigation='true'] .workspace-sidebar { display: none; }
 .workspace-shell[data-phone-navigation='true'] .mobile-tab-bar { display: block; }
 .workspace-shell[data-phone-navigation='true'] .app-settings-parent[data-workspace-navigation='true'] {
   padding-inline-start: 0;
-  padding-bottom: calc(5.25rem * max(1, var(--app-text-scale, 1)) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .workspace-shell[data-phone-navigation='true'] .workspace-nav-button--mobile { min-height: 44px; flex-direction: row; gap: .375rem; }

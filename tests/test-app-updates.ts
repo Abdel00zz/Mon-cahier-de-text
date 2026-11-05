@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createWebUpdateControl, readPublishedWebVersion } from '../src/platform/appUpdates';
+import { createWebUpdateControl, readPublishedWebVersion, startAppUpdateChecks } from '../src/platform/appUpdates';
 import { trustedApkUrl, validateNativeRelease } from '../src/platform/nativeRelease';
 
 const installed = { state: 'manual' as const, source: 'apk' as const, versionCode: 6, signatureSha256: 'a'.repeat(64) };
@@ -83,6 +83,26 @@ test('mise à jour web : un réveil réseau ne remplace pas un rechargement déj
   f.control.cancel();
   assert.equal(f.control.getSnapshot(), 'downloaded');
   f.activate(); assert.equal(f.reloads(), 0);
+});
+
+test('mise à jour web : une version détectée est appliquée au repos sans vérification permanente', async () => {
+  let state: 'idle' | 'downloaded' | 'pending' = 'idle';
+  let checks = 0;
+  let applies = 0;
+  const stop = startAppUpdateChecks({
+    active: () => true,
+    now: () => 0,
+    subscribe: () => () => {},
+  }, {
+    check: async () => { checks++; state = 'downloaded'; },
+    getSnapshot: () => state,
+    apply: () => { applies++; state = 'pending'; },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(checks, 1);
+  assert.equal(applies, 1);
+  stop();
 });
 
 test('mise à jour web : le délai couvre un corps de réponse bloqué après les headers', async () => {

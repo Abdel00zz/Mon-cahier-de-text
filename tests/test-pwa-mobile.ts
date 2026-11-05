@@ -3,7 +3,7 @@ import test from 'node:test';
 import { isForegroundOnline, millisecondsUntilNextMoroccoDay, startForegroundPolling } from '../src/platform/mobileScheduling';
 import { getBundledCalendar, todayInMorocco } from '../src/domain/calendar/calendar';
 import { detectSessionAlerts } from '../src/domain/notifications/sessionAlertEngine';
-import { startSafePwaAction } from '../src/platform/safeUpdate';
+import { scheduleSafePwaReload, startSafePwaAction } from '../src/platform/safeUpdate';
 import { openNotificationTarget, type NotificationWindow } from '../src/platform/notificationNavigation';
 import { readCachedLessons } from '../src/infrastructure/storage/notebookStorage';
 import type { AppConfig, ClassInfo } from '../src/types';
@@ -171,6 +171,53 @@ test('mise à jour : conserve une saisie bloquante, aucune boucle de vérificati
   fake.wake(); assert.equal(fake.timers.size, 0); stop();
 });
 
+test('PWA : les mises à jour du worker et de version fusionnent leur rechargement', () => {
+  const fake = fakeEnvironment();
+  let workerReloads = 0;
+  let versionReloads = 0;
+  const cancelWorker = scheduleSafePwaReload(() => workerReloads++, fake.environment);
+  const cancelVersion = scheduleSafePwaReload(() => versionReloads++, fake.environment);
+  assert.equal(fake.timers.size, 1, 'un seul délai de mise à jour est actif');
+  fake.fire();
+  assert.equal(workerReloads + versionReloads, 1, 'une seule source recharge la page');
+  assert.equal(fake.timers.size, 0);
+  cancelWorker();
+  cancelVersion();
+});
+
+test('PWA : un nouveau service worker recharge les onglets uniquement après leur premier contrôle', async () => {
+  const { watchPwaControllerChanges } = await import('../src/platform/pwaInstall');
+  const target = new EventTarget();
+  let controller: ServiceWorker | null = null;
+  const serviceWorker = {
+    get controller() { return controller; },
+    addEventListener: target.addEventListener.bind(target),
+    removeEventListener: target.removeEventListener.bind(target),
+  } as Pick<ServiceWorkerContainer, 'controller' | 'addEventListener' | 'removeEventListener'>;
+  const scheduled: Array<() => void> = [];
+  let reloads = 0;
+  const stop = watchPwaControllerChanges(serviceWorker, action => {
+    scheduled.push(action);
+    return () => {};
+  }, () => { reloads++; });
+
+  controller = {} as ServiceWorker;
+  target.dispatchEvent(new Event('controllerchange'));
+  assert.equal(scheduled.length, 0, 'la première prise de contrôle ne provoque pas de rechargement');
+
+  controller = {} as ServiceWorker;
+  target.dispatchEvent(new Event('controllerchange'));
+  target.dispatchEvent(new Event('controllerchange'));
+  assert.equal(scheduled.length, 1, 'un remplacement en attente ne programme qu’un rechargement');
+  scheduled[0]();
+  assert.equal(reloads, 1);
+
+  stop();
+  controller = {} as ServiceWorker;
+  target.dispatchEvent(new Event('controllerchange'));
+  assert.equal(scheduled.length, 1, 'le nettoyage retire l’écouteur');
+});
+
 const fixtureClass: ClassInfo = { id: 'c1', name: '1AC 1', subject: 'Mathématiques', teacherName: '', color: '', cycle: 'college', createdAt: '2026-09-01' };
 const fixtureConfig: Partial<AppConfig> = {
   schoolYearStart: '2026-09-01', timetable: [{ day: 1, slot: 0, classId: 'c1' }],
@@ -294,4 +341,3 @@ test('un nouveau signal d’installation efface le marqueur périmé après dés
   assert.equal(values.has('cdt_pwa_installed_v1'), false);
   dispose();
 });
-

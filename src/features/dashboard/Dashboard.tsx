@@ -554,7 +554,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                             <ClassCard
                                                                 classInfo={item.classInfo}
                                                                 onSelect={() => openNotebook(item.classInfo)}
-                                                                onOpenSchedule={onOpenSchedule}
                                                                 onConfigure={() => setEditingClass(item.classInfo)}
                                                                 onOpenEvaluations={entry => onOpenEvaluations(item.classInfo, entry)}
                                                                 onDelete={() => setClassPendingDelete(item.classInfo)}

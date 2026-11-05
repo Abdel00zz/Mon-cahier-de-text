@@ -1,6 +1,6 @@
 /* One quiet, bilingual accordion. Answers mount only when requested. */
 .learning-guide {
-  --guide-bg: var(--codex-stone);
+  --guide-bg: hsl(var(--card));
   --guide-surface: #fdfcf9;
   --guide-ink: #292e2a;
   --guide-mute: #606862;
@@ -38,11 +38,11 @@
   overflow: hidden;
   border: 1px solid var(--guide-line);
   border-radius: 28px;
-  /* Coque en verre : le guide se lit au-dessus de la page sans la masquer. */
-  background: color-mix(in srgb, var(--guide-bg) 84%, transparent) !important;
+  /* Coque neutre en verre : lisible, sans aplat coloré ni effet de texture. */
+  background: color-mix(in srgb, var(--guide-bg) 92%, transparent) !important;
   box-shadow: 0 24px 64px -28px rgb(20 16 35 / .35), inset 0 1px 0 color-mix(in srgb, var(--guide-surface) 75%, transparent);
-  -webkit-backdrop-filter: blur(30px) saturate(1.6);
-  backdrop-filter: blur(30px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
 }
 @media (prefers-reduced-transparency: reduce) {
   .learning-guide-modal.modal-motion-surface {
@@ -91,6 +91,7 @@
 .guide-search button { display: grid; place-items: center; width: 44px; min-height: 44px; flex-shrink: 0; cursor: pointer; }
 .guide-search:focus-within { border-color: var(--guide-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--guide-accent) 12%, transparent); }
 .guide-main { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 2px 2px 0; }
+.guide-result-count { margin: 0 2px 8px; padding-inline: 2px; color: var(--guide-mute); text-align: start; font-size: 12px; line-height: 1.5; }
 .guide-questions { overflow: hidden; border: 1px solid var(--guide-line); border-radius: 14px; background: var(--guide-surface); }
 .guide-questions details { position: relative; }
 .guide-questions details + details::before { content: ''; position: absolute; top: 0; inset-inline: 16px; height: 1px; background: linear-gradient(90deg, transparent, var(--guide-line) 8%, var(--guide-line) 92%, transparent); pointer-events: none; }

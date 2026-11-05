@@ -17,6 +17,7 @@ export interface ModalBottomSheetProps {
   description?: React.ReactNode;
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  bottomNavigation?: React.ReactNode;
   maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full' | string;
   className?: string;
   headerClassName?: string;
@@ -61,7 +62,7 @@ function useCompactPresentation(open: boolean) {
  * gestures, velocity, drag cancellation and transforms; our viewport service
  * supplies the visible area above the Android/iOS keyboard. */
 export function ModalBottomSheet({
-  isOpen, onDismissRequest, onClose, title, description, children, footer,
+  isOpen, onDismissRequest, onClose, title, description, children, footer, bottomNavigation,
   maxWidth = 'md', className, headerClassName, bodyClassName, footerClassName,
   dragHandle = true, hideClose = false, closeDisabled = false,
   swipeToDismiss = true, swipeFromBody = false, blockDismiss = false, dir,
@@ -75,16 +76,20 @@ export function ModalBottomSheet({
   const reducedMotion = useReducedMotion();
   const contentRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const dismissedForOpen = useRef(false);
   const [layer, setLayer] = useState(0);
   const direction = dir ?? (isRtl ? 'rtl' : 'ltr');
   const closeLabel = t('common.close');
   const dismiss = useCallback(() => {
+    if (!open || blockDismiss || dismissedForOpen.current) return;
+    dismissedForOpen.current = true;
     closeHaptic();
     (onDismissRequest ?? onClose)?.();
-  }, [closeHaptic, onDismissRequest, onClose]);
+  }, [blockDismiss, closeHaptic, onDismissRequest, onClose, open]);
   useEffect(() => { if (open) openHaptic(); }, [open, openHaptic]);
   useLayoutEffect(() => {
     if (!open) return;
+    dismissedForOpen.current = false;
     const lease = acquireModalLayer();
     setLayer(lease.layer);
     return lease.release;
@@ -130,7 +135,7 @@ export function ModalBottomSheet({
     </div>}
     {!title && !description && <Dialog.Title className="sr-only">{closeLabel}</Dialog.Title>}
   </>;
-  const close = !hideClose && <Dialog.Close aria-label={closeLabel} disabled={closeDisabled}
+  const close = !hideClose && <Dialog.Close aria-label={closeLabel} disabled={closeDisabled || blockDismiss}
     className="dialog-close absolute z-30 inline-flex items-center justify-center touch-manipulation">
     <X className="size-4" strokeWidth={1.5} aria-hidden="true" />
   </Dialog.Close>;
@@ -170,6 +175,7 @@ export function ModalBottomSheet({
       <Dialog.Overlay className="modal-motion-overlay fixed inset-0" style={{ zIndex: 100 + layer * 20 }} />
       <Dialog.Content {...dialogProps} {...surfaceProps} ref={contentRef} style={{ zIndex: 110 + layer * 20 }}>
         {heading}{close}<div className={bodyClass}>{children}</div>{actions}
+        {bottomNavigation && <div className="modal-bottom-navigation">{bottomNavigation}</div>}
       </Dialog.Content>
     </Dialog.Portal>}
   </Dialog.Root>;

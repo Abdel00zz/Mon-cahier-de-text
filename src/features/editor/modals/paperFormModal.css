@@ -37,9 +37,39 @@
 .paper-form-modal :is(.dialog-close, .btn-back, .remark-close-btn):hover { background: var(--control-wash); color: var(--control-ink-hover); }
 .paper-form-modal .insertion-point-box { padding: 12px 16px; border-radius: 12px; background: var(--form-well); border-color: var(--form-line); box-shadow: none; }
 .paper-form-modal .icon-pin-wrap { background: var(--form-surface); color: var(--control-ink); box-shadow: none; }
-.paper-form-modal .content-category { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: none; }
-.paper-form-modal .content-category:not(:disabled):hover { border-color: var(--control-ink); background: var(--form-well); }
-.paper-form-modal .content-category__icon { color: var(--control-ink); background: var(--form-well); box-shadow: none; border-radius: 10px; }
+.paper-form-modal .content-category {
+  min-height: 9.5rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.1rem 0.65rem;
+  border-radius: 20px;
+  border-color: var(--form-line);
+  background: var(--form-surface);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / .04);
+  text-align: center;
+}
+.paper-form-modal .content-category:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--control-ink) 35%, var(--form-line));
+  background: var(--form-well);
+}
+.paper-form-modal .content-category__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+  border-radius: 16px;
+  background: hsl(var(--muted));
+  box-shadow: none;
+}
+.paper-form-modal .content-category__icon svg { width: 2rem; height: 2rem; stroke-width: 1.8; }
+.paper-form-modal .content-category > div:not(.content-category__icon) { width: 100%; }
+.paper-form-modal .content-category > div:not(.content-category__icon) > div:first-child {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: center;
+}
+.paper-form-modal .content-category > div:not(.content-category__icon) > div:nth-child(2) { text-align: center; }
+.paper-form-modal .content-category:disabled .content-category__icon { color: hsl(var(--muted-foreground)); }
 .paper-form-modal .content-category:disabled .content-category__icon { color: hsl(var(--muted-foreground)); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]) { border-radius: 12px; border-color: var(--form-line); background: var(--form-surface); box-shadow: 0 1px 2px hsl(var(--foreground) / .025); }
 .paper-form-modal .content-fields :is(input, [role="combobox"]):focus-visible { border-color: hsl(var(--primary)); }

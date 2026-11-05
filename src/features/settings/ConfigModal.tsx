@@ -54,6 +54,7 @@ interface ConfigModalProps {
   scheduleClassId?: string;
   onClose: () => void;
   onOpenGuide: () => void;
+  mobileNavigation?: React.ReactNode;
   config: AppConfig;
   onConfigChange: (newConfig: Partial<AppConfig>) => void;
   onExportPlatform: () => void;
@@ -104,6 +105,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   isOpen = true,
   onClose,
   onOpenGuide,
+  mobileNavigation,
   config,
   onConfigChange,
   onExportPlatform,
@@ -426,10 +428,12 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       ) : <span className="hub-titlebar" data-codex-title>{t('settings.title')}</span>}
       maxWidth="lg"
       mobilePresentation="dialog"
+      hideClose
       className="hub-modal settings-modal-frame settings-modal-sheet liquid-modal overflow-hidden"
       headerClassName="hub-modal-header"
       bodyClassName="hub-modal-body settings-modal-body"
       footer={hasProfileChanges ? footer : undefined}
+      bottomNavigation={mobileNavigation}
     >
       {settingsShell}
     </Modal>

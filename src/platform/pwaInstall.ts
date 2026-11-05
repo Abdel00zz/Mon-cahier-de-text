@@ -1,6 +1,8 @@
 import { Capacitor } from '@capacitor/core';
 import { dequal } from 'dequal';
 import { createStore } from 'zustand/vanilla';
+import { logger } from '@/lib/logger';
+import { scheduleSafePwaReload } from './safeUpdate';
 
 export type PwaPlatform = 'ios' | 'android' | 'desktop';
 
@@ -202,9 +204,39 @@ async function registerPwaServiceWorker(): Promise<ServiceWorkerRegistration | n
       });
     });
     return registration;
-  } catch {
+  } catch (error) {
+    logger.warn('PWA service worker registration failed.', error);
     return null;
   }
+}
+
+/** Reloads existing clients only after a replacement worker takes control. */
+export function watchPwaControllerChanges(
+  serviceWorker: Pick<ServiceWorkerContainer, 'controller' | 'addEventListener' | 'removeEventListener'>,
+  schedule: (action: () => void) => () => void,
+  reload: () => void,
+): () => void {
+  let hasHadController = Boolean(serviceWorker.controller);
+  let cancelReload: (() => void) | undefined;
+  let stopped = false;
+  const onControllerChange = () => {
+    if (!hasHadController) {
+      hasHadController = Boolean(serviceWorker.controller);
+      return;
+    }
+    if (stopped || cancelReload) return;
+    cancelReload = schedule(() => {
+      cancelReload = undefined;
+      reload();
+    });
+  };
+  serviceWorker.addEventListener('controllerchange', onControllerChange);
+  return () => {
+    stopped = true;
+    serviceWorker.removeEventListener('controllerchange', onControllerChange);
+    cancelReload?.();
+    cancelReload = undefined;
+  };
 }
 
 export function initPwaInstall(): () => void {
@@ -249,11 +281,20 @@ export function initPwaInstall(): () => void {
   const mediaQuery = window.matchMedia?.('(display-mode: standalone)');
   mediaQuery?.addEventListener?.('change', onDisplayModeChange);
 
+  let stopControllerWatch = () => {};
+  if ('serviceWorker' in navigator) {
+    stopControllerWatch = watchPwaControllerChanges(
+      navigator.serviceWorker,
+      action => scheduleSafePwaReload(action),
+      () => window.location.reload(),
+    );
+  }
   void registerPwaServiceWorker();
 
   return () => {
     window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.removeEventListener('appinstalled', onAppInstalled);
     mediaQuery?.removeEventListener?.('change', onDisplayModeChange);
+    stopControllerWatch();
   };
 }

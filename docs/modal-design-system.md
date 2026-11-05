@@ -2,11 +2,11 @@
 
 ## 1. Philosophie & Principes Directeurs
 Le système de modales de l'application est conçu comme le **point d'interaction pivot** pour la saisie, l'édition, la configuration et la confirmation d'actions critiques. Il allie :
-- **Liquid Glass Architecture & Glassmorphism WCAG AA** : Transparence calibrée (88-92%), `backdrop-filter: blur(16-24px) saturate(150%)`, liseré spéculaire supérieur (`inset 0 1px 0.5px`) garantissant un détachement net sur fond clair comme sur fond sombre sans compromettre le ratio de contraste de 4.5:1.
-- **Accélération Matérielle GPU (60 FPS Constant)** : Seules les propriétés optimisées par le compositeur GPU (`transform`, `opacity`, `backdrop-filter`) sont animées avec `will-change: transform, opacity`.
-- **Chorégraphie Spring Physics** : Entrée orchestrée en 3 temps (Backdrop $T+0\text{ms}$ $\rightarrow$ Surface modale $T+40\text{ms}$ avec ressort amorti $\rightarrow$ Éléments internes $T+120\text{ms}$ en cascade cadencée).
-- **Morphing 3D Tactile au Glissement (Swipe-to-Dismiss)** : Suivi en temps réel de la progression (`--drag-progress`) avec micro-mise à l'échelle (`scale(calc(1 - var(--drag-progress) * 0.04))`) et perspective 3D douce (`rotateX(calc(var(--drag-progress) * 2.5deg))`).
-- **Retours Haptiques Systématiques (`useModalHaptics`)** : Retours sensoriels calibrés pour chaque geste (ouverture douce, confirmation de succès, suppression sécurisée, sélection de niveau, expansion/repli de palier).
+- **Verre discret et lisible** : Les fenêtres flottantes utilisent une surface presque opaque, un flou modéré et une bordure fine. Les textes restent portés par des surfaces opaques ; le verre est réservé aux barres collantes.
+- **Mouvement court et coordonné** : Le voile entre en 200 ms, la surface en 260 ms et la fermeture en 180 ms. Les transitions CSS n'animent que `opacity` et `transform`; la poignée reste pilotée par la bibliothèque de feuilles pour éviter les conflits de gestes.
+- **Gestes et viewport réels** : `react-modal-sheet` prend en charge le suivi du doigt, la vitesse et l'annulation du glissement. Le viewport visuel tient compte des barres système et du clavier.
+- **Accessibilité intégrée** : Radix gère le focus, le retour au déclencheur et l'échappement ; les fenêtres imbriquées reçoivent une couche distincte. `prefers-reduced-motion` et `prefers-reduced-transparency` sont respectés.
+- **Retours haptiques calibrés (`useModalHaptics`)** : Le socle commun confirme l'ouverture et la fermeture ; les actions de validation, d'erreur et de suppression restent déclenchées par leurs parcours métier.
 
 ---
 
@@ -15,23 +15,28 @@ Le système de modales de l'application est conçu comme le **point d'interactio
 ### 2.1. Courbes et Paramètres de Ressorts
 | Token | Valeur CSS / Type | Rôle |
 | :--- | :--- | :--- |
-| `--modal-spring-bounce` | `cubic-bezier(0.16, 1.12, 0.3, 1)` | Rebond dynamique subtil sur actions positives |
-| `--modal-spring-smooth` | `cubic-bezier(0.22, 1, 0.36, 1)` | Transition fluide et amortie pour la surface |
-| `--modal-spring-snappy` | `cubic-bezier(0.4, 0, 0.2, 1)` | Clôture vive et immédiate sans latence |
+| `--modal-spring-golden` | `cubic-bezier(0.19, 1, 0.22, 1)` | Retour souple sur les gestes |
+| `--modal-spring-bounce` | `cubic-bezier(0.16, 1.08, 0.28, 1)` | Rebond léger sur les actions positives |
+| `--modal-spring-smooth` | `cubic-bezier(0.18, 1.01, 0.24, 1)` | Transition amortie de la surface |
+| `--modal-spring-snappy` | `cubic-bezier(0.24, 1.02, 0.35, 1)` | Réponse vive sans rebond |
+
+Les durées effectivement utilisées par le socle sont centralisées dans
+`modal-premium-tokens.css` : `--modal-timing-backdrop` (200 ms),
+`--modal-timing-surface` (260 ms), `--modal-timing-content` (180 ms).
 
 ### 2.2. Niveaux de Flou et Glassmorphism
 | Token | Valeur | Usage |
 | :--- | :--- | :--- |
-| `--modal-blur-subtle` | `8px` | Voile de fond initial / appareils d'entrée de gamme |
-| `--modal-blur-medium` | `16px` | Élévation standard (modales courantes) |
-| `--modal-blur-intense` | `24px` | Élévation haute (actions critiques, création classe) |
+| `--modal-blur-subtle` | `10px` | Voile de fond |
+| `--modal-blur-medium` | `18px` | Verre standard des modales |
+| `--modal-blur-intense` | `26px` | Élévation haute (réservée aux cas spécifiques) |
 
 ### 2.3. Ombres d'Élévation Z
 | Token | Valeur | Élévation (`data-elevation`) |
 | :--- | :--- | :--- |
-| `--modal-shadow-low` | `0 4px 14px -4px rgb(0 0 0 / 0.08)` | `low` : alertes légères, menus courts |
-| `--modal-shadow-mid` | `0 12px 32px -12px rgb(0 0 0 / 0.18)` | `mid` (défaut) : modales standards |
-| `--modal-shadow-high` | `0 24px 56px -16px rgb(0 0 0 / 0.28)` | `high` : formulaires denses, wizards |
+| `--modal-shadow-low` | `0 6px 18px -4px rgb(28 26 22 / 0.08)` | `low` : alertes légères, menus courts |
+| `--modal-shadow-mid` | `0 16px 38px -12px rgb(28 26 22 / 0.16)` | `mid` (défaut) : modales standards |
+| `--modal-shadow-high` | `0 28px 64px -14px rgb(28 26 22 / 0.24)` | `high` : formulaires denses, wizards |
 
 ### 2.4. Halos Lumineux Contextuels (`data-glow`)
 | Variant | Token | Contexte d'application |
@@ -111,13 +116,42 @@ remplit l'écran, bords vifs, et se lit comme une application système native
 | Zone visible réelle | `--modal-visible-height` suit clavier et barres système |
 | En-tête et pied collants | `position: sticky` + verre `--ui-glass-bg` / `--ui-glass-filter` |
 | Poignée masquée | `.modal-handle-region { display: none }` : plus de glissement à fermer |
-| Entrée | `modal-fullscreen-in` — 280 ms, montée douce, `prefers-reduced-motion` respecté |
+| Entrée | `modal-fullscreen-in` — 260 ms, montée amortie, `prefers-reduced-motion` respecté |
 | Corps opaque | seule la coque est en verre ; le texte reste à 4.5:1 |
 
-Au-delà de 768 px, la fenêtre reste un dialogue flottant (28 px de rayon, verre
-teinté), centré dans la zone visible.
+Au-delà de 768 px, la fenêtre reste un dialogue flottant (rayon de 22 px, ou
+28 px pour les dialogues liquides), centré dans la zone visible.
 
-## 5. Une surface, un filet, un accent
+## 5. Branchement des fenêtres
+
+Les fenêtres de formulaire, de réglage, de guide, d'édition et de consultation
+passent par `Modal` (`modal.tsx`), qui délègue à `ModalBottomSheet`. Ce point
+unique fournit le viewport, la pile, le focus, les gestes, les retours haptiques
+et le cadre visuel.
+
+Deux exceptions gardent leur sémantique ou leur placement propres tout en
+partageant l'overlay et la pile de fenêtres :
+
+- `ConfirmDialog` reste un `AlertDialog` Radix pour conserver la sémantique
+  d'une décision critique ; son format compact est explicite.
+- `CommandPalette` reste un dialogue de recherche ancré en haut de l'écran ;
+  son voile, son animation et sa couche suivent les tokens communs.
+
+Le guide d'installation PWA utilise désormais `Modal` comme les autres
+parcours. Le bouton de fermeture standard et le bouton de pied de page
+déclenchent ainsi le même cycle de fermeture.
+
+Les fenêtres Aide et Paramètres gardent leur barre de titre (et le retour de
+rubrique dans les Paramètres), sans filet sous l'en-tête ni bouton X. Elles
+restent fermables par Échap ou en cliquant hors de la fenêtre.
+Sur téléphone et tablette compacte (jusqu'à 1023 px), la barre de navigation
+des trois sections est rendue dans la fenêtre elle-même : elle reste visible,
+accessible au clavier et utilisable sans passer sous le voile plein écran.
+Les fenêtres Aide et Paramètres occupent alors le viewport ; l'accueil des
+Paramètres conserve deux colonnes et la carte d'aide ferme la dernière ligne.
+La barre n'est pas ajoutée sur ordinateur.
+
+## 6. Une surface, un filet, un accent
 
 Les fenêtres ne portent plus de frise, de cannelure ni de dégradé coloré :
 
@@ -132,7 +166,7 @@ de lecture : plus de centrage systématique.
 
 ---
 
-## 6. Accessibilité & Dégradation Gracieuse
+## 7. Accessibilité & Dégradation Gracieuse
 
 1. **`prefers-reduced-motion`** :
    Toutes les animations de pulsations lumineuses (`.glow-pulse-*`), de ressorts et de transitions sont désactivées instantanément lorsque le système de l'enseignant le demande :

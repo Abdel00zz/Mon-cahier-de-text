@@ -17,7 +17,10 @@ function groups(time: string, timetable: TimetableEntry[]) {
 }
 test('a finished class moves from Today to Tomorrow exactly at teaching end, without disappearing', () => {
   const timetable = [{day: 1, slot: 0, classId: 'a'}, {day: 2, slot: 0, classId: 'a'}, {day: 1, slot: 2, classId: 'b'}];
-  assert.deepEqual(groups('08:54:59', timetable)[0].items.map(i => i.classInfo.id), ['a', 'b']);
+  assert.deepEqual(groups('08:54:59', timetable).map(g => [g.key, g.label, g.items.map(i => i.classInfo.id)]), [
+    ['now', 'En cours', ['a']], ['day-0', 'Aujourd’hui', ['b']],
+    ['other', 'Autres classes', ['c']],
+  ]);
   const after = groups('08:55:00', timetable);
   assert.deepEqual(after.map(g => [g.label, g.items.map(i => i.classInfo.id)]), [
     ['Aujourd’hui', ['b']], ['Demain', ['a']], ['Autres classes', ['c']],
@@ -27,9 +30,24 @@ test('a class with another lesson today remains today, including a teaching brea
   const timetable = [{day: 1, slot: 0, classId: 'a'}, {day: 1, slot: 1, classId: 'a'}, {day: 1, slot: 5, classId: 'a'}];
   for (const time of ['08:55:00', '10:00:00', '14:00:00']) {
     const result = groups(time, timetable);
-    assert.equal(result[0].key, 'day-0');
-    assert.equal(result[0].items[0].classInfo.id, 'a');
+    const classGroup = result.find(group => group.items.some(item => item.classInfo.id === 'a'));
+    assert.ok(classGroup);
+    assert.ok(['now', 'day-0'].includes(classGroup.key));
   }
+});
+
+test('a current session has its own localized Now group, ahead of other days', () => {
+  const current: SessionScheduleStatus = { state: 'in_progress', label: '', shortLabel: '', dayOffset: 0 };
+  const today: SessionScheduleStatus = { state: 'today_later', label: '', shortLabel: '', dayOffset: 0, startMin: 600 };
+  const tomorrow: SessionScheduleStatus = { state: 'upcoming', label: '', shortLabel: '', dayOffset: 1, startMin: 480 };
+  const result = groupDashboardClasses(classes, new Map([
+    ['a', tomorrow], ['b', current], ['c', today],
+  ]), 'ar');
+
+  assert.deepEqual(result.map(group => [group.key, group.label]), [
+    ['now', 'الآن'], ['day-0', 'اليوم'], ['day-1', 'غداً'],
+  ]);
+  assert.deepEqual(result.map(group => group.items.map(item => item.classInfo.id)), [['b'], ['c'], ['a']]);
 });
 test('weekdays from different weeks never merge; ties retain manual ordering', () => {
   const upcoming = (offset: number, date: string): SessionScheduleStatus => ({state: 'upcoming', label: '', shortLabel: '', dayOffset: offset, date, dayLabel: 'Lundi', startMin: 480});

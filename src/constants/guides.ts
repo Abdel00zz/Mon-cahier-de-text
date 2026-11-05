@@ -21,8 +21,9 @@ import { print } from './guide/print';
 import { devices } from './guide/devices';
 import { backup } from './guide/backup';
 import { troubleshooting } from './guide/troubleshooting';
+import { about } from './guide/about';
 
-const chapters = [start, profile, schedule, classes, students, content, editor, types, dates, math, curriculum, legal, assessments, notifications, appearance, print, devices, backup, troubleshooting];
+const chapters = [start, profile, schedule, classes, students, content, editor, types, dates, math, curriculum, legal, assessments, notifications, appearance, print, devices, backup, troubleshooting, about];
 
 export const GUIDE_FR: GuideChapter[] = chapters.map(entry => entry.fr);
 export const GUIDE_AR: GuideChapter[] = chapters.map(entry => entry.ar);

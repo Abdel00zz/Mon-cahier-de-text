@@ -99,6 +99,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
           : 'bg-background hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
       }`}
+      data-layout="tile"
       title={disabled ? tooltip : undefined}
     >
       <div className={`content-category__icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
@@ -372,7 +373,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupStructures')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               <CategoryCard
                 icon={Book}
                 label={tc('manageLessons.type.chapter')}
@@ -424,7 +425,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupFree')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               <CategoryCard icon={GripHorizontal} label={t('addContent.free')} description={t('addContent.freeHelp')}
                 colorClass="text-slate-600 dark:text-slate-400" onClick={() => handleSelectType('free')} />
             </div>
@@ -447,7 +448,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupAssessments')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               <CategoryCard
                 icon={ListChecks}
                 label={tc('manageLessons.type.evaluation_diagnostic')}
@@ -523,7 +524,7 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupCorrections')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               <CategoryCard
                 icon={CheckCheck}
                 label={tc('manageLessons.type.correction_devoir_maison')}

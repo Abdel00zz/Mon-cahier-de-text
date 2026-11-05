@@ -4,19 +4,6 @@
 .evaluation-modal .modal-header svg { stroke-width: 1.8; }
 .evaluation-modal .modal-body { scrollbar-gutter: stable; }
 .evaluation-modal.document-modal-frame.modal-motion-surface { border-radius: 16px; }
-.evaluation-modal .hub-card[data-layout='tile'] {
-  min-height: 112px;
-  padding: 12px 10px;
-  border-radius: 8px;
-  box-shadow: none;
-  background: hsl(var(--card));
-}
-.evaluation-modal .hub-card[data-layout='tile'] .hub-card__icon {
-  width: 36px; height: 36px; border-radius: 6px;
-  background: hsl(var(--muted)); color: hsl(var(--muted-foreground));
-}
-.evaluation-modal .hub-card__icon svg { width: 22px; height: 22px; stroke-width: 1.8; }
-.evaluation-modal .hub-card[data-layout='tile'] .hub-card__title { font-size: 13px; line-height: 1.65; }
 .evaluation-modal :is(input:not([type='checkbox']), textarea, [role='combobox']) { min-width: 0; min-height: 44px; }
 .evaluation-modal .modal-body button:not([role='tab']):not(.ev-action):not(.ev-icon-btn):not(.del-btn):not(.ev-date-trigger):not(.ev-accordion__toggle):not(.ev-row button) { min-height: 44px; }
 .evaluation-workspace .ev-row__id button { white-space: normal; overflow: visible; }

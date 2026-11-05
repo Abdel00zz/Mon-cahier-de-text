@@ -13,7 +13,7 @@
   }
 }
 .settings-modal-frame.modal-motion-surface .modal-pro-header {
-  border-bottom: 1px solid var(--settings-rule);
+  border-bottom: 0;
   padding-block: 8px;
 }
 .settings-modal-frame .modal-header .hub-titlebar {
@@ -236,4 +236,3 @@ html[lang='ar'] .settings-tab-navigation [role='tab'] {
   .settings-page-section { animation: none; }
   .settings-tab-navigation [role='tab'] { transition: none; }
 }
-

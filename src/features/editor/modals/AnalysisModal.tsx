@@ -10,7 +10,7 @@ import { schoolYearLabelFromDate } from '@/domain/calendar/calendar';
 import { formatDateDDMMYYYY } from '@/domain/notebook/dataUtils';
 import { Modal } from '@/components/ui/modal';
 import { MathText } from '@/components/ui/math-text';
-import { BookOpen, ChevronLeft, ChevronRight, Network, TriangleAlert } from '@/components/ui/icons';
+import { BookOpen, ChevronLeft, Network, TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { titleDirection } from '@/domain/notebook/contentDirection';
 
@@ -121,23 +121,21 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                   </span>
                 )}
               </div>
-              <ul className="hub-grid" data-rows aria-label={t('analysis.card.program')}>
+              <ul className="hub-grid" data-tiles aria-label={t('analysis.card.program')}>
                 <li className="contents">
-                  <button type="button" data-tone="blue" data-layout="row" className="hub-card" onClick={() => setView('program')}>
+                  <button type="button" data-tone="blue" data-layout="tile" className="hub-card" onClick={() => setView('program')}>
                     <span className="hub-card__icon" aria-hidden="true"><BookOpen /></span>
                     <span className="hub-card__body">
                       <span className="hub-card__title">{t('analysis.card.program')}</span>
                     </span>
-                    <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
                   </button>
                 </li>
                 <li className="contents">
-                  <button type="button" data-tone="violet" data-layout="row" className="hub-card" onClick={() => setView('link')}>
+                  <button type="button" data-tone="violet" data-layout="tile" className="hub-card" onClick={() => setView('link')}>
                     <span className="hub-card__icon" aria-hidden="true"><Network /></span>
                     <span className="hub-card__body">
                       <span className="hub-card__title">{t('analysis.card.link')}</span>
                     </span>
-                    <ChevronRight aria-hidden className="ms-auto h-4 w-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
                   </button>
                 </li>
               </ul>

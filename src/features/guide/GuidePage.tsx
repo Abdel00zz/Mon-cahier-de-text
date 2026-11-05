@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, FC } from 'react';
+import type { ReactNode } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { GuideModal } from './GuideModal';
 import type { GuideReference } from '@/constants/guide/model';
@@ -9,9 +10,10 @@ export interface GuidePageProps {
   onBack?: () => void;
   onClose?: () => void;
   initialReference?: GuideReference;
+  mobileNavigation?: ReactNode;
 }
 
-export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose, initialReference }) => {
+export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose, initialReference, mobileNavigation }) => {
   const reducedMotion = useReducedMotion();
   const [isSheetOpen, setIsSheetOpen] = useState(true);
   const closeTimerRef = useRef<number | null>(null);
@@ -53,6 +55,7 @@ export const GuidePage: FC<GuidePageProps> = ({ onBack, onClose, initialReferenc
     <GuideModal
       isOpen={isSheetOpen}
       onClose={requestClose}
+      mobileNavigation={mobileNavigation}
       initialReference={initialReference}
     />
   );

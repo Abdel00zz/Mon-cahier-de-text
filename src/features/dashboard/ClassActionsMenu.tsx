@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId } from 'react';
 import { create } from 'zustand';
-import { MoreVertical, Pencil, CalendarCheck, CalendarDays } from 'lucide-react';
+import { MoreVertical, Pencil, CalendarCheck } from 'lucide-react';
 import { Trash2 } from '@/components/ui/icons';
 import { Modal } from '@/components/ui/modal';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -22,14 +22,12 @@ export function ClassActionsMenu({
     name,
     triggerClassName,
     onConfigure,
-    onOpenSchedule,
     onDelete,
     onOpenEvaluations,
 }: {
     name: string;
     triggerClassName: string;
     onConfigure: () => void;
-    onOpenSchedule?: () => void;
     onDelete?: () => void;
     onOpenEvaluations?: (entry: ClassEvaluationEntry) => void;
     tier?: string | null;
@@ -103,58 +101,51 @@ export function ClassActionsMenu({
                     headerClassName="class-quick-sheet__header"
                     bodyClassName="class-quick-sheet__body"
                 >
-                    <div className="class-quick-sheet__actions">
-                            {onOpenSchedule && (
-                                <button type="button" className="class-quick-sheet__action"
-                                    onClick={() => { impact('light'); closeMenu(); onOpenSchedule(); }}>
-                                    <CalendarDays className="class-quick-sheet__icon" aria-hidden="true" />
-                                    <span className="flex-1 font-medium">{t('settings.item.schedule')}</span>
-                                </button>
-                            )}
-                            {onOpenEvaluations && (
-                                <button
-                                    type="button"
-                                    onClick={() => openEvaluations('all')}
-                                    className="class-quick-sheet__action"
-                                >
-                                    <CalendarCheck className="class-quick-sheet__icon" />
-                                    <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
-                                        {t('dashboard.openEvaluations')}
-                                    </span>
-                                </button>
-                            )}
+                    <div className="class-quick-sheet__actions hub-grid" data-tiles>
+                        {onOpenEvaluations && (
+                            <button
+                                type="button"
+                                onClick={() => openEvaluations('all')}
+                                data-tone="blue"
+                                data-layout="tile"
+                                className="class-quick-sheet__action hub-card"
+                            >
+                                <span className="hub-card__icon" aria-hidden="true"><CalendarCheck /></span>
+                                <span className="hub-card__title">{t('dashboard.openEvaluations')}</span>
+                            </button>
+                        )}
 
+                        <button
+                            type="button"
+                            onClick={() => {
+                                impact('light');
+                                setActiveMenu(null);
+                                onConfigure();
+                            }}
+                            data-tone="violet"
+                            data-layout="tile"
+                            className="class-quick-sheet__action hub-card"
+                        >
+                            <span className="hub-card__icon" aria-hidden="true"><Pencil /></span>
+                            <span className="hub-card__title">{editLabel}</span>
+                        </button>
+
+                        {onDelete && (
                             <button
                                 type="button"
                                 onClick={() => {
-                                    impact('light');
+                                    impact('medium');
                                     setActiveMenu(null);
-                                    onConfigure();
+                                    onDelete();
                                 }}
-                                className="class-quick-sheet__action"
+                                data-tone="rose"
+                                data-layout="tile"
+                                className="class-quick-sheet__action class-quick-sheet__action--danger hub-card"
                             >
-                                <Pencil className="class-quick-sheet__icon" />
-                                <span className="flex-1 font-medium text-[15px] sm:text-[16px]">
-                                    {editLabel}
-                                </span>
+                                <span className="hub-card__icon" aria-hidden="true"><Trash2 /></span>
+                                <span className="hub-card__title">{deleteLabel}</span>
                             </button>
-
-                            {onDelete && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        impact('medium');
-                                        setActiveMenu(null);
-                                        onDelete();
-                                    }}
-                                    className="class-quick-sheet__action class-quick-sheet__action--danger"
-                                >
-                                    <Trash2 className="class-quick-sheet__icon" />
-                                    <span className="flex-1 font-semibold text-[15px] sm:text-[16px]">
-                                        {deleteLabel}
-                                    </span>
-                                </button>
-                            )}
+                        )}
                     </div>
                 </Modal>
             )}

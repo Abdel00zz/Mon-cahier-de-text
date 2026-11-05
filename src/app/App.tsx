@@ -27,6 +27,8 @@ import { useClassManager } from '../hooks/useClassManager';
 import { useTheme } from '../hooks/useTheme';
 import { useDevice } from '../hooks/useDevice';
 import { TabBar, TabType } from '../components/navigation/TabBar';
+import { MobileTabBar } from '../components/navigation/MobileTabBar';
+import { NAV_COPY } from '../components/navigation/navigationConfig';
 import { DeferredMount } from '../components/ui/DeferredMount';
 import { markCurrentSessionHandled, sessionClaimedByClass } from '../infrastructure/notifications/currentSessionNavigation';
 import { teachesSeveralSubjects } from '../domain/classes/subjectScope';
@@ -243,6 +245,7 @@ const App: React.FC = () => {
   const routeFallback = <PageTransitionLoader />;
 
   const activeTab: TabType = view === 'settings' ? 'settings' : view === 'help' ? 'help' : 'dashboard';
+  const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (tab === 'dashboard') {
@@ -259,6 +262,15 @@ const App: React.FC = () => {
       handleOpenHelp();
     }
   }, [view, handleBackToDashboard, handleBackFromSettings, handleBackFromHelp, handleOpenSettings, handleOpenHelp]);
+  const modalNavigation = (
+    <MobileTabBar
+      activeTab={activeTab}
+      goTo={handleTabChange}
+      copy={NAV_COPY[config.applicationLocale ?? 'ar']}
+      isRtl={isRtl}
+      presentation="modal"
+    />
+  );
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
 
@@ -271,7 +283,6 @@ const App: React.FC = () => {
 
   const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
   const isOverlayOpen = !isAuthView && !isBooting && (view === 'settings' || view === 'help');
-  const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const dynamicCanvasStyle = useMemo(() => {
     return computeDynamicCanvasStyle(classes, currentSession.classIds);
@@ -318,6 +329,7 @@ const App: React.FC = () => {
           <Suspense fallback={null}>
             <SettingsPage
               asPage={false}
+              mobileNavigation={modalNavigation}
               initialSection={assistantSettingsSection?.section}
               scheduleClassId={assistantSettingsSection?.section === 'emploi' ? assistantSettingsSection.classId : undefined}
               onBack={handleBackFromSettings}
@@ -334,6 +346,7 @@ const App: React.FC = () => {
             <GuidePage
               onBack={handleBackFromHelp}
               onClose={handleBackFromHelp}
+              mobileNavigation={modalNavigation}
             />
           </Suspense>
         )}
