@@ -36,10 +36,10 @@ La police Readex Pro est chargée depuis Google Fonts ; hors ligne, la pile
   centrés, sections et items au bord de lecture, puces `Cours 1`.
 - **Édition de classe** : modale plein écran (onglets `المعلومات` / `تلاميذ القسم`,
   pastilles de couleur, sélecteurs, numéro de groupe, pied `حفظ` + `حذف القسم`).
-- **Paramètres** : grille de sept cartes sur téléphone, rail de navigation sur
+- **Paramètres** : panneaux en listes groupées (libellé de groupe, une seule carte, filets fins) avec contrôles segmentés pour le thème, la taille du texte et la langue ; grille de sept cartes sur téléphone, rail de navigation sur
   bureau ; panneaux Emploi du temps, Absences, Profil, Apparence, Notifications,
   Compte et données.
-- **Aide** : recherche, accordéons, rubrique « À propos / من نحن », crédit.
+- **Aide** : recherche en pastille, accordéons à icône teintée et chevron qui pivote, réponses indentées avec étapes et astuce, rubrique « À propos / من نحن », crédit.
 - **Créer une classe** : assistant en trois étapes (niveau, filière, détails).
 - **Évaluations** : contexte de classe, groupes accordéon, lignes datées.
 - **Messages** : boîte de réception, compteur de non-lus, items horodatés.
@@ -74,7 +74,7 @@ Valeurs relevées dans les feuilles du dépôt (`src/styles`, `features/**/*.css
 - en-tête et pied collants en verre dépoli sur téléphone ;
 - accent de navigation `#0a5bbd` (6,2:1 sur `#fafafa`), lavis `rgb(10 91 189 / .08)` ;
 - paramètres : cartes de 136 px minimum, icône 44 px, rayon 16 px ;
-- transitions de 150 à 320 ms, supprimées avec `prefers-reduced-motion` ;
+- transitions de 150 à 320 ms ; deux courbes : `--spring-bounce cubic-bezier(.34,1.56,.64,1)` pour les gestes (pastilles, chevrons, onglets) et `--ease-ios cubic-bezier(.32,.72,0,1)` pour les panneaux ; tout est supprimé avec `prefers-reduced-motion` ;
 - cahier sur téléphone : échelle propre (base 12,1 px), écarts d’au moins 0,7 px
   entre niveaux de lecture.
 

@@ -1429,3 +1429,136 @@ textarea.field { resize: vertical; min-height: 7rem; }
 .modal__footer--class { justify-content: space-between; }
 .modal__footer--class .btn--gradient { flex: 1 1 auto; }
 .modal__footer--class .btn--danger-ghost { flex: 0 0 auto; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Réglages groupés, pastilles segmentées et accordéons — d’après la maquette
+   de référence (Notion/iOS) : ressort distinct pour les gestes, iOS pour les
+   transitions de panneau.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --spring-bounce: cubic-bezier(.34, 1.56, .64, 1);
+  --ease-ios: cubic-bezier(.32, .72, 0, 1);
+}
+
+/* Libellé de groupe */
+.gl {
+  margin: 1.1rem .25rem .4rem;
+  font-size: .74rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: .01em;
+}
+.gl:first-child { margin-top: .2rem; }
+
+/* Liste groupée : un seul contenant, des filets fins entre les lignes */
+.grp {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  overflow: hidden;
+}
+.grp .row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 48px;
+  padding: .55rem .8rem;
+  width: 100%;
+}
+.grp .row + .row::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: .8rem 0;
+  height: 1px;
+  background: hsl(var(--border) / .7);
+}
+.grp .row > span:not(.ri) { flex: 1; min-width: 0; }
+.grp .row small { display: block; font-size: .72rem; color: hsl(var(--muted-foreground)); }
+.row__state { font-style: normal; font-size: .74rem; color: hsl(var(--muted-foreground)); }
+.ri {
+  display: grid; place-items: center;
+  width: 1.9rem; height: 1.9rem; flex: none;
+  border-radius: .5rem;
+  background: color-mix(in srgb, var(--c, hsl(var(--primary))) 15%, hsl(var(--background)));
+  color: color-mix(in srgb, var(--c, hsl(var(--primary))) 78%, hsl(var(--foreground)));
+}
+.ri .icon { width: 1.05rem; height: 1.05rem; }
+
+/* Contrôle segmenté : pastille qui glisse, ombre douce au repos */
+.seg {
+  display: flex;
+  gap: .15rem;
+  width: 100%;
+  padding: .2rem;
+  border-radius: .65rem;
+  background: hsl(var(--muted) / .7);
+}
+.seg button {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding-inline: .35rem;
+  border-radius: .5rem;
+  font-size: .8rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: background-color .25s ease, color .25s ease, box-shadow .25s ease, transform .3s var(--spring-bounce);
+}
+.seg button:active { transform: scale(.96); }
+.seg button[aria-pressed='true'] {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-weight: 650;
+  box-shadow: 0 0 0 1px hsl(var(--border)), 0 1px 2px hsl(var(--foreground) / .08);
+}
+
+/* Accordéons de l’aide : icône teintée, chevron qui pivote */
+.guide-list { gap: .5rem; }
+.hq-ic {
+  display: grid; place-items: center;
+  width: 2rem; height: 2rem; flex: none;
+  border-radius: .55rem;
+  background: color-mix(in srgb, var(--c, #337ea9) 15%, hsl(var(--background)));
+  color: color-mix(in srgb, var(--c, #337ea9) 78%, hsl(var(--foreground)));
+  transition: transform .35s var(--spring-bounce);
+}
+.hq-ic .icon { width: 1.05rem; height: 1.05rem; }
+.guide-item:nth-of-type(1) .hq-ic { --c: #d9730d; }
+.guide-item:nth-of-type(2) .hq-ic { --c: #337ea9; }
+.guide-item:nth-of-type(3) .hq-ic { --c: #448361; }
+.guide-item:nth-of-type(4) .hq-ic { --c: #cb912f; }
+.guide-item:hover .hq-ic { transform: translateY(-1px); }
+.hq-chev {
+  width: 1.1rem; height: 1.1rem; flex: none;
+  color: hsl(var(--muted-foreground));
+  transform: rotate(-90deg);
+  transition: transform .35s var(--ease-ios);
+}
+html[dir='ltr'] .hq-chev { transform: rotate(90deg); }
+.guide-item[open] .hq-chev,
+html[dir='ltr'] .guide-item[open] .hq-chev { transform: rotate(-270deg); }
+.guide-item > summary { gap: .65rem; min-height: 52px; }
+.guide-item > summary > span:not(.hq-ic):not(.eval-group__name) { flex: 1; min-width: 0; }
+.guide-answer { animation: answer-in .35s var(--ease-ios) both; }
+@keyframes answer-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (min-width: 480px) {
+  .guide-answer { padding-inline-start: 3.55rem; }
+}
+
+/* Fluidité : panneaux et pastilles d’onglet */
+.screen.is-active { animation: screen-in 300ms var(--ease-ios) both; }
+html[dir='rtl'] .screen.is-active { animation-name: screen-in-rtl; }
+@keyframes screen-in { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
+@keyframes screen-in-rtl { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
+.tab-btn .icon { transition: transform .4s var(--spring-bounce); }
+.tab-btn[aria-current='page'] .icon { transform: scale(1.12); }
+.switch::after { transition: transform .4s var(--spring-bounce); }
+.modal { animation-timing-function: var(--ease-ios); }
+@media (prefers-reduced-motion: reduce) {
+  .screen.is-active, .guide-answer { animation: none; }
+  .hq-chev, .hq-ic, .seg button, .tab-btn .icon, .switch::after { transition: none; }
+}

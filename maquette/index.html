@@ -393,51 +393,45 @@
 
           <!-- Apparence -->
           <section class="panel is-active" data-panel="apparence">
-            <div class="section">
-              <div class="section__head">
-                <div>
-                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span data-ar="الوضع" data-fr="Thème">الوضع</span></h3>
-                </div>
-                <button class="btn btn--ghost" type="button" style="min-height:36px;padding:.25rem .6rem;font-size:.75rem" data-ar="إعادة التعيين" data-fr="Réinitialiser">إعادة التعيين</button>
-              </div>
-              <div class="section__body">
-                <div class="choice-grid" data-pressed-group role="group" aria-label="الوضع" data-label-ar="الوضع" data-label-fr="Thème">
-                  <button class="choice" type="button" data-theme-choice="light" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span data-ar="نهاري" data-fr="Clair">نهاري</span></button>
-                  <button class="choice" type="button" data-theme-choice="dark" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span data-ar="ليلي" data-fr="Sombre">ليلي</span></button>
-                  <button class="choice" type="button" data-theme-choice="system" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-laptop"/></svg><span data-ar="تلقائي" data-fr="Système">تلقائي</span></button>
+            <p class="gl" data-ar="المظهر" data-fr="Thème">المظهر</p>
+            <div class="grp">
+              <div class="row">
+                <div class="seg" data-pressed-group role="group" aria-label="الوضع" data-label-ar="الوضع" data-label-fr="Thème">
+                  <button type="button" data-theme-choice="light" aria-pressed="true"><span data-ar="نهاري" data-fr="Clair">نهاري</span></button>
+                  <button type="button" data-theme-choice="dark" aria-pressed="false"><span data-ar="ليلي" data-fr="Sombre">ليلي</span></button>
+                  <button type="button" data-theme-choice="system" aria-pressed="false"><span data-ar="تلقائي" data-fr="Auto">تلقائي</span></button>
                 </div>
               </div>
             </div>
 
-            <div class="section">
-              <div class="section__head">
-                <div>
-                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-type"/></svg><span data-ar="حجم النص" data-fr="Taille du texte">حجم النص</span></h3>
-                  <p class="section__hint" data-ar="اللوحة والدفتر" data-fr="Tableau de bord et cahier">اللوحة والدفتر</p>
-                </div>
-              </div>
-              <div class="section__body">
-                <div class="choice-grid" data-pressed-group role="group" aria-label="حجم النص" data-label-ar="حجم النص" data-label-fr="Taille du texte">
-                  <button class="choice choice--stack" type="button" data-text-size="sm" aria-pressed="false"><span class="choice__sample" style="font-size:.94rem">Aa</span><span class="choice__size" data-ar="صغير" data-fr="Petit">صغير</span></button>
-                  <button class="choice choice--stack" type="button" data-text-size="md" aria-pressed="true"><span class="choice__sample" style="font-size:1.05rem">Aa</span><span class="choice__size" data-ar="عادي" data-fr="Normal">عادي</span></button>
-                  <button class="choice choice--stack" type="button" data-text-size="lg" aria-pressed="false"><span class="choice__sample" style="font-size:1.18rem">Aa</span><span class="choice__size" data-ar="كبير" data-fr="Grand">كبير</span></button>
-                  <button class="choice choice--stack" type="button" data-text-size="xl" aria-pressed="false"><span class="choice__sample" style="font-size:1.3rem">Aa</span><span class="choice__size" data-ar="كبير جدا" data-fr="Très grand">كبير جدا</span></button>
+            <p class="gl" data-ar="حجم النص" data-fr="Taille du texte">حجم النص</p>
+            <div class="grp">
+              <div class="row">
+                <div class="seg" data-pressed-group role="group" aria-label="حجم النص" data-label-ar="حجم النص" data-label-fr="Taille du texte">
+                  <button type="button" data-text-size="sm" aria-pressed="false"><span style="font-size:.82rem">Aa</span></button>
+                  <button type="button" data-text-size="md" aria-pressed="true"><span style="font-size:.95rem">Aa</span></button>
+                  <button type="button" data-text-size="lg" aria-pressed="false"><span style="font-size:1.08rem">Aa</span></button>
+                  <button type="button" data-text-size="xl" aria-pressed="false"><span style="font-size:1.2rem">Aa</span></button>
                 </div>
               </div>
             </div>
 
-            <div class="section">
-              <div class="section__head">
-                <div>
-                  <h3 class="section__title"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span data-ar="اللغة" data-fr="Langue">اللغة</span></h3>
-                  <p class="section__hint" data-ar="لغة الواجهة" data-fr="Langue de l’interface">لغة الواجهة</p>
+            <p class="gl" data-ar="اللغة" data-fr="Langue">اللغة</p>
+            <div class="grp">
+              <div class="row">
+                <div class="seg" data-pressed-group role="group" aria-label="اللغة" data-label-ar="اللغة" data-label-fr="Langue">
+                  <button type="button" data-lang-choice="ar" aria-pressed="true"><span lang="ar">العربية</span></button>
+                  <button type="button" data-lang-choice="fr" aria-pressed="false"><span lang="fr">Français</span></button>
                 </div>
               </div>
-              <div class="section__body">
-                <div class="choice-grid" data-pressed-group role="group" aria-label="اللغة" data-label-ar="اللغة" data-label-fr="Langue">
-                  <button class="choice" type="button" data-lang-choice="ar" aria-pressed="true"><span lang="ar">العربية</span></button>
-                  <button class="choice" type="button" data-lang-choice="fr" aria-pressed="false"><span lang="fr">Français</span></button>
-                </div>
+            </div>
+
+            <p class="gl" data-ar="الحركة" data-fr="Mouvement">الحركة</p>
+            <div class="grp">
+              <div class="row">
+                <span class="ri" aria-hidden="true" style="--c:#337ea9"><svg class="icon"><use href="#i-sparkles"/></svg></span>
+                <span><span data-ar="مؤثرات ناعمة" data-fr="Effets adoucis">مؤثرات ناعمة</span><small data-ar="تُلغى تلقائياً عند تقليل الحركة في النظام" data-fr="Désactivés automatiquement si le système réduit les animations">تُلغى تلقائياً عند تقليل الحركة في النظام</small></span>
+                <em class="row__state" data-ar="تلقائي" data-fr="Auto">تلقائي</em>
               </div>
             </div>
           </section>
@@ -672,7 +666,7 @@
 
       <div class="guide-list">
         <details class="guide-item" open>
-          <summary><span data-ar="كيف أنشئ قسماً جديداً؟" data-fr="Comment créer une nouvelle classe ?">كيف أنشئ قسماً جديداً؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <summary><span class="hq-ic" aria-hidden="true"><svg class="icon"><use href="#i-quote"/></svg></span><span data-ar="كيف أنشئ قسماً جديداً؟" data-fr="Comment créer une nouvelle classe ?">كيف أنشئ قسماً جديداً؟</span><svg class="icon hq-chev" aria-hidden="true"><use href="#i-chevron-left"/></svg></summary>
           <div class="guide-answer">
             <p class="guide-summary" data-ar="من شاشة الأقسام، اضغط زر + ثم اختر المستوى والشعبة وأدخل رقم القسم. يمكنك اختيار لون القسم للتمييز البصري." data-fr="Depuis l’écran Classes, appuyez sur + puis choisissez le niveau, la filière et le numéro de groupe. Une couleur permet de distinguer la classe.">من شاشة الأقسام، اضغط زر + ثم اختر المستوى والشعبة وأدخل رقم القسم. يمكنك اختيار لون القسم للتمييز البصري.</p>
             <section><h3 data-ar="الخطوات" data-fr="Étapes">الخطوات</h3>
@@ -687,7 +681,7 @@
         </details>
 
         <details class="guide-item">
-          <summary><span data-ar="كيف أُعيّن تاريخاً لحصة؟" data-fr="Comment attribuer une date à une séance ?">كيف أُعيّن تاريخاً لحصة؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <summary><span class="hq-ic" aria-hidden="true"><svg class="icon"><use href="#i-quote"/></svg></span><span data-ar="كيف أُعيّن تاريخاً لحصة؟" data-fr="Comment attribuer une date à une séance ?">كيف أُعيّن تاريخاً لحصة؟</span><svg class="icon hq-chev" aria-hidden="true"><use href="#i-chevron-left"/></svg></summary>
           <div class="guide-answer">
             <p class="guide-summary" data-ar="افتح القسم، ثم اختر «تعيين تاريخ». يتحقق التطبيق من استعمال الزمن والعطل والغيابات قبل التسجيل." data-fr="Ouvrez la classe puis « Attribuer une date ». L’application vérifie l’emploi du temps, les congés et les absences avant l’enregistrement.">افتح القسم، ثم اختر «تعيين تاريخ». يتحقق التطبيق من استعمال الزمن والعطل والغيابات قبل التسجيل.</p>
             <div class="guide-related"><span data-ar="انظر أيضاً" data-fr="Voir aussi">انظر أيضاً</span><button type="button" data-ar="إدارة الدروس" data-fr="Gérer les leçons">إدارة الدروس</button><button type="button" data-ar="الطباعة" data-fr="Impression">الطباعة</button></div>
@@ -695,14 +689,14 @@
         </details>
 
         <details class="guide-item">
-          <summary><span data-ar="كيف أنقل بياناتي إلى هاتف آخر؟" data-fr="Comment transférer mes données sur un autre appareil ?">كيف أنقل بياناتي إلى هاتف آخر؟</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <summary><span class="hq-ic" aria-hidden="true"><svg class="icon"><use href="#i-quote"/></svg></span><span data-ar="كيف أنقل بياناتي إلى هاتف آخر؟" data-fr="Comment transférer mes données sur un autre appareil ?">كيف أنقل بياناتي إلى هاتف آخر؟</span><svg class="icon hq-chev" aria-hidden="true"><use href="#i-chevron-left"/></svg></summary>
           <div class="guide-answer">
             <p class="guide-summary" data-ar="من الإعدادات ▸ الحساب والبيانات، صدّر ملف JSON ثم استورده في الجهاز الجديد. المزامنة السحابية تحفظ نسخة تلقائية كل ثلاث دقائق." data-fr="Dans Paramètres ▸ Compte et données, exportez un fichier JSON puis importez-le sur le nouvel appareil. La synchronisation cloud conserve une copie automatique toutes les trois minutes.">من الإعدادات ▸ الحساب والبيانات، صدّر ملف JSON ثم استورده في الجهاز الجديد. المزامنة السحابية تحفظ نسخة تلقائية كل ثلاث دقائق.</p>
           </div>
         </details>
 
         <details class="guide-item" id="about">
-          <summary><span data-ar="من نحن" data-fr="À propos">من نحن</span><span class="guide-plus" aria-hidden="true">+</span></summary>
+          <summary><span class="hq-ic" aria-hidden="true"><svg class="icon"><use href="#i-quote"/></svg></span><span data-ar="من نحن" data-fr="À propos">من نحن</span><svg class="icon hq-chev" aria-hidden="true"><use href="#i-chevron-left"/></svg></summary>
           <div class="guide-answer">
             <p class="guide-summary" data-ar="دفتر نصوصي أداة مغربية لتنظيم العمل اليومي للأستاذ: الأقسام، الحصص، التواريخ، التقويم والتقييم — بواجهة هادئة تعمل دون اتصال." data-fr="Mon cahier de textes est un outil marocain pensé pour le quotidien de l’enseignant : classes, séances, dates, évaluations — dans une interface calme, utilisable hors ligne.">دفتر نصوصي أداة مغربية لتنظيم العمل اليومي للأستاذ: الأقسام، الحصص، التواريخ، التقويم والتقييم — بواجهة هادئة تعمل دون اتصال.</p>
             <section>
@@ -845,8 +839,7 @@
     </header>
     <div class="modal__body">
       <details class="eval-group" open>
-        <summary>
-          <span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-ar="فروض وامتحانات" data-fr="Devoirs et évaluations">فروض وامتحانات</span><span class="eval-group__count">4</span></span>
+        <summary><span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-ar="فروض وامتحانات" data-fr="Devoirs et évaluations">فروض وامتحانات</span><span class="eval-group__count">4</span></span>
           <svg class="icon icon--sm muted" aria-hidden="true"><use href="#i-chevron-left"/></svg>
         </summary>
         <div class="eval-rows">
@@ -878,8 +871,7 @@
       </details>
 
       <details class="eval-group">
-        <summary>
-          <span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-ar="أنشطة تربوية" data-fr="Activités pédagogiques">أنشطة تربوية</span><span class="eval-group__count">2</span></span>
+        <summary><span class="eval-group__name"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-ar="أنشطة تربوية" data-fr="Activités pédagogiques">أنشطة تربوية</span><span class="eval-group__count">2</span></span>
           <svg class="icon icon--sm muted" aria-hidden="true"><use href="#i-chevron-left"/></svg>
         </summary>
         <div class="eval-rows">
