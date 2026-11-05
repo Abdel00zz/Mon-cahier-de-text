@@ -337,28 +337,25 @@ html[lang="ar"] .keep-class-title {
 
   .dark {
     color-scheme: only dark;
-    /* Nuit « argile brûlée » : le fond descend à 12 % — la profondeur de
-       Material (#121212) en gardant la chaleur du sable — et chaque niveau
-       au-dessus remonte d’un cran (carte 17 %, menu 19 %, muet 20 %), comme
-       un empilement de surfaces éclairées. Les accents s’éclaircissent et se
-       désaturent pour ne plus vibrer sur le sombre, et l’encre ivoire reste
-       au-dessus de 11:1 sur la carte la plus claire. Jamais une inversion. */
-    --background: 40 6% 12%;       /* #1F1D1A nuit d’argile */
+    /* Nuit carbone (charte §2.1) : fond #191919, carte #202020, surface
+       surélevée #252525 — un empilement de surfaces éclairées, jamais une
+       inversion. Les accents restent légèrement désaturés pour ne pas vibrer. */
+    --background: 0 0% 10%;        /* #191919 carbone */
     --foreground: 42 18% 92%;
-    --card: 38 6% 17%;             /* surface élevée : plus claire que le fond */
+    --card: 0 0% 13%;              /* #212121 : surface élevée, plus claire que le fond */
     --card-foreground: 42 18% 92%;
-    --popover: 38 6% 19%;
+    --popover: 0 0% 15%;           /* #252525 surface surélevée */
     --popover-foreground: 42 18% 92%;
     --primary: 15 58% 62%;         /* terre cuite éclaircie, légèrement désaturée */
     --primary-foreground: 30 12% 10%;
-    --secondary: 38 6% 21%;
+    --secondary: 0 0% 17%;
     --secondary-foreground: 42 18% 92%;
-    --muted: 38 5% 20%;
+    --muted: 0 0% 16%;
     --muted-foreground: 42 8% 67%;
     --accent: 18 20% 22%;
     --accent-foreground: 18 58% 84%;
-    --border: 38 7% 26%;
-    --input: 38 8% 40%;
+    --border: 0 0% 16%;
+    --input: 0 0% 30%;
     --ring: 15 58% 62%;
     --destructive: 352 55% 70%; /* Rouge doux, encre sombre sur les actions. */
     --destructive-foreground: 352 45% 12%;
