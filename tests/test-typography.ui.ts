@@ -69,6 +69,19 @@ test('le tableau de contenu compose en Computer Modern Sans Serif (Medium, Demi 
   }
 });
 
+test('les cellules de date restent centrées et la typographie du cahier s’adapte au téléphone', () => {
+  const surface = readFileSync('src/styles/editor-surface.css', 'utf8');
+  const row = readFileSync('src/features/editor/TableRow.tsx', 'utf8');
+  const session = readFileSync('src/features/editor/SessionGroupRow.tsx', 'utf8');
+  const table = readFileSync('src/features/editor/MainTable.tsx', 'utf8');
+
+  assert.match(surface, /--editor-fs-date:\s*calc\(var\(--editor-scale\)\s*\*\s*0\.88\)/, 'les dates suivent la même échelle typographique');
+  assert.match(surface, /@media \(max-width: 639px\) and \(pointer: coarse\)[\s\S]*?--editor-scale:\s*max\(0\.875rem,[\s\S]*?var\(--app-text-scale, 1\)/, 'le texte du téléphone est réduit sans ignorer le réglage de taille');
+  assert.match(row, /flex h-full min-h-\[48px\] w-full flex-col items-center justify-center/, 'les cellules date simples et fusionnées centrent leur contenu');
+  assert.match(session, /data-session-cell="date"[\s\S]*?items-center justify-center/, 'la date d’une séance fusionnée reste centrée');
+  assert.match(table, /data-absence-session[\s\S]*?items-center justify-center[\s\S]*?text-center editor-type-table-side/, 'les dates d’absence suivent le même alignement');
+});
+
 test('les remarques et les retours système utilisent la police de l’interface', () => {
   const typography = readFileSync('src/styles/typography.css', 'utf8');
   const editor = readFileSync('src/features/editor/editorTypography.css', 'utf8');
@@ -179,5 +192,4 @@ test('le tableau éditeur recalcule ses polices selon la langue du texte (dir="l
   );
   assert.match(arabicChapterHtml, /dir="rtl" class="editor-type-chapter/, 'le chapitre arabe est RTL');
 });
-
 

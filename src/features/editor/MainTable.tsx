@@ -297,7 +297,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                     return (
                       <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement}>
                           <div data-absence-session={row.session.date} data-absence-dates={dates.join(',')} className={`grid min-h-14 border-b border-border bg-muted/20 ${TABLE_GRID_CLASS}`}>
-                              <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-start border-e border-border px-1 py-3 text-start editor-type-table-side"><MultiDateCard dates={dates} /></div>
+                              <div title={dates.map(date => formatDateDDMMYYYY(date) ?? date).join(' · ')} className="flex min-w-0 items-center justify-center border-e border-border px-1 py-3 text-center editor-type-table-side"><MultiDateCard dates={dates} /></div>
                               <div dir={textDirectionAttribute(t('notifications.absenceCertificate'))} className="flex items-center justify-start text-start border-e border-border px-3 py-3 font-medium editor-type-table-main">{t('notifications.absenceCertificate')}</div>
                               <div className="flex min-w-0 flex-col justify-center gap-2 whitespace-pre-wrap break-words px-2 py-3 text-muted-foreground editor-type-remark">
                                   {remarks.map(remark => <div key={remark.dates[0]} dir={textDirectionAttribute(remark.reasons.join(' · '))}>

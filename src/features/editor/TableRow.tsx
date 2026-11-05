@@ -129,7 +129,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
     if (rangeOrPair) {
       const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
       return (
-        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.85rem] font-semibold leading-snug tabular-nums sm:text-[0.95rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center font-semibold leading-snug tabular-nums ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
           <span data-date-token className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
             <bdi dir="ltr" className="whitespace-nowrap">{rangeOrPair.start.day}/{rangeOrPair.start.numericMonth}</bdi>
             <span className="font-normal text-foreground text-xs">{conjunction}</span>
@@ -156,7 +156,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
   if (parsedDates.length === 0) return null;
   const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.9rem] font-semibold leading-snug tabular-nums sm:text-[1.0125rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`editor-date-value flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center font-semibold leading-snug tabular-nums ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
       {parsedDates.map((date, index) => (
         <span key={date.source} data-date-token className="inline-flex shrink-0 items-baseline gap-0.5 whitespace-nowrap">
           {index > 0 ? <span className="font-normal text-foreground">{conjunction}</span> : null}
@@ -183,7 +183,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
 
     return (
-      <div className={`flex h-full min-h-[48px] w-full flex-col items-start justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
+      <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
         {isMiddle && <DateCard dateStr={dateStr} hasWarning={hasWarning} />}
       </div>
     );
@@ -191,7 +191,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
   // Not merged
   return (
-    <div className={`flex h-full min-h-[48px] w-full flex-col items-start justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
+    <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
       <DateCard dateStr={dateStr} hasWarning={hasWarning} />
     </div>
   );

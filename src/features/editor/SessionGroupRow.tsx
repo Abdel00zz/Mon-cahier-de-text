@@ -203,7 +203,7 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
             <button
                 type="button"
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-start self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -334,4 +334,3 @@ export const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
 });
 
 SessionGroupRow.displayName = 'SessionGroupRow';
-

@@ -18,6 +18,7 @@
     --editor-fs-remark: 13px;
     --editor-fs-table-main: 12.5px;
     --editor-fs-table-side: 11.5px;
+    --editor-fs-date: 13px;
     --editor-fs-page: 11.5px;
     --editor-fs-badge: 11px;
     --editor-badge-min-width: 30px;
@@ -106,6 +107,9 @@
     font-family: var(--font-sans);
     font-size: var(--editor-fs-table-side);
     line-height: 1.2;
+  }
+  [data-editor-table] .editor-date-value {
+    font-size: var(--editor-fs-date);
   }
   .editor-type-table-main {
     font-family: var(--font-sans);
@@ -303,6 +307,7 @@
     --editor-fs-remark: calc(var(--editor-scale) * 0.84);
     --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
     --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
+    --editor-fs-date: calc(var(--editor-scale) * 0.88);
     --editor-fs-page: calc(var(--editor-scale) * 0.75);
     --editor-fs-badge: calc(var(--editor-scale) * 0.72);
     --editor-badge-min-width: calc(var(--editor-scale) * 1.95);
@@ -374,6 +379,13 @@
     [data-editor-table] {
       /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
       --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vmin), 1rem) * var(--app-text-scale, 1)));
+    }
+  }
+
+  @media (max-width: 639px) and (pointer: coarse) {
+    [data-editor-table] {
+      /* Réduit légèrement toute la hiérarchie sur téléphone, sans toucher au réglage de taille global. */
+      --editor-scale: max(0.875rem, calc(clamp(0.85rem, calc(0.85rem + 0.1vmin), 0.9rem) * var(--app-text-scale, 1)));
     }
   }
 }
