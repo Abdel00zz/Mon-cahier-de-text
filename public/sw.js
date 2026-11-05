@@ -72,6 +72,32 @@ function isCacheableStaticPath(pathname) {
   );
 }
 
+/* Une réponse réseau qui traîne ne doit pas retarder l’ouverture du cahier :
+   au-delà du délai, la coque en cache prend le relais. Certains contextes
+   (tests, navigateurs anciens) n’exposent ni AbortController ni setTimeout :
+   la requête simple suffit alors. */
+function fetchShell(request, timeoutMs) {
+  if (typeof AbortController !== 'function' || typeof setTimeout !== 'function') {
+    return Promise.resolve().then(() => fetch(request)).catch(() => null);
+  }
+  return new Promise(resolve => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      resolve(null);
+    }, timeoutMs);
+    fetch(request, { signal: controller.signal })
+      .then(response => {
+        clearTimeout(timer);
+        resolve(response);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(null);
+      });
+  });
+}
+
 self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -87,11 +113,23 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname === '/version.json') return;
 
-  // Each worker serves its own consistent shell; other pages retain normal navigation.
+  // Réseau d’abord pour la coque : une version déployée doit être vue au
+  // premier chargement en ligne — sinon une PWA installée reste des semaines
+  // sur une coque et des morceaux JS périmés. Le cache ne sert qu’en secours
+  // (hors ligne ou réseau qui traîne), et il n’est jamais réécrit ici : la
+  // coque en cache reste cohérente avec les fichiers précachés du worker.
   if (request.mode === 'navigate' && (url.pathname === '/' || url.pathname === '/index.html')) {
     event.respondWith((async () => {
       const shell = await caches.open(SHELL_CACHE);
-      return await shell.match('/index.html') || await shell.match('/') || fetch(request);
+      const cached = await shell.match('/index.html') || await shell.match('/');
+      let fresh = null;
+      try {
+        fresh = await fetchShell(request, 4000);
+      } catch {
+        fresh = null;
+      }
+      if (fresh && fresh.ok && fresh.type === 'basic') return fresh;
+      return cached || fresh || Response.error();
     })());
     return;
   }

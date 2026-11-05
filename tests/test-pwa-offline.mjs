@@ -62,6 +62,17 @@ test('offline shell and editor are available after installation without a networ
   assert.equal(await sw.request('/SamsungOneArabic-400.ttf'), 'cached:/SamsungOneArabic-400.ttf');
 });
 
+test('la navigation préfère la version en ligne et retombe sur la coque en cache', async () => {
+  const fresh = { ok: true, type: 'basic' };
+  const online = worker(false, { fetch: async () => fresh });
+  await online.install();
+  assert.equal(await online.request('/', 'navigate'), fresh, 'une coque périmée ne masque plus un nouveau build');
+
+  const offline = worker();
+  await offline.install();
+  assert.equal(await offline.request('/', 'navigate'), 'cached:/index.html', 'hors ligne, la coque en cache reste servie');
+});
+
 test('incomplete download does not activate or retain a partial shell', async () => {
   const sw = worker(true);
   await assert.rejects(sw.install());

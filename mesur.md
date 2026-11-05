@@ -133,27 +133,29 @@ La carte applique une palette liée à la classe, et non un même fond littéral
 | Colonne latérale / page | 11,5 px | Métadonnées |
 | Badge | 11 px | Repère compact |
 
-Les valeurs du tableau sont les références initiales; les règles finales les recalculent proportionnellement à `--editor-scale`. À titre de lecture, avec le réglage utilisateur à 100 %, cette échelle vaut environ **14 px sur un téléphone tactile étroit** et **16 px sur un grand écran**. Les tailles effectivement obtenues sont alors :
+Les valeurs du tableau sont les références initiales; les règles finales les recalculent proportionnellement à `--editor-scale`. Le téléphone utilise désormais sa **propre échelle**, plus serrée que celle du bureau : base ≈ **12,1 px** (réglage utilisateur 100 %), et des ratios élargis pour que chaque niveau de lecture garde au moins 0,7 px d’écart avec le suivant. Le bureau large reste à ≈ 16 px.
 
-| Zone / niveau | Téléphone (échelle 14 px) | Bureau large (échelle 16 px) |
+| Zone / niveau | Téléphone (échelle 12,1 px) | Bureau large (échelle 16 px) |
 |---|---:|---:|
-| Chapitre | 20,3 px | 23,2 px |
-| Bloc de tête | 17,5 px | 20 px |
-| Section | 16,2 px | 18,6 px |
-| Sous-section | 15,1 px | 17,3 px |
-| Sous-sous-section | 14,3 px | 16,3 px |
-| Titre d’item | 13,4 px | 15,4 px |
-| Description | 12,6 px | 14,4 px |
-| Remarque | 11,8 px | 13,4 px |
-| Cellule principale | 11,3 px | 13 px |
-| Colonne latérale | 10,5 px | 12 px |
-| Date | 12,3 px | 14,1 px |
-| Page | 10,5 px | 12 px |
-| Badge | 10,1 px | 11,5 px |
+| Chapitre | 18,6 px | 23,2 px |
+| Bloc de tête | 16,7 px | 20 px |
+| Section | 15,1 px | 18,6 px |
+| Sous-section | 14 px | 17,3 px |
+| Sous-sous-section | 13,2 px | 16,3 px |
+| Titre d’item | 12,3 px | 15,4 px |
+| Description | 11,5 px | 14,4 px |
+| Remarque | 11 px (plancher) | 13,4 px |
+| Cellule principale | 10,6 px | 13 px |
+| Colonne latérale | 10,1 px | 12 px |
+| Date | 12,1 px | 14,1 px |
+| Page | 10,1 px | 12 px |
+| Badge | 9,9 px | 11,5 px |
 
 Ce sont des résultats calculés à partir des ratios CSS, arrondis au dixième; la largeur d’écran et le réglage de taille du texte peuvent les faire varier. La grille de colonnes est partagée entre en-tête, lignes et cellules fusionnées : date `minmax(4.75rem, 18%)`, texte flexible, côté `minmax(3.5rem, 20%)`; téléphone `minmax(3.5rem, 14%) / 1fr / minmax(3.5rem, 16%)`; bureau `minmax(8.5rem, 13%) / 1fr / minmax(9.5rem, 16%)`.
 
-Les espacements de contenu sont pilotés par l’échelle et les niveaux de retrait : 4/8/14 px par défaut, plus amples à partir de 640 px et en paysage tactile. Dates et contenus importants sont centrés selon leurs rôles de cellules; les paragraphes conservent un alignement naturel.
+**Alignement :** les titres structurels — chapitre, bloc de tête, évaluation (dont l’évaluation diagnostique) — et la colonne des dates, en-tête compris, sont centrés; c’est la ligne de repère du cahier. Les sections, sous-sections, titres d’items, descriptions et remarques se calent sur le bord de lecture : la hiérarchie se lit par la taille, la graisse et la marge, jamais par un centrage généralisé. Une règle CSS dédiée (`.editor-date-value`) garantit le centrage d’une date même si une classe utilitaire manque.
+
+Les espacements de contenu sont pilotés par l’échelle et les niveaux de retrait : 4/8/14 px par défaut, plus amples à partir de 640 px et en paysage tactile.
 
 **Couleurs :** contenu sur surface claire/sombre neutre; chapitres en teal (`#2b6d73`, `#91cec8` en sombre); titre d’évaluation rose profond (`#9f1239`, éclairci en sombre); badges et documents restent discrets, sans multiplier les aplats.
 
@@ -662,7 +664,7 @@ Les composants qui suivent le doigt lisent `var(--touch-min)` : bouton de fermet
 
 ### 17.3 Ce qui reste ouvert
 
-- **Échelle typographique** : 25 tailles distinctes, écarts de 1 px entre niveaux de l’éditeur. Une échelle de 8 paliers (`11 / 12 / 14 / 16 / 18 / 22 / 28 / 34`) demande de reprendre `editorTypography.css` et les tailles en dur des modales.
+- **Échelle typographique globale** : 25 tailles distinctes hors éditeur. L’éditeur a désormais deux échelles (bureau 16 px, téléphone 12,1 px) avec des paliers lisibles ; il reste à tokeniser les tailles en dur des modales et des listes.
 - **Rayons** : converger vers `8 / 12 / 16 / 24 / 28 / pilule`. Aujourd’hui 6, 10, 14 et 18 coexistent encore.
 - **Titres de modale** : un seul token `--modal-title-size` remplacerait les valeurs 15, 16, 16/17, 16/18, 17/19.
 - **Arabe** : le titre de page RTL (1,35–1,7 rem) est plus petit que le titre latin (1,625–2,125 rem). À vérifier sur appareil, la lisibilité arabe demandant plutôt +1 à +2 px.
@@ -675,3 +677,13 @@ Les contrastes indiqués sont calculés à partir des valeurs HSL du thème (WCA
 Deux règles mortes ont été corrigées au passage : la ligne d’évaluation redescendait à 44 px au doigt à cause d’un bloc `(max-width: 768px)` postérieur, et la rangée compacte de la barre mobile en paysage gardait 44 px en dur. Un ancien 44 px en dur subsiste dans les optimisations mobiles de `notebookTracking.css` ; elles ne suivent pas encore le token.
 
 Reste à confirmer avec axe ou Accessibility Scanner sur un appareil réel, ainsi que le rendu des cibles à 48 px avec la taille de police Android poussée à 130–200 %.
+
+### 17.5 Mise à jour de l’application installée
+
+Le service worker servait la coque depuis le cache **avant** le réseau. Une PWA déjà installée pouvait donc afficher des semaines durant une interface périmée — coque et morceaux JS d’un build antérieur — et donner l’impression que les correctifs de style ou d’horloge « ne marchaient pas ». Trois changements :
+
+- la navigation est servie **réseau d’abord** (délai de 4 s), la coque en cache restant le secours hors ligne ; le cache n’est jamais réécrit à la volée, il reste cohérent avec les fichiers précachés du worker ;
+- `navigator.serviceWorker.register` utilise `updateViaCache: 'none'`, donc `sw.js` n’est plus masqué par le cache HTTP ;
+- la vérification de version existante (`/version.json`, au plus une fois par heure au retour dans la page) déclenche le rechargement différé, qui récupère maintenant réellement la nouvelle coque.
+
+L’horloge interne du planning, elle, se recale à la prochaine minute et à chaque reprise (visibilité, focus, `pageshow`, reprise native).

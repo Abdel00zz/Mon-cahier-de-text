@@ -190,7 +190,9 @@ async function registerPwaServiceWorker(): Promise<ServiceWorkerRegistration | n
     return null;
   }
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    // `updateViaCache: 'none'` : le worker lui-même est toujours revalidé, sinon
+    // un `sw.js` en cache HTTP peut retarder la découverte d’un nouveau build.
+    const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' });
     if (registration.waiting) {
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
