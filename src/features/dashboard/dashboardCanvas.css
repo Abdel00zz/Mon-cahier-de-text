@@ -1,22 +1,27 @@
 /* One solid canvas shared with navigation and assistant surfaces. */
 :root {
   --serenite-bg: hsl(var(--background));
-  --serenite-ink: #221d35;
-  --serenite-mute: #6b6385;
-  --serenite-line: rgba(70, 55, 130, .11);
+  /* Encres chaudes : brun-noir et gris sable, jamais un gris bleuté — la même
+     famille que le papier ivoire. Contrastes mesurés : 15,1:1 et 6,2:1. */
+  --serenite-ink: #2b2016;
+  --serenite-mute: #6e5a49;
+  --serenite-line: rgba(122, 96, 62, .16);
   --serenite-glass: hsl(var(--card));
   --serenite-solid: hsl(var(--background));
   --serenite-sheet: hsl(var(--background));
-  --serenite-g1: #5f52d6;
-  --serenite-g2: #3e6ec9;
-  --serenite-grad: linear-gradient(135deg, var(--serenite-g1), var(--serenite-g2));
+  /* Dégradé « aurore » : bleu → violet → rose, la signature des surfaces
+     d’intelligence artificielle (Gemini). Les trois arrêts gardent ≥ 5,7:1 avec
+     l’encre blanche du libellé du dock : la marque ne coûte jamais la lisibilité. */
+  --serenite-g1: #0e5ddd;
+  --serenite-g2: #b6354f;
+  --serenite-grad: linear-gradient(135deg, var(--serenite-g1) 0%, #752fbc 55%, var(--serenite-g2) 100%);
   --serenite-ease: cubic-bezier(.34, 1.4, .5, 1);
   --spring: cubic-bezier(.34, 1.4, .5, 1);
   --dash-bg: var(--serenite-bg);
   --dash-header-ink: var(--serenite-ink);
   --dash-group-ink: var(--serenite-mute);
   --dash-btn-bg: var(--serenite-grad);
-  --dash-btn-shadow: 0 10px 20px -8px rgba(95, 82, 214, .75), inset 0 1px 0 rgba(255, 255, 255, .28);
+  --dash-btn-shadow: 0 8px 18px -9px color-mix(in srgb, var(--serenite-g1) 62%, transparent), inset 0 1px 0 rgba(255, 255, 255, .3);
   --dash-robot-badge-bg: #8b3a2b;
   --dash-tabbar-bg: var(--serenite-glass);
   --dash-tabbar-border: var(--serenite-line);
@@ -31,14 +36,15 @@
 }
 .dark {
   --serenite-bg: hsl(var(--background));
-  --serenite-ink: #f2effc;
-  --serenite-mute: #9e96b8;
-  --serenite-line: rgba(210, 198, 255, .12);
-  --serenite-glass: rgba(36, 32, 58, .94);
-  --serenite-solid: #201d33;
-  --serenite-sheet: rgba(30, 27, 48, .94);
-  --serenite-g1: #6c5ce7;
-  --serenite-g2: #487eb0;
+  --serenite-ink: #f4f0e8;
+  --serenite-mute: #a9a08f;
+  --serenite-line: rgba(226, 214, 190, .13);
+  --serenite-glass: rgba(32, 29, 24, .92);
+  --serenite-solid: #201d18;
+  --serenite-sheet: rgba(28, 25, 21, .94);
+  --serenite-g1: #2b6fe0;
+  --serenite-g2: #c94a68;
+  --serenite-grad: linear-gradient(135deg, var(--serenite-g1) 0%, #8a4fd0 55%, var(--serenite-g2) 100%);
 }
 [data-dashboard-surface], [data-dashboard-root], .keep-dashboard-canvas, .keep-futuristic-surface {
   --pixel-spring: var(--spring);
@@ -96,7 +102,7 @@
 @media (hover: hover) and (pointer: fine) {
   .dashboard-header-plus-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 24px -8px rgba(95, 82, 214, .85), inset 0 1px 0 rgba(255, 255, 255, .34);
+    box-shadow: 0 14px 24px -9px color-mix(in srgb, var(--serenite-g1) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .36);
   }
   .dashboard-header-plus-btn:hover svg { transform: rotate(90deg); }
 }

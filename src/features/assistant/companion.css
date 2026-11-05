@@ -1,11 +1,13 @@
 .assistant-anchor {
-  --assistant-avatar: #5f52d6;
-  --assistant-surface: #fbfafe;
-  --assistant-border: rgba(70, 55, 130, .14);
-  --assistant-ink: #221d35;
-  --control-ink: #554b7c;
-  --control-ink-hover: #44366f;
-  --control-wash: #eeebfa;
+  /* Surface d’assistance : papier chaud de l’application, anneau « aurore »
+     discret — la même famille chromatique que le bouton d’ajout. */
+  --assistant-avatar: #0e5ddd;
+  --assistant-surface: #fdfcf8;
+  --assistant-border: rgba(122, 96, 62, .16);
+  --assistant-ink: #2b2016;
+  --control-ink: #4a3f6b;
+  --control-ink-hover: #3a3156;
+  --control-wash: #eceaf6;
   --assistant-safe-top: env(safe-area-inset-top, 0px);
   --assistant-safe-bottom: env(safe-area-inset-bottom, 0px);
   --assistant-safe-left: env(safe-area-inset-left, 0px);
@@ -14,13 +16,13 @@
   position: relative; flex: none; inline-size: 46px; block-size: 46px; text-align: start;
 }
 .dark .assistant-anchor {
-  --assistant-avatar: #a99ef6;
-  --assistant-surface: #1c1929;
-  --assistant-border: rgba(210, 198, 255, .14);
-  --assistant-ink: #f2effc;
-  --control-ink: #d2c8ef;
-  --control-ink-hover: #e7dfff;
-  --control-wash: #38324d;
+  --assistant-avatar: #7aa7ff;
+  --assistant-surface: #201d18;
+  --assistant-border: rgba(226, 214, 190, .14);
+  --assistant-ink: #f5f1e8;
+  --control-ink: #cfc6e2;
+  --control-ink-hover: #e6dff5;
+  --control-wash: #322c44;
 }
 .assistant-trigger {
   position: relative; display: grid; place-items: center; inline-size: 46px; block-size: 46px;

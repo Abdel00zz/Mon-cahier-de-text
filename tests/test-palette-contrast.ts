@@ -132,9 +132,12 @@ for (const theme of ['clair', 'sombre'] as const) {
       assert.ok(cardL > bgL, `la carte (${cardL}%) doit être plus claire que le fond (${bgL}%)`);
       assert.ok(ratioBg >= 1.12, `étagement carte/fond trop faible : ${ratioBg.toFixed(3)}`);
     } else {
-      assert.deepEqual(background, [0, 0, 100], 'fond blanc uni');
-      assert.deepEqual(card, background, 'pas de couche de papier teintée');
-      assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures distinguent les surfaces blanches');
+      // Thème clair éditorial : papier ivoire teinté, cartes presque blanches.
+      // La profondeur ne vient donc pas d'un écart de luminance (il est faible
+      // par choix), mais du filet sable qui détache chaque carte.
+      assert.deepEqual(background, [45, 33, 97], 'fond ivoire, jamais du blanc pur');
+      assert.ok(cardL > bgL, `la carte (${cardL}%) reste plus claire que le fond (${bgL}%)`);
+      assert.ok(ratio(token('border'), background) >= 1.25, 'les bordures détachent les cartes du papier');
     }
   });
 }
